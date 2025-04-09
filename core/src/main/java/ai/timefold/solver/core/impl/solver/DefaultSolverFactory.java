@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.solver;
 
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -171,15 +170,14 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
 
     private SolutionDescriptor<Solution_> buildSolutionDescriptor() {
         if (solverConfig.getSolutionClass() == null) {
-            throw new IllegalArgumentException("The solver configuration must have a solutionClass (" +
-                    solverConfig.getSolutionClass() +
-                    "). If you're using the Quarkus extension or Spring Boot starter, it should have been filled in " +
-                    "already.");
+            throw new IllegalArgumentException(
+                    "The solver configuration must have a solutionClass (%s). If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already."
+                            .formatted(solverConfig.getSolutionClass()));
         }
         if (ConfigUtils.isEmptyCollection(solverConfig.getEntityClassList())) {
-            throw new IllegalArgumentException("The solver configuration must have at least 1 entityClass (" +
-                    solverConfig.getEntityClassList() + "). If you're using the Quarkus extension or Spring Boot starter, " +
-                    "it should have been filled in already.");
+            throw new IllegalArgumentException(
+                    "The solver configuration must have at least 1 entityClass (%s). If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already."
+                            .formatted(solverConfig.getEntityClassList()));
         }
         return SolutionDescriptor.buildSolutionDescriptor(solverConfig.determineDomainAccessType(),
                 (Class<Solution_>) solverConfig.getSolutionClass(),
@@ -239,9 +237,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     if (listVariableDescriptorList.size() != 1) {
                         // TODO: Do multiple Construction Heuristics for each list variable descriptor?
                         throw new IllegalArgumentException(
-                                "Construction Heuristic phase does not support multiple list variables ("
-                                        + listVariableDescriptorList + ") for planning entity (" +
-                                        genuineEntityDescriptor.getEntityClass() + ").");
+                                "Construction Heuristic phase does not support multiple list variables (%s) for planning entity (%s)."
+                                        .formatted(listVariableDescriptorList, genuineEntityDescriptor.getEntityClass()));
                     }
                     entityPlacerConfig =
                             DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,
@@ -293,13 +290,13 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                         SolverConfig.MOVE_THREAD_COUNT_NONE, SolverConfig.MOVE_THREAD_COUNT_AUTO);
             }
             if (resolvedMoveThreadCount < 1) {
-                throw new IllegalArgumentException("The moveThreadCount (" + moveThreadCount
-                        + ") resulted in a resolvedMoveThreadCount (" + resolvedMoveThreadCount
-                        + ") that is lower than 1.");
+                throw new IllegalArgumentException(
+                        "The moveThreadCount (%s) resulted in a resolvedMoveThreadCount (%d) that is lower than 1."
+                                .formatted(moveThreadCount, resolvedMoveThreadCount));
             }
             if (resolvedMoveThreadCount > availableProcessorCount) {
-                LOGGER.warn("The resolvedMoveThreadCount ({}) is higher "
-                        + "than the availableProcessorCount ({}), which is counter-efficient.",
+                LOGGER.warn(
+                        "The resolvedMoveThreadCount ({}) is higher than the availableProcessorCount ({}), which is counter-efficient.",
                         resolvedMoveThreadCount, availableProcessorCount);
                 // Still allow it, to reproduce issues of a high-end server machine on a low-end developer machine
             }

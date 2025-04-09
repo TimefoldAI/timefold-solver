@@ -149,7 +149,8 @@ class SolutionDescriptorTest {
     void noProblemFactPropertyWithEasyScoreCalculation() {
         SolverFactory<TestdataNoProblemFactPropertySolution> solverFactory = PlannerTestUtils.buildSolverFactory(
                 TestdataNoProblemFactPropertySolution.class, TestdataEntity.class);
-        solverFactory.buildSolver();
+        assertThatCode(solverFactory::buildSolver)
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -399,8 +400,10 @@ class SolutionDescriptorTest {
     void problemScaleBasic() {
         int valueCount = 10;
         int entityCount = 20;
-        SolutionDescriptor<ai.timefold.solver.core.impl.testdata.domain.TestdataSolution> solutionDescriptor = ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.buildSolutionDescriptor();
-        ai.timefold.solver.core.impl.testdata.domain.TestdataSolution solution = ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.generateSolution(valueCount, entityCount);
+        SolutionDescriptor<ai.timefold.solver.core.impl.testdata.domain.TestdataSolution> solutionDescriptor =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.buildSolutionDescriptor();
+        ai.timefold.solver.core.impl.testdata.domain.TestdataSolution solution =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.generateSolution(valueCount, entityCount);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -415,8 +418,10 @@ class SolutionDescriptorTest {
     void emptyProblemScale() {
         int valueCount = 27;
         int entityCount = 27;
-        SolutionDescriptor<ai.timefold.solver.core.impl.testdata.domain.TestdataSolution> solutionDescriptor = ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.buildSolutionDescriptor();
-        ai.timefold.solver.core.impl.testdata.domain.TestdataSolution solution = ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.generateSolution(valueCount, entityCount);
+        SolutionDescriptor<ai.timefold.solver.core.impl.testdata.domain.TestdataSolution> solutionDescriptor =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.buildSolutionDescriptor();
+        ai.timefold.solver.core.impl.testdata.domain.TestdataSolution solution =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.generateSolution(valueCount, entityCount);
         solution.getValueList().clear();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);

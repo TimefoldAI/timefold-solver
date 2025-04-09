@@ -1,14 +1,20 @@
 package ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritanceinterface.baseannotated.childannotated;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity
-public interface TestdataMultipleBaseEntity extends TestdataBaseEntity {
+public interface TestdataBaseEntity {
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange2")
-    String getValue2();
+    @PlanningId
+    Long getId();
 
-    void setValue2(String value2);
+    void setId(Long id);
+
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    String getValue();
+
+    void setValue(String value);
 
 }

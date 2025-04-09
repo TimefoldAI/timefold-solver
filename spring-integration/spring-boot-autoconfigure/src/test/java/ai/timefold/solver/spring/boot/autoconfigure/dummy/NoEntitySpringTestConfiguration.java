@@ -1,9 +1,10 @@
 package ai.timefold.solver.spring.boot.autoconfigure.dummy;
 
-import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@EntityScan(basePackages = "ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.noEntity")
+@AutoConfigurationPackage(basePackages = { "ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.noEntity",
+        "ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.incremental" })
 public class NoEntitySpringTestConfiguration {
 }

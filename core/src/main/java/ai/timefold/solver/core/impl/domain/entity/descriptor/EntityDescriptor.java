@@ -274,32 +274,33 @@ public class EntityDescriptor<Solution_> {
      * If a class declares any variable (genuine or shadow), it must be annotated as an entity,
      * even if a supertype already has the annotation.
      */
-    private void assertNonEntityParentClassHasNoVariables() {
+    public static void assertValidaPlanningVariables(Class<?> clazz) {
         // We first check the entity class
-        if (entityClass.getAnnotation(PlanningEntity.class) == null && hasAnyGenuineOrShadowVariables(entityClass)) {
+        if (clazz.getAnnotation(PlanningEntity.class) == null && hasAnyGenuineOrShadowVariables(clazz)) {
             throw new IllegalStateException(
                     """
                             The class %s is not annotated with @PlanningEntity but defines genuine or shadow variables.
                             Maybe annotate %s with @PlanningEntity."""
-                            .formatted(entityClass.getName(), entityClass.getName()));
+                            .formatted(clazz.getName(), clazz.getName()));
         }
         // We check the first level of the inheritance chain
         var classList = new ArrayList<Class<?>>();
-        classList.add(entityClass.getSuperclass());
-        classList.addAll(Arrays.asList(entityClass.getInterfaces()));
-        for (var clazz : classList) {
-            if (clazz != null && clazz.getAnnotation(PlanningEntity.class) == null && hasAnyGenuineOrShadowVariables(clazz)) {
+        classList.add(clazz.getSuperclass());
+        classList.addAll(Arrays.asList(clazz.getInterfaces()));
+        for (var otherClazz : classList) {
+            if (otherClazz != null && otherClazz.getAnnotation(PlanningEntity.class) == null
+                    && hasAnyGenuineOrShadowVariables(otherClazz)) {
                 throw new IllegalStateException(
                         """
                                 The class %s is not annotated with @PlanningEntity but defines genuine or shadow variables.
                                 Maybe annotate %s with @PlanningEntity."""
-                                .formatted(clazz.getName(), clazz.getName()));
+                                .formatted(otherClazz.getName(), otherClazz.getName()));
             }
         }
     }
 
     @SuppressWarnings("unchecked")
-    private boolean hasAnyGenuineOrShadowVariables(Class<?> entityClass) {
+    private static boolean hasAnyGenuineOrShadowVariables(Class<?> entityClass) {
         var membersList = ConfigUtils.getDeclaredMembers(entityClass);
         return membersList.stream()
                 .anyMatch(member -> ConfigUtils.extractAnnotationClass(member, PLANNING_ENTITY_ANNOTATION_CLASSES) != null);
@@ -339,7 +340,7 @@ public class EntityDescriptor<Solution_> {
     private void processEntityAnnotations() {
         assertNotMixedInheritance();
         assertSingleInheritance();
-        assertNonEntityParentClassHasNoVariables();
+        assertValidaPlanningVariables(entityClass);
         var entityAnnotation = entityClass.getAnnotation(PlanningEntity.class);
         if (entityAnnotation == null && declaredInheritedEntityClassList.isEmpty()) {
             throw new IllegalStateException(

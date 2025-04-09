@@ -6,22 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.BothClassesAnnotatedAddNewVarBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.BothClassesAnnotatedAddNewVarSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.BothClassesAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.BothClassesAnnotatedReplaceVarBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.BothClassesAnnotatedReplaceVarSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.BothClassesAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.MultipleBothClassesAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.MultipleBothClassesAnnotatedMixedPatternSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.MultipleBothClassesAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.MultipleOnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.MultipleOnlyBaseClassAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.OnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.OnlyBaseClassAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.OnlyChildClassAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.superclass.OnlyChildClassAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedAddNewVarBaseInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedAddNewVarSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedBaseInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedReplaceVarBaseInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedReplaceVarSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothClassesAnnotatedBaseInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothClassesAnnotatedMixedPatternSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothClassesAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleOnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleOnlyBaseClassAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyBaseClassAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyChildClassAnnotatedBaseInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyChildClassAnnotatedSpringTestConfiguration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -120,10 +119,10 @@ class TimefoldSolverInheritanceTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestdataSolution
-                                    .generateSolution(1, 1, false);
+                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestdataSolution
+                                    .generateSolution(3, 2, false);
                     var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotated.TestdataSolution) solverFactory
+                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
@@ -142,10 +141,10 @@ class TimefoldSolverInheritanceTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestdataSolution
-                                    .generateSolution(1, 1, false);
+                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataSolution
+                                    .generateSolution(3, 2, false);
                     var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotated.TestdataSolution) solverFactory
+                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
@@ -163,10 +162,10 @@ class TimefoldSolverInheritanceTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestdataSolution
-                                    .generateSolution(1, 2, false);
+                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childnotannotated.TestdataSolution
+                                    .generateSolution(3, 2, false);
                     var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childnotannotated.TestdataSolution) solverFactory
+                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childnotannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
@@ -185,10 +184,10 @@ class TimefoldSolverInheritanceTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestdataSolution
+                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childnotannotated.TestdataSolution
                                     .generateSolution(1, 2, false);
                     var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childnotannotated.TestdataSolution) solverFactory
+                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childnotannotated.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
@@ -203,9 +202,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testOnlyChildClassAnnotated() {
         assertThatCode(() -> onlyChildClassAnnotatedContextRunner
-                .run(context -> context.getBean(SolverConfig.class)))
-                .rootCause().hasMessageContaining(
-                        "The classes ([TestdataBaseEntity]) do not have the PlanningEntity annotation, even though they contain properties reserved for planning entities.");
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("is not annotated with @PlanningEntity but defines genuine or shadow variables.");
     }
 
     /**
@@ -216,9 +215,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testOnlyChildClassAnnotatedBaseIsInterface() {
         assertThatCode(() -> onlyChildClassAnnotatedBaseInterfaceContextRunner
-                .run(context -> context.getBean(SolverConfig.class)))
-                .rootCause().hasMessageContaining(
-                        "The classes ([TestdataBaseEntity]) do not have the PlanningEntity annotation, even though they contain properties reserved for planning entities.");
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("is not annotated with @PlanningEntity but defines genuine or shadow variables.");
     }
 
     /**
@@ -231,10 +230,10 @@ class TimefoldSolverInheritanceTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotatedaddvar.TestdataSolution
-                                    .generateSolution(1, 2, false);
+                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataSolution
+                                    .generateSolution(3, 2, false);
                     var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotatedaddvar.TestdataSolution) solverFactory
+                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
@@ -253,10 +252,10 @@ class TimefoldSolverInheritanceTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotatedaddvar.TestdataSolution
-                                    .generateSolution(1, 2, false);
+                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedaddvar.TestdataSolution
+                                    .generateSolution(3, 2, false);
                     var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotatedaddvar.TestdataSolution) solverFactory
+                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedaddvar.TestdataSolution) solverFactory
                                     .buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
@@ -271,17 +270,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testBothClassesAnnotatedReplaceVariable() {
         assertThatCode(() -> bothClassAnnotatedReplaceVarContextRunner
-                .run(context -> {
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotatedreplacevar.TestdataSolution
-                                    .generateSolution(1, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevar.baseannotated.childannotatedreplacevar.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
-                    assertNotNull(solution);
-                }))
-                .isInstanceOf(IllegalStateException.class);
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("redefines the genuine variables [value], which is not permitted.");
     }
 
     /**
@@ -292,17 +283,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testBothClassesAnnotatedReplaceVariableBaseIsInterface() {
         assertThatCode(() -> bothClassAnnotatedReplaceVarBaseInterfaceContextRunner
-                .run(context -> {
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotatedreplacevar.TestdataSolution
-                                    .generateSolution(1, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.singlevarinterface.baseannotated.childannotatedreplacevar.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
-                    assertNotNull(solution);
-                }))
-                .isInstanceOf(IllegalStateException.class);
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("redefines the genuine variables [value], which is not permitted.");
     }
 
     /**
@@ -312,18 +295,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testMultipleBothClassesAnnotated() {
         assertThatCode(() -> multipleBothClassesAnnotatedContextRunner
-                .run(context -> {
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childannotated.TestdataMultipleSolution
-                                    .generateSolution(1, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childannotated.TestdataMultipleSolution) solverFactory
-                                    .buildSolver().solve(problem);
-                    assertNotNull(solution);
-                    assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
-                }))
-                .doesNotThrowAnyException();
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -334,18 +308,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testMultipleBothClassesAnnotatedBaseIsInterface() {
         assertThatCode(() -> multipleBothClassesAnnotatedBaseInterfaceContextRunner
-                .run(context -> {
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritanceinterface.baseannotated.childannotated.TestdataMultipleSolution
-                                    .generateSolution(1, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritanceinterface.baseannotated.childannotated.TestdataMultipleSolution) solverFactory
-                                    .buildSolver().solve(problem);
-                    assertNotNull(solution);
-                    assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
-                }))
-                .doesNotThrowAnyException();
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -355,18 +320,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testMultipleOnlyBaseClassAnnotated() {
         assertThatCode(() -> multipleOnlyBaseClassAnnotatedContextRunner
-                .run(context -> {
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childnotannotated.TestdataMultipleSolution
-                                    .generateSolution(1, 2);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.childnotannotated.TestdataMultipleSolution) solverFactory
-                                    .buildSolver().solve(problem);
-                    assertNotNull(solution);
-                    assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2)); // value of 2 for each constraint
-                }))
-                .isInstanceOf(IllegalStateException.class);
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -377,18 +333,9 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testMultipleOnlyBaseClassAnnotatedBaseIsInterface() {
         assertThatCode(() -> multipleOnlyBaseClassAnnotatedBaseInterfaceContextRunner
-                .run(context -> {
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritanceinterface.baseannotated.childnotannotated.TestdataMultipleSolution
-                                    .generateSolution(1, 2);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritanceinterface.baseannotated.childnotannotated.TestdataMultipleSolution) solverFactory
-                                    .buildSolver().solve(problem);
-                    assertNotNull(solution);
-                    assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2)); // value of 2 for each constraint
-                }))
-                .isInstanceOf(IllegalStateException.class);
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("The multiple inheritance is not allowed.");
     }
 
     /**
@@ -399,17 +346,8 @@ class TimefoldSolverInheritanceTest {
     @Test
     void testMultipleBothClassesAnnotatedMixedPattern() {
         assertThatCode(() -> multipleBothClassesAnnotatedMixedPatternContextRunner
-                .run(context -> {
-                    var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleSolution
-                                    .generateSolution(1, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.superclass.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleSolution) solverFactory
-                                    .buildSolver().solve(problem);
-                    assertNotNull(solution);
-                    assertThat(solution.getScore()).isEqualTo(SimpleScore.of(6)); // value of 2 for each constraint
-                }))
-                .doesNotThrowAnyException();
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("Mixed inheritance is not permitted.");
     }
 }

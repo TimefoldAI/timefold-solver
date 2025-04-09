@@ -42,7 +42,8 @@ class TimefoldProcessorChainedXMLNoneTest {
         assertThat(solverConfig.getSolutionClass()).isEqualTo(TestdataChainedQuarkusSolution.class);
         assertThat(solverConfig.getEntityClassList()).containsExactlyInAnyOrder(
                 TestdataChainedQuarkusObject.class,
-                TestdataChainedQuarkusEntity.class);
+                TestdataChainedQuarkusEntity.class,
+                TestdataChainedQuarkusAnchor.class);
         assertThat(solverConfig.getScoreDirectorFactoryConfig().getConstraintProviderClass())
                 .isEqualTo(TestdataChainedQuarkusConstraintProvider.class);
         // No termination defined (solverConfig.xml isn't included)
