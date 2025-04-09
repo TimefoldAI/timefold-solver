@@ -2,10 +2,12 @@ package ai.timefold.solver.core.impl.solver.scope;
 
 import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
 
+import java.time.Clock;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,6 +36,8 @@ import io.micrometer.core.instrument.Tags;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 public class SolverScope<Solution_> {
+
+    private final Clock clock;
 
     // Solution-derived fields have the potential for race conditions.
     private final AtomicReference<ProblemSizeStatistics> problemSizeStatistics = new AtomicReference<>();
@@ -82,9 +86,18 @@ public class SolverScope<Solution_> {
         return value == -1 ? null : value;
     }
 
-    // ************************************************************************
-    // Constructors and simple getters/setters
-    // ************************************************************************
+    public SolverScope() {
+        this.clock = Clock.systemDefaultZone();
+    }
+
+    public SolverScope(Clock clock) {
+        this.clock = Objects.requireNonNull(clock);
+    }
+
+    public Clock getClock() {
+        return clock;
+    }
+
     public AbstractSolver<Solution_> getSolver() {
         return solver;
     }
@@ -259,7 +272,7 @@ public class SolverScope<Solution_> {
     }
 
     public void startingNow() {
-        startingSystemTimeMillis.set(System.currentTimeMillis());
+        startingSystemTimeMillis.set(getClock().millis());
         resetAtomicLongTimeMillis(endingSystemTimeMillis);
         this.moveEvaluationCount = 0L;
     }
@@ -269,7 +282,7 @@ public class SolverScope<Solution_> {
     }
 
     public void endingNow() {
-        endingSystemTimeMillis.set(System.currentTimeMillis());
+        endingSystemTimeMillis.set(getClock().millis());
     }
 
     public boolean isBestSolutionInitialized() {
@@ -277,7 +290,7 @@ public class SolverScope<Solution_> {
     }
 
     public long calculateTimeMillisSpentUpToNow() {
-        var now = System.currentTimeMillis();
+        var now = getClock().millis();
         return now - getStartingSystemTimeMillis();
     }
 
@@ -288,7 +301,7 @@ public class SolverScope<Solution_> {
         }
         var endingMillis = getEndingSystemTimeMillis();
         if (endingMillis == null) { // The solver hasn't ended yet.
-            endingMillis = System.currentTimeMillis();
+            endingMillis = getClock().millis();
         }
         return endingMillis - startingMillis;
     }
@@ -323,7 +336,7 @@ public class SolverScope<Solution_> {
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
-        SolverScope<Solution_> childThreadSolverScope = new SolverScope<>();
+        SolverScope<Solution_> childThreadSolverScope = new SolverScope<>(clock);
         childThreadSolverScope.bestSolution.set(null);
         childThreadSolverScope.bestScore.set(null);
         childThreadSolverScope.monitoringTags = monitoringTags;

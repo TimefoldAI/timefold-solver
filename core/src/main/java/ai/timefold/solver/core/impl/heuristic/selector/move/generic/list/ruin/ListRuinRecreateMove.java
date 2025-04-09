@@ -85,7 +85,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                             .withElementsToRecreate(ruinedValueList)
                             .build();
 
-            var nestedSolverScope = new SolverScope<Solution_>();
+            var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
             nestedSolverScope.setSolver(solverScope.getSolver());
             nestedSolverScope.setScoreDirector(variableChangeRecordingScoreDirector.getBacking());
             constructionHeuristicPhase.solvingStarted(nestedSolverScope);

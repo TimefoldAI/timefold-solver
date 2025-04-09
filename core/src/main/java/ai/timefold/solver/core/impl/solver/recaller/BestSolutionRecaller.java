@@ -51,7 +51,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         InnerScore innerScore = scoreDirector.calculateScore();
         var score = innerScore.raw();
         solverScope.setBestScore(innerScore);
-        solverScope.setBestSolutionTimeMillis(System.currentTimeMillis());
+        solverScope.setBestSolutionTimeMillis(solverScope.getClock().millis());
         // The original bestSolution might be the final bestSolution and should have an accurate Score
         solverScope.getSolutionDescriptor().setScore(solverScope.getBestSolution(), score);
         if (innerScore.fullyAssigned()) {
@@ -151,7 +151,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         }
         solverScope.setBestSolution(bestSolution);
         solverScope.setBestScore(bestScore);
-        solverScope.setBestSolutionTimeMillis(System.currentTimeMillis());
+        solverScope.setBestSolutionTimeMillis(solverScope.getClock().millis());
     }
 
 }

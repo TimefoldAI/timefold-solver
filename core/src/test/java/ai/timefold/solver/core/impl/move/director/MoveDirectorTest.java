@@ -9,7 +9,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -227,8 +226,8 @@ class MoveDirectorTest {
 
     @Test
     void undoNestedPhaseMove() {
-        var innerScoreDirector = mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<TestdataListSolution, SimpleScore>(innerScoreDirector);
+        var innerScoreDirector = (InnerScoreDirector<TestdataListSolution, SimpleScore>) mock(InnerScoreDirector.class);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
         var listVariableStateSupply = mock(ListVariableStateSupply.class);
         var listVariableDescriptor = mock(ListVariableDescriptor.class);
         var supplyManager = mock(SupplyManager.class);
@@ -271,7 +270,7 @@ class MoveDirectorTest {
         var ephemeralMoveDirector = moveDirector.ephemeral();
         var scoreDirector = ephemeralMoveDirector.getScoreDirector();
         var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
-                ruinRecreateConstructionHeuristicPhaseBuilder, mock(SolverScope.class), Arrays.asList(v1), Set.of(e1));
+                ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1), Set.of(e1));
         move.doMoveOnly(scoreDirector);
         var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
         // e1 must be analyzed at the beginning of the move execution
@@ -298,13 +297,13 @@ class MoveDirectorTest {
 
     @Test
     void testSolverScopeNestedPhase() {
-        var innerScoreDirector = mock(InnerScoreDirector.class);
-        var moveDirector = new MoveDirector<TestdataSolution, SimpleScore>(innerScoreDirector);
+        var innerScoreDirector = (InnerScoreDirector<TestdataSolution, SimpleScore>) mock(InnerScoreDirector.class);
+        var moveDirector = new MoveDirector<>(innerScoreDirector);
         var genuineVariableDescriptor = mock(GenuineVariableDescriptor.class);
         var supplyManager = mock(SupplyManager.class);
         var ruinRecreateConstructionHeuristicPhaseBuilder = mock(RuinRecreateConstructionHeuristicPhaseBuilder.class);
         var constructionHeuristicPhase = mock(RuinRecreateConstructionHeuristicPhase.class);
-        var mainSolverScope = mock(SolverScope.class);
+        var mainSolverScope = new SolverScope<TestdataSolution>();
 
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");

@@ -108,13 +108,13 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     public void startingNow() {
-        startingSystemTimeMillis = System.currentTimeMillis();
+        startingSystemTimeMillis = getSolverScope().getClock().millis();
         startingScoreCalculationCount = getScoreDirector().getCalculationCount();
         startingMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
     }
 
     public void endingNow() {
-        endingSystemTimeMillis = System.currentTimeMillis();
+        endingSystemTimeMillis = getSolverScope().getClock().millis();
         endingScoreCalculationCount = getScoreDirector().getCalculationCount();
         endingMoveEvaluationCount = getSolverScope().getMoveEvaluationCount();
     }
@@ -128,7 +128,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     public long calculatePhaseTimeMillisSpentUpToNow() {
-        long now = System.currentTimeMillis();
+        long now = getSolverScope().getClock().millis();
         return now - startingSystemTimeMillis;
     }
 

@@ -57,11 +57,7 @@ public sealed interface PhaseTermination<Solution_>
     void phaseEnded(AbstractPhaseScope<Solution_> phaseScope);
 
     static <Solution_> PhaseTermination<Solution_> bridge(SolverTermination<Solution_> termination) {
-        if (termination instanceof UniversalTermination<Solution_> universalTermination) {
-            return universalTermination;
-        } else {
-            return new SolverBridgePhaseTermination<>(termination);
-        }
+        return new SolverBridgePhaseTermination<>(termination);
     }
 
 }

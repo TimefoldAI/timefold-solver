@@ -42,7 +42,10 @@ final class OrCompositeTermination<Solution_>
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
         for (var termination : phaseTerminationList) {
-            if (termination.isApplicableTo(phaseScope.getClass()) && termination.isPhaseTerminated(phaseScope)) {
+            if (!termination.isApplicableTo(phaseScope.getClass())) {
+                continue;
+            }
+            if (termination.isPhaseTerminated(phaseScope)) {
                 return true;
             }
         }

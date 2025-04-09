@@ -1,5 +1,15 @@
-package ai.timefold.solver.core.impl.solver;
+package ai.timefold.solver.core.impl.solver.termination;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+import static org.awaitility.Awaitility.await;
+
+import java.time.Clock;
+import java.time.Duration;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 
@@ -19,10 +29,9 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.impl.testdata.util.MockClock;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
-import org.assertj.core.api.Assertions;
-import org.assertj.core.api.SoftAssertions;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Assumptions;
@@ -36,9 +45,9 @@ import org.junit.jupiter.params.provider.ArgumentsSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-class DefaultSolverTerminationTest {
+class TerminationTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolverTerminationTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(TerminationTest.class);
 
     @Test
     void stepCountTerminationAtSolverLevel() {
@@ -57,7 +66,51 @@ class DefaultSolverTerminationTest {
         // 2 entities means 2 steps, but the step count limit is 1.
         // Therefore the best solution is uninitialized, but the score is still just zero.
         // (No init score.)
-        Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
+    }
+
+    @Test
+    void globalTimeSpentTerminationAtPhaseLevel() throws InterruptedException, ExecutionException {
+        var clock = new MockClock(Clock.systemDefaultZone());
+        var solverConfig = new SolverConfig(clock)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withTerminationConfig(new TerminationConfig()
+                                        .withSpentLimit(Duration.ofSeconds(1))),
+                        new LocalSearchPhaseConfig())
+                .withTerminationConfig(new TerminationConfig()
+                        .withSpentLimit(Duration.ofSeconds(2)));
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+
+        var executor = Executors.newSingleThreadExecutor();
+        try {
+            var counter = new AtomicInteger(0);
+            var future = executor.submit(() -> {
+                counter.incrementAndGet();
+                return solver.solve(solution);
+            });
+            await().atMost(Duration.ofSeconds(1)).until(() -> counter.get() == 1); // Wait for solver to start.
+            assertThat(future).isNotDone();
+            Thread.sleep(100L); // Give solver some processing time to exit the CH.
+
+            clock.tick(Duration.ofMillis(1001)); // Fake 1 second passing; this should terminate the first LS.
+            Thread.sleep(100L); // Give solver some processing time to handle everything.
+            assertThat(future).isNotDone();
+
+            clock.tick(Duration.ofMillis(1000)); // Fake another second; this should terminate the second LS.
+            await().atMost(Duration.ofSeconds(1)).until(future::isDone); // Wait for solver to complete.
+
+            assertThat(future.get())
+                    .isNotNull();
+        } finally {
+            executor.shutdownNow();
+        }
     }
 
     @Test
@@ -77,7 +130,7 @@ class DefaultSolverTerminationTest {
         // 2 entities means 2 steps, but the step count limit is 1.
         // Therefore the best solution is uninitialized, but the score is still just zero.
         // (No init score.)
-        Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
 
     @Test
@@ -94,7 +147,7 @@ class DefaultSolverTerminationTest {
         var solver = SolverFactory.<TestdataSolution> create(solverConfig)
                 .buildSolver();
         var bestSolution = solver.solve(solution);
-        Assertions.assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
+        assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
 
     @Test
@@ -107,7 +160,7 @@ class DefaultSolverTerminationTest {
                         .withTerminationConfig(new TerminationConfig()
                                 .withDiminishedReturnsConfig(new DiminishedReturnsTerminationConfig())));
         var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
-        Assertions.assertThatThrownBy(solverFactory::buildSolver)
+        assertThatThrownBy(solverFactory::buildSolver)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("DiminishedReturns");
@@ -123,7 +176,7 @@ class DefaultSolverTerminationTest {
                         .withTerminationConfig(new TerminationConfig()
                                 .withUnimprovedStepCountLimit(1)));
         var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
-        Assertions.assertThatThrownBy(solverFactory::buildSolver)
+        assertThatThrownBy(solverFactory::buildSolver)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("UnimprovedStepCount");
@@ -139,7 +192,7 @@ class DefaultSolverTerminationTest {
                         .withTerminationConfig(new TerminationConfig()
                                 .withUnimprovedMillisecondsSpentLimit(1L)));
         var solverFactory = SolverFactory.<TestdataSolution> create(solverConfig);
-        Assertions.assertThatThrownBy(solverFactory::buildSolver)
+        assertThatThrownBy(solverFactory::buildSolver)
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("includes some terminations which are not applicable")
                 .hasMessageContaining("UnimprovedTimeMillisSpent");
@@ -162,7 +215,7 @@ class DefaultSolverTerminationTest {
         DummySimpleScoreThrowingEasyScoreCalculator.SOLVER.set(solver);
 
         var resultingSolution = solver.solve(solution);
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
             softly.assertThat(resultingSolution).isNotNull();
             softly.assertThat(resultingSolution.getScore()).isNotNull();
         });
@@ -185,7 +238,7 @@ class DefaultSolverTerminationTest {
         DummySimpleScoreThrowingEasyScoreCalculator.SOLVER.set(solver);
 
         var resultingSolution = solver.solve(solution);
-        SoftAssertions.assertSoftly(softly -> {
+        assertSoftly(softly -> {
             softly.assertThat(resultingSolution).isNotNull();
             softly.assertThat(resultingSolution.getScore()).isNotNull();
         });
@@ -211,7 +264,7 @@ class DefaultSolverTerminationTest {
         });
 
         var resultingSolution = solver.solve(solution);
-        Assertions.assertThat(resultingSolution).isNotNull();
+        assertThat(resultingSolution).isNotNull();
     }
 
     @ParameterizedTest
@@ -234,7 +287,7 @@ class DefaultSolverTerminationTest {
         });
 
         var resultingSolution = solver.solve(solution);
-        Assertions.assertThat(resultingSolution).isNotNull();
+        assertThat(resultingSolution).isNotNull();
     }
 
     static class TerminationArgumentSource implements ArgumentsProvider {

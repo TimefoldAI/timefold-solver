@@ -9,6 +9,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -208,6 +209,8 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     public static final String MOVE_THREAD_COUNT_AUTO = "AUTO";
 
     @XmlTransient
+    private Clock clock = null;
+    @XmlTransient
     private ClassLoader classLoader = null;
 
     // Warning: all fields are null (and not defaulted) because they can be inherited
@@ -265,6 +268,13 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
     public SolverConfig() {
     }
 
+    /**
+     * For testing purposes only.
+     */
+    public SolverConfig(@NonNull Clock clock) {
+        this.clock = Objects.requireNonNull(clock);
+    }
+
     public SolverConfig(@Nullable ClassLoader classLoader) {
         this.classLoader = classLoader;
     }
@@ -278,6 +288,22 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
      */
     public SolverConfig(@NonNull SolverConfig inheritedConfig) {
         inherit(inheritedConfig);
+    }
+
+    /**
+     * For testing purposes only.
+     *
+     * @return null if system default should be used
+     */
+    public @Nullable Clock getClock() {
+        return clock;
+    }
+
+    /**
+     * For testing purposes only.
+     */
+    public void setClock(@Nullable Clock clock) {
+        this.clock = clock;
     }
 
     public @Nullable ClassLoader getClassLoader() {
@@ -664,6 +690,7 @@ public class SolverConfig extends AbstractConfig<SolverConfig> {
      */
     @Override
     public @NonNull SolverConfig inherit(@NonNull SolverConfig inheritedConfig) {
+        clock = ConfigUtils.inheritOverwritableProperty(clock, inheritedConfig.getClock());
         classLoader = ConfigUtils.inheritOverwritableProperty(classLoader, inheritedConfig.getClassLoader());
         enablePreviewFeatureSet = ConfigUtils.inheritMergeableEnumSetProperty(enablePreviewFeatureSet,
                 inheritedConfig.getEnablePreviewFeatureSet());

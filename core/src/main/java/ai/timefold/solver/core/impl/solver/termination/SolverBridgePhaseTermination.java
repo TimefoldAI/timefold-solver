@@ -8,12 +8,29 @@ import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * Delegates phase calls (such as {@link #isPhaseTerminated(AbstractPhaseScope)})
+ * to solver calls (such as {@link SolverTermination#isSolverTerminated(SolverScope)})
+ * on the bridged termination.
+ * <p>
+ * Had this not happened,
+ * the solver-level termination running at phase-level
+ * would call {@link #isPhaseTerminated(AbstractPhaseScope)}
+ * instead of {@link SolverTermination#isSolverTerminated(SolverScope)},
+ * and would therefore use the phase start timestamp as its reference,
+ * and not the solver start timestamp.
+ * The effect of this in practice would have been that,
+ * if a solver-level {@link TimeMillisSpentTermination} were configured to terminate after 10 seconds,
+ * each phase would effectively start a new 10-second counter.
+ * 
+ * @param <Solution_>
+ */
 @NullMarked
 final class SolverBridgePhaseTermination<Solution_>
         extends AbstractPhaseTermination<Solution_>
         implements ChildThreadSupportingTermination<Solution_, SolverScope<Solution_>> {
 
-    private final SolverTermination<Solution_> solverTermination;
+    final SolverTermination<Solution_> solverTermination;
 
     public SolverBridgePhaseTermination(SolverTermination<Solution_> solverTermination) {
         this.solverTermination = Objects.requireNonNull(solverTermination);
