@@ -2,7 +2,6 @@ package ai.timefold.solver.quarkus.deployment;
 
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static java.lang.String.format;
-import static java.util.stream.Collectors.toList;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -210,12 +209,13 @@ class TimefoldProcessor {
         // Only skip this extension if everything is missing. Otherwise, if some parts are missing, fail fast later.
         if (indexView.getAnnotations(DotNames.PLANNING_SOLUTION).isEmpty()
                 && indexView.getAnnotations(DotNames.PLANNING_ENTITY).isEmpty()) {
-            log.warn("Skipping Timefold extension because there are no @" + PlanningSolution.class.getSimpleName()
-                    + " or @" + PlanningEntity.class.getSimpleName() + " annotated classes."
-                    + "\nIf your domain classes are located in a dependency of this project, maybe try generating"
-                    + " the Jandex index by using the jandex-maven-plugin in that dependency, or by adding"
-                    + "application.properties entries (quarkus.index-dependency.<name>.group-id"
-                    + " and quarkus.index-dependency.<name>.artifact-id).");
+            log.warn(
+                    """
+                            Skipping Timefold extension because there are no @%s or @%s annotated classes.
+                            If your domain classes are located in a dependency of this project, maybe try generating the \
+                            Jandex index by using the jandex-maven-plugin in that dependency, or by addingapplication.properties entries \
+                            (quarkus.index-dependency.<name>.group-id and quarkus.index-dependency.<name>.artifact-id)."""
+                            .formatted(PlanningSolution.class.getSimpleName(), PlanningEntity.class.getSimpleName()));
             additionalBeans.produce(new AdditionalBeanBuildItem(UnavailableTimefoldBeanProvider.class));
             solverNames.forEach(solverName -> solverConfigMap.put(solverName, null));
             return new SolverConfigBuildItem(solverConfigMap, null);
@@ -306,7 +306,9 @@ class TimefoldProcessor {
 
             if (!declaringClass.annotationsMap().containsKey(DotNames.PLANNING_ENTITY)) {
                 throw new IllegalStateException(
-                        "%s with a @%s annotation is in a class (%s) that does not have a @%s annotation.\nMaybe add a @%s annotation on the class (%s)."
+                        """
+                                %s with a @%s annotation is in a class (%s) that does not have a @%s annotation.
+                                Maybe add a @%s annotation on the class (%s)."""
                                 .formatted(prefix, annotationInstance.name().withoutPackagePrefix(), declaringClass.name(),
                                         PlanningEntity.class.getSimpleName(), PlanningEntity.class.getSimpleName(),
                                         declaringClass.name()));
@@ -350,11 +352,6 @@ class TimefoldProcessor {
                     "Unused classes ([%s]) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
                             PlanningSolution.class.getSimpleName()));
         }
-        // Validate the solution classes target types
-        List<AnnotationTarget> targetList = annotationInstanceCollection.stream()
-                .map(AnnotationInstance::target)
-                .toList();
-        assertTargetClasses(targetList, DotNames.PLANNING_SOLUTION);
     }
 
     private void assertNodeSharingDisabled(Map<String, SolverConfig> solverConfigMap) {
@@ -376,12 +373,6 @@ class TimefoldProcessor {
     private void assertSolverConfigEntityClasses(IndexView indexView) {
         // No entity classes
         assertEmptyInstances(indexView, DotNames.PLANNING_ENTITY);
-        // Validate the entity classes target types
-        Collection<AnnotationInstance> annotationInstanceCollection = indexView.getAnnotations(DotNames.PLANNING_ENTITY);
-        List<AnnotationTarget> targetList = annotationInstanceCollection.stream()
-                .map(AnnotationInstance::target)
-                .toList();
-        assertTargetClasses(targetList, DotNames.PLANNING_ENTITY);
     }
 
     private void assertSolverConfigConstraintClasses(IndexView indexView, Map<String, SolverConfig> solverConfigMap) {
@@ -501,15 +492,6 @@ class TimefoldProcessor {
             } catch (ClassNotFoundException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    private void assertTargetClasses(List<AnnotationTarget> targetList, DotName dotName) {
-        if (targetList.stream().anyMatch(target -> target.kind() != AnnotationTarget.Kind.CLASS)) {
-            throw new IllegalStateException(
-                    "All classes ([%s]) annotated with @%s must be a class.".formatted(
-                            targetList.stream().map(t -> t.asClass().name().toString()).collect(Collectors.joining(", ")),
-                            dotName.local()));
         }
     }
 
@@ -788,10 +770,41 @@ class TimefoldProcessor {
     }
 
     private List<Class<?>> findEntityClassList(IndexView indexView) {
-        return indexView.getAnnotations(DotNames.PLANNING_ENTITY).stream()
+        // All annotated classes
+        var entityList = new ArrayList<Class<?>>(indexView.getAnnotations(DotNames.PLANNING_ENTITY).stream()
                 .map(AnnotationInstance::target)
                 .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
-                .collect(toList());
+                .toList());
+        // Now we search for child classes as well
+        var childEntityList = new ArrayList<Class<?>>(entityList);
+        while (!childEntityList.isEmpty()) {
+            var entityClass = childEntityList.remove(0);
+            // Check all subclasses
+            var childEntityClassList = indexView.getAllKnownSubclasses(entityClass).stream()
+                    .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
+                    .toList();
+            if (!childEntityClassList.isEmpty()) {
+                entityList.addAll(childEntityClassList.stream().filter(c -> !entityList.contains(c)).toList());
+                childEntityList.addAll(childEntityClassList);
+            }
+            // Check all subinterfaces
+            var childEntityInterfaceList = indexView.getAllKnownSubinterfaces(entityClass).stream()
+                    .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
+                    .toList();
+            if (!childEntityInterfaceList.isEmpty()) {
+                entityList.addAll(childEntityInterfaceList.stream().filter(c -> !entityList.contains(c)).toList());
+                childEntityList.addAll(childEntityInterfaceList);
+            }
+            // Check all implementors
+            var childEntityImplementorList = indexView.getAllKnownImplementors(entityClass).stream()
+                    .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
+                    .toList();
+            if (!childEntityImplementorList.isEmpty()) {
+                entityList.addAll(childEntityImplementorList.stream().filter(c -> !entityList.contains(c)).toList());
+                childEntityList.addAll(childEntityImplementorList);
+            }
+        }
+        return entityList;
     }
 
     private void registerClassesFromAnnotations(IndexView indexView, Set<Class<?>> reflectiveClassSet) {
@@ -1002,7 +1015,7 @@ class TimefoldProcessor {
             }
             // Using REFLECTION domain access type so Timefold doesn't try to generate GIZMO code
             solverConfigMap.values().forEach(c -> {
-                SolutionDescriptor solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(DomainAccessType.REFLECTION,
+                var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(DomainAccessType.REFLECTION,
                         c.getSolutionClass(), null, null, c.getEntityClassList());
                 gizmoSolutionClonerClassNameSet
                         .add(entityEnhancer.generateSolutionCloner(solutionDescriptor, classOutput, indexView, transformers));
@@ -1045,8 +1058,10 @@ class TimefoldProcessor {
         // All solver must use the same domain access type
         if (solverConfigMap.values().stream().map(SolverConfig::getDomainAccessType).distinct().count() > 1) {
             throw new ConfigurationException(
-                    "The domain access type must be unique across all Solver configurations.\n%s".formatted(solverConfigMap
-                            .entrySet().stream().map(e -> format("quarkus.timefold.\"%s\".domain-access-type=%s",
+                    """
+                            The domain access type must be unique across all Solver configurations.
+                            %s""".formatted(solverConfigMap.entrySet().stream()
+                            .map(e -> format("quarkus.timefold.\"%s\".domain-access-type=%s",
                                     e.getKey(), e.getValue().getDomainAccessType()))
                             .collect(Collectors.joining("\n"))));
         }

@@ -88,6 +88,22 @@ public class EntityDescriptor<Solution_> {
             CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class };
 
+    private static final Class[] PLANNING_ENTITY_ANNOTATION_CLASSES = {
+            PlanningPin.class,
+            PlanningPinToIndex.class,
+            PlanningVariable.class,
+            PlanningListVariable.class,
+            AnchorShadowVariable.class,
+            CustomShadowVariable.class,
+            IndexShadowVariable.class,
+            InverseRelationShadowVariable.class,
+            NextElementShadowVariable.class,
+            PiggybackShadowVariable.class,
+            PreviousElementShadowVariable.class,
+            ShadowVariable.class,
+            ShadowVariable.List.class,
+            CascadingUpdateShadowVariable.class };
+
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
     private final int ordinal;
@@ -286,7 +302,7 @@ public class EntityDescriptor<Solution_> {
     private boolean hasAnyGenuineOrShadowVariables(Class<?> entityClass) {
         var membersList = ConfigUtils.getDeclaredMembers(entityClass);
         return membersList.stream()
-                .anyMatch(member -> ConfigUtils.extractAnnotationClass(member, VARIABLE_ANNOTATION_CLASSES) != null);
+                .anyMatch(member -> ConfigUtils.extractAnnotationClass(member, PLANNING_ENTITY_ANNOTATION_CLASSES) != null);
     }
 
     private static boolean isEntityClass(Class<?> clazz) {
