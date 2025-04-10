@@ -8,8 +8,8 @@ import jakarta.inject.Inject;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataBaseEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;

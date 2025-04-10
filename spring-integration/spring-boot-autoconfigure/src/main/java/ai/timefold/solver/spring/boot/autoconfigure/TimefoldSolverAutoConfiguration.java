@@ -344,8 +344,8 @@ public class TimefoldSolverAutoConfiguration
     private static void assertValidaPlanningVariables(IncludeAbstractClassesEntityScanner entityScanner) {
         var timefoldFieldAnnotationList =
                 entityScanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
-        for (var clazz: timefoldFieldAnnotationList) {
-           EntityDescriptor.assertValidaPlanningVariables(clazz);
+        for (var clazz : timefoldFieldAnnotationList) {
+            EntityDescriptor.assertValidaPlanningVariables(clazz);
         }
     }
 

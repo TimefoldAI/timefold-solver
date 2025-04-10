@@ -3,12 +3,12 @@ package ai.timefold.solver.quarkus.inheritance;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataBaseEntity;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataBaseEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataSolution;
 
