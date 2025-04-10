@@ -7,19 +7,22 @@ import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+
 public class VariableReferenceGraph<Solution_> {
-    private final Map<VariableId, Map<Object, EntityVariableOrFactReference<Solution_>>> variableReferenceToInstanceMap;
-    private final List<EntityVariableOrFactReference<Solution_>> instanceList;
+    private final Map<VariableId, Map<Object, EntityVariableOrFactReference<?>>> variableReferenceToInstanceMap;
+    private final List<EntityVariableOrFactReference<?>> instanceList;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 
     private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
     private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
-    private final Map<VariableId, AbstractShadowVariableReference<Solution_, ?, ?>> variableIdToShadowVariable;
+    private final Map<VariableId, VariableUpdaterInfo> variableIdToShadowVariable;
     private final Map<EntityVariableOrFactReference<Solution_>, List<EntityVariableOrFactReference<Solution_>>> fixedEdges;
-    private final IdentityHashMap<Object, List<EntityVariableOrFactReference<Solution_>>> entityToVariableReferenceMap;
+    private final IdentityHashMap<Object, List<EntityVariableOrFactReference<?>>> entityToVariableReferenceMap;
     private int[][] counts;
     private TopologicalOrderGraph graph;
     private BitSet changed;
@@ -36,18 +39,18 @@ public class VariableReferenceGraph<Solution_> {
         entityToVariableReferenceMap = new IdentityHashMap<>();
     }
 
-    public void addShadowVariable(AbstractShadowVariableReference<Solution_, ?, ?> shadowVariable) {
+    public void addShadowVariable(VariableUpdaterInfo shadowVariable) {
         variableIdToShadowVariable.put(shadowVariable.getVariableId(), shadowVariable);
     }
 
-    public EntityVariableOrFactReference<Solution_> addVariableReferenceEntity(VariableId variableId, Object entity,
-            InnerVariableReference<Solution_, ?, ?> variableReference) {
+    public <Entity_> EntityVariableOrFactReference<Entity_> addVariableReferenceEntity(VariableId variableId, Entity_ entity,
+            VariableUpdaterInfo variableReference) {
         if (!variableId.entityClass().isInstance(entity)) {
             throw new IllegalArgumentException(variableId + " " + entity);
         }
         if (variableReferenceToInstanceMap.containsKey(variableId) &&
                 variableReferenceToInstanceMap.get(variableId).containsKey(entity)) {
-            return variableReferenceToInstanceMap.get(variableId).get(entity);
+            return (EntityVariableOrFactReference<Entity_>) variableReferenceToInstanceMap.get(variableId).get(entity);
         }
         var node = new EntityVariableOrFactReference<>(variableId, entity, variableReference, instanceList.size());
         variableReferenceToInstanceMap.computeIfAbsent(variableId, k -> new IdentityHashMap<>())
@@ -74,8 +77,16 @@ public class VariableReferenceGraph<Solution_> {
         graph.withNodeData(instanceList);
         changed = new BitSet(instanceList.size());
 
+        graph.startBatchChange();
+        var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         for (var instance : instanceList) {
-            afterVariableChanged(instance.variableId(), instance.entity());
+            if (visited.add(instance.entity())) {
+                for (var variableId : variableReferenceToAfterProcessor.keySet()) {
+                    if (variableId.entityClass().isInstance(instance.entity())) {
+                        afterVariableChanged(variableId, instance.entity());
+                    }
+                }
+            }
             entityToVariableReferenceMap.computeIfAbsent(instance.entity(), ignored -> new ArrayList<>())
                     .add(instance);
         }
@@ -86,7 +97,7 @@ public class VariableReferenceGraph<Solution_> {
         }
     }
 
-    public EntityVariableOrFactReference<Solution_> lookup(VariableId variableReference, Object entity) {
+    public EntityVariableOrFactReference<?> lookup(VariableId variableReference, Object entity) {
         return variableReferenceToInstanceMap.getOrDefault(variableReference, Collections.emptyMap()).get(entity);
     }
 
@@ -108,6 +119,7 @@ public class VariableReferenceGraph<Solution_> {
         if (oldCount == 0) {
             graph.addEdge(from.id(), to.id());
         }
+
         markChanged(to);
     }
 
@@ -125,7 +137,7 @@ public class VariableReferenceGraph<Solution_> {
         markChanged(to);
     }
 
-    public void markChanged(EntityVariableOrFactReference<Solution_> node) {
+    public void markChanged(EntityVariableOrFactReference<?> node) {
         if (changed.isEmpty()) {
             graph.startBatchChange();
         }
@@ -139,11 +151,27 @@ public class VariableReferenceGraph<Solution_> {
             // exception, so return early.
             return;
         }
-        graph.endBatchChange();
 
+        record AffectedEntity(Object entity, VariableUpdaterInfo variableUpdaterInfo) {
+            @Override
+            public boolean equals(Object o) {
+                if (o instanceof AffectedEntity other) {
+                    return entity == other.entity;
+                }
+                return false;
+            }
+
+            @Override
+            public int hashCode() {
+                return System.identityHashCode(entity);
+            }
+        }
+
+        graph.endBatchChange();
         updating = true;
         var visited = new boolean[instanceList.size()];
         var loopedTracker = new LoopedTracker(visited.length);
+        var affectedEntities = Collections.newSetFromMap(new IdentityHashMap<AffectedEntity, Boolean>());
 
         while (!changed.isEmpty()) {
             int minNode = popChangedNodeWithLowestTopologicalIndex();
@@ -154,13 +182,31 @@ public class VariableReferenceGraph<Solution_> {
             var shadowVariable = variableIdToShadowVariable.get(instanceList.get(minNode).variableId());
             var isChanged = true;
 
-            if (shadowVariable != null) {
-                var isEntityLooped = entityToVariableReferenceMap.get(instanceList.get(minNode).entity())
-                        .stream().anyMatch(instance -> graph.isLooped(loopedTracker, instance.id()));
-                if (isEntityLooped) {
-                    shadowVariable.invalidate(changedVariableNotifier, instanceList.get(minNode).entity());
+            var entity = instanceList.get(minNode).entity();
+            var isLooped = graph.isLooped(loopedTracker, minNode);
+            var oldValue = shadowVariable.memberAccessor().executeGetter(entity);
+
+            if (isLooped) {
+                affectedEntities.add(new AffectedEntity(entity, shadowVariable));
+                if (oldValue != null) {
+                    changedVariableNotifier
+                            .beforeVariableChanged((VariableDescriptor<Solution_>) shadowVariable.variableDescriptor(), entity);
+                    shadowVariable.memberAccessor().executeSetter(entity, null);
+                    changedVariableNotifier
+                            .afterVariableChanged((VariableDescriptor<Solution_>) shadowVariable.variableDescriptor(), entity);
+                }
+            } else {
+                var newValue = shadowVariable.calculator().apply(entity);
+
+                if (!Objects.equals(oldValue, newValue)) {
+                    affectedEntities.add(new AffectedEntity(entity, shadowVariable));
+                    changedVariableNotifier
+                            .beforeVariableChanged((VariableDescriptor<Solution_>) shadowVariable.variableDescriptor(), entity);
+                    shadowVariable.memberAccessor().executeSetter(entity, newValue);
+                    changedVariableNotifier
+                            .afterVariableChanged((VariableDescriptor<Solution_>) shadowVariable.variableDescriptor(), entity);
                 } else {
-                    isChanged = shadowVariable.update(changedVariableNotifier, instanceList.get(minNode).entity());
+                    isChanged = false;
                 }
             }
 
@@ -168,6 +214,27 @@ public class VariableReferenceGraph<Solution_> {
                 graph.nodeForwardEdges(minNode).forEachRemaining((int node) -> {
                     changed.set(node);
                 });
+            }
+        }
+
+        for (var affectedEntity : affectedEntities) {
+            var invalidDescriptor = affectedEntity.variableUpdaterInfo.invalidityMarkerVariableDescriptor();
+            if (invalidDescriptor == null) {
+                continue;
+            }
+            var entity = affectedEntity.entity;
+            var isEntityLooped = false;
+            for (var node : entityToVariableReferenceMap.get(entity)) {
+                if (graph.isLooped(loopedTracker, node.id())) {
+                    isEntityLooped = true;
+                    break;
+                }
+            }
+            var oldValue = invalidDescriptor.getValue(entity);
+            if (!Objects.equals(oldValue, isEntityLooped)) {
+                changedVariableNotifier.beforeVariableChanged((VariableDescriptor<Solution_>) invalidDescriptor, entity);
+                invalidDescriptor.setValue(entity, isEntityLooped);
+                changedVariableNotifier.afterVariableChanged((VariableDescriptor<Solution_>) invalidDescriptor, entity);
             }
         }
         updating = false;

@@ -10,6 +10,7 @@ import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable.List;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
 
 /**
  * Specifies that a bean property (or a field) is a custom shadow variable of 1 or more source variables.
@@ -21,6 +22,19 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable.List;
 @Retention(RUNTIME)
 @Repeatable(List.class)
 public @interface ShadowVariable {
+    /**
+     * Experimental.
+     * <p/>
+     * If set, it is a name of a method annotated with
+     * {@link ShadowVariableUpdater} that computes the value of this
+     * {@link ShadowVariable}.
+     * <p/>
+     * If set, {@link #variableListenerClass()}, {@link #sourceEntityClass()}
+     * and {@link #sourceVariableName()} must all be unset.
+     *
+     * @return the method that computes the value of this {@link ShadowVariable}.
+     */
+    String method() default "";
 
     /**
      * A {@link VariableListener} or {@link ListVariableListener} gets notified after a source planning variable has changed.
@@ -30,9 +44,12 @@ public @interface ShadowVariable {
      * For example: VRP with time windows uses a {@link VariableListener} to update the arrival times
      * of all the trailing entities when an entity is changed.
      *
-     * @return a variable listener class
+     * Must not be set if {@link #method()} is set.
+     *
+     * @return {@link NullVariableListener} when the attribute is omitted (workaround for annotation limitation).
+     *         The variable listener class that computes the value of this shadow variable.
      */
-    Class<? extends AbstractVariableListener> variableListenerClass();
+    Class<? extends AbstractVariableListener> variableListenerClass() default NullVariableListener.class;
 
     /**
      * The {@link PlanningEntity} class of the source variable.
@@ -49,7 +66,7 @@ public @interface ShadowVariable {
      *
      * @return never null, a genuine or shadow variable name
      */
-    String sourceVariableName();
+    String sourceVariableName() default "";
 
     /**
      * Defines several {@link ShadowVariable} annotations on the same element.
@@ -59,6 +76,11 @@ public @interface ShadowVariable {
     @interface List {
 
         ShadowVariable[] value();
+    }
+
+    /** Workaround for annotation limitation in {@link #variableListenerClass()}. */
+    interface NullVariableListener extends AbstractVariableListener<Object, Object> {
+
     }
 
     /** Workaround for annotation limitation in {@link #sourceEntityClass()}. */

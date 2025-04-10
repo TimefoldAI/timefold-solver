@@ -69,7 +69,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.DeclarativeShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
 
 import org.jspecify.annotations.NonNull;
@@ -95,7 +94,6 @@ public class EntityDescriptor<Solution_> {
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class,
-            DeclarativeShadowVariable.class,
             InvalidityMarker.class
     };
 
@@ -150,6 +148,11 @@ public class EntityDescriptor<Solution_> {
         if (entityClass.getPackage() == null) {
             LOGGER.warn("The entityClass ({}) should be in a proper java package.", entityClass);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Collection<Class<? extends Annotation>> getVariableAnnotationClasses() {
+        return List.of(VARIABLE_ANNOTATION_CLASSES);
     }
 
     /**
@@ -384,7 +387,14 @@ public class EntityDescriptor<Solution_> {
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(ShadowVariable.class)
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
-            var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            ShadowVariableDescriptor<Solution_> variableDescriptor;
+            var annotation = memberAccessor.getAnnotation(ShadowVariable.class);
+            if (annotation != null && !annotation.method().isEmpty()) {
+                variableDescriptor =
+                        new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            } else {
+                variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            }
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
             var variableDescriptor =
@@ -400,10 +410,6 @@ public class EntityDescriptor<Solution_> {
                 declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
-        } else if (variableAnnotationClass.equals(DeclarativeShadowVariable.class)) {
-            var variableDescriptor = new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
-                    memberAccessor);
-            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(InvalidityMarker.class)) {
             var variableDescriptor = new InvalidityMarkerVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
                     memberAccessor);

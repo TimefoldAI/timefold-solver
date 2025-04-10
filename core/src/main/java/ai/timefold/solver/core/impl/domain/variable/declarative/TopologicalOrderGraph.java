@@ -10,7 +10,7 @@ public interface TopologicalOrderGraph {
     default void endBatchChange() {
     }
 
-    default <Solution_> void withNodeData(List<EntityVariableOrFactReference<Solution_>> nodes) {
+    default <Solution_> void withNodeData(List<EntityVariableOrFactReference<?>> nodes) {
     }
 
     void addEdge(int from, int to);

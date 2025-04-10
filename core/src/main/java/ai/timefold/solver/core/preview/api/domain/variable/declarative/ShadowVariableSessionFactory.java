@@ -7,9 +7,8 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public interface ShadowVariableSessionFactory {
-    static ShadowVariableSessionFactory create(SolutionDescriptor<?> solutionDescriptor,
-            ShadowVariableProvider shadowVariableProvider) {
-        return new MockShadowVariableSessionFactory<>(solutionDescriptor, shadowVariableProvider);
+    static ShadowVariableSessionFactory create(SolutionDescriptor<?> solutionDescriptor) {
+        return new MockShadowVariableSessionFactory<>(solutionDescriptor);
     }
 
     ShadowVariableSession forEntities(Object... entities);

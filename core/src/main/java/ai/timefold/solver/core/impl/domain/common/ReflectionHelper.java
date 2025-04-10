@@ -125,6 +125,32 @@ public final class ReflectionHelper {
         return null;
     }
 
+    /**
+     * @param containingClass never null
+     * @param propertyName never null
+     * @return sometimes null
+     */
+    public static Method getDeclaredGetterMethod(Class<?> containingClass, String propertyName) {
+        String capitalizedPropertyName = capitalizePropertyName(propertyName);
+        String getterName = PROPERTY_ACCESSOR_PREFIX_GET + capitalizedPropertyName;
+        try {
+            return containingClass.getMethod(getterName);
+        } catch (NoSuchMethodException e) {
+            // intentionally empty
+        }
+        String isserName = PROPERTY_ACCESSOR_PREFIX_IS + capitalizedPropertyName;
+        try {
+
+            Method method = containingClass.getDeclaredMethod(isserName);
+            if (method.getReturnType() == boolean.class) {
+                return method;
+            }
+        } catch (NoSuchMethodException e) {
+            // intentionally empty
+        }
+        return null;
+    }
+
     private static String capitalizePropertyName(String propertyName) {
         if (propertyName.isEmpty() || Character.isUpperCase(propertyName.charAt(0))) {
             return propertyName;
@@ -150,6 +176,19 @@ public final class ReflectionHelper {
     public static Field getField(Class<?> containingClass, String fieldName) {
         try {
             return containingClass.getField(fieldName);
+        } catch (NoSuchFieldException e) {
+            return null;
+        }
+    }
+
+    /**
+     * @param containingClass never null
+     * @param fieldName never null
+     * @return sometimes null
+     */
+    public static Field getDeclaredField(Class<?> containingClass, String fieldName) {
+        try {
+            return containingClass.getDeclaredField(fieldName);
         } catch (NoSuchFieldException e) {
             return null;
         }

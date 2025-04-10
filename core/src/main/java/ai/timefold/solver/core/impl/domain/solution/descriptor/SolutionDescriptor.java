@@ -68,6 +68,7 @@ import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutio
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -1154,6 +1155,19 @@ public class SolutionDescriptor<Solution_> {
             return 0;
         }
         return scale;
+    }
+
+    public List<DeclarativeShadowVariableDescriptor<Solution_>> getDeclarativeShadowVariableDescriptors() {
+        var out = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
+        for (var entityDescriptor : entityDescriptorMap.values()) {
+            entityDescriptor.getShadowVariableDescriptors();
+            for (var shadowVariableDescriptor : entityDescriptor.getShadowVariableDescriptors()) {
+                if (shadowVariableDescriptor instanceof DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariableDescriptor) {
+                    out.add(declarativeShadowVariableDescriptor);
+                }
+            }
+        }
+        return out;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution) {

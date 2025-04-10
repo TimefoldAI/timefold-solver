@@ -6,18 +6,25 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.DeclarativeShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
+
+import org.apache.commons.lang3.ObjectUtils;
 
 @PlanningEntity
 public class TestdataTATask {
     String id;
     List<TestdataTATask> dependencies;
 
-    @DeclarativeShadowVariable(TestdataTAShadowVariableProvider.class)
+    @PreviousElementShadowVariable(sourceVariableName = "tasks")
+    TestdataTATask previousTask;
+
+    @ShadowVariable(method = "calculateStartTime")
     LocalDateTime startTime;
 
-    @DeclarativeShadowVariable(TestdataTAShadowVariableProvider.class)
+    @ShadowVariable(method = "calculateEndTime")
     LocalDateTime endTime;
 
     @InvalidityMarker
@@ -58,12 +65,42 @@ public class TestdataTATask {
         this.startTime = startTime;
     }
 
+    @ShadowVariableUpdater(sources = { "dependencies[].endTime", "previousTask.endTime", "employee" })
+    public LocalDateTime calculateStartTime() {
+        LocalDateTime readyTime;
+        if (previousTask != null) {
+            readyTime = previousTask.endTime;
+        } else if (employee != null) {
+            readyTime = employee.startTime;
+        } else {
+            return null;
+        }
+
+        if (dependencies != null) {
+            for (var dependency : dependencies) {
+                if (dependency.endTime == null) {
+                    return null;
+                }
+                readyTime = ObjectUtils.max(readyTime, dependency.endTime);
+            }
+        }
+        return readyTime;
+    }
+
     public LocalDateTime getEndTime() {
         return endTime;
     }
 
     public void setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
+    }
+
+    @ShadowVariableUpdater(sources = { "startTime" })
+    public LocalDateTime calculateEndTime() {
+        if (startTime == null) {
+            return null;
+        }
+        return startTime.plus(duration);
     }
 
     public Duration getDuration() {

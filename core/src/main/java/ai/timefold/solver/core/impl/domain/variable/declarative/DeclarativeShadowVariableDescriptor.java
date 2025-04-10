@@ -1,13 +1,16 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
@@ -15,11 +18,11 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.DeclarativeShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableProvider;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
 
 public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
-    private Class<? extends ShadowVariableProvider> shadowVariableProviderClass;
+    MemberAccessor calculator;
+    RootVariableSource<?, ?>[] sources;
 
     public DeclarativeShadowVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
@@ -38,8 +41,52 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                             .formatted(variableMemberAccessor.getName(), entityDescriptor.getEntityClass().getName(),
                                     SolverConfig.class.getSimpleName()));
         }
-        shadowVariableProviderClass = variableMemberAccessor.getAnnotation(DeclarativeShadowVariable.class)
-                .value();
+        var annotation = variableMemberAccessor.getAnnotation(ShadowVariable.class);
+        var methodName = annotation.method();
+        if (methodName.isEmpty()) {
+            throw new IllegalStateException("DeclarativeShadowVariableDescriptor was created when method is empty.");
+        }
+
+        Method method;
+        try {
+            method = variableMemberAccessor.getDeclaringClass().getMethod(methodName);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException("Could not find method named %s on the class %s. Maybe you misspelled it?"
+                    .formatted(methodName, variableMemberAccessor.getDeclaringClass().getSimpleName()), e);
+        }
+
+        var shadowVariableUpdater = method.getAnnotation(ShadowVariableUpdater.class);
+        if (shadowVariableUpdater == null) {
+            throw new IllegalArgumentException("""
+                    Method "%s" referenced from @%s member %s is not annotated with @%s.
+                    Maybe annotate the method %s with @%s?
+                    """.formatted(methodName, ShadowVariable.class.getSimpleName(), variableMemberAccessor,
+                    ShadowVariableUpdater.class.getSimpleName(),
+                    methodName, ShadowVariableUpdater.class.getSimpleName()));
+        }
+        this.calculator =
+                entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(method,
+                        MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, ShadowVariableUpdater.class,
+                        descriptorPolicy.getDomainAccessType());
+
+        var sources = shadowVariableUpdater.sources();
+        if (sources.length == 0) {
+            throw new IllegalArgumentException("""
+                    Method "%s" referenced from @%s member %s has no sources.
+                    A shadow variable must have at least one source (since otherwise it a constant).
+                    Maybe add one source?
+                    """.formatted(methodName, ShadowVariable.class.getSimpleName(), variableMemberAccessor));
+        }
+
+        var rootVariableSources = new RootVariableSource[sources.length];
+        for (int i = 0; i < sources.length; i++) {
+            rootVariableSources[i] = RootVariableSource.from(entityDescriptor.getEntityClass(),
+                    variableMemberAccessor.getName(),
+                    sources[i],
+                    entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory(),
+                    descriptorPolicy);
+        }
+        this.sources = rootVariableSources;
     }
 
     @Override
@@ -67,7 +114,15 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     }
 
-    public Class<? extends ShadowVariableProvider> getShadowVariableProviderClass() {
-        return shadowVariableProviderClass;
+    public MemberAccessor getMemberAccessor() {
+        return variableMemberAccessor;
+    }
+
+    public MemberAccessor getCalculator() {
+        return calculator;
+    }
+
+    public RootVariableSource<?, ?>[] getSources() {
+        return sources;
     }
 }

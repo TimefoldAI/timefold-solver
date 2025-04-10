@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.spy;
@@ -11,20 +12,16 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.PrimitiveIterator;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.function.QuadConsumer;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.EntityVariableOrFactReference;
-import ai.timefold.solver.core.impl.domain.variable.declarative.LoopedTracker;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableId;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -178,51 +175,40 @@ class VariableListenerSupportTest {
                 .isEmpty();
     }
 
-    private static class MockTopologicalOrderGraph implements TopologicalOrderGraph {
+    private static class MockTopologicalOrderGraph extends DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         Object[] nodeToEntities;
         VariableId[] nodeToVariableId;
 
         public MockTopologicalOrderGraph(int size) {
+            super(size);
             nodeToEntities = new Object[size];
             nodeToVariableId = new VariableId[size];
         }
 
         @Override
-        public <Solution_> void withNodeData(List<EntityVariableOrFactReference<Solution_>> nodes) {
+        public <Solution_> void withNodeData(List<EntityVariableOrFactReference<?>> nodes) {
             nodeToEntities = nodes.stream().map(EntityVariableOrFactReference::entity).toArray(Object[]::new);
             nodeToVariableId = nodes.stream().map(EntityVariableOrFactReference::variableId).toArray(VariableId[]::new);
         }
 
         public void addEdge(VariableId fromId, Object fromEntity, VariableId toId, Object toEntity) {
+            // Mock to spy invocations
         }
 
         public void removeEdge(VariableId fromId, Object fromEntity, VariableId toId, Object toEntity) {
-
+            // Mock to spy invocations
         }
 
         @Override
         public void addEdge(int from, int to) {
+            super.addEdge(from, to);
             addEdge(nodeToVariableId[from], nodeToEntities[from], nodeToVariableId[to], nodeToEntities[to]);
         }
 
         @Override
         public void removeEdge(int from, int to) {
+            super.addEdge(from, to);
             removeEdge(nodeToVariableId[from], nodeToEntities[from], nodeToVariableId[to], nodeToEntities[to]);
-        }
-
-        @Override
-        public PrimitiveIterator.OfInt nodeForwardEdges(int from) {
-            return IntStream.empty().iterator();
-        }
-
-        @Override
-        public boolean isLooped(LoopedTracker loopedTracker, int node) {
-            return false;
-        }
-
-        @Override
-        public int getTopologicalOrder(int node) {
-            return 0;
         }
     }
 
@@ -283,17 +269,9 @@ class VariableListenerSupportTest {
 
         var graph = graphReference.get();
 
-        var root = VariableId.entity(TestdataFSRVisit.class);
-        var previous = root.previous();
-        var inverse = root.inverse();
-
-        var serviceReadyTime = root.child(DefaultShadowVariableFactory.getIntermediateVariableName("serviceReadyTime"));
-        var serviceStartTime = root.child("serviceStartTime");
-        var serviceFinishTime = root.child("serviceFinishTime");
-
-        var group = root.group(TestdataFSRVisit.class, 0);
-        var groupReadyTime = group.child(DefaultShadowVariableFactory.getIntermediateVariableName("serviceReadyTime"));
-        var previousFinishTime = previous.child("serviceFinishTime");
+        var serviceReadyTime = new VariableId(TestdataFSRVisit.class, "serviceReadyTime");
+        var serviceStartTime = new VariableId(TestdataFSRVisit.class, "serviceStartTime");
+        var serviceFinishTime = new VariableId(TestdataFSRVisit.class, "serviceFinishTime");
 
         var expectedAddCount = new AtomicInteger(0);
         var expectedRemoveCount = new AtomicInteger(0);
@@ -309,44 +287,40 @@ class VariableListenerSupportTest {
         };
 
         for (var visit : solution.getVisits()) {
-            verifyAddEdge.accept(root, visit, previous, visit);
-            verifyAddEdge.accept(root, visit, inverse, visit);
-            verifyAddEdge.accept(root, visit, group, visit);
-            verifyAddEdge.accept(root, visit, serviceReadyTime, visit);
-            verifyAddEdge.accept(root, visit, serviceStartTime, visit);
-            verifyAddEdge.accept(root, visit, serviceFinishTime, visit);
-            verifyAddEdge.accept(previous, visit, previousFinishTime, visit);
-            verifyAddEdge.accept(group, visit, groupReadyTime, visit);
-
-            verifyAddEdge.accept(previousFinishTime, visit, serviceReadyTime, visit);
-            verifyAddEdge.accept(inverse, visit, serviceReadyTime, visit);
-
             verifyAddEdge.accept(serviceReadyTime, visit, serviceStartTime, visit);
-            verifyAddEdge.accept(groupReadyTime, visit, serviceStartTime, visit);
             verifyAddEdge.accept(serviceStartTime, visit, serviceFinishTime, visit);
 
             if (visit.getPreviousVisit() != null) {
-                verifyAddEdge.accept(serviceFinishTime, visit.getPreviousVisit(), previousFinishTime, visit);
+                verifyAddEdge.accept(serviceFinishTime, visit.getPreviousVisit(), serviceReadyTime, visit);
             }
 
             if (visit.getVisitGroup() != null) {
                 for (var element : visit.getVisitGroup()) {
-                    verifyAddEdge.accept(serviceReadyTime, element, groupReadyTime, visit);
+                    verifyAddEdge.accept(serviceReadyTime, element, serviceStartTime, visit);
                 }
             }
         }
-        verify(graph, times(expectedAddCount.get())).addEdge(any(), any(), any(), any());
+        // Note: addEdge only adds an edge if it does not already exists in the graph,
+        // so the count is less here
+        verify(graph, atMost(expectedAddCount.get())).addEdge(any(), any(), any(), any());
         verify(graph, times(0)).removeEdge(any(), any(), any(), any());
 
         reset(graph);
         expectedAddCount.set(0);
         expectedRemoveCount.set(0);
 
-        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        variableListenerSupport.beforeListVariableChanged(listVariableDescriptor, vehicle1, 1, 3);
+        var previousElementDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataFSRVisit.class)
+                .getShadowVariableDescriptor("previousVisit");
+        var vehicleDescriptor =
+                solutionDescriptor.getEntityDescriptorStrict(TestdataFSRVisit.class).getShadowVariableDescriptor("vehicle");
 
-        verifyRemoveEdge.accept(serviceFinishTime, visitA1, previousFinishTime, visitB1);
-        verifyRemoveEdge.accept(serviceFinishTime, visitB1, previousFinishTime, visitC);
+        variableListenerSupport.beforeVariableChanged(previousElementDescriptor, visitB1);
+        variableListenerSupport.beforeVariableChanged(previousElementDescriptor, visitC);
+        variableListenerSupport.beforeVariableChanged(vehicleDescriptor, visitB1);
+        variableListenerSupport.beforeVariableChanged(vehicleDescriptor, visitC);
+
+        verifyRemoveEdge.accept(serviceFinishTime, visitA1, serviceReadyTime, visitB1);
+        verifyRemoveEdge.accept(serviceFinishTime, visitB1, serviceReadyTime, visitC);
 
         verify(graph, times(0)).addEdge(any(), any(), any(), any());
         verify(graph, times(expectedRemoveCount.get())).removeEdge(any(), any(), any(), any());
@@ -356,16 +330,21 @@ class VariableListenerSupportTest {
         expectedRemoveCount.set(0);
 
         vehicle1.setVisits(List.of(visitA1, visitC));
-        variableListenerSupport.afterElementUnassigned(listVariableDescriptor, visitB1);
         verify(graph, times(0)).addEdge(any(), any(), any(), any());
         verify(graph, times(0)).removeEdge(any(), any(), any(), any());
 
         // Edges are added only when variable listeners are triggered,
         // since we require ListVariableState to be up-to-date
-        variableListenerSupport.afterListVariableChanged(listVariableDescriptor, vehicle1, 1, 2);
+        visitC.setPreviousVisit(visitA1);
+        visitC.setVehicle(vehicle1);
+        visitB1.setPreviousVisit(null);
+        variableListenerSupport.afterVariableChanged(vehicleDescriptor, visitC);
+        variableListenerSupport.afterVariableChanged(previousElementDescriptor, visitC);
+        variableListenerSupport.afterVariableChanged(previousElementDescriptor, visitB1);
+
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
 
-        verifyAddEdge.accept(serviceFinishTime, visitA1, previousFinishTime, visitC);
+        verifyAddEdge.accept(serviceFinishTime, visitA1, serviceReadyTime, visitC);
         verify(graph, times(expectedAddCount.get())).addEdge(any(), any(), any(), any());
         verify(graph, times(0)).removeEdge(any(), any(), any(), any());
     }
