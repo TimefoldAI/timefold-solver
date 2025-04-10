@@ -52,7 +52,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         this.bestSolutionRecaller = bestSolutionRecaller;
         this.globalTermination = globalTermination;
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);
-        this.phaseList = phaseList;
+        this.phaseList = List.copyOf(phaseList);
     }
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -61,15 +62,21 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     private static final Logger LOGGER = LoggerFactory.getLogger(DefaultSolverFactory.class);
     private static final long DEFAULT_RANDOM_SEED = 0L;
 
+    private final Clock clock;
     private final SolverConfig solverConfig;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final ScoreDirectorFactory<Solution_, ?> scoreDirectorFactory;
 
     public DefaultSolverFactory(SolverConfig solverConfig) {
+        this.clock = Objects.requireNonNullElse(solverConfig.getClock(), Clock.systemDefaultZone());
         this.solverConfig = Objects.requireNonNull(solverConfig, "The solverConfig (" + solverConfig + ") cannot be null.");
         this.solutionDescriptor = buildSolutionDescriptor();
         // Caching score director factory as it potentially does expensive things.
         this.scoreDirectorFactory = buildScoreDirectorFactory();
+    }
+
+    public Clock getClock() {
+        return clock;
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
@@ -86,7 +93,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         Objects.requireNonNull(configOverride, "Invalid configOverride (null) given to SolverFactory.");
         var isDaemon = Objects.requireNonNullElse(solverConfig.getDaemon(), false);
 
-        var solverScope = new SolverScope<Solution_>();
+        var solverScope = new SolverScope<Solution_>(clock);
         var monitoringConfig = solverConfig.determineMetricConfig();
         solverScope.setMonitoringTags(Tags.empty());
         var solverMetricList = Objects.requireNonNull(monitoringConfig.getSolverMetricList());

@@ -91,7 +91,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
         var entityPlacer = buildEntityPlacer()
                 .rebuildWithFilter((solution, selection) -> selection == clonedElement);
 
-        var solverScope = new SolverScope<Solution_>();
+        var solverScope = new SolverScope<Solution_>(solverFactory.getClock());
         solverScope.setWorkingRandom(new Random(0)); // We will evaluate every option; random does not matter.
         solverScope.setScoreDirector(scoreDirector);
         var phaseScope = new ConstructionHeuristicPhaseScope<>(solverScope, -1);
