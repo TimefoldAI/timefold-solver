@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
 
+import static ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit.BASE_START_TIME;
+
 import java.time.Duration;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -21,7 +23,7 @@ public class TestdataFSRConstraintProvider implements ConstraintProvider {
                 constraintFactory.forEach(TestdataFSRVisit.class)
                         .filter(visit -> !visit.isInvalid() && visit.isAssigned())
                         .penalize(HardSoftScore.ONE_SOFT, visit -> (int) Duration
-                                .between(TestdataFSRShadowVariableProvider.BASE_START_TIME, visit.getServiceFinishTime())
+                                .between(BASE_START_TIME, visit.getServiceFinishTime())
                                 .toMinutes())
                         .asConstraint("Minimize finish time")
         };

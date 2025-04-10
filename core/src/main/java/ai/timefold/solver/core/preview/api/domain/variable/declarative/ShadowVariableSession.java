@@ -7,11 +7,5 @@ import org.jspecify.annotations.Nullable;
 public interface ShadowVariableSession {
     void setVariable(Object entity, String variableName, @Nullable Object value);
 
-    void setPrevious(Object entity, @Nullable Object previousValue);
-
-    void setNext(Object entity, @Nullable Object nextValue);
-
-    void setInverse(Object entity, @Nullable Object inverseValue);
-
     void updateVariables();
 }

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
 
+import static ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit.BASE_START_TIME;
+
 import java.time.Duration;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -19,7 +21,7 @@ public class TestdataFSRAssertionEasyScoreCalculator implements EasyScoreCalcula
                     hardScore--;
                 } else {
                     softScore -= (int) Duration
-                            .between(TestdataFSRShadowVariableProvider.BASE_START_TIME, visit.getExpectedServiceFinishTime())
+                            .between(BASE_START_TIME, visit.getExpectedServiceFinishTime())
                             .toMinutes();
                 }
             }

@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Objects;
 
-public record EntityVariableOrFactReference<Solution_>(VariableId variableId, Object entity,
-        InnerVariableReference<Solution_, ?, ?> variableReference, int id) {
+public record EntityVariableOrFactReference<Entity_>(VariableId variableId, Entity_ entity,
+        VariableUpdaterInfo variableReference, int id) {
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof EntityVariableOrFactReference<?> that))

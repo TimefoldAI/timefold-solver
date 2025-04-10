@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -11,20 +13,25 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.DeclarativeShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
 
 @PlanningEntity
 public class TestdataFSRVisit {
+    public static final LocalDateTime BASE_START_TIME = LocalDate.of(2025, 1, 1).atTime(LocalTime.of(9, 0));
     String id;
 
     @InverseRelationShadowVariable(sourceVariableName = "visits")
     TestdataFSRVehicle vehicle;
 
-    @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
+    @ShadowVariable(method = "serviceReadyTimeUpdater")
+    LocalDateTime serviceReadyTime;
+
+    @ShadowVariable(method = "serviceStartTimeUpdater")
     LocalDateTime serviceStartTime;
 
-    @DeclarativeShadowVariable(TestdataFSRShadowVariableProvider.class)
+    @ShadowVariable(method = "serviceFinishTimeUpdater")
     LocalDateTime serviceFinishTime;
 
     @PreviousElementShadowVariable(sourceVariableName = "visits")
@@ -83,6 +90,41 @@ public class TestdataFSRVisit {
 
     public void setServiceStartTime(LocalDateTime serviceStartTime) {
         this.serviceStartTime = serviceStartTime;
+    }
+
+    @ShadowVariableUpdater(sources = { "previousVisit.serviceFinishTime", "vehicle" })
+    public LocalDateTime serviceReadyTimeUpdater() {
+        if (previousVisit != null) {
+            return previousVisit.serviceFinishTime.plusMinutes(30L);
+        }
+        if (vehicle != null) {
+            return BASE_START_TIME;
+        }
+        return null;
+    }
+
+    @ShadowVariableUpdater(sources = { "serviceReadyTime", "visitGroup[].serviceReadyTime" })
+    public LocalDateTime serviceStartTimeUpdater() {
+        if (serviceReadyTime == null) {
+            return null;
+        }
+        var startTime = serviceReadyTime;
+        if (visitGroup != null) {
+            for (var visit : visitGroup) {
+                if (visit.serviceReadyTime != null && startTime.isBefore(visit.serviceReadyTime)) {
+                    startTime = visit.serviceReadyTime;
+                }
+            }
+        }
+        return startTime;
+    }
+
+    @ShadowVariableUpdater(sources = { "serviceStartTime" })
+    public LocalDateTime serviceFinishTimeUpdater() {
+        if (serviceStartTime == null) {
+            return null;
+        }
+        return serviceStartTime.plusMinutes(30L);
     }
 
     public LocalDateTime getServiceFinishTime() {
@@ -161,8 +203,8 @@ public class TestdataFSRVisit {
             if (vehicle == null) {
                 return null;
             }
-            cache.readyTimeCache.put(this, TestdataFSRShadowVariableProvider.BASE_START_TIME);
-            return TestdataFSRShadowVariableProvider.BASE_START_TIME;
+            cache.readyTimeCache.put(this, BASE_START_TIME);
+            return BASE_START_TIME;
         }
         var out = previousVisit.getExpectedServiceFinishTime(cache);
         if (out == null) {
