@@ -2,7 +2,8 @@
 name: Bug report
 about: Create a report to help us improve.
 title: ''
-labels: ["bug", "process/needs triage"]
+labels: ["process/needs triage"]
+type: "Bug"
 assignees: ''
 
 ---
