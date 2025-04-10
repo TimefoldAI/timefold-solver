@@ -10,6 +10,8 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordEntity;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordValue;
 
 @PlanningSolution
 public class TestdataSolution extends TestdataObject {

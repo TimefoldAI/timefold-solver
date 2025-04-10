@@ -27,7 +27,15 @@ import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBase
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataSetBasedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataRecordSolution;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.enumeration.TestdataEnumSolution;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.badconfiguration.TestdataBadConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.duplicateweightconfiguration.TestdataDuplicateWeightConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.nosolution.TestdataNoSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
@@ -516,11 +524,11 @@ class SolutionDescriptorTest {
         TestdataChainedSolution solution = new TestdataChainedSolution("test solution");
         List<TestdataChainedAnchor> anchorList = IntStream.range(0, anchorCount)
                 .mapToObj(Integer::toString)
-                .map(TestdataChainedAnchor::new).collect(Collectors.toList());
+                .map(TestdataChainedAnchor::new).toList();
         solution.setChainedAnchorList(anchorList);
         List<TestdataChainedEntity> entityList = IntStream.range(0, entityCount)
                 .mapToObj(Integer::toString)
-                .map(TestdataChainedEntity::new).collect(Collectors.toList());
+                .map(TestdataChainedEntity::new).toList();
         solution.setChainedEntityList(entityList);
         solution.setUnchainedValueList(Collections.singletonList(new TestdataValue("v")));
         return solution;
@@ -597,5 +605,62 @@ class SolutionDescriptorTest {
     void testImmutableClass() {
         assertThatCode(TestdataRecordSolution::buildSolutionDescriptor)
                 .hasMessageContaining("cannot be a record as it needs to be mutable.");
+        assertThatCode(TestdataEnumSolution::buildSolutionDescriptor)
+                .hasMessageContaining("cannot be an enum as it needs to be mutable.");
+    }
+
+    @Test
+    void testMultipleConstraintWeights() {
+        assertThatCode(TestdataInvalidConstraintWeightOverridesSolution::buildSolutionDescriptor)
+                .hasMessageContaining("has more than one field")
+                .hasMessageContaining(
+                        "of type interface ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides");
+    }
+
+    @Test
+    void testNoSolution() {
+        assertThatCode(TestdataNoSolution::buildSolutionDescriptor)
+                .hasMessageContaining("but does not have a @PlanningSolution annotation");
+    }
+
+    @Test
+    void testInvalidConfiguration() {
+        assertThatCode(TestdataInvalidConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The autoDiscoverMemberType ")
+                .hasMessageContaining("cannot accept a member")
+                .hasMessageContaining("with an elementType")
+                .hasMessageContaining("that has a @ConstraintConfiguration annotation.");
+    }
+
+    @Test
+    void testConfigurationMap() {
+        assertThatCode(TestdataMapConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The autoDiscoverMemberType ")
+                .hasMessageContaining("does not yet support the member")
+                .hasMessageContaining("which is an implementation of Map.");
+    }
+
+    @Test
+    void testDuplicateConfigurationWeights() {
+        assertThatCode(TestdataDuplicateWeightConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining(
+                        "has both a ConstraintWeightOverrides member and a ConstraintConfigurationProvider-annotated member")
+                .hasMessageContaining(
+                        "ConstraintConfigurationProvider is deprecated, please remove it from your codebase and keep ConstraintWeightOverrides only");
+    }
+
+    @Test
+    void testBadConfiguration() {
+        assertThatCode(TestdataBadConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The solutionClass")
+                .hasMessageContaining("has a @ConstraintConfigurationProvider annotated member")
+                .hasMessageContaining("that does not return a class")
+                .hasMessageContaining("that has a ConstraintConfiguration annotation.");
+    }
+
+    @Test
+    void testBadFactCollection() {
+        assertThatCode(TestdataBadFactCollectionSolution::buildSolutionDescriptor)
+                .hasMessageContaining("that does not return a Collection or an array.");
     }
 }

@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.entity.TestdataExtendedEntitySolution;
 import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.noplanningvar.TestdataNoVariableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedSolution;
@@ -96,5 +97,11 @@ class EntityDescriptorTest {
     void testImmutableClass() {
         assertThatCode(TestdataSolution::buildSolutionDescriptor)
                 .hasMessageContaining("cannot be a record as it needs to be mutable.");
+    }
+
+    @Test
+    void testEntityWithoutVariables() {
+        assertThatCode(TestdataNoVariableSolution::buildSolutionDescriptor)
+                .hasMessageContaining("must have at least 1 member with");
     }
 }
