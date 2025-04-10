@@ -79,6 +79,45 @@ class TerminationTest {
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
                                 .withTerminationConfig(new TerminationConfig()
+                                        .withSpentLimit(Duration.ofSeconds(2))))
+                .withTerminationConfig(new TerminationConfig()
+                        .withSpentLimit(Duration.ofSeconds(1))); // Global is shorter than local; global gets priority.
+        var solution = TestdataSolution.generateSolution(2, 2);
+        solution.getEntityList().forEach(entity -> entity.setValue(null)); // Uninitialize.
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+
+        var executor = Executors.newSingleThreadExecutor();
+        try {
+            var counter = new AtomicInteger(0);
+            var future = executor.submit(() -> {
+                counter.incrementAndGet();
+                return solver.solve(solution);
+            });
+            await().atMost(Duration.ofSeconds(1)).until(() -> counter.get() == 1); // Wait for solver to start.
+            assertThat(future).isNotDone();
+            Thread.sleep(100L); // Give solver some processing time to exit the CH.
+
+            clock.tick(Duration.ofMillis(1001)); // Fake 1 second passing; this should terminate the solver in the LS.
+            await().atMost(Duration.ofSeconds(1)).until(future::isDone); // Wait for solver to complete.
+
+            assertThat(future.get())
+                    .isNotNull();
+        } finally {
+            executor.shutdownNow();
+        }
+    }
+
+    @Test
+    void globalTimeSpentTerminationAtPhaseLevelTwoPhases() throws InterruptedException, ExecutionException {
+        var clock = new MockClock(Clock.systemDefaultZone());
+        var solverConfig = new SolverConfig(clock)
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withTerminationConfig(new TerminationConfig()
                                         .withSpentLimit(Duration.ofSeconds(1))),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
