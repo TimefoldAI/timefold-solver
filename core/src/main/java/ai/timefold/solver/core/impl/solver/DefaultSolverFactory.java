@@ -182,11 +182,11 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     "it should have been filled in already.");
         }
         return SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
-                        solverConfig.determineDomainAccessType(),
-                        (Class<Solution_>) solverConfig.getSolutionClass(),
-                        solverConfig.getGizmoMemberAccessorMap(),
-                        solverConfig.getGizmoSolutionClonerMap(),
-                        solverConfig.getEntityClassList());
+                solverConfig.determineDomainAccessType(),
+                (Class<Solution_>) solverConfig.getSolutionClass(),
+                solverConfig.getGizmoMemberAccessorMap(),
+                solverConfig.getGizmoSolutionClonerMap(),
+                solverConfig.getEntityClassList());
     }
 
     private <Score_ extends Score<Score_>> ScoreDirectorFactory<Solution_, Score_> buildScoreDirectorFactory() {
