@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataRecordEntity;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataRecordValue;
 import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordEntity;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordValue;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

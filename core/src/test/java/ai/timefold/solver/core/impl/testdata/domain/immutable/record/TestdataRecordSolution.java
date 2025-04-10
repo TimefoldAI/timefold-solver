@@ -1,5 +1,5 @@
 
-package ai.timefold.solver.core.impl.testdata.domain.immutable;
+package ai.timefold.solver.core.impl.testdata.domain.immutable.record;
 
 import java.util.List;
 

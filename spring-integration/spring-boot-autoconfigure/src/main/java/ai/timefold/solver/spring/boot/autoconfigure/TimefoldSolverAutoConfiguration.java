@@ -414,12 +414,13 @@ public class TimefoldSolverAutoConfiguration
         // No Entity class
         for (var config : solverConfigMap.values()) {
             // Assert if the list is empty
-            if (config.getEntityClassList() == null || config.getEntityClassList().isEmpty()) {
+            var entityList = config.getEntityClassList();
+            if (entityList == null || entityList.isEmpty()) {
                 throw new IllegalStateException(
                         "No classes were found with a @%s annotation.".formatted(PlanningEntity.class.getSimpleName()));
             }
             // Assert the entity target and planning variables
-            for (var clazz : config.getEntityClassList()) {
+            for (var clazz : entityList) {
                 SolutionDescriptor.assertMutable(clazz, "entityClass");
                 EntityDescriptor.assertValidPlanningVariables(clazz);
             }

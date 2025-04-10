@@ -280,7 +280,7 @@ public class SolutionDescriptor<Solution_> {
                 processFactEntityOrScoreAnnotation(descriptorPolicy, member, entityClassList);
             }
             potentiallyOverwritingMethodList.ensureCapacity(potentiallyOverwritingMethodList.size() + memberList.size());
-            memberList.stream().filter(member -> member instanceof Method)
+            memberList.stream().filter(Method.class::isInstance)
                     .forEach(member -> potentiallyOverwritingMethodList.add((Method) member));
         }
         if (entityCollectionMemberAccessorMap.isEmpty() && entityMemberAccessorMap.isEmpty()) {
@@ -961,17 +961,16 @@ public class SolutionDescriptor<Solution_> {
     public void visitEntitiesByEntityClass(Solution_ solution, Class<?> entityClass, Predicate<Object> visitor) {
         for (var entityMemberAccessor : entityMemberAccessorMap.values()) {
             var entity = extractMemberObject(entityMemberAccessor, solution);
-            if (entityClass.isInstance(entity)) {
-                if (visitor.test(entity)) {
-                    return;
-                }
+            if (entityClass.isInstance(entity) && visitor.test(entity)) {
+                return;
             }
+
         }
         for (var entityCollectionMemberAccessor : entityCollectionMemberAccessorMap.values()) {
             var optionalTypeParameter = ConfigUtils.extractGenericTypeParameter("solutionClass",
                     entityCollectionMemberAccessor.getDeclaringClass(), entityCollectionMemberAccessor.getType(),
                     entityCollectionMemberAccessor.getGenericType(), null, entityCollectionMemberAccessor.getName());
-            var collectionGuaranteedToContainOnlyGivenEntityType = optionalTypeParameter
+            boolean collectionGuaranteedToContainOnlyGivenEntityType = optionalTypeParameter
                     .map(entityClass::isAssignableFrom)
                     .orElse(false);
             if (collectionGuaranteedToContainOnlyGivenEntityType) {
@@ -998,11 +997,10 @@ public class SolutionDescriptor<Solution_> {
             // We need to go over every collection member and check if it is an entity of the given type.
             var entityCollection = extractMemberCollectionOrArray(entityCollectionMemberAccessor, solution, false);
             for (var entity : entityCollection) {
-                if (entityClass.isInstance(entity)) {
-                    if (visitor.test(entity)) {
-                        return;
-                    }
+                if (entityClass.isInstance(entity) && visitor.test(entity)) {
+                    return;
                 }
+
             }
         }
     }
