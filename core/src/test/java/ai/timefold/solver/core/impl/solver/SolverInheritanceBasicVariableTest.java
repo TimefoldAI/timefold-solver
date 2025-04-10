@@ -26,7 +26,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -48,7 +48,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -69,7 +69,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childnotannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childnotannotated.TestConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childnotannotated.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -91,7 +91,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childnotannotated.TestdataChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childnotannotated.TestConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childnotannotated.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -152,7 +152,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(100L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -174,7 +174,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedaddvar.TestdataChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedaddvar.TestConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(100L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedaddvar.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -194,7 +194,7 @@ class SolverInheritanceBasicVariableTest {
                 .withEntityClasses(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedreplacevar.TestdataChildEntity.class)
                 .withConstraintProviderClass(DummyConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var solution =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedreplacevar.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -215,7 +215,7 @@ class SolverInheritanceBasicVariableTest {
                 .withEntityClasses(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedreplacevar.TestdataChildEntity.class)
                 .withConstraintProviderClass(DummyConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var solution =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedreplacevar.TestdataSolution
                         .generateSolution(3, 2, false);
@@ -236,7 +236,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.childannotated.TestdataMultipleChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.childannotated.TestMultipleConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.childannotated.TestdataMultipleSolution
                         .generateSolution(3, 2, false);
@@ -258,7 +258,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritanceinterface.baseannotated.childannotated.TestdataMultipleChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritanceinterface.baseannotated.childannotated.TestMultipleConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritanceinterface.baseannotated.childannotated.TestdataMultipleSolution
                         .generateSolution(3, 2, false);
@@ -279,7 +279,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.childnotannotated.TestdataMultipleChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.childnotannotated.TestMultipleConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.childnotannotated.TestdataMultipleSolution
                         .generateSolution(3, 2);
@@ -301,7 +301,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritanceinterface.baseannotated.childnotannotated.TestdataMultipleChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritanceinterface.baseannotated.childnotannotated.TestMultipleConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritanceinterface.baseannotated.childnotannotated.TestdataMultipleSolution
                         .generateSolution(3, 2);
@@ -323,7 +323,7 @@ class SolverInheritanceBasicVariableTest {
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleChildEntity.class)
                 .withConstraintProviderClass(
                         ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.mixed.childannotated.TestMultipleConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withStepCountLimit(10));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem =
                 ai.timefold.solver.core.impl.testdata.domain.inheritance.multipleinheritance.baseannotated.mixed.childannotated.TestdataMultipleSolution
                         .generateSolution(3, 2, false);

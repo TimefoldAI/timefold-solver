@@ -274,7 +274,7 @@ public class EntityDescriptor<Solution_> {
      * If a class declares any variable (genuine or shadow), it must be annotated as an entity,
      * even if a supertype already has the annotation.
      */
-    public static void assertValidaPlanningVariables(Class<?> clazz) {
+    public static void assertValidPlanningVariables(Class<?> clazz) {
         // We first check the entity class
         if (clazz.getAnnotation(PlanningEntity.class) == null && hasAnyGenuineOrShadowVariables(clazz)) {
             throw new IllegalStateException(
@@ -340,7 +340,7 @@ public class EntityDescriptor<Solution_> {
     private void processEntityAnnotations() {
         assertNotMixedInheritance();
         assertSingleInheritance();
-        assertValidaPlanningVariables(entityClass);
+        assertValidPlanningVariables(entityClass);
         var entityAnnotation = entityClass.getAnnotation(PlanningEntity.class);
         if (entityAnnotation == null && declaredInheritedEntityClassList.isEmpty()) {
             throw new IllegalStateException(

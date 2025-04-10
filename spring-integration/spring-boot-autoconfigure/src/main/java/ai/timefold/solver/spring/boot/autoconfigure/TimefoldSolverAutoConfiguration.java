@@ -345,7 +345,7 @@ public class TimefoldSolverAutoConfiguration
         var timefoldFieldAnnotationList =
                 entityScanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
         for (var clazz : timefoldFieldAnnotationList) {
-            EntityDescriptor.assertValidaPlanningVariables(clazz);
+            EntityDescriptor.assertValidPlanningVariables(clazz);
         }
     }
 
@@ -421,7 +421,7 @@ public class TimefoldSolverAutoConfiguration
             // Assert the entity target and planning variables
             for (var clazz : config.getEntityClassList()) {
                 SolutionDescriptor.assertMutable(clazz, "entityClass");
-                EntityDescriptor.assertValidaPlanningVariables(clazz);
+                EntityDescriptor.assertValidPlanningVariables(clazz);
             }
         }
     }
