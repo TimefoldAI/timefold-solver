@@ -8,7 +8,6 @@ import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider
 import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataRecordEntity;
 import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataRecordSolution;
 import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataRecordValue;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

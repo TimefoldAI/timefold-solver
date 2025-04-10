@@ -4,9 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import jakarta.inject.Inject;
-
-import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedreplacevar.TestdataChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedreplacevar.TestdataSolution;
