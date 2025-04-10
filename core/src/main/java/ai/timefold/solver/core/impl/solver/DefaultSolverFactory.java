@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver;
 
+import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
