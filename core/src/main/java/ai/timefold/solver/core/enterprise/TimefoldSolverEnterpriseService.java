@@ -3,6 +3,8 @@ package ai.timefold.solver.core.enterprise;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Objects;
 import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -18,6 +20,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.ConstructionHeuristicForager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
@@ -93,6 +96,18 @@ public interface TimefoldSolverEnterpriseService {
                 .formatted(SOLVER_NAME, COMMUNITY_NAME, communityVersion, ENTERPRISE_NAME, enterpriseVersion,
                         COMMUNITY_COORDINATES, ENTERPRISE_COORDINATES));
     }
+
+    static <T> T buildOrDefault(Function<TimefoldSolverEnterpriseService, T> builder, Supplier<T> defaultValue) {
+        try {
+            var service = load();
+            return builder.apply(service);
+        } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | InstantiationException
+                | IllegalAccessException e) {
+            return defaultValue.get();
+        }
+    }
+
+    TopologicalOrderGraph buildTopologyGraph(int size);
 
     Class<? extends ConstraintProvider>
             buildLambdaSharedConstraintProvider(Class<? extends ConstraintProvider> originalConstraintProvider);

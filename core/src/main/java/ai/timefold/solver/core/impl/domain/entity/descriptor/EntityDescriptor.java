@@ -51,6 +51,8 @@ import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShado
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.PiggybackShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.InvalidityMarkerVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -66,7 +68,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,7 +92,9 @@ public class EntityDescriptor<Solution_> {
             ShadowVariable.List.class,
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
-            CascadingUpdateShadowVariable.class };
+            CascadingUpdateShadowVariable.class,
+            InvalidityMarker.class
+    };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
@@ -96,6 +103,8 @@ public class EntityDescriptor<Solution_> {
     private final Class<?> entityClass;
     private final Predicate<Object> isInitializedPredicate;
     private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
+    @Nullable
+    private InvalidityMarkerVariableDescriptor<Solution_> invalidityMarkerVariableDescriptor;
 
     private Predicate<Object> hasNoNullVariablesBasicVar;
     private Predicate<Object> hasNoNullVariablesListVar;
@@ -136,6 +145,11 @@ public class EntityDescriptor<Solution_> {
         if (entityClass.getPackage() == null) {
             LOGGER.warn("The entityClass ({}) should be in a proper java package.", entityClass);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static Collection<Class<? extends Annotation>> getVariableAnnotationClasses() {
+        return List.of(VARIABLE_ANNOTATION_CLASSES);
     }
 
     /**
@@ -352,7 +366,14 @@ public class EntityDescriptor<Solution_> {
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(ShadowVariable.class)
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
-            var variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            ShadowVariableDescriptor<Solution_> variableDescriptor;
+            var annotation = memberAccessor.getAnnotation(ShadowVariable.class);
+            if (annotation != null && !annotation.method().isEmpty()) {
+                variableDescriptor =
+                        new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            } else {
+                variableDescriptor = new CustomShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
+            }
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
             var variableDescriptor =
@@ -368,6 +389,11 @@ public class EntityDescriptor<Solution_> {
                 declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
+        } else if (variableAnnotationClass.equals(InvalidityMarker.class)) {
+            var variableDescriptor = new InvalidityMarkerVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
+                    memberAccessor);
+            invalidityMarkerVariableDescriptor = variableDescriptor;
+            declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
                     new PiggybackShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
@@ -590,6 +616,10 @@ public class EntityDescriptor<Solution_> {
         return effectiveGenuineVariableDescriptorMap.get(variableName);
     }
 
+    public @Nullable InvalidityMarkerVariableDescriptor<Solution_> getInvalidityMarkerVariableDescriptor() {
+        return invalidityMarkerVariableDescriptor;
+    }
+
     public boolean hasAnyGenuineVariables() {
         return !effectiveGenuineVariableDescriptorMap.isEmpty();
     }
@@ -637,8 +667,20 @@ public class EntityDescriptor<Solution_> {
         return effectiveVariableDescriptorMap.containsKey(variableName);
     }
 
-    public VariableDescriptor<Solution_> getVariableDescriptor(String variableName) {
+    public @Nullable VariableDescriptor<Solution_> getVariableDescriptor(String variableName) {
         return effectiveVariableDescriptorMap.get(variableName);
+    }
+
+    public @NonNull VariableDescriptor<Solution_> getVariableDescriptorOrFail(String variableName) {
+        var variableDescriptor = effectiveVariableDescriptorMap.get(variableName);
+        if (variableDescriptor == null) {
+            throw new IllegalArgumentException("""
+                    Entity class %s does not hava a "%s" genuine or shadow variable.
+                    Maybe you meant one of %s?"""
+                    .formatted(entityClass.getSimpleName(),
+                            variableName, effectiveVariableDescriptorMap.keySet()));
+        }
+        return variableDescriptor;
     }
 
     public boolean hasAnyDeclaredGenuineVariableDescriptor() {
