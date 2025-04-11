@@ -10,7 +10,6 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
