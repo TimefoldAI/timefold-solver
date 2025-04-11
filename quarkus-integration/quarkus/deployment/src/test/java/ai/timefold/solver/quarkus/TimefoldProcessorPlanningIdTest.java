@@ -2,13 +2,12 @@ package ai.timefold.solver.quarkus;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.quarkus.testdata.superclass.constraints.DummyConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.superclass.domain.TestdataEntity;
 import ai.timefold.solver.quarkus.testdata.superclass.domain.TestdataSolution;
 
@@ -36,10 +35,10 @@ class TimefoldProcessorPlanningIdTest {
         TestdataSolution problem = new TestdataSolution();
         problem.setValueList(IntStream.range(1, 3)
                 .mapToObj(i -> "v" + i)
-                .collect(Collectors.toList()));
+                .toList());
         problem.setEntityList(IntStream.range(1, 3)
-                .mapToObj(i -> new TestdataEntity(i))
-                .collect(Collectors.toList()));
+                .mapToObj(TestdataEntity::new)
+                .toList());
 
         TestdataSolution solution = solverFactory.buildSolver().solve(problem);
         assertNotNull(solution);

@@ -1,12 +1,15 @@
 package ai.timefold.solver.core.impl.domain.entity.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.List;
 
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extended.entity.TestdataExtendedEntitySolution;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.noplanningvar.TestdataNoVariableSolution;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedSolution;
@@ -88,5 +91,17 @@ class EntityDescriptorTest {
                 TestdataExtendedEntitySolution.buildEntityDescriptor();
         assertThat(entityDescriptor.extractEntities(solution))
                 .containsExactlyInAnyOrder(entity, subEntity, e1, e2, e3, e4, s1, s2, s3, r1, r2);
+    }
+
+    @Test
+    void testImmutableClass() {
+        assertThatCode(TestdataSolution::buildSolutionDescriptor)
+                .hasMessageContaining("cannot be a record as it needs to be mutable.");
+    }
+
+    @Test
+    void testEntityWithoutVariables() {
+        assertThatCode(TestdataNoVariableSolution::buildSolutionDescriptor)
+                .hasMessageContaining("must have at least 1 member with");
     }
 }

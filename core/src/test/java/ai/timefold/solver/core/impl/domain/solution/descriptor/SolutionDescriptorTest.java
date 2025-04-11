@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfCollection;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -9,7 +10,6 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -18,7 +18,6 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
@@ -27,6 +26,15 @@ import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBase
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataSetBasedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.enumeration.TestdataEnumSolution;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.badconfiguration.TestdataBadConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.duplicateweightconfiguration.TestdataDuplicateWeightConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.nosolution.TestdataNoSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
@@ -148,7 +156,8 @@ class SolutionDescriptorTest {
     void noProblemFactPropertyWithEasyScoreCalculation() {
         SolverFactory<TestdataNoProblemFactPropertySolution> solverFactory = PlannerTestUtils.buildSolverFactory(
                 TestdataNoProblemFactPropertySolution.class, TestdataEntity.class);
-        solverFactory.buildSolver();
+        assertThatCode(solverFactory::buildSolver)
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -356,8 +365,8 @@ class SolutionDescriptorTest {
     void countUninitializedVariables() {
         var valueCount = 10;
         var entityCount = 3;
-        var solution = TestdataSolution.generateSolution(valueCount, entityCount);
-        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solution = ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.generateSolution(valueCount, entityCount);
+        var solutionDescriptor = ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.buildSolutionDescriptor();
 
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
         assertThat(initializationStats.uninitializedVariableCount()).isZero();
@@ -398,8 +407,10 @@ class SolutionDescriptorTest {
     void problemScaleBasic() {
         int valueCount = 10;
         int entityCount = 20;
-        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
+        SolutionDescriptor<ai.timefold.solver.core.impl.testdata.domain.TestdataSolution> solutionDescriptor =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.buildSolutionDescriptor();
+        ai.timefold.solver.core.impl.testdata.domain.TestdataSolution solution =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.generateSolution(valueCount, entityCount);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -414,8 +425,10 @@ class SolutionDescriptorTest {
     void emptyProblemScale() {
         int valueCount = 27;
         int entityCount = 27;
-        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
+        SolutionDescriptor<ai.timefold.solver.core.impl.testdata.domain.TestdataSolution> solutionDescriptor =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.buildSolutionDescriptor();
+        ai.timefold.solver.core.impl.testdata.domain.TestdataSolution solution =
+                ai.timefold.solver.core.impl.testdata.domain.TestdataSolution.generateSolution(valueCount, entityCount);
         solution.getValueList().clear();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
@@ -510,11 +523,11 @@ class SolutionDescriptorTest {
         TestdataChainedSolution solution = new TestdataChainedSolution("test solution");
         List<TestdataChainedAnchor> anchorList = IntStream.range(0, anchorCount)
                 .mapToObj(Integer::toString)
-                .map(TestdataChainedAnchor::new).collect(Collectors.toList());
+                .map(TestdataChainedAnchor::new).toList();
         solution.setChainedAnchorList(anchorList);
         List<TestdataChainedEntity> entityList = IntStream.range(0, entityCount)
                 .mapToObj(Integer::toString)
-                .map(TestdataChainedEntity::new).collect(Collectors.toList());
+                .map(TestdataChainedEntity::new).toList();
         solution.setChainedEntityList(entityList);
         solution.setUnchainedValueList(Collections.singletonList(new TestdataValue("v")));
         return solution;
@@ -585,5 +598,68 @@ class SolutionDescriptorTest {
         // but the numbers should be relatively (i.e. ~1%) close.
         assertThat(Math.pow(10, listPowerExponent))
                 .isCloseTo(Math.pow(10, chainedPowerExponent), Percentage.withPercentage(1));
+    }
+
+    @Test
+    void testImmutableClass() {
+        assertThatCode(TestdataRecordSolution::buildSolutionDescriptor)
+                .hasMessageContaining("cannot be a record as it needs to be mutable.");
+        assertThatCode(TestdataEnumSolution::buildSolutionDescriptor)
+                .hasMessageContaining("cannot be an enum as it needs to be mutable.");
+    }
+
+    @Test
+    void testMultipleConstraintWeights() {
+        assertThatCode(TestdataInvalidConstraintWeightOverridesSolution::buildSolutionDescriptor)
+                .hasMessageContaining("has more than one field")
+                .hasMessageContaining(
+                        "of type interface ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides");
+    }
+
+    @Test
+    void testNoSolution() {
+        assertThatCode(TestdataNoSolution::buildSolutionDescriptor)
+                .hasMessageContaining("but does not have a @PlanningSolution annotation");
+    }
+
+    @Test
+    void testInvalidConfiguration() {
+        assertThatCode(TestdataInvalidConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The autoDiscoverMemberType ")
+                .hasMessageContaining("cannot accept a member")
+                .hasMessageContaining("with an elementType")
+                .hasMessageContaining("that has a @ConstraintConfiguration annotation.");
+    }
+
+    @Test
+    void testConfigurationMap() {
+        assertThatCode(TestdataMapConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The autoDiscoverMemberType ")
+                .hasMessageContaining("does not yet support the member")
+                .hasMessageContaining("which is an implementation of Map.");
+    }
+
+    @Test
+    void testDuplicateConfigurationWeights() {
+        assertThatCode(TestdataDuplicateWeightConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining(
+                        "has both a ConstraintWeightOverrides member and a ConstraintConfigurationProvider-annotated member")
+                .hasMessageContaining(
+                        "ConstraintConfigurationProvider is deprecated, please remove it from your codebase and keep ConstraintWeightOverrides only");
+    }
+
+    @Test
+    void testBadConfiguration() {
+        assertThatCode(TestdataBadConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The solutionClass")
+                .hasMessageContaining("has a @ConstraintConfigurationProvider annotated member")
+                .hasMessageContaining("that does not return a class")
+                .hasMessageContaining("that has a ConstraintConfiguration annotation.");
+    }
+
+    @Test
+    void testBadFactCollection() {
+        assertThatCode(TestdataBadFactCollectionSolution::buildSolutionDescriptor)
+                .hasMessageContaining("that does not return a Collection or an array.");
     }
 }
