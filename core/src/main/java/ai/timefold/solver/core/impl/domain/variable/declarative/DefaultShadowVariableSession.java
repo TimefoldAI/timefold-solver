@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -19,14 +18,14 @@ public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSe
         @Override
         public boolean equals(@Nullable Object o) {
             if (o instanceof EntityVariablePair<?> other) {
-                return entity == other.entity && Objects.equals(variableDescriptor, other.variableDescriptor);
+                return entity == other.entity && variableDescriptor.getOrdinal() == other.variableDescriptor.getOrdinal();
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return Objects.hash(System.identityHashCode(entity), variableDescriptor);
+            return (31 * System.identityHashCode(entity)) ^ variableDescriptor.getOrdinal();
         }
     }
 
