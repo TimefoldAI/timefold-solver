@@ -19,13 +19,14 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-class BothClassesTest {
+class TimefoldProcessorBothClassesTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(TestBothAnnotatedConstraintProvider.class, TestdataBothAnnotatedSolution.class, TestdataBothAnnotatedChildEntity.class,
+                    .addClasses(TestBothAnnotatedConstraintProvider.class, TestdataBothAnnotatedSolution.class,
+                            TestdataBothAnnotatedChildEntity.class,
                             TestdataBaseEntity.class));
     @Inject
     SolverFactory<TestdataBothAnnotatedSolution> solverFactory;

@@ -18,7 +18,6 @@ class TimefoldProcessorSolverInvalidEntityClassTest {
     // Empty classes
     @RegisterExtension
     static final QuarkusUnitTest config1 = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.environment-mode", "FULL_ASSERT")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class).addClasses(TestdataQuarkusSolution.class))
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)

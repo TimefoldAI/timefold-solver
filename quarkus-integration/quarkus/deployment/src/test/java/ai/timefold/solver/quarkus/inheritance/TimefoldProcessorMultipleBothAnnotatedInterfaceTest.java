@@ -15,13 +15,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-class MultipleBothAnnotatedInterfaceTest {
+class TimefoldProcessorMultipleBothAnnotatedInterfaceTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(TestMultipleBothAnnotatedInterfaceConstraintProvider.class, TestdataMultipleBothAnnotatedInterfaceSolution.class,
+                    .addClasses(TestMultipleBothAnnotatedInterfaceConstraintProvider.class,
+                            TestdataMultipleBothAnnotatedInterfaceSolution.class,
                             TestdataMultipleBothAnnotatedInterfaceChildEntity.class))
             .assertException(exception -> {
                 assertEquals(IllegalStateException.class, exception.getClass());

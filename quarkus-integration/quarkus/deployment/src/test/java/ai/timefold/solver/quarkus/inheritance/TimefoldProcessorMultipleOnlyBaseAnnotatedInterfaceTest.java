@@ -17,10 +17,9 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-class MultipleOnlyBaseAnnotatedInterfaceTest {
+class TimefoldProcessorMultipleOnlyBaseAnnotatedInterfaceTest {
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestMultipleChildNotAnnotatedInterfaceConstraintProvider.class,
                             TestdataMultipleChildNotAnnotatedInterfaceSolution.class,
