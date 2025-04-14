@@ -13,7 +13,8 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 @PlanningSolution
 public class TestdataMultipleBothAnnotatedSolution {
 
-    public static TestdataMultipleBothAnnotatedSolution generateSolution(int valueListSize, int entityListSize, boolean initialized) {
+    public static TestdataMultipleBothAnnotatedSolution generateSolution(int valueListSize, int entityListSize,
+            boolean initialized) {
         var solution = new TestdataMultipleBothAnnotatedSolution();
         var valueList = new ArrayList<String>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {

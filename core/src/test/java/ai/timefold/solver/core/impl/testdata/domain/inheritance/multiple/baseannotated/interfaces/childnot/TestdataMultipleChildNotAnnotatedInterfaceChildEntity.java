@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childnot;
 
-public class TestdataMultipleChildNotAnnotatedInterfaceChildEntity implements TestdataMultipleChildNotAnnotatedInterfaceSecondEntity {
+public class TestdataMultipleChildNotAnnotatedInterfaceChildEntity
+        implements TestdataMultipleChildNotAnnotatedInterfaceSecondEntity {
 
     private Long id;
     private String value;

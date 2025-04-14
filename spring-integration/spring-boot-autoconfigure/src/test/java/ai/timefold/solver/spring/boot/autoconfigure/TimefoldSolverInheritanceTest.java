@@ -307,7 +307,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> multipleOnlyBaseClassAnnotatedContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
@@ -320,19 +321,20 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> multipleOnlyBaseClassAnnotatedBaseInterfaceContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
-        /**
-         * This test validates the behavior of the solver
-         * when multiple inheritance is used, the child is annotated with {@code @PlanningEntity}
-         * and it inherits from class and interface.
-         */
-        @Test
-        void testMultipleBothClassesAnnotatedMixedPattern() {
-            assertThatCode(() -> multipleBothClassesAnnotatedMixedPatternContextRunner
-                    .run(context -> context.getBean(SolverFactory.class)))
-                    .rootCause()
-                    .hasMessageContaining("Mixed inheritance is not permitted.");
-        }
+    /**
+     * This test validates the behavior of the solver
+     * when multiple inheritance is used, the child is annotated with {@code @PlanningEntity}
+     * and it inherits from class and interface.
+     */
+    @Test
+    void testMultipleBothClassesAnnotatedMixedPattern() {
+        assertThatCode(() -> multipleBothClassesAnnotatedMixedPatternContextRunner
+                .run(context -> context.getBean(SolverFactory.class)))
+                .rootCause()
+                .hasMessageContaining("Mixed inheritance is not permitted.");
+    }
 }

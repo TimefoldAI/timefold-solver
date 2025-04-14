@@ -5,7 +5,8 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceBaseEntity;
 
 @PlanningEntity
-public class TestdataMultipleMixedChildEntity extends TestdataMultipleMixedBaseEntity implements TestdataMultipleBothAnnotatedInterfaceBaseEntity {
+public class TestdataMultipleMixedChildEntity extends TestdataMultipleMixedBaseEntity
+        implements TestdataMultipleBothAnnotatedInterfaceBaseEntity {
 
     private Long id;
     private String value;

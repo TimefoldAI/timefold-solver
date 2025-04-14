@@ -7,7 +7,8 @@ import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@AutoConfigurationPackage(basePackageClasses = { TestdataBaseNotAnnotatedInterfaceSolution.class, DummyConstraintProvider.class })
+@AutoConfigurationPackage(
+        basePackageClasses = { TestdataBaseNotAnnotatedInterfaceSolution.class, DummyConstraintProvider.class })
 public class OnlyChildAnnotatedInterfaceSpringTestConfiguration {
 
 }

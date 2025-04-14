@@ -30,10 +30,10 @@ import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRec
 import ai.timefold.solver.core.impl.testdata.domain.invalid.badconfiguration.TestdataBadConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.duplicateweightoverrides.TestdataDuplicateWeightConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.nosolution.TestdataNoSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.variablemap.TestdataMapConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericEntity;

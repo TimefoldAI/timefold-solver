@@ -7,41 +7,41 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childtoo.TestMultipleBothAnnotatedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childnot.TestMultipleChildNotAnnotatedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childnot.TestdataMultipleChildNotAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childnot.TestdataMultipleChildNotAnnotatedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childtoo.TestMultipleBothAnnotatedConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedChildEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.mixed.TestMultipleMixedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.mixed.TestdataMultipleMixedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.classes.mixed.TestdataMultipleMixedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childtoo.TestMultipleBothAnnotatedInterfaceConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childnot.TestMultipleChildNotAnnotatedInterfaceConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childtoo.TestMultipleBothAnnotatedInterfaceConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceChildEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.addvar.TestAddVarConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.addvar.TestdataAddVarChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.addvar.TestdataAddVarSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childtoo.TestBothAnnotatedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childnot.TestChildNotAnnotatedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childtoo.TestBothAnnotatedConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.replacevar.TestdataReplaceVarChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.replacevar.TestdataReplaceVarSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.addvar.TestAddVarInterfaceConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childtoo.TestBothAnnotatedInterfaceConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childnot.TestChildNotAnnotatedInterfaceConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childnot.TestdataChildNotAnnotatedInterfaceChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childnot.TestdataChildNotAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childtoo.TestBothAnnotatedInterfaceConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceChildEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.replacevar.TestdataReplaceVarInterfaceChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.replacevar.TestdataReplaceVarInterfaceSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.basenot.classes.TestdataBaseNotAnnotatedChildEntity;
@@ -239,7 +239,8 @@ class SolverInheritanceTest {
                 TestdataMultipleBothAnnotatedSolution
                         .generateSolution(3, 2, false);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
@@ -256,7 +257,8 @@ class SolverInheritanceTest {
                 .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem = TestdataMultipleBothAnnotatedInterfaceSolution.generateSolution(3, 2, false);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
@@ -272,7 +274,8 @@ class SolverInheritanceTest {
                 .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem = TestdataMultipleChildNotAnnotatedSolution.generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
@@ -289,7 +292,8 @@ class SolverInheritanceTest {
                 .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
         var problem = TestdataMultipleChildNotAnnotatedInterfaceSolution.generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
