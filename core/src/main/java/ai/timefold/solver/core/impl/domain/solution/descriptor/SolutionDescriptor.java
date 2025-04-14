@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor.extractInheritedClasses;
 import static java.util.stream.Stream.concat;
 
 import java.lang.annotation.Annotation;
@@ -118,7 +119,7 @@ public class SolutionDescriptor<Solution_> {
         // add all parent and child classes, and sort them.
         var updatedEntityClassList = new ArrayList<>(entityClassList);
         for (var entityClass : entityClassList) {
-            var inheritedEntityClasses = EntityDescriptor.extractInheritedClasses(entityClass);
+            var inheritedEntityClasses = extractInheritedClasses(entityClass);
             var filteredInheritedEntityClasses = inheritedEntityClasses.stream()
                     .filter(c -> !updatedEntityClassList.contains(c)).toList();
             updatedEntityClassList.addAll(filteredInheritedEntityClasses);

@@ -6,21 +6,27 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedAddNewVarBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedAddNewVarSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedReplaceVarBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedReplaceVarSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothClassesAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothClassesAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothClassesAnnotatedMixedPatternSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothClassesAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleOnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleOnlyBaseClassAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyBaseClassAnnotatedSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyChildClassAnnotatedBaseInterfaceSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyChildClassAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.addvar.TestdataAddVarSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childnot.TestdataChildNotAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceSolution;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.AddVarInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.AddVarSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothAnnotatedInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.BothAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothAnnotatedInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothAnnotatedMixedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleBothAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleOnlyBaseAnnotatedInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.MultipleOnlyBaseAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyBaseAnnotatedInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyBaseAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyChildAnnotatedInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.OnlyChildAnnotatedSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.ReplaceVarInterfaceSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.inheritance.ReplaceVarSpringTestConfiguration;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
@@ -50,63 +56,63 @@ class TimefoldSolverInheritanceTest {
         bothClassesAnnotatedContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(BothClassesAnnotatedSpringTestConfiguration.class);
+                .withUserConfiguration(BothAnnotatedSpringTestConfiguration.class);
         bothClassesAnnotatedBaseInterfaceContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(BothClassesAnnotatedBaseInterfaceSpringTestConfiguration.class);
+                .withUserConfiguration(BothAnnotatedInterfaceSpringTestConfiguration.class);
         onlyBaseClassAnnotatedContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(OnlyBaseClassAnnotatedSpringTestConfiguration.class);
+                .withUserConfiguration(OnlyBaseAnnotatedSpringTestConfiguration.class);
         onlyBaseClassAnnotatedBaseInterfaceContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(OnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration.class);
+                .withUserConfiguration(OnlyBaseAnnotatedInterfaceSpringTestConfiguration.class);
         onlyChildClassAnnotatedContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(OnlyChildClassAnnotatedSpringTestConfiguration.class);
+                .withUserConfiguration(OnlyChildAnnotatedSpringTestConfiguration.class);
         onlyChildClassAnnotatedBaseInterfaceContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(OnlyChildClassAnnotatedBaseInterfaceSpringTestConfiguration.class);
+                .withUserConfiguration(OnlyChildAnnotatedInterfaceSpringTestConfiguration.class);
         bothAnnotatedAddNewVarContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(BothClassesAnnotatedAddNewVarSpringTestConfiguration.class);
+                .withUserConfiguration(AddVarSpringTestConfiguration.class);
         bothAnnotatedAddNewVarBaseInterfaceContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(BothClassesAnnotatedAddNewVarBaseInterfaceSpringTestConfiguration.class);
+                .withUserConfiguration(AddVarInterfaceSpringTestConfiguration.class);
         bothClassAnnotatedReplaceVarContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(BothClassesAnnotatedReplaceVarSpringTestConfiguration.class);
+                .withUserConfiguration(ReplaceVarSpringTestConfiguration.class);
         bothClassAnnotatedReplaceVarBaseInterfaceContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(BothClassesAnnotatedReplaceVarBaseInterfaceSpringTestConfiguration.class);
+                .withUserConfiguration(ReplaceVarInterfaceSpringTestConfiguration.class);
         multipleBothClassesAnnotatedContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(MultipleBothClassesAnnotatedSpringTestConfiguration.class);
+                .withUserConfiguration(MultipleBothAnnotatedSpringTestConfiguration.class);
         multipleBothClassesAnnotatedBaseInterfaceContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(MultipleBothClassesAnnotatedBaseInterfaceSpringTestConfiguration.class);
+                .withUserConfiguration(MultipleBothAnnotatedInterfaceSpringTestConfiguration.class);
         multipleOnlyBaseClassAnnotatedContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(MultipleOnlyBaseClassAnnotatedSpringTestConfiguration.class);
+                .withUserConfiguration(MultipleOnlyBaseAnnotatedSpringTestConfiguration.class);
         multipleOnlyBaseClassAnnotatedBaseInterfaceContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(MultipleOnlyBaseClassAnnotatedBaseInterfaceSpringTestConfiguration.class);
+                .withUserConfiguration(MultipleOnlyBaseAnnotatedInterfaceSpringTestConfiguration.class);
         multipleBothClassesAnnotatedMixedPatternContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(MultipleBothClassesAnnotatedMixedPatternSpringTestConfiguration.class);
+                .withUserConfiguration(MultipleBothAnnotatedMixedSpringTestConfiguration.class);
     }
 
     /**
@@ -118,12 +124,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> bothClassesAnnotatedContextRunner
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestdataSolution
-                                    .generateSolution(3, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotated.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
+                    var problem = TestdataBothAnnotatedSolution.generateSolution(3, 2, false);
+                    var solution = (TestdataBothAnnotatedSolution) solverFactory.buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
                 }))
@@ -140,12 +142,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> bothClassesAnnotatedBaseInterfaceContextRunner
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataSolution
-                                    .generateSolution(3, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotated.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
+                    var problem = TestdataBothAnnotatedInterfaceSolution.generateSolution(3, 2, false);
+                    var solution = (TestdataBothAnnotatedInterfaceSolution) solverFactory.buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
                 }))
@@ -161,12 +159,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> onlyBaseClassAnnotatedContextRunner
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childnotannotated.TestdataSolution
-                                    .generateSolution(3, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childnotannotated.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
+                    var problem = TestdataChildNotAnnotatedSolution.generateSolution(3, 2, false);
+                    var solution = (TestdataChildNotAnnotatedSolution) solverFactory.buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
                 }))
@@ -183,12 +177,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> onlyBaseClassAnnotatedBaseInterfaceContextRunner
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childnotannotated.TestdataSolution
-                                    .generateSolution(1, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childnotannotated.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
+                    var problem = TestdataChildNotAnnotatedInterfaceSolution.generateSolution(1, 2, false);
+                    var solution = (TestdataChildNotAnnotatedInterfaceSolution) solverFactory.buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
                 }))
@@ -229,12 +219,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> bothAnnotatedAddNewVarContextRunner
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
-                    var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataSolution
-                                    .generateSolution(3, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevar.baseannotated.childannotatedaddvar.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
+                    var problem = TestdataAddVarSolution.generateSolution(3, 2, false);
+                    var solution = (TestdataAddVarSolution) solverFactory.buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
                 }))
@@ -252,11 +238,8 @@ class TimefoldSolverInheritanceTest {
                 .run(context -> {
                     var solverFactory = context.getBean(SolverFactory.class);
                     var problem =
-                            ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedaddvar.TestdataSolution
-                                    .generateSolution(3, 2, false);
-                    var solution =
-                            (ai.timefold.solver.core.impl.testdata.domain.inheritance.singlevarinterface.baseannotated.childannotatedaddvar.TestdataSolution) solverFactory
-                                    .buildSolver().solve(problem);
+                            TestdataAddVarInterfaceSolution.generateSolution(3, 2, false);
+                    var solution = (TestdataAddVarInterfaceSolution) solverFactory.buildSolver().solve(problem);
                     assertNotNull(solution);
                     assertThat(solution.getScore()).isEqualTo(SimpleScore.of(4)); // value of 2 for each constraint
                 }))
@@ -272,7 +255,7 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> bothClassAnnotatedReplaceVarContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("redefines the genuine variables [value], which is not permitted.");
+                .hasMessageContaining("redefines the genuine variables ([value]), which is not permitted.");
     }
 
     /**
@@ -285,7 +268,7 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> bothClassAnnotatedReplaceVarBaseInterfaceContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("redefines the genuine variables [value], which is not permitted.");
+                .hasMessageContaining("redefines the genuine variables ([value]), which is not permitted.");
     }
 
     /**
@@ -297,7 +280,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> multipleBothClassesAnnotatedContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("The multiple inheritance is not allowed.");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
@@ -310,7 +294,8 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> multipleBothClassesAnnotatedBaseInterfaceContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("The multiple inheritance is not allowed.");
+                .hasMessageContaining(
+                        "Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
@@ -322,7 +307,7 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> multipleOnlyBaseClassAnnotatedContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("The multiple inheritance is not allowed.");
+                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
     /**
@@ -335,19 +320,19 @@ class TimefoldSolverInheritanceTest {
         assertThatCode(() -> multipleOnlyBaseClassAnnotatedBaseInterfaceContextRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .rootCause()
-                .hasMessageContaining("The multiple inheritance is not allowed.");
+                .hasMessageContaining("Remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure");
     }
 
-    /**
-     * This test validates the behavior of the solver
-     * when multiple inheritance is used, the child is annotated with {@code @PlanningEntity}
-     * and it inherits from class and interface.
-     */
-    @Test
-    void testMultipleBothClassesAnnotatedMixedPattern() {
-        assertThatCode(() -> multipleBothClassesAnnotatedMixedPatternContextRunner
-                .run(context -> context.getBean(SolverFactory.class)))
-                .rootCause()
-                .hasMessageContaining("Mixed inheritance is not permitted.");
-    }
+        /**
+         * This test validates the behavior of the solver
+         * when multiple inheritance is used, the child is annotated with {@code @PlanningEntity}
+         * and it inherits from class and interface.
+         */
+        @Test
+        void testMultipleBothClassesAnnotatedMixedPattern() {
+            assertThatCode(() -> multipleBothClassesAnnotatedMixedPatternContextRunner
+                    .run(context -> context.getBean(SolverFactory.class)))
+                    .rootCause()
+                    .hasMessageContaining("Mixed inheritance is not permitted.");
+        }
 }

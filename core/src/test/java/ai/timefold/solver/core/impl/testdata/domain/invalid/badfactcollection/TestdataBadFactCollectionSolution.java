@@ -28,4 +28,28 @@ public class TestdataBadFactCollectionSolution {
 
     @PlanningScore
     private SimpleScore score;
+
+    public TestdataValue getValueList() {
+        return valueList;
+    }
+
+    public void setValueList(TestdataValue valueList) {
+        this.valueList = valueList;
+    }
+
+    public List<TestdataEntity> getEntityList() {
+        return entityList;
+    }
+
+    public void setEntityList(List<TestdataEntity> entityList) {
+        this.entityList = entityList;
+    }
+
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
 }

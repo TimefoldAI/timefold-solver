@@ -3,13 +3,15 @@ package ai.timefold.solver.core.impl.domain.entity.descriptor;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
-import static java.util.stream.Collectors.joining;
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertNotMixedInheritance;
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertSingleInheritance;
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertValidPlanningVariables;
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.isEntityClass;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -88,22 +90,6 @@ public class EntityDescriptor<Solution_> {
             CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class };
 
-    private static final Class[] PLANNING_ENTITY_ANNOTATION_CLASSES = {
-            PlanningPin.class,
-            PlanningPinToIndex.class,
-            PlanningVariable.class,
-            PlanningListVariable.class,
-            AnchorShadowVariable.class,
-            CustomShadowVariable.class,
-            IndexShadowVariable.class,
-            InverseRelationShadowVariable.class,
-            NextElementShadowVariable.class,
-            PiggybackShadowVariable.class,
-            PreviousElementShadowVariable.class,
-            ShadowVariable.class,
-            ShadowVariable.List.class,
-            CascadingUpdateShadowVariable.class };
-
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
     private final int ordinal;
@@ -153,13 +139,6 @@ public class EntityDescriptor<Solution_> {
         if (entityClass.getPackage() == null) {
             LOGGER.warn("The entityClass ({}) should be in a proper java package.", entityClass);
         }
-    }
-
-    public static List<Class<?>> extractInheritedClasses(Class<?> entityClass) {
-        var entityClassList = new ArrayList<Class<?>>();
-        readParentEntityClassAnnotations(entityClass, entityClassList);
-        // We ensure the root child class is not present
-        return entityClassList.stream().filter(c -> !c.equals(entityClass)).toList();
     }
 
     /**
@@ -219,99 +198,6 @@ public class EntityDescriptor<Solution_> {
     // Lifecycle methods
     // ************************************************************************
 
-    private static void readParentEntityClassAnnotations(Class<?> entityClass, List<Class<?>> declaredEntityList) {
-        if (entityClass == null || entityClass.equals(Object.class)) {
-            return;
-        }
-        if (isEntityClass(entityClass)) {
-            declaredEntityList.add(entityClass);
-        }
-        readParentEntityClassAnnotations(entityClass.getSuperclass(), declaredEntityList);
-        Arrays.asList(entityClass.getInterfaces()).forEach(i -> readParentEntityClassAnnotations(i, declaredEntityList));
-    }
-
-    /**
-     * Mixed inheritance is not permitted. Therefore, inheritance must consist only of classes or only of interfaces.
-     */
-    private void assertNotMixedInheritance() {
-        if (declaredInheritedEntityClassList.isEmpty()) {
-            return;
-        }
-        var hasClass = false;
-        var hasInterface = false;
-        for (var declaredEntityClass : declaredInheritedEntityClassList) {
-            if (!hasClass && !declaredEntityClass.isInterface()) {
-                hasClass = true;
-            }
-            if (!hasInterface && declaredEntityClass.isInterface()) {
-                hasInterface = true;
-            }
-            if (hasClass && hasInterface) {
-                break;
-            }
-        }
-        if (hasClass && hasInterface) {
-            throw new IllegalStateException(
-                    """
-                            The class %s extends another class marked as an entity and also implements an interface that is annotated as an entity. Mixed inheritance is not permitted.
-                            Maybe remove either the entity class or one of the entity interfaces from the inheritance chain."""
-                            .formatted(entityClass));
-        }
-    }
-
-    private void assertSingleInheritance() {
-        if (declaredInheritedEntityClassList.size() > 1) {
-            throw new IllegalStateException(
-                    """
-                            The class %s inheritance chain has multiple parent classes or interfaces annotated as entity [%s]. The multiple inheritance is not allowed.
-                            Maybe remove either the entity classes or entity interfaces from the inheritance chain to create a single-level inheritance structure."""
-                            .formatted(entityClass.getName(),
-                                    declaredInheritedEntityClassList.stream().map(Class::getName).collect(joining(", "))));
-        }
-    }
-
-    /**
-     * If a class declares any variable (genuine or shadow), it must be annotated as an entity,
-     * even if a supertype already has the annotation.
-     */
-    public static void assertValidPlanningVariables(Class<?> clazz) {
-        // We first check the entity class
-        if (clazz.getAnnotation(PlanningEntity.class) == null && hasAnyGenuineOrShadowVariables(clazz)) {
-            throw new IllegalStateException(
-                    """
-                            The class %s is not annotated with @PlanningEntity but defines genuine or shadow variables.
-                            Maybe annotate %s with @PlanningEntity."""
-                            .formatted(clazz.getName(), clazz.getName()));
-        }
-        // We check the first level of the inheritance chain
-        var classList = new ArrayList<Class<?>>();
-        classList.add(clazz.getSuperclass());
-        classList.addAll(Arrays.asList(clazz.getInterfaces()));
-        for (var otherClazz : classList) {
-            if (otherClazz != null && otherClazz.getAnnotation(PlanningEntity.class) == null
-                    && hasAnyGenuineOrShadowVariables(otherClazz)) {
-                throw new IllegalStateException(
-                        """
-                                The class %s is not annotated with @PlanningEntity but defines genuine or shadow variables.
-                                Maybe annotate %s with @PlanningEntity."""
-                                .formatted(otherClazz.getName(), otherClazz.getName()));
-            }
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    private static boolean hasAnyGenuineOrShadowVariables(Class<?> entityClass) {
-        var membersList = ConfigUtils.getDeclaredMembers(entityClass);
-        return membersList.stream()
-                .anyMatch(member -> ConfigUtils.extractAnnotationClass(member, PLANNING_ENTITY_ANNOTATION_CLASSES) != null);
-    }
-
-    private static boolean isEntityClass(Class<?> clazz) {
-        return clazz.getAnnotation(PlanningEntity.class) != null
-                || clazz.getSuperclass() != null && clazz.getSuperclass().getAnnotation(PlanningEntity.class) != null
-                || Arrays.stream(clazz.getInterfaces()).anyMatch(i -> i.getAnnotation(PlanningEntity.class) != null);
-    }
-
     public void processAnnotations(DescriptorPolicy descriptorPolicy) {
         processEntityAnnotations();
         declaredGenuineVariableDescriptorMap = new LinkedHashMap<>();
@@ -327,7 +213,7 @@ public class EntityDescriptor<Solution_> {
             processPlanningVariableAnnotation(variableDescriptorCounter, descriptorPolicy, member);
             processPlanningPinAnnotation(descriptorPolicy, member);
         }
-        // Verify that there are no defined variables and that it does not exist inheritance chain as well
+        // Verify that there are no defined planning variables from annotated or inherited classes
         if (declaredGenuineVariableDescriptorMap.isEmpty() && declaredShadowVariableDescriptorMap.isEmpty()
                 && declaredInheritedEntityClassList.isEmpty()) {
             throw new IllegalStateException(
@@ -338,8 +224,8 @@ public class EntityDescriptor<Solution_> {
     }
 
     private void processEntityAnnotations() {
-        assertNotMixedInheritance();
-        assertSingleInheritance();
+        assertNotMixedInheritance(entityClass, declaredInheritedEntityClassList);
+        assertSingleInheritance(entityClass, declaredInheritedEntityClassList);
         assertValidPlanningVariables(entityClass);
         var entityAnnotation = entityClass.getAnnotation(PlanningEntity.class);
         if (entityAnnotation == null && declaredInheritedEntityClassList.isEmpty()) {
@@ -603,9 +489,9 @@ public class EntityDescriptor<Solution_> {
                 .toList();
         if (!redefinedGenuineVariables.isEmpty()) {
             throw new IllegalStateException("""
-                    The class (%s) redefines the genuine variables [%s], which is not permitted.
-                    Maybe remove the variables [%s] from the class (%s).""".formatted(entityClass,
-                    String.join(", ", redefinedGenuineVariables), String.join(", ", redefinedGenuineVariables),
+                    The class (%s) redefines the genuine variables (%s), which is not permitted.
+                    Maybe remove the variables (%s) from the class (%s).""".formatted(entityClass,
+                    redefinedGenuineVariables, String.join(", ", redefinedGenuineVariables),
                     entityClass));
         }
         effectiveGenuineVariableDescriptorMap.putAll(declaredGenuineVariableDescriptorMap);
@@ -614,10 +500,9 @@ public class EntityDescriptor<Solution_> {
                 .toList();
         if (!redefinedShadowVariables.isEmpty()) {
             throw new IllegalStateException("""
-                    The class (%s) redefines the shadow variables [%s], which is not permitted.
-                    Maybe remove the variables [%s] from the class (%s).""".formatted(entityClass,
-                    String.join(", ", redefinedShadowVariables), String.join(", ", redefinedShadowVariables),
-                    entityClass));
+                    The class (%s) redefines the shadow variables (%s), which is not permitted.
+                    Maybe remove the variables (%s) from the class (%s).""".formatted(entityClass,
+                    redefinedShadowVariables, redefinedShadowVariables, entityClass));
         }
         effectiveShadowVariableDescriptorMap.putAll(declaredShadowVariableDescriptorMap);
         effectiveVariableDescriptorMap = CollectionUtils
@@ -853,6 +738,25 @@ public class EntityDescriptor<Solution_> {
     // ************************************************************************
     // Extraction methods
     // ************************************************************************
+    public static List<Class<?>> extractInheritedClasses(Class<?> entityClass) {
+        var entityClassList = new ArrayList<Class<?>>();
+        readParentEntityClassAnnotations(entityClass, entityClassList);
+        // We ensure the root child class is not present
+        return entityClassList.stream().filter(c -> !c.equals(entityClass)).toList();
+    }
+
+    private static void readParentEntityClassAnnotations(Class<?> entityClass, List<Class<?>> declaredEntityList) {
+        if (entityClass == null || entityClass.equals(Object.class)) {
+            return;
+        }
+        if (isEntityClass(entityClass)) {
+            declaredEntityList.add(entityClass);
+        }
+        readParentEntityClassAnnotations(entityClass.getSuperclass(), declaredEntityList);
+        for (var clazz : entityClass.getInterfaces()) {
+            readParentEntityClassAnnotations(clazz, declaredEntityList);
+        }
+    }
 
     public List<Object> extractEntities(Solution_ solution) {
         var entityList = new ArrayList<>();

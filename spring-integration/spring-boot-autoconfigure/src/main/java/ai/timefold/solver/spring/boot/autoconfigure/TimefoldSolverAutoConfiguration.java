@@ -1,5 +1,6 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.*;
 import static java.util.stream.Collectors.joining;
 
 import java.io.StringWriter;
@@ -35,7 +36,6 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.spring.boot.autoconfigure.config.DiminishedReturnsProperties;
@@ -345,7 +345,7 @@ public class TimefoldSolverAutoConfiguration
         var timefoldFieldAnnotationList =
                 entityScanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
         for (var clazz : timefoldFieldAnnotationList) {
-            EntityDescriptor.assertValidPlanningVariables(clazz);
+            assertValidPlanningVariables(clazz);
         }
     }
 
@@ -422,7 +422,7 @@ public class TimefoldSolverAutoConfiguration
             // Assert the entity target and planning variables
             for (var clazz : entityList) {
                 SolutionDescriptor.assertMutable(clazz, "entityClass");
-                EntityDescriptor.assertValidPlanningVariables(clazz);
+                assertValidPlanningVariables(clazz);
             }
         }
     }
