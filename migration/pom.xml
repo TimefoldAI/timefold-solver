@@ -23,16 +23,6 @@
     <java.module.name>ai.timefold.solver.migration</java.module.name>
   </properties>
 
-  <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr4-runtime</artifactId>
-        <version>4.11.1</version> <!-- Otherwise Openrewrite complains and occasionally fails. -->
-      </dependency>
-    </dependencies>
-  </dependencyManagement>
-
   <dependencies>
     <dependency>
       <groupId>org.openrewrite</groupId>
