@@ -2841,10 +2841,11 @@ Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data and creates the uninitialized planning entity instances for the solver to plan.
 
 [#planningModelInheritance]
-== Inheritance
+== Inheritance for Planning Entities
 
-Inheritance can also be applied when modeling your problem.
-There are specific rules that govern what can be done with inheritance in this context.
+You can use Java's type system naturally to model your problem.
+The solver however enforces some additional restrictions
+on how inheritance can be used when it comes to planning entities and planning variables:
 
  . If both the child and parent entities are annotated, the solver must identify and accept all defined variables from each class, ensuring the solving process fills in these planning variables.
  . If a child class is not annotated yet inherits from an entity class or implements an entity interface, it should be considered an entity, and the previous statement continues to apply to it.
