@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
  */
 public class EntityDescriptor<Solution_> {
 
-    private static final Class[] VARIABLE_ANNOTATION_CLASSES = {
+    protected static final Class[] VARIABLE_ANNOTATION_CLASSES = {
             PlanningVariable.class,
             PlanningListVariable.class,
             InverseRelationShadowVariable.class,

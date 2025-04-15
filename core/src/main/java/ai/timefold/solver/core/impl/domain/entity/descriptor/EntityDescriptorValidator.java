@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.entity.descriptor;
 
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor.VARIABLE_ANNOTATION_CLASSES;
+
 import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -8,36 +10,14 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
-import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 public class EntityDescriptorValidator {
 
-    private static final Class[] PLANNING_ENTITY_ANNOTATION_CLASSES = {
+    private static final Class[] ADDITIONAL_VARIABLE_ANNOTATION_CLASSES = {
             PlanningPin.class,
-            PlanningPinToIndex.class,
-            PlanningVariable.class,
-            PlanningListVariable.class,
-            AnchorShadowVariable.class,
-            CustomShadowVariable.class,
-            IndexShadowVariable.class,
-            InverseRelationShadowVariable.class,
-            NextElementShadowVariable.class,
-            PiggybackShadowVariable.class,
-            PreviousElementShadowVariable.class,
-            ShadowVariable.class,
-            ShadowVariable.List.class,
-            CascadingUpdateShadowVariable.class };
+            PlanningPinToIndex.class
+    };
 
     private EntityDescriptorValidator() {
     }
@@ -137,7 +117,8 @@ public class EntityDescriptorValidator {
     private static List<Member> extractPlanningVariables(Class<?> entityClass) {
         var membersList = ConfigUtils.getDeclaredMembers(entityClass);
         return membersList.stream()
-                .filter(member -> ConfigUtils.extractAnnotationClass(member, PLANNING_ENTITY_ANNOTATION_CLASSES) != null)
+                .filter(member -> ConfigUtils.extractAnnotationClass(member, VARIABLE_ANNOTATION_CLASSES) != null
+                        || ConfigUtils.extractAnnotationClass(member, ADDITIONAL_VARIABLE_ANNOTATION_CLASSES) != null)
                 .toList();
     }
 
