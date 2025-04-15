@@ -2839,3 +2839,241 @@ def generate_demo_data(demo_data: DemoData) -> Timetable:
 
 Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data and creates the uninitialized planning entity instances for the solver to plan.
+
+[#planningModelInheritance]
+== Inheritance for Planning Entities
+
+You can use Java's type system naturally to model your problem.
+The solver however enforces some additional restrictions
+on how inheritance can be used when it comes to planning entities and planning variables:
+
+ . If both the child and parent entities are annotated, the solver must identify and accept all defined variables from each class, ensuring the solving process fills in these planning variables.
+ . If a child class is not annotated yet inherits from an entity class or implements an entity interface, it should be considered an entity, and the previous statement continues to apply to it.
+ . If a class declares any variable (genuine or shadow), it must be annotated as an entity, even if a supertype already has the annotation.
+ . A child entity must not redefine any existing planning variable, but it can add new variables (genuine or shadow).
+ . Inheriting properties from more than one parent entity, also known as multiple inheritance, is not allowed. Therefore, only one parent entity or one level of inheritance is allowed.
+ . Mixing inheritance models with classes and interfaces is prohibited. Therefore, inheriting exclusively from classes or only from interfaces is acceptable.
+
+=== Defining multiple planning variables
+
+The first rule defines that multiple planning variables can be effectively modeled using inheritance.
+The following example models two planning entities,
+where the child class `TestdataChildEntity` inherits from `TestdataBaseEntity`.
+Additionally, two distinct planning variables, `value` and `value2`, are read.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class TestdataChildEntity extends TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange2")
+    private String value2;
+    ...
+}
+
+@PlanningEntity
+public class TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    private String value;
+    ...
+}
+----
+====
+
+The previous example can also be modeled using interfaces.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class TestdataChildEntity implements TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange2")
+    private String value2;
+    ...
+}
+
+@PlanningEntity
+public interface TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    String getValue();
+    ...
+}
+----
+====
+
+=== Inheriting planning variables
+
+Non-annotated entities can inherit planning variables from annotated entities (second rule).
+In the next code snippet, it can be observed that `TestdataChildEntity` does not have the `@PlanningEntity` annotation,
+but it is accepted as an entity because its direct parent is an annotated entity.
+Additionally, the planning variable `value` will be linked with `TestdataChildEntity`.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class TestdataChildEntity extends TestdataBaseEntity {
+    ...
+}
+
+@PlanningEntity
+public class TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    private String value;
+    ...
+}
+----
+====
+
+The use of the interface is illustrated in the following manner.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class TestdataChildEntity implements TestdataBaseEntity {
+    ...
+}
+
+@PlanningEntity
+public interface TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    String getValue();
+    ...
+}
+----
+====
+
+=== Non-entities cannot define planning variables
+
+The third rule states that non-entities are not permitted to define planning variables.
+The model `TestdataBaseEntity` defines a planning variable.
+However, it is not marked with the `@PlanningEntity` annotation.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class TestdataChildEntity extends TestdataBaseEntity {
+    ...
+}
+
+public class TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    private String value;
+    ...
+}
+----
+====
+
+[NOTE]
+====
+The rule also applies when the model uses interface.
+====
+
+=== Redefining planning variables
+
+It is not permitted to redefine planning variables when using inheritance to model your problem (fourth rule).
+The following example demonstrates that the planning variable `value` is redefined by the child class,
+which is not allowed.
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class TestdataChildEntity extends TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    private String value;
+    ...
+}
+
+public class TestdataBaseEntity {
+    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    private String value;
+    ...
+}
+----
+====
+
+[NOTE]
+====
+The rule also applies when the model uses interface.
+====
+
+=== Multiple inheritance
+
+Multiple inheritance, or inheriting properties from more than one parent entity, is not permitted.
+The following model illustrates an inheritance chain comprising three planning entities,
+but only a maximum of two are supported.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class TestdataMultipleChildEntity extends TestdataChildEntity {
+    ...
+}
+
+@PlanningEntity
+public class TestdataChildEntity extends TestdataBaseEntity {
+    ...
+}
+
+@PlanningEntity
+public class TestdataBaseEntity {
+    ...
+}
+----
+====
+
+[NOTE]
+====
+The rule also applies when the model uses interface.
+====
+
+=== Mixed inheritance
+
+It is not permitted to model inheritance using both classes and interfaces.
+Therefore, you can only inherit from either classes or interfaces.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class TestdataMultipleChildEntity extends TestdataChildEntity
+    implements TestdataBaseEntity {
+    ...
+}
+
+@PlanningEntity
+public class TestdataChildEntity {
+    ...
+}
+
+@PlanningEntity
+public interface TestdataBaseEntity {
+    ...
+}
+----
+====

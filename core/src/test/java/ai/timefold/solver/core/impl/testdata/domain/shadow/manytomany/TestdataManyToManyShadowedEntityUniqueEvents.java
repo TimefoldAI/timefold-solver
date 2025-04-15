@@ -4,9 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
@@ -25,25 +22,6 @@ public class TestdataManyToManyShadowedEntityUniqueEvents extends TestdataManyTo
     }
 
     @Override
-    @PlanningVariable(valueRangeProviderRefs = "valueRange")
-    public TestdataValue getPrimaryValue() {
-        return super.getPrimaryValue();
-    }
-
-    @Override
-    @PlanningVariable(valueRangeProviderRefs = "valueRange")
-    public TestdataValue getSecondaryValue() {
-        return super.getSecondaryValue();
-    }
-
-    @Override
-    @ShadowVariable(variableListenerClass = ComposedValuesUpdatingVariableListener.class, sourceVariableName = "primaryValue")
-    @ShadowVariable(variableListenerClass = ComposedValuesUpdatingVariableListener.class, sourceVariableName = "secondaryValue")
-    public String getComposedCode() {
-        return super.getComposedCode();
-    }
-
-    @Override
     public void setComposedCode(String composedCode) {
         // (2) log composedCode updates for later verification.
         composedCodeLog.add(composedCode);
@@ -52,12 +30,6 @@ public class TestdataManyToManyShadowedEntityUniqueEvents extends TestdataManyTo
 
     public List<String> getComposedCodeLog() {
         return composedCodeLog;
-    }
-
-    @Override
-    @PiggybackShadowVariable(shadowVariableName = "composedCode")
-    public String getReverseComposedCode() {
-        return super.getReverseComposedCode();
     }
 
     public static class ComposedValuesUpdatingVariableListener

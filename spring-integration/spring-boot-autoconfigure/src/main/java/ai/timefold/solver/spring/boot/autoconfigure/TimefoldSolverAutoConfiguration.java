@@ -1,16 +1,15 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.*;
 import static java.util.stream.Collectors.joining;
 
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
@@ -37,6 +36,7 @@ import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.spring.boot.autoconfigure.config.DiminishedReturnsProperties;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperties;
@@ -118,7 +118,7 @@ public class TimefoldSolverAutoConfiguration
     }
 
     private Map<String, SolverConfig> getSolverConfigMap() {
-        IncludeAbstractClassesEntityScanner entityScanner = new IncludeAbstractClassesEntityScanner(this.context);
+        var entityScanner = new IncludeAbstractClassesEntityScanner(this.context);
         if (!entityScanner.hasSolutionOrEntityClasses()) {
             LOG.warn(
                     """
@@ -129,7 +129,7 @@ public class TimefoldSolverAutoConfiguration
                                     SpringBootApplication.class.getSimpleName(), EntityScan.class.getSimpleName()));
             return Map.of();
         }
-        Map<String, SolverConfig> solverConfigMap = new HashMap<>();
+        var solverConfigMap = new HashMap<String, SolverConfig>();
         // Step 1 - create all SolverConfig
         // If the config map is empty, we build the config using the default solver name
         if (timefoldProperties.getSolver() == null || timefoldProperties.getSolver().isEmpty()) {
@@ -139,35 +139,37 @@ public class TimefoldSolverAutoConfiguration
             timefoldProperties.getSolver().keySet()
                     .forEach(solverName -> solverConfigMap.put(solverName, createSolverConfig(timefoldProperties, solverName)));
         }
-        // Step 2 - validate all SolverConfig definitions
-        assertNoMemberAnnotationWithoutClassAnnotation(entityScanner);
+        // Step 2 - first pass of validations
+        assertValidaPlanningVariables(entityScanner);
         assertSolverConfigSolutionClasses(entityScanner, solverConfigMap);
-        assertSolverConfigEntityClasses(entityScanner);
         assertSolverConfigConstraintClasses(entityScanner, solverConfigMap);
-
         // Step 3 - load all additional information per SolverConfig
         solverConfigMap.forEach(
                 (solverName, solverConfig) -> loadSolverConfig(entityScanner, timefoldProperties, solverName, solverConfig));
+        // Step 4 - second pass of validations
+        assertEmptySolutionClasses(solverConfigMap);
+        assertMutableSolutionClasses(solverConfigMap);
+        assertSolverConfigEntityClasses(solverConfigMap);
         return solverConfigMap;
     }
 
     @Override
     public BeanFactoryInitializationAotContribution processAheadOfTime(ConfigurableListableBeanFactory beanFactory) {
-        Map<String, SolverConfig> solverConfigMap = getSolverConfigMap();
+        var solverConfigMap = getSolverConfigMap();
         return new TimefoldSolverAotContribution(solverConfigMap);
     }
 
     @Override
     public void postProcessBeanDefinitionRegistry(BeanDefinitionRegistry registry) throws BeansException {
-        Map<String, SolverConfig> solverConfigMap = getSolverConfigMap();
-        SolverConfigIO solverConfigIO = new SolverConfigIO();
+        var solverConfigMap = getSolverConfigMap();
+        var solverConfigIO = new SolverConfigIO();
         registry.registerBeanDefinition(TimefoldSolverAotFactory.class.getName(),
                 new RootBeanDefinition(TimefoldSolverAotFactory.class));
         if (solverConfigMap.isEmpty()) {
-            RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
+            var rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
             rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
             rootBeanDefinition.setFactoryMethodName("solverConfigSupplier");
-            StringWriter solverXmlOutput = new StringWriter();
+            var solverXmlOutput = new StringWriter();
             solverConfigIO.write(new SolverConfig(), solverXmlOutput);
             rootBeanDefinition.getConstructorArgumentValues().addGenericArgumentValue(
                     solverXmlOutput.toString());
@@ -176,10 +178,10 @@ public class TimefoldSolverAutoConfiguration
         }
 
         if (timefoldProperties.getSolver() == null || timefoldProperties.getSolver().size() == 1) {
-            RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
+            var rootBeanDefinition = new RootBeanDefinition(SolverConfig.class);
             rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
             rootBeanDefinition.setFactoryMethodName("solverConfigSupplier");
-            StringWriter solverXmlOutput = new StringWriter();
+            var solverXmlOutput = new StringWriter();
             solverConfigIO.write(solverConfigMap.values().iterator().next(), solverXmlOutput);
             rootBeanDefinition.getConstructorArgumentValues().addGenericArgumentValue(
                     solverXmlOutput.toString());
@@ -187,10 +189,10 @@ public class TimefoldSolverAutoConfiguration
         } else {
             // Only SolverManager can be injected for multiple solver configurations
             solverConfigMap.forEach((solverName, solverConfig) -> {
-                RootBeanDefinition rootBeanDefinition = new RootBeanDefinition(SolverManager.class);
+                var rootBeanDefinition = new RootBeanDefinition(SolverManager.class);
                 rootBeanDefinition.setFactoryBeanName(TimefoldSolverAotFactory.class.getName());
                 rootBeanDefinition.setFactoryMethodName("solverManagerSupplier");
-                StringWriter solverXmlOutput = new StringWriter();
+                var solverXmlOutput = new StringWriter();
                 solverConfigIO.write(solverConfig, solverXmlOutput);
                 rootBeanDefinition.getConstructorArgumentValues().addGenericArgumentValue(
                         solverXmlOutput.toString());
@@ -201,7 +203,7 @@ public class TimefoldSolverAutoConfiguration
 
     private SolverConfig createSolverConfig(TimefoldProperties timefoldProperties, String solverName) {
         // 1 - The solver configuration takes precedence over root and default settings
-        Optional<String> solverConfigXml = timefoldProperties.getSolverConfig(solverName)
+        var solverConfigXml = timefoldProperties.getSolverConfig(solverName)
                 .map(SolverProperties::getSolverConfigXml);
 
         // 2 - Root settings
@@ -243,18 +245,6 @@ public class TimefoldSolverAutoConfiguration
         var solverEntityClassList = solverConfig.getEntityClassList();
         if (solverEntityClassList == null) {
             solverConfig.setEntityClassList(entityScanner.findEntityClassList());
-        } else {
-            var entityClassCount = solverEntityClassList.stream()
-                    .filter(Objects::nonNull)
-                    .count();
-            if (entityClassCount == 0L) {
-                throw new IllegalStateException(
-                        """
-                                The solverConfig's entityClassList (%s) does not contain any non-null entries.
-                                Maybe the classes listed there do not actually exist and therefore deserialization turned them to null?"""
-                                .formatted(solverEntityClassList.stream().map(Class::getSimpleName)
-                                        .collect(joining(", "))));
-            }
         }
         timefoldProperties.getSolverConfig(solverName)
                 .ifPresentOrElse(
@@ -301,7 +291,7 @@ public class TimefoldSolverAutoConfiguration
 
     private static ScoreDirectorFactoryConfig
             defaultScoreDirectoryFactoryConfig(IncludeAbstractClassesEntityScanner entityScanner) {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig
                 .setEasyScoreCalculatorClass(entityScanner.findFirstImplementingClass(EasyScoreCalculator.class));
         scoreDirectorFactoryConfig
@@ -313,7 +303,7 @@ public class TimefoldSolverAutoConfiguration
     }
 
     static void applyTerminationProperties(SolverConfig solverConfig, TerminationProperties terminationProperties) {
-        TerminationConfig terminationConfig = solverConfig.getTerminationConfig();
+        var terminationConfig = solverConfig.getTerminationConfig();
         if (terminationConfig == null) {
             terminationConfig = new TerminationConfig();
             solverConfig.setTerminationConfig(terminationConfig);
@@ -351,37 +341,19 @@ public class TimefoldSolverAutoConfiguration
                 .withMinimumImprovementRatio(diminishedReturnsProperties.getMinimumImprovementRatio()));
     }
 
-    private static void assertNoMemberAnnotationWithoutClassAnnotation(IncludeAbstractClassesEntityScanner entityScanner) {
-        List<Class<?>> timefoldFieldAnnotationList =
+    private static void assertValidaPlanningVariables(IncludeAbstractClassesEntityScanner entityScanner) {
+        var timefoldFieldAnnotationList =
                 entityScanner.findClassesWithAnnotation(PLANNING_ENTITY_FIELD_ANNOTATIONS);
-        List<Class<?>> entityList = entityScanner.findEntityClassList();
-
-        List<String> nonEntityClassList = timefoldFieldAnnotationList.stream().filter(clazz -> !entityList.contains(clazz))
-                .map(Class::getSimpleName).toList();
-        if (!nonEntityClassList.isEmpty()) {
-            throw new IllegalStateException(
-                    """
-                            The classes ([%s]) do not have the %s annotation, even though they contain properties reserved for planning entities.
-                            Maybe add a @%s annotation on the classes ([%s])."""
-                            .formatted(String.join(", ", nonEntityClassList), PlanningEntity.class.getSimpleName(),
-                                    PlanningEntity.class.getSimpleName(), String.join(", ", nonEntityClassList)));
+        for (var clazz : timefoldFieldAnnotationList) {
+            assertValidPlanningVariables(clazz);
         }
     }
 
     private static void assertSolverConfigSolutionClasses(IncludeAbstractClassesEntityScanner entityScanner,
             Map<String, SolverConfig> solverConfigMap) {
-        // Validate the solution class
-        // No solution class
-        String emptyListErrorMessage = """
-                No classes were found with a @%s annotation.
-                Maybe your @%s annotated class is not in a subpackage of your @%s annotated class's package.
-                Maybe move your planning solution class to your application class's (sub)package (or use @%s).""".formatted(
-                PlanningSolution.class.getSimpleName(), PlanningSolution.class.getSimpleName(),
-                SpringBootApplication.class.getSimpleName(), EntityScan.class.getSimpleName());
-        assertEmptyInstances(entityScanner, PlanningSolution.class, emptyListErrorMessage);
         // Multiple classes and single solver
         try {
-            Set<Class<?>> classes = entityScanner.scan(PlanningSolution.class);
+            var classes = entityScanner.scan(PlanningSolution.class);
             if (classes.size() > 1 && solverConfigMap.size() == 1) {
                 throw new IllegalStateException(
                         "Multiple classes ([%s]) found in the classpath with a @%s annotation.".formatted(
@@ -389,7 +361,7 @@ public class TimefoldSolverAutoConfiguration
                                 PlanningSolution.class.getSimpleName()));
             }
             // Multiple classes and at least one solver config does not specify the solution class
-            List<String> solverConfigWithoutSolutionClassList = solverConfigMap.entrySet().stream()
+            var solverConfigWithoutSolutionClassList = solverConfigMap.entrySet().stream()
                     .filter(e -> e.getValue().getSolutionClass() == null)
                     .map(Map.Entry::getKey)
                     .toList();
@@ -404,7 +376,7 @@ public class TimefoldSolverAutoConfiguration
                                         classes.stream().map(Class::getSimpleName).collect(joining(", "))));
             }
             // Unused solution classes
-            List<String> unusedSolutionClassList = classes.stream()
+            var unusedSolutionClassList = classes.stream()
                     .map(Class::getName)
                     .filter(planningClassName -> solverConfigMap.values().stream().filter(c -> c.getSolutionClass() != null)
                             .noneMatch(c -> c.getSolutionClass().getName().equals(planningClassName)))
@@ -415,24 +387,44 @@ public class TimefoldSolverAutoConfiguration
                                 String.join(", ", unusedSolutionClassList),
                                 PlanningSolution.class.getSimpleName()));
             }
-            assertTargetClasses(classes, PlanningSolution.class.getSimpleName());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Scanning for @%s annotations failed.".formatted(PlanningSolution.class.getSimpleName()), e);
         }
     }
 
-    private static void assertSolverConfigEntityClasses(IncludeAbstractClassesEntityScanner entityScanner) {
+    private static void assertEmptySolutionClasses(Map<String, SolverConfig> solverConfigMap) {
+        // No solution class
+        for (var config : solverConfigMap.values()) {
+            if (config.getSolutionClass() == null) {
+                throw new IllegalStateException(
+                        "No classes were found with a @%s annotation.".formatted(PlanningSolution.class.getSimpleName()));
+            }
+        }
+    }
+
+    private static void assertMutableSolutionClasses(Map<String, SolverConfig> solverConfigMap) {
+        // Assert it is mutable
+        for (var config : solverConfigMap.values()) {
+            SolutionDescriptor.assertMutable(config.getSolutionClass(), "solutionClass");
+        }
+    }
+
+    private static void assertSolverConfigEntityClasses(Map<String, SolverConfig> solverConfigMap) {
         // No Entity class
-        String emptyListErrorMessage = """
-                No classes were found with a @%s annotation.
-                Maybe your @%s annotated class(es) are not in a subpackage of your @%s annotated class's package.
-                Maybe move your planning entity classes to your application class's (sub)package(or use @%s)."""
-                .formatted(
-                        PlanningEntity.class.getSimpleName(), PlanningEntity.class.getSimpleName(),
-                        SpringBootApplication.class.getSimpleName(), EntityScan.class.getSimpleName());
-        assertEmptyInstances(entityScanner, PlanningEntity.class, emptyListErrorMessage);
-        assertTargetClasses(entityScanner.findEntityClassList(), PlanningEntity.class.getSimpleName());
+        for (var config : solverConfigMap.values()) {
+            // Assert if the list is empty
+            var entityList = config.getEntityClassList();
+            if (entityList == null || entityList.isEmpty()) {
+                throw new IllegalStateException(
+                        "No classes were found with a @%s annotation.".formatted(PlanningEntity.class.getSimpleName()));
+            }
+            // Assert the entity target and planning variables
+            for (var clazz : entityList) {
+                SolutionDescriptor.assertMutable(clazz, "entityClass");
+                assertValidPlanningVariables(clazz);
+            }
+        }
     }
 
     private static void assertSolverConfigConstraintClasses(
@@ -466,7 +458,7 @@ public class TimefoldSolverAutoConfiguration
             List<Class<? extends ConstraintProvider>> constraintScoreClassList,
             List<Class<? extends IncrementalScoreCalculator>> incrementalScoreClassList) {
         // Single solver, multiple score calculators
-        String errorMessage = "Multiple score calculator classes (%s) that implements %s were found in the classpath.";
+        var errorMessage = "Multiple score calculator classes (%s) that implements %s were found in the classpath.";
         if (simpleScoreClassList.size() > 1 && solverConfigMap.size() == 1) {
             throw new IllegalStateException(errorMessage.formatted(
                     simpleScoreClassList.stream().map(Class::getSimpleName).collect(joining(", ")),
@@ -488,7 +480,7 @@ public class TimefoldSolverAutoConfiguration
                         Some solver configs (%s) don't specify a %s score calculator class, yet there are multiple available (%s) on the classpath.
                         Maybe set the XML config file to the related solver configs, or add the missing score calculator to the XML files,
                         or remove the unnecessary score calculator from the classpath.""";
-        List<String> solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
+        var solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
                 .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
                         || e.getValue().getScoreDirectorFactoryConfig().getEasyScoreCalculatorClass() == null)
                 .map(Map.Entry::getKey)
@@ -528,7 +520,7 @@ public class TimefoldSolverAutoConfiguration
             List<Class<? extends ConstraintProvider>> constraintScoreClassList,
             List<Class<? extends IncrementalScoreCalculator>> incrementalScoreClassList) {
         String errorMessage;
-        List<String> solverConfigWithUnusedSolutionClassList = simpleScoreClassList.stream()
+        var solverConfigWithUnusedSolutionClassList = simpleScoreClassList.stream()
                 .map(Class::getName)
                 .filter(className -> solverConfigMap.values().stream()
                         .filter(c -> c.getScoreDirectorFactoryConfig() != null
@@ -564,32 +556,6 @@ public class TimefoldSolverAutoConfiguration
         if (incrementalScoreClassList.size() > 1 && !solverConfigWithUnusedSolutionClassList.isEmpty()) {
             throw new IllegalStateException(errorMessage.formatted(String.join(", ", solverConfigWithUnusedSolutionClassList),
                     IncrementalScoreCalculator.class.getSimpleName()));
-        }
-    }
-
-    private static void assertEmptyInstances(IncludeAbstractClassesEntityScanner entityScanner,
-            Class<? extends Annotation> clazz,
-            String errorMessage) {
-        try {
-            Collection<Class<?>> classInstanceCollection = entityScanner.scan(clazz);
-            if (classInstanceCollection.isEmpty()) {
-                throw new IllegalStateException(errorMessage);
-            }
-        } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("Scanning for @%s annotations failed.".formatted(clazz.getSimpleName()), e);
-        }
-    }
-
-    private static void assertTargetClasses(Collection<Class<?>> targetCollection, String targetAnnotation) {
-        List<String> invalidClasses = targetCollection.stream()
-                .filter(target -> target.isRecord() || target.isEnum() || target.isPrimitive())
-                .map(Class::getSimpleName)
-                .toList();
-        if (!invalidClasses.isEmpty()) {
-            throw new IllegalStateException(
-                    "All classes ([%s]) annotated with @%s must be a class.".formatted(
-                            String.join(", ", invalidClasses),
-                            targetAnnotation));
         }
     }
 }

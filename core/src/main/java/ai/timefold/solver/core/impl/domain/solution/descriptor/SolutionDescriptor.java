@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor.extractInheritedClasses;
 import static java.util.stream.Stream.concat;
 
 import java.lang.annotation.Annotation;
@@ -114,7 +115,16 @@ public class SolutionDescriptor<Solution_> {
         solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
         solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
         var ordinal = 0;
-        for (var entityClass : sortEntityClassList(entityClassList)) {
+        // Before iterating over the entity classes, we need to read the inheritance chain,
+        // add all parent and child classes, and sort them.
+        var updatedEntityClassList = new ArrayList<>(entityClassList);
+        for (var entityClass : entityClassList) {
+            var inheritedEntityClasses = extractInheritedClasses(entityClass);
+            var filteredInheritedEntityClasses = inheritedEntityClasses.stream()
+                    .filter(c -> !updatedEntityClassList.contains(c)).toList();
+            updatedEntityClassList.addAll(filteredInheritedEntityClasses);
+        }
+        for (var entityClass : sortEntityClassList(updatedEntityClassList)) {
             var entityDescriptor = new EntityDescriptor<>(ordinal++, solutionDescriptor, entityClass);
             solutionDescriptor.addEntityDescriptor(entityDescriptor);
             entityDescriptor.processAnnotations(descriptorPolicy);
@@ -210,9 +220,9 @@ public class SolutionDescriptor<Solution_> {
         var entityClass = entityDescriptor.getEntityClass();
         for (var otherEntityClass : entityDescriptorMap.keySet()) {
             if (entityClass.isAssignableFrom(otherEntityClass)) {
-                throw new IllegalArgumentException("An earlier entityClass (" + otherEntityClass
-                        + ") should not be a subclass of a later entityClass (" + entityClass
-                        + "). Switch their declaration so superclasses are defined earlier.");
+                throw new IllegalArgumentException(
+                        "An earlier entityClass (%s) should not be a subclass of a later entityClass (%s). Switch their declaration so superclasses are defined earlier."
+                                .formatted(otherEntityClass, entityClass));
             }
         }
         entityDescriptorMap.put(entityClass, entityDescriptor);
@@ -271,30 +281,33 @@ public class SolutionDescriptor<Solution_> {
                 processFactEntityOrScoreAnnotation(descriptorPolicy, member, entityClassList);
             }
             potentiallyOverwritingMethodList.ensureCapacity(potentiallyOverwritingMethodList.size() + memberList.size());
-            memberList.stream().filter(member -> member instanceof Method)
+            memberList.stream().filter(Method.class::isInstance)
                     .forEach(member -> potentiallyOverwritingMethodList.add((Method) member));
         }
         if (entityCollectionMemberAccessorMap.isEmpty() && entityMemberAccessorMap.isEmpty()) {
-            throw new IllegalStateException("The solutionClass (" + solutionClass
-                    + ") must have at least 1 member with a "
-                    + PlanningEntityCollectionProperty.class.getSimpleName() + " annotation or a "
-                    + PlanningEntityProperty.class.getSimpleName() + " annotation.");
+            throw new IllegalStateException(
+                    "The solutionClass (%s) must have at least 1 member with a %s annotation or a %s annotation.".formatted(
+                            solutionClass, PlanningEntityCollectionProperty.class.getSimpleName(),
+                            PlanningEntityProperty.class.getSimpleName()));
         }
         // Do not check if problemFactCollectionMemberAccessorMap and problemFactMemberAccessorMap are empty
         // because they are only required for ConstraintStreams.
         if (scoreDescriptor == null) {
-            throw new IllegalStateException("The solutionClass (" + solutionClass
-                    + ") must have 1 member with a @" + PlanningScore.class.getSimpleName() + " annotation.\n"
-                    + "Maybe add a getScore() method with a @" + PlanningScore.class.getSimpleName() + " annotation.");
+            throw new IllegalStateException(
+                    """
+                            The solutionClass (%s) must have 1 member with a @%s annotation.
+                            Maybe add a getScore() method with a @%s annotation."""
+                            .formatted(solutionClass, PlanningScore.class.getSimpleName(),
+                                    PlanningScore.class.getSimpleName()));
         }
     }
 
     private void processSolutionAnnotations(DescriptorPolicy descriptorPolicy) {
         var solutionAnnotation = solutionClass.getAnnotation(PlanningSolution.class);
         if (solutionAnnotation == null) {
-            throw new IllegalStateException("The solutionClass (" + solutionClass
-                    + ") has been specified as a solution in the configuration," +
-                    " but does not have a @" + PlanningSolution.class.getSimpleName() + " annotation.");
+            throw new IllegalStateException(
+                    "The solutionClass (%s) has been specified as a solution in the configuration, but does not have a @%s annotation."
+                            .formatted(solutionClass, PlanningSolution.class.getSimpleName()));
         }
         autoDiscoverMemberType = solutionAnnotation.autoDiscoverMemberType();
         var solutionClonerClass = solutionAnnotation.solutionCloner();
@@ -367,12 +380,12 @@ public class SolutionDescriptor<Solution_> {
                                 : ((Method) member).getGenericReturnType();
                         var memberName = member.getName();
                         if (!(genericType instanceof ParameterizedType)) {
-                            throw new IllegalArgumentException("The solutionClass (" + solutionClass + ") has a "
-                                    + "auto discovered member (" + memberName + ") with a member type (" + type
-                                    + ") that returns a " + Collection.class.getSimpleName()
-                                    + " which has no generic parameters.\n"
-                                    + "Maybe the member (" + memberName + ") should return a typed "
-                                    + Collection.class.getSimpleName() + ".");
+                            throw new IllegalArgumentException(
+                                    """
+                                            The solutionClass (%s) has a auto discovered member (%s) with a member type (%s) that returns a %s which has no generic parameters.
+                                            Maybe the member (%s) should return a typed %s."""
+                                            .formatted(solutionClass, memberName, type, Collection.class.getSimpleName(),
+                                                    memberName, Collection.class.getSimpleName()));
                         }
                         elementType = ConfigUtils.extractGenericTypeParameter("solutionClass", solutionClass, type, genericType,
                                 null, member.getName()).orElse(Object.class);
@@ -382,21 +395,20 @@ public class SolutionDescriptor<Solution_> {
                     if (entityClassList.stream().anyMatch(entityClass -> entityClass.isAssignableFrom(elementType))) {
                         annotationClass = PlanningEntityCollectionProperty.class;
                     } else if (elementType.isAnnotationPresent(ConstraintConfiguration.class)) {
-                        throw new IllegalStateException("The autoDiscoverMemberType (" + autoDiscoverMemberType
-                                + ") cannot accept a member (" + member
-                                + ") of type (" + type
-                                + ") with an elementType (" + elementType
-                                + ") that has a @" + ConstraintConfiguration.class.getSimpleName() + " annotation.\n"
-                                + "Maybe use a member of the type (" + elementType + ") directly instead of a "
-                                + Collection.class.getSimpleName() + " or array of that type.");
+                        throw new IllegalStateException(
+                                """
+                                        The autoDiscoverMemberType (%s) cannot accept a member (%s) of type (%s) with an elementType (%s) that has a @%s annotation.
+                                        Maybe use a member of the type (%s) directly instead of a %s or array of that type."""
+                                        .formatted(autoDiscoverMemberType, member, type, elementType,
+                                                ConstraintConfiguration.class.getSimpleName(), elementType,
+                                                Collection.class.getSimpleName()));
                     } else {
                         annotationClass = ProblemFactCollectionProperty.class;
                     }
                 } else if (Map.class.isAssignableFrom(type)) {
-                    throw new IllegalStateException("The autoDiscoverMemberType (" + autoDiscoverMemberType
-                            + ") does not yet support the member (" + member
-                            + ") of type (" + type
-                            + ") which is an implementation of " + Map.class.getSimpleName() + ".");
+                    throw new IllegalStateException(
+                            "The autoDiscoverMemberType (%s) does not yet support the member (%s) of type (%s) which is an implementation of %s."
+                                    .formatted(autoDiscoverMemberType, member, type, Map.class.getSimpleName()));
                 } else if (entityClassList.stream().anyMatch(entityClass -> entityClass.isAssignableFrom(type))) {
                     annotationClass = PlanningEntityProperty.class;
                 } else if (type.isAnnotationPresent(ConstraintConfiguration.class)) {
@@ -429,11 +441,12 @@ public class SolutionDescriptor<Solution_> {
         if (constraintConfigurationMemberAccessor != null) {
             if (!constraintConfigurationMemberAccessor.getName().equals(memberAccessor.getName())
                     || !constraintConfigurationMemberAccessor.getClass().equals(memberAccessor.getClass())) {
-                throw new IllegalStateException("The solutionClass (" + solutionClass
-                        + ") has a @" + ConstraintConfigurationProvider.class.getSimpleName()
-                        + " annotated member (" + memberAccessor
-                        + ") that is duplicated by another member (" + constraintConfigurationMemberAccessor + ").\n"
-                        + "Maybe the annotation is defined on both the field and its getter.");
+                throw new IllegalStateException(
+                        """
+                                The solutionClass (%s) has a @%s annotated member (%s) that is duplicated by another member (%s).
+                                Maybe the annotation is defined on both the field and its getter."""
+                                .formatted(solutionClass, ConstraintConfigurationProvider.class.getSimpleName(), memberAccessor,
+                                        constraintConfigurationMemberAccessor));
             }
             // Bottom class wins. Bottom classes are parsed first due to ConfigUtil.getAllAnnotatedLineageClasses()
             return;
@@ -445,11 +458,10 @@ public class SolutionDescriptor<Solution_> {
 
         var constraintConfigurationClass = constraintConfigurationMemberAccessor.getType();
         if (!constraintConfigurationClass.isAnnotationPresent(ConstraintConfiguration.class)) {
-            throw new IllegalStateException("The solutionClass (" + solutionClass
-                    + ") has a @" + ConstraintConfigurationProvider.class.getSimpleName()
-                    + " annotated member (" + member + ") that does not return a class ("
-                    + constraintConfigurationClass + ") that has a "
-                    + ConstraintConfiguration.class.getSimpleName() + " annotation.");
+            throw new IllegalStateException(
+                    "The solutionClass (%s) has a @%s annotated member (%s) that does not return a class (%s) that has a %s annotation."
+                            .formatted(solutionClass, ConstraintConfigurationProvider.class.getSimpleName(), member,
+                                    constraintConfigurationClass, ConstraintConfiguration.class.getSimpleName()));
         }
         constraintWeightSupplier =
                 ConstraintConfigurationBasedConstraintWeightSupplier.create(this, constraintConfigurationClass);
@@ -465,10 +477,10 @@ public class SolutionDescriptor<Solution_> {
         } else if (annotationClass == ProblemFactCollectionProperty.class) {
             var type = memberAccessor.getType();
             if (!(Collection.class.isAssignableFrom(type) || type.isArray())) {
-                throw new IllegalStateException("The solutionClass (" + solutionClass
-                        + ") has a @" + ProblemFactCollectionProperty.class.getSimpleName()
-                        + " annotated member (" + member + ") that does not return a "
-                        + Collection.class.getSimpleName() + " or an array.");
+                throw new IllegalStateException(
+                        "The solutionClass (%s) has a @%s annotated member (%s) that does not return a %s or an array."
+                                .formatted(solutionClass, ProblemFactCollectionProperty.class.getSimpleName(), member,
+                                        Collection.class.getSimpleName()));
             }
             problemFactCollectionMemberAccessorMap.put(memberAccessor.getName(), memberAccessor);
         } else {
@@ -486,10 +498,10 @@ public class SolutionDescriptor<Solution_> {
         } else if (annotationClass == PlanningEntityCollectionProperty.class) {
             var type = memberAccessor.getType();
             if (!(Collection.class.isAssignableFrom(type) || type.isArray())) {
-                throw new IllegalStateException("The solutionClass (" + solutionClass
-                        + ") has a @" + PlanningEntityCollectionProperty.class.getSimpleName()
-                        + " annotated member (" + member + ") that does not return a "
-                        + Collection.class.getSimpleName() + " or an array.");
+                throw new IllegalStateException(
+                        "The solutionClass (%s) has a @%s annotated member (%s) that does not return a %s or an array."
+                                .formatted(solutionClass, PlanningEntityCollectionProperty.class.getSimpleName(), member,
+                                        Collection.class.getSimpleName()));
             }
             entityCollectionMemberAccessorMap.put(memberAccessor.getName(), memberAccessor);
         } else {
@@ -521,12 +533,11 @@ public class SolutionDescriptor<Solution_> {
         } else {
             return;
         }
-        throw new IllegalStateException("The solutionClass (" + solutionClass
-                + ") has a @" + annotationClass.getSimpleName()
-                + " annotated member (" + memberAccessor
-                + ") that is duplicated by a @" + otherAnnotationClass.getSimpleName()
-                + " annotated member (" + duplicate + ").\n"
-                + (annotationClass.equals(otherAnnotationClass)
+        throw new IllegalStateException("""
+                The solutionClass (%s) has a @%s annotated member (%s) that is duplicated by a @%s annotated member (%s).
+                %s""".formatted(solutionClass, annotationClass.getSimpleName(), memberAccessor,
+                otherAnnotationClass.getSimpleName(),
+                duplicate, annotationClass.equals(otherAnnotationClass)
                         ? "Maybe the annotation is defined on both the field and its getter."
                         : "Maybe 2 mutually exclusive annotations are configured."));
     }
@@ -588,14 +599,14 @@ public class SolutionDescriptor<Solution_> {
             var shadow = pair.getKey();
             if (pair.getValue() != 0) {
                 if (pair.getValue() < 0) {
-                    throw new IllegalStateException("Impossible state because the shadowVariable ("
-                            + shadow.getSimpleEntityAndVariableName()
-                            + ") cannot be used more as a sink than it has sources.");
+                    throw new IllegalStateException(
+                            "Impossible state because the shadowVariable (%s) cannot be used more as a sink than it has sources."
+                                    .formatted(shadow.getSimpleEntityAndVariableName()));
                 }
-                throw new IllegalStateException("There is a cyclic shadow variable path"
-                        + " that involves the shadowVariable (" + shadow.getSimpleEntityAndVariableName()
-                        + ") because it must be later than its sources (" + shadow.getSourceVariableDescriptorList()
-                        + ") and also earlier than its sinks (" + shadow.getSinkVariableDescriptorList() + ").");
+                throw new IllegalStateException(
+                        "There is a cyclic shadow variable path that involves the shadowVariable (%s) because it must be later than its sources (%s) and also earlier than its sinks (%s)."
+                                .formatted(shadow.getSimpleEntityAndVariableName(), shadow.getSourceVariableDescriptorList(),
+                                        shadow.getSinkVariableDescriptorList()));
             }
             for (var sink : shadow.getSinkVariableDescriptorList()) {
                 var sinkPair = shadowToPairMap.get(sink);
@@ -659,7 +670,7 @@ public class SolutionDescriptor<Solution_> {
                 .flatMap(Collection::stream)
                 .filter(VariableDescriptor::isListVariable)
                 .map(variableDescriptor -> ((ListVariableDescriptor<Solution_>) variableDescriptor))
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private void initSolutionCloner(DescriptorPolicy descriptorPolicy) {
@@ -811,16 +822,15 @@ public class SolutionDescriptor<Solution_> {
     public EntityDescriptor<Solution_> findEntityDescriptorOrFail(Class<?> entitySubclass) {
         var entityDescriptor = findEntityDescriptor(entitySubclass);
         if (entityDescriptor == null) {
-            throw new IllegalArgumentException("A planning entity is an instance of a class (" + entitySubclass
-                    + ") that is not configured as a planning entity class (" + getEntityClassSet() + ").\n" +
-                    "If that class (" + entitySubclass.getSimpleName()
-                    + ") (or superclass thereof) is not a @" + PlanningEntity.class.getSimpleName()
-                    + " annotated class, maybe your @" + PlanningSolution.class.getSimpleName()
-                    + " annotated class has an incorrect @" + PlanningEntityCollectionProperty.class.getSimpleName()
-                    + " or @" + PlanningEntityProperty.class.getSimpleName() + " annotated member.\n"
-                    + "Otherwise, if you're not using the Quarkus extension or Spring Boot starter,"
-                    + " maybe that entity class (" + entitySubclass.getSimpleName()
-                    + ") is missing from your solver configuration.");
+            throw new IllegalArgumentException(
+                    """
+                            A planning entity is an instance of a class (%s) that is not configured as a planning entity class (%s).
+                            If that class (%s) (or superclass thereof) is not a @%s annotated class, maybe your @%s annotated class has an incorrect @%s or @%s annotated member.
+                            Otherwise, if you're not using the Quarkus extension or Spring Boot starter, maybe that entity class (%s) is missing from your solver configuration."""
+                            .formatted(entitySubclass, getEntityClassSet(), entitySubclass.getSimpleName(),
+                                    PlanningEntity.class.getSimpleName(), PlanningSolution.class.getSimpleName(),
+                                    PlanningEntityCollectionProperty.class.getSimpleName(),
+                                    PlanningEntityProperty.class.getSimpleName(), entitySubclass.getSimpleName()));
         }
         return entityDescriptor;
     }
@@ -952,11 +962,10 @@ public class SolutionDescriptor<Solution_> {
     public void visitEntitiesByEntityClass(Solution_ solution, Class<?> entityClass, Predicate<Object> visitor) {
         for (var entityMemberAccessor : entityMemberAccessorMap.values()) {
             var entity = extractMemberObject(entityMemberAccessor, solution);
-            if (entityClass.isInstance(entity)) {
-                if (visitor.test(entity)) {
-                    return;
-                }
+            if (entityClass.isInstance(entity) && visitor.test(entity)) {
+                return;
             }
+
         }
         for (var entityCollectionMemberAccessor : entityCollectionMemberAccessorMap.values()) {
             var optionalTypeParameter = ConfigUtils.extractGenericTypeParameter("solutionClass",
@@ -989,11 +998,10 @@ public class SolutionDescriptor<Solution_> {
             // We need to go over every collection member and check if it is an entity of the given type.
             var entityCollection = extractMemberCollectionOrArray(entityCollectionMemberAccessor, solution, false);
             for (var entity : entityCollection) {
-                if (entityClass.isInstance(entity)) {
-                    if (visitor.test(entity)) {
-                        return;
-                    }
+                if (entityClass.isInstance(entity) && visitor.test(entity)) {
+                    return;
                 }
+
             }
         }
     }
@@ -1232,14 +1240,14 @@ public class SolutionDescriptor<Solution_> {
             collection = (Collection<Object>) memberAccessor.executeGetter(solution);
         }
         if (collection == null) {
-            throw new IllegalArgumentException("The solutionClass (" + solutionClass
-                    + ")'s " + (isFact ? "factCollectionProperty" : "entityCollectionProperty") + " ("
-                    + memberAccessor + ") should never return null.\n"
-                    + (memberAccessor instanceof ReflectionFieldMemberAccessor ? ""
-                            : "Maybe the getter/method always returns null instead of the actual data.\n")
-                    + "Maybe that property (" + memberAccessor.getName()
-                    + ") was set with null instead of an empty collection/array when the class ("
-                    + solutionClass.getSimpleName() + ") instance was created.");
+            throw new IllegalArgumentException(
+                    """
+                            The solutionClass (%s)'s %s (%s) should never return null.
+                            %sMaybe that property (%s) was set with null instead of an empty collection/array when the class (%s) instance was created."""
+                            .formatted(solutionClass, isFact ? "factCollectionProperty" : "entityCollectionProperty",
+                                    memberAccessor, memberAccessor instanceof ReflectionFieldMemberAccessor ? ""
+                                            : "Maybe the getter/method always returns null instead of the actual data.\n",
+                                    memberAccessor.getName(), solutionClass.getSimpleName()));
         }
         return collection;
     }
@@ -1332,7 +1340,7 @@ public class SolutionDescriptor<Solution_> {
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" + solutionClass.getName() + ")";
+        return "%s(%s)".formatted(getClass().getSimpleName(), solutionClass.getName());
     }
 
 }

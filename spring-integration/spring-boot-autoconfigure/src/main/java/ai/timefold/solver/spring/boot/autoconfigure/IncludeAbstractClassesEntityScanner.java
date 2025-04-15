@@ -118,17 +118,33 @@ public class IncludeAbstractClassesEntityScanner extends EntityScanner {
             throw new IllegalStateException(
                     "Scanning for @%s annotations failed.".formatted(PlanningSolution.class.getSimpleName()), e);
         }
+        if (solutionClassSet.isEmpty()) {
+            return null;
+        }
         return solutionClassSet.iterator().next();
     }
 
     public List<Class<?>> findEntityClassList() {
-        Set<Class<?>> entityClassSet;
         try {
-            entityClassSet = scan(PlanningEntity.class);
+            // Add all annotated classes
+            var entityClassSet = new HashSet<>(scan(PlanningEntity.class));
+            var childEntityList = new ArrayList<>(entityClassSet);
+            // Now we search for child classes as well
+            while (!childEntityList.isEmpty()) {
+                var entityClass = childEntityList.remove(0);
+                // Check all subclasses
+                var childEntityClassList = findImplementingClassList(entityClass).stream()
+                        .filter(c -> !c.equals(entityClass))
+                        .toList();
+                if (!childEntityClassList.isEmpty()) {
+                    entityClassSet.addAll(childEntityClassList);
+                    childEntityList.addAll(childEntityClassList);
+                }
+            }
+            return new ArrayList<>(entityClassSet);
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("Scanning for @%s failed.".formatted(PlanningEntity.class.getSimpleName()), e);
         }
-        return new ArrayList<>(entityClassSet);
     }
 
     private Set<Class<?>> findAllClassesUsingClassLoader(ClassLoader classLoader, String packageName) throws IOException {

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfCollection;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -9,12 +10,9 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
@@ -27,8 +25,16 @@ import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBase
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataSetBasedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.enumeration.TestdataEnumSolution;
+import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.badconfiguration.TestdataBadConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.duplicateweightoverrides.TestdataDuplicateWeightConfigurationSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.nosolution.TestdataNoSolution;
+import ai.timefold.solver.core.impl.testdata.domain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericSolution;
@@ -69,8 +75,7 @@ class SolutionDescriptorTest {
 
     @Test
     void problemFactProperty() {
-        SolutionDescriptor<TestdataProblemFactPropertySolution> solutionDescriptor = TestdataProblemFactPropertySolution
-                .buildSolutionDescriptor();
+        var solutionDescriptor = TestdataProblemFactPropertySolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("extraObject");
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("valueList",
                 "otherProblemFactList");
@@ -78,8 +83,7 @@ class SolutionDescriptorTest {
 
     @Test
     void readMethodProblemFactCollectionProperty() {
-        SolutionDescriptor<TestdataReadMethodProblemFactCollectionPropertySolution> solutionDescriptor =
-                TestdataReadMethodProblemFactCollectionPropertySolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataReadMethodProblemFactCollectionPropertySolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("valueList",
                 "createProblemFacts");
@@ -123,8 +127,7 @@ class SolutionDescriptorTest {
 
     @Test
     void wildcardProblemFactAndEntityProperties() {
-        SolutionDescriptor<TestdataWildcardSolution> solutionDescriptor = TestdataWildcardSolution
-                .buildSolutionDescriptor();
+        var solutionDescriptor = TestdataWildcardSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("extendsValueList",
                 "supersValueList");
@@ -134,10 +137,10 @@ class SolutionDescriptorTest {
 
     @Test
     void wildcardSupersEntityListProperty() {
-        SolverFactory<TestdataUnsupportedWildcardSolution> solverFactory = PlannerTestUtils.buildSolverFactory(
-                TestdataUnsupportedWildcardSolution.class, TestdataEntity.class);
-        Solver<TestdataUnsupportedWildcardSolution> solver = solverFactory.buildSolver();
-        TestdataUnsupportedWildcardSolution solution = new TestdataUnsupportedWildcardSolution();
+        var solverFactory =
+                PlannerTestUtils.buildSolverFactory(TestdataUnsupportedWildcardSolution.class, TestdataEntity.class);
+        var solver = solverFactory.buildSolver();
+        var solution = new TestdataUnsupportedWildcardSolution();
         solution.setValueList(Arrays.asList(new TestdataValue("v1")));
         solution.setSupersEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataValue("v2")));
         // TODO Ideally, this already fails fast on buildSolverFactory
@@ -146,15 +149,15 @@ class SolutionDescriptorTest {
 
     @Test
     void noProblemFactPropertyWithEasyScoreCalculation() {
-        SolverFactory<TestdataNoProblemFactPropertySolution> solverFactory = PlannerTestUtils.buildSolverFactory(
-                TestdataNoProblemFactPropertySolution.class, TestdataEntity.class);
-        solverFactory.buildSolver();
+        var solverFactory =
+                PlannerTestUtils.buildSolverFactory(TestdataNoProblemFactPropertySolution.class, TestdataEntity.class);
+        assertThatCode(solverFactory::buildSolver)
+                .doesNotThrowAnyException();
     }
 
     @Test
     void extended() {
-        SolutionDescriptor<TestdataAnnotatedExtendedSolution> solutionDescriptor = TestdataAnnotatedExtendedSolution
-                .buildExtendedSolutionDescriptor();
+        var solutionDescriptor = TestdataAnnotatedExtendedSolution.buildExtendedSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("valueList",
                 "subValueList");
@@ -164,7 +167,7 @@ class SolutionDescriptorTest {
 
     @Test
     void setProperties() {
-        SolutionDescriptor<TestdataSetBasedSolution> solutionDescriptor = TestdataSetBasedSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataSetBasedSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("valueSet");
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).isEmpty();
@@ -173,8 +176,7 @@ class SolutionDescriptorTest {
 
     @Test
     void arrayProperties() {
-        SolutionDescriptor<TestdataArrayBasedSolution> solutionDescriptor = TestdataArrayBasedSolution
-                .buildSolutionDescriptor();
+        var solutionDescriptor = TestdataArrayBasedSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("values");
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).isEmpty();
@@ -183,7 +185,7 @@ class SolutionDescriptorTest {
 
     @Test
     void generic() {
-        SolutionDescriptor<TestdataGenericSolution> solutionDescriptor = TestdataGenericSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataGenericSolution.buildSolutionDescriptor();
 
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("valueList",
                 "complexGenericValueList", "subTypeValueList");
@@ -204,8 +206,7 @@ class SolutionDescriptorTest {
 
     @Test
     void autoDiscoverFields() {
-        SolutionDescriptor<TestdataAutoDiscoverFieldSolution> solutionDescriptor = TestdataAutoDiscoverFieldSolution
-                .buildSolutionDescriptor();
+        var solutionDescriptor = TestdataAutoDiscoverFieldSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getScoreDefinition()).isInstanceOf(SimpleScoreDefinition.class);
         assertThat(solutionDescriptor.getScoreDefinition().getScoreClass()).isEqualTo(SimpleScore.class);
         assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().getName())
@@ -216,12 +217,11 @@ class SolutionDescriptorTest {
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
 
-        TestdataObject singleProblemFact = new TestdataObject("p1");
-        List<TestdataValue> valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        List<TestdataEntity> entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        TestdataEntity otherEntity = new TestdataEntity("otherE1");
-        TestdataAutoDiscoverFieldSolution solution = new TestdataAutoDiscoverFieldSolution(
-                "s1", singleProblemFact, valueList, entityList, otherEntity);
+        var singleProblemFact = new TestdataObject("p1");
+        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
+        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
+        var otherEntity = new TestdataEntity("otherE1");
+        var solution = new TestdataAutoDiscoverFieldSolution("s1", singleProblemFact, valueList, entityList, otherEntity);
 
         assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherE1", "p1", "e1", "e2",
                 "v1", "v2");
@@ -229,8 +229,7 @@ class SolutionDescriptorTest {
 
     @Test
     void autoDiscoverGetters() {
-        SolutionDescriptor<TestdataAutoDiscoverGetterSolution> solutionDescriptor = TestdataAutoDiscoverGetterSolution
-                .buildSolutionDescriptor();
+        var solutionDescriptor = TestdataAutoDiscoverGetterSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().getName())
                 .isEqualTo("constraintConfiguration");
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("constraintConfiguration",
@@ -239,12 +238,11 @@ class SolutionDescriptorTest {
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
 
-        TestdataObject singleProblemFact = new TestdataObject("p1");
-        List<TestdataValue> valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        List<TestdataEntity> entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        TestdataEntity otherEntity = new TestdataEntity("otherE1");
-        TestdataAutoDiscoverGetterSolution solution = new TestdataAutoDiscoverGetterSolution(
-                "s1", singleProblemFact, valueList, entityList, otherEntity);
+        var singleProblemFact = new TestdataObject("p1");
+        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
+        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
+        var otherEntity = new TestdataEntity("otherE1");
+        var solution = new TestdataAutoDiscoverGetterSolution("s1", singleProblemFact, valueList, entityList, otherEntity);
 
         assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherE1", "p1", "e1", "e2",
                 "v1", "v2");
@@ -252,21 +250,20 @@ class SolutionDescriptorTest {
 
     @Test
     void autoDiscoverFieldsFactCollectionOverriddenToSingleProperty() {
-        SolutionDescriptor<TestdataAutoDiscoverFieldOverrideSolution> solutionDescriptor =
-                TestdataAutoDiscoverFieldOverrideSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataAutoDiscoverFieldOverrideSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact",
                 "listProblemFact");
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
 
-        TestdataObject singleProblemFact = new TestdataObject("p1");
-        List<TestdataValue> valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        List<TestdataEntity> entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        TestdataEntity otherEntity = new TestdataEntity("otherE1");
-        List<String> listFact = new CodeAssertableArrayList<>("list1", Arrays.asList("x", "y"));
-        TestdataAutoDiscoverFieldOverrideSolution solution = new TestdataAutoDiscoverFieldOverrideSolution(
-                "s1", singleProblemFact, valueList, entityList, otherEntity, listFact);
+        var singleProblemFact = new TestdataObject("p1");
+        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
+        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
+        var otherEntity = new TestdataEntity("otherE1");
+        var listFact = new CodeAssertableArrayList<>("list1", Arrays.asList("x", "y"));
+        var solution = new TestdataAutoDiscoverFieldOverrideSolution("s1", singleProblemFact, valueList, entityList,
+                otherEntity, listFact);
 
         assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution),
                 "otherE1", "list1", "p1", "e1", "e2", "v1", "v2");
@@ -274,21 +271,20 @@ class SolutionDescriptorTest {
 
     @Test
     void autoDiscoverGettersFactCollectionOverriddenToSingleProperty() {
-        SolutionDescriptor<TestdataAutoDiscoverGetterOverrideSolution> solutionDescriptor =
-                TestdataAutoDiscoverGetterOverrideSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataAutoDiscoverGetterOverrideSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact",
                 "listProblemFact");
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
 
-        TestdataObject singleProblemFact = new TestdataObject("p1");
-        List<TestdataValue> valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        List<TestdataEntity> entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        TestdataEntity otherEntity = new TestdataEntity("otherE1");
-        List<String> listFact = new CodeAssertableArrayList<>("list1", Arrays.asList("x", "y"));
-        TestdataAutoDiscoverGetterOverrideSolution solution = new TestdataAutoDiscoverGetterOverrideSolution(
-                "s1", singleProblemFact, valueList, entityList, otherEntity, listFact);
+        var singleProblemFact = new TestdataObject("p1");
+        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
+        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
+        var otherEntity = new TestdataEntity("otherE1");
+        var listFact = new CodeAssertableArrayList<>("list1", Arrays.asList("x", "y"));
+        var solution = new TestdataAutoDiscoverGetterOverrideSolution("s1", singleProblemFact, valueList, entityList,
+                otherEntity, listFact);
 
         assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution),
                 "otherE1", "list1", "p1", "e1", "e2", "v1", "v2");
@@ -296,21 +292,20 @@ class SolutionDescriptorTest {
 
     @Test
     void autoDiscoverUnannotatedEntitySubclass() {
-        SolutionDescriptor<TestdataAutoDiscoverUnannotatedEntitySolution> solutionDescriptor =
-                TestdataAutoDiscoverUnannotatedEntitySolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataAutoDiscoverUnannotatedEntitySolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("singleProblemFact");
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("problemFactList");
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
 
-        TestdataObject singleProblemFact = new TestdataObject("p1");
-        List<TestdataValue> valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
-        List<TestdataUnannotatedExtendedEntity> entityList = Arrays.asList(
+        var singleProblemFact = new TestdataObject("p1");
+        var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
+        var entityList = Arrays.asList(
                 new TestdataUnannotatedExtendedEntity("u1"),
                 new TestdataUnannotatedExtendedEntity("u2"));
-        TestdataUnannotatedExtendedEntity otherEntity = new TestdataUnannotatedExtendedEntity("otherU1");
-        TestdataAutoDiscoverUnannotatedEntitySolution solution = new TestdataAutoDiscoverUnannotatedEntitySolution(
-                "s1", singleProblemFact, valueList, entityList, otherEntity);
+        var otherEntity = new TestdataUnannotatedExtendedEntity("otherU1");
+        var solution =
+                new TestdataAutoDiscoverUnannotatedEntitySolution("s1", singleProblemFact, valueList, entityList, otherEntity);
 
         assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherU1", "p1", "u1", "u2",
                 "v1", "v2");
@@ -318,8 +313,7 @@ class SolutionDescriptorTest {
 
     @Test
     void autoDiscoverGettersOverriddenInSubclass() {
-        SolutionDescriptor<TestdataExtendedAutoDiscoverGetterSolution> solutionDescriptor =
-                TestdataExtendedAutoDiscoverGetterSolution.buildSubclassSolutionDescriptor();
+        var solutionDescriptor = TestdataExtendedAutoDiscoverGetterSolution.buildSubclassSolutionDescriptor();
         assertThat(solutionDescriptor.getConstraintConfigurationMemberAccessor().getName())
                 .isEqualTo("constraintConfiguration");
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).containsOnlyKeys("constraintConfiguration",
@@ -328,13 +322,13 @@ class SolutionDescriptorTest {
         assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("otherEntity");
         assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList");
 
-        TestdataObject singleProblemFact = new TestdataObject("p1");
-        List<TestdataValue> listAsSingleProblemFact = new CodeAssertableArrayList<>(
-                "f1", Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        List<TestdataEntity> entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
-        TestdataEntity otherEntity = new TestdataEntity("otherE1");
-        TestdataExtendedAutoDiscoverGetterSolution solution = new TestdataExtendedAutoDiscoverGetterSolution(
-                "s1", singleProblemFact, listAsSingleProblemFact, entityList, otherEntity);
+        var singleProblemFact = new TestdataObject("p1");
+        var listAsSingleProblemFact =
+                new CodeAssertableArrayList<>("f1", Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
+        var entityList = Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2"));
+        var otherEntity = new TestdataEntity("otherE1");
+        var solution = new TestdataExtendedAutoDiscoverGetterSolution("s1", singleProblemFact, listAsSingleProblemFact,
+                entityList, otherEntity);
 
         assertAllCodesOfCollection(solutionDescriptor.getAllEntitiesAndProblemFacts(solution), "otherE1", "f1", "p1", "e1",
                 "e2");
@@ -381,8 +375,8 @@ class SolutionDescriptorTest {
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution);
         assertThat(initializationStats.unassignedValueCount()).isZero();
 
-        List<TestdataListValue> valueList = solution.getEntityList().get(0).getValueList();
-        int unassignedValueCount = valueList.size();
+        var valueList = solution.getEntityList().get(0).getValueList();
+        var unassignedValueCount = valueList.size();
         assertThat(valueList).hasSizeGreaterThan(10 / 3);
         valueList.forEach(value -> {
             value.setEntity(null);
@@ -396,10 +390,10 @@ class SolutionDescriptorTest {
 
     @Test
     void problemScaleBasic() {
-        int valueCount = 10;
-        int entityCount = 20;
-        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
+        var valueCount = 10;
+        var entityCount = 20;
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solution = TestdataSolution.generateSolution(valueCount, entityCount);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -412,10 +406,10 @@ class SolutionDescriptorTest {
 
     @Test
     void emptyProblemScale() {
-        int valueCount = 27;
-        int entityCount = 27;
-        SolutionDescriptor<TestdataSolution> solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
-        TestdataSolution solution = TestdataSolution.generateSolution(valueCount, entityCount);
+        var valueCount = 27;
+        var entityCount = 27;
+        var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
+        var solution = TestdataSolution.generateSolution(valueCount, entityCount);
         solution.getValueList().clear();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
@@ -432,9 +426,9 @@ class SolutionDescriptorTest {
         var solutionDescriptor = TestdataValueRangeSolution.buildSolutionDescriptor();
         var solution = new TestdataValueRangeSolution("Solution");
         solution.setEntityList(List.of(new TestdataValueRangeEntity("A")));
-        final long entityCount = 1L;
-        final long valueCount = 3L;
-        final long variableCount = 8L;
+        final var entityCount = 1L;
+        final var valueCount = 3L;
+        final var variableCount = 8L;
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * variableCount);
@@ -449,8 +443,8 @@ class SolutionDescriptorTest {
     void problemScaleEntityProvidingValueRange() {
         var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataEntityProvidingSolution("Solution");
-        TestdataValue v1 = new TestdataValue("1");
-        TestdataValue v2 = new TestdataValue("2");
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
         solution.setEntityList(List.of(
                 new TestdataEntityProvidingEntity("A",
                         List.of(v1, v2)),
@@ -472,7 +466,7 @@ class SolutionDescriptorTest {
     void problemScaleSingleEntityProvidingSingleValueRange() {
         var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataEntityProvidingSolution("Solution");
-        TestdataValue v1 = new TestdataValue("1");
+        var v1 = new TestdataValue("1");
         solution.setEntityList(List.of(
                 new TestdataEntityProvidingEntity("A",
                         List.of(v1))));
@@ -490,10 +484,10 @@ class SolutionDescriptorTest {
 
     @Test
     void problemScaleChained() {
-        int anchorCount = 20;
-        int entityCount = 500;
-        SolutionDescriptor<TestdataChainedSolution> solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
-        TestdataChainedSolution solution = generateChainedSolution(anchorCount, entityCount);
+        var anchorCount = 20;
+        var entityCount = 500;
+        var solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
+        var solution = generateChainedSolution(anchorCount, entityCount);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
@@ -507,14 +501,14 @@ class SolutionDescriptorTest {
     }
 
     static TestdataChainedSolution generateChainedSolution(int anchorCount, int entityCount) {
-        TestdataChainedSolution solution = new TestdataChainedSolution("test solution");
-        List<TestdataChainedAnchor> anchorList = IntStream.range(0, anchorCount)
+        var solution = new TestdataChainedSolution("test solution");
+        var anchorList = IntStream.range(0, anchorCount)
                 .mapToObj(Integer::toString)
-                .map(TestdataChainedAnchor::new).collect(Collectors.toList());
+                .map(TestdataChainedAnchor::new).toList();
         solution.setChainedAnchorList(anchorList);
-        List<TestdataChainedEntity> entityList = IntStream.range(0, entityCount)
+        var entityList = IntStream.range(0, entityCount)
                 .mapToObj(Integer::toString)
-                .map(TestdataChainedEntity::new).collect(Collectors.toList());
+                .map(TestdataChainedEntity::new).toList();
         solution.setChainedEntityList(entityList);
         solution.setUnchainedValueList(Collections.singletonList(new TestdataValue("v")));
         return solution;
@@ -522,10 +516,10 @@ class SolutionDescriptorTest {
 
     @Test
     void problemScaleList() {
-        int valueCount = 500;
-        int entityCount = 20;
-        SolutionDescriptor<TestdataListSolution> solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        TestdataListSolution solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
+        var valueCount = 500;
+        var entityCount = 20;
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -539,10 +533,10 @@ class SolutionDescriptorTest {
 
     @Test
     void problemScaleSingleEntityWithAssignedValues() {
-        int valueCount = 1;
-        int entityCount = 1;
-        SolutionDescriptor<TestdataListSolution> solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        TestdataListSolution solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
+        var valueCount = 1;
+        var entityCount = 1;
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -554,12 +548,10 @@ class SolutionDescriptorTest {
 
     @Test
     void problemScaleSingleEntityWithUnassignedValues() {
-        int valueCount = 1;
-        int entityCount = 1;
-        SolutionDescriptor<TestdataAllowsUnassignedValuesListSolution> solutionDescriptor =
-                TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
-        TestdataAllowsUnassignedValuesListSolution solution =
-                TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
+        var valueCount = 1;
+        var entityCount = 1;
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -572,18 +564,80 @@ class SolutionDescriptorTest {
 
     @Test
     void assertProblemScaleListIsApproximatelyProblemScaleChained() {
-        int valueCount = 500;
-        int entityCount = 20;
-        SolutionDescriptor<TestdataListSolution> solutionDescriptorList = TestdataListSolution.buildSolutionDescriptor();
-        TestdataListSolution listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        double listPowerExponent = solutionDescriptorList.getProblemScale(listSolution);
-        SolutionDescriptor<TestdataChainedSolution> solutionDescriptorChained =
-                TestdataChainedSolution.buildSolutionDescriptor();
-        TestdataChainedSolution solutionChained = generateChainedSolution(entityCount, valueCount);
-        double chainedPowerExponent = solutionDescriptorChained.getProblemScale(solutionChained);
+        var valueCount = 500;
+        var entityCount = 20;
+        var solutionDescriptorList = TestdataListSolution.buildSolutionDescriptor();
+        var listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
+        var listPowerExponent = solutionDescriptorList.getProblemScale(listSolution);
+        var solutionDescriptorChained = TestdataChainedSolution.buildSolutionDescriptor();
+        var solutionChained = generateChainedSolution(entityCount, valueCount);
+        var chainedPowerExponent = solutionDescriptorChained.getProblemScale(solutionChained);
         // Since they are using different bases in calculation, some difference is expected,
         // but the numbers should be relatively (i.e. ~1%) close.
         assertThat(Math.pow(10, listPowerExponent))
                 .isCloseTo(Math.pow(10, chainedPowerExponent), Percentage.withPercentage(1));
+    }
+
+    @Test
+    void testImmutableClass() {
+        assertThatCode(TestdataRecordSolution::buildSolutionDescriptor)
+                .hasMessageContaining("cannot be a record as it needs to be mutable.");
+        assertThatCode(TestdataEnumSolution::buildSolutionDescriptor)
+                .hasMessageContaining("cannot be an enum as it needs to be mutable.");
+    }
+
+    @Test
+    void testMultipleConstraintWeights() {
+        assertThatCode(TestdataInvalidConstraintWeightOverridesSolution::buildSolutionDescriptor)
+                .hasMessageContaining("has more than one field")
+                .hasMessageContaining(
+                        "of type interface ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides");
+    }
+
+    @Test
+    void testNoSolution() {
+        assertThatCode(TestdataNoSolution::buildSolutionDescriptor)
+                .hasMessageContaining("but does not have a @PlanningSolution annotation");
+    }
+
+    @Test
+    void testInvalidConfiguration() {
+        assertThatCode(TestdataInvalidConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The autoDiscoverMemberType ")
+                .hasMessageContaining("cannot accept a member")
+                .hasMessageContaining("with an elementType")
+                .hasMessageContaining("that has a @ConstraintConfiguration annotation.");
+    }
+
+    @Test
+    void testConfigurationMap() {
+        assertThatCode(TestdataMapConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The autoDiscoverMemberType ")
+                .hasMessageContaining("does not yet support the member")
+                .hasMessageContaining("which is an implementation of Map.");
+    }
+
+    @Test
+    void testDuplicateConfigurationWeights() {
+        assertThatCode(TestdataDuplicateWeightConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining(
+                        "has both a ConstraintWeightOverrides member and a ConstraintConfigurationProvider-annotated member")
+                .hasMessageContaining(
+                        "ConstraintConfigurationProvider is deprecated, please remove it from your codebase and keep ConstraintWeightOverrides only");
+    }
+
+    @Test
+    void testBadConfiguration() {
+        assertThatCode(TestdataBadConfigurationSolution::buildSolutionDescriptor)
+                .hasMessageContaining("The solutionClass")
+                .hasMessageContaining("has a @ConstraintConfigurationProvider annotated member")
+                .hasMessageContaining("that does not return a class")
+                .hasMessageContaining("that has a ConstraintConfiguration annotation.");
+    }
+
+    @Test
+    void testBadFactCollection() {
+        assertThatCode(TestdataBadFactCollectionSolution::buildSolutionDescriptor)
+                .hasMessageContaining("that does not return a Collection or an array.");
     }
 }

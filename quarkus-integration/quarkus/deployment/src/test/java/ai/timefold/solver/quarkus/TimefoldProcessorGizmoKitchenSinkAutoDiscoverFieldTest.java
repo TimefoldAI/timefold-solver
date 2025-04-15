@@ -1,6 +1,7 @@
 package ai.timefold.solver.quarkus;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import ai.timefold.solver.quarkus.testdata.gizmo.DummyConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.gizmo.DummyVariableListener;
@@ -18,7 +19,6 @@ class TimefoldProcessorGizmoKitchenSinkAutoDiscoverFieldTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0hard/0soft")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestDataKitchenSinkAutoDiscoverFieldSolution.class,
                             TestDataKitchenSinkEntity.class,
@@ -29,8 +29,8 @@ class TimefoldProcessorGizmoKitchenSinkAutoDiscoverFieldTest {
                     .hasMessageContaining("autoDiscoverMemberType"));
 
     @Test
-    void solve() { // The method exists only so that the class is considered a test.
-        throw new IllegalStateException("The test is expected to fail before it even gets here.");
+    void solve() {
+        fail("The build should fail");
     }
 
 }

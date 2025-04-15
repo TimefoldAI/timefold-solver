@@ -127,10 +127,10 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     SolverScope<TestdataSpringSolution> customScope = new SolverScope<>() {
                         @Override
                         public long calculateTimeMillisSpentUpToNow() {
@@ -169,7 +169,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
                             .collect(Collectors.toList()));
@@ -304,7 +304,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
                             .collect(Collectors.toList()));
@@ -330,10 +330,10 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
 
                     for (var solverName : List.of("solver1", "solver2")) {
                         var solver =
@@ -380,7 +380,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                     var problem = new TestdataSpringSolution();
                     problem.setValueList(IntStream.range(1, 3)
                             .mapToObj(i -> "v" + i)
-                            .collect(Collectors.toList()));
+                            .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
                             .collect(Collectors.toList()));
@@ -429,7 +429,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                         var problem = new TestdataSpringSolution();
                         problem.setValueList(IntStream.range(1, 3)
                                 .mapToObj(i -> "v" + i)
-                                .collect(Collectors.toList()));
+                                .toList());
                         problem.setEntityList(IntStream.range(1, 3)
                                 .mapToObj(i -> new TestdataSpringEntity())
                                 .collect(Collectors.toList()));
@@ -712,23 +712,14 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
                 .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "The classes",
-                        "InvalidMethodTestdataSpringEntity",
-                        "InvalidFieldTestdataSpringEntity",
-                        "do not have the PlanningEntity annotation, even though they contain properties reserved for planning entities.",
-                        "Maybe add a @PlanningEntity annotation on the classes");
+                .cause().message().contains("is not annotated with @PlanningEntity but defines genuine or shadow variables.");
 
         assertThatCode(() -> contextRunner
                 .withUserConfiguration(InvalidEntitySpringTestConfiguration.class)
                 .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
                 .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "All classes",
-                        "InvalidRecordTestdataSpringEntity",
-                        "InvalidEnumTestdataSpringEntity",
-                        "annotated with @PlanningEntity must be a class");
+                .cause().message().contains("as it needs to be mutable.");
     }
 
     @Test
@@ -740,9 +731,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withPropertyValues(
                         "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/invalidSolverConfig.xml")
                 .run(context -> context.getBean("solver1")))
-                .cause().message().contains(
-                        "All classes",
-                        "InvalidRecordTestdataSpringSolution",
-                        "annotated with @PlanningSolution must be a class");
+                .cause().message().contains("cannot be a record as it needs to be mutable.");
     }
 }
