@@ -988,7 +988,7 @@ public class SolutionDescriptor<Solution_> {
                 continue;
             }
             // The collection now is either raw, or it is not of an entity type, such as perhaps a parent interface.
-            var collectionCouldPossiblyContainGivenEntityType = optionalTypeParameter
+            boolean collectionCouldPossiblyContainGivenEntityType = optionalTypeParameter
                     .map(e -> e.isAssignableFrom(entityClass))
                     .orElse(true);
             if (!collectionCouldPossiblyContainGivenEntityType) {

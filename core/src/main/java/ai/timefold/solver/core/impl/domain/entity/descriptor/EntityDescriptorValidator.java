@@ -39,6 +39,9 @@ public class EntityDescriptorValidator {
             ShadowVariable.List.class,
             CascadingUpdateShadowVariable.class };
 
+    private EntityDescriptorValidator() {
+    }
+
     /**
      * Mixed inheritance is not permitted. Therefore, inheritance must consist only of classes or only of interfaces.
      */

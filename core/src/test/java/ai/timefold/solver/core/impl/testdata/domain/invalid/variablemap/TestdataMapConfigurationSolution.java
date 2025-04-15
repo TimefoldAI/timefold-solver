@@ -24,4 +24,28 @@ public class TestdataMapConfigurationSolution {
 
     @PlanningScore
     private SimpleScore score;
+
+    public DummyMapConstraintConfiguration getConfiguration() {
+        return configuration;
+    }
+
+    public void setConfiguration(DummyMapConstraintConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    public List<TestdataEntity> getEntityList() {
+        return entityList;
+    }
+
+    public void setEntityList(List<TestdataEntity> entityList) {
+        this.entityList = entityList;
+    }
+
+    public SimpleScore getScore() {
+        return score;
+    }
+
+    public void setScore(SimpleScore score) {
+        this.score = score;
+    }
 }
