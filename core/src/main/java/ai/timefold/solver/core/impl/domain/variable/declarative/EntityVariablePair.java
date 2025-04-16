@@ -2,7 +2,9 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Objects;
 
-public record EntityVariablePair(Object entity, VariableId variableId,
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
+
+public record EntityVariablePair(Object entity, VariableMetaModel<?, ?, ?> variableId,
         VariableUpdaterInfo variableReference, int graphNodeId) {
     @Override
     public boolean equals(Object object) {

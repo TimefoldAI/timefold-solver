@@ -8,13 +8,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public record VariableUpdaterInfo(Class<?> entityClass,
-        String variableName,
+public record VariableUpdaterInfo(
         DeclarativeShadowVariableDescriptor<?> variableDescriptor,
         @Nullable InvalidityMarkerVariableDescriptor<?> invalidityMarkerVariableDescriptor,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator) {
-    VariableId getVariableId() {
-        return new VariableId(entityClass, variableName);
-    }
 }

@@ -5,20 +5,20 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public record VariableSourceReference(Class<?> entityClass,
-        String variableName,
+public record VariableSourceReference(VariableMetaModel<?, ?, ?> variableMetaModel,
         List<MemberAccessor> chainToVariable,
         boolean isTopLevel,
         boolean isDeclarative,
-        VariableId targetVariableId,
-        @Nullable VariableId downstreamDeclarativeVariable,
+        VariableMetaModel<?, ?, ?> targetVariableMetamodel,
+        @Nullable VariableMetaModel<?, ?, ?> downstreamDeclarativeVariableMetamodel,
         BiConsumer<Object, Consumer<Object>> targetEntityFunctionStartingFromVariableEntity) {
     public boolean affectGraphEdges() {
-        return downstreamDeclarativeVariable != null;
+        return downstreamDeclarativeVariableMetamodel != null;
     }
 }

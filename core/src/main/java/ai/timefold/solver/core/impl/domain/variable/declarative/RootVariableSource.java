@@ -14,13 +14,15 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
 
 import org.jspecify.annotations.NonNull;
 
 public record RootVariableSource<Entity_, Value_>(
         Class<? extends Entity_> rootEntity,
-        BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction,
+        BiConsumer<Object, Consumer<Value_>> valueEntityFunction,
         List<VariableSourceReference> variableSourceReferences) {
 
     private static final String COLLECTION_REFERENCE_SUFFIX = "[]";
@@ -45,6 +47,7 @@ public record RootVariableSource<Entity_, Value_>(
     }
 
     public static <Entity_, Value_> RootVariableSource<Entity_, Value_> from(
+            PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass,
             String targetVariableName,
             String variablePath,
@@ -110,7 +113,7 @@ public record RootVariableSource<Entity_, Value_>(
             }
         }
 
-        BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction;
+        BiConsumer<Object, Consumer<Value_>> valueEntityFunction;
         List<MemberAccessor> chainToVariableEntity = chainToVariable.subList(0, chainToVariable.size() - 1);
         if (!hasListMemberAccessor) {
             valueEntityFunction = getRegularSourceEntityVisitor(chainToVariableEntity);
@@ -122,7 +125,8 @@ public record RootVariableSource<Entity_, Value_>(
         boolean isTopLevel = true;
         for (var chainStartingFromSourceVariable : chainStartingFromSourceVariableList) {
             var newSourceReference =
-                    createVariableSourceReferenceFromChain(rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
+                    createVariableSourceReferenceFromChain(solutionMetaModel,
+                            rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
                             chainToVariable,
                             isTopLevel);
             variableSourceReferences.add(newSourceReference);
@@ -143,11 +147,9 @@ public record RootVariableSource<Entity_, Value_>(
                 variableSourceReferences);
     }
 
-    private static <Entity_, Value_> @NonNull BiConsumer<? extends Entity_, Consumer<Value_>> getRegularSourceEntityVisitor(
+    private static <Value_> @NonNull BiConsumer<Object, Consumer<Value_>> getRegularSourceEntityVisitor(
             List<MemberAccessor> finalChainToVariable) {
-        @SuppressWarnings("unchecked")
-        BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction;
-        valueEntityFunction = (entity, consumer) -> {
+        return (entity, consumer) -> {
             Object current = entity;
             for (var accessor : finalChainToVariable) {
                 current = accessor.executeGetter(current);
@@ -157,14 +159,11 @@ public record RootVariableSource<Entity_, Value_>(
             }
             consumer.accept((Value_) current);
         };
-        return valueEntityFunction;
     }
 
-    private static <Entity_, Value_> @NonNull BiConsumer<? extends Entity_, Consumer<Value_>> getCollectionSourceEntityVisitor(
+    private static <Value_> @NonNull BiConsumer<Object, Consumer<Value_>> getCollectionSourceEntityVisitor(
             List<MemberAccessor> listMemberAccessors, List<MemberAccessor> finalChainToVariable) {
-        @SuppressWarnings("unchecked")
-        BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction;
-        valueEntityFunction = (entity, consumer) -> {
+        return (entity, consumer) -> {
             Object current = entity;
             for (var accessor : listMemberAccessors) {
                 current = accessor.executeGetter(current);
@@ -185,10 +184,10 @@ public record RootVariableSource<Entity_, Value_>(
                 consumer.accept((Value_) current);
             }
         };
-        return valueEntityFunction;
     }
 
     private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(
+            PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass, String targetVariableName, List<MemberAccessor> afterChain,
             List<MemberAccessor> chainToVariable, boolean isTopLevel) {
         var variableMemberAccessor = afterChain.get(0);
@@ -196,44 +195,42 @@ public record RootVariableSource<Entity_, Value_>(
                 variableMemberAccessor.getName(),
                 chainToVariable.subList(0, chainToVariable.size() - afterChain.size()),
                 afterChain);
-        VariableId downstreamDeclarativeVariable = null;
+        VariableMetaModel<?, ?, ?> downstreamDeclarativeVariable = null;
 
         var maybeDownstreamVariable = afterChain.remove(afterChain.size() - 1);
         if (isDeclarativeShadowVariable(maybeDownstreamVariable)) {
             downstreamDeclarativeVariable =
-                    new VariableId(maybeDownstreamVariable.getDeclaringClass(), maybeDownstreamVariable.getName());
+                    solutionMetaModel.entity(maybeDownstreamVariable.getDeclaringClass())
+                            .variable(maybeDownstreamVariable.getName());
         }
 
-        var newSourceReference = new VariableSourceReference(
-                variableMemberAccessor.getDeclaringClass(),
-                variableMemberAccessor.getName(),
+        return new VariableSourceReference(
+                solutionMetaModel.entity(variableMemberAccessor.getDeclaringClass()).variable(variableMemberAccessor.getName()),
                 sourceVariablePath.memberAccessorsBeforeEntity,
                 isTopLevel,
                 isDeclarativeShadowVariable(variableMemberAccessor),
-                new VariableId(rootEntityClass, targetVariableName),
+                solutionMetaModel.entity(rootEntityClass).variable(targetVariableName),
                 downstreamDeclarativeVariable,
                 sourceVariablePath.getValueVisitorFromVariableEntity());
-        return newSourceReference;
     }
 
     private static void assertIsValidVariableReference(String variablePath, VariableSourceReference variableSourceReference) {
-        VariableId sourceVariableId =
-                new VariableId(variableSourceReference.entityClass(), variableSourceReference.variableName());
+        var sourceVariableId = variableSourceReference.variableMetaModel();
         if (variableSourceReference.isDeclarative()
-                && variableSourceReference.downstreamDeclarativeVariable() != null
-                && !variableSourceReference.downstreamDeclarativeVariable()
+                && variableSourceReference.downstreamDeclarativeVariableMetamodel() != null
+                && !variableSourceReference.downstreamDeclarativeVariableMetamodel()
                         .equals(sourceVariableId)) {
             throw new IllegalArgumentException(
                     "The source path \"%s\" accesses a declarative shadow variable \"%s\" from another declarative shadow variable \"%s\"."
                             .formatted(variablePath,
-                                    variableSourceReference.downstreamDeclarativeVariable(),
+                                    variableSourceReference.downstreamDeclarativeVariableMetamodel(),
                                     sourceVariableId));
         }
         if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariable().isEmpty()) {
             throw new IllegalArgumentException(
                     "The source path \"%s\" accesses a non-declarative shadow variable \"%s\" not from the root entity or collection."
                             .formatted(variablePath,
-                                    variableSourceReference.variableName()));
+                                    variableSourceReference.variableMetaModel().name()));
         }
     }
 

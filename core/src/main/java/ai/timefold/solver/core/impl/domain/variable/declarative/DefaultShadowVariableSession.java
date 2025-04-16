@@ -5,6 +5,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -13,18 +14,18 @@ import org.jspecify.annotations.Nullable;
 public class DefaultShadowVariableSession<Solution_> implements Supply {
     final VariableReferenceGraph<Solution_> graph;
 
-    record EntityVariablePair<Solution_>(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
+    record EntityVariablePair<Solution_>(VariableMetaModel<?, ?, ?> variableMetamodel, Object entity) {
         @Override
         public boolean equals(@Nullable Object o) {
             if (o instanceof EntityVariablePair<?> other) {
-                return entity == other.entity && variableDescriptor.getOrdinal() == other.variableDescriptor.getOrdinal();
+                return entity == other.entity && variableMetamodel == other.variableMetamodel;
             }
             return false;
         }
 
         @Override
         public int hashCode() {
-            return (31 * System.identityHashCode(entity)) ^ variableDescriptor.getOrdinal();
+            return (31 * System.identityHashCode(entity)) ^ System.identityHashCode(variableMetamodel);
         }
     }
 
@@ -35,9 +36,8 @@ public class DefaultShadowVariableSession<Solution_> implements Supply {
     }
 
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        if (modifiedEntityVariableSet.add(new EntityVariablePair<>(variableDescriptor, entity))) {
-            var entityClass = variableDescriptor.getEntityDescriptor().getEntityClass();
-            graph.beforeVariableChanged(new VariableId(entityClass, variableDescriptor.getVariableName()),
+        if (modifiedEntityVariableSet.add(new EntityVariablePair<>(variableDescriptor.getVariableMetaModel(), entity))) {
+            graph.beforeVariableChanged(variableDescriptor.getVariableMetaModel(),
                     entity);
         }
     }
@@ -45,8 +45,7 @@ public class DefaultShadowVariableSession<Solution_> implements Supply {
     public void updateVariables() {
         for (var modifiedEntityVariable : modifiedEntityVariableSet) {
             graph.afterVariableChanged(
-                    new VariableId(modifiedEntityVariable.variableDescriptor.getEntityDescriptor().getEntityClass(),
-                            modifiedEntityVariable.variableDescriptor.getVariableName()),
+                    modifiedEntityVariable.variableMetamodel,
                     modifiedEntityVariable.entity);
         }
         modifiedEntityVariableSet.clear();

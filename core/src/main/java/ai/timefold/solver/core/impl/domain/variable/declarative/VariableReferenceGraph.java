@@ -14,14 +14,15 @@ import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public class VariableReferenceGraph<Solution_> {
-    private final Map<VariableId, Map<Object, EntityVariablePair>> variableReferenceToInstanceMap;
+    private final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair>> variableReferenceToInstanceMap;
     private final List<EntityVariablePair> instanceList;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 
-    private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
-    private final Map<VariableId, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
+    private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
+    private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
     private final Map<EntityVariablePair, List<EntityVariablePair>> fixedEdges;
     private final IdentityHashMap<Object, List<EntityVariablePair>> entityToVariableReferenceMap;
     private int[][] counts;
@@ -39,17 +40,17 @@ public class VariableReferenceGraph<Solution_> {
     }
 
     public <Entity_> EntityVariablePair addVariableReferenceEntity(
-            VariableId variableId,
+            VariableMetaModel<?, ?, ?> variableId,
             Entity_ entity,
             VariableUpdaterInfo variableReference) {
-        if (!variableId.entityClass().isInstance(entity)) {
+        if (!variableId.entity().type().isInstance(entity)) {
             throw new IllegalArgumentException(variableId + " " + entity);
         }
         if (variableReferenceToInstanceMap.containsKey(variableId) &&
                 variableReferenceToInstanceMap.get(variableId).containsKey(entity)) {
             return variableReferenceToInstanceMap.get(variableId).get(entity);
         }
-        var node = new EntityVariablePair(entity, new VariableId(variableId.entityClass(), variableId.variableName()),
+        var node = new EntityVariablePair(entity, variableId,
                 variableReference, instanceList.size());
         variableReferenceToInstanceMap.computeIfAbsent(variableId, k -> new IdentityHashMap<>())
                 .put(entity, node);
@@ -57,13 +58,13 @@ public class VariableReferenceGraph<Solution_> {
         return node;
     }
 
-    public void addBeforeProcessor(VariableId variableId,
+    public void addBeforeProcessor(VariableMetaModel<?, ?, ?> variableId,
             BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
         variableReferenceToBeforeProcessor.computeIfAbsent(variableId, k -> new ArrayList<>())
                 .add(consumer);
     }
 
-    public void addAfterProcessor(VariableId variableId,
+    public void addAfterProcessor(VariableMetaModel<?, ?, ?> variableId,
             BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
         variableReferenceToAfterProcessor.computeIfAbsent(variableId, k -> new ArrayList<>())
                 .add(consumer);
@@ -80,7 +81,7 @@ public class VariableReferenceGraph<Solution_> {
         for (var instance : instanceList) {
             if (visited.add(instance.entity())) {
                 for (var variableId : variableReferenceToAfterProcessor.keySet()) {
-                    if (variableId.entityClass().isInstance(instance.entity())) {
+                    if (variableId.entity().type().isInstance(instance.entity())) {
                         afterVariableChanged(variableId, instance.entity());
                     }
                 }
@@ -95,7 +96,7 @@ public class VariableReferenceGraph<Solution_> {
         }
     }
 
-    public EntityVariablePair lookup(VariableId variableId, Object entity) {
+    public EntityVariablePair lookup(VariableMetaModel<?, ?, ?> variableId, Object entity) {
         return variableReferenceToInstanceMap.getOrDefault(variableId, Collections.emptyMap()).get(entity);
     }
 
@@ -282,8 +283,8 @@ public class VariableReferenceGraph<Solution_> {
         }
     }
 
-    public void beforeVariableChanged(VariableId variableReference, Object entity) {
-        if (variableReference.entityClass().isInstance(entity)) {
+    public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+        if (variableReference.entity().type().isInstance(entity)) {
             var updaterList = variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList());
             for (var consumer : updaterList) {
                 consumer.accept(this, entity);
@@ -291,8 +292,8 @@ public class VariableReferenceGraph<Solution_> {
         }
     }
 
-    public void afterVariableChanged(VariableId variableReference, Object entity) {
-        if (variableReference.entityClass().isInstance(entity)) {
+    public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+        if (variableReference.entity().type().isInstance(entity)) {
             var updaterList = variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList());
             var node = lookup(variableReference, entity);
             if (node != null) {

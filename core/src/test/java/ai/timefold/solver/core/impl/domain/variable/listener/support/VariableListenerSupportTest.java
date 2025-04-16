@@ -23,7 +23,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.EntityVariablePair;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
-import ai.timefold.solver.core.impl.domain.variable.declarative.VariableId;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
@@ -42,6 +41,7 @@ import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRV
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderSolution;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.junit.jupiter.api.Test;
 
@@ -177,38 +177,40 @@ class VariableListenerSupportTest {
 
     private static class MockTopologicalOrderGraph extends DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         Object[] nodeToEntities;
-        VariableId[] nodeToVariableId;
+        VariableMetaModel<?, ?, ?>[] nodeToVariableMetamodel;
 
         public MockTopologicalOrderGraph(int size) {
             super(size);
             nodeToEntities = new Object[size];
-            nodeToVariableId = new VariableId[size];
+            nodeToVariableMetamodel = new VariableMetaModel[size];
         }
 
         @Override
         public void withNodeData(List<EntityVariablePair> nodes) {
             nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
-            nodeToVariableId = nodes.stream().map(EntityVariablePair::variableId).toArray(VariableId[]::new);
+            nodeToVariableMetamodel = nodes.stream().map(EntityVariablePair::variableId).toArray(VariableMetaModel[]::new);
         }
 
-        public void addEdge(VariableId fromId, Object fromEntity, VariableId toId, Object toEntity) {
+        public void addEdge(VariableMetaModel<?, ?, ?> fromId, Object fromEntity, VariableMetaModel<?, ?, ?> toId,
+                Object toEntity) {
             // Mock to spy invocations
         }
 
-        public void removeEdge(VariableId fromId, Object fromEntity, VariableId toId, Object toEntity) {
+        public void removeEdge(VariableMetaModel<?, ?, ?> fromId, Object fromEntity, VariableMetaModel<?, ?, ?> toId,
+                Object toEntity) {
             // Mock to spy invocations
         }
 
         @Override
         public void addEdge(int from, int to) {
             super.addEdge(from, to);
-            addEdge(nodeToVariableId[from], nodeToEntities[from], nodeToVariableId[to], nodeToEntities[to]);
+            addEdge(nodeToVariableMetamodel[from], nodeToEntities[from], nodeToVariableMetamodel[to], nodeToEntities[to]);
         }
 
         @Override
         public void removeEdge(int from, int to) {
             super.addEdge(from, to);
-            removeEdge(nodeToVariableId[from], nodeToEntities[from], nodeToVariableId[to], nodeToEntities[to]);
+            removeEdge(nodeToVariableMetamodel[from], nodeToEntities[from], nodeToVariableMetamodel[to], nodeToEntities[to]);
         }
     }
 
@@ -269,22 +271,26 @@ class VariableListenerSupportTest {
 
         var graph = graphReference.get();
 
-        var serviceReadyTime = new VariableId(TestdataFSRVisit.class, "serviceReadyTime");
-        var serviceStartTime = new VariableId(TestdataFSRVisit.class, "serviceStartTime");
-        var serviceFinishTime = new VariableId(TestdataFSRVisit.class, "serviceFinishTime");
+        var entityMetamodel = solutionDescriptor.getMetaModel()
+                .entity(TestdataFSRVisit.class);
+        var serviceReadyTime = entityMetamodel.variable("serviceReadyTime");
+        var serviceStartTime = entityMetamodel.variable("serviceStartTime");
+        var serviceFinishTime = entityMetamodel.variable("serviceFinishTime");
 
         var expectedAddCount = new AtomicInteger(0);
         var expectedRemoveCount = new AtomicInteger(0);
 
-        QuadConsumer<VariableId, Object, VariableId, Object> verifyAddEdge = (fromId, fromObj, toId, toObj) -> {
-            verify(graph).addEdge(fromId, fromObj, toId, toObj);
-            expectedAddCount.getAndIncrement();
-        };
+        QuadConsumer<VariableMetaModel<?, ?, ?>, Object, VariableMetaModel<?, ?, ?>, Object> verifyAddEdge =
+                (fromId, fromObj, toId, toObj) -> {
+                    verify(graph).addEdge(fromId, fromObj, toId, toObj);
+                    expectedAddCount.getAndIncrement();
+                };
 
-        QuadConsumer<VariableId, Object, VariableId, Object> verifyRemoveEdge = (fromId, fromObj, toId, toObj) -> {
-            verify(graph).removeEdge(fromId, fromObj, toId, toObj);
-            expectedRemoveCount.getAndIncrement();
-        };
+        QuadConsumer<VariableMetaModel<?, ?, ?>, Object, VariableMetaModel<?, ?, ?>, Object> verifyRemoveEdge =
+                (fromId, fromObj, toId, toObj) -> {
+                    verify(graph).removeEdge(fromId, fromObj, toId, toObj);
+                    expectedRemoveCount.getAndIncrement();
+                };
 
         for (var visit : solution.getVisits()) {
             verifyAddEdge.accept(serviceReadyTime, visit, serviceStartTime, visit);

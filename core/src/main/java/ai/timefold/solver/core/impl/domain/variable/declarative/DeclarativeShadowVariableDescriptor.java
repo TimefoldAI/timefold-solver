@@ -105,6 +105,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         sources = new RootVariableSource[sourcePaths.length];
         for (int i = 0; i < sources.length; i++) {
             sources[i] = RootVariableSource.from(
+                    entityDescriptor.getSolutionDescriptor().getMetaModel(),
                     entityDescriptor.getEntityClass(),
                     variableMemberAccessor.getName(),
                     sourcePaths[i],

@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableNotifier;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
-import ai.timefold.solver.core.impl.domain.variable.declarative.VariableId;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRAssertionEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRConstraintProvider;
@@ -42,10 +41,10 @@ public class FSRShadowVariableTest {
 
         public void setVariable(Object entity, String variableName, @Nullable Object value) {
             var variableMetamodel = solutionDescriptor.getMetaModel().entity(entity.getClass()).variable(variableName);
-            graph.beforeVariableChanged(new VariableId(variableMetamodel), entity);
+            graph.beforeVariableChanged(variableMetamodel, entity);
             solutionDescriptor.getEntityDescriptorStrict(entity.getClass()).getVariableDescriptor(variableName)
                     .setValue(entity, value);
-            graph.afterVariableChanged(new VariableId(variableMetamodel), entity);
+            graph.afterVariableChanged(variableMetamodel, entity);
         }
 
         public void updateVariables() {
