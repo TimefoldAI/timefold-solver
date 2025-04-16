@@ -285,7 +285,7 @@
         <dc:title></dc:title>
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://timefold.ai/product/license/" />
+           rdf:resource="https://timefold.ai/license" />
       </cc:Work>
     </rdf:RDF>
   </metadata>

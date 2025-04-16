@@ -14,7 +14,7 @@
   <packaging>pom</packaging>
 
   <name>Timefold Solver build parent</name>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <!-- ************************************************************************ -->

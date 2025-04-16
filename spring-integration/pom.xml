@@ -21,7 +21,7 @@
 
     This module contains the integration modules.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <modules>
     <module>spring-boot-autoconfigure</module>

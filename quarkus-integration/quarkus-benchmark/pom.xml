@@ -13,7 +13,7 @@
   <packaging>pom</packaging>
 
   <name>Timefold Solver Quarkus Benchmark</name>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <modules>
     <module>runtime</module>

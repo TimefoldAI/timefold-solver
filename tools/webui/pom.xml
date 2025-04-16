@@ -19,7 +19,7 @@
 
     This module contains the web UI.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.webui</java.module.name>

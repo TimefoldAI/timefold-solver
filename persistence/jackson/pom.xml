@@ -19,7 +19,7 @@
 
     This module contains the Jackson integration.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.jackson</java.module.name>

@@ -20,7 +20,7 @@
     This module contains the JSON-B integration.
     This module is deprecated and will be removed in a future major version of Timefold Solver.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.jsonb</java.module.name>

@@ -145,9 +145,9 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint Streams migration recipe</a>.
+     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
+     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
     public List<String> getScoreDrlList() {
@@ -155,10 +155,9 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
+     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
+     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
     public void setScoreDrlList(List<String> scoreDrlList) {
@@ -243,10 +242,9 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
+     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
+     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
     public ScoreDirectorFactoryConfig withScoreDrlList(List<String> scoreDrlList) {
@@ -255,10 +253,9 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated Score DRL is deprecated and will be removed in a future major version of Timefold.
-     *             See <a href="https://timefold.ai/docs/">DRL
-     *             to Constraint
-     *             Streams migration recipe</a>.
+     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
+     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
     public ScoreDirectorFactoryConfig withScoreDrls(String... scoreDrls) {

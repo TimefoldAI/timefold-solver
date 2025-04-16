@@ -16,7 +16,7 @@
 
     This module is just the multiproject parent. The planning engine itself is in timefold-solver-core.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
   <inceptionYear>2006</inceptionYear>
   <licenses>
     <license>

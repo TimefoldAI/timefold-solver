@@ -18,7 +18,7 @@
 
     This module contains the core implementation of the Python solver.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.python.core</java.module.name>

@@ -23,7 +23,7 @@ than using [Timefold Solver for Java](https://github.com/TimefoldAI/timefold-sol
 
 ## Get started with Timefold Solver in Python
 
-* [Read a Getting Started guide](https://timefold.ai/docs)
+* [Read a Getting Started guide](https://docs.timefold.ai/timefold-solver/latest/quickstart/overview)
 * [Clone the Quickstarts repository](https://github.com/TimefoldAI/timefold-quickstarts)
 
 ## Requirements
@@ -150,8 +150,8 @@ def room_conflict(constraint_factory: ConstraintFactory) -> Constraint:
             .as_constraint("Room conflict")
     )
 ```
-for more details on Constraint Streams,
-see https://timefold.ai/docs/timefold-solver/latest/constraints-and-score/score-calculation.
+
+Also see [Timefold Solver Documentation on Constraint Streams](https://docs.timefold.ai/timefold-solver/latest/constraints-and-score/score-calculation).
 
 ### Solve
 
@@ -179,7 +179,7 @@ solution = solver.solve(generate_problem())
 `solution` will be a `TimeTable` instance with planning
 variables set to the final best solution found.
 
-For a full API spec, visit [the Timefold Documentation](https://timefold.ai/docs/timefold-solver/latest).
+For a full API spec, visit [the Timefold Documentation](https://docs.timefold.ai/timefold-solver/latest/introduction).
 
 ## Legal notice
 
