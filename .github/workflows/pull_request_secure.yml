@@ -321,7 +321,7 @@ jobs:
           yq -i e 'del(.site.keys)' apps/docs/antora-playbook.yml
           yq -i e '.content.sources += [{"url": "../../timefold-solver", "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
           npm ci
-          npm run build -- --filter docs
+          npm run build -- --filter @timefoldai/docs
 
       - name: Deploy Documentation (Preview Mode)
         if: ${{ env.BRANCH_NAME != 'main' }}
