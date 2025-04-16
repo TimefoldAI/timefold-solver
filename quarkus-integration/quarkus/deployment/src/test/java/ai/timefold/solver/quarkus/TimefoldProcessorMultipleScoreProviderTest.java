@@ -20,7 +20,7 @@ class TimefoldProcessorMultipleScoreProviderTest {
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, "ai.timefold.solver.quarkus.testdata.multiplescore"));
+                    .addPackages(true, "ai.timefold.solver.quarkus.testdata.multiscore"));
 
     @Inject
     SolverFactory<TestdataMultipleScoreSolution> solverFactory;
