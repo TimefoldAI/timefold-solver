@@ -21,7 +21,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
-import ai.timefold.solver.core.impl.domain.variable.declarative.EntityVariableOrFactReference;
+import ai.timefold.solver.core.impl.domain.variable.declarative.EntityVariablePair;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableId;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -186,9 +186,9 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public <Solution_> void withNodeData(List<EntityVariableOrFactReference<?>> nodes) {
-            nodeToEntities = nodes.stream().map(EntityVariableOrFactReference::entity).toArray(Object[]::new);
-            nodeToVariableId = nodes.stream().map(EntityVariableOrFactReference::variableId).toArray(VariableId[]::new);
+        public void withNodeData(List<EntityVariablePair> nodes) {
+            nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
+            nodeToVariableId = nodes.stream().map(EntityVariablePair::variableId).toArray(VariableId[]::new);
         }
 
         public void addEdge(VariableId fromId, Object fromEntity, VariableId toId, Object toEntity) {
@@ -338,9 +338,6 @@ class VariableListenerSupportTest {
         visitC.setPreviousVisit(visitA1);
         visitC.setVehicle(vehicle1);
         visitB1.setPreviousVisit(null);
-        variableListenerSupport.afterVariableChanged(vehicleDescriptor, visitC);
-        variableListenerSupport.afterVariableChanged(previousElementDescriptor, visitC);
-        variableListenerSupport.afterVariableChanged(previousElementDescriptor, visitB1);
 
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
 

@@ -11,30 +11,26 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableSessionFactory;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVariableSessionFactory {
+public class DefaultShadowVariableSessionFactory<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
-    private final SupplyManager supplyManager;
     private final IntFunction<TopologicalOrderGraph> graphCreator;
 
     public DefaultShadowVariableSessionFactory(
             SolutionDescriptor<Solution_> solutionDescriptor,
-            InnerScoreDirector<Solution_, ?> scoreDirector, SupplyManager supplyManager,
+            InnerScoreDirector<Solution_, ?> scoreDirector,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         this.solutionDescriptor = solutionDescriptor;
         this.scoreDirector = scoreDirector;
-        this.supplyManager = supplyManager;
         this.graphCreator = graphCreator;
     }
 
-    static <Solution_> void visitGraph(
+    public static <Solution_> void visitGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraph<Solution_> variableReferenceGraph, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {
@@ -83,7 +79,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
             var fromEntityClass = declarativeShadowVariable.getEntityDescriptor().getEntityClass();
             var fromVariableName = declarativeShadowVariable.getVariableName();
             final var fromVariableId = new VariableId(fromEntityClass, fromVariableName);
-            variableReferenceGraph.addShadowVariable(variableIdToUpdater.get(fromVariableId));
 
             for (var source : declarativeShadowVariable.getSources()) {
                 for (var sourcePart : source.variableSourceReferences()) {
@@ -121,14 +116,14 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
                     variableReferenceGraph.addBeforeProcessor(sourceVariableId, (graph, toEntity) -> {
                         alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity, fromEntity -> {
                             graph.removeEdge(
-                                    (EntityVariableOrFactReference<Solution_>) graph.lookup(fromVariableId, fromEntity),
-                                    (EntityVariableOrFactReference<Solution_>) graph.lookup(toVariableId, toEntity));
+                                    (EntityVariablePair) graph.lookup(fromVariableId, fromEntity),
+                                    (EntityVariablePair) graph.lookup(toVariableId, toEntity));
                         });
                     });
                     variableReferenceGraph.addAfterProcessor(sourceVariableId, (graph, toEntity) -> {
                         alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity, fromEntity -> {
-                            graph.addEdge((EntityVariableOrFactReference<Solution_>) graph.lookup(fromVariableId, fromEntity),
-                                    (EntityVariableOrFactReference<Solution_>) graph.lookup(toVariableId, toEntity));
+                            graph.addEdge((EntityVariablePair) graph.lookup(fromVariableId, fromEntity),
+                                    (EntityVariablePair) graph.lookup(toVariableId, toEntity));
                         });
                     });
                 }
@@ -153,9 +148,9 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
                                 ((BiConsumer<Object, Consumer>) (BiConsumer) sourceRoot.valueEntityFunction())
                                         .accept(entity, fromEntity -> {
                                             variableReferenceGraph.addFixedEdge(
-                                                    (EntityVariableOrFactReference<Solution_>) variableReferenceGraph
+                                                    (EntityVariablePair) variableReferenceGraph
                                                             .lookup(fromVariableId, fromEntity),
-                                                    (EntityVariableOrFactReference<Solution_>) variableReferenceGraph
+                                                    (EntityVariablePair) variableReferenceGraph
                                                             .lookup(toVariableId, entity));
                                         });
                                 break;
@@ -174,7 +169,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> implements ShadowVar
         return forEntities(entities.toArray());
     }
 
-    @Override
     public DefaultShadowVariableSession<Solution_> forEntities(Object... entities) {
         var variableReferenceGraph = new VariableReferenceGraph<>(ChangedVariableNotifier.of(scoreDirector));
 

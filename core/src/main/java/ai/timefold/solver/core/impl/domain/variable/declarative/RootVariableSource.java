@@ -16,12 +16,16 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
 
+import org.jspecify.annotations.NonNull;
+
 public record RootVariableSource<Entity_, Value_>(
         Class<? extends Entity_> rootEntity,
         BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction,
         List<VariableSourceReference> variableSourceReferences) {
 
     private static final String COLLECTION_REFERENCE_SUFFIX = "[]";
+    private static final String MEMBER_SEPERATOR_REGEX = "\\.";
+
     private record VariablePath(Class<?> variableEntityClass,
             String variableName,
             List<MemberAccessor> memberAccessorsBeforeEntity,
@@ -46,18 +50,17 @@ public record RootVariableSource<Entity_, Value_>(
             String variablePath,
             MemberAccessorFactory memberAccessorFactory,
             DescriptorPolicy descriptorPolicy) {
-        var pathParts = variablePath.split("\\.");
-        var variablePaths = new ArrayList<VariablePath>();
+        var pathParts = variablePath.split(MEMBER_SEPERATOR_REGEX);
         List<MemberAccessor> chainToVariable = new ArrayList<>();
         List<MemberAccessor> listMemberAccessors = new ArrayList<>();
         var hasListMemberAccessor = false;
-        List<List<MemberAccessor>> chainAfterVariable = new ArrayList<>();
-        boolean afterVariable = false;
+        List<List<MemberAccessor>> chainStartingFromSourceVariableList = new ArrayList<>();
+        boolean isAfterVariable = false;
         Class<?> currentEntity = rootEntityClass;
 
         for (var pathPart : pathParts) {
             if (pathPart.endsWith(COLLECTION_REFERENCE_SUFFIX)) {
-                if (afterVariable) {
+                if (isAfterVariable) {
                     throw new IllegalArgumentException("Cannot reference a collection on a variable.");
                 }
                 if (hasListMemberAccessor) {
@@ -92,86 +95,37 @@ public record RootVariableSource<Entity_, Value_>(
                 }
 
                 chainToVariable.add(memberAccessor);
-                for (var chain : chainAfterVariable) {
+                for (var chain : chainStartingFromSourceVariableList) {
                     chain.add(memberAccessor);
                 }
                 if (isVariable) {
-                    List<MemberAccessor> chainAfter = new ArrayList<>();
+                    List<MemberAccessor> chainStartingFromSourceVariable = new ArrayList<>();
 
-                    chainAfter.add(memberAccessor);
-                    chainAfterVariable.add(chainAfter);
+                    chainStartingFromSourceVariable.add(memberAccessor);
+                    chainStartingFromSourceVariableList.add(chainStartingFromSourceVariable);
 
-                    var chainBefore = new ArrayList<>(chainToVariable.subList(0, chainToVariable.size() - 1));
-                    variablePaths.add(new VariablePath(currentEntity, pathPart, chainBefore, chainAfter));
-                    afterVariable = true;
+                    isAfterVariable = true;
                 }
                 currentEntity = memberAccessor.getType();
             }
         }
 
-        @SuppressWarnings("unchecked")
         BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction;
-
-        List<MemberAccessor> finalChainToVariable = chainToVariable.subList(0, chainToVariable.size() - 1);
+        List<MemberAccessor> chainToVariableEntity = chainToVariable.subList(0, chainToVariable.size() - 1);
         if (!hasListMemberAccessor) {
-            valueEntityFunction = (entity, consumer) -> {
-                Object current = entity;
-                for (var accessor : finalChainToVariable) {
-                    current = accessor.executeGetter(current);
-                    if (current == null) {
-                        return;
-                    }
-                }
-                consumer.accept((Value_) current);
-            };
+            valueEntityFunction = getRegularSourceEntityVisitor(chainToVariableEntity);
         } else {
-            valueEntityFunction = (entity, consumer) -> {
-                Object current = entity;
-                for (var accessor : listMemberAccessors) {
-                    current = accessor.executeGetter(current);
-                    if (current == null) {
-                        return;
-                    }
-                }
-
-                Iterable<Object> iterable = (Iterable<Object>) current;
-                outer: for (var item : iterable) {
-                    current = item;
-                    for (var accessor : finalChainToVariable) {
-                        current = accessor.executeGetter(current);
-                        if (current == null) {
-                            continue outer;
-                        }
-                    }
-                    consumer.accept((Value_) current);
-                }
-            };
+            valueEntityFunction = getCollectionSourceEntityVisitor(listMemberAccessors, chainToVariableEntity);
         }
 
         List<VariableSourceReference> variableSourceReferences = new ArrayList<>();
         boolean isTopLevel = true;
-        for (var afterChain : chainAfterVariable) {
-            var variableMemberAccessor = afterChain.get(0);
-            var sourceVariablePath = new VariablePath(variableMemberAccessor.getDeclaringClass(),
-                    variableMemberAccessor.getName(),
-                    chainToVariable.subList(0, chainToVariable.size() - afterChain.size()),
-                    afterChain);
-            VariableId downstreamDeclarativeVariable = null;
-
-            var maybeDownstreamVariable = afterChain.remove(afterChain.size() - 1);
-            if (isDeclarativeShadowVariable(maybeDownstreamVariable)) {
-                downstreamDeclarativeVariable =
-                        new VariableId(maybeDownstreamVariable.getDeclaringClass(), maybeDownstreamVariable.getName());
-            }
-            variableSourceReferences.add(new VariableSourceReference(
-                    variableMemberAccessor.getDeclaringClass(),
-                    variableMemberAccessor.getName(),
-                    sourceVariablePath.memberAccessorsBeforeEntity,
-                    isTopLevel,
-                    isDeclarativeShadowVariable(variableMemberAccessor),
-                    new VariableId(rootEntityClass, targetVariableName),
-                    downstreamDeclarativeVariable,
-                    sourceVariablePath.getValueVisitorFromVariableEntity()));
+        for (var chainStartingFromSourceVariable : chainStartingFromSourceVariableList) {
+            var newSourceReference =
+                    createVariableSourceReferenceFromChain(rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
+                            chainToVariable,
+                            isTopLevel);
+            variableSourceReferences.add(newSourceReference);
             isTopLevel = false;
         }
 
@@ -181,29 +135,106 @@ public record RootVariableSource<Entity_, Value_>(
         }
 
         for (var variableSourceReference : variableSourceReferences) {
-            VariableId sourceVariableId =
-                    new VariableId(variableSourceReference.entityClass(), variableSourceReference.variableName());
-            if (variableSourceReference.isDeclarative()
-                    && variableSourceReference.downstreamDeclarativeVariable() != null
-                    && !variableSourceReference.downstreamDeclarativeVariable()
-                            .equals(sourceVariableId)) {
-                throw new IllegalArgumentException(
-                        "The source path \"%s\" accesses a declarative shadow variable \"%s\" from another declarative shadow variable \"%s\"."
-                                .formatted(variablePath,
-                                        variableSourceReference.downstreamDeclarativeVariable(),
-                                        sourceVariableId));
-            }
-            if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariable().isEmpty()) {
-                throw new IllegalArgumentException(
-                        "The source path \"%s\" accesses a non-declarative shadow variable \"%s\" not from the root entity or collection."
-                                .formatted(variablePath,
-                                        variableSourceReference.variableName()));
-            }
+            assertIsValidVariableReference(variablePath, variableSourceReference);
         }
 
         return new RootVariableSource<>(rootEntityClass,
                 valueEntityFunction,
                 variableSourceReferences);
+    }
+
+    private static <Entity_, Value_> @NonNull BiConsumer<? extends Entity_, Consumer<Value_>> getRegularSourceEntityVisitor(
+            List<MemberAccessor> finalChainToVariable) {
+        @SuppressWarnings("unchecked")
+        BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction;
+        valueEntityFunction = (entity, consumer) -> {
+            Object current = entity;
+            for (var accessor : finalChainToVariable) {
+                current = accessor.executeGetter(current);
+                if (current == null) {
+                    return;
+                }
+            }
+            consumer.accept((Value_) current);
+        };
+        return valueEntityFunction;
+    }
+
+    private static <Entity_, Value_> @NonNull BiConsumer<? extends Entity_, Consumer<Value_>> getCollectionSourceEntityVisitor(
+            List<MemberAccessor> listMemberAccessors, List<MemberAccessor> finalChainToVariable) {
+        @SuppressWarnings("unchecked")
+        BiConsumer<? extends Entity_, Consumer<Value_>> valueEntityFunction;
+        valueEntityFunction = (entity, consumer) -> {
+            Object current = entity;
+            for (var accessor : listMemberAccessors) {
+                current = accessor.executeGetter(current);
+                if (current == null) {
+                    return;
+                }
+            }
+
+            Iterable<Object> iterable = (Iterable<Object>) current;
+            outer: for (var item : iterable) {
+                current = item;
+                for (var accessor : finalChainToVariable) {
+                    current = accessor.executeGetter(current);
+                    if (current == null) {
+                        continue outer;
+                    }
+                }
+                consumer.accept((Value_) current);
+            }
+        };
+        return valueEntityFunction;
+    }
+
+    private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(
+            Class<? extends Entity_> rootEntityClass, String targetVariableName, List<MemberAccessor> afterChain,
+            List<MemberAccessor> chainToVariable, boolean isTopLevel) {
+        var variableMemberAccessor = afterChain.get(0);
+        var sourceVariablePath = new VariablePath(variableMemberAccessor.getDeclaringClass(),
+                variableMemberAccessor.getName(),
+                chainToVariable.subList(0, chainToVariable.size() - afterChain.size()),
+                afterChain);
+        VariableId downstreamDeclarativeVariable = null;
+
+        var maybeDownstreamVariable = afterChain.remove(afterChain.size() - 1);
+        if (isDeclarativeShadowVariable(maybeDownstreamVariable)) {
+            downstreamDeclarativeVariable =
+                    new VariableId(maybeDownstreamVariable.getDeclaringClass(), maybeDownstreamVariable.getName());
+        }
+
+        var newSourceReference = new VariableSourceReference(
+                variableMemberAccessor.getDeclaringClass(),
+                variableMemberAccessor.getName(),
+                sourceVariablePath.memberAccessorsBeforeEntity,
+                isTopLevel,
+                isDeclarativeShadowVariable(variableMemberAccessor),
+                new VariableId(rootEntityClass, targetVariableName),
+                downstreamDeclarativeVariable,
+                sourceVariablePath.getValueVisitorFromVariableEntity());
+        return newSourceReference;
+    }
+
+    private static void assertIsValidVariableReference(String variablePath, VariableSourceReference variableSourceReference) {
+        VariableId sourceVariableId =
+                new VariableId(variableSourceReference.entityClass(), variableSourceReference.variableName());
+        if (variableSourceReference.isDeclarative()
+                && variableSourceReference.downstreamDeclarativeVariable() != null
+                && !variableSourceReference.downstreamDeclarativeVariable()
+                        .equals(sourceVariableId)) {
+            throw new IllegalArgumentException(
+                    "The source path \"%s\" accesses a declarative shadow variable \"%s\" from another declarative shadow variable \"%s\"."
+                            .formatted(variablePath,
+                                    variableSourceReference.downstreamDeclarativeVariable(),
+                                    sourceVariableId));
+        }
+        if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariable().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The source path \"%s\" accesses a non-declarative shadow variable \"%s\" not from the root entity or collection."
+                            .formatted(variablePath,
+                                    variableSourceReference.variableName()));
+        }
     }
 
     private static MemberAccessor getMemberAccessor(Class<?> declaringClass, String memberName,

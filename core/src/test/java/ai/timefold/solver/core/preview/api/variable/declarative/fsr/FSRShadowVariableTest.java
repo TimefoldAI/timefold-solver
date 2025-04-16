@@ -13,28 +13,66 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableNotifier;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
+import ai.timefold.solver.core.impl.domain.variable.declarative.VariableId;
+import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRAssertionEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRRoutePlan;
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVehicle;
 import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableSessionFactory;
 
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 public class FSRShadowVariableTest {
+    public static class MockShadowVariableSession<Solution_> {
+        final SolutionDescriptor<Solution_> solutionDescriptor;
+        final VariableReferenceGraph<Solution_> graph;
+
+        public MockShadowVariableSession(SolutionDescriptor<Solution_> solutionDescriptor,
+                VariableReferenceGraph<Solution_> graph) {
+            this.solutionDescriptor = solutionDescriptor;
+            this.graph = graph;
+        }
+
+        public void setVariable(Object entity, String variableName, @Nullable Object value) {
+            var variableMetamodel = solutionDescriptor.getMetaModel().entity(entity.getClass()).variable(variableName);
+            graph.beforeVariableChanged(new VariableId(variableMetamodel), entity);
+            solutionDescriptor.getEntityDescriptorStrict(entity.getClass()).getVariableDescriptor(variableName)
+                    .setValue(entity, value);
+            graph.afterVariableChanged(new VariableId(variableMetamodel), entity);
+        }
+
+        public void updateVariables() {
+            graph.updateChanged();
+        }
+    }
+
+    private <Solution_> MockShadowVariableSession<Solution_> createSession(SolutionDescriptor<Solution_> solutionDescriptor,
+            Object... entities) {
+        var variableReferenceGraph = new VariableReferenceGraph<Solution_>(ChangedVariableNotifier.empty());
+
+        DefaultShadowVariableSessionFactory.visitGraph(solutionDescriptor, variableReferenceGraph, entities,
+                DefaultTopologicalOrderGraph::new);
+
+        return new MockShadowVariableSession<>(solutionDescriptor, variableReferenceGraph);
+    }
+
     @Test
     public void simpleChain() {
-        var sessionFactory = ShadowVariableSessionFactory.create(
-                TestdataFSRRoutePlan.buildSolutionDescriptor());
-
         var vehicle = spy(new TestdataFSRVehicle("v1"));
         var visit1 = spy(new TestdataFSRVisit("c1"));
         var visit2 = spy(new TestdataFSRVisit("c2"));
         var visit3 = spy(new TestdataFSRVisit("c3"));
 
-        var session = sessionFactory.forEntities(vehicle, visit1, visit2, visit3);
+        var session = createSession(
+                TestdataFSRRoutePlan.buildSolutionDescriptor(),
+                vehicle, visit1, visit2, visit3);
         session.setVariable(visit1, "vehicle", vehicle);
         session.setVariable(visit2, "previousVisit", visit1);
         session.setVariable(visit3, "previousVisit", visit2);
@@ -79,9 +117,6 @@ public class FSRShadowVariableTest {
 
     @Test
     public void groupChain() {
-        var sessionFactory = ShadowVariableSessionFactory.create(
-                TestdataFSRRoutePlan.buildSolutionDescriptor());
-
         var vehicle1 = new TestdataFSRVehicle("v1");
         var vehicle2 = new TestdataFSRVehicle("v2");
         var vehicle3 = new TestdataFSRVehicle("v3");
@@ -103,8 +138,8 @@ public class FSRShadowVariableTest {
         visitB2.setVisitGroup(visitGroupB);
         visitB3.setVisitGroup(visitGroupB);
 
-        var session =
-                sessionFactory.forEntities(vehicle1, vehicle2, vehicle3, visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
+        var session = createSession(TestdataFSRRoutePlan.buildSolutionDescriptor(),
+                vehicle1, vehicle2, vehicle3, visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
         session.setVariable(visitA1, "vehicle", vehicle1);
         session.setVariable(visitA2, "vehicle", vehicle2);
         session.setVariable(visitB1, "vehicle", vehicle3);
@@ -185,9 +220,6 @@ public class FSRShadowVariableTest {
 
     @Test
     public void groupChainValidToInvalid() {
-        var sessionFactory = ShadowVariableSessionFactory.create(
-                TestdataFSRRoutePlan.buildSolutionDescriptor());
-
         var vehicle1 = new TestdataFSRVehicle("v1");
         var vehicle2 = new TestdataFSRVehicle("v2");
         var vehicle3 = new TestdataFSRVehicle("v3");
@@ -209,8 +241,8 @@ public class FSRShadowVariableTest {
         visitB2.setVisitGroup(visitGroupB);
         visitB3.setVisitGroup(visitGroupB);
 
-        var session =
-                sessionFactory.forEntities(vehicle1, vehicle2, vehicle3, visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
+        var session = createSession(TestdataFSRRoutePlan.buildSolutionDescriptor(),
+                vehicle1, vehicle2, vehicle3, visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
         session.setVariable(visitA1, "vehicle", vehicle1);
         session.setVariable(visitA2, "vehicle", vehicle2);
         session.setVariable(visitB1, "vehicle", vehicle3);
@@ -311,9 +343,6 @@ public class FSRShadowVariableTest {
 
     @Test
     public void groupChainInvalidToValid() {
-        var sessionFactory = ShadowVariableSessionFactory.create(
-                TestdataFSRRoutePlan.buildSolutionDescriptor());
-
         var vehicle1 = new TestdataFSRVehicle("v1");
         var vehicle2 = new TestdataFSRVehicle("v2");
         var vehicle3 = new TestdataFSRVehicle("v3");
@@ -335,8 +364,8 @@ public class FSRShadowVariableTest {
         visitB2.setVisitGroup(visitGroupB);
         visitB3.setVisitGroup(visitGroupB);
 
-        var session =
-                sessionFactory.forEntities(vehicle1, vehicle2, vehicle3, visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
+        var session = createSession(TestdataFSRRoutePlan.buildSolutionDescriptor(),
+                vehicle1, vehicle2, vehicle3, visitA1, visitA2, visitB1, visitB2, visitB3, visitC);
         session.setVariable(visitA1, "vehicle", vehicle1);
         session.setVariable(visitA2, "vehicle", vehicle2);
         session.setVariable(visitB1, "vehicle", vehicle1);
@@ -477,9 +506,7 @@ public class FSRShadowVariableTest {
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
                         .withConstraintProviderClass(TestdataFSRConstraintProvider.class)
                         .withAssertionScoreDirectorFactory(new ScoreDirectorFactoryConfig()
-                                .withEasyScoreCalculatorClass(TestdataFSRAssertionEasyScoreCalculator.class))
-                //
-                )
+                                .withEasyScoreCalculatorClass(TestdataFSRAssertionEasyScoreCalculator.class)))
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1000L));
 

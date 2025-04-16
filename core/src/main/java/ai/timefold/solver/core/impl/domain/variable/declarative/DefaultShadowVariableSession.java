@@ -5,13 +5,12 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableSession;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSession, Supply {
+public class DefaultShadowVariableSession<Solution_> implements Supply {
     final VariableReferenceGraph<Solution_> graph;
 
     record EntityVariablePair<Solution_>(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
@@ -43,13 +42,6 @@ public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSe
         }
     }
 
-    public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        //        var entityClass = variableDescriptor.getEntityDescriptor().getEntityClass();
-        //        graph.afterVariableChanged(new VariableId(entityClass, variableDescriptor.getVariableName()),
-        //                entity);
-    }
-
-    @Override
     public void updateVariables() {
         for (var modifiedEntityVariable : modifiedEntityVariableSet) {
             graph.afterVariableChanged(
@@ -59,11 +51,5 @@ public class DefaultShadowVariableSession<Solution_> implements ShadowVariableSe
         }
         modifiedEntityVariableSet.clear();
         graph.updateChanged();
-    }
-
-    // Unsupported methods
-    @Override
-    public void setVariable(Object entity, String variableName, @Nullable Object value) {
-        throw new UnsupportedOperationException("Use before and after methods instead");
     }
 }

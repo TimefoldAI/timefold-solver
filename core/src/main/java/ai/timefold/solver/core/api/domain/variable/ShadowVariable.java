@@ -23,7 +23,7 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVar
 @Repeatable(List.class)
 public @interface ShadowVariable {
     /**
-     * Experimental.
+     * {@link ai.timefold.solver.core.config.solver.PreviewFeature Preview feature}.
      * <p/>
      * If set, it is a name of a method annotated with
      * {@link ShadowVariableUpdater} that computes the value of this

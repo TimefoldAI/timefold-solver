@@ -127,7 +127,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     private void
             processShadowVariableDescriptorWithoutListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        // TODO: Set up variable listener for declarative shadow variables
         for (var listenerWithSources : shadowVariableDescriptor.buildVariableListeners(this)) {
             var variableListener = listenerWithSources.getVariableListener();
             if (variableListener instanceof Supply supply) {
@@ -213,7 +212,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             var shadowVariableSessionFactory = new DefaultShadowVariableSessionFactory<>(
                     scoreDirector.getSolutionDescriptor(),
                     scoreDirector,
-                    this,
                     shadowVariableGraphCreator);
             shadowVariableSession = shadowVariableSessionFactory.forSolution(scoreDirector.getWorkingSolution());
             triggerVariableListenersInNotificationQueues();
@@ -261,18 +259,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             shadowVariableSession.beforeVariableChanged(variableDescriptor, entity);
             notificationQueuesAreEmpty = false;
         }
-    }
-
-    public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        if (shadowVariableSession != null) {
-            shadowVariableSession.afterVariableChanged(variableDescriptor, entity);
-        }
-    }
-
-    public void beforeElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-    }
-
-    public void beforeElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
     }
 
     public void afterElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {

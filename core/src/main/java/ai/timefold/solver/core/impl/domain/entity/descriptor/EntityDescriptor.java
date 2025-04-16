@@ -69,6 +69,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
 
 import org.jspecify.annotations.NonNull;
@@ -133,6 +134,9 @@ public class EntityDescriptor<Solution_> {
     // Duplicate of effectiveGenuineVariableDescriptorMap.values() for faster iteration on the hot path.
     private List<GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorList;
     private List<ListVariableDescriptor<Solution_>> effectiveGenuineListVariableDescriptorList;
+
+    // Caches the metamodel
+    private PlanningEntityMetaModel<Solution_, ?> entityMetaModel = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -929,6 +933,15 @@ public class EntityDescriptor<Solution_> {
         return isGenuine() &&
                 (effectiveMovableEntityFilter == null
                         || effectiveMovableEntityFilter.test(workingSolution, entity));
+    }
+
+    public PlanningEntityMetaModel<Solution_, ?> getEntityMetaModel() {
+        if (entityMetaModel != null) {
+            return entityMetaModel;
+        }
+        entityMetaModel = solutionDescriptor.getMetaModel()
+                .entity(entityClass);
+        return entityMetaModel;
     }
 
     @Override

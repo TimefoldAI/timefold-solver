@@ -23,6 +23,7 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVar
 public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     MemberAccessor calculator;
     RootVariableSource<?, ?>[] sources;
+    String[] sourcePaths;
 
     public DeclarativeShadowVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
@@ -69,24 +70,14 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                         MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, ShadowVariableUpdater.class,
                         descriptorPolicy.getDomainAccessType());
 
-        var sources = shadowVariableUpdater.sources();
-        if (sources.length == 0) {
+        sourcePaths = shadowVariableUpdater.sources();
+        if (sourcePaths.length == 0) {
             throw new IllegalArgumentException("""
                     Method "%s" referenced from @%s member %s has no sources.
                     A shadow variable must have at least one source (since otherwise it a constant).
                     Maybe add one source?
                     """.formatted(methodName, ShadowVariable.class.getSimpleName(), variableMemberAccessor));
         }
-
-        var rootVariableSources = new RootVariableSource[sources.length];
-        for (int i = 0; i < sources.length; i++) {
-            rootVariableSources[i] = RootVariableSource.from(entityDescriptor.getEntityClass(),
-                    variableMemberAccessor.getName(),
-                    sources[i],
-                    entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory(),
-                    descriptorPolicy);
-        }
-        this.sources = rootVariableSources;
     }
 
     @Override
@@ -111,7 +102,15 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
-
+        sources = new RootVariableSource[sourcePaths.length];
+        for (int i = 0; i < sources.length; i++) {
+            sources[i] = RootVariableSource.from(
+                    entityDescriptor.getEntityClass(),
+                    variableMemberAccessor.getName(),
+                    sourcePaths[i],
+                    entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory(),
+                    descriptorPolicy);
+        }
     }
 
     public MemberAccessor getMemberAccessor() {

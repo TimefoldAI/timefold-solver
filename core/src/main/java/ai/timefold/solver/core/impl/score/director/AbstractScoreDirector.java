@@ -454,12 +454,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
             moveStreamsBasedMoveRepository.update(entity);
         }
-        variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
     }
 
     @Override
     public void beforeListVariableElementAssigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
-        variableListenerSupport.beforeElementAssigned(variableDescriptor, element);
     }
 
     @Override

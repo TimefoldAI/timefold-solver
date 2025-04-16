@@ -131,17 +131,17 @@ public final class ReflectionHelper {
      * @return sometimes null
      */
     public static Method getDeclaredGetterMethod(Class<?> containingClass, String propertyName) {
-        String capitalizedPropertyName = capitalizePropertyName(propertyName);
-        String getterName = PROPERTY_ACCESSOR_PREFIX_GET + capitalizedPropertyName;
+        var capitalizedPropertyName = capitalizePropertyName(propertyName);
+        var getterName = PROPERTY_ACCESSOR_PREFIX_GET + capitalizedPropertyName;
         try {
             return containingClass.getMethod(getterName);
         } catch (NoSuchMethodException e) {
             // intentionally empty
         }
-        String isserName = PROPERTY_ACCESSOR_PREFIX_IS + capitalizedPropertyName;
+        var isserName = PROPERTY_ACCESSOR_PREFIX_IS + capitalizedPropertyName;
         try {
 
-            Method method = containingClass.getDeclaredMethod(isserName);
+            var method = containingClass.getDeclaredMethod(isserName);
             if (method.getReturnType() == boolean.class) {
                 return method;
             }

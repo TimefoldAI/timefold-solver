@@ -2,18 +2,18 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Objects;
 
-public record EntityVariableOrFactReference<Entity_>(VariableId variableId, Entity_ entity,
-        VariableUpdaterInfo variableReference, int id) {
+public record EntityVariablePair(Object entity, VariableId variableId,
+        VariableUpdaterInfo variableReference, int graphNodeId) {
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof EntityVariableOrFactReference<?> that))
+        if (!(object instanceof EntityVariablePair that))
             return false;
-        return id == that.id;
+        return graphNodeId == that.graphNodeId;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id);
+        return Objects.hashCode(graphNodeId);
     }
 
     @Override
