@@ -1,4 +1,4 @@
-package ai.timefold.solver.spring.boot.autoconfigure.multiscore.domain;
+package ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain;
 
 import java.util.ArrayList;
 import java.util.List;

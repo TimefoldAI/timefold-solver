@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdata.multiscore.domain;
+package ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;

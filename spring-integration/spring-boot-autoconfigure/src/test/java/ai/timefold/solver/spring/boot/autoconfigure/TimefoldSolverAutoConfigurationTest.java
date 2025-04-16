@@ -56,7 +56,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntity
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.multiscore.MultipleScoreSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.multiple.MultipleScoreSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfiguration;
@@ -89,7 +89,7 @@ class TimefoldSolverAutoConfigurationTest {
     private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner gizmoContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
-    private final ApplicationContextRunner multiscoreRunner;
+    private final ApplicationContextRunner multiConstraintProviderRunner;
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
     private final FilteredClassLoader testFilteredClassLoader;
     private final FilteredClassLoader noGizmoFilteredClassLoader;
@@ -133,7 +133,7 @@ class TimefoldSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(MultiModuleSpringTestConfiguration.class);
-        multiscoreRunner = new ApplicationContextRunner()
+        multiConstraintProviderRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(MultipleScoreSpringTestConfiguration.class);
@@ -912,7 +912,7 @@ class TimefoldSolverAutoConfigurationTest {
 
     @Test
     void readOnlyConcreteProviderClass() {
-        AssertionsForClassTypes.assertThatCode(() -> multiscoreRunner
+        AssertionsForClassTypes.assertThatCode(() -> multiConstraintProviderRunner
                 .run(context -> context.getBean(SolverFactory.class)))
                 .doesNotThrowAnyException();
     }

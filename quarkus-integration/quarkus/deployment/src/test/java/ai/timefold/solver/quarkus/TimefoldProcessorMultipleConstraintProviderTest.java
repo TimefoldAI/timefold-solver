@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.quarkus.testdata.multiscore.domain.TestdataMultipleScoreSolution;
+import ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain.TestdataMultipleScoreSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -14,13 +14,13 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-class TimefoldProcessorMultipleScoreProviderTest {
+class TimefoldProcessorMultipleConstraintProviderTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, "ai.timefold.solver.quarkus.testdata.multiscore"));
+                    .addPackages(true, "ai.timefold.solver.quarkus.testdata.multiple.constraintprovider"));
 
     @Inject
     SolverFactory<TestdataMultipleScoreSolution> solverFactory;

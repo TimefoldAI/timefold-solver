@@ -1,22 +1,21 @@
-package ai.timefold.solver.spring.boot.autoconfigure.multiscore.constraints;
+package ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.constraints;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
-import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.spring.boot.autoconfigure.multiscore.domain.TestdataMultipleScoreEntity;
+import ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain.TestdataMultipleScoreEntity;
 
 import org.jspecify.annotations.NonNull;
 
-public abstract class TestdataAbstractMultipleScoreConstraintProvider implements ConstraintProvider {
+public class TestdataMultipleScoreConstraintProvider extends TestdataAbstractMultipleScoreConstraintProvider {
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataMultipleScoreEntity.class)
                         .join(TestdataMultipleScoreEntity.class, Joiners.equal(TestdataMultipleScoreEntity::getValue))
                         .filter((a, b) -> a != b)
-                        .penalize(SimpleScore.ONE)
+                        .penalize(SimpleScore.ONE, (e1, e2) -> 1)
                         .asConstraint("Don't assign 2 entities the same value.")
         };
     }
