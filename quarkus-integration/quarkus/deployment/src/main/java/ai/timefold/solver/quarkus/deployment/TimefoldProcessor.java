@@ -380,9 +380,10 @@ class TimefoldProcessor {
         Collection<ClassInfo> simpleScoreClassCollection = indexView.getAllKnownImplementations(DotNames.EASY_SCORE_CALCULATOR)
                 .stream().filter(clazz -> !clazz.isAbstract())
                 .toList();
-        Collection<ClassInfo> constraintScoreClassCollection = indexView.getAllKnownImplementations(DotNames.CONSTRAINT_PROVIDER)
-                .stream().filter(clazz -> !clazz.isAbstract())
-                .toList();
+        Collection<ClassInfo> constraintScoreClassCollection =
+                indexView.getAllKnownImplementations(DotNames.CONSTRAINT_PROVIDER)
+                        .stream().filter(clazz -> !clazz.isAbstract())
+                        .toList();
         Collection<ClassInfo> incrementalScoreClassCollection =
                 indexView.getAllKnownImplementations(DotNames.INCREMENTAL_SCORE_CALCULATOR)
                         .stream().filter(clazz -> !clazz.isAbstract())
