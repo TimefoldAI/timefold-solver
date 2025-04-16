@@ -196,7 +196,7 @@ A `@PlanningId` property must be:
 * Unique for that specific class
 ** It does not need to be unique across different problem fact classes
 (unless in that rare case that those classes are mixed in the same value range or planning entity collection).
-* An instance of a type that implements `Object.hashCode()` and `Object.equals()`.
+* An instance of a type that implements `Object.hashCode()` and `Object.equals()`. See the Javadoc on the https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Object.html[`java.lang.Object` class] for details.
 ** It's recommended to use the type `Integer`, `int`, `Long`, `long`, `String` or `UUID`.
 * Never `null` by the time `Solver.solve()` is called.
 
