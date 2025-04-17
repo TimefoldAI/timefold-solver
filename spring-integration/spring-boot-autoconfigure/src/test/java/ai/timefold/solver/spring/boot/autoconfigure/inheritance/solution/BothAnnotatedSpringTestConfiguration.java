@@ -1,14 +1,14 @@
-package ai.timefold.solver.spring.boot.autoconfigure.inheritance.entity;
+package ai.timefold.solver.spring.boot.autoconfigure.inheritance.solution;
 
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedSolution;
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @AutoConfigurationPackage
-@EntityScan(basePackageClasses = { TestdataBothAnnotatedSolution.class })
+@EntityScan(basePackageClasses = { TestdataBothAnnotatedExtendedSolution.class })
 public class BothAnnotatedSpringTestConfiguration {
 
 }
