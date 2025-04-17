@@ -8,7 +8,7 @@ import ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain.Te
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataMultipleScoreConstraintProvider extends TestdataAbstractMultipleConstraintProvider {
+public class TestdataMultipleConstraintProvider extends TestdataAbstractMultipleConstraintProvider {
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
