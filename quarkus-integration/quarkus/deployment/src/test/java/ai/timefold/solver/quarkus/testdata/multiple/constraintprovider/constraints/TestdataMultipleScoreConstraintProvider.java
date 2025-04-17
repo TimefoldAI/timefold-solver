@@ -4,16 +4,16 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain.TestdataMultipleScoreEntity;
+import ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain.TestdataMultipleConstraintEntity;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataMultipleScoreConstraintProvider extends TestdataAbstractMultipleScoreConstraintProvider {
+public class TestdataMultipleScoreConstraintProvider extends TestdataAbstractMultipleConstraintProvider {
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
-                factory.forEach(TestdataMultipleScoreEntity.class)
-                        .join(TestdataMultipleScoreEntity.class, Joiners.equal(TestdataMultipleScoreEntity::getValue))
+                factory.forEach(TestdataMultipleConstraintEntity.class)
+                        .join(TestdataMultipleConstraintEntity.class, Joiners.equal(TestdataMultipleConstraintEntity::getValue))
                         .filter((a, b) -> a != b)
                         .penalize(SimpleScore.ONE, (e1, e2) -> 1)
                         .asConstraint("Don't assign 2 entities the same value.")

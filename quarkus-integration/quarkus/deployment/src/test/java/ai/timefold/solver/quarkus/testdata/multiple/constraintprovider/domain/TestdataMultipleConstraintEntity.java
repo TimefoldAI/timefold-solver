@@ -4,7 +4,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 @PlanningEntity
-public class TestdataMultipleScoreEntity {
+public class TestdataMultipleConstraintEntity {
 
     private String value;
 

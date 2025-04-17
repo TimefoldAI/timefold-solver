@@ -56,7 +56,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntity
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.multiple.MultipleScoreSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.multiple.MultipleConstraintSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfiguration;
@@ -136,7 +136,7 @@ class TimefoldSolverAutoConfigurationTest {
         multiConstraintProviderRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(MultipleScoreSpringTestConfiguration.class);
+                .withUserConfiguration(MultipleConstraintSpringTestConfiguration.class);
         allDefaultsFilteredClassLoader =
                 new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("ai.timefold.solver.test"),
                         FilteredClassLoader.ClassPathResourceFilter

@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain.TestdataMultipleScoreSolution;
+import ai.timefold.solver.quarkus.testdata.multiple.constraintprovider.domain.TestdataMultipleConstraintSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -23,11 +23,11 @@ class TimefoldProcessorMultipleConstraintProviderTest {
                     .addPackages(true, "ai.timefold.solver.quarkus.testdata.multiple.constraintprovider"));
 
     @Inject
-    SolverFactory<TestdataMultipleScoreSolution> solverFactory;
+    SolverFactory<TestdataMultipleConstraintSolution> solverFactory;
 
     @Test
     void readOnlyConcreteProviderClass() {
-        var problem = TestdataMultipleScoreSolution.generateSolution(3, 2);
+        var problem = TestdataMultipleConstraintSolution.generateSolution(3, 2);
         assertThatCode(() -> solverFactory.buildSolver().solve(problem)).doesNotThrowAnyException();
     }
 }

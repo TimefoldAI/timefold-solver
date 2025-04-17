@@ -5,6 +5,6 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @AutoConfigurationPackage
-public class MultipleScoreSpringTestConfiguration {
+public class MultipleConstraintSpringTestConfiguration {
 
 }

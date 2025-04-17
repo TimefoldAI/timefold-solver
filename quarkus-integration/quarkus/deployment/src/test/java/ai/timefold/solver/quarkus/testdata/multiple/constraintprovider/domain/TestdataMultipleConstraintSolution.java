@@ -11,18 +11,18 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 
 @PlanningSolution
-public class TestdataMultipleScoreSolution {
+public class TestdataMultipleConstraintSolution {
 
-    public static TestdataMultipleScoreSolution generateSolution(int valueListSize, int entityListSize) {
-        var solution = new TestdataMultipleScoreSolution();
+    public static TestdataMultipleConstraintSolution generateSolution(int valueListSize, int entityListSize) {
+        var solution = new TestdataMultipleConstraintSolution();
         var valueList = new ArrayList<String>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {
             valueList.add("Generated Value " + i);
         }
         solution.setValueList(valueList);
-        var entityList = new ArrayList<TestdataMultipleScoreEntity>(entityListSize);
+        var entityList = new ArrayList<TestdataMultipleConstraintEntity>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
-            var entity = new TestdataMultipleScoreEntity();
+            var entity = new TestdataMultipleConstraintEntity();
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
@@ -30,7 +30,7 @@ public class TestdataMultipleScoreSolution {
     }
 
     private List<String> valueList;
-    private List<TestdataMultipleScoreEntity> entityList;
+    private List<TestdataMultipleConstraintEntity> entityList;
 
     private SimpleScore score;
 
@@ -45,11 +45,11 @@ public class TestdataMultipleScoreSolution {
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataMultipleScoreEntity> getEntityList() {
+    public List<TestdataMultipleConstraintEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataMultipleScoreEntity> entityList) {
+    public void setEntityList(List<TestdataMultipleConstraintEntity> entityList) {
         this.entityList = entityList;
     }
 

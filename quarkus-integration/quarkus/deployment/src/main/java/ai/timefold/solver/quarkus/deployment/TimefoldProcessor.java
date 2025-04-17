@@ -804,7 +804,7 @@ class TimefoldProcessor {
                 childEntityList.addAll(childEntityInterfaceList);
             }
             // Check all implementors
-            var childEntityImplementorList = indexView.getAllKnownImplementors(entityClass).stream()
+            var childEntityImplementorList = indexView.getAllKnownImplementations(entityClass).stream()
                     .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
                     .toList();
             if (!childEntityImplementorList.isEmpty()) {
@@ -868,7 +868,7 @@ class TimefoldProcessor {
     }
 
     private <T> Class<? extends T> findFirstImplementingConcreteClass(DotName targetDotName, IndexView indexView) {
-        Collection<ClassInfo> classInfoCollection = indexView.getAllKnownImplementors(targetDotName).stream()
+        Collection<ClassInfo> classInfoCollection = indexView.getAllKnownImplementations(targetDotName).stream()
                 .filter(classInfo -> !classInfo.isAbstract())
                 .toList();
         if (classInfoCollection.isEmpty()) {
