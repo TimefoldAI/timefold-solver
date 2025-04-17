@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.task_assignment;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -9,27 +9,27 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 @PlanningEntity
-public class TestdataTAEmployee {
+public class TestdataDependencyEntity {
     @PlanningListVariable
-    List<TestdataTATask> tasks;
+    List<TestdataDependencyValue> values;
 
     LocalDateTime startTime;
 
-    public TestdataTAEmployee() {
+    public TestdataDependencyEntity() {
         this(LocalDateTime.ofEpochSecond(0L, 0, ZoneOffset.UTC));
     }
 
-    public TestdataTAEmployee(LocalDateTime startTime) {
+    public TestdataDependencyEntity(LocalDateTime startTime) {
         this.startTime = startTime;
-        this.tasks = new ArrayList<>();
+        this.values = new ArrayList<>();
     }
 
-    public List<TestdataTATask> getTasks() {
-        return tasks;
+    public List<TestdataDependencyValue> getValues() {
+        return values;
     }
 
-    public void setTasks(List<TestdataTATask> tasks) {
-        this.tasks = tasks;
+    public void setValues(List<TestdataDependencyValue> values) {
+        this.values = values;
     }
 
     public LocalDateTime getStartTime() {
@@ -42,8 +42,8 @@ public class TestdataTAEmployee {
 
     @Override
     public String toString() {
-        return "TestdataTAEmployee{" +
-                "tasks=" + tasks +
+        return "TestdataPredecessorEntity{" +
+                "values=" + values +
                 ", startTime=" + startTime +
                 '}';
     }

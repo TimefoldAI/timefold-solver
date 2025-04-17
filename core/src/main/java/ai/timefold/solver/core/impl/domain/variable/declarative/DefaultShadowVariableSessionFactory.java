@@ -71,7 +71,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             }
         }
 
-        // Create variable listeners for each declarative shadow variable descriptor
+        // Create variable processors for each declarative shadow variable descriptor
         for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
             final var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
 

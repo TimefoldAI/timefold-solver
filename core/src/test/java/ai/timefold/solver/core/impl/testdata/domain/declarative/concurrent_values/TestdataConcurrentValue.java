@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,12 +18,12 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.Invalidit
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
 
 @PlanningEntity
-public class TestdataFSRVisit {
+public class TestdataConcurrentValue {
     public static final LocalDateTime BASE_START_TIME = LocalDate.of(2025, 1, 1).atTime(LocalTime.of(9, 0));
     String id;
 
-    @InverseRelationShadowVariable(sourceVariableName = "visits")
-    TestdataFSRVehicle vehicle;
+    @InverseRelationShadowVariable(sourceVariableName = "values")
+    TestdataConcurrentEntity entity;
 
     @ShadowVariable(method = "serviceReadyTimeUpdater")
     LocalDateTime serviceReadyTime;
@@ -34,21 +34,21 @@ public class TestdataFSRVisit {
     @ShadowVariable(method = "serviceFinishTimeUpdater")
     LocalDateTime serviceFinishTime;
 
-    @PreviousElementShadowVariable(sourceVariableName = "visits")
-    TestdataFSRVisit previousVisit;
+    @PreviousElementShadowVariable(sourceVariableName = "values")
+    TestdataConcurrentValue previousValue;
 
-    @NextElementShadowVariable(sourceVariableName = "visits")
-    TestdataFSRVisit nextVisit;
+    @NextElementShadowVariable(sourceVariableName = "values")
+    TestdataConcurrentValue nextValue;
 
-    List<TestdataFSRVisit> visitGroup;
+    List<TestdataConcurrentValue> concurrentValueGroup;
 
     @InvalidityMarker
     boolean isInvalid;
 
-    public TestdataFSRVisit() {
+    public TestdataConcurrentValue() {
     }
 
-    public TestdataFSRVisit(String id) {
+    public TestdataConcurrentValue(String id) {
         this.id = id;
     }
 
@@ -60,28 +60,28 @@ public class TestdataFSRVisit {
         this.id = id;
     }
 
-    public TestdataFSRVehicle getVehicle() {
-        return vehicle;
+    public TestdataConcurrentEntity getEntity() {
+        return entity;
     }
 
-    public void setVehicle(TestdataFSRVehicle vehicle) {
-        this.vehicle = vehicle;
+    public void setEntity(TestdataConcurrentEntity entity) {
+        this.entity = entity;
     }
 
-    public TestdataFSRVisit getPreviousVisit() {
-        return previousVisit;
+    public TestdataConcurrentValue getPreviousValue() {
+        return previousValue;
     }
 
-    public void setPreviousVisit(TestdataFSRVisit previousVisit) {
-        this.previousVisit = previousVisit;
+    public void setPreviousValue(TestdataConcurrentValue previousValue) {
+        this.previousValue = previousValue;
     }
 
-    public TestdataFSRVisit getNextVisit() {
-        return nextVisit;
+    public TestdataConcurrentValue getNextValue() {
+        return nextValue;
     }
 
-    public void setNextVisit(TestdataFSRVisit nextVisit) {
-        this.nextVisit = nextVisit;
+    public void setNextValue(TestdataConcurrentValue nextValue) {
+        this.nextValue = nextValue;
     }
 
     public LocalDateTime getServiceStartTime() {
@@ -92,25 +92,25 @@ public class TestdataFSRVisit {
         this.serviceStartTime = serviceStartTime;
     }
 
-    @ShadowVariableUpdater(sources = { "previousVisit.serviceFinishTime", "vehicle" })
+    @ShadowVariableUpdater(sources = { "previousValue.serviceFinishTime", "entity" })
     public LocalDateTime serviceReadyTimeUpdater() {
-        if (previousVisit != null) {
-            return previousVisit.serviceFinishTime.plusMinutes(30L);
+        if (previousValue != null) {
+            return previousValue.serviceFinishTime.plusMinutes(30L);
         }
-        if (vehicle != null) {
+        if (entity != null) {
             return BASE_START_TIME;
         }
         return null;
     }
 
-    @ShadowVariableUpdater(sources = { "serviceReadyTime", "visitGroup[].serviceReadyTime" })
+    @ShadowVariableUpdater(sources = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" })
     public LocalDateTime serviceStartTimeUpdater() {
         if (serviceReadyTime == null) {
             return null;
         }
         var startTime = serviceReadyTime;
-        if (visitGroup != null) {
-            for (var visit : visitGroup) {
+        if (concurrentValueGroup != null) {
+            for (var visit : concurrentValueGroup) {
                 if (visit.serviceReadyTime != null && startTime.isBefore(visit.serviceReadyTime)) {
                     startTime = visit.serviceReadyTime;
                 }
@@ -135,12 +135,12 @@ public class TestdataFSRVisit {
         this.serviceFinishTime = serviceFinishTime;
     }
 
-    public List<TestdataFSRVisit> getVisitGroup() {
-        return visitGroup;
+    public List<TestdataConcurrentValue> getConcurrentValueGroup() {
+        return concurrentValueGroup;
     }
 
-    public void setVisitGroup(List<TestdataFSRVisit> visitGroup) {
-        this.visitGroup = visitGroup;
+    public void setConcurrentValueGroup(List<TestdataConcurrentValue> concurrentValueGroup) {
+        this.concurrentValueGroup = concurrentValueGroup;
     }
 
     public boolean isInvalid() {
@@ -155,22 +155,22 @@ public class TestdataFSRVisit {
         return getExpectedInvalid(new IdentityHashMap<>());
     }
 
-    boolean getExpectedInvalid(Map<TestdataFSRVisit, Boolean> cache) {
+    boolean getExpectedInvalid(Map<TestdataConcurrentValue, Boolean> cache) {
         if (cache.containsKey(this)) {
             return cache.get(this);
         }
         cache.put(this, true);
-        if (previousVisit != null && previousVisit.getExpectedInvalid(cache)) {
+        if (previousValue != null && previousValue.getExpectedInvalid(cache)) {
             return true;
         }
-        if (visitGroup != null) {
+        if (concurrentValueGroup != null) {
             var vehicles = Collections.newSetFromMap(new IdentityHashMap<>());
-            for (var visit : visitGroup) {
-                if (visit.vehicle != null && !vehicles.add(visit.vehicle)) {
+            for (var visit : concurrentValueGroup) {
+                if (visit.entity != null && !vehicles.add(visit.entity)) {
                     return true;
                 }
                 if (visit != this) {
-                    if (visit.previousVisit != null && visit.previousVisit.getExpectedInvalid(cache)) {
+                    if (visit.previousValue != null && visit.previousValue.getExpectedInvalid(cache)) {
                         return true;
                     }
                 }
@@ -180,8 +180,9 @@ public class TestdataFSRVisit {
         return false;
     }
 
-    record TimeCache(Map<TestdataFSRVisit, LocalDateTime> readyTimeCache, Map<TestdataFSRVisit, LocalDateTime> startTimeCache,
-            Map<TestdataFSRVisit, LocalDateTime> endTimeCache) {
+    record TimeCache(Map<TestdataConcurrentValue, LocalDateTime> readyTimeCache,
+            Map<TestdataConcurrentValue, LocalDateTime> startTimeCache,
+            Map<TestdataConcurrentValue, LocalDateTime> endTimeCache) {
         static TimeCache create() {
             return new TimeCache(new IdentityHashMap<>(), new IdentityHashMap<>(), new IdentityHashMap<>());
         }
@@ -199,14 +200,14 @@ public class TestdataFSRVisit {
             return cache.readyTimeCache.get(this);
         }
         cache.readyTimeCache.put(this, null);
-        if (previousVisit == null) {
-            if (vehicle == null) {
+        if (previousValue == null) {
+            if (entity == null) {
                 return null;
             }
             cache.readyTimeCache.put(this, BASE_START_TIME);
             return BASE_START_TIME;
         }
-        var out = previousVisit.getExpectedServiceFinishTime(cache);
+        var out = previousValue.getExpectedServiceFinishTime(cache);
         if (out == null) {
             return null;
         }
@@ -227,12 +228,12 @@ public class TestdataFSRVisit {
             return cache.startTimeCache.get(this);
         }
         cache.startTimeCache.put(this, null);
-        if (visitGroup == null) {
+        if (concurrentValueGroup == null) {
             var out = getExpectedServiceReadyTime(cache);
             cache.startTimeCache.put(this, out);
             return out;
         } else {
-            var out = visitGroup.stream().map(visit -> visit.getExpectedServiceReadyTime(cache))
+            var out = concurrentValueGroup.stream().map(visit -> visit.getExpectedServiceReadyTime(cache))
                     .filter(Objects::nonNull).max(LocalDateTime::compareTo)
                     .orElse(null);
             cache.startTimeCache.put(this, out);
@@ -262,12 +263,12 @@ public class TestdataFSRVisit {
     }
 
     public boolean isAssigned() {
-        return vehicle != null;
+        return entity != null;
     }
 
     @Override
     public String toString() {
-        return (previousVisit != null) ? previousVisit + " -> " + id
-                : (vehicle != null) ? vehicle.id + " -> " + id : "null -> " + id;
+        return (previousValue != null) ? previousValue + " -> " + id
+                : (entity != null) ? entity.id + " -> " + id : "null -> " + id;
     }
 }

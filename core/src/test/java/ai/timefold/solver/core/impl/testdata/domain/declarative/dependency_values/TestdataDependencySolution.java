@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.task_assignment;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -12,45 +12,45 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
-public class TestdataTASchedule {
+public class TestdataDependencySolution {
     @PlanningEntityCollectionProperty
-    List<TestdataTAEmployee> employees;
+    List<TestdataDependencyEntity> entities;
 
     @PlanningEntityCollectionProperty
     @ValueRangeProvider
-    List<TestdataTATask> tasks;
+    List<TestdataDependencyValue> values;
 
     @PlanningScore
     HardSoftScore score;
 
-    public TestdataTASchedule() {
+    public TestdataDependencySolution() {
     }
 
-    public TestdataTASchedule(List<TestdataTAEmployee> employees, List<TestdataTATask> tasks) {
-        this.tasks = tasks;
-        this.employees = employees;
+    public TestdataDependencySolution(List<TestdataDependencyEntity> entities, List<TestdataDependencyValue> values) {
+        this.values = values;
+        this.entities = entities;
     }
 
-    public SolutionDescriptor<TestdataTASchedule> buildSolutionDescriptor() {
+    public SolutionDescriptor<TestdataDependencySolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
-                TestdataTASchedule.class, TestdataTAEmployee.class, TestdataTATask.class);
+                TestdataDependencySolution.class, TestdataDependencyEntity.class, TestdataDependencyValue.class);
     }
 
-    public List<TestdataTATask> getTasks() {
-        return tasks;
+    public List<TestdataDependencyValue> getValues() {
+        return values;
     }
 
-    public void setTasks(List<TestdataTATask> tasks) {
-        this.tasks = tasks;
+    public void setValues(List<TestdataDependencyValue> values) {
+        this.values = values;
     }
 
-    public List<TestdataTAEmployee> getEmployees() {
-        return employees;
+    public List<TestdataDependencyEntity> getEntities() {
+        return entities;
     }
 
-    public void setEmployees(
-            List<TestdataTAEmployee> employees) {
-        this.employees = employees;
+    public void setEntities(
+            List<TestdataDependencyEntity> entities) {
+        this.entities = entities;
     }
 
     public HardSoftScore getScore() {
@@ -63,9 +63,9 @@ public class TestdataTASchedule {
 
     @Override
     public String toString() {
-        return "TestdataTASchedule{" +
-                "employees=" + employees +
-                ", tasks=" + tasks +
+        return "TestdataPredecessorSolution{" +
+                "entities=" + entities +
+                ", values=" + values +
                 ", score=" + score +
                 '}';
     }

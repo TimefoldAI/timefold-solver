@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values;
 
 import java.util.EnumSet;
 import java.util.List;
@@ -12,37 +12,37 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
-public class TestdataFSRRoutePlan {
-    public static SolutionDescriptor<TestdataFSRRoutePlan> buildSolutionDescriptor() {
+public class TestdataConcurrentSolution {
+    public static SolutionDescriptor<TestdataConcurrentSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
-                TestdataFSRRoutePlan.class,
-                TestdataFSRVehicle.class, TestdataFSRVisit.class);
+                TestdataConcurrentSolution.class,
+                TestdataConcurrentEntity.class, TestdataConcurrentValue.class);
     }
 
     @PlanningEntityCollectionProperty
-    List<TestdataFSRVehicle> vehicles;
+    List<TestdataConcurrentEntity> entities;
 
     @PlanningEntityCollectionProperty
     @ValueRangeProvider
-    List<TestdataFSRVisit> visits;
+    List<TestdataConcurrentValue> values;
 
     @PlanningScore
     HardSoftScore score;
 
-    public List<TestdataFSRVehicle> getVehicles() {
-        return vehicles;
+    public List<TestdataConcurrentEntity> getEntities() {
+        return entities;
     }
 
-    public void setVehicles(List<TestdataFSRVehicle> vehicles) {
-        this.vehicles = vehicles;
+    public void setEntities(List<TestdataConcurrentEntity> entities) {
+        this.entities = entities;
     }
 
-    public List<TestdataFSRVisit> getVisits() {
-        return visits;
+    public List<TestdataConcurrentValue> getValues() {
+        return values;
     }
 
-    public void setVisits(List<TestdataFSRVisit> visits) {
-        this.visits = visits;
+    public void setValues(List<TestdataConcurrentValue> values) {
+        this.values = values;
     }
 
     public HardSoftScore getScore() {

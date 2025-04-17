@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.task_assignment;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values;
 
 import java.time.Duration;
 
@@ -9,17 +9,17 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataTAConstraintProvider implements ConstraintProvider {
+public class TestdataDependencyConstraintProvider implements ConstraintProvider {
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                constraintFactory.forEach(TestdataTATask.class)
-                        .filter(TestdataTATask::isInvalid)
+                constraintFactory.forEach(TestdataDependencyValue.class)
+                        .filter(TestdataDependencyValue::isInvalid)
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Invalid task"),
-                constraintFactory.forEach(TestdataTATask.class)
+                constraintFactory.forEach(TestdataDependencyValue.class)
                         .filter(task -> !task.isInvalid())
-                        .penalize(HardSoftScore.ONE_SOFT, t -> (int) Duration.between(t.getEmployee().getStartTime(),
+                        .penalize(HardSoftScore.ONE_SOFT, t -> (int) Duration.between(t.getEntity().getStartTime(),
                                 t.getEndTime()).toMinutes())
                         .asConstraint("Finish tasks as early as possible")
         };

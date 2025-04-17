@@ -36,9 +36,9 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntit
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRRoutePlan;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVehicle;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values.TestdataConcurrentEntity;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values.TestdataConcurrentSolution;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values.TestdataConcurrentValue;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderSolution;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -216,48 +216,48 @@ class VariableListenerSupportTest {
 
     @Test
     void shadowVariableListGraphEvents() {
-        var solutionDescriptor = TestdataFSRRoutePlan.buildSolutionDescriptor();
-        InnerScoreDirector<TestdataFSRRoutePlan, HardSoftScore> scoreDirector = mock(InnerScoreDirector.class);
+        var solutionDescriptor = TestdataConcurrentSolution.buildSolutionDescriptor();
+        InnerScoreDirector<TestdataConcurrentSolution, HardSoftScore> scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
 
         AtomicReference<MockTopologicalOrderGraph> graphReference = new AtomicReference<>(null);
         var registry = new NotifiableRegistry<>(solutionDescriptor);
-        VariableListenerSupport<TestdataFSRRoutePlan> variableListenerSupport;
+        VariableListenerSupport<TestdataConcurrentSolution> variableListenerSupport;
 
-        var vehicle1 = new TestdataFSRVehicle("1");
-        var vehicle2 = new TestdataFSRVehicle("2");
-        var vehicle3 = new TestdataFSRVehicle("3");
+        var vehicle1 = new TestdataConcurrentEntity("1");
+        var vehicle2 = new TestdataConcurrentEntity("2");
+        var vehicle3 = new TestdataConcurrentEntity("3");
 
-        var visitA1 = new TestdataFSRVisit("a1");
-        var visitA2 = new TestdataFSRVisit("a2");
+        var visitA1 = new TestdataConcurrentValue("a1");
+        var visitA2 = new TestdataConcurrentValue("a2");
 
-        var visitB1 = new TestdataFSRVisit("b1");
-        var visitB2 = new TestdataFSRVisit("b2");
-        var visitB3 = new TestdataFSRVisit("b3");
+        var visitB1 = new TestdataConcurrentValue("b1");
+        var visitB2 = new TestdataConcurrentValue("b2");
+        var visitB3 = new TestdataConcurrentValue("b3");
 
-        var visitC = new TestdataFSRVisit("c");
+        var visitC = new TestdataConcurrentValue("c");
 
         var groupA = List.of(visitA1, visitA2);
-        visitA1.setVisitGroup(groupA);
-        visitA2.setVisitGroup(groupA);
+        visitA1.setConcurrentValueGroup(groupA);
+        visitA2.setConcurrentValueGroup(groupA);
 
         var groupB = List.of(visitB1, visitB2, visitB3);
-        visitB1.setVisitGroup(groupB);
-        visitB2.setVisitGroup(groupB);
-        visitB3.setVisitGroup(groupB);
+        visitB1.setConcurrentValueGroup(groupB);
+        visitB2.setConcurrentValueGroup(groupB);
+        visitB3.setConcurrentValueGroup(groupB);
 
-        vehicle1.setVisits(List.of(visitA1, visitB1, visitC));
-        vehicle2.setVisits(List.of(visitA2, visitB2));
-        vehicle3.setVisits(List.of(visitB3));
+        vehicle1.setValues(List.of(visitA1, visitB1, visitC));
+        vehicle2.setValues(List.of(visitA2, visitB2));
+        vehicle3.setValues(List.of(visitB3));
 
-        vehicle1.updateVisitShadows();
-        vehicle2.updateVisitShadows();
-        vehicle3.updateVisitShadows();
+        vehicle1.updateValueShadows();
+        vehicle2.updateValueShadows();
+        vehicle3.updateValueShadows();
 
-        var solution = new TestdataFSRRoutePlan();
-        solution.setVehicles(List.of(vehicle1, vehicle2, vehicle3));
-        solution.setVisits(List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC));
+        var solution = new TestdataConcurrentSolution();
+        solution.setEntities(List.of(vehicle1, vehicle2, vehicle3));
+        solution.setValues(List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC));
 
         variableListenerSupport =
                 new VariableListenerSupport<>(scoreDirector, registry, size -> {
@@ -272,7 +272,7 @@ class VariableListenerSupportTest {
         var graph = graphReference.get();
 
         var entityMetamodel = solutionDescriptor.getMetaModel()
-                .entity(TestdataFSRVisit.class);
+                .entity(TestdataConcurrentValue.class);
         var serviceReadyTime = entityMetamodel.variable("serviceReadyTime");
         var serviceStartTime = entityMetamodel.variable("serviceStartTime");
         var serviceFinishTime = entityMetamodel.variable("serviceFinishTime");
@@ -292,16 +292,16 @@ class VariableListenerSupportTest {
                     expectedRemoveCount.getAndIncrement();
                 };
 
-        for (var visit : solution.getVisits()) {
+        for (var visit : solution.getValues()) {
             verifyAddEdge.accept(serviceReadyTime, visit, serviceStartTime, visit);
             verifyAddEdge.accept(serviceStartTime, visit, serviceFinishTime, visit);
 
-            if (visit.getPreviousVisit() != null) {
-                verifyAddEdge.accept(serviceFinishTime, visit.getPreviousVisit(), serviceReadyTime, visit);
+            if (visit.getPreviousValue() != null) {
+                verifyAddEdge.accept(serviceFinishTime, visit.getPreviousValue(), serviceReadyTime, visit);
             }
 
-            if (visit.getVisitGroup() != null) {
-                for (var element : visit.getVisitGroup()) {
+            if (visit.getConcurrentValueGroup() != null) {
+                for (var element : visit.getConcurrentValueGroup()) {
                     verifyAddEdge.accept(serviceReadyTime, element, serviceStartTime, visit);
                 }
             }
@@ -315,10 +315,11 @@ class VariableListenerSupportTest {
         expectedAddCount.set(0);
         expectedRemoveCount.set(0);
 
-        var previousElementDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataFSRVisit.class)
-                .getShadowVariableDescriptor("previousVisit");
+        var previousElementDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataConcurrentValue.class)
+                .getShadowVariableDescriptor("previousValue");
         var vehicleDescriptor =
-                solutionDescriptor.getEntityDescriptorStrict(TestdataFSRVisit.class).getShadowVariableDescriptor("vehicle");
+                solutionDescriptor.getEntityDescriptorStrict(TestdataConcurrentValue.class)
+                        .getShadowVariableDescriptor("entity");
 
         variableListenerSupport.beforeVariableChanged(previousElementDescriptor, visitB1);
         variableListenerSupport.beforeVariableChanged(previousElementDescriptor, visitC);
@@ -335,15 +336,15 @@ class VariableListenerSupportTest {
         expectedAddCount.set(0);
         expectedRemoveCount.set(0);
 
-        vehicle1.setVisits(List.of(visitA1, visitC));
+        vehicle1.setValues(List.of(visitA1, visitC));
         verify(graph, times(0)).addEdge(any(), any(), any(), any());
         verify(graph, times(0)).removeEdge(any(), any(), any(), any());
 
         // Edges are added only when variable listeners are triggered,
         // since we require ListVariableState to be up-to-date
-        visitC.setPreviousVisit(visitA1);
-        visitC.setVehicle(vehicle1);
-        visitB1.setPreviousVisit(null);
+        visitC.setPreviousValue(visitA1);
+        visitC.setEntity(vehicle1);
+        visitB1.setPreviousValue(null);
 
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
 

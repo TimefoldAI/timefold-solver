@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.task_assignment;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -14,12 +14,12 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVar
 import org.apache.commons.lang3.ObjectUtils;
 
 @PlanningEntity
-public class TestdataTATask {
+public class TestdataDependencyValue {
     String id;
-    List<TestdataTATask> dependencies;
+    List<TestdataDependencyValue> dependencies;
 
-    @PreviousElementShadowVariable(sourceVariableName = "tasks")
-    TestdataTATask previousTask;
+    @PreviousElementShadowVariable(sourceVariableName = "values")
+    TestdataDependencyValue previousValue;
 
     @ShadowVariable(method = "calculateStartTime")
     LocalDateTime startTime;
@@ -30,30 +30,30 @@ public class TestdataTATask {
     @InvalidityMarker
     boolean isInvalid;
 
-    @InverseRelationShadowVariable(sourceVariableName = "tasks")
-    TestdataTAEmployee employee;
+    @InverseRelationShadowVariable(sourceVariableName = "values")
+    TestdataDependencyEntity entity;
 
     Duration duration;
 
-    public TestdataTATask() {
+    public TestdataDependencyValue() {
     }
 
-    public TestdataTATask(String id, Duration duration) {
+    public TestdataDependencyValue(String id, Duration duration) {
         this(id, duration, null);
     }
 
-    public TestdataTATask(String id, Duration duration, List<TestdataTATask> dependencies) {
+    public TestdataDependencyValue(String id, Duration duration, List<TestdataDependencyValue> dependencies) {
         this.id = id;
         this.duration = duration;
         this.dependencies = dependencies;
     }
 
-    public List<TestdataTATask> getDependencies() {
+    public List<TestdataDependencyValue> getDependencies() {
         return dependencies;
     }
 
     public void setDependencies(
-            List<TestdataTATask> dependencies) {
+            List<TestdataDependencyValue> dependencies) {
         this.dependencies = dependencies;
     }
 
@@ -65,13 +65,13 @@ public class TestdataTATask {
         this.startTime = startTime;
     }
 
-    @ShadowVariableUpdater(sources = { "dependencies[].endTime", "previousTask.endTime", "employee" })
+    @ShadowVariableUpdater(sources = { "dependencies[].endTime", "previousValue.endTime", "entity" })
     public LocalDateTime calculateStartTime() {
         LocalDateTime readyTime;
-        if (previousTask != null) {
-            readyTime = previousTask.endTime;
-        } else if (employee != null) {
-            readyTime = employee.startTime;
+        if (previousValue != null) {
+            readyTime = previousValue.endTime;
+        } else if (entity != null) {
+            readyTime = entity.startTime;
         } else {
             return null;
         }
@@ -119,12 +119,12 @@ public class TestdataTATask {
         isInvalid = invalid;
     }
 
-    public TestdataTAEmployee getEmployee() {
-        return employee;
+    public TestdataDependencyEntity getEntity() {
+        return entity;
     }
 
-    public void setEmployee(TestdataTAEmployee employee) {
-        this.employee = employee;
+    public void setEntity(TestdataDependencyEntity entity) {
+        this.entity = entity;
     }
 
     @Override

@@ -134,7 +134,7 @@ public record RootVariableSource<Entity_, Value_>(
         }
 
         if (variableSourceReferences.isEmpty()) {
-            throw new IllegalArgumentException("The source path \"%s\" on entity class %s does not reference any variables."
+            throw new IllegalArgumentException("The source path (%s) on entity class %s does not reference any variables."
                     .formatted(variablePath, rootEntityClass));
         }
 
@@ -221,14 +221,14 @@ public record RootVariableSource<Entity_, Value_>(
                 && !variableSourceReference.downstreamDeclarativeVariableMetamodel()
                         .equals(sourceVariableId)) {
             throw new IllegalArgumentException(
-                    "The source path \"%s\" accesses a declarative shadow variable \"%s\" from another declarative shadow variable \"%s\"."
+                    "The source path (%s) accesses a declarative shadow variable (%s) from another declarative shadow variable (%s)."
                             .formatted(variablePath,
                                     variableSourceReference.downstreamDeclarativeVariableMetamodel(),
                                     sourceVariableId));
         }
         if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariable().isEmpty()) {
             throw new IllegalArgumentException(
-                    "The source path \"%s\" accesses a non-declarative shadow variable \"%s\" not from the root entity or collection."
+                    "The source path (%s) accesses a non-declarative shadow variable (%s) not from the root entity or collection."
                             .formatted(variablePath,
                                     variableSourceReference.variableMetaModel().name()));
         }

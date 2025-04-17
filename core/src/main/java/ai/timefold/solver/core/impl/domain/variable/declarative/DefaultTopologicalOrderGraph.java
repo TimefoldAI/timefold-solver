@@ -7,9 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     private final int[] ord;
@@ -23,7 +23,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         this.componentMap = CollectionUtils.newLinkedHashMap(size);
         this.forwardEdges = new Set[size];
         this.backEdges = new Set[size];
-        for (int i = 0; i < size; i++) {
+        for (var i = 0; i < size; i++) {
             forwardEdges[i] = new HashSet<>();
             backEdges[i] = new HashSet<>();
             ord[i] = i;
@@ -79,27 +79,27 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
 
     @Override
     public void endBatchChange() {
-        AtomicInteger index = new AtomicInteger(1);
-        AtomicInteger stackIndex = new AtomicInteger(0);
-        int size = forwardEdges.length;
-        int[] stack = new int[size];
-        int[] indexMap = new int[size];
-        int[] lowMap = new int[size];
-        boolean[] onStackSet = new boolean[size];
-        List<BitSet> components = new ArrayList<>();
+        var index = new MutableInt(1);
+        var stackIndex = new MutableInt(0);
+        var size = forwardEdges.length;
+        var stack = new int[size];
+        var indexMap = new int[size];
+        var lowMap = new int[size];
+        var onStackSet = new boolean[size];
+        var components = new ArrayList<BitSet>();
         componentMap.clear();
 
-        for (int node = 0; node < size; node++) {
+        for (var node = 0; node < size; node++) {
             if (indexMap[node] == 0) {
                 strongConnect(node, index, stackIndex, stack, indexMap, lowMap, onStackSet, components);
             }
         }
 
-        int ordIndex = 0;
-        for (int i = components.size() - 1; i >= 0; i--) {
+        var ordIndex = 0;
+        for (var i = components.size() - 1; i >= 0; i--) {
             var component = components.get(i);
             var componentNodes = new ArrayList<Integer>(component.cardinality());
-            for (int node = component.nextSetBit(0); node >= 0; node = component.nextSetBit(node + 1)) {
+            for (var node = component.nextSetBit(0); node >= 0; node = component.nextSetBit(node + 1)) {
                 ord[node] = ordIndex;
                 componentNodes.add(node);
                 componentMap.put(node, componentNodes);
@@ -111,18 +111,19 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         }
     }
 
-    private void strongConnect(int node, AtomicInteger index, AtomicInteger stackIndex, int[] stack,
+    private void strongConnect(int node, MutableInt index, MutableInt stackIndex, int[] stack,
             int[] indexMap,
             int[] lowMap, boolean[] onStackSet, List<BitSet> components) {
         // Set the depth index for node to the smallest unused index
-        indexMap[node] = index.get();
-        lowMap[node] = index.get();
-        index.getAndIncrement();
-        stack[stackIndex.getAndIncrement()] = node;
+        indexMap[node] = index.intValue();
+        lowMap[node] = index.intValue();
+        index.increment();
+        stack[stackIndex.intValue()] = node;
         onStackSet[node] = true;
+        stackIndex.increment();
 
         // Consider successors of node
-        for (int successor : forwardEdges[node]) {
+        for (var successor : forwardEdges[node]) {
             if (indexMap[successor] == 0) {
                 // Successor has not yet been visited; recurse on it
                 strongConnect(successor, index, stackIndex, stack, indexMap, lowMap, onStackSet, components);
@@ -138,11 +139,11 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
 
         // If node is a root node, pop the stack and generate an SCC
         if (onStackSet[node] && lowMap[node] == indexMap[node]) {
-            BitSet out = new BitSet();
+            var out = new BitSet();
 
             int current;
             do {
-                current = stack[stackIndex.decrementAndGet()];
+                current = stack[stackIndex.decrement()];
                 onStackSet[current] = false;
                 out.set(current);
             } while (node != current);

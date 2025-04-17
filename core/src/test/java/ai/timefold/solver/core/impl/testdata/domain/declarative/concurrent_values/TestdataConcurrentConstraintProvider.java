@@ -1,6 +1,6 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.fsr;
+package ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values;
 
-import static ai.timefold.solver.core.impl.testdata.domain.declarative.fsr.TestdataFSRVisit.BASE_START_TIME;
+import static ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values.TestdataConcurrentValue.BASE_START_TIME;
 
 import java.time.Duration;
 
@@ -11,20 +11,19 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataFSRAssertionConstraintProvider implements ConstraintProvider {
+public class TestdataConcurrentConstraintProvider implements ConstraintProvider {
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                constraintFactory.forEach(TestdataFSRVisit.class)
-                        .filter(TestdataFSRVisit::getExpectedInvalid)
+                constraintFactory.forEach(TestdataConcurrentValue.class)
+                        .filter(TestdataConcurrentValue::isInvalid)
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Invalid visit"),
 
-                constraintFactory.forEach(TestdataFSRVisit.class)
-                        .filter(visit -> !visit.getExpectedInvalid() && visit.isAssigned())
+                constraintFactory.forEach(TestdataConcurrentValue.class)
+                        .filter(visit -> !visit.isInvalid() && visit.isAssigned())
                         .penalize(HardSoftScore.ONE_SOFT, visit -> (int) Duration
-                                .between(BASE_START_TIME,
-                                        visit.getExpectedServiceFinishTime())
+                                .between(BASE_START_TIME, visit.getServiceFinishTime())
                                 .toMinutes())
                         .asConstraint("Minimize finish time")
         };
