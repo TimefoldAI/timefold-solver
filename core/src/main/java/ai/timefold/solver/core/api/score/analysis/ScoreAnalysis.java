@@ -18,6 +18,7 @@ import ai.timefold.solver.core.api.score.ScoreExplanation;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
+import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 
 import org.jspecify.annotations.NonNull;
@@ -47,8 +48,29 @@ import org.jspecify.annotations.Nullable;
  * @param score Score of the solution being analyzed.
  * @param constraintMap for each constraint identified by its {@link Constraint#getConstraintRef()},
  *        the {@link ConstraintAnalysis} that describes the impact of that constraint on the overall score.
- *        Constraints are present even if they have no matches, unless their weight is zero;
- *        zero-weight constraints are not present.
+ *        <p>
+ *        Zero-weight constraints are never included, they are excluded from score calculation in the first place.
+ *        Otherwise constraints are always included, even if they have no matches,
+ *        unless the score analysis represents a diff between two other analyses.
+ * 
+ *        <p>
+ *        In the case of a diff:
+ * 
+ *        <ul>
+ *        <li>
+ *        If constraint matching is disabled ({@link ScoreAnalysisFetchPolicy#FETCH_SHALLOW})
+ *        or if only match counts are available ({@link ScoreAnalysisFetchPolicy#FETCH_MATCH_COUNT}),
+ *        constraints are present even if they have no matches.
+ *        </li>
+ *        <li>
+ *        If constraint matching is fully enabled ({@link ScoreAnalysisFetchPolicy#FETCH_ALL})
+ *        the constraint will not be included if a diff of its constraint matches is empty.
+ *        (In other words: when diffing, the analysis for a particular constraint won't be available
+ *        if we can guarantee that the constraint matches are identical in both analyses.)
+ *        </li>
+ *        </ul>
+ * 
+ *        <p>
  *        Entries in the map have a stable iteration order; items are ordered first by {@link ConstraintAnalysis#weight()},
  *        then by {@link ConstraintAnalysis#constraintRef()}.
  * @param isSolutionInitialized Whether the solution was fully initialized at the time of analysis.
@@ -58,6 +80,13 @@ import org.jspecify.annotations.Nullable;
 public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
         @NonNull Map<ConstraintRef, ConstraintAnalysis<Score_>> constraintMap,
         boolean isSolutionInitialized) {
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    private static final Comparator<ConstraintAnalysis<?>> REVERSED_WEIGHT_COMPARATOR =
+            Comparator.<ConstraintAnalysis<?>, Score> comparing(ConstraintAnalysis::weight)
+                    .reversed();
+    private static final Comparator<ConstraintAnalysis<?>> MAP_COMPARATOR =
+            REVERSED_WEIGHT_COMPARATOR.thenComparing(ConstraintAnalysis::constraintRef);
 
     static final int DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT = 3;
 
@@ -73,12 +102,9 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
         Objects.requireNonNull(score, "score");
         Objects.requireNonNull(constraintMap, "constraintMap");
         // Ensure consistent order and no external interference.
-        var comparator = Comparator.<ConstraintAnalysis<Score_>, Score_> comparing(ConstraintAnalysis::weight)
-                .reversed()
-                .thenComparing(ConstraintAnalysis::constraintRef);
         constraintMap = Collections.unmodifiableMap(constraintMap.values()
                 .stream()
-                .sorted(comparator)
+                .sorted(MAP_COMPARATOR)
                 .collect(Collectors.toMap(
                         ConstraintAnalysis::constraintRef,
                         Function.identity(),
@@ -165,13 +191,26 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
         var result = Stream.concat(constraintMap.keySet().stream(),
                 other.constraintMap.keySet().stream())
                 .distinct()
+                .flatMap(constraintRef -> {
+                    var constraintAnalysis = getConstraintAnalysis(constraintRef);
+                    var otherConstraintAnalysis = other.getConstraintAnalysis(constraintRef);
+                    var diff = ConstraintAnalysis.diff(constraintRef, constraintAnalysis, otherConstraintAnalysis);
+                    // Figuring out whether constraint matches changed is tricky.
+                    // Can't use constraint weight; weight diff on the same constraint is zero if weight unchanged.
+                    // Can't use matchCount; matchCount diff can be zero if one match was added and another removed.
+                    // To detect if the constraint matches changed, we use the actual match diff.
+                    // If it is null, either justifications are disabled, or constraint matching is disabled altogether.
+                    // In that case, we have no choice but to return the diff, because it may mean anything.
+                    if (diff.matches() == null || !diff.matches().isEmpty()) {
+                        return Stream.of(diff);
+                    }
+                    // This will be empty only if all matches are exactly the same.
+                    // In that case, we can safely ignore the diff to not bloat the result with meaningless data.
+                    return Stream.empty();
+                })
                 .collect(Collectors.toMap(
+                        ConstraintAnalysis::constraintRef,
                         Function.identity(),
-                        constraintRef -> {
-                            var constraintAnalysis = getConstraintAnalysis(constraintRef);
-                            var otherConstraintAnalysis = other.getConstraintAnalysis(constraintRef);
-                            return ConstraintAnalysis.diff(constraintRef, constraintAnalysis, otherConstraintAnalysis);
-                        },
                         (constraintRef, otherConstraintRef) -> constraintRef,
                         HashMap::new));
         return new ScoreAnalysis<>(score.subtract(other.score()), result, isSolutionInitialized);
