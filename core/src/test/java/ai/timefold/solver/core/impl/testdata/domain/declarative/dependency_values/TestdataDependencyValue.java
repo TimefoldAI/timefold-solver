@@ -65,7 +65,7 @@ public class TestdataDependencyValue {
         this.startTime = startTime;
     }
 
-    @ShadowSources(sources = { "dependencies[].endTime", "previousValue.endTime", "entity" })
+    @ShadowSources({ "dependencies[].endTime", "previousValue.endTime", "entity" })
     public LocalDateTime calculateStartTime() {
         LocalDateTime readyTime;
         if (previousValue != null) {
@@ -95,7 +95,7 @@ public class TestdataDependencyValue {
         this.endTime = endTime;
     }
 
-    @ShadowSources(sources = { "startTime" })
+    @ShadowSources({ "startTime" })
     public LocalDateTime calculateEndTime() {
         if (startTime == null) {
             return null;

@@ -92,7 +92,7 @@ public class TestdataConcurrentValue {
         this.serviceStartTime = serviceStartTime;
     }
 
-    @ShadowSources(sources = { "previousValue.serviceFinishTime", "entity" })
+    @ShadowSources({ "previousValue.serviceFinishTime", "entity" })
     public LocalDateTime serviceReadyTimeUpdater() {
         if (previousValue != null) {
             return previousValue.serviceFinishTime.plusMinutes(30L);
@@ -103,7 +103,7 @@ public class TestdataConcurrentValue {
         return null;
     }
 
-    @ShadowSources(sources = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" })
+    @ShadowSources({ "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" })
     public LocalDateTime serviceStartTimeUpdater() {
         if (serviceReadyTime == null) {
             return null;
@@ -119,7 +119,7 @@ public class TestdataConcurrentValue {
         return startTime;
     }
 
-    @ShadowSources(sources = { "serviceStartTime" })
+    @ShadowSources("serviceStartTime")
     public LocalDateTime serviceFinishTimeUpdater() {
         if (serviceStartTime == null) {
             return null;

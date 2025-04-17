@@ -24,11 +24,12 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSou
 public @interface ShadowVariable {
     /**
      * {@link ai.timefold.solver.core.config.solver.PreviewFeature Preview feature}.
-     * <p/>
-     * If set, it is a name of a method annotated with
+     * <p>
+     * If set, this {@link ShadowVariable} is a supplier variable, and it
+     * is a name of a method annotated with
      * {@link ShadowSources} that computes the value of this
      * {@link ShadowVariable}.
-     * <p/>
+     * <p>
      * If set, {@link #variableListenerClass()}, {@link #sourceEntityClass()}
      * and {@link #sourceVariableName()} must all be unset.
      *

@@ -30,18 +30,18 @@ public interface TopologicalOrderGraph {
     }
 
     /**
-     * Called when a graph is added.
-     *
-     * @implNote {@link #getTopologicalOrder(int)} is allowed to be invalid
-     *           when this method returns.
+     * Called when a graph edge is added.
+     * <p>
+     * {@link #getTopologicalOrder(int)} is allowed to be invalid
+     * when this method returns.
      */
     void addEdge(int from, int to);
 
     /**
-     * Called when a graph is removed.
-     *
-     * @implNote {@link #getTopologicalOrder(int)} is allowed to be invalid
-     *           when this method returns.
+     * Called when a graph edge is removed.
+     * <p>
+     * {@link #getTopologicalOrder(int)} is allowed to be invalid
+     * when this method returns.
      */
     void removeEdge(int from, int to);
 
@@ -69,12 +69,12 @@ public interface TopologicalOrderGraph {
      * Returns a number corresponding to the topological order of a node.
      * In particular, after {@link #endBatchChange()} is called, the following
      * must be true for any pair of nodes A, B where:
-     *
-     * - A is a predecessor of B
-     * - `isLooped(A) == isLooped(B) == false`
-     *
-     * getTopologicalOrder(A) < getTopologicalOrder(B)
-     *
+     * <ul>
+     * <li>A is a predecessor of B</li>
+     * <li>`isLooped(A) == isLooped(B) == false`</li>
+     * </ul>
+     * getTopologicalOrder(A) &lt; getTopologicalOrder(B)
+     * <p>
      * Said number may not be unique.
      */
     int getTopologicalOrder(int node);

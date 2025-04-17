@@ -70,7 +70,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                         MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, ShadowSources.class,
                         descriptorPolicy.getDomainAccessType());
 
-        sourcePaths = shadowVariableUpdater.sources();
+        sourcePaths = shadowVariableUpdater.value();
         if (sourcePaths.length == 0) {
             throw new IllegalArgumentException("""
                     Method "%s" referenced from @%s member %s has no sources.
