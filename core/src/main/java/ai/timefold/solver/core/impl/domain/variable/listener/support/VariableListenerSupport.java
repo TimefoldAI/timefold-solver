@@ -9,12 +9,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
+import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -30,6 +36,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -41,12 +48,13 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
-    private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
-
     public static <Solution_> VariableListenerSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()));
+        return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()),
+                TimefoldSolverEnterpriseService.buildOrDefault(service -> service::buildTopologyGraph,
+                        () -> DefaultTopologicalOrderGraph::new));
     }
 
+    private static final int SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT = 3;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final NotifiableRegistry<Solution_> notifiableRegistry;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
@@ -55,11 +63,18 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final List<ListVariableChangedNotification<Solution_>> listVariableChangedNotificationList;
     private final Set<Object> unassignedValueWithEmptyInverseEntitySet;
     private final List<CascadingUpdateShadowVariableDescriptor<Solution_>> cascadingUpdateShadowVarDescriptorList;
+    @NonNull
+    private final IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator;
 
     private boolean notificationQueuesAreEmpty = true;
     private int nextGlobalOrder = 0;
+    @Nullable
+    private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
+    @Nullable
+    private ListVariableStateSupply<Solution_> listVariableStateSupply = null;
 
-    VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry) {
+    VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry,
+            @NonNull IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
         this.scoreDirector = Objects.requireNonNull(scoreDirector);
         this.notifiableRegistry = Objects.requireNonNull(notifiableRegistry);
 
@@ -70,13 +85,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                         .flatMap(e -> e.getDeclaredCascadingUpdateShadowVariableDescriptors().stream())
                         .toList() : Collections.emptyList();
         var hasCascadingUpdates = !cascadingUpdateShadowVarDescriptorList.isEmpty();
-        this.listVariableChangedNotificationList = hasCascadingUpdates ? new ArrayList<>() : Collections.emptyList();
+        this.listVariableChangedNotificationList = new ArrayList<>();
         this.unassignedValueWithEmptyInverseEntitySet =
                 hasCascadingUpdates ? new LinkedIdentityHashSet<>() : Collections.emptySet();
+        this.shadowVariableGraphCreator = shadowVariableGraphCreator;
     }
 
     public void linkVariableListeners() {
-        var listVariableStateSupply = listVariableDescriptor == null ? null : demand(listVariableDescriptor.getStateDemand());
+        listVariableStateSupply = listVariableDescriptor == null ? null : demand(listVariableDescriptor.getStateDemand());
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
                 .flatMap(Collection::stream)
@@ -191,6 +207,15 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.resetWorkingSolution();
         }
+
+        if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()) {
+            var shadowVariableSessionFactory = new DefaultShadowVariableSessionFactory<>(
+                    scoreDirector.getSolutionDescriptor(),
+                    scoreDirector,
+                    shadowVariableGraphCreator);
+            shadowVariableSession = shadowVariableSessionFactory.forSolution(scoreDirector.getWorkingSolution());
+            triggerVariableListenersInNotificationQueues();
+        }
     }
 
     public void close() {
@@ -228,6 +253,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             for (var notifiable : notifiables) {
                 notifiable.notifyBefore(notification);
             }
+            notificationQueuesAreEmpty = false;
+        }
+        if (shadowVariableSession != null) {
+            shadowVariableSession.beforeVariableChanged(variableDescriptor, entity);
             notificationQueuesAreEmpty = false;
         }
     }
@@ -273,6 +302,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    public InnerScoreDirector<Solution_, ?> getScoreDirector() {
+        return scoreDirector;
+    }
+
     public void triggerVariableListenersInNotificationQueues() {
         if (notificationQueuesAreEmpty) {
             // Shortcut in case the trigger is called multiple times in a row,
@@ -283,16 +316,28 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.triggerAllNotifications();
         }
-        // If there is no cascade, skip the whole thing.
-        // If there are no events and no newly unassigned variables, skip the whole thing as well.
-        if (!cascadingUpdateShadowVarDescriptorList.isEmpty() &&
-                !(listVariableChangedNotificationList.isEmpty() && unassignedValueWithEmptyInverseEntitySet.isEmpty())) {
-            triggerCascadingUpdateShadowVariableUpdate();
+        if (listVariableDescriptor != null) {
+            // If there is no cascade, skip the whole thing.
+            // If there are no events and no newly unassigned variables, skip the whole thing as well.
+            if (!cascadingUpdateShadowVarDescriptorList.isEmpty() &&
+                    !(listVariableChangedNotificationList.isEmpty() && unassignedValueWithEmptyInverseEntitySet.isEmpty())) {
+                triggerCascadingUpdateShadowVariableUpdate();
+            }
+            listVariableChangedNotificationList.clear();
+        }
+        if (shadowVariableSession != null) {
+            shadowVariableSession.updateVariables();
         }
         notificationQueuesAreEmpty = true;
     }
 
+    /**
+     * Triggers all cascading update shadow variable user-logic.
+     */
     private void triggerCascadingUpdateShadowVariableUpdate() {
+        if (listVariableChangedNotificationList.isEmpty() || cascadingUpdateShadowVarDescriptorList.isEmpty()) {
+            return;
+        }
         for (var cascadingUpdateShadowVariableDescriptor : cascadingUpdateShadowVarDescriptorList) {
             cascadeListVariableChangedNotifications(cascadingUpdateShadowVariableDescriptor);
             // When the unassigned element has no inverse entity,
@@ -301,7 +346,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             // or its related shadow variables will remain unchanged.
             cascadeUnassignedValues(cascadingUpdateShadowVariableDescriptor);
         }
-        listVariableChangedNotificationList.clear();
         unassignedValueWithEmptyInverseEntitySet.clear();
     }
 

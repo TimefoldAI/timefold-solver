@@ -16,6 +16,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
@@ -50,6 +51,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -66,6 +68,7 @@ import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutio
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -96,18 +99,39 @@ public class SolutionDescriptor<Solution_> {
         return buildSolutionDescriptor(solutionClass, Arrays.asList(entityClasses));
     }
 
-    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
+    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
+            Class<Solution_> solutionClass,
             List<Class<?>> entityClassList) {
-        return buildSolutionDescriptor(DomainAccessType.REFLECTION, solutionClass, null, null, entityClassList);
+        return buildSolutionDescriptor(EnumSet.noneOf(PreviewFeature.class), solutionClass, entityClassList);
     }
 
-    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(DomainAccessType domainAccessType,
+    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
+            Set<PreviewFeature> enabledPreviewFeaturesSet,
+            Class<Solution_> solutionClass,
+            Class<?>... entityClasses) {
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, solutionClass, List.of(entityClasses));
+    }
+
+    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
+            Set<PreviewFeature> enabledPreviewFeaturesSet,
+            Class<Solution_> solutionClass,
+            List<Class<?>> entityClassList) {
+        return buildSolutionDescriptor(enabledPreviewFeaturesSet, DomainAccessType.REFLECTION, solutionClass, null,
+                null, entityClassList);
+    }
+
+    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(
+            Set<PreviewFeature> enabledPreviewFeatureSet,
+            DomainAccessType domainAccessType,
             Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap,
             Map<String, SolutionCloner> solutionClonerMap, List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
         solutionClonerMap = Objects.requireNonNullElse(solutionClonerMap, Collections.emptyMap());
         var solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
         var descriptorPolicy = new DescriptorPolicy();
+        if (enabledPreviewFeatureSet != null) {
+            descriptorPolicy.setEnabledPreviewFeatureSet(enabledPreviewFeatureSet);
+        }
         descriptorPolicy.setDomainAccessType(domainAccessType);
         descriptorPolicy.setGeneratedSolutionClonerMap(solutionClonerMap);
         descriptorPolicy.setMemberAccessorFactory(solutionDescriptor.getMemberAccessorFactory());
@@ -1131,6 +1155,19 @@ public class SolutionDescriptor<Solution_> {
             return 0;
         }
         return scale;
+    }
+
+    public List<DeclarativeShadowVariableDescriptor<Solution_>> getDeclarativeShadowVariableDescriptors() {
+        var out = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
+        for (var entityDescriptor : entityDescriptorMap.values()) {
+            entityDescriptor.getShadowVariableDescriptors();
+            for (var shadowVariableDescriptor : entityDescriptor.getShadowVariableDescriptors()) {
+                if (shadowVariableDescriptor instanceof DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariableDescriptor) {
+                    out.add(declarativeShadowVariableDescriptor);
+                }
+            }
+        }
+        return out;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution) {
