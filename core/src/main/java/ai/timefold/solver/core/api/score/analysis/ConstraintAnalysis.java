@@ -125,7 +125,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         var otherMatchAnalysisMap = mapMatchesToJustifications(otherMatchAnalyses);
         var matchAnalysesList = Stream.concat(matchAnalysisMap.keySet().stream(), otherMatchAnalysisMap.keySet().stream())
                 .distinct()
-                .map(justification -> {
+                .flatMap(justification -> {
                     var matchAnalysis = matchAnalysisMap.get(justification);
                     var otherMatchAnalysis = otherMatchAnalysisMap.get(justification);
                     if (matchAnalysis == null) {
@@ -135,16 +135,17 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
                                             .formatted(constraintRef));
                         }
                         // No need to compute diff; this match is not present in this score explanation.
-                        return otherMatchAnalysis.negate();
+                        return Stream.of(otherMatchAnalysis.negate());
                     } else if (otherMatchAnalysis == null) {
                         // No need to compute diff; this match is not present in the other score explanation.
-                        return matchAnalysis;
-                    } else { // Compute the diff.
-                        return new MatchAnalysis<>(constraintRef, matchAnalysis.score().subtract(otherMatchAnalysis.score()),
-                                justification);
+                        return Stream.of(matchAnalysis);
+                    } else if (!matchAnalysis.equals(otherMatchAnalysis)) { // Compute the diff.
+                        return Stream.of(new MatchAnalysis<>(constraintRef,
+                                matchAnalysis.score().subtract(otherMatchAnalysis.score()), justification));
+                    } else { // There is no difference; skip entirely.
+                        return Stream.empty();
                     }
-                })
-                .toList();
+                }).toList();
         return new ConstraintAnalysis<>(constraintRef, constraintWeightDifference, scoreDifference, matchAnalysesList,
                 getMatchCount(constraintAnalysis, otherConstraintAnalysis));
     }
