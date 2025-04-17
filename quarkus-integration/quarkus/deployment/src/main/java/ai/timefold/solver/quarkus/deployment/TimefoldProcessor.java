@@ -376,10 +376,18 @@ class TimefoldProcessor {
     }
 
     private void assertSolverConfigConstraintClasses(IndexView indexView, Map<String, SolverConfig> solverConfigMap) {
-        Collection<ClassInfo> simpleScoreClassCollection = indexView.getAllKnownImplementors(DotNames.EASY_SCORE_CALCULATOR);
-        Collection<ClassInfo> constraintScoreClassCollection = indexView.getAllKnownImplementors(DotNames.CONSTRAINT_PROVIDER);
+        // We filter out abstract classes
+        Collection<ClassInfo> simpleScoreClassCollection = indexView.getAllKnownImplementations(DotNames.EASY_SCORE_CALCULATOR)
+                .stream().filter(clazz -> !clazz.isAbstract())
+                .toList();
+        Collection<ClassInfo> constraintScoreClassCollection =
+                indexView.getAllKnownImplementations(DotNames.CONSTRAINT_PROVIDER)
+                        .stream().filter(clazz -> !clazz.isAbstract())
+                        .toList();
         Collection<ClassInfo> incrementalScoreClassCollection =
-                indexView.getAllKnownImplementors(DotNames.INCREMENTAL_SCORE_CALCULATOR);
+                indexView.getAllKnownImplementations(DotNames.INCREMENTAL_SCORE_CALCULATOR)
+                        .stream().filter(clazz -> !clazz.isAbstract())
+                        .toList();
         // No score classes
         if (simpleScoreClassCollection.isEmpty() && constraintScoreClassCollection.isEmpty()
                 && incrementalScoreClassCollection.isEmpty()) {
@@ -796,7 +804,7 @@ class TimefoldProcessor {
                 childEntityList.addAll(childEntityInterfaceList);
             }
             // Check all implementors
-            var childEntityImplementorList = indexView.getAllKnownImplementors(entityClass).stream()
+            var childEntityImplementorList = indexView.getAllKnownImplementations(entityClass).stream()
                     .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
                     .toList();
             if (!childEntityImplementorList.isEmpty()) {
@@ -851,16 +859,18 @@ class TimefoldProcessor {
     private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig(IndexView indexView) {
         ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setEasyScoreCalculatorClass(
-                findFirstImplementingClass(DotNames.EASY_SCORE_CALCULATOR, indexView));
+                findFirstImplementingConcreteClass(DotNames.EASY_SCORE_CALCULATOR, indexView));
         scoreDirectorFactoryConfig.setConstraintProviderClass(
-                findFirstImplementingClass(DotNames.CONSTRAINT_PROVIDER, indexView));
+                findFirstImplementingConcreteClass(DotNames.CONSTRAINT_PROVIDER, indexView));
         scoreDirectorFactoryConfig.setIncrementalScoreCalculatorClass(
-                findFirstImplementingClass(DotNames.INCREMENTAL_SCORE_CALCULATOR, indexView));
+                findFirstImplementingConcreteClass(DotNames.INCREMENTAL_SCORE_CALCULATOR, indexView));
         return scoreDirectorFactoryConfig;
     }
 
-    private <T> Class<? extends T> findFirstImplementingClass(DotName targetDotName, IndexView indexView) {
-        Collection<ClassInfo> classInfoCollection = indexView.getAllKnownImplementors(targetDotName);
+    private <T> Class<? extends T> findFirstImplementingConcreteClass(DotName targetDotName, IndexView indexView) {
+        Collection<ClassInfo> classInfoCollection = indexView.getAllKnownImplementations(targetDotName).stream()
+                .filter(classInfo -> !classInfo.isAbstract())
+                .toList();
         if (classInfoCollection.isEmpty()) {
             return null;
         }

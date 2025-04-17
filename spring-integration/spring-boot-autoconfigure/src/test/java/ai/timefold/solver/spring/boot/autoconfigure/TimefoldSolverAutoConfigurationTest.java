@@ -56,6 +56,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntity
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.multiple.MultipleConstraintSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfiguration;
@@ -64,6 +65,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpring
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
+import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -87,6 +89,7 @@ class TimefoldSolverAutoConfigurationTest {
     private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner gizmoContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
+    private final ApplicationContextRunner multiConstraintProviderRunner;
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
     private final FilteredClassLoader testFilteredClassLoader;
     private final FilteredClassLoader noGizmoFilteredClassLoader;
@@ -130,6 +133,10 @@ class TimefoldSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(MultiModuleSpringTestConfiguration.class);
+        multiConstraintProviderRunner = new ApplicationContextRunner()
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
+                .withUserConfiguration(MultipleConstraintSpringTestConfiguration.class);
         allDefaultsFilteredClassLoader =
                 new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("ai.timefold.solver.test"),
                         FilteredClassLoader.ClassPathResourceFilter
@@ -901,6 +908,13 @@ class TimefoldSolverAutoConfigurationTest {
                         "Multiple score calculator classes", DummyChainedSpringIncrementalScore.class.getSimpleName(),
                         DummySpringIncrementalScore.class.getSimpleName(),
                         "that implements IncrementalScoreCalculator were found in the classpath.");
+    }
+
+    @Test
+    void readOnlyConcreteProviderClass() {
+        AssertionsForClassTypes.assertThatCode(() -> multiConstraintProviderRunner
+                .run(context -> context.getBean(SolverFactory.class)))
+                .doesNotThrowAnyException();
     }
 
     @Test
