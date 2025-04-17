@@ -140,7 +140,7 @@ setup(
     url='https://github.com/TimefoldAI/timefold-solver',
     project_urls={
         'Timefold Solver Documentation': 'https://timefold.ai/docs/timefold-solver/latest',
-        'Timefold Homepage': 'https://timefold.ai',
+        'Timefold Solver Homepage': 'https://solver.timefold.ai',
     },
     classifiers=[
         'Development Status :: 4 - Beta',

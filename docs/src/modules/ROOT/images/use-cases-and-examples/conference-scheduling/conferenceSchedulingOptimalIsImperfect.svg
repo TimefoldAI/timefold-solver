@@ -2265,7 +2265,7 @@
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
         <dc:language>en</dc:language>
         <cc:license
-           rdf:resource="https://timefold.ai/product/license/" />
+           rdf:resource="https://timefold.ai/license" />
       </cc:Work>
     </rdf:RDF>
   </metadata>

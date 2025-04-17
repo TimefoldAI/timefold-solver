@@ -20,7 +20,7 @@
 
     This module contains the Python implementation of the solver.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

@@ -17,7 +17,7 @@
     Upgrade your code with a single command.
     This migration replace all your calls to deleted/deprecated methods of Timefold with their proper alternatives.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.migration</java.module.name>

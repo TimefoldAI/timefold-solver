@@ -21,7 +21,7 @@
     This module contains support for testing the solver.
     This module is intended to be used a test-scoped dependency.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <properties>
     <java.module.name>ai.timefold.solver.test</java.module.name>

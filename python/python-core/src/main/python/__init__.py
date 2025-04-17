@@ -1,5 +1,5 @@
 """
-`Timefold Solver <https://timefold.ai/>`_ is a lightweight,
+`Timefold Solver <https://solver.timefold.ai/>`_ is a lightweight,
 embeddable constraint satisfaction engine which optimizes planning problems.
 
 It solves use cases such as:

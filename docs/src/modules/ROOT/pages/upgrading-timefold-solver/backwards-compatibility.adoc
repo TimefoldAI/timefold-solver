@@ -18,12 +18,21 @@ but probably not in hotfix releases.
 
 Backwards incompatible changes for a new major version are clearly documented in xref:upgrading-timefold-solver/upgrade-to-latest-version.adoc#manualUpgrade[the upgrade recipe].
 
+
 [#previewFeatures]
 == Preview features
 
 Timefold Solver includes several components which are only available as preview features.
-These are in `preview.api` packages.
-These are:
+We use preview features as means of sharing our work with the community early
+and to get feedback on how to develop them further,
+without being hamstrung by our strict backwards compatibility guarantees.
+
+We deliver preview features to the same standard of quality as the rest of Timefold Solver.
+However, their APIs and behavior are not yet considered stable, pending user feedback.
+Any class, method or field related to these features may change or be removed without prior notice,
+although we strive to avoid this as much as possible.
+
+Preview features often live in the `preview.api` package, and they are:
 
 - xref:optimization-algorithms/local-search.adoc#diversifiedLateAcceptance[Diversified Late Acceptance] acceptor
 - xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
@@ -31,22 +40,18 @@ in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package,
 and in the `SolutionManager`
 - _Timefold Solver for Python_, which is currently in beta
 
-These preview features are developed to the same standard as the rest of Timefold Solver.
-However, their APIs are not yet considered stable, pending user feedback.
-Any class, method or field related to these features may change or be removed without prior notice,
-although we strive to avoid this as much as possible.
-
 We encourage you to try these preview features and give us feedback on your experience with them.
 Please direct your feedback to
 https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver Github].
 
+
 === Experimental status of Move Streams
 
-Move Streams, although marked as a preview feature, is an active research project.
-It is intended to simplify the creation of custom moves, eventually replacing move selectors.
+Move Streams are an active research project.
+It intends to simplify the creation of custom moves, eventually replacing move selectors.
 The component is under heavy development, entirely undocumented, and many key features are yet to be delivered.
 Neither the API nor the feature set are complete, and any part can change or be removed at any time.
 
 Move Streams will eventually stabilize and be promoted from a research project to a true preview feature.
-We only expose it now to be able to use it for experimentation and testing.
+We only expose it now to be able to use it for internal experimentation and testing.
 As such, it is an exception to the rule — this preview feature is not finished, and it is not yet ready for feedback.

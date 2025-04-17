@@ -22,7 +22,7 @@
     This module is deprecated and will be removed in a future major version of Timefold Solver.
     Please use the Jackson integration instead.
   </description>
-  <url>https://timefold.ai</url>
+  <url>https://solver.timefold.ai</url>
 
   <modules>
     <module>runtime</module>

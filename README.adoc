@@ -30,7 +30,7 @@ Developed by the original OptaPlanner team, our aim is to free the world of wast
 image:https://img.shields.io/maven-central/v/ai.timefold.solver/timefold-solver-bom?logo=apache-maven&style=for-the-badge["Maven artifact", link="https://ossindex.sonatype.org/component/pkg:maven/ai.timefold.solver/timefold-solver-bom"]
 image:https://img.shields.io/badge/Java-17+-brightgreen.svg?style=for-the-badge["JVM support", link="https://sdkman.io"]
 
-* https://timefold.ai/docs[Read a Getting Started guide.]
+* https://docs.timefold.ai/timefold-solver/latest/quickstart/overview[Read a Getting Started guide.]
 * https://github.com/TimefoldAI/timefold-quickstarts[Clone the Quickstarts repository.]
 
 == Build from source
@@ -63,10 +63,10 @@ For more, see link:CONTRIBUTING.adoc[Contributing].
 
 == Editions
 
-There are 2 editions of Timefold Solver:
+There are two editions of Timefold Solver:
 
-- Timefold Solver Community Edition (CE) (this repo).
-- https://timefold.ai/pricing[Timefold Solver Enterprise Edition (EE)], a licensed version of Timefold Solver.
+- Timefold Solver Community Edition (this repo).
+- https://timefold.ai/pricing[Timefold Solver Enterprise Edition], a licensed version of Timefold Solver.
 
 === Key Features of Timefold Solver Enterprise Edition (EE)
 

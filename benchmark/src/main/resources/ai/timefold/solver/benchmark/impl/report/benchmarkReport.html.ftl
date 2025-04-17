@@ -929,11 +929,11 @@
             <div class="hstack gap-3 p-4">
                 <div class="ms-auto"><a class="text-white" href="https://timefold.ai">Timefold</a></div>
                 <div class="vr"></div>
-                <div><a class="text-white" href="https://timefold.ai/docs">Documentation</a></div>
+                <div><a class="text-white" href="https://docs.timefold.ai/timefold-solver/latest/">Documentation</a></div>
                 <div class="vr"></div>
-                <div><a class="text-white" href="https://github.com/TimefoldAI">Code</a></div>
+                <div><a class="text-white" href="https://github.com/TimefoldAI/timefold-solver">Code</a></div>
                 <div class="vr"></div>
-                <div class="me-auto"><a class="text-white" href="https://timefold.ai/product/support/">Support</a></div>
+                <div class="me-auto"><a class="text-white" href="https://timefold.ai/support">Support</a></div>
             </div>
         </div>
     </footer>
