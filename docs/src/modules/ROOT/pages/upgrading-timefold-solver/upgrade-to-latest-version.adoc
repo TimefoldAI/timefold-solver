@@ -80,6 +80,24 @@ can refer to the initialization event on the `SolverManager`,
 or to `BestSolutionChangedEvent.isNewBestSolutionInitialized()` method.
 ====
 
+'''
+
+icon:info-circle[role=yellow] Score analysis diff correctly omitting certain matches
+[%collapsible%open]
+====
+We fixed a bug in `ScoreAnalysis.diff(...)` which would list constraint matches as different,
+even in cases where there were no differences between two sets of constraint matches.
+In this case, the diff would contain an otherwise empty entry for each such constraint,
+leading to confusion as to its meaning.
+
+In the new version, `ScoreAnalysis` no longer returns such constraints.
+User queries for such constraints will now result in `null`,
+as they should.
+We expect this change will only affect a tiny number of users,
+and we encourage users of `ScoreAnalysis` to check the heavily expanded and clarified Javadoc of the class
+to discover the exact behavior of the functionality.
+====
+
 
 === Upgrade from 1.19.0 to 1.20.0
 
