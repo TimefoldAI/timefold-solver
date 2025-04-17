@@ -18,7 +18,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     MemberAccessor calculator;
@@ -43,7 +43,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                                     SolverConfig.class.getSimpleName()));
         }
         var annotation = variableMemberAccessor.getAnnotation(ShadowVariable.class);
-        var methodName = annotation.method();
+        var methodName = annotation.supplierName();
         if (methodName.isEmpty()) {
             throw new IllegalStateException("DeclarativeShadowVariableDescriptor was created when method is empty.");
         }
@@ -56,18 +56,18 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                     .formatted(methodName, variableMemberAccessor.getDeclaringClass().getSimpleName()), e);
         }
 
-        var shadowVariableUpdater = method.getAnnotation(ShadowVariableUpdater.class);
+        var shadowVariableUpdater = method.getAnnotation(ShadowSources.class);
         if (shadowVariableUpdater == null) {
             throw new IllegalArgumentException("""
                     Method "%s" referenced from @%s member %s is not annotated with @%s.
                     Maybe annotate the method %s with @%s?
                     """.formatted(methodName, ShadowVariable.class.getSimpleName(), variableMemberAccessor,
-                    ShadowVariableUpdater.class.getSimpleName(),
-                    methodName, ShadowVariableUpdater.class.getSimpleName()));
+                    ShadowSources.class.getSimpleName(),
+                    methodName, ShadowSources.class.getSimpleName()));
         }
         this.calculator =
                 entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(method,
-                        MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, ShadowVariableUpdater.class,
+                        MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, ShadowSources.class,
                         descriptorPolicy.getDomainAccessType());
 
         sourcePaths = shadowVariableUpdater.sources();

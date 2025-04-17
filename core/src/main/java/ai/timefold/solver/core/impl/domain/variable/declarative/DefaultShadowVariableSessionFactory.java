@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.IntFunction;
@@ -43,6 +44,25 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap = new HashMap<>();
 
         // Create graph node for each entity/declarative shadow variable pair
+        createGraphNodes(variableReferenceGraph, entities, declarativeShadowVariableDescriptors, variableIdToUpdater,
+                declarativeShadowVariableToAliasMap);
+
+        // Create variable processors for each declarative shadow variable descriptor
+        for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
+            final var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
+            createSourceChangeProcessors(variableReferenceGraph, declarativeShadowVariable, fromVariableId);
+            createAliasToVariableChangeProcessors(variableReferenceGraph, declarativeShadowVariableToAliasMap, fromVariableId);
+        }
+
+        // Create the fixed edges in the graph
+        createFixedVariableRelationEdges(variableReferenceGraph, entities, declarativeShadowVariableDescriptors);
+        variableReferenceGraph.createGraph(graphCreator);
+    }
+
+    private static <Solution_> void createGraphNodes(VariableReferenceGraph<Solution_> graph, Object[] entities,
+            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
+            Map<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo> variableIdToUpdater,
+            Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap) {
         for (var entity : entities) {
             for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
                 var entityClass = declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass();
@@ -53,7 +73,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             declarativeShadowVariableDescriptor.getEntityDescriptor().getInvalidityMarkerVariableDescriptor(),
                             declarativeShadowVariableDescriptor.getMemberAccessor(),
                             declarativeShadowVariableDescriptor.getCalculator()::executeGetter));
-                    variableReferenceGraph.addVariableReferenceEntity(
+                    graph.addVariableReferenceEntity(
                             variableId,
                             entity,
                             updater);
@@ -70,62 +90,65 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 }
             }
         }
+    }
 
-        // Create variable processors for each declarative shadow variable descriptor
-        for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
-            final var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
+    private static <Solution_> void createSourceChangeProcessors(VariableReferenceGraph<Solution_> variableReferenceGraph,
+            DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
+            VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        for (var source : declarativeShadowVariable.getSources()) {
+            for (var sourcePart : source.variableSourceReferences()) {
+                var toVariableId = sourcePart.variableMetaModel();
 
-            for (var source : declarativeShadowVariable.getSources()) {
-                for (var sourcePart : source.variableSourceReferences()) {
-                    var toVariableId = sourcePart.variableMetaModel();
-
-                    // declarative variables have edges to each other in the graph,
-                    // and will mark dependent variable as changed.
-                    // non-declarative variables are not in the graph and must have their
-                    // own processor
-                    if (!sourcePart.isDeclarative()) {
-                        variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) -> {
-                            // Exploits the fact the source entity and the target entity must be the same,
-                            // since non-declarative variables can only be accessed from the root entity
-                            // i.e. paths like "otherVisit.previous"
-                            // or "visitGroup[].otherVisit.previous" are not allowed,
-                            // but paths like "previous" or
-                            // "visitGroup[].previous" are.
-                            // Without this invariant, an inverse set must be calculated
-                            // and maintained,
-                            // and this code is complicated enough.
-                            graph.markChanged(graph.lookup(fromVariableId, entity));
-                        });
-                    }
-                }
-            }
-
-            for (var alias : declarativeShadowVariableToAliasMap.getOrDefault(fromVariableId, Collections.emptySet())) {
-                var toVariableId = alias.targetVariableMetamodel();
-                var sourceVariableId = alias.variableMetaModel();
-
-                if (!alias.isDeclarative() && alias.affectGraphEdges()) {
-                    // Exploit the same fact as above
-                    variableReferenceGraph.addBeforeProcessor(sourceVariableId, (graph, toEntity) -> {
-                        alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity, fromEntity -> {
-                            graph.removeEdge(
-                                    graph.lookup(fromVariableId, fromEntity),
-                                    graph.lookup(toVariableId, toEntity));
-                        });
-                    });
-                    variableReferenceGraph.addAfterProcessor(sourceVariableId, (graph, toEntity) -> {
-                        alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity, fromEntity -> {
-                            graph.addEdge(graph.lookup(fromVariableId, fromEntity),
-                                    graph.lookup(toVariableId, toEntity));
-                        });
+                // declarative variables have edges to each other in the graph,
+                // and will mark dependent variable as changed.
+                // non-declarative variables are not in the graph and must have their
+                // own processor
+                if (!sourcePart.isDeclarative()) {
+                    variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) -> {
+                        // Exploits the fact the source entity and the target entity must be the same,
+                        // since non-declarative variables can only be accessed from the root entity
+                        // i.e. paths like "otherVisit.previous"
+                        // or "visitGroup[].otherVisit.previous" are not allowed,
+                        // but paths like "previous" or
+                        // "visitGroup[].previous" are.
+                        // Without this invariant, an inverse set must be calculated
+                        // and maintained,
+                        // and this code is complicated enough.
+                        graph.markChanged(graph.lookup(fromVariableId, entity));
                     });
                 }
-                // Note: it is impossible to have a declarative variable affect graph edges,
-                // since accessing a declarative variable from another declarative variable is prohibited.
             }
         }
+    }
 
-        // Create the fixed edges in the graph
+    private static <Solution_> void createAliasToVariableChangeProcessors(
+            VariableReferenceGraph<Solution_> variableReferenceGraph,
+            Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap,
+            VariableMetaModel<Solution_, ?, ?> fromVariableId) {
+        for (var alias : declarativeShadowVariableToAliasMap.getOrDefault(fromVariableId, Collections.emptySet())) {
+            var toVariableId = alias.targetVariableMetamodel();
+            var sourceVariableId = alias.variableMetaModel();
+
+            if (!alias.isDeclarative() && alias.affectGraphEdges()) {
+                // Exploit the same fact as above
+                variableReferenceGraph.addBeforeProcessor(sourceVariableId,
+                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity,
+                                fromEntity -> graph.removeEdge(
+                                        graph.lookup(fromVariableId, fromEntity),
+                                        graph.lookup(toVariableId, toEntity))));
+                variableReferenceGraph.addAfterProcessor(sourceVariableId,
+                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity,
+                                fromEntity -> graph.addEdge(graph.lookup(fromVariableId, fromEntity),
+                                        graph.lookup(toVariableId, toEntity))));
+            }
+            // Note: it is impossible to have a declarative variable affect graph edges,
+            // since accessing a declarative variable from another declarative variable is prohibited.
+        }
+    }
+
+    private static <Solution_> void createFixedVariableRelationEdges(VariableReferenceGraph<Solution_> variableReferenceGraph,
+            Object[] entities,
+            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
         for (var entity : entities) {
             for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
                 var entityClass = declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass();
@@ -137,13 +160,11 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                 var fromVariableId = source.variableMetaModel();
 
                                 sourceRoot.valueEntityFunction()
-                                        .accept(entity, fromEntity -> {
-                                            variableReferenceGraph.addFixedEdge(
-                                                    variableReferenceGraph
-                                                            .lookup(fromVariableId, fromEntity),
-                                                    variableReferenceGraph
-                                                            .lookup(toVariableId, entity));
-                                        });
+                                        .accept(entity, fromEntity -> variableReferenceGraph.addFixedEdge(
+                                                variableReferenceGraph
+                                                        .lookup(fromVariableId, fromEntity),
+                                                variableReferenceGraph
+                                                        .lookup(toVariableId, entity)));
                                 break;
                             }
                         }
@@ -151,7 +172,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 }
             }
         }
-        variableReferenceGraph.createGraph(graphCreator);
     }
 
     public DefaultShadowVariableSession<Solution_> forSolution(Solution_ solution) {

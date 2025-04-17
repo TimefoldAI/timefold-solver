@@ -16,8 +16,8 @@ import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWit
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
-public class InvalidityMarkerVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
-    public InvalidityMarkerVariableDescriptor(int ordinal,
+public class ShadowVariableLoopedVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+    public ShadowVariableLoopedVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
@@ -58,6 +58,6 @@ public class InvalidityMarkerVariableDescriptor<Solution_> extends ShadowVariabl
 
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
-
+        // no action needed
     }
 }

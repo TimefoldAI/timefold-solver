@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable.List;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 /**
  * Specifies that a bean property (or a field) is a custom shadow variable of 1 or more source variables.
@@ -26,7 +26,7 @@ public @interface ShadowVariable {
      * {@link ai.timefold.solver.core.config.solver.PreviewFeature Preview feature}.
      * <p/>
      * If set, it is a name of a method annotated with
-     * {@link ShadowVariableUpdater} that computes the value of this
+     * {@link ShadowSources} that computes the value of this
      * {@link ShadowVariable}.
      * <p/>
      * If set, {@link #variableListenerClass()}, {@link #sourceEntityClass()}
@@ -34,7 +34,7 @@ public @interface ShadowVariable {
      *
      * @return the method that computes the value of this {@link ShadowVariable}.
      */
-    String method() default "";
+    String supplierName() default "";
 
     /**
      * A {@link VariableListener} or {@link ListVariableListener} gets notified after a source planning variable has changed.
@@ -44,7 +44,7 @@ public @interface ShadowVariable {
      * For example: VRP with time windows uses a {@link VariableListener} to update the arrival times
      * of all the trailing entities when an entity is changed.
      *
-     * Must not be set if {@link #method()} is set.
+     * Must not be set if {@link #supplierName()} is set.
      *
      * @return {@link NullVariableListener} when the attribute is omitted (workaround for annotation limitation).
      *         The variable listener class that computes the value of this shadow variable.
@@ -55,6 +55,8 @@ public @interface ShadowVariable {
      * The {@link PlanningEntity} class of the source variable.
      * <p>
      * Specified if the source variable is on a different {@link Class} than the class that uses this referencing annotation.
+     * <p>
+     * Must not be set if {@link #supplierName()} is set.
      *
      * @return {@link NullEntityClass} when the attribute is omitted (workaround for annotation limitation).
      *         Defaults to the same {@link Class} as the one that uses this annotation.
@@ -63,6 +65,8 @@ public @interface ShadowVariable {
 
     /**
      * The source variable name.
+     * <p>
+     * Must not be set if {@link #supplierName()} is set.
      *
      * @return never null, a genuine or shadow variable name
      */

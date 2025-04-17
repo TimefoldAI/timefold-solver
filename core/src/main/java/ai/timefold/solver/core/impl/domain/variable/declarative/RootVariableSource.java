@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 import org.jspecify.annotations.NonNull;
 
@@ -74,9 +74,9 @@ public record RootVariableSource<Entity_, Value_>(
                 listMemberAccessors.add(memberAccessor);
                 chainToVariable = new ArrayList<>();
 
-                currentEntity = ConfigUtils.extractGenericTypeParameterOrFail(ShadowVariableUpdater.class.getSimpleName(),
+                currentEntity = ConfigUtils.extractGenericTypeParameterOrFail(ShadowSources.class.getSimpleName(),
                         currentEntity,
-                        memberAccessor.getType(), memberAccessor.getGenericType(), ShadowVariableUpdater.class,
+                        memberAccessor.getType(), memberAccessor.getGenericType(), ShadowSources.class,
                         memberAccessor.getName());
 
                 hasListMemberAccessor = true;
@@ -163,26 +163,14 @@ public record RootVariableSource<Entity_, Value_>(
 
     private static <Value_> @NonNull BiConsumer<Object, Consumer<Value_>> getCollectionSourceEntityVisitor(
             List<MemberAccessor> listMemberAccessors, List<MemberAccessor> finalChainToVariable) {
+        var entityListMemberAccessor = RootVariableSource.<Iterable<Object>> getRegularSourceEntityVisitor(listMemberAccessors);
+        var elementSourceEntityVisitor = RootVariableSource.<Value_> getRegularSourceEntityVisitor(finalChainToVariable);
         return (entity, consumer) -> {
-            Object current = entity;
-            for (var accessor : listMemberAccessors) {
-                current = accessor.executeGetter(current);
-                if (current == null) {
-                    return;
+            entityListMemberAccessor.accept(entity, iterable -> {
+                for (var item : iterable) {
+                    elementSourceEntityVisitor.accept(item, consumer);
                 }
-            }
-
-            Iterable<Object> iterable = (Iterable<Object>) current;
-            outer: for (var item : iterable) {
-                current = item;
-                for (var accessor : finalChainToVariable) {
-                    current = accessor.executeGetter(current);
-                    if (current == null) {
-                        continue outer;
-                    }
-                }
-                consumer.accept((Value_) current);
-            }
+            });
         };
     }
 
@@ -269,6 +257,6 @@ public record RootVariableSource<Entity_, Value_>(
         if (shadowVariable == null) {
             return false;
         }
-        return !shadowVariable.method().isEmpty();
+        return !shadowVariable.supplierName().isEmpty();
     }
 }

@@ -8,8 +8,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -21,13 +21,13 @@ public class TestdataDependencyValue {
     @PreviousElementShadowVariable(sourceVariableName = "values")
     TestdataDependencyValue previousValue;
 
-    @ShadowVariable(method = "calculateStartTime")
+    @ShadowVariable(supplierName = "calculateStartTime")
     LocalDateTime startTime;
 
-    @ShadowVariable(method = "calculateEndTime")
+    @ShadowVariable(supplierName = "calculateEndTime")
     LocalDateTime endTime;
 
-    @InvalidityMarker
+    @ShadowVariableLooped
     boolean isInvalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "values")
@@ -65,7 +65,7 @@ public class TestdataDependencyValue {
         this.startTime = startTime;
     }
 
-    @ShadowVariableUpdater(sources = { "dependencies[].endTime", "previousValue.endTime", "entity" })
+    @ShadowSources(sources = { "dependencies[].endTime", "previousValue.endTime", "entity" })
     public LocalDateTime calculateStartTime() {
         LocalDateTime readyTime;
         if (previousValue != null) {
@@ -95,7 +95,7 @@ public class TestdataDependencyValue {
         this.endTime = endTime;
     }
 
-    @ShadowVariableUpdater(sources = { "startTime" })
+    @ShadowSources(sources = { "startTime" })
     public LocalDateTime calculateEndTime() {
         if (startTime == null) {
             return null;

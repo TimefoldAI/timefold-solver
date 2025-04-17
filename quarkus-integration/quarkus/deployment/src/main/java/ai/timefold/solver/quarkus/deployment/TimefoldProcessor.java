@@ -505,15 +505,6 @@ class TimefoldProcessor {
         }
     }
 
-    private void assertTargetClasses(List<AnnotationTarget> targetList, DotName dotName) {
-        if (targetList.stream().anyMatch(target -> target.kind() != AnnotationTarget.Kind.CLASS)) {
-            throw new IllegalStateException(
-                    "All classes ([%s]) annotated with @%s must be a class.".formatted(
-                            targetList.stream().map(t -> t.asClass().name().toString()).collect(Collectors.joining(", ")),
-                            dotName.local()));
-        }
-    }
-
     private SolverConfig createSolverConfig(ClassLoader classLoader, String solverName) {
         // 1 - The solver configuration takes precedence over root and default settings
         Optional<String> solverConfigXml = this.timefoldBuildTimeConfig.getSolverConfig(solverName)

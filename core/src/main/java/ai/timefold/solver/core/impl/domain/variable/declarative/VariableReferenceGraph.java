@@ -177,9 +177,8 @@ public class VariableReferenceGraph<Solution_> {
                     affectedEntities);
 
             if (isChanged) {
-                graph.nodeForwardEdges(nextNode).forEachRemaining((int node) -> {
-                    nodeHeap.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node)));
-                });
+                graph.nodeForwardEdges(nextNode).forEachRemaining(
+                        (int node) -> nodeHeap.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node))));
             }
         }
 

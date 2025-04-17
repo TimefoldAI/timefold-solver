@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoInteractions;
 
+import java.time.Duration;
 import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -28,16 +29,9 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class ConcurrentValuesShadowVariableTest {
-    public static class MockShadowVariableSession<Solution_> {
-        final SolutionDescriptor<Solution_> solutionDescriptor;
-        final VariableReferenceGraph<Solution_> graph;
-
-        public MockShadowVariableSession(SolutionDescriptor<Solution_> solutionDescriptor,
-                VariableReferenceGraph<Solution_> graph) {
-            this.solutionDescriptor = solutionDescriptor;
-            this.graph = graph;
-        }
+class ConcurrentValuesShadowVariableTest {
+    private record MockShadowVariableSession<Solution_>(SolutionDescriptor<Solution_> solutionDescriptor,
+            VariableReferenceGraph<Solution_> graph) {
 
         public void setVariable(Object entity, String variableName, @Nullable Object value) {
             var variableMetamodel = solutionDescriptor.getMetaModel().entity(entity.getClass()).variable(variableName);
@@ -63,7 +57,7 @@ public class ConcurrentValuesShadowVariableTest {
     }
 
     @Test
-    public void simpleChain() {
+    void simpleChain() {
         var entity = spy(new TestdataConcurrentEntity("v1"));
         var value1 = spy(new TestdataConcurrentValue("c1"));
         var value2 = spy(new TestdataConcurrentValue("c2"));
@@ -81,18 +75,9 @@ public class ConcurrentValuesShadowVariableTest {
         Mockito.reset(entity, value1, value2, value3);
         session.updateVariables();
 
-        assertThat(value1.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(value1.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(value1.isInvalid()).isFalse();
-
-        assertThat(value2.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(value2.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(value2.isInvalid()).isFalse();
-
-        assertThat(value3.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(value3.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(value3.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, value1);
+        assertStartsAfterDuration(Duration.ofMinutes(60L), value2);
+        assertStartsAfterDuration(Duration.ofMinutes(120L), value3);
 
         // Second, test value1 -> value3 -> value2
         session.setVariable(value2, "previousValue", value3);
@@ -104,22 +89,13 @@ public class ConcurrentValuesShadowVariableTest {
         // value1 should have no interactions, since none of its dependencies are updated
         verifyNoInteractions(value1);
 
-        assertThat(value1.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(value1.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(value1.isInvalid()).isFalse();
-
-        assertThat(value3.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(value3.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(value2.isInvalid()).isFalse();
-
-        assertThat(value2.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(value2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(value3.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, value1);
+        assertStartsAfterDuration(Duration.ofMinutes(60), value3);
+        assertStartsAfterDuration(Duration.ofMinutes(120), value2);
     }
 
     @Test
-    public void groupChain() {
+    void groupChain() {
         var entity1 = new TestdataConcurrentEntity("v1");
         var entity2 = new TestdataConcurrentEntity("v2");
         var entity3 = new TestdataConcurrentEntity("v3");
@@ -158,36 +134,11 @@ public class ConcurrentValuesShadowVariableTest {
         session.updateVariables();
 
         // No delay for A1/A2, since their entities arrive at the same time
-        assertThat(valueA1.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueA1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueA1.isInvalid()).isFalse();
-
-        assertThat(valueA2.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueA2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueA2.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, valueA1, valueA2);
 
         // Delay B1 until the entities from A1/A2 are done (they are needed for values B2/B3)
-        assertThat(valueB1.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB1.isInvalid()).isFalse();
-
-        assertThat(valueB2.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB2.isInvalid()).isFalse();
-
-        assertThat(valueB3.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB3.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB3.isInvalid()).isFalse();
-
-        assertThat(valueC.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(valueC.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(valueC.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ofMinutes(60L), valueB1, valueB2, valueB3);
+        assertStartsAfterDuration(Duration.ofMinutes(120L), valueC);
 
         // Second test:
         // entity1: valueC -> valueA1 -> valueB2
@@ -200,43 +151,17 @@ public class ConcurrentValuesShadowVariableTest {
         session.updateVariables();
 
         // A1 is delayed because it is now after C
-        assertThat(valueA1.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueA1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueA1.isInvalid()).isFalse();
-
         // A2 is now delayed until A1 is ready
-        assertThat(valueA2.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueA2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueA2.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ofMinutes(60L), valueA1, valueA2);
 
-        assertThat(valueB1.getServiceStartTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(valueB1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(valueB1.isInvalid()).isFalse();
-
-        assertThat(valueB2.getServiceStartTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(valueB2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(valueB2.isInvalid()).isFalse();
-
-        assertThat(valueB3.getServiceStartTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(valueB3.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(valueB3.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ofMinutes(120L), valueB1, valueB2, valueB3);
 
         // Value C can now start immediately since it the first value and not in a concurrent group
-        assertThat(valueC.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueC.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueC.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, valueC);
     }
 
     @Test
-    public void groupChainValidToInvalid() {
+    void groupChainValidToInvalid() {
         var entity1 = new TestdataConcurrentEntity("v1");
         var entity2 = new TestdataConcurrentEntity("v2");
         var entity3 = new TestdataConcurrentEntity("v3");
@@ -274,35 +199,9 @@ public class ConcurrentValuesShadowVariableTest {
 
         session.updateVariables();
 
-        assertThat(valueA1.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueA1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueA1.isInvalid()).isFalse();
-
-        assertThat(valueA2.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueA2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueA2.isInvalid()).isFalse();
-
-        assertThat(valueB1.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB1.isInvalid()).isFalse();
-
-        assertThat(valueB2.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB2.isInvalid()).isFalse();
-
-        assertThat(valueB3.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB3.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB3.isInvalid()).isFalse();
-
-        assertThat(valueC.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(valueC.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(valueC.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, valueA1, valueA2);
+        assertStartsAfterDuration(Duration.ofMinutes(60L), valueB1, valueB2, valueB3);
+        assertStartsAfterDuration(Duration.ofMinutes(120L), valueC);
 
         // Second test:
         // entity1: valueB2 -> valueA1
@@ -319,30 +218,8 @@ public class ConcurrentValuesShadowVariableTest {
 
         // Everything is invalid/null, since no values are prior to the looped
         // groups.
-        assertThat(valueA1.getServiceStartTime()).isNull();
-        assertThat(valueA1.getServiceFinishTime()).isNull();
-        assertThat(valueA1.isInvalid()).isTrue();
-
-        assertThat(valueA2.getServiceStartTime()).isNull();
-        assertThat(valueA2.getServiceFinishTime()).isNull();
-        assertThat(valueA2.isInvalid()).isTrue();
-
-        assertThat(valueB1.getServiceStartTime()).isNull();
-        assertThat(valueB1.getServiceFinishTime()).isNull();
-        assertThat(valueB1.isInvalid()).isTrue();
-
-        assertThat(valueB2.getServiceStartTime()).isNull();
-        assertThat(valueB2.getServiceFinishTime()).isNull();
-        assertThat(valueB2.isInvalid()).isTrue();
-
-        assertThat(valueB3.getServiceStartTime()).isNull();
-        assertThat(valueB3.getServiceFinishTime()).isNull();
-        assertThat(valueB3.isInvalid()).isTrue();
-
         // C is invalid, since it is after the concurrent loop
-        assertThat(valueC.getServiceStartTime()).isNull();
-        assertThat(valueC.getServiceFinishTime()).isNull();
-        assertThat(valueC.isInvalid()).isTrue();
+        assertInvalid(valueA1, valueA2, valueB1, valueB2, valueB3, valueC);
 
         // Third test:
         // entity1: valueB2 -> valueA1
@@ -357,34 +234,13 @@ public class ConcurrentValuesShadowVariableTest {
 
         session.updateVariables();
 
-        assertThat(valueA1.getServiceStartTime()).isNull();
-        assertThat(valueA1.getServiceFinishTime()).isNull();
-        assertThat(valueA1.isInvalid()).isTrue();
-
-        assertThat(valueA2.getServiceStartTime()).isNull();
-        assertThat(valueA2.getServiceFinishTime()).isNull();
-        assertThat(valueA2.isInvalid()).isTrue();
-
-        assertThat(valueB1.getServiceStartTime()).isNull();
-        assertThat(valueB1.getServiceFinishTime()).isNull();
-        assertThat(valueB1.isInvalid()).isTrue();
-
-        assertThat(valueB2.getServiceStartTime()).isNull();
-        assertThat(valueB2.getServiceFinishTime()).isNull();
-        assertThat(valueB2.isInvalid()).isTrue();
-
-        assertThat(valueB3.getServiceStartTime()).isNull();
-        assertThat(valueB3.getServiceFinishTime()).isNull();
-        assertThat(valueB3.isInvalid()).isTrue();
-
+        assertInvalid(valueA1, valueA2, valueB1, valueB2, valueB3);
         // C is valid, since it is prior to the concurrent loop
-        assertThat(valueC.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueC.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueC.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, valueC);
     }
 
     @Test
-    public void groupChainInvalidToValid() {
+    void groupChainInvalidToValid() {
         var entity1 = new TestdataConcurrentEntity("v1");
         var entity2 = new TestdataConcurrentEntity("v2");
         var entity3 = new TestdataConcurrentEntity("v3");
@@ -426,30 +282,9 @@ public class ConcurrentValuesShadowVariableTest {
         session.updateVariables();
 
         // Everything except C is invalid
-        assertThat(valueA1.getServiceStartTime()).isNull();
-        assertThat(valueA1.getServiceFinishTime()).isNull();
-        assertThat(valueA1.isInvalid()).isTrue();
-
-        assertThat(valueA2.getServiceStartTime()).isNull();
-        assertThat(valueA2.getServiceFinishTime()).isNull();
-        assertThat(valueA2.isInvalid()).isTrue();
-
-        assertThat(valueB1.getServiceStartTime()).isNull();
-        assertThat(valueB1.getServiceFinishTime()).isNull();
-        assertThat(valueB1.isInvalid()).isTrue();
-
-        assertThat(valueB2.getServiceStartTime()).isNull();
-        assertThat(valueB2.getServiceFinishTime()).isNull();
-        assertThat(valueB2.isInvalid()).isTrue();
-
-        assertThat(valueB3.getServiceStartTime()).isNull();
-        assertThat(valueB3.getServiceFinishTime()).isNull();
-        assertThat(valueB3.isInvalid()).isTrue();
-
+        assertInvalid(valueA1, valueA2, valueB1, valueB2, valueB3);
         // C is valid because it is not involved in or after a loop
-        assertThat(valueC.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueC.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueC.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, valueC);
 
         // Second test:
         // entity1: valueA1
@@ -464,35 +299,25 @@ public class ConcurrentValuesShadowVariableTest {
 
         session.updateVariables();
 
-        assertThat(valueA1.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueA1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueA1.isInvalid()).isFalse();
+        assertStartsAfterDuration(Duration.ZERO, valueA1, valueA2);
+        assertStartsAfterDuration(Duration.ofMinutes(60), valueB1, valueB2, valueB3);
+        assertStartsAfterDuration(Duration.ofMinutes(120), valueC);
+    }
 
-        assertThat(valueA2.getServiceStartTime()).isEqualTo(BASE_START_TIME);
-        assertThat(valueA2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(30L));
-        assertThat(valueA2.isInvalid()).isFalse();
+    private static void assertStartsAfterDuration(Duration duration, TestdataConcurrentValue... values) {
+        for (var value : values) {
+            assertThat(value.getServiceStartTime()).isEqualTo(BASE_START_TIME.plus(duration));
+            assertThat(value.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plus(duration).plusMinutes(30L));
+            assertThat(value.isInvalid()).isFalse();
+        }
+    }
 
-        assertThat(valueB1.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB1.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB1.isInvalid()).isFalse();
-
-        assertThat(valueB2.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB2.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB2.isInvalid()).isFalse();
-
-        assertThat(valueB3.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(60L));
-        assertThat(valueB3.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(90L));
-        assertThat(valueB3.isInvalid()).isFalse();
-
-        assertThat(valueC.getServiceStartTime()).isEqualTo(BASE_START_TIME.plusMinutes(120L));
-        assertThat(valueC.getServiceFinishTime())
-                .isEqualTo(BASE_START_TIME.plusMinutes(150L));
-        assertThat(valueC.isInvalid()).isFalse();
+    private static void assertInvalid(TestdataConcurrentValue... values) {
+        for (var value : values) {
+            assertThat(value.getServiceStartTime()).isNull();
+            assertThat(value.getServiceFinishTime()).isNull();
+            assertThat(value.isInvalid()).isTrue();
+        }
     }
 
     @Test
@@ -524,10 +349,11 @@ public class ConcurrentValuesShadowVariableTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1000L));
 
-        var solverFactory = SolverFactory.create(solverConfig);
+        var solverFactory = SolverFactory.<TestdataConcurrentSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
+        var solution = solver.solve(problem);
 
-        solver.solve(problem);
+        assertThat(solution.getScore().isFeasible()).isTrue();
     }
 
     @Test
@@ -569,9 +395,10 @@ public class ConcurrentValuesShadowVariableTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1000L));
 
-        var solverFactory = SolverFactory.create(solverConfig);
+        var solverFactory = SolverFactory.<TestdataConcurrentSolution> create(solverConfig);
         var solver = solverFactory.buildSolver();
+        var solution = solver.solve(problem);
 
-        solver.solve(problem);
+        assertThat(solution.getScore().isFeasible()).isTrue();
     }
 }

@@ -14,10 +14,10 @@ import org.jspecify.annotations.Nullable;
 public class DefaultShadowVariableSession<Solution_> implements Supply {
     final VariableReferenceGraph<Solution_> graph;
 
-    record EntityVariablePair<Solution_>(VariableMetaModel<?, ?, ?> variableMetamodel, Object entity) {
+    record EntityVariablePair(VariableMetaModel<?, ?, ?> variableMetamodel, Object entity) {
         @Override
         public boolean equals(@Nullable Object o) {
-            if (o instanceof EntityVariablePair<?> other) {
+            if (o instanceof EntityVariablePair other) {
                 return entity == other.entity && variableMetamodel == other.variableMetamodel;
             }
             return false;
@@ -29,14 +29,14 @@ public class DefaultShadowVariableSession<Solution_> implements Supply {
         }
     }
 
-    final Set<EntityVariablePair<Solution_>> modifiedEntityVariableSet = new HashSet<>();
+    final Set<EntityVariablePair> modifiedEntityVariableSet = new HashSet<>();
 
     public DefaultShadowVariableSession(VariableReferenceGraph<Solution_> graph) {
         this.graph = graph;
     }
 
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        if (modifiedEntityVariableSet.add(new EntityVariablePair<>(variableDescriptor.getVariableMetaModel(), entity))) {
+        if (modifiedEntityVariableSet.add(new EntityVariablePair(variableDescriptor.getVariableMetaModel(), entity))) {
             graph.beforeVariableChanged(variableDescriptor.getVariableMetaModel(),
                     entity);
         }

@@ -54,7 +54,7 @@ import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableD
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.PiggybackShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.declarative.InvalidityMarkerVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ShadowVariableLoopedVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -70,7 +70,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFa
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -95,7 +95,7 @@ public class EntityDescriptor<Solution_> {
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class,
-            InvalidityMarker.class
+            ShadowVariableLooped.class
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
@@ -107,7 +107,7 @@ public class EntityDescriptor<Solution_> {
     private final Predicate<Object> isInitializedPredicate;
     private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
     @Nullable
-    private InvalidityMarkerVariableDescriptor<Solution_> invalidityMarkerVariableDescriptor;
+    private ShadowVariableLoopedVariableDescriptor<Solution_> invalidityMarkerVariableDescriptor;
 
     private Predicate<Object> hasNoNullVariablesBasicVar;
     private Predicate<Object> hasNoNullVariablesListVar;
@@ -393,7 +393,7 @@ public class EntityDescriptor<Solution_> {
                 || variableAnnotationClass.equals(ShadowVariable.List.class)) {
             ShadowVariableDescriptor<Solution_> variableDescriptor;
             var annotation = memberAccessor.getAnnotation(ShadowVariable.class);
-            if (annotation != null && !annotation.method().isEmpty()) {
+            if (annotation != null && !annotation.supplierName().isEmpty()) {
                 variableDescriptor =
                         new DeclarativeShadowVariableDescriptor<>(nextVariableDescriptorOrdinal, this, memberAccessor);
             } else {
@@ -414,8 +414,8 @@ public class EntityDescriptor<Solution_> {
                 declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
-        } else if (variableAnnotationClass.equals(InvalidityMarker.class)) {
-            var variableDescriptor = new InvalidityMarkerVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
+        } else if (variableAnnotationClass.equals(ShadowVariableLooped.class)) {
+            var variableDescriptor = new ShadowVariableLoopedVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
                     memberAccessor);
             invalidityMarkerVariableDescriptor = variableDescriptor;
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
@@ -661,7 +661,7 @@ public class EntityDescriptor<Solution_> {
         return effectiveGenuineVariableDescriptorMap.get(variableName);
     }
 
-    public @Nullable InvalidityMarkerVariableDescriptor<Solution_> getInvalidityMarkerVariableDescriptor() {
+    public @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> getInvalidityMarkerVariableDescriptor() {
         return invalidityMarkerVariableDescriptor;
     }
 

@@ -14,8 +14,8 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.InvalidityMarker;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableUpdater;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 
 @PlanningEntity
 public class TestdataConcurrentValue {
@@ -25,13 +25,13 @@ public class TestdataConcurrentValue {
     @InverseRelationShadowVariable(sourceVariableName = "values")
     TestdataConcurrentEntity entity;
 
-    @ShadowVariable(method = "serviceReadyTimeUpdater")
+    @ShadowVariable(supplierName = "serviceReadyTimeUpdater")
     LocalDateTime serviceReadyTime;
 
-    @ShadowVariable(method = "serviceStartTimeUpdater")
+    @ShadowVariable(supplierName = "serviceStartTimeUpdater")
     LocalDateTime serviceStartTime;
 
-    @ShadowVariable(method = "serviceFinishTimeUpdater")
+    @ShadowVariable(supplierName = "serviceFinishTimeUpdater")
     LocalDateTime serviceFinishTime;
 
     @PreviousElementShadowVariable(sourceVariableName = "values")
@@ -42,7 +42,7 @@ public class TestdataConcurrentValue {
 
     List<TestdataConcurrentValue> concurrentValueGroup;
 
-    @InvalidityMarker
+    @ShadowVariableLooped
     boolean isInvalid;
 
     public TestdataConcurrentValue() {
@@ -92,7 +92,7 @@ public class TestdataConcurrentValue {
         this.serviceStartTime = serviceStartTime;
     }
 
-    @ShadowVariableUpdater(sources = { "previousValue.serviceFinishTime", "entity" })
+    @ShadowSources(sources = { "previousValue.serviceFinishTime", "entity" })
     public LocalDateTime serviceReadyTimeUpdater() {
         if (previousValue != null) {
             return previousValue.serviceFinishTime.plusMinutes(30L);
@@ -103,7 +103,7 @@ public class TestdataConcurrentValue {
         return null;
     }
 
-    @ShadowVariableUpdater(sources = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" })
+    @ShadowSources(sources = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" })
     public LocalDateTime serviceStartTimeUpdater() {
         if (serviceReadyTime == null) {
             return null;
@@ -119,7 +119,7 @@ public class TestdataConcurrentValue {
         return startTime;
     }
 
-    @ShadowVariableUpdater(sources = { "serviceStartTime" })
+    @ShadowSources(sources = { "serviceStartTime" })
     public LocalDateTime serviceFinishTimeUpdater() {
         if (serviceStartTime == null) {
             return null;
@@ -169,10 +169,8 @@ public class TestdataConcurrentValue {
                 if (visit.entity != null && !vehicles.add(visit.entity)) {
                     return true;
                 }
-                if (visit != this) {
-                    if (visit.previousValue != null && visit.previousValue.getExpectedInvalid(cache)) {
-                        return true;
-                    }
+                if (visit != this && visit.previousValue != null && visit.previousValue.getExpectedInvalid(cache)) {
+                    return true;
                 }
             }
         }
