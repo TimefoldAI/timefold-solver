@@ -64,13 +64,21 @@ public record RootVariableSource<Entity_, Value_>(
         for (var pathPart : pathParts) {
             if (pathPart.endsWith(COLLECTION_REFERENCE_SUFFIX)) {
                 if (isAfterVariable) {
-                    throw new IllegalArgumentException("Cannot reference a collection on a variable.");
+                    throw new IllegalArgumentException(
+                            "The source path (%s) starting from root class (%s) accesses a collection (%s) after a variable (%s), which is not allowed."
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart,
+                                            chainStartingFromSourceVariableList.get(0).get(0).getName()));
                 }
                 if (hasListMemberAccessor) {
-                    throw new IllegalArgumentException("Cannot reference a collection on a collection.");
+                    throw new IllegalArgumentException(
+                            "The source path (%s) starting from root class (%s) accesses a collection (%s) after another collection (%s), which is not allowed."
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart,
+                                            listMemberAccessors.get(listMemberAccessors.size() - 1).getName()));
                 }
                 var memberName = pathPart.substring(0, pathPart.length() - COLLECTION_REFERENCE_SUFFIX.length());
-                var memberAccessor = getMemberAccessor(currentEntity, memberName, memberAccessorFactory, descriptorPolicy);
+                var memberAccessor =
+                        getMemberAccessor(rootEntityClass, variablePath, currentEntity, memberName, memberAccessorFactory,
+                                descriptorPolicy);
                 listMemberAccessors.add(memberAccessor);
                 chainToVariable = new ArrayList<>();
 
@@ -81,7 +89,7 @@ public record RootVariableSource<Entity_, Value_>(
 
                 hasListMemberAccessor = true;
             } else {
-                var memberAccessor = getMemberAccessor(currentEntity, pathPart,
+                var memberAccessor = getMemberAccessor(rootEntityClass, variablePath, currentEntity, pathPart,
                         memberAccessorFactory, descriptorPolicy);
 
                 if (!hasListMemberAccessor) {
@@ -122,24 +130,25 @@ public record RootVariableSource<Entity_, Value_>(
         }
 
         List<VariableSourceReference> variableSourceReferences = new ArrayList<>();
-        boolean isTopLevel = true;
-        for (var chainStartingFromSourceVariable : chainStartingFromSourceVariableList) {
+        for (var i = 0; i < chainStartingFromSourceVariableList.size(); i++) {
+            var chainStartingFromSourceVariable = chainStartingFromSourceVariableList.get(i);
             var newSourceReference =
                     createVariableSourceReferenceFromChain(solutionMetaModel,
                             rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
                             chainToVariable,
-                            isTopLevel);
+                            i == 0,
+                            i == chainStartingFromSourceVariableList.size() - 1);
             variableSourceReferences.add(newSourceReference);
-            isTopLevel = false;
         }
 
         if (variableSourceReferences.isEmpty()) {
-            throw new IllegalArgumentException("The source path (%s) on entity class %s does not reference any variables."
-                    .formatted(variablePath, rootEntityClass));
+            throw new IllegalArgumentException(
+                    "The source path (%s) starting from root entity class (%s) does not reference any variables."
+                            .formatted(variablePath, rootEntityClass.getSimpleName()));
         }
 
         for (var variableSourceReference : variableSourceReferences) {
-            assertIsValidVariableReference(variablePath, variableSourceReference);
+            assertIsValidVariableReference(rootEntityClass, variablePath, variableSourceReference);
         }
 
         return new RootVariableSource<>(rootEntityClass,
@@ -177,7 +186,7 @@ public record RootVariableSource<Entity_, Value_>(
     private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(
             PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass, String targetVariableName, List<MemberAccessor> afterChain,
-            List<MemberAccessor> chainToVariable, boolean isTopLevel) {
+            List<MemberAccessor> chainToVariable, boolean isTopLevel, boolean isBottomLevel) {
         var variableMemberAccessor = afterChain.get(0);
         var sourceVariablePath = new VariablePath(variableMemberAccessor.getDeclaringClass(),
                 variableMemberAccessor.getName(),
@@ -196,40 +205,44 @@ public record RootVariableSource<Entity_, Value_>(
                 solutionMetaModel.entity(variableMemberAccessor.getDeclaringClass()).variable(variableMemberAccessor.getName()),
                 sourceVariablePath.memberAccessorsBeforeEntity,
                 isTopLevel,
+                isBottomLevel,
                 isDeclarativeShadowVariable(variableMemberAccessor),
                 solutionMetaModel.entity(rootEntityClass).variable(targetVariableName),
                 downstreamDeclarativeVariable,
                 sourceVariablePath.getValueVisitorFromVariableEntity());
     }
 
-    private static void assertIsValidVariableReference(String variablePath, VariableSourceReference variableSourceReference) {
+    private static void assertIsValidVariableReference(Class<?> rootEntityClass, String variablePath,
+            VariableSourceReference variableSourceReference) {
         var sourceVariableId = variableSourceReference.variableMetaModel();
         if (variableSourceReference.isDeclarative()
                 && variableSourceReference.downstreamDeclarativeVariableMetamodel() != null
-                && !variableSourceReference.downstreamDeclarativeVariableMetamodel()
-                        .equals(sourceVariableId)) {
+                && !variableSourceReference.isBottomLevel()) {
             throw new IllegalArgumentException(
-                    "The source path (%s) accesses a declarative shadow variable (%s) from another declarative shadow variable (%s)."
+                    "The source path (%s) starting from root entity class (%s) accesses a declarative shadow variable (%s) from another declarative shadow variable (%s)."
                             .formatted(variablePath,
-                                    variableSourceReference.downstreamDeclarativeVariableMetamodel(),
-                                    sourceVariableId));
+                                    rootEntityClass.getSimpleName(),
+                                    variableSourceReference.downstreamDeclarativeVariableMetamodel().name(),
+                                    sourceVariableId.name()));
         }
-        if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariable().isEmpty()) {
+        if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariableEntity().isEmpty()) {
             throw new IllegalArgumentException(
-                    "The source path (%s) accesses a non-declarative shadow variable (%s) not from the root entity or collection."
-                            .formatted(variablePath,
+                    "The source path (%s) starting from root entity class (%s) accesses a non-declarative shadow variable (%s) not from the root entity or collection."
+                            .formatted(variablePath, rootEntityClass.getSimpleName(),
                                     variableSourceReference.variableMetaModel().name()));
         }
     }
 
-    private static MemberAccessor getMemberAccessor(Class<?> declaringClass, String memberName,
+    private static MemberAccessor getMemberAccessor(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
+            String memberName,
             MemberAccessorFactory memberAccessorFactory, DescriptorPolicy descriptorPolicy) {
         Member member = ReflectionHelper.getDeclaredField(declaringClass, memberName);
         if (member == null) {
             member = ReflectionHelper.getDeclaredGetterMethod(declaringClass, memberName);
             if (member == null) {
-                throw new IllegalArgumentException("Class %s does not have member %s."
-                        .formatted(declaringClass.getSimpleName(), memberName));
+                throw new IllegalArgumentException(
+                        "The source path (%s) starting from root class (%s) references a member (%s) on class (%s) that does not exist."
+                                .formatted(sourcePath, rootClass.getSimpleName(), memberName, declaringClass.getSimpleName()));
             }
         }
         return memberAccessorFactory.buildAndCacheMemberAccessor(member,

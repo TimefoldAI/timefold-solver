@@ -107,7 +107,7 @@ public class EntityDescriptor<Solution_> {
     private final Predicate<Object> isInitializedPredicate;
     private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
     @Nullable
-    private ShadowVariableLoopedVariableDescriptor<Solution_> invalidityMarkerVariableDescriptor;
+    private ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor;
 
     private Predicate<Object> hasNoNullVariablesBasicVar;
     private Predicate<Object> hasNoNullVariablesListVar;
@@ -417,7 +417,7 @@ public class EntityDescriptor<Solution_> {
         } else if (variableAnnotationClass.equals(ShadowVariableLooped.class)) {
             var variableDescriptor = new ShadowVariableLoopedVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
                     memberAccessor);
-            invalidityMarkerVariableDescriptor = variableDescriptor;
+            shadowVariableLoopedDescriptor = variableDescriptor;
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
@@ -661,8 +661,8 @@ public class EntityDescriptor<Solution_> {
         return effectiveGenuineVariableDescriptorMap.get(variableName);
     }
 
-    public @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> getInvalidityMarkerVariableDescriptor() {
-        return invalidityMarkerVariableDescriptor;
+    public @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> getShadowVariableLoopedDescriptor() {
+        return shadowVariableLoopedDescriptor;
     }
 
     public boolean hasAnyGenuineVariables() {

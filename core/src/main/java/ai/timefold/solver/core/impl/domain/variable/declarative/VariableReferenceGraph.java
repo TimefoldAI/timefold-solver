@@ -43,9 +43,6 @@ public class VariableReferenceGraph<Solution_> {
             VariableMetaModel<?, ?, ?> variableId,
             Entity_ entity,
             VariableUpdaterInfo variableReference) {
-        if (!variableId.entity().type().isInstance(entity)) {
-            throw new IllegalArgumentException(variableId + " " + entity);
-        }
         if (variableReferenceToInstanceMap.containsKey(variableId) &&
                 variableReferenceToInstanceMap.get(variableId).containsKey(entity)) {
             return variableReferenceToInstanceMap.get(variableId).get(entity);
@@ -178,7 +175,11 @@ public class VariableReferenceGraph<Solution_> {
 
             if (isChanged) {
                 graph.nodeForwardEdges(nextNode).forEachRemaining(
-                        (int node) -> nodeHeap.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node))));
+                        (int node) -> {
+                            if (!visited[node]) {
+                                nodeHeap.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node)));
+                            }
+                        });
             }
         }
 
@@ -259,8 +260,8 @@ public class VariableReferenceGraph<Solution_> {
     @SuppressWarnings("unchecked")
     private void updateInvalidityStatusOfAffectedEntities(Set<AffectedEntity> affectedEntities, LoopedTracker loopedTracker) {
         for (var affectedEntity : affectedEntities) {
-            var invalidDescriptor = affectedEntity.variableUpdaterInfo.invalidityMarkerVariableDescriptor();
-            if (invalidDescriptor == null) {
+            var shadowVariableLoopedDescriptor = affectedEntity.variableUpdaterInfo.shadowVariableLoopedDescriptor();
+            if (shadowVariableLoopedDescriptor == null) {
                 continue;
             }
             var entity = affectedEntity.entity;
@@ -271,12 +272,14 @@ public class VariableReferenceGraph<Solution_> {
                     break;
                 }
             }
-            var oldValue = invalidDescriptor.getValue(entity);
+            var oldValue = shadowVariableLoopedDescriptor.getValue(entity);
             if (!Objects.equals(oldValue, isEntityLooped)) {
-                changedVariableNotifier.beforeVariableChanged().accept((VariableDescriptor<Solution_>) invalidDescriptor,
+                changedVariableNotifier.beforeVariableChanged().accept(
+                        (VariableDescriptor<Solution_>) shadowVariableLoopedDescriptor,
                         entity);
-                invalidDescriptor.setValue(entity, isEntityLooped);
-                changedVariableNotifier.afterVariableChanged().accept((VariableDescriptor<Solution_>) invalidDescriptor,
+                shadowVariableLoopedDescriptor.setValue(entity, isEntityLooped);
+                changedVariableNotifier.afterVariableChanged().accept(
+                        (VariableDescriptor<Solution_>) shadowVariableLoopedDescriptor,
                         entity);
             }
         }

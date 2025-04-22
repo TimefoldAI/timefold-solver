@@ -10,7 +10,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public record VariableUpdaterInfo(
         DeclarativeShadowVariableDescriptor<?> variableDescriptor,
-        @Nullable ShadowVariableLoopedVariableDescriptor<?> invalidityMarkerVariableDescriptor,
+        @Nullable ShadowVariableLoopedVariableDescriptor<?> shadowVariableLoopedDescriptor,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator) {
 }

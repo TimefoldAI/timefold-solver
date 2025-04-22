@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 
 public class ShadowVariableLoopedVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     public ShadowVariableLoopedVariableDescriptor(int ordinal,
@@ -28,11 +29,11 @@ public class ShadowVariableLoopedVariableDescriptor<Solution_> extends ShadowVar
         if (!descriptorPolicy.isPreviewFeatureEnabled(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)) {
             throw new IllegalStateException(
                     """
-                            The member (%s) on the entity class (%s) is an invalidity marker, but the declarative shadow variable preview feature is disabled.
+                            The member (%s) on the entity class (%s) has an (%s) annotation, but the declarative shadow variable preview feature is disabled.
                             Maybe enable declarative shadow variables in your %s?
                             """
                             .formatted(variableMemberAccessor.getName(), entityDescriptor.getEntityClass().getName(),
-                                    SolverConfig.class.getSimpleName()));
+                                    ShadowVariableLooped.class.getSimpleName(), SolverConfig.class.getSimpleName()));
         }
     }
 
