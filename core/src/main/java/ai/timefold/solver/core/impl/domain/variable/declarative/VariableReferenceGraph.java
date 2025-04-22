@@ -246,6 +246,15 @@ public class VariableReferenceGraph<Solution_> {
 
     private PriorityQueue<AffectedShadowVariable> createInitialChangeQueue() {
         var heap = new PriorityQueue<AffectedShadowVariable>(instanceList.size());
+        // BitSet iteration: get the first set bit at or after 0,
+        // then get the first set bit after that bit.
+        // Iteration ends when nextSetBit returns -1.
+        // This has the potential to overflow, since to do the
+        // test, we necessarily need to do nextSetBit(i + 1),
+        // and i + 1 can be negative if Integer.MAX_VALUE is set
+        // in the BitSet.
+        // This should never happen, since arrays in Java are limited
+        // to slightly less than Integer.MAX_VALUE.
         for (var i = changed.nextSetBit(0); i >= 0; i = changed.nextSetBit(i + 1)) {
             var topologicalOrder = graph.getTopologicalOrder(i);
             heap.add(new AffectedShadowVariable(i, topologicalOrder));

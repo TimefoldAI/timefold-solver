@@ -23,7 +23,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaMo
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class RootVariableSourceTest {
+class RootVariableSourceTest {
     PlanningSolutionMetaModel<TestdataInvalidDeclarativeSolution> planningSolutionMetaModel;
 
     PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity> entityMetaModel;
@@ -39,7 +39,7 @@ public class RootVariableSourceTest {
 
     @BeforeEach
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    public void setUp() {
+    void setUp() {
         planningSolutionMetaModel = mock(PlanningSolutionMetaModel.class);
 
         entityMetaModel = mock(PlanningEntityMetaModel.class);
@@ -84,7 +84,7 @@ public class RootVariableSourceTest {
 
     private void assertChainToVariableEntity(VariableSourceReference variableSourceReference, String... expectedNames) {
         var chain = variableSourceReference.chainToVariableEntity();
-        assertThat(chain.size()).isEqualTo(expectedNames.length);
+        assertThat(chain).hasSize(expectedNames.length);
 
         for (var i = 0; i < chain.size(); i++) {
             assertThat(chain.get(i).getName()).isEqualTo(expectedNames[i]);
@@ -479,5 +479,21 @@ public class RootVariableSourceTest {
                 .hasMessageContaining("The source path (fact)" +
                         " starting from root entity class (TestdataInvalidDeclarativeValue)" +
                         " does not reference any variables.");
+    }
+
+    @Test
+    void invalidPathMultipleFactsInARow() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "fact.fact.dependency",
+                memberAccessorFactory,
+                descriptorPolicy))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("The source path (fact.fact.dependency)" +
+                        " starting from root entity (TestdataInvalidDeclarativeValue)" +
+                        " referencing multiple facts (fact, fact)" +
+                        " in a row.");
     }
 }

@@ -104,18 +104,17 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 // non-declarative variables are not in the graph and must have their
                 // own processor
                 if (!sourcePart.isDeclarative()) {
-                    variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) -> {
-                        // Exploits the fact the source entity and the target entity must be the same,
-                        // since non-declarative variables can only be accessed from the root entity
-                        // i.e. paths like "otherVisit.previous"
-                        // or "visitGroup[].otherVisit.previous" are not allowed,
-                        // but paths like "previous" or
-                        // "visitGroup[].previous" are.
-                        // Without this invariant, an inverse set must be calculated
-                        // and maintained,
-                        // and this code is complicated enough.
-                        graph.markChanged(graph.lookup(fromVariableId, entity));
-                    });
+                    variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) ->
+                    // Exploits the fact the source entity and the target entity must be the same,
+                    // since non-declarative variables can only be accessed from the root entity
+                    // i.e. paths like "otherVisit.previous"
+                    // or "visitGroup[].otherVisit.previous" are not allowed,
+                    // but paths like "previous" or
+                    // "visitGroup[].previous" are.
+                    // Without this invariant, an inverse set must be calculated
+                    // and maintained,
+                    // and this code is complicated enough.
+                    graph.markChanged(graph.lookup(fromVariableId, entity)));
                 }
             }
         }

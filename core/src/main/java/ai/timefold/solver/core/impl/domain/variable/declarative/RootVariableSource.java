@@ -60,6 +60,7 @@ public record RootVariableSource<Entity_, Value_>(
         List<List<MemberAccessor>> chainStartingFromSourceVariableList = new ArrayList<>();
         boolean isAfterVariable = false;
         Class<?> currentEntity = rootEntityClass;
+        var factCount = 0;
 
         for (var pathPart : pathParts) {
             if (pathPart.endsWith(COLLECTION_REFERENCE_SUFFIX)) {
@@ -81,6 +82,7 @@ public record RootVariableSource<Entity_, Value_>(
                                 descriptorPolicy);
                 listMemberAccessors.add(memberAccessor);
                 chainToVariable = new ArrayList<>();
+                factCount = 0;
 
                 currentEntity = ConfigUtils.extractGenericTypeParameterOrFail(ShadowSources.class.getSimpleName(),
                         currentEntity,
@@ -116,6 +118,16 @@ public record RootVariableSource<Entity_, Value_>(
                     chainStartingFromSourceVariableList.add(chainStartingFromSourceVariable);
 
                     isAfterVariable = true;
+                    factCount = 0;
+                } else {
+                    factCount++;
+                    if (factCount == 2) {
+                        throw new IllegalArgumentException(
+                                "The source path (%s) starting from root entity (%s) referencing multiple facts (%s, %s) in a row."
+                                        .formatted(variablePath, rootEntityClass.getSimpleName(),
+                                                chainToVariable.get(chainToVariable.size() - 2).getName(),
+                                                chainToVariable.get(chainToVariable.size() - 1).getName()));
+                    }
                 }
                 currentEntity = memberAccessor.getType();
             }
@@ -174,13 +186,11 @@ public record RootVariableSource<Entity_, Value_>(
             List<MemberAccessor> listMemberAccessors, List<MemberAccessor> finalChainToVariable) {
         var entityListMemberAccessor = RootVariableSource.<Iterable<Object>> getRegularSourceEntityVisitor(listMemberAccessors);
         var elementSourceEntityVisitor = RootVariableSource.<Value_> getRegularSourceEntityVisitor(finalChainToVariable);
-        return (entity, consumer) -> {
-            entityListMemberAccessor.accept(entity, iterable -> {
-                for (var item : iterable) {
-                    elementSourceEntityVisitor.accept(item, consumer);
-                }
-            });
-        };
+        return (entity, consumer) -> entityListMemberAccessor.accept(entity, iterable -> {
+            for (var item : iterable) {
+                elementSourceEntityVisitor.accept(item, consumer);
+            }
+        });
     }
 
     private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(

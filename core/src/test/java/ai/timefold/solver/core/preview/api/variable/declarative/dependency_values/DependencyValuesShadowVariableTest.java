@@ -19,9 +19,9 @@ import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_value
 
 import org.junit.jupiter.api.Test;
 
-public class DependencyValuesShadowVariableTest {
+class DependencyValuesShadowVariableTest {
     @Test
-    public void testSolve() {
+    void testSolve() {
         var baseTime = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
         var entityA = new TestdataDependencyEntity(baseTime);
         var entityB = new TestdataDependencyEntity(baseTime.plusMinutes(30));

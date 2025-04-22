@@ -15,6 +15,9 @@ public class DefaultShadowVariableSession<Solution_> implements Supply {
     final VariableReferenceGraph<Solution_> graph;
 
     record EntityVariablePair(VariableMetaModel<?, ?, ?> variableMetamodel, Object entity) {
+        // entity must be compared by identity; cannot rely on user's equals/hashCode.
+        // variableMetamodel is guaranteed to be the same instance for the same variable.
+        // this class is often used as a key for maps, so equals/hashCode are optimized for performance.
         @Override
         public boolean equals(@Nullable Object o) {
             if (o instanceof EntityVariablePair other) {
