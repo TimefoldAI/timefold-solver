@@ -16,6 +16,10 @@ import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseann
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtooabstract.TestdataBothAnnotatedAbstractChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtooabstract.TestdataBothAnnotatedAbstractExtendedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtooabstract.TestdataBothAnnotatedAbstractExtendedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.multiple.TestdataMultipleInheritanceEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.multiple.TestdataMultipleInheritanceExtendedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
@@ -68,13 +72,15 @@ class SolverSolutionInheritanceTest {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataOnlyChildAnnotatedExtendedSolution.class)
                 .withEntityClasses(TestdataOnlyChildAnnotatedChildEntity.class)
-                .withConstraintProviderClass(DummyConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(14L));
+                .withConstraintProviderClass(DummyConstraintProvider.class);
 
         var problem = TestdataBothAnnotatedExtendedSolution.generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("Maybe add a getScore() method with a @PlanningScore annotation.");
+                .hasMessageContaining("is not annotated with @PlanningSolution but defines annotated members")
+                .hasMessageContaining("Maybe annotate")
+                .hasMessageContaining("with @PlanningSolution")
+                .hasMessageContaining("Maybe remove the annotated members ([entityList, score, valueList])");
     }
 
     /**
@@ -92,5 +98,40 @@ class SolverSolutionInheritanceTest {
         var problem = TestdataOnlyBaseAnnotatedExtendedSolution.generateSolution(3, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));
+    }
+
+    /**
+     * This test validates the behavior of the solver
+     * when the child {@code @PlanningSolution} replaces an existing annotated member.
+     */
+    @Test
+    void testReplaceAnnotatedMember() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataReplaceMemberExtendedSolution.class)
+                .withEntityClasses(TestdataReplaceMemberEntity.class)
+                .withConstraintProviderClass(DummyConstraintProvider.class);
+
+        var problem = TestdataReplaceMemberExtendedSolution.generateSolution(3, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("has a @PlanningEntityCollectionProperty annotated member")
+                .hasMessageContaining("that is duplicated by a @PlanningEntityCollectionProperty annotated member")
+                .hasMessageContaining("Maybe the annotation is defined on both the field and its getter.");
+    }
+
+    /**
+     * This test validates the behavior of the solver
+     * when multiple inheritance is applied.
+     */
+    @Test
+    void testMultipleInheritance() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataMultipleInheritanceExtendedSolution.class)
+                .withEntityClasses(TestdataMultipleInheritanceEntity.class)
+                .withConstraintProviderClass(DummyConstraintProvider.class);
+
+        var problem = TestdataReplaceMemberExtendedSolution.generateSolution(3, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("inherits its @PlanningSolution annotation from multiple classes")
+                .hasMessageContaining("Remove the solution classes from the inheritance chain to create a single-level inheritance structure.");
     }
 }

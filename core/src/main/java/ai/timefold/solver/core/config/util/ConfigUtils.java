@@ -102,14 +102,14 @@ public class ConfigUtils {
         customProperties.forEach((propertyName, valueString) -> {
             var setterMethod = ReflectionHelper.getSetterMethod(beanClass, propertyName);
             if (setterMethod == null) {
-                throw new IllegalStateException("The custom property " + propertyName + " (" + valueString
-                        + ") in the " + customPropertiesPropertyName
-                        + " cannot be set on the " + beanClassPropertyName + " (" + beanClass
-                        + ") because that class has no public setter for that property.\n"
-                        + "Maybe add a public setter for that custom property (" + propertyName
-                        + ") on that class (" + beanClass.getSimpleName() + ").\n"
-                        + "Maybe don't configure that custom property " + propertyName + " (" + valueString
-                        + ") in the " + customPropertiesPropertyName + ".");
+                throw new IllegalStateException(
+                        """
+                                The custom property %s (%s) in the %s cannot be set on the %s (%s) because that class has no public setter for that property.
+                                Maybe add a public setter for that custom property (%s) on that class (%s).
+                                Maybe don't configure that custom property %s (%s) in the %s."""
+                                .formatted(propertyName, valueString, customPropertiesPropertyName, beanClassPropertyName,
+                                        beanClass, propertyName, beanClass.getSimpleName(), propertyName, valueString,
+                                        customPropertiesPropertyName));
             }
             var propertyType = setterMethod.getParameterTypes()[0];
             Object typedValue;
@@ -131,28 +131,30 @@ public class ConfigUtils {
                 } else if (propertyType.isEnum()) {
                     typedValue = Enum.valueOf((Class<? extends Enum>) propertyType, valueString);
                 } else {
-                    throw new IllegalStateException("The custom property " + propertyName + " (" + valueString
-                            + ") in the " + customPropertiesPropertyName
-                            + " has an unsupported propertyType (" + propertyType + ") for value (" + valueString + ").");
+                    throw new IllegalStateException(
+                            "The custom property %s (%s) in the %s has an unsupported propertyType (%s) for value (%s)."
+                                    .formatted(propertyName, valueString, customPropertiesPropertyName, propertyType,
+                                            valueString));
                 }
             } catch (NumberFormatException e) {
-                throw new IllegalStateException("The custom property " + propertyName + " (" + valueString
-                        + ") in the " + customPropertiesPropertyName
-                        + " cannot be parsed to the propertyType (" + propertyType
-                        + ") of the setterMethod (" + setterMethod + ").");
+                throw new IllegalStateException(
+                        "The custom property %s (%s) in the %s cannot be parsed to the propertyType (%s) of the setterMethod (%s)."
+                                .formatted(propertyName, valueString, customPropertiesPropertyName, propertyType,
+                                        setterMethod));
             }
             try {
                 setterMethod.invoke(bean, typedValue);
             } catch (IllegalAccessException e) {
-                throw new IllegalStateException("The custom property " + propertyName + " (" + valueString
-                        + ") in the " + customPropertiesPropertyName
-                        + " has a setterMethod (" + setterMethod + ") on the beanClass (" + beanClass
-                        + ") that cannot be called for the typedValue (" + typedValue + ").", e);
+                throw new IllegalStateException(
+                        "The custom property %s (%s) in the %s has a setterMethod (%s) on the beanClass (%s) that cannot be called for the typedValue (%s)."
+                                .formatted(propertyName, valueString, customPropertiesPropertyName, setterMethod, beanClass,
+                                        typedValue),
+                        e);
             } catch (InvocationTargetException e) {
-                throw new IllegalStateException("The custom property " + propertyName + " (" + valueString
-                        + ") in the " + customPropertiesPropertyName
-                        + " has a setterMethod (" + setterMethod + ") on the beanClass (" + beanClass
-                        + ") that throws an exception for the typedValue (" + typedValue + ").",
+                throw new IllegalStateException(
+                        "The custom property %s (%s) in the %s has a setterMethod (%s) on the beanClass (%s) that throws an exception for the typedValue (%s)."
+                                .formatted(propertyName, valueString, customPropertiesPropertyName, setterMethod, beanClass,
+                                        typedValue),
                         e.getCause());
             }
         });
@@ -305,7 +307,7 @@ public class ConfigUtils {
      */
     public static int ceilDivide(int dividend, int divisor) {
         if (divisor == 0) {
-            throw new ArithmeticException("Cannot divide by zero: " + dividend + "/" + divisor);
+            throw new ArithmeticException("Cannot divide by zero: %d/%d".formatted(dividend, divisor));
         }
         int correction;
         if (dividend % divisor == 0) {
@@ -323,8 +325,8 @@ public class ConfigUtils {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException ex) {
-            throw new IllegalStateException("The " + propertyName + " (" + value + ") resolved to neither of ("
-                    + Arrays.toString(magicValues) + ") nor a number.");
+            throw new IllegalStateException("The %s (%s) resolved to neither of (%s) nor a number.".formatted(propertyName,
+                    value, Arrays.toString(magicValues)));
         }
     }
 
@@ -409,20 +411,29 @@ public class ConfigUtils {
     @SafeVarargs
     public static Class<? extends Annotation> extractAnnotationClass(@NonNull Member member,
             @NonNull Class<? extends Annotation>... annotationClasses) {
-        Class<? extends Annotation> annotationClass = null;
+        var classList = extractAnnotationClasses(member, annotationClasses);
+        if (classList.isEmpty()) {
+            return null;
+        } else if (classList.size() > 1) {
+            throw new IllegalStateException(
+                    "The class (%s) has a member (%s) that has both a @%s annotation and a @%s annotation.".formatted(
+                            member.getDeclaringClass(), member, classList.get(0).getSimpleName(),
+                            classList.get(1).getSimpleName()));
+        } else {
+            return classList.get(0);
+        }
+    }
+
+    @SafeVarargs
+    public static List<Class<? extends Annotation>> extractAnnotationClasses(@NonNull Member member,
+            @NonNull Class<? extends Annotation>... annotationClasses) {
+        var annotationClassList = new ArrayList<Class<? extends Annotation>>();
         for (var detectedAnnotationClass : annotationClasses) {
             if (((AnnotatedElement) member).isAnnotationPresent(detectedAnnotationClass)) {
-                if (annotationClass != null) {
-                    throw new IllegalStateException("The class (" + member.getDeclaringClass()
-                            + ") has a member (" + member + ") that has both a @"
-                            + annotationClass.getSimpleName() + " annotation and a @"
-                            + detectedAnnotationClass.getSimpleName() + " annotation.");
-                }
-                annotationClass = detectedAnnotationClass;
-                // Do not break early: check other annotationClasses too
+                annotationClassList.add(detectedAnnotationClass);
             }
         }
-        return annotationClass;
+        return annotationClassList;
     }
 
     public static Class<?> extractGenericTypeParameterOrFail(@NonNull String parentClassConcept, @NonNull Class<?> parentClass,
@@ -512,12 +523,13 @@ public class ConfigUtils {
 
     private static void assertPlanningIdMemberIsComparable(Class<?> clazz, Member member, MemberAccessor memberAccessor) {
         if (!memberAccessor.getType().isPrimitive() && !Comparable.class.isAssignableFrom(memberAccessor.getType())) {
-            throw new IllegalArgumentException("The class (" + clazz
-                    + ") has a member (" + member + ") with a @" + PlanningId.class.getSimpleName()
-                    + " annotation that returns a type (" + memberAccessor.getType()
-                    + ") that does not implement " + Comparable.class.getSimpleName() + ".\n"
-                    + "Maybe use a " + Long.class.getSimpleName()
-                    + " or " + String.class.getSimpleName() + " type instead.");
+            throw new IllegalArgumentException(
+                    """
+                            The class (%s) has a member (%s) with a @%s annotation that returns a type (%s) that does not implement %s.
+                            Maybe use a %s or %s type instead."""
+                            .formatted(clazz, member, PlanningId.class.getSimpleName(), memberAccessor.getType(),
+                                    Comparable.class.getSimpleName(), Long.class.getSimpleName(),
+                                    String.class.getSimpleName()));
         }
     }
 
