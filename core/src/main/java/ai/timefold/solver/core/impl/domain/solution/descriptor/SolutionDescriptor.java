@@ -354,9 +354,12 @@ public class SolutionDescriptor<Solution_> {
         domainAccessType = descriptorPolicy.getDomainAccessType();
         processSolutionAnnotations(descriptorPolicy);
         var potentiallyOverwritingMethodList = new ArrayList<Method>();
-        // Iterate through the entire inheritance chain,
-        // as previous validations ensure no multiple inheritance or invalid annotated members exist
-        for (var lineageClass : ConfigUtils.getAllParents(solutionClass)) {
+        // Iterate inherited members too
+        var lineageClassList = ConfigUtils.getAllAnnotatedLineageClasses(solutionClass, PlanningSolution.class);
+        if (lineageClassList.isEmpty() && solutionClass.getSuperclass().isAnnotationPresent(PlanningSolution.class)) {
+            lineageClassList = ConfigUtils.getAllAnnotatedLineageClasses(solutionClass.getSuperclass(), PlanningSolution.class);
+        }
+        for (var lineageClass : lineageClassList) {
             var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
             for (var member : memberList) {
                 if (member instanceof Method method && potentiallyOverwritingMethodList.stream().anyMatch(
