@@ -5,6 +5,7 @@ import static java.util.stream.Collectors.joining;
 
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -353,39 +354,33 @@ public class TimefoldSolverAutoConfiguration
             Map<String, SolverConfig> solverConfigMap) {
         // Multiple classes and single solver
         try {
-            var classes = entityScanner.scan(PlanningSolution.class);
-            if (classes.size() > 1 && solverConfigMap.size() == 1) {
+            var classes = entityScanner.scan(PlanningSolution.class).stream()
+                    .filter(c -> !Modifier.isAbstract(c.getModifiers()))
+                    .toList();
+            var firstConfig = solverConfigMap.values().stream().findFirst().orElse(null);
+            if (classes.size() > 1 && solverConfigMap.size() == 1 && firstConfig != null
+                    && firstConfig.getSolutionClass() == null) {
                 throw new IllegalStateException(
                         "Multiple classes ([%s]) found in the classpath with a @%s annotation.".formatted(
                                 classes.stream().map(Class::getSimpleName).collect(joining(", ")),
                                 PlanningSolution.class.getSimpleName()));
             }
-            // Multiple classes and at least one solver config does not specify the solution class
-            var solverConfigWithoutSolutionClassList = solverConfigMap.entrySet().stream()
+            // Multiple classes and at least one solver config do not specify the solution class
+            // We do not fail if all configurations define the solution,
+            // even though there are additional "unused" solution classes in the classpath.
+            var unconfiguredSolverConfigList = solverConfigMap.entrySet().stream()
                     .filter(e -> e.getValue().getSolutionClass() == null)
                     .map(Map.Entry::getKey)
                     .toList();
-            if (classes.size() > 1 && !solverConfigWithoutSolutionClassList.isEmpty()) {
+            if (classes.size() > 1 && !unconfiguredSolverConfigList.isEmpty()) {
                 throw new IllegalStateException(
                         """
                                 Some solver configs (%s) don't specify a %s class, yet there are multiple available (%s) on the classpath.
                                 Maybe set the XML config file to the related solver configs, or add the missing solution classes to the XML files,
                                 or remove the unnecessary solution classes from the classpath."""
-                                .formatted(String.join(", ", solverConfigWithoutSolutionClassList),
+                                .formatted(String.join(", ", unconfiguredSolverConfigList),
                                         PlanningSolution.class.getSimpleName(),
                                         classes.stream().map(Class::getSimpleName).collect(joining(", "))));
-            }
-            // Unused solution classes
-            var unusedSolutionClassList = classes.stream()
-                    .map(Class::getName)
-                    .filter(planningClassName -> solverConfigMap.values().stream().filter(c -> c.getSolutionClass() != null)
-                            .noneMatch(c -> c.getSolutionClass().getName().equals(planningClassName)))
-                    .toList();
-            if (classes.size() > 1 && !unusedSolutionClassList.isEmpty()) {
-                throw new IllegalStateException(
-                        "Unused classes ([%s]) found with a @%s annotation.".formatted(
-                                String.join(", ", unusedSolutionClassList),
-                                PlanningSolution.class.getSimpleName()));
             }
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
