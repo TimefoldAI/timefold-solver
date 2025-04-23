@@ -2840,12 +2840,162 @@ def generate_demo_data(demo_data: DemoData) -> Timetable:
 Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data and creates the uninitialized planning entity instances for the solver to plan.
 
-[#planningModelInheritance]
-== Inheritance for Planning Entities
+[#planningModelSolutionInheritance]
+== Inheritance for Planning Solutions
 
 You can use Java's type system naturally to model your problem.
 The solver however enforces some additional restrictions
-on how inheritance can be used when it comes to planning entities and planning variables:
+on how inheritance can be used when it comes defining planning solution models:
+
+. If both the child and parent solution classes are annotated, the solver must identify and accept all the defined annotated members from each class.
+. If a child class is not annotated yet inherits from a solution class, it should be considered a solution, and the previous statement continues to apply to it.
+. If a class declares any annotated members, it must be annotated as a solution, even if a supertype already has the annotation.
+. A child solution class must not redefine any existing annotated member, but it can add new ones.
+. Inheriting annotated members from more than one parent solution class, also known as multiple inheritance, is not allowed. Therefore, only one parent solution class or one level of inheritance is allowed.
+
+=== Defining multiple annotated members
+
+According to the first rule, you can define multiple annotated members through the use of inheritance.
+The following example illustrates two planning solutions, where the child class `TestdataExtendedSolution` inherits from `TestdataBaseSolution`. Additionally, multiple annotated members, `valueList`, `entityList`, `score`, and `secondEntityList`, are accessed.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class TestdataBaseSolution {
+    @ProblemFactCollectionProperty
+    private List<String> valueList;
+    @PlanningEntityCollectionProperty
+    private List<? extends TestdataBothAnnotatedBaseEntity> entityList;
+    @PlanningScore
+    private SimpleScore score;
+    ...
+}
+
+@PlanningSolution
+public class TestdataExtendedSolution extends TestdataBaseSolution {
+    @PlanningEntityCollectionProperty
+    private List<TestdataBothAnnotatedChildEntity> secondEntityList;
+    ...
+}
+----
+====
+
+=== Inheriting annotated members
+
+Non-annotated solution classes can inherit annotated members from annotated solutions, as stated by the second rule.
+In the code snippet below,
+we can see that the class `TestdataExtendedSolution` does not have the `@PlanningSolution` annotation.
+However, it is still recognized as an solution class because its direct parent class is annotated.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class TestdataBaseSolution {
+    @ProblemFactCollectionProperty
+    private List<String> valueList;
+    ...
+}
+
+public class TestdataExtendedSolution extends TestdataBaseSolution {
+    ...
+}
+----
+====
+
+=== Non-solution classes cannot define annotated members
+
+Non-solution classes cannot define any annotated members.
+The model `TestdataBaseSolution` includes an annotated member but lacks the `@PlanningSolution` annotation.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class TestdataBaseSolution {
+    @ProblemFactCollectionProperty
+    private List<String> valueList;
+    ...
+}
+
+@PlanningSolution
+public class TestdataExtendedSolution extends TestdataBaseSolution {
+    ...
+}
+----
+====
+
+=== Redefining annotated members
+
+The redefinition of annotated members through inheritance is not allowed (fourth rule).
+The subsequent example illustrates that the member `valueList` is redefined in the child class,
+which violates this rule.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class TestdataBaseSolution {
+    @ProblemFactCollectionProperty
+    private List<String> valueList;
+    ...
+}
+
+@PlanningSolution
+public class TestdataExtendedSolution extends TestdataBaseSolution {
+    @ProblemFactCollectionProperty
+    private List<String> valueList;
+    ...
+}
+----
+====
+
+=== Multiple inheritance
+
+Multiple inheritance, or inheriting properties from more than one parent solution, is not permitted.
+The following model demonstrates an inheritance chain with three solution classes,
+but it only supports a maximum of two.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class TestdataBaseSolution {
+    ...
+}
+
+@PlanningSolution
+public class TestdataChildSolution extends TestdataBaseSolution {
+    ...
+}
+
+
+@PlanningSolution
+public class TestdataExtendedSolution extends TestdataChildSolution {
+    ...
+}
+----
+====
+
+[#planningModelEntiyInheritance]
+== Inheritance for Planning Entities
+
+Similar to xref:planningModelSolutionInheritance[planning solutions],
+there are also restrictions on the use of inheritance and modeling planning entities:
 
  . If both the child and parent entities are annotated, the solver must identify and accept all defined variables from each class, ensuring the solving process fills in these planning variables.
  . If a child class is not annotated yet inherits from an entity class or implements an entity interface, it should be considered an entity, and the previous statement continues to apply to it.
@@ -2989,6 +3139,7 @@ The rule also applies when the model uses interface.
 It is not permitted to redefine planning variables when using inheritance to model your problem (fourth rule).
 The following example demonstrates that the planning variable `value` is redefined by the child class,
 which is not allowed.
+
 [tabs]
 ====
 Java::
