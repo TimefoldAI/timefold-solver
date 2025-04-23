@@ -1,19 +1,15 @@
 package ai.timefold.solver.quarkus.inheritance.solution;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyAnnotatedBaseEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedSolution;
 import ai.timefold.solver.quarkus.testdata.superclass.constraints.DummyConstraintProvider;
 
-import jakarta.inject.Inject;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.junit.jupiter.api.Test;
@@ -32,7 +28,12 @@ class TimefoldProcessorOnlyChildAnnotatedTest {
                             TestdataOnlyAnnotatedBaseEntity.class))
             .assertException(exception -> {
                 assertEquals(IllegalStateException.class, exception.getClass());
-                assertTrue(exception.getMessage().contains("Maybe add a getScore() method with a @PlanningScore annotation."));
+                assertTrue(exception.getMessage()
+                        .contains("is not annotated with @PlanningSolution but defines annotated members"));
+                assertTrue(exception.getMessage().contains("Maybe annotate"));
+                assertTrue(exception.getMessage().contains("with @PlanningSolution"));
+                assertTrue(
+                        exception.getMessage().contains("Maybe remove the annotated members ([entityList, score, valueList])"));
             });
 
     /**

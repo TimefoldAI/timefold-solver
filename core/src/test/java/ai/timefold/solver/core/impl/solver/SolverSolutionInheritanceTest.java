@@ -132,6 +132,7 @@ class SolverSolutionInheritanceTest {
         var problem = TestdataReplaceMemberExtendedSolution.generateSolution(3, 2);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
                 .hasMessageContaining("inherits its @PlanningSolution annotation from multiple classes")
-                .hasMessageContaining("Remove the solution classes from the inheritance chain to create a single-level inheritance structure.");
+                .hasMessageContaining(
+                        "Remove the solution classes from the inheritance chain to create a single-level inheritance structure.");
     }
 }

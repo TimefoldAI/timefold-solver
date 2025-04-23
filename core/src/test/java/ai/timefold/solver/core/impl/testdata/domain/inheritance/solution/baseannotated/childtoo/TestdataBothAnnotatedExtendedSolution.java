@@ -30,7 +30,7 @@ public class TestdataBothAnnotatedExtendedSolution extends TestdataBothAnnotated
         }
         solution.setEntityList(entityList);
         solution.setSecondEntityList(secondEntityList);
-        solution.setConstraintWeightOverrides(ConstraintWeightOverrides.<SimpleScore>of(Collections.EMPTY_MAP));
+        solution.setConstraintWeightOverrides(ConstraintWeightOverrides.<SimpleScore> of(Collections.EMPTY_MAP));
         return solution;
     }
 

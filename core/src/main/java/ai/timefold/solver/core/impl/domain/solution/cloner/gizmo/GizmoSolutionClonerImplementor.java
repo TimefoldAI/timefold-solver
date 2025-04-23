@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -287,7 +288,7 @@ public class GizmoSolutionClonerImplementor {
         methodCreator.returnValue(clone);
     }
 
-    private void createCloneSolutionRun(ClassCreator classCreator, SolutionDescriptor solutionDescriptor,
+    private void createCloneSolutionRun(ClassCreator classCreator, SolutionDescriptor<?> solutionDescriptor,
             Set<Class<?>> solutionClassSet,
             Map<Class<?>, GizmoSolutionOrEntityDescriptor> memoizedSolutionOrEntityDescriptorMap,
             SortedSet<Class<?>> deepClonedClassesSortedSet, Comparator<Class<?>> instanceOfComparator) {
@@ -328,7 +329,7 @@ public class GizmoSolutionClonerImplementor {
 
             GizmoSolutionOrEntityDescriptor solutionSubclassDescriptor =
                     memoizedSolutionOrEntityDescriptorMap.computeIfAbsent(solutionSubclass,
-                            (key) -> new GizmoSolutionOrEntityDescriptor(solutionDescriptor, solutionSubclass));
+                            key -> new GizmoSolutionOrEntityDescriptor(solutionDescriptor, solutionSubclass));
 
             ResultHandle clone;
             if (PlanningCloneable.class.isAssignableFrom(solutionSubclass)) {
@@ -419,7 +420,7 @@ public class GizmoSolutionClonerImplementor {
 
             if (type != null && !isArray) {
                 entitySubclasses =
-                        deepClonedClassesSortedSet.stream().filter(type::isAssignableFrom).collect(Collectors.toList());
+                        deepClonedClassesSortedSet.stream().filter(type::isAssignableFrom).toList();
             }
 
             ResultHandle fieldValue = shallowlyClonedField.readMemberValue(methodCreator, thisObj);
@@ -673,10 +674,12 @@ public class GizmoSolutionClonerImplementor {
         if (type instanceof ParameterizedType parameterizedType) {
             // Assume Collection follow Collection<T> convention of first type argument = element class
             elementClassType = parameterizedType.getActualTypeArguments()[0];
-            if (elementClassType instanceof Class class1) {
+            if (elementClassType instanceof Class<?> class1) {
                 elementClass = class1;
             } else if (elementClassType instanceof ParameterizedType parameterizedElementClassType) {
                 elementClass = (Class<?>) parameterizedElementClassType.getRawType();
+            } else if (elementClassType instanceof WildcardType wildcardType) {
+                elementClass = (Class<?>) wildcardType.getUpperBounds()[0];
             } else {
                 throw new IllegalStateException("Unhandled type " + elementClassType + ".");
             }
@@ -768,7 +771,7 @@ public class GizmoSolutionClonerImplementor {
             // Assume Map follow Map<K,V> convention of second type argument = value class
             keyType = parameterizedType.getActualTypeArguments()[0];
             elementClassType = parameterizedType.getActualTypeArguments()[1];
-            if (elementClassType instanceof Class class1) {
+            if (elementClassType instanceof Class<?> class1) {
                 elementClass = class1;
             } else if (elementClassType instanceof ParameterizedType parameterizedElementClassType) {
                 elementClass = (Class<?>) parameterizedElementClassType.getRawType();
@@ -776,7 +779,7 @@ public class GizmoSolutionClonerImplementor {
                 throw new IllegalStateException("Unhandled type " + elementClassType + ".");
             }
 
-            if (keyType instanceof Class class1) {
+            if (keyType instanceof Class<?> class1) {
                 keyClass = class1;
             } else if (keyType instanceof ParameterizedType parameterizedElementClassType) {
                 keyClass = (Class<?>) parameterizedElementClassType.getRawType();
@@ -788,7 +791,7 @@ public class GizmoSolutionClonerImplementor {
         }
 
         List<Class<?>> entitySubclasses = deepClonedClassesSortedSet.stream()
-                .filter(keyClass::isAssignableFrom).collect(Collectors.toList());
+                .filter(keyClass::isAssignableFrom).toList();
         ResultHandle entry = whileLoopBlock
                 .invokeInterfaceMethod(MethodDescriptor.ofMethod(Iterator.class, "next", Object.class), iterator);
         ResultHandle toCloneValue = whileLoopBlock
@@ -900,9 +903,7 @@ public class GizmoSolutionClonerImplementor {
         // We are certain that the instance is of the same type as the declared field type.
         // (Or is an undeclared subclass of the planning entity)
         switch (unhandledCloneType) {
-            case SHALLOW -> {
-                currentBranch.assign(cloneResultHolder, toClone);
-            }
+            case SHALLOW -> currentBranch.assign(cloneResultHolder, toClone);
             case DEEP -> {
                 ResultHandle cloneObj = currentBranch.invokeStaticMethod(
                         MethodDescriptor.ofMethod(
@@ -973,7 +974,7 @@ public class GizmoSolutionClonerImplementor {
         methodCreator.setModifiers(Modifier.STATIC | Modifier.PRIVATE);
 
         GizmoSolutionOrEntityDescriptor entityDescriptor = memoizedSolutionOrEntityDescriptorMap.computeIfAbsent(entityClass,
-                (key) -> new GizmoSolutionOrEntityDescriptor(solutionDescriptor, entityClass));
+                key -> new GizmoSolutionOrEntityDescriptor(solutionDescriptor, entityClass));
 
         ResultHandle toClone = methodCreator.getMethodParam(0);
         ResultHandle cloneMap = methodCreator.getMethodParam(1);

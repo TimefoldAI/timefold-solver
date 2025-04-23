@@ -19,6 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.quarkus.gizmo.ResultHandle;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
 
@@ -57,7 +58,6 @@ import ai.timefold.solver.quarkus.devui.TimefoldDevUIRecorder;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 
 import org.jboss.jandex.AnnotationInstance;
-import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -93,7 +93,6 @@ import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
 import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.gizmo.MethodDescriptor;
-import io.quarkus.gizmo.ResultHandle;
 import io.quarkus.runtime.configuration.ConfigurationException;
 
 class TimefoldProcessor {
@@ -109,9 +108,9 @@ class TimefoldProcessor {
 
     @BuildStep
     void watchSolverConfigXml(BuildProducer<HotDeploymentWatchedFileBuildItem> hotDeploymentWatchedFiles) {
-        String solverConfigXML = timefoldBuildTimeConfig.solverConfigXml()
+        var solverConfigXML = timefoldBuildTimeConfig.solverConfigXml()
                 .orElse(TimefoldBuildTimeConfig.DEFAULT_SOLVER_CONFIG_URL);
-        Set<String> solverCongigXmlFileSet = new HashSet<>();
+        var solverCongigXmlFileSet = new HashSet<String>();
         solverCongigXmlFileSet.add(solverConfigXML);
         timefoldBuildTimeConfig.solver().values().stream()
                 .map(SolverBuildTimeConfig::solverConfigXml)
@@ -144,7 +143,7 @@ class TimefoldProcessor {
 
     @BuildStep(onlyIf = IsDevelopment.class)
     public CardPageBuildItem registerDevUICard() {
-        CardPageBuildItem cardPageBuildItem = new CardPageBuildItem();
+        var cardPageBuildItem = new CardPageBuildItem();
 
         cardPageBuildItem.addPage(Page.webComponentPageBuilder()
                 .title("Configuration")
@@ -187,14 +186,14 @@ class TimefoldProcessor {
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
-        IndexView indexView = combinedIndex.getIndex();
+        var indexView = combinedIndex.getIndex();
 
         // Step 0 - determine list of names used for injected solver components
         var solverNames = new HashSet<String>();
         var solverConfigMap = new HashMap<String, SolverConfig>();
         for (var namedItem : indexView.getAnnotations(DotNames.NAMED)) {
             var target = namedItem.target();
-            DotName type = switch (target.kind()) {
+            var type = switch (target.kind()) {
                 case CLASS -> target.asClass().name();
                 case FIELD -> target.asField().type().name();
                 case METHOD_PARAMETER -> target.asMethodParameter().type().name();
@@ -287,24 +286,23 @@ class TimefoldProcessor {
         }
 
         for (AnnotationInstance annotationInstance : timefoldFieldAnnotationCollection) {
-            AnnotationTarget annotationTarget = annotationInstance.target();
+            var annotationTarget = annotationInstance.target();
             ClassInfo declaringClass;
             String prefix;
-            switch (annotationTarget.kind()) {
-                case FIELD:
+            declaringClass = switch (annotationTarget.kind()) {
+                case FIELD -> {
                     prefix = "The field (%s)".formatted(annotationTarget.asField().name());
-                    declaringClass = annotationTarget.asField().declaringClass();
-                    break;
-                case METHOD:
+                    yield annotationTarget.asField().declaringClass();
+                }
+                case METHOD -> {
                     prefix = "The method (%s)".formatted(annotationTarget.asMethod().name());
-                    declaringClass = annotationTarget.asMethod().declaringClass();
-                    break;
-                default:
-                    throw new IllegalStateException(
-                            "Member annotation @%s is on (%s), which is an invalid target type (%s) for @%s.".formatted(
-                                    annotationInstance.name().withoutPackagePrefix(), annotationTarget, annotationTarget.kind(),
-                                    annotationInstance.name().withoutPackagePrefix()));
-            }
+                    yield annotationTarget.asMethod().declaringClass();
+                }
+                default -> throw new IllegalStateException(
+                        "Member annotation @%s is on (%s), which is an invalid target type (%s) for @%s.".formatted(
+                                annotationInstance.name().withoutPackagePrefix(), annotationTarget, annotationTarget.kind(),
+                                annotationInstance.name().withoutPackagePrefix()));
+            };
 
             if (!declaringClass.annotationsMap().containsKey(DotNames.PLANNING_ENTITY)) {
                 throw new IllegalStateException(
@@ -323,36 +321,29 @@ class TimefoldProcessor {
         // No solution class
         assertEmptyInstances(indexView, DotNames.PLANNING_SOLUTION);
         // Multiple classes and single solver
-        Collection<AnnotationInstance> annotationInstanceCollection = indexView.getAnnotations(DotNames.PLANNING_SOLUTION);
-        if (annotationInstanceCollection.size() > 1 && solverConfigMap.size() == 1) {
+        var annotationInstanceList = getAllConcreteSolutionClasses(indexView);
+        var firstConfig = solverConfigMap.values().stream().findFirst().orElse(null);
+        if (annotationInstanceList.size() > 1 && solverConfigMap.size() == 1 && firstConfig != null
+                && firstConfig.getSolutionClass() == null) {
             throw new IllegalStateException("Multiple classes (%s) found in the classpath with a @%s annotation.".formatted(
-                    convertAnnotationInstancesToString(annotationInstanceCollection), PlanningSolution.class.getSimpleName()));
+                    convertAnnotationInstancesToString(annotationInstanceList), PlanningSolution.class.getSimpleName()));
         }
-        // Multiple classes and at least one solver config does not specify the solution class
-        List<String> solverConfigWithoutSolutionClassList = solverConfigMap.entrySet().stream()
+        // Multiple classes and at least one solver config do not specify the solution class
+        // We do not fail if all configurations define the solution,
+        // even though there are additional "unused" solution classes in the classpath.
+        var unconfiguredSolverConfigList = solverConfigMap.entrySet().stream()
                 .filter(e -> e.getValue().getSolutionClass() == null)
                 .map(Map.Entry::getKey)
                 .toList();
-        if (annotationInstanceCollection.size() > 1 && !solverConfigWithoutSolutionClassList.isEmpty()) {
+        if (annotationInstanceList.size() > 1 && !unconfiguredSolverConfigList.isEmpty()) {
             throw new IllegalStateException(
                     """
                             Some solver configs (%s) don't specify a %s class, yet there are multiple available (%s) on the classpath.
                             Maybe set the XML config file to the related solver configs, or add the missing solution classes to the XML files,
                             or remove the unnecessary solution classes from the classpath."""
-                            .formatted(String.join(", ", solverConfigWithoutSolutionClassList),
+                            .formatted(String.join(", ", unconfiguredSolverConfigList),
                                     PlanningSolution.class.getSimpleName(),
-                                    convertAnnotationInstancesToString(annotationInstanceCollection)));
-        }
-        // Unused solution classes
-        List<String> unusedSolutionClassList = annotationInstanceCollection.stream()
-                .map(planningClass -> planningClass.target().asClass().name().toString())
-                .filter(planningClassName -> solverConfigMap.values().stream().filter(c -> c.getSolutionClass() != null)
-                        .noneMatch(c -> c.getSolutionClass().getName().equals(planningClassName)))
-                .toList();
-        if (annotationInstanceCollection.size() > 1 && !unusedSolutionClassList.isEmpty()) {
-            throw new IllegalStateException(
-                    "Unused classes ([%s]) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
-                            PlanningSolution.class.getSimpleName()));
+                                    convertAnnotationInstancesToString(annotationInstanceList)));
         }
     }
 
@@ -379,14 +370,14 @@ class TimefoldProcessor {
 
     private void assertSolverConfigConstraintClasses(IndexView indexView, Map<String, SolverConfig> solverConfigMap) {
         // We filter out abstract classes
-        Collection<ClassInfo> simpleScoreClassCollection = indexView.getAllKnownImplementations(DotNames.EASY_SCORE_CALCULATOR)
+        var simpleScoreClassCollection = indexView.getAllKnownImplementations(DotNames.EASY_SCORE_CALCULATOR)
                 .stream().filter(clazz -> !clazz.isAbstract())
                 .toList();
-        Collection<ClassInfo> constraintScoreClassCollection =
+        var constraintScoreClassCollection =
                 indexView.getAllKnownImplementations(DotNames.CONSTRAINT_PROVIDER)
                         .stream().filter(clazz -> !clazz.isAbstract())
                         .toList();
-        Collection<ClassInfo> incrementalScoreClassCollection =
+        var incrementalScoreClassCollection =
                 indexView.getAllKnownImplementations(DotNames.INCREMENTAL_SCORE_CALCULATOR)
                         .stream().filter(clazz -> !clazz.isAbstract())
                         .toList();
@@ -398,7 +389,7 @@ class TimefoldProcessor {
                             ConstraintProvider.class.getSimpleName(), IncrementalScoreCalculator.class.getSimpleName()));
         }
         // Multiple classes and single solver
-        String errorMessage = "Multiple score classes classes (%s) that implements %s were found in the classpath.";
+        var errorMessage = "Multiple score classes classes (%s) that implements %s were found in the classpath.";
         if (simpleScoreClassCollection.size() > 1 && solverConfigMap.size() == 1) {
             throw new IllegalStateException(errorMessage.formatted(
                     simpleScoreClassCollection.stream().map(c -> c.name().toString()).collect(Collectors.joining(", ")),
@@ -419,7 +410,7 @@ class TimefoldProcessor {
                 Some solver configs (%s) don't specify a %s score class, yet there are multiple available (%s) on the classpath.
                 Maybe set the XML config file to the related solver configs, or add the missing score classes to the XML files,
                 or remove the unnecessary score classes from the classpath.""";
-        List<String> solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
+        var solverConfigWithoutConstraintClassList = solverConfigMap.entrySet().stream()
                 .filter(e -> e.getValue().getScoreDirectorFactoryConfig() == null
                         || e.getValue().getScoreDirectorFactoryConfig().getEasyScoreCalculatorClass() == null)
                 .map(Map.Entry::getKey)
@@ -453,7 +444,7 @@ class TimefoldProcessor {
                     incrementalScoreClassCollection.stream().map(c -> c.name().toString()).collect(Collectors.joining(", "))));
         }
         // Unused score classes
-        List<String> solverConfigWithUnusedSolutionClassList = simpleScoreClassCollection.stream()
+        var solverConfigWithUnusedSolutionClassList = simpleScoreClassCollection.stream()
                 .map(clazz -> clazz.name().toString())
                 .filter(className -> solverConfigMap.values().stream()
                         .filter(c -> c.getScoreDirectorFactoryConfig() != null
@@ -493,7 +484,7 @@ class TimefoldProcessor {
     }
 
     private void assertEmptyInstances(IndexView indexView, DotName dotName) {
-        Collection<AnnotationInstance> annotationInstanceCollection = indexView.getAnnotations(dotName);
+        var annotationInstanceCollection = indexView.getAnnotations(dotName);
         if (annotationInstanceCollection.isEmpty()) {
             try {
                 throw new IllegalStateException(
@@ -507,7 +498,7 @@ class TimefoldProcessor {
 
     private SolverConfig createSolverConfig(ClassLoader classLoader, String solverName) {
         // 1 - The solver configuration takes precedence over root and default settings
-        Optional<String> solverConfigXml = this.timefoldBuildTimeConfig.getSolverConfig(solverName)
+        var solverConfigXml = this.timefoldBuildTimeConfig.getSolverConfig(solverName)
                 .flatMap(SolverBuildTimeConfig::solverConfigXml);
 
         // 2 - Root settings
@@ -576,14 +567,14 @@ class TimefoldProcessor {
             return;
         }
 
-        Map<String, ConstraintMetaModel> constraintMetaModelsBySolverNames = new HashMap<>();
+        var constraintMetaModelsBySolverNames = new HashMap<String, ConstraintMetaModel>();
         solverConfigBuildItem.getSolverConfigMap().forEach((solverName, solverConfig) -> {
             // Gizmo-generated member accessors are not yet available at build time.
-            DomainAccessType originalDomainAccessType = solverConfig.getDomainAccessType();
+            var originalDomainAccessType = solverConfig.getDomainAccessType();
             solverConfig.setDomainAccessType(DomainAccessType.REFLECTION);
 
             var solverFactory = SolverFactory.create(solverConfig);
-            ConstraintMetaModel constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
+            var constraintMetaModel = BeanUtil.buildConstraintMetaModel(solverFactory);
             // Avoid changing the original solver config.
             solverConfig.setDomainAccessType(originalDomainAccessType);
             constraintMetaModelsBySolverNames.put(solverName, constraintMetaModel);
@@ -623,7 +614,7 @@ class TimefoldProcessor {
                         .defaultBean()
                         .done());
 
-                SolverManagerConfig solverManagerConfig = new SolverManagerConfig();
+                var solverManagerConfig = new SolverManagerConfig();
                 syntheticBeanBuildItemBuildProducer.produce(SyntheticBeanBuildItem.configure(SolverManagerConfig.class)
                         .scope(Singleton.class)
                         .supplier(recorder.solverManagerConfig(solverManagerConfig))
@@ -690,31 +681,31 @@ class TimefoldProcessor {
 
     private void generateConstraintVerifier(SolverConfig solverConfig,
             BuildProducer<SyntheticBeanBuildItem> syntheticBeanBuildItemBuildProducer) {
-        String constraintVerifierClassName = DotNames.CONSTRAINT_VERIFIER.toString();
+        var constraintVerifierClassName = DotNames.CONSTRAINT_VERIFIER.toString();
         var scoreDirectorFactoryConfig = Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig());
         var constraintProviderClass = scoreDirectorFactoryConfig.getConstraintProviderClass();
         if (constraintProviderClass != null && isClassDefined(constraintVerifierClassName)) {
-            final Class<?> planningSolutionClass = Objects.requireNonNull(solverConfig.getSolutionClass());
-            final List<Class<?>> planningEntityClassList = Objects.requireNonNull(solverConfig.getEntityClassList());
+            final var planningSolutionClass = Objects.requireNonNull(solverConfig.getSolutionClass());
+            final var planningEntityClassList = Objects.requireNonNull(solverConfig.getEntityClassList());
             // TODO Don't duplicate defaults by using ConstraintVerifier.create(solverConfig) instead
             SyntheticBeanBuildItem.ExtendedBeanConfigurator constraintDescriptor =
                     SyntheticBeanBuildItem.configure(DotNames.CONSTRAINT_VERIFIER)
                             .scope(Singleton.class)
                             .creator(methodCreator -> {
-                                ResultHandle constraintProviderResultHandle =
+                                var constraintProviderResultHandle =
                                         methodCreator.newInstance(MethodDescriptor.ofConstructor(constraintProviderClass));
-                                ResultHandle planningSolutionClassResultHandle = methodCreator.loadClass(planningSolutionClass);
+                                var planningSolutionClassResultHandle = methodCreator.loadClass(planningSolutionClass);
 
-                                ResultHandle planningEntityClassesResultHandle =
+                                var planningEntityClassesResultHandle =
                                         methodCreator.newArray(Class.class, planningEntityClassList.size());
-                                for (int i = 0; i < planningEntityClassList.size(); i++) {
-                                    ResultHandle planningEntityClassResultHandle =
+                                for (var i = 0; i < planningEntityClassList.size(); i++) {
+                                    var planningEntityClassResultHandle =
                                             methodCreator.loadClass(planningEntityClassList.get(i));
                                     methodCreator.writeArrayValue(planningEntityClassesResultHandle, i,
                                             planningEntityClassResultHandle);
                                 }
 
-                                ResultHandle enabledPreviewFeatureSet = methodCreator.invokeStaticMethod(
+                                var enabledPreviewFeatureSet = methodCreator.invokeStaticMethod(
                                         MethodDescriptor.ofMethod(
                                                 EnumSet.class, "noneOf", EnumSet.class, Class.class),
                                         methodCreator.loadClass(PreviewFeature.class));
@@ -725,8 +716,8 @@ class TimefoldProcessor {
                                                 enabledPreviewFeatureSet, methodCreator.load(enabledPreviewFeature));
                                     }
                                 }
-                                for (int i = 0; i < planningEntityClassList.size(); i++) {
-                                    ResultHandle planningEntityClassResultHandle =
+                                for (var i = 0; i < planningEntityClassList.size(); i++) {
+                                    var planningEntityClassResultHandle =
                                             methodCreator.loadClass(planningEntityClassList.get(i));
                                     methodCreator.writeArrayValue(planningEntityClassesResultHandle, i,
                                             planningEntityClassResultHandle);
@@ -734,12 +725,12 @@ class TimefoldProcessor {
 
                                 // Got incompatible class change error when trying to invoke static method on
                                 // ConstraintVerifier.build(ConstraintProvider, Class, Class...)
-                                ResultHandle solutionDescriptorResultHandle = methodCreator.invokeStaticMethod(
+                                var solutionDescriptorResultHandle = methodCreator.invokeStaticMethod(
                                         MethodDescriptor.ofMethod(SolutionDescriptor.class, "buildSolutionDescriptor",
                                                 SolutionDescriptor.class, Set.class, Class.class, Class[].class),
                                         enabledPreviewFeatureSet, planningSolutionClassResultHandle,
                                         planningEntityClassesResultHandle);
-                                ResultHandle constraintVerifierResultHandle = methodCreator.newInstance(
+                                var constraintVerifierResultHandle = methodCreator.newInstance(
                                         MethodDescriptor.ofConstructor(
                                                 "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier",
                                                 ConstraintProvider.class, SolutionDescriptor.class),
@@ -792,9 +783,15 @@ class TimefoldProcessor {
         // Termination properties are set at runtime
     }
 
+    private List<AnnotationInstance> getAllConcreteSolutionClasses(IndexView indexView) {
+        return indexView.getAnnotations(DotNames.PLANNING_SOLUTION).stream()
+                .filter(annotationInstance -> !annotationInstance.target().asClass().isAbstract())
+                .toList();
+    }
+
     private Class<?> findFirstSolutionClass(IndexView indexView) {
-        Collection<AnnotationInstance> annotationInstanceCollection = indexView.getAnnotations(DotNames.PLANNING_SOLUTION);
-        AnnotationTarget solutionTarget = annotationInstanceCollection.iterator().next().target();
+        var annotationInstanceCollection = getAllConcreteSolutionClasses(indexView);
+        var solutionTarget = annotationInstanceCollection.iterator().next().target();
         return convertClassInfoToClass(solutionTarget.asClass());
     }
 
@@ -805,7 +802,7 @@ class TimefoldProcessor {
                 .map(target -> (Class<?>) convertClassInfoToClass(target.asClass()))
                 .toList());
         // Now we search for child classes as well
-        var childEntityList = new ArrayList<Class<?>>(entityList);
+        var childEntityList = new ArrayList<>(entityList);
         while (!childEntityList.isEmpty()) {
             var entityClass = childEntityList.remove(0);
             // Check all subclasses
@@ -837,17 +834,17 @@ class TimefoldProcessor {
     }
 
     private void registerClassesFromAnnotations(IndexView indexView, Set<Class<?>> reflectiveClassSet) {
-        for (DotNames.BeanDefiningAnnotations beanDefiningAnnotation : DotNames.BeanDefiningAnnotations.values()) {
-            for (AnnotationInstance annotationInstance : indexView
+        for (var beanDefiningAnnotation : DotNames.BeanDefiningAnnotations.values()) {
+            for (var annotationInstance : indexView
                     .getAnnotationsWithRepeatable(beanDefiningAnnotation.getAnnotationDotName(), indexView)) {
-                for (String parameterName : beanDefiningAnnotation.getParameterNames()) {
-                    AnnotationValue value = annotationInstance.value(parameterName);
+                for (var parameterName : beanDefiningAnnotation.getParameterNames()) {
+                    var value = annotationInstance.value(parameterName);
 
                     // We don't care about the default/null type.
                     if (value != null) {
-                        Type type = value.asClass();
+                        var type = value.asClass();
                         try {
-                            Class<?> beanClass = Class.forName(type.name().toString(), false,
+                            var beanClass = Class.forName(type.name().toString(), false,
                                     Thread.currentThread().getContextClassLoader());
                             reflectiveClassSet.add(beanClass);
                         } catch (ClassNotFoundException e) {
@@ -862,13 +859,13 @@ class TimefoldProcessor {
 
     protected void applyScoreDirectorFactoryProperties(IndexView indexView, SolverConfig solverConfig) {
         if (solverConfig.getScoreDirectorFactoryConfig() == null) {
-            ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = defaultScoreDirectoryFactoryConfig(indexView);
+            var scoreDirectorFactoryConfig = defaultScoreDirectoryFactoryConfig(indexView);
             solverConfig.setScoreDirectorFactoryConfig(scoreDirectorFactoryConfig);
         }
     }
 
     private boolean isClassDefined(String className) {
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        var classLoader = Thread.currentThread().getContextClassLoader();
         try {
             Class.forName(className, false, classLoader);
             return true;
@@ -878,7 +875,7 @@ class TimefoldProcessor {
     }
 
     private ScoreDirectorFactoryConfig defaultScoreDirectoryFactoryConfig(IndexView indexView) {
-        ScoreDirectorFactoryConfig scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
+        var scoreDirectorFactoryConfig = new ScoreDirectorFactoryConfig();
         scoreDirectorFactoryConfig.setEasyScoreCalculatorClass(
                 findFirstImplementingConcreteClass(DotNames.EASY_SCORE_CALCULATOR, indexView));
         scoreDirectorFactoryConfig.setConstraintProviderClass(
@@ -889,13 +886,13 @@ class TimefoldProcessor {
     }
 
     private <T> Class<? extends T> findFirstImplementingConcreteClass(DotName targetDotName, IndexView indexView) {
-        Collection<ClassInfo> classInfoCollection = indexView.getAllKnownImplementations(targetDotName).stream()
+        var classInfoCollection = indexView.getAllKnownImplementations(targetDotName).stream()
                 .filter(classInfo -> !classInfo.isAbstract())
                 .toList();
         if (classInfoCollection.isEmpty()) {
             return null;
         }
-        ClassInfo classInfo = classInfoCollection.iterator().next();
+        var classInfo = classInfoCollection.iterator().next();
         return convertClassInfoToClass(classInfo);
     }
 
@@ -905,8 +902,8 @@ class TimefoldProcessor {
     }
 
     private <T> Class<? extends T> convertClassInfoToClass(ClassInfo classInfo) {
-        String className = classInfo.name().toString();
-        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        var className = classInfo.name().toString();
+        var classLoader = Thread.currentThread().getContextClassLoader();
         try {
             return (Class<? extends T>) classLoader.loadClass(className);
         } catch (ClassNotFoundException e) {
@@ -920,11 +917,11 @@ class TimefoldProcessor {
             BuildProducer<BytecodeTransformerBuildItem> transformers, Set<Class<?>> reflectiveClassSet) {
         // Use mvn quarkus:dev -Dquarkus.debug.generated-classes-dir=dump-classes
         // to dump generated classes
-        ClassOutput classOutput = new GeneratedClassGizmoAdaptor(generatedClasses, true);
-        ClassOutput beanClassOutput = new GeneratedBeanGizmoAdaptor(generatedBeans);
+        var classOutput = new GeneratedClassGizmoAdaptor(generatedClasses, true);
+        var beanClassOutput = new GeneratedBeanGizmoAdaptor(generatedBeans);
 
-        Set<String> generatedMemberAccessorsClassNameSet = new HashSet<>();
-        Set<String> gizmoSolutionClonerClassNameSet = new HashSet<>();
+        var generatedMemberAccessorsClassNameSet = new HashSet<String>();
+        var gizmoSolutionClonerClassNameSet = new HashSet<String>();
 
         /*
          * TODO consistently change the name "entity" to something less confusing
@@ -932,21 +929,24 @@ class TimefoldProcessor {
          * "planning entity" and other things as well.
          */
         assertSolverDomainAccessType(solverConfigMap);
-        GizmoMemberAccessorEntityEnhancer entityEnhancer = new GizmoMemberAccessorEntityEnhancer();
+        var entityEnhancer = new GizmoMemberAccessorEntityEnhancer();
         if (solverConfigMap.values().stream().anyMatch(c -> c.getDomainAccessType() == DomainAccessType.GIZMO)) {
-            Collection<AnnotationInstance> membersToGeneratedAccessorsForCollection = new ArrayList<>();
+            var membersToGeneratedAccessorsForCollection = new ArrayList<AnnotationInstance>();
 
             // Every entity and solution gets scanned for annotations.
             // Annotated members get their accessors generated.
-            for (DotName dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
+            for (var dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
                 membersToGeneratedAccessorsForCollection.addAll(indexView.getAnnotationsWithRepeatable(dotName, indexView));
             }
             membersToGeneratedAccessorsForCollection.removeIf(this::shouldIgnoreMember);
 
             // Fail fast on auto-discovery.
-            Collection<AnnotationInstance> planningSolutionAnnotationInstanceCollection =
-                    indexView.getAnnotations(DotNames.PLANNING_SOLUTION);
-            List<String> unusedSolutionClassList = planningSolutionAnnotationInstanceCollection.stream()
+            var planningSolutionAnnotationInstanceCollection = getAllConcreteSolutionClasses(indexView);
+            var unconfiguredSolverConfigList = solverConfigMap.entrySet().stream()
+                    .filter(e -> e.getValue().getSolutionClass() == null)
+                    .map(Map.Entry::getKey)
+                    .toList();
+            var unusedSolutionClassList = planningSolutionAnnotationInstanceCollection.stream()
                     .map(planningClass -> planningClass.target().asClass().name().toString())
                     .filter(planningClassName -> reflectiveClassSet.stream()
                             .noneMatch(clazz -> clazz.getName().equals(planningClassName)))
@@ -954,7 +954,8 @@ class TimefoldProcessor {
             if (planningSolutionAnnotationInstanceCollection.isEmpty()) {
                 throw new IllegalStateException(
                         "No classes found with a @%s annotation.".formatted(PlanningSolution.class.getSimpleName()));
-            } else if (planningSolutionAnnotationInstanceCollection.size() > 1 && !unusedSolutionClassList.isEmpty()) {
+            } else if (planningSolutionAnnotationInstanceCollection.size() > 1 && !unconfiguredSolverConfigList.isEmpty()
+                    && !unusedSolutionClassList.isEmpty()) {
                 throw new IllegalStateException(
                         "Unused classes (%s) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
                                 PlanningSolution.class.getSimpleName()));
@@ -983,11 +984,11 @@ class TimefoldProcessor {
                 }
             });
 
-            for (AnnotationInstance annotatedMember : membersToGeneratedAccessorsForCollection) {
+            for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
                 switch (annotatedMember.target().kind()) {
                     case FIELD: {
-                        FieldInfo fieldInfo = annotatedMember.target().asField();
-                        ClassInfo classInfo = fieldInfo.declaringClass();
+                        var fieldInfo = annotatedMember.target().asField();
+                        var classInfo = fieldInfo.declaringClass();
                         buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, fieldInfo, transformers);
                         if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
@@ -1007,8 +1008,8 @@ class TimefoldProcessor {
                         break;
                     }
                     case METHOD: {
-                        MethodInfo methodInfo = annotatedMember.target().asMethod();
-                        ClassInfo classInfo = methodInfo.declaringClass();
+                        var methodInfo = annotatedMember.target().asMethod();
+                        var classInfo = methodInfo.declaringClass();
                         buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, methodInfo, true, transformers);
                         break;
@@ -1020,18 +1021,18 @@ class TimefoldProcessor {
                 }
             }
             // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
-            AnnotationInstance solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
-            ClassInfo solutionClassInfo = solutionClassInstance.target().asClass();
-            FieldInfo constraintFieldInfo = solutionClassInfo.fields().stream()
+            var solutionClassInstance = planningSolutionAnnotationInstanceCollection.iterator().next();
+            var solutionClassInfo = solutionClassInstance.target().asClass();
+            var constraintFieldInfo = solutionClassInfo.fields().stream()
                     .filter(f -> f.type().name().equals(DotNames.CONSTRAINT_WEIGHT_OVERRIDES))
                     .findFirst()
                     .orElse(null);
             if (constraintFieldInfo != null) {
                 // Prefer method to field
-                Class<?> solutionClass = convertClassInfoToClass(solutionClassInfo);
-                Method constraintMethod =
+                var solutionClass = convertClassInfoToClass(solutionClassInfo);
+                var constraintMethod =
                         ReflectionHelper.getGetterMethod(solutionClass, constraintFieldInfo.name());
-                MethodInfo constraintMethodInfo = solutionClassInfo.methods().stream()
+                var constraintMethodInfo = solutionClassInfo.methods().stream()
                         .filter(m -> constraintMethod != null && m.name().equals(constraintMethod.getName())
                                 && m.parametersCount() == 0)
                         .findFirst()
