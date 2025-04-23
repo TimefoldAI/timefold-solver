@@ -37,5 +37,5 @@ class TimefoldProcessorReplaceMemberAnnotatedTest {
     @Test
     void testReplaceAnnotatedMember() {
         fail("The build should fail");
-      }
+    }
 }
