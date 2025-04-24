@@ -1,12 +1,13 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
-import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.*;
+import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertValidPlanningVariables;
 import static java.util.stream.Collectors.joining;
 
 import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -270,6 +271,9 @@ public class TimefoldSolverAutoConfiguration
         }
         if (solverProperties.getDomainAccessType() != null) {
             solverConfig.setDomainAccessType(solverProperties.getDomainAccessType());
+        }
+        if (solverProperties.getEnabledPreviewFeatures() != null) {
+            solverConfig.setEnablePreviewFeatureSet(new HashSet<>(solverProperties.getEnabledPreviewFeatures()));
         }
         if (solverProperties.getNearbyDistanceMeterClass() != null) {
             solverConfig.setNearbyDistanceMeterClass(solverProperties.getNearbyDistanceMeterClass());

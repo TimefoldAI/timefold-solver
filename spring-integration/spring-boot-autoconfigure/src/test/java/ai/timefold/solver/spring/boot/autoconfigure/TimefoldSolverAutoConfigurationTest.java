@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
 import java.util.Collections;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
@@ -63,6 +64,9 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfi
 import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
+import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.SupplierVariableSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.domain.TestdataSpringSupplierVariableEntity;
+import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.domain.TestdataSpringSupplierVariableSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.assertj.core.api.AssertionsForClassTypes;
@@ -87,6 +91,7 @@ class TimefoldSolverAutoConfigurationTest {
     private final ApplicationContextRunner benchmarkContextRunner;
     private final ApplicationContextRunner noUserConfigurationContextRunner;
     private final ApplicationContextRunner chainedContextRunner;
+    private final ApplicationContextRunner supplierVariableContextRunner;
     private final ApplicationContextRunner gizmoContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
     private final ApplicationContextRunner multiConstraintProviderRunner;
@@ -129,6 +134,10 @@ class TimefoldSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(ChainedSpringTestConfiguration.class);
+        supplierVariableContextRunner = new ApplicationContextRunner()
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
+                .withUserConfiguration(SupplierVariableSpringTestConfiguration.class);
         multimoduleRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -938,5 +947,25 @@ class TimefoldSolverAutoConfigurationTest {
                         "timefold.solver.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/invalidSolverConfig.xml")
                 .run(context -> context.getBean("solver1")))
                 .cause().message().contains("cannot be a record as it needs to be mutable.");
+    }
+
+    @Test
+    void solveSupplierVariables() {
+        supplierVariableContextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues(
+                        "timefold.solver.enabled-preview-features=DECLARATIVE_SHADOW_VARIABLES",
+                        "timefold.solver.termination.best-score-limit=0")
+                .run(context -> {
+                    SolverManager<TestdataSpringSupplierVariableSolution, Long> solverManager =
+                            context.getBean(SolverManager.class);
+                    var problem = new TestdataSpringSupplierVariableSolution();
+                    problem.setValueList(List.of("a", "b"));
+                    problem.setEntityList(List.of(new TestdataSpringSupplierVariableEntity()));
+                    var solverJob = solverManager.solve(1L, problem);
+                    var solution = solverJob.getFinalBestSolution();
+                    assertThat(solution).isNotNull();
+                    assertThat(solution.getScore().score()).isNotNegative();
+                });
     }
 }

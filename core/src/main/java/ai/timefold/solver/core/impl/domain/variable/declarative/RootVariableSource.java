@@ -25,8 +25,8 @@ public record RootVariableSource<Entity_, Value_>(
         BiConsumer<Object, Consumer<Value_>> valueEntityFunction,
         List<VariableSourceReference> variableSourceReferences) {
 
-    private static final String COLLECTION_REFERENCE_SUFFIX = "[]";
-    private static final String MEMBER_SEPERATOR_REGEX = "\\.";
+    public static final String COLLECTION_REFERENCE_SUFFIX = "[]";
+    public static final String MEMBER_SEPERATOR_REGEX = "\\.";
 
     private record VariablePath(Class<?> variableEntityClass,
             String variableName,
