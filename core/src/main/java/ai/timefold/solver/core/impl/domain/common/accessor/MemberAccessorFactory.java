@@ -49,7 +49,7 @@ public final class MemberAccessorFactory {
             Class<? extends Annotation> annotationClass, DomainAccessType domainAccessType, ClassLoader classLoader) {
         return switch (domainAccessType) {
             case GIZMO -> GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
-                    memberAccessorType != MemberAccessorType.REGULAR_METHOD,
+                    memberAccessorType != MemberAccessorType.VOID_METHOD,
                     (GizmoClassLoader) Objects.requireNonNull(classLoader));
             case REFLECTION -> buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
         };
@@ -83,7 +83,7 @@ public final class MemberAccessorFactory {
                     }
                     memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
                     break;
-                case REGULAR_METHOD:
+                case VOID_METHOD:
                     memberAccessor = new ReflectionMethodMemberAccessor(method, false);
                     break;
                 default:
@@ -168,6 +168,6 @@ public final class MemberAccessorFactory {
         FIELD_OR_READ_METHOD,
         FIELD_OR_GETTER_METHOD,
         FIELD_OR_GETTER_METHOD_WITH_SETTER,
-        REGULAR_METHOD
+        VOID_METHOD
     }
 }

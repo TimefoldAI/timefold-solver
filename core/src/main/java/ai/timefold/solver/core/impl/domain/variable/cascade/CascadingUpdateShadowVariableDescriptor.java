@@ -131,7 +131,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
                                     targetMethodName));
         }
         targetMethod = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(allSourceMethodMembers.get(0),
-                MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, descriptorPolicy.getDomainAccessType());
+                MemberAccessorFactory.MemberAccessorType.VOID_METHOD, null, descriptorPolicy.getDomainAccessType());
         firstTargetVariableDescriptor = targetVariableDescriptorList.get(0);
     }
 

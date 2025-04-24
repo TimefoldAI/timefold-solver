@@ -100,7 +100,7 @@ class MemberAccessorFactoryTest {
     @Test
     void methodReturnVoid() throws NoSuchMethodException {
         MemberAccessor memberAccessor = MemberAccessorFactory.buildMemberAccessor(TestdataEntity.class.getMethod("updateValue"),
-                MemberAccessorFactory.MemberAccessorType.REGULAR_METHOD, null, DomainAccessType.REFLECTION, null);
+                MemberAccessorFactory.MemberAccessorType.VOID_METHOD, null, DomainAccessType.REFLECTION, null);
         assertThat(memberAccessor).isInstanceOf(ReflectionMethodMemberAccessor.class);
         assertThat(memberAccessor.getName()).isEqualTo("updateValue");
         assertThat(memberAccessor.getType()).isEqualTo(void.class);
