@@ -283,7 +283,7 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: pnpm
-      - name: dependencies
+      - name: Install Dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Checkout timefold-solver
