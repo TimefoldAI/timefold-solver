@@ -68,8 +68,9 @@ We have streamlined and clarified the rules of inheritance when modeling plannin
 The documentation now describes how to use it for both the
 xref:using-timefold-solver/modeling-planning-problems.adoc#planningModelSolutionInheritance[solution] and xref:using-timefold-solver/modeling-planning-problems.adoc#planningModelEntiyInheritance[entity] models.
 
-We do not expect that the new rules will impact existing user code,
-although it is possible that some corner cases may not work in the new version.
+We do not expect that the clarified rules will impact existing user code,
+but it is possible that some unexpected corner cases will break.
+If that is the case, please let us know.
 ====
 
 '''
