@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusSolution;
 import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
 import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
@@ -58,6 +59,28 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
                             "ai.timefold.solver.quarkus.testdata.shadowvariable.domain.TestdataQuarkusShadowVariableSolution")
                     .hasMessageContaining("ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution")
                     .hasMessageContaining("on the classpath."));
+
+    // Unused classes
+    @RegisterExtension
+    static final QuarkusUnitTest config3 = new QuarkusUnitTest()
+            .overrideConfigKey("quarkus.timefold.solver.\"solver1\".solver-config-xml",
+                    "ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
+            .overrideConfigKey("quarkus.timefold.solver.\"solver2\".solver-config-xml",
+                    "ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml")
+            .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
+                    .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,
+                            TestdataQuarkusConstraintProvider.class)
+                    .addClasses(TestdataQuarkusShadowVariableEntity.class,
+                            TestdataQuarkusShadowVariableSolution.class,
+                            TestdataQuarkusShadowVariableConstraintProvider.class,
+                            TestdataQuarkusShadowVariableListener.class)
+                    .addClasses(TestdataChainedQuarkusSolution.class)
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusConfig.xml")
+                    .addAsResource("ai/timefold/solver/quarkus/customSolverQuarkusShadowVariableConfig.xml"))
+            .assertException(t -> assertThat(t)
+                    .isInstanceOf(IllegalStateException.class)
+                    .hasMessageContaining(
+                            "Unused classes ([ai.timefold.solver.quarkus.testdata.chained.domain.TestdataChainedQuarkusSolution]) found with a @PlanningSolution annotation."));
 
     @Inject
     @Named("solver1")

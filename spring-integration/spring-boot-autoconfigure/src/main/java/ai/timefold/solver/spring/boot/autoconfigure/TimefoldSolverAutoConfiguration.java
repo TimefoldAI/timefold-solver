@@ -382,6 +382,20 @@ public class TimefoldSolverAutoConfiguration
                                         PlanningSolution.class.getSimpleName(),
                                         classes.stream().map(Class::getSimpleName).collect(joining(", "))));
             }
+            // Unused solution classes
+            // When inheritance is used, we ignore the parent classes
+            var unusedSolutionClassList = classes.stream()
+                    .map(Class::getName)
+                    .filter(planningClassName -> solverConfigMap.values().stream().filter(c -> c.getSolutionClass() != null)
+                            .noneMatch(c -> c.getSolutionClass().getName().equals(planningClassName)
+                                    || c.getSolutionClass().getSuperclass().getName().equals(planningClassName)))
+                    .toList();
+            if (classes.size() > 1 && !unusedSolutionClassList.isEmpty()) {
+                throw new IllegalStateException(
+                        "Unused classes ([%s]) found with a @%s annotation.".formatted(
+                                String.join(", ", unusedSolutionClassList),
+                                PlanningSolution.class.getSimpleName()));
+            }
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException(
                     "Scanning for @%s annotations failed.".formatted(PlanningSolution.class.getSimpleName()), e);

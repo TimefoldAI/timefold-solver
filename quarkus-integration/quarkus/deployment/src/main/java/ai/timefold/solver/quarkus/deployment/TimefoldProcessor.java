@@ -3,7 +3,6 @@ package ai.timefold.solver.quarkus.deployment;
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static java.lang.String.format;
 
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +18,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import io.quarkus.gizmo.ResultHandle;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Singleton;
 
@@ -344,6 +342,19 @@ class TimefoldProcessor {
                             .formatted(String.join(", ", unconfiguredSolverConfigList),
                                     PlanningSolution.class.getSimpleName(),
                                     convertAnnotationInstancesToString(annotationInstanceList)));
+        }
+        // Unused solution classes
+        // When inheritance is used, we ignore the parent classes.
+        var unusedSolutionClassList = annotationInstanceList.stream()
+                .map(planningClass -> planningClass.target().asClass().name().toString())
+                .filter(planningClassName -> solverConfigMap.values().stream().filter(c -> c.getSolutionClass() != null)
+                        .noneMatch(c -> c.getSolutionClass().getName().equals(planningClassName)
+                                || c.getSolutionClass().getSuperclass().getName().equals(planningClassName)))
+                .toList();
+        if (annotationInstanceList.size() > 1 && !unusedSolutionClassList.isEmpty()) {
+            throw new IllegalStateException(
+                    "Unused classes ([%s]) found with a @%s annotation.".formatted(String.join(", ", unusedSolutionClassList),
+                            PlanningSolution.class.getSimpleName()));
         }
     }
 
@@ -783,7 +794,7 @@ class TimefoldProcessor {
         // Termination properties are set at runtime
     }
 
-    private List<AnnotationInstance> getAllConcreteSolutionClasses(IndexView indexView) {
+    private static List<AnnotationInstance> getAllConcreteSolutionClasses(IndexView indexView) {
         return indexView.getAnnotations(DotNames.PLANNING_SOLUTION).stream()
                 .filter(annotationInstance -> !annotationInstance.target().asClass().isAbstract())
                 .toList();

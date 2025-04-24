@@ -22,7 +22,6 @@ class TimefoldProcessorBothClassesAnnotatedTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataBothAnnotatedExtendedConstraintProvider.class,
                             TestdataBothAnnotatedConstraintProvider.class, TestdataBothAnnotatedExtendedSolution.class,

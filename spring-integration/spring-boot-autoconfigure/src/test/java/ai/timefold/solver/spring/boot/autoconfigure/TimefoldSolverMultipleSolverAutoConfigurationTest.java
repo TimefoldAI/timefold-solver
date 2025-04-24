@@ -533,6 +533,19 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
     }
 
     @Test
+    void unusedSolutionClass() {
+        assertThatCode(() -> noUserConfigurationContextRunner
+                .withUserConfiguration(MultipleSolutionsSpringTestConfiguration.class)
+                .withPropertyValues(
+                        "timefold.solver.solver1.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
+                .withPropertyValues(
+                        "timefold.solver.solver2.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/normalSolverConfig.xml")
+                .run(context -> context.getBean("solver1")))
+                .cause().message().contains(
+                        "Unused classes ([ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution]) found with a @PlanningSolution annotation.");
+    }
+
+    @Test
     void noEntityClass() {
         assertThatCode(() -> noUserConfigurationContextRunner
                 .withUserConfiguration(NoEntitySpringTestConfiguration.class)

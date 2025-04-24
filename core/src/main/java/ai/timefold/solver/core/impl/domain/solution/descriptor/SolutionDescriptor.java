@@ -223,7 +223,7 @@ public class SolutionDescriptor<Solution_> {
             throw new IllegalStateException(
                     """
                             The class %s inherits its @%s annotation from multiple classes (%s).
-                            Remove the solution classes from the inheritance chain to create a single-level inheritance structure."""
+                            Remove solution class(es) from the inheritance chain to create a single-level inheritance structure."""
                             .formatted(solutionClass.getName(), PlanningSolution.class.getSimpleName(), inheritedClassList));
         }
     }
@@ -403,19 +403,15 @@ public class SolutionDescriptor<Solution_> {
                     "The solutionClass (%s) has been specified as a solution in the configuration, but does not have a @%s annotation."
                             .formatted(solutionClass, PlanningSolution.class.getSimpleName()));
         }
-        if (solutionAnnotation != null) {
-            autoDiscoverMemberType = solutionAnnotation.autoDiscoverMemberType();
-        } else {
-            autoDiscoverMemberType = parentSolutionAnnotation.autoDiscoverMemberType();
-        }
+        var annotation = solutionAnnotation != null ? solutionAnnotation : parentSolutionAnnotation;
+        autoDiscoverMemberType = annotation.autoDiscoverMemberType();
         // We accept only the child class cloner
         var solutionClonerClass =
                 solutionAnnotation != null ? solutionAnnotation.solutionCloner() : PlanningSolution.NullSolutionCloner.class;
         if (solutionClonerClass != PlanningSolution.NullSolutionCloner.class) {
             solutionCloner = ConfigUtils.newInstance(this::toString, "solutionClonerClass", solutionClonerClass);
         }
-        var lookUpStrategyType = solutionAnnotation != null ? solutionAnnotation.lookUpStrategyType()
-                : parentSolutionAnnotation.lookUpStrategyType();
+        var lookUpStrategyType = annotation.lookUpStrategyType();
         lookUpStrategyResolver =
                 new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
     }
