@@ -180,7 +180,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     "The solver configuration must have at least 1 entityClass (%s). If you're using the Quarkus extension or Spring Boot starter, it should have been filled in already."
                             .formatted(solverConfig.getEntityClassList()));
         }
-        return SolutionDescriptor.buildSolutionDescriptor(solverConfig.determineDomainAccessType(),
+        return SolutionDescriptor.buildSolutionDescriptor(solverConfig.getEnablePreviewFeatureSet(),
+                solverConfig.determineDomainAccessType(),
                 (Class<Solution_>) solverConfig.getSolutionClass(),
                 solverConfig.getGizmoMemberAccessorMap(),
                 solverConfig.getGizmoSolutionClonerMap(),

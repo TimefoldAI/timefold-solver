@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -19,6 +20,7 @@ public abstract class VariableDescriptor<Solution_> {
     protected final MemberAccessor variableMemberAccessor;
     protected final String variableName;
     protected final String simpleEntityAndVariableName;
+    protected VariableMetaModel<Solution_, ?, ?> cachedMetamodel = null;
 
     protected List<ShadowVariableDescriptor<Solution_>> sinkVariableDescriptorList = new ArrayList<>(4);
 
@@ -28,7 +30,14 @@ public abstract class VariableDescriptor<Solution_> {
 
     protected VariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
-        if (variableMemberAccessor.getType().isPrimitive()) {
+        this(ordinal, entityDescriptor, variableMemberAccessor, false);
+    }
+
+    protected VariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
+            MemberAccessor variableMemberAccessor, boolean allowPrimitive) {
+        if (!allowPrimitive && variableMemberAccessor.getType().isPrimitive()) {
+            // uninitialized variables only apply to genuine planning variables;
+            // shadow variables can use primitives
             throw new IllegalStateException("""
                     The entityClass (%s) has a @%s annotated member (%s) that returns a primitive type (%s).
                     This means it cannot represent an uninitialized variable as null \
@@ -120,5 +129,14 @@ public abstract class VariableDescriptor<Solution_> {
     public final boolean isGenuineAndUninitialized(Object entity) {
         return this instanceof GenuineVariableDescriptor<Solution_> genuineVariableDescriptor
                 && !genuineVariableDescriptor.isInitialized(entity);
+    }
+
+    public VariableMetaModel<Solution_, ?, ?> getVariableMetaModel() {
+        if (cachedMetamodel != null) {
+            return cachedMetamodel;
+        }
+        cachedMetamodel = entityDescriptor.getEntityMetaModel()
+                .variable(variableName);
+        return cachedMetamodel;
     }
 }
