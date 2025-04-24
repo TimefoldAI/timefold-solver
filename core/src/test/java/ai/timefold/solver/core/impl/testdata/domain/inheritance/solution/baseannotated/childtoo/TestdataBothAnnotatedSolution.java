@@ -9,32 +9,53 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
 @PlanningSolution
-public class TestdataBothAnnotatedSolution {
+public class TestdataBothAnnotatedSolution extends TestdataObject {
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider(id = "valueRange")
-    private List<String> valueList;
+    private List<TestdataValue> valueList;
+    @ValueRangeProvider(id = "subValueRange")
+    @ProblemFactCollectionProperty
+    private List<TestdataValue> subValueList;
     @PlanningEntityCollectionProperty
-    private List<? extends TestdataBothAnnotatedBaseEntity> entityList;
+    private List<? extends TestdataEntity> entityList;
     @PlanningScore
     private SimpleScore score;
     private ConstraintWeightOverrides<SimpleScore> constraintWeightOverrides;
 
-    public List<String> getValueList() {
+    public TestdataBothAnnotatedSolution() {
+    }
+
+    public TestdataBothAnnotatedSolution(String code) {
+        super(code);
+    }
+
+    public List<TestdataValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<String> valueList) {
+    public void setValueList(List<TestdataValue> valueList) {
         this.valueList = valueList;
     }
 
-    public List<? extends TestdataBothAnnotatedBaseEntity> getEntityList() {
+    public List<TestdataValue> getSubValueList() {
+        return subValueList;
+    }
+
+    public void setSubValueList(List<TestdataValue> subValueList) {
+        this.subValueList = subValueList;
+    }
+
+    public List<? extends TestdataEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<? extends TestdataBothAnnotatedBaseEntity> entityList) {
+    public void setEntityList(List<? extends TestdataEntity> entityList) {
         this.entityList = entityList;
     }
 

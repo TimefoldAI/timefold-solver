@@ -64,7 +64,7 @@ class SolverEntityInheritanceTest {
                 .withSolutionClass(TestdataBothAnnotatedSolution.class)
                 .withEntityClasses(TestdataBothAnnotatedChildEntity.class)
                 .withConstraintProviderClass(TestBothAnnotatedConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(20L));
         var problem = TestdataBothAnnotatedSolution.generateSolution(3, 2, false);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getScore()).isEqualTo(SimpleScore.of(2));

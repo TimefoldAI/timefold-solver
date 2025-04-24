@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.extended.thirdparty;
+package ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.thirdparty;
 
 import java.util.List;
 

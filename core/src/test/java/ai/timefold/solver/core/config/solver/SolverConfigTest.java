@@ -46,8 +46,8 @@ import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartit
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceEntity;
 import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceSolution;
@@ -215,9 +215,9 @@ class SolverConfigTest {
         var solverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
         var classVisitor = (Consumer<Class<?>>) mock(Consumer.class);
         solverConfig.visitReferencedClasses(classVisitor);
-        verify(classVisitor, atLeastOnce()).accept(TestdataAnnotatedExtendedSolution.class);
+        verify(classVisitor, atLeastOnce()).accept(TestdataBothAnnotatedSolution.class);
         verify(classVisitor, atLeastOnce()).accept(TestdataEntity.class);
-        verify(classVisitor, atLeastOnce()).accept(TestdataAnnotatedExtendedEntity.class);
+        verify(classVisitor, atLeastOnce()).accept(TestdataBothAnnotatedChildEntity.class);
         verify(classVisitor, atLeastOnce()).accept(DummyEasyScoreCalculator.class);
         verify(classVisitor, atLeastOnce()).accept(DummyConstraintProvider.class);
         verify(classVisitor, atLeastOnce()).accept(DummyIncrementalScoreCalculator.class);

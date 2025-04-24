@@ -38,11 +38,11 @@ class SolverSolutionInheritanceTest {
                 .withSolutionClass(TestdataBothAnnotatedExtendedSolution.class)
                 .withEntityClasses(TestdataBothAnnotatedChildEntity.class)
                 .withConstraintProviderClass(TestdataBothAnnotatedExtendedConstraintProvider.class)
-                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(14L));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(100L));
 
         var problem = TestdataBothAnnotatedExtendedSolution.generateSolution(3, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(8));
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(16));
     }
 
     /**

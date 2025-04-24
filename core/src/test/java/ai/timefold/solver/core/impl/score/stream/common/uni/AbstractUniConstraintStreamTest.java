@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
@@ -42,12 +43,11 @@ import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunction
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
@@ -966,22 +966,23 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void forEach_polymorphism() {
-        TestdataSolution solution = new TestdataUnannotatedExtendedSolution();
+        var solution = new TestdataOnlyBaseAnnotatedExtendedSolution("s1");
+        solution.setConstraintWeightOverrides(ConstraintWeightOverrides.none());
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");
         solution.setValueList(List.of(v1, v2));
-        var cat = new TestdataUnannotatedExtendedEntity("Cat", v1);
+        var cat = new TestdataOnlyBaseAnnotatedChildEntity("Cat", v1);
         var animal = new TestdataEntity("Animal", v1);
-        var dog = new TestdataUnannotatedExtendedEntity("Dog", v1);
+        var dog = new TestdataOnlyBaseAnnotatedChildEntity("Dog", v1);
         solution.setEntityList(List.of(cat, animal, dog));
 
-        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataSolution.buildSolutionDescriptor(),
+        InnerScoreDirector<TestdataOnlyBaseAnnotatedExtendedSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataOnlyBaseAnnotatedExtendedSolution.buildSolutionDescriptor(),
                 factory -> new Constraint[] {
                         factory.forEach(TestdataEntity.class)
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint("superclassConstraint"),
-                        factory.forEach(TestdataUnannotatedExtendedEntity.class)
+                        factory.forEach(TestdataOnlyBaseAnnotatedChildEntity.class)
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint("subclassConstraint")
                 });
@@ -3629,7 +3630,7 @@ public abstract class AbstractUniConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
-        assertThat(zeroWeightMonitorCount.getAndSet(0L)).isEqualTo(0);
+        assertThat(zeroWeightMonitorCount.getAndSet(0L)).isZero();
         assertThat(oneWeightMonitorCount.getAndSet(0L)).isEqualTo(3);
 
         // Incremental
@@ -3637,8 +3638,8 @@ public abstract class AbstractUniConstraintStreamTest
         entity1.setStringProperty("myProperty2");
         scoreDirector.afterProblemPropertyChanged(entity1);
         scoreDirector.calculateScore();
-        assertThat(zeroWeightMonitorCount.get()).isEqualTo(0);
-        assertThat(oneWeightMonitorCount.get()).isEqualTo(1);
+        assertThat(zeroWeightMonitorCount.get()).isZero();
+        assertThat(oneWeightMonitorCount.get()).isOne();
     }
 
     @TestTemplate

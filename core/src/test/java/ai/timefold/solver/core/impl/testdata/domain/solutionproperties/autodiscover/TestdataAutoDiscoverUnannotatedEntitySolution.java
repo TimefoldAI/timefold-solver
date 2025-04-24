@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 
 @PlanningSolution(autoDiscoverMemberType = AutoDiscoverMemberType.GETTER)
 public class TestdataAutoDiscoverUnannotatedEntitySolution extends TestdataObject {
@@ -23,8 +23,8 @@ public class TestdataAutoDiscoverUnannotatedEntitySolution extends TestdataObjec
     private TestdataObject singleProblemFactField;
     private List<TestdataValue> problemFactListField;
 
-    private List<TestdataUnannotatedExtendedEntity> entityListField;
-    private TestdataUnannotatedExtendedEntity otherEntityField;
+    private List<TestdataOnlyBaseAnnotatedChildEntity> entityListField;
+    private TestdataOnlyBaseAnnotatedChildEntity otherEntityField;
 
     private SimpleScore score;
 
@@ -36,8 +36,8 @@ public class TestdataAutoDiscoverUnannotatedEntitySolution extends TestdataObjec
     }
 
     public TestdataAutoDiscoverUnannotatedEntitySolution(String code, TestdataObject singleProblemFact,
-            List<TestdataValue> problemFactList, List<TestdataUnannotatedExtendedEntity> entityList,
-            TestdataUnannotatedExtendedEntity otherEntity) {
+            List<TestdataValue> problemFactList, List<TestdataOnlyBaseAnnotatedChildEntity> entityList,
+            TestdataOnlyBaseAnnotatedChildEntity otherEntity) {
         super(code);
         this.singleProblemFactField = singleProblemFact;
         this.problemFactListField = problemFactList;
@@ -55,12 +55,12 @@ public class TestdataAutoDiscoverUnannotatedEntitySolution extends TestdataObjec
     }
 
     // should be auto discovered as an entity collection
-    public List<TestdataUnannotatedExtendedEntity> getEntityList() {
+    public List<TestdataOnlyBaseAnnotatedChildEntity> getEntityList() {
         return entityListField;
     }
 
     // should be auto discovered as a single entity property
-    public TestdataUnannotatedExtendedEntity getOtherEntity() {
+    public TestdataOnlyBaseAnnotatedChildEntity getOtherEntity() {
         return otherEntityField;
     }
 

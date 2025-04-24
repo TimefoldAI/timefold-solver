@@ -6,20 +6,28 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
 public class TestdataOnlyBaseAnnotatedExtendedSolution extends TestdataOnlyBaseAnnotatedSolution {
 
+    public static SolutionDescriptor<TestdataOnlyBaseAnnotatedExtendedSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataOnlyBaseAnnotatedExtendedSolution.class,
+                TestdataEntity.class, TestdataOnlyBaseAnnotatedChildEntity.class);
+    }
+
     public static TestdataOnlyBaseAnnotatedExtendedSolution generateSolution(int valueListSize, int entityListSize) {
-        var solution = new TestdataOnlyBaseAnnotatedExtendedSolution();
-        var valueList = new ArrayList<String>(valueListSize);
+        var solution = new TestdataOnlyBaseAnnotatedExtendedSolution("s1");
+        var valueList = new ArrayList<TestdataValue>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {
-            valueList.add("Generated Value " + i);
+            valueList.add(new TestdataValue("Generated Value " + i));
         }
         solution.setValueList(valueList);
         var entityList = new ArrayList<TestdataOnlyBaseAnnotatedChildEntity>(entityListSize);
         var idx = 0;
         for (int i = 0; i < entityListSize; i++) {
-            var entity = new TestdataOnlyBaseAnnotatedChildEntity(idx++);
+            var entity = new TestdataOnlyBaseAnnotatedChildEntity(String.valueOf(idx++));
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
@@ -27,8 +35,30 @@ public class TestdataOnlyBaseAnnotatedExtendedSolution extends TestdataOnlyBaseA
         return solution;
     }
 
+    private Object extraObject;
+
+    public TestdataOnlyBaseAnnotatedExtendedSolution() {
+    }
+
+    public TestdataOnlyBaseAnnotatedExtendedSolution(String code) {
+        super(code);
+    }
+
+    public TestdataOnlyBaseAnnotatedExtendedSolution(String code, Object extraObject) {
+        super(code);
+        this.extraObject = extraObject;
+    }
+
     @Override
     public List<TestdataOnlyBaseAnnotatedChildEntity> getEntityList() {
         return (List<TestdataOnlyBaseAnnotatedChildEntity>) super.getEntityList();
+    }
+
+    public Object getExtraObject() {
+        return extraObject;
+    }
+
+    public void setExtraObject(Object extraObject) {
+        this.extraObject = extraObject;
     }
 }

@@ -32,7 +32,7 @@ public class TestdataAccessModifierSolution extends TestdataObject {
         TestdataAccessModifierSolution.staticField = staticField;
     }
 
-    public static SolutionDescriptor buildSolutionDescriptor() {
+    public static SolutionDescriptor<TestdataAccessModifierSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataAccessModifierSolution.class, TestdataEntity.class);
     }
 

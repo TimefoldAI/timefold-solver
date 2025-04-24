@@ -23,10 +23,10 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntit
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBasedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataSetBasedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.immutable.enumeration.TestdataEnumSolution;
 import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.badconfiguration.TestdataBadConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
@@ -157,12 +157,13 @@ class SolutionDescriptorTest {
 
     @Test
     void extended() {
-        var solutionDescriptor = TestdataAnnotatedExtendedSolution.buildExtendedSolutionDescriptor();
+        var solutionDescriptor = TestdataBothAnnotatedExtendedSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("valueList",
                 "subValueList");
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).isEmpty();
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList", "subEntityList");
+        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("entity", "subEntity");
+        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList", "subEntityList",
+                "rawEntityList", "entityList", "objectEntityList");
     }
 
     @Test
@@ -301,9 +302,9 @@ class SolutionDescriptorTest {
         var singleProblemFact = new TestdataObject("p1");
         var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
         var entityList = Arrays.asList(
-                new TestdataUnannotatedExtendedEntity("u1"),
-                new TestdataUnannotatedExtendedEntity("u2"));
-        var otherEntity = new TestdataUnannotatedExtendedEntity("otherU1");
+                new TestdataOnlyBaseAnnotatedChildEntity("u1"),
+                new TestdataOnlyBaseAnnotatedChildEntity("u2"));
+        var otherEntity = new TestdataOnlyBaseAnnotatedChildEntity("otherU1");
         var solution =
                 new TestdataAutoDiscoverUnannotatedEntitySolution("s1", singleProblemFact, valueList, entityList, otherEntity);
 
