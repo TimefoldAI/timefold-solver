@@ -93,6 +93,11 @@ public class SolutionDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolutionDescriptor.class);
     private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(-1, null, PlanningEntity.class);
+    protected static final Class[] ANNOTATED_MEMBERS_CLASSES = {
+            ProblemFactCollectionProperty.class,
+            ValueRangeProvider.class,
+            PlanningEntityCollectionProperty.class,
+            PlanningScore.class };
 
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
             Class<?>... entityClasses) {
@@ -126,6 +131,8 @@ public class SolutionDescriptor<Solution_> {
             Class<Solution_> solutionClass, Map<String, MemberAccessor> memberAccessorMap,
             Map<String, SolutionCloner> solutionClonerMap, List<Class<?>> entityClassList) {
         assertMutable(solutionClass, "solutionClass");
+        assertSingleInheritance(solutionClass);
+        assertValidAnnotatedMembers(solutionClass);
         solutionClonerMap = Objects.requireNonNullElse(solutionClonerMap, Collections.emptyMap());
         var solutionDescriptor = new SolutionDescriptor<>(solutionClass, memberAccessorMap);
         var descriptorPolicy = new DescriptorPolicy();
@@ -176,6 +183,51 @@ public class SolutionDescriptor<Solution_> {
         }
     }
 
+    /**
+     * If a class declares any annotated member, it must be annotated as a solution,
+     * even if a supertype already has the annotation.
+     */
+    public static void assertValidAnnotatedMembers(Class<?> clazz) {
+        // We first check the entity class
+        if (clazz.getAnnotation(PlanningSolution.class) == null && hasAnyAnnotatedMembers(clazz)) {
+            var annotatedMembers = extractAnnotatedMembers(clazz).stream()
+                    .map(Member::getName)
+                    .toList();
+            throw new IllegalStateException(
+                    """
+                            The class %s is not annotated with @PlanningSolution but defines annotated members.
+                            Maybe annotate %s with @PlanningSolution.
+                            Maybe remove the annotated members (%s)."""
+                            .formatted(clazz.getName(), clazz.getName(), annotatedMembers));
+        }
+        // We check the first level of the inheritance chain
+        var otherClazz = clazz.getSuperclass();
+        if (otherClazz != null && otherClazz.getAnnotation(PlanningSolution.class) == null
+                && hasAnyAnnotatedMembers(otherClazz)) {
+            var annotatedMembers = extractAnnotatedMembers(otherClazz).stream()
+                    .map(Member::getName)
+                    .toList();
+            throw new IllegalStateException(
+                    """
+                            The class %s is not annotated with @PlanningSolution but defines annotated members.
+                            Maybe annotate %s with @PlanningSolution.
+                            Maybe remove the annotated members (%s)."""
+                            .formatted(otherClazz.getName(), otherClazz.getName(), annotatedMembers));
+        }
+    }
+
+    public static void assertSingleInheritance(Class<?> solutionClass) {
+        var inheritedClassList =
+                ConfigUtils.getAllAnnotatedLineageClasses(solutionClass.getSuperclass(), PlanningSolution.class);
+        if (inheritedClassList.size() > 1) {
+            throw new IllegalStateException(
+                    """
+                            The class %s inherits its @%s annotation from multiple classes (%s).
+                            Remove solution class(es) from the inheritance chain to create a single-level inheritance structure."""
+                            .formatted(solutionClass.getName(), PlanningSolution.class.getSimpleName(), inheritedClassList));
+        }
+    }
+
     private static List<Class<?>> sortEntityClassList(List<Class<?>> entityClassList) {
         var sortedEntityClassList = new ArrayList<Class<?>>(entityClassList.size());
         for (var entityClass : entityClassList) {
@@ -193,6 +245,18 @@ public class SolutionDescriptor<Solution_> {
             }
         }
         return sortedEntityClassList;
+    }
+
+    private static List<Member> extractAnnotatedMembers(Class<?> solutionClass) {
+        var membersList = ConfigUtils.getDeclaredMembers(solutionClass);
+        return membersList.stream()
+                .filter(member -> !ConfigUtils.extractAnnotationClasses(member, ANNOTATED_MEMBERS_CLASSES).isEmpty())
+                .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    private static boolean hasAnyAnnotatedMembers(Class<?> solutionClass) {
+        return !extractAnnotatedMembers(solutionClass).isEmpty();
     }
 
     // ************************************************************************
@@ -290,9 +354,12 @@ public class SolutionDescriptor<Solution_> {
         domainAccessType = descriptorPolicy.getDomainAccessType();
         processSolutionAnnotations(descriptorPolicy);
         var potentiallyOverwritingMethodList = new ArrayList<Method>();
-        // Iterate inherited members too (unlike for EntityDescriptor where each one is declared)
-        // to make sure each one is registered
-        for (var lineageClass : ConfigUtils.getAllAnnotatedLineageClasses(solutionClass, PlanningSolution.class)) {
+        // Iterate inherited members too
+        var lineageClassList = ConfigUtils.getAllAnnotatedLineageClasses(solutionClass, PlanningSolution.class);
+        if (lineageClassList.isEmpty() && solutionClass.getSuperclass().isAnnotationPresent(PlanningSolution.class)) {
+            lineageClassList = ConfigUtils.getAllAnnotatedLineageClasses(solutionClass.getSuperclass(), PlanningSolution.class);
+        }
+        for (var lineageClass : lineageClassList) {
             var memberList = ConfigUtils.getDeclaredMembers(lineageClass);
             for (var member : memberList) {
                 if (member instanceof Method method && potentiallyOverwritingMethodList.stream().anyMatch(
@@ -328,18 +395,25 @@ public class SolutionDescriptor<Solution_> {
 
     private void processSolutionAnnotations(DescriptorPolicy descriptorPolicy) {
         var solutionAnnotation = solutionClass.getAnnotation(PlanningSolution.class);
-        if (solutionAnnotation == null) {
+        var parentSolutionAnnotation =
+                solutionClass.getSuperclass() != null ? solutionClass.getSuperclass().getAnnotation(PlanningSolution.class)
+                        : null;
+        if (solutionAnnotation == null && parentSolutionAnnotation == null) {
             throw new IllegalStateException(
                     "The solutionClass (%s) has been specified as a solution in the configuration, but does not have a @%s annotation."
                             .formatted(solutionClass, PlanningSolution.class.getSimpleName()));
         }
-        autoDiscoverMemberType = solutionAnnotation.autoDiscoverMemberType();
-        var solutionClonerClass = solutionAnnotation.solutionCloner();
+        var annotation = solutionAnnotation != null ? solutionAnnotation : parentSolutionAnnotation;
+        autoDiscoverMemberType = annotation.autoDiscoverMemberType();
+        // We accept only the child class cloner
+        var solutionClonerClass =
+                solutionAnnotation != null ? solutionAnnotation.solutionCloner() : PlanningSolution.NullSolutionCloner.class;
         if (solutionClonerClass != PlanningSolution.NullSolutionCloner.class) {
             solutionCloner = ConfigUtils.newInstance(this::toString, "solutionClonerClass", solutionClonerClass);
         }
+        var lookUpStrategyType = annotation.lookUpStrategyType();
         lookUpStrategyResolver =
-                new LookUpStrategyResolver(descriptorPolicy, solutionAnnotation.lookUpStrategyType());
+                new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
     }
 
     private void processValueRangeProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member) {

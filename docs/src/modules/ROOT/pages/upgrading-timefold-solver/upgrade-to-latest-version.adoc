@@ -61,6 +61,20 @@ We kindly ask Kotlin and Python users to translate the changes accordingly.
 
 === Upgrade from 1.21.0 to 1.22.0
 
+.icon:info-circle[role=yellow] Formalization of inheritance rules
+[%collapsible%open]
+====
+We have streamlined and clarified the rules of inheritance when modeling planning solutions and planning entities.
+The documentation now describes how to use it for both the
+xref:using-timefold-solver/modeling-planning-problems.adoc#planningModelSolutionInheritance[solution] and xref:using-timefold-solver/modeling-planning-problems.adoc#planningModelEntiyInheritance[entity] models.
+
+We do not expect that the clarified rules will impact existing user code,
+but it is possible that some unexpected corner cases will break.
+If that is the case, please let us know.
+====
+
+'''
+
 .icon:info-circle[role=yellow] Init score no longer available
 [%collapsible%open]
 ====

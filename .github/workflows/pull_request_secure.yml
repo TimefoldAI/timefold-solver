@@ -276,12 +276,13 @@ jobs:
           repository: TimefoldAI/frontend
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-
+      - name: Install pnpm
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda
       - name: Set up NodeJs
         uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: npm
+          cache: pnpm
 
       - name: Checkout timefold-solver
         uses: actions/checkout@v4
@@ -320,8 +321,8 @@ jobs:
           yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
           yq -i e 'del(.site.keys)' apps/docs/antora-playbook.yml
           yq -i e '.content.sources += [{"url": "../../timefold-solver", "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
-          npm ci
-          npm run build -- --filter @timefoldai/docs
+          pnpm install --frozen-lockfile
+          pnpm build --filter @timefoldai/docs
 
       - name: Deploy Documentation (Preview Mode)
         if: ${{ env.BRANCH_NAME != 'main' }}
@@ -332,6 +333,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: ./apps/docs
           command: pages deploy ./public-serve --project-name=timefold-docs --branch=${{ github.ref }}
+          packageManager: pnpm
 
   sonarcloud:
     needs: approval_required

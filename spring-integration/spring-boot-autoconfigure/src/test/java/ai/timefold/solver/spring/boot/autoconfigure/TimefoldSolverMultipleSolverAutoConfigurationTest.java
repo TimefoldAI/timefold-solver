@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
@@ -172,7 +171,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                             .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     SolverScope<TestdataSpringSolution> customScope = new SolverScope<>() {
                         @Override
                         public long calculateTimeMillisSpentUpToNow() {
@@ -307,7 +306,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                             .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
 
                     for (var solverName : List.of("solver1", "solver2")) {
                         var solver =
@@ -383,7 +382,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                             .toList());
                     problem.setEntityList(IntStream.range(1, 3)
                             .mapToObj(i -> new TestdataSpringEntity())
-                            .collect(Collectors.toList()));
+                            .toList());
                     for (var solverName : List.of("solver1", "solver2")) {
                         var solverManager =
                                 (SolverManager<TestdataSpringSolution, Long>) context.getBean(solverName);
@@ -432,7 +431,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                                 .toList());
                         problem.setEntityList(IntStream.range(1, 3)
                                 .mapToObj(i -> new TestdataSpringEntity())
-                                .collect(Collectors.toList()));
+                                .toList());
                         var solverJob = solverManager.solve(1L, problem);
                         var solution = solverJob.getFinalBestSolution();
                         assertThat(solution).isNotNull();

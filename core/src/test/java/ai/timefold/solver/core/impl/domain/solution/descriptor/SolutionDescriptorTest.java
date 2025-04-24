@@ -597,7 +597,7 @@ class SolutionDescriptorTest {
     @Test
     void testNoSolution() {
         assertThatCode(TestdataNoSolution::buildSolutionDescriptor)
-                .hasMessageContaining("but does not have a @PlanningSolution annotation");
+                .hasMessageContaining("is not annotated with @PlanningSolution but defines annotated members");
     }
 
     @Test
