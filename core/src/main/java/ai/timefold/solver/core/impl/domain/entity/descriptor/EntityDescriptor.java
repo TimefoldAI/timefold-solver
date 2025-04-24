@@ -10,7 +10,9 @@ import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescri
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -323,8 +325,29 @@ public class EntityDescriptor<Solution_> {
                 member, VARIABLE_ANNOTATION_CLASSES);
         if (variableAnnotationClass != null) {
             MemberAccessorFactory.MemberAccessorType memberAccessorType;
-            if (variableAnnotationClass.equals(CustomShadowVariable.class)
-                    || variableAnnotationClass.equals(ShadowVariable.class)
+            if (variableAnnotationClass.equals(ShadowVariable.class)) {
+                // Need to check only the single annotation version,
+                // since supplier variable can only be used with a single
+                // annotation.
+                ShadowVariable annotation;
+                if (member instanceof Field field) {
+                    annotation = field.getAnnotation(ShadowVariable.class);
+                } else if (member instanceof Method method) {
+                    annotation = method.getAnnotation(ShadowVariable.class);
+                } else {
+                    throw new IllegalStateException(
+                            "Member must be a field or a method, but was (%s).".formatted(member.getClass().getSimpleName()));
+                }
+                if (annotation == null) {
+                    throw new IllegalStateException("Impossible state: cannot get %s annotation on a %s annotated member (%s)."
+                            .formatted(ShadowVariable.class.getSimpleName(), ShadowVariable.class.getSimpleName(), member));
+                }
+                if (!annotation.supplierName().isEmpty()) {
+                    memberAccessorType = FIELD_OR_GETTER_METHOD_WITH_SETTER;
+                } else {
+                    memberAccessorType = FIELD_OR_GETTER_METHOD;
+                }
+            } else if (variableAnnotationClass.equals(CustomShadowVariable.class)
                     || variableAnnotationClass.equals(ShadowVariable.List.class)
                     || variableAnnotationClass.equals(PiggybackShadowVariable.class)
                     || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {

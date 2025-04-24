@@ -40,7 +40,9 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 import ai.timefold.solver.quarkus.TimefoldRecorder;
 import ai.timefold.solver.quarkus.bean.BeanUtil;
 import ai.timefold.solver.quarkus.bean.DefaultTimefoldBeanProvider;
@@ -56,6 +58,7 @@ import ai.timefold.solver.quarkus.devui.TimefoldDevUIRecorder;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
 
 import org.jboss.jandex.AnnotationInstance;
+import org.jboss.jandex.AnnotationTarget;
 import org.jboss.jandex.AnnotationValue;
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -780,6 +783,10 @@ class TimefoldProcessor {
         }
 
         timefoldBuildTimeConfig.getSolverConfig(solverName)
+                .flatMap(SolverBuildTimeConfig::enabledPreviewFeatures)
+                .ifPresent(solverConfig::setEnablePreviewFeatureSet);
+
+        timefoldBuildTimeConfig.getSolverConfig(solverName)
                 .flatMap(SolverBuildTimeConfig::nearbyDistanceMeterClass)
                 .ifPresent(clazz -> {
                     // We need to check the data type, as the Smallrye converter does not enforce it
@@ -948,6 +955,43 @@ class TimefoldProcessor {
             // Annotated members get their accessors generated.
             for (var dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
                 membersToGeneratedAccessorsForCollection.addAll(indexView.getAnnotationsWithRepeatable(dotName, indexView));
+            }
+            for (var shadowSources : indexView.getAnnotations(DotNames.SHADOW_SOURCES)) {
+                var rootType = shadowSources.target().asMethod().declaringClass();
+                var sources = shadowSources.value().asStringArray();
+                for (var source : sources) {
+                    var currentType = rootType;
+                    var parts = source.split(RootVariableSource.MEMBER_SEPERATOR_REGEX);
+                    for (var part : parts) {
+                        var memberName = part.endsWith(RootVariableSource.COLLECTION_REFERENCE_SUFFIX)
+                                ? part.substring(0, part.length() - RootVariableSource.COLLECTION_REFERENCE_SUFFIX.length())
+                                : part;
+                        ClassInfo nextType = null;
+                        AnnotationTarget target = null;
+                        var field = currentType.field(memberName);
+                        if (field == null) {
+                            var method = currentType
+                                    .method("get" + memberName.substring(0, 1).toUpperCase() + memberName.substring(1));
+                            if (method == null) {
+                                throw new IllegalStateException(
+                                        "Cannot find field or getter for (%s) in class (%s) which is referenced by the %s path (%s) with root entity (%s)."
+                                                .formatted(memberName, currentType.simpleName(),
+                                                        ShadowSources.class.getSimpleName(), source, rootType.simpleName()));
+                            }
+                            target = method;
+                            nextType = method.declaringClass();
+                        } else {
+                            target = field;
+                            nextType = field.declaringClass();
+                        }
+                        // Create a fake annotation for it
+                        membersToGeneratedAccessorsForCollection.add(
+                                AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
+                                        .value(source)
+                                        .buildWithTarget(target));
+                        currentType = nextType;
+                    }
+                }
             }
             membersToGeneratedAccessorsForCollection.removeIf(this::shouldIgnoreMember);
 

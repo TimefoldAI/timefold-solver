@@ -39,6 +39,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 import org.jboss.jandex.DotName;
 
@@ -84,6 +85,7 @@ public final class DotNames {
     static final DotName SHADOW_VARIABLE = DotName.createSimple(ShadowVariable.class.getName());
     static final DotName CASCADING_UPDATE_SHADOW_VARIABLE =
             DotName.createSimple(CascadingUpdateShadowVariable.class.getName());
+    static final DotName SHADOW_SOURCES = DotName.createSimple(ShadowSources.class.getName());
 
     static final DotName SOLVER_CONFIG = DotName.createSimple(SolverConfig.class.getName());
     static final DotName SOLVER_MANAGER_CONFIG = DotName.createSimple(SolverManagerConfig.class.getName());

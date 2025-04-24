@@ -1,9 +1,11 @@
 package ai.timefold.solver.quarkus.deployment.config;
 
 import java.util.Optional;
+import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
 
@@ -40,6 +42,13 @@ public interface SolverBuildTimeConfig {
     // Build time - visited by SolverConfig.visitReferencedClasses
     // which generates the constructor used by Quarkus
     Optional<Class<?>> nearbyDistanceMeterClass();
+
+    /**
+     * What preview features to enable.
+     * The list of available preview features should not
+     * be considered stable and may change between releases.
+     */
+    Optional<Set<PreviewFeature>> enabledPreviewFeatures();
 
     /**
      * What constraint stream implementation to use. Defaults to {@link ConstraintStreamImplType#BAVET}.

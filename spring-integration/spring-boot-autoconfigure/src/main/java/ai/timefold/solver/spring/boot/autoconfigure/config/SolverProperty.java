@@ -1,5 +1,6 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 public enum SolverProperty {
@@ -22,6 +24,8 @@ public enum SolverProperty {
     MOVE_THREAD_COUNT("move-thread-count", SolverProperties::setMoveThreadCount, Object::toString),
     DOMAIN_ACCESS_TYPE("domain-access-type", SolverProperties::setDomainAccessType,
             value -> DomainAccessType.valueOf(value.toString())),
+    ENABLED_PREVIEW_FEATURES("enabled-preview-features", SolverProperties::setEnabledPreviewFeatures,
+            value -> Arrays.stream(value.toString().split(",")).map(PreviewFeature::valueOf).toList()),
     NEARBY_DISTANCE_METER_CLASS("nearby-distance-meter-class", SolverProperties::setNearbyDistanceMeterClass,
             value -> {
                 try {

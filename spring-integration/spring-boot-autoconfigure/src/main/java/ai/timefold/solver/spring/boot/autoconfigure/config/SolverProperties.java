@@ -1,11 +1,13 @@
 package ai.timefold.solver.spring.boot.autoconfigure.config;
 
+import java.util.List;
 import java.util.Map;
 import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.springframework.boot.context.properties.NestedConfigurationProperty;
@@ -48,6 +50,8 @@ public class SolverProperties {
      * and all planning annotations must be on public members.
      */
     private DomainAccessType domainAccessType;
+
+    private List<PreviewFeature> enabledPreviewFeatures;
 
     /**
      * Enable the Nearby Selection quick configuration.
@@ -119,6 +123,14 @@ public class SolverProperties {
 
     public void setDomainAccessType(DomainAccessType domainAccessType) {
         this.domainAccessType = domainAccessType;
+    }
+
+    public List<PreviewFeature> getEnabledPreviewFeatures() {
+        return enabledPreviewFeatures;
+    }
+
+    public void setEnabledPreviewFeatures(List<PreviewFeature> enabledPreviewFeatures) {
+        this.enabledPreviewFeatures = enabledPreviewFeatures;
     }
 
     public Class<? extends NearbyDistanceMeter<?, ?>> getNearbyDistanceMeterClass() {
