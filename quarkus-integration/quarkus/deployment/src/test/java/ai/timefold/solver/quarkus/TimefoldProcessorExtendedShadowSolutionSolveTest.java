@@ -8,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
@@ -47,11 +46,10 @@ class TimefoldProcessorExtendedShadowSolutionSolveTest {
 
     @Test
     void solve() throws ExecutionException, InterruptedException {
-        TestdataExtendedShadowShadowEntity shadowEntity =
-                new TestdataExtendedShadowExtendedShadowEntity();
-        TestdataExtendedShadowSolution problem = new TestdataExtendedShadowSolution(shadowEntity);
-        SolverJob<TestdataExtendedShadowSolution, Long> solverJob = solverManager.solve(1L, problem);
-        TestdataExtendedShadowSolution solution = solverJob.getFinalBestSolution();
+        var shadowEntity = new TestdataExtendedShadowExtendedShadowEntity();
+        var problem = new TestdataExtendedShadowSolution(shadowEntity);
+        var solverJob = solverManager.solve(1L, problem);
+        var solution = solverJob.getFinalBestSolution();
         assertNotNull(solution);
         assertNotSame(solution, problem);
         assertEquals(0, solution.score.score());

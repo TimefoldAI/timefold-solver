@@ -55,10 +55,10 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     void restoreWorkingSolution() {
-        ExhaustiveSearchPhaseScope<TestdataSolution> phaseScope = mock(ExhaustiveSearchPhaseScope.class);
-        ExhaustiveSearchStepScope<TestdataSolution> lastCompletedStepScope = mock(ExhaustiveSearchStepScope.class);
+        var phaseScope = mock(ExhaustiveSearchPhaseScope.class);
+        var lastCompletedStepScope = mock(ExhaustiveSearchStepScope.class);
         when(phaseScope.getLastCompletedStepScope()).thenReturn(lastCompletedStepScope);
-        ExhaustiveSearchStepScope<TestdataSolution> stepScope = mock(ExhaustiveSearchStepScope.class);
+        var stepScope = mock(ExhaustiveSearchStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);

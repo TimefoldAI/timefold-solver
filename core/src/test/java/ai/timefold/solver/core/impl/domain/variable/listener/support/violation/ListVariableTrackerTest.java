@@ -19,10 +19,10 @@ class ListVariableTrackerTest {
 
     @Test
     void testMissingBeforeEvents() {
-        ListVariableTracker<TestdataListSolution> tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
         tracker.beforeListVariableChanged(null, a, 0, 1);
         tracker.afterListVariableChanged(null, a, 0, 1);
@@ -38,10 +38,10 @@ class ListVariableTrackerTest {
 
     @Test
     void testMissingAfterEvents() {
-        ListVariableTracker<TestdataListSolution> tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
         tracker.beforeListVariableChanged(null, a, 0, 1);
         tracker.afterListVariableChanged(null, a, 0, 1);
@@ -57,10 +57,10 @@ class ListVariableTrackerTest {
 
     @Test
     void testMissingBeforeAndAfterEvents() {
-        ListVariableTracker<TestdataListSolution> tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
         tracker.beforeListVariableChanged(null, a, 0, 1);
         tracker.afterListVariableChanged(null, a, 0, 1);
@@ -74,10 +74,10 @@ class ListVariableTrackerTest {
 
     @Test
     void testNoMissingEvents() {
-        ListVariableTracker<TestdataListSolution> tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
         tracker.beforeListVariableChanged(null, a, 0, 1);
         tracker.afterListVariableChanged(null, a, 0, 1);
@@ -91,10 +91,10 @@ class ListVariableTrackerTest {
 
     @Test
     void testEventsResetAfterCall() {
-        ListVariableTracker<TestdataListSolution> tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
         tracker.beforeListVariableChanged(null, a, 0, 1);
         tracker.afterListVariableChanged(null, a, 0, 1);
@@ -117,12 +117,11 @@ class ListVariableTrackerTest {
     @Test
     @SuppressWarnings({ "rawtypes", "unchecked" })
     void testDoesNotIncludeMissingEventsForOtherVariables() {
-        ListVariableTracker<TestdataListSolution> tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
-        VariableDescriptor<?> otherVariableDescriptor =
-                TestdataListEntityWithShadowHistory.buildVariableDescriptorForValueList();
+        var tracker = new ListVariableTracker<>(VARIABLE_DESCRIPTOR);
+        var otherVariableDescriptor = TestdataListEntityWithShadowHistory.buildVariableDescriptorForValueList();
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataListEntityWithShadowHistory b = new TestdataListEntityWithShadowHistory("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataListEntityWithShadowHistory("b");
 
         tracker.beforeListVariableChanged(null, a, 0, 1);
         tracker.afterListVariableChanged(null, a, 0, 1);

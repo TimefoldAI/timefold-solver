@@ -16,14 +16,14 @@ class GenuineVariableDescriptorTest {
 
     @Test
     void isReinitializable() {
-        GenuineVariableDescriptor<?> variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
         assertThat(variableDescriptor.isReinitializable(new TestdataEntity("a", new TestdataValue()))).isFalse();
         assertThat(variableDescriptor.isReinitializable(new TestdataEntity("b", null))).isTrue();
     }
 
     @Test
     void isReinitializable_allowsUnassigned() {
-        GenuineVariableDescriptor<?> variableDescriptor = TestdataAllowsUnassignedEntity.buildVariableDescriptorForValue();
+        var variableDescriptor = TestdataAllowsUnassignedEntity.buildVariableDescriptorForValue();
         assertThat(variableDescriptor.isReinitializable(new TestdataAllowsUnassignedEntity("a", new TestdataValue())))
                 .isFalse();
         assertThat(variableDescriptor.isReinitializable(new TestdataAllowsUnassignedEntity("b", null))).isTrue();
@@ -31,7 +31,7 @@ class GenuineVariableDescriptorTest {
 
     @Test
     void isReinitializable_list() {
-        GenuineVariableDescriptor<?> variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
+        var variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
         assertThat(variableDescriptor.isReinitializable(new TestdataListEntity("a", new TestdataListValue()))).isFalse();
         assertThat(variableDescriptor.isReinitializable(new TestdataListEntity("b", new ArrayList<>()))).isFalse();
     }
