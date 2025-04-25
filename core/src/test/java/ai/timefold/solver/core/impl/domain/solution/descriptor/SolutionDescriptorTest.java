@@ -14,6 +14,7 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
+import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -62,7 +63,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEnt
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.CodeAssertableArrayList;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
-import ai.timefold.solver.core.impl.util.MathUtils;
 
 import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;

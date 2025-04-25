@@ -22,10 +22,10 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
-import ai.timefold.solver.core.impl.util.Pair;
 
 import org.junit.jupiter.api.TestTemplate;
 

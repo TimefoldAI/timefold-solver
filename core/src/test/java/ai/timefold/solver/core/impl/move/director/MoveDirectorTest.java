@@ -29,6 +29,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.Li
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -44,7 +45,6 @@ import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullMultiSwapListMove;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 import org.junit.jupiter.api.Test;
 

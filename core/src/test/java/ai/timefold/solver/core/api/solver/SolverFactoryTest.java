@@ -26,8 +26,8 @@ import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testutil.PlannerTestUtils;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;

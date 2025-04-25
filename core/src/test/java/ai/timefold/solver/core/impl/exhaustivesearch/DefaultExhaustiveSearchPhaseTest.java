@@ -34,6 +34,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -41,10 +43,8 @@ import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
-import ai.timefold.solver.core.testutil.PlannerTestUtils;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

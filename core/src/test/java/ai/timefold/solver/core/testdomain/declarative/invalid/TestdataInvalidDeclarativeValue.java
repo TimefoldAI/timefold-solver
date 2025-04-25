@@ -5,8 +5,8 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
 public class TestdataInvalidDeclarativeValue extends TestdataObject {

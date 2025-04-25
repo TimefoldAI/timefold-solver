@@ -64,6 +64,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -93,11 +95,9 @@ import ai.timefold.solver.core.testdomain.multientity.TestdataMultiEntitySolutio
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
-import ai.timefold.solver.core.testutil.PlannerTestUtils;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;

@@ -38,8 +38,8 @@ import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAll
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
-import ai.timefold.solver.core.testutil.PlannerTestUtils;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

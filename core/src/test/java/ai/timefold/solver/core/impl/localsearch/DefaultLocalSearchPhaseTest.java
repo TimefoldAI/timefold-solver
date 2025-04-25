@@ -34,8 +34,8 @@ import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
-import ai.timefold.solver.core.testutil.PlannerTestUtils;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

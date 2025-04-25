@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -26,7 +27,6 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.testutil.TestRandom;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
 
 import org.junit.jupiter.api.Test;
 

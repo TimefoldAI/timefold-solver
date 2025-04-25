@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -40,7 +41,6 @@ import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
-import ai.timefold.solver.core.impl.util.Pair;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.params.ParameterizedTest;

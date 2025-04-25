@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.equals.TestdataEqualsByCodeEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.equals.TestdataEqualsByCodeEntity;
@@ -17,7 +18,6 @@ import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListEa
 import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListEntity;
 import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListSolution;
 import ai.timefold.solver.core.testdomain.equals.list.TestdataEqualsByCodeListValue;
-import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
