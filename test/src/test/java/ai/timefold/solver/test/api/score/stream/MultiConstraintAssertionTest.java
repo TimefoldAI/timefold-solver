@@ -23,10 +23,10 @@ import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMu
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSecondEntity;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierConstraintProvider;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierExtendedSolution;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierFirstEntity;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierSecondEntity;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;

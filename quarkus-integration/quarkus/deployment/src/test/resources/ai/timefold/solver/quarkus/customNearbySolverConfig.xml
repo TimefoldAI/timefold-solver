@@ -4,5 +4,5 @@
     <termination>
         <secondsSpentLimit>3</secondsSpentLimit>
     </termination>
-    <nearbyDistanceMeterClass>ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter</nearbyDistanceMeterClass>
+    <nearbyDistanceMeterClass>ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter</nearbyDistanceMeterClass>
 </solver>

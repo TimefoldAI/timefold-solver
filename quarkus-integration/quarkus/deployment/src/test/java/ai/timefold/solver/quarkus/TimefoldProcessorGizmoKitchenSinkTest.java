@@ -19,10 +19,10 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
-import ai.timefold.solver.quarkus.testdata.gizmo.DummyConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.gizmo.DummyVariableListener;
-import ai.timefold.solver.quarkus.testdata.gizmo.TestDataKitchenSinkEntity;
-import ai.timefold.solver.quarkus.testdata.gizmo.TestDataKitchenSinkSolution;
+import ai.timefold.solver.quarkus.testdomain.gizmo.DummyConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
+import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkEntity;
+import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

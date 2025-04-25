@@ -17,7 +17,7 @@ import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotate
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowShadowEntity;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowSolution;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowVariable;
-import ai.timefold.solver.quarkus.testdata.inheritance.solution.TestdataExtendedShadowSolutionConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.inheritance.solution.TestdataExtendedShadowSolutionConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

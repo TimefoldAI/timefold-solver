@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <solutionClass>ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution</solutionClass>
-  <entityClass>ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity</entityClass>
+  <solutionClass>ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution</solutionClass>
+  <entityClass>ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity</entityClass>
   <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
   <termination>
     <secondsSpentLimit>1</secondsSpentLimit>

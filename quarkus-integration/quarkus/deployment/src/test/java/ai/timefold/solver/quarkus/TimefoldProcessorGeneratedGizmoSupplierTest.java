@@ -29,7 +29,7 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
-import ai.timefold.solver.quarkus.testdata.gizmo.DummyVariableListener;
+import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

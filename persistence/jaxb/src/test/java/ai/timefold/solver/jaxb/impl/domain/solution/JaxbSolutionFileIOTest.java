@@ -8,9 +8,9 @@ import java.io.File;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.jaxb.impl.testdata.domain.JaxbTestdataEntity;
-import ai.timefold.solver.jaxb.impl.testdata.domain.JaxbTestdataSolution;
-import ai.timefold.solver.jaxb.impl.testdata.domain.JaxbTestdataValue;
+import ai.timefold.solver.jaxb.testdomain.JaxbTestdataEntity;
+import ai.timefold.solver.jaxb.testdomain.JaxbTestdataSolution;
+import ai.timefold.solver.jaxb.testdomain.JaxbTestdataValue;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

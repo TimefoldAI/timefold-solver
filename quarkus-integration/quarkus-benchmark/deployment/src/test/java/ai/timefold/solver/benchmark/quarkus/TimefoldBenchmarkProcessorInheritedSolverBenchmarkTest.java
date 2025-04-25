@@ -6,10 +6,10 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
-import ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusOtherEntity;
-import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.benchmark.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.benchmark.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.benchmark.quarkus.testdomain.normal.domain.TestdataQuarkusOtherEntity;
+import ai.timefold.solver.benchmark.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;

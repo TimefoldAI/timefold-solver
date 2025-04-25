@@ -2,7 +2,7 @@
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
     <solutionClass>
-        ai.timefold.solver.quarkus.testdata.inheritance.solution.TestdataBothAnnotatedNoRawListExtendedSolution
+        ai.timefold.solver.quarkus.testdomain.inheritance.solution.TestdataBothAnnotatedNoRawListExtendedSolution
     </solutionClass>
     <entityClass>
         ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity
