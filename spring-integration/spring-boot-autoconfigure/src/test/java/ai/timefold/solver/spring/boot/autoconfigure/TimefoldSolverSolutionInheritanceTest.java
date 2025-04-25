@@ -106,7 +106,7 @@ class TimefoldSolverSolutionInheritanceTest {
                     var problem = TestdataBothAnnotatedExtendedSolution.generateSolution(3, 2);
                     var solution = (TestdataBothAnnotatedExtendedSolution) solverFactory.buildSolver().solve(problem);
                     assertNotNull(solution);
-                    assertThat(solution.getScore()).isEqualTo(SimpleScore.of(8));
+                    assertThat(solution.getScore()).isEqualTo(SimpleScore.of(16));
                 }))
                 .doesNotThrowAnyException();
     }

@@ -46,6 +46,7 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
@@ -972,14 +973,14 @@ public abstract class AbstractUniConstraintStreamTest
         var v2 = new TestdataValue("v2");
         solution.setValueList(List.of(v1, v2));
         var cat = new TestdataOnlyBaseAnnotatedChildEntity("Cat", v1);
-        var animal = new TestdataEntity("Animal", v1);
+        var animal = new TestdataOnlyBaseAnnotatedBaseEntity("Animal", v1);
         var dog = new TestdataOnlyBaseAnnotatedChildEntity("Dog", v1);
         solution.setEntityList(List.of(cat, animal, dog));
 
         InnerScoreDirector<TestdataOnlyBaseAnnotatedExtendedSolution, SimpleScore> scoreDirector = buildScoreDirector(
                 TestdataOnlyBaseAnnotatedExtendedSolution.buildSolutionDescriptor(),
                 factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
+                        factory.forEach(TestdataOnlyBaseAnnotatedBaseEntity.class)
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint("superclassConstraint"),
                         factory.forEach(TestdataOnlyBaseAnnotatedChildEntity.class)

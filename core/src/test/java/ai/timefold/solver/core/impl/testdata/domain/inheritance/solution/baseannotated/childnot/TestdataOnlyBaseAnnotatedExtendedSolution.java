@@ -7,14 +7,13 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
 public class TestdataOnlyBaseAnnotatedExtendedSolution extends TestdataOnlyBaseAnnotatedSolution {
 
     public static SolutionDescriptor<TestdataOnlyBaseAnnotatedExtendedSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataOnlyBaseAnnotatedExtendedSolution.class,
-                TestdataEntity.class, TestdataOnlyBaseAnnotatedChildEntity.class);
+                TestdataOnlyBaseAnnotatedBaseEntity.class, TestdataOnlyBaseAnnotatedChildEntity.class);
     }
 
     public static TestdataOnlyBaseAnnotatedExtendedSolution generateSolution(int valueListSize, int entityListSize) {

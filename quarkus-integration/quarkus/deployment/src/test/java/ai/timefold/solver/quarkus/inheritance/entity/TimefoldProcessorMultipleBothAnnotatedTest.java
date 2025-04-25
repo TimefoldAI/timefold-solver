@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestMultipleBothAnnotatedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBaseEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
@@ -24,7 +24,7 @@ class TimefoldProcessorMultipleBothAnnotatedTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestMultipleBothAnnotatedConstraintProvider.class, TestdataMultipleBothAnnotatedSolution.class,
                             TestdataMultipleBothAnnotatedChildEntity.class, TestdataBothAnnotatedChildEntity.class,
-                            TestdataBaseEntity.class))
+                            TestdataEntity.class))
             .assertException(exception -> {
                 assertEquals(IllegalStateException.class, exception.getClass());
                 assertTrue(

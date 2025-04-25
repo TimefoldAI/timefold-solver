@@ -2,13 +2,13 @@
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
     <solutionClass>
-        ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution
+        ai.timefold.solver.quarkus.testdata.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedNoRawListExtendedSolution
     </solutionClass>
     <entityClass>
         ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity
     </entityClass>
     <entityClass>
-        ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedBaseEntity
+        ai.timefold.solver.core.impl.testdata.domain.TestdataEntity
     </entityClass>
     <scoreDirectorFactory>
         <constraintProviderClass>

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Fail.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedBaseEntity;
+import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedConstraintProvider;
@@ -26,7 +26,7 @@ class TimefoldProcessorBothClassesAnnotatedTest {
                     .addClasses(TestdataBothAnnotatedExtendedConstraintProvider.class,
                             TestdataBothAnnotatedConstraintProvider.class, TestdataBothAnnotatedExtendedSolution.class,
                             TestdataBothAnnotatedSolution.class, TestdataBothAnnotatedChildEntity.class,
-                            TestdataBothAnnotatedBaseEntity.class))
+                            TestdataEntity.class))
             .assertException(exception -> {
                 assertEquals(IllegalStateException.class, exception.getClass());
                 assertTrue(exception.getMessage().contains("Multiple classes"));

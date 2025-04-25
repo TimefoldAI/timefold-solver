@@ -49,6 +49,7 @@ import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExten
 import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowShadowEntity;
 import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowSolution;
 import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowVariable;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.thirdparty.TestdataExtendedThirdPartyEntity;
@@ -376,6 +377,15 @@ public abstract class AbstractSolutionClonerTest {
         assertCode("1", cloneB.getValue());
     }
 
+    private void assertEntityClone(TestdataOnlyBaseAnnotatedBaseEntity originalEntity,
+            TestdataOnlyBaseAnnotatedBaseEntity cloneEntity,
+            String entityCode, String valueCode) {
+        assertThat(cloneEntity).isNotSameAs(originalEntity);
+        assertCode(entityCode, originalEntity);
+        assertCode(entityCode, cloneEntity);
+        assertCode(valueCode, cloneEntity.getValue());
+    }
+
     private void assertEntityClone(TestdataEntity originalEntity, TestdataEntity cloneEntity,
             String entityCode, String valueCode) {
         assertThat(cloneEntity).isNotSameAs(originalEntity);
@@ -564,7 +574,7 @@ public abstract class AbstractSolutionClonerTest {
         Comparator<TestdataSetBasedEntity> entityComparator = (a1, b1) -> {
             return b1.getCode().compareTo(a1.getCode()); // Reverse alphabetic
         };
-        var originalEntitySet = new TreeSet<TestdataSetBasedEntity>(entityComparator);
+        var originalEntitySet = new TreeSet<>(entityComparator);
         originalEntitySet.addAll(Arrays.asList(a, b, c, d));
         original.setEntitySet(originalEntitySet);
 

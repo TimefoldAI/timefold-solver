@@ -7,7 +7,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
@@ -17,7 +16,7 @@ public class TestdataAutoDiscoverUnannotatedEntitySolution extends TestdataObjec
 
     public static SolutionDescriptor<TestdataAutoDiscoverUnannotatedEntitySolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
-                TestdataAutoDiscoverUnannotatedEntitySolution.class, TestdataEntity.class);
+                TestdataAutoDiscoverUnannotatedEntitySolution.class, TestdataOnlyBaseAnnotatedChildEntity.class);
     }
 
     private TestdataObject singleProblemFactField;

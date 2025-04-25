@@ -10,7 +10,6 @@ import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
@@ -18,14 +17,15 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 public class TestdataOnlyBaseAnnotatedSolution extends TestdataObject {
 
     public static SolutionDescriptor<TestdataOnlyBaseAnnotatedSolution> buildBaseSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataOnlyBaseAnnotatedSolution.class, TestdataEntity.class);
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataOnlyBaseAnnotatedSolution.class,
+                TestdataOnlyBaseAnnotatedBaseEntity.class);
     }
 
     @ProblemFactCollectionProperty
     @ValueRangeProvider(id = "valueRange")
     private List<TestdataValue> valueList;
     @PlanningEntityCollectionProperty
-    private List<TestdataEntity> entityList;
+    private List<TestdataOnlyBaseAnnotatedBaseEntity> entityList;
     @PlanningScore
     private SimpleScore score;
     private ConstraintWeightOverrides<SimpleScore> constraintWeightOverrides;
@@ -45,12 +45,12 @@ public class TestdataOnlyBaseAnnotatedSolution extends TestdataObject {
         this.valueList = valueList;
     }
 
-    public List<? extends TestdataEntity> getEntityList() {
+    public List<? extends TestdataOnlyBaseAnnotatedBaseEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<? extends TestdataEntity> entityList) {
-        this.entityList = (List<TestdataEntity>) entityList;
+    public void setEntityList(List<? extends TestdataOnlyBaseAnnotatedBaseEntity> entityList) {
+        this.entityList = (List<TestdataOnlyBaseAnnotatedBaseEntity>) entityList;
     }
 
     public SimpleScore getScore() {

@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childnot;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 
-public class TestdataOnlyBaseAnnotatedChildEntity extends TestdataEntity {
+public class TestdataOnlyBaseAnnotatedChildEntity extends TestdataOnlyBaseAnnotatedBaseEntity {
 
     private Object extraObject;
 
