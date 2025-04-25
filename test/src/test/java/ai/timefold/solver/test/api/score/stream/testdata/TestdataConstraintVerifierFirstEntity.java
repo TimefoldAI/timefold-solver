@@ -2,8 +2,8 @@ package ai.timefold.solver.test.api.score.stream.testdata;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity
 public final class TestdataConstraintVerifierFirstEntity extends TestdataObject {

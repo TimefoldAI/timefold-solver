@@ -26,16 +26,16 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentEntity;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentValue;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderEntity;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
+import ai.timefold.solver.core.testdomain.shadow.order.TestdataShadowVariableOrderEntity;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.junit.jupiter.api.Test;

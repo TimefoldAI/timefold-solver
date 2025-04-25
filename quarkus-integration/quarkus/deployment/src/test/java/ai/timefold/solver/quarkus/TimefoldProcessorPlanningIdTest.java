@@ -7,7 +7,7 @@ import java.util.stream.IntStream;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
+import ai.timefold.solver.core.testconstraint.DummyConstraintProvider;
 import ai.timefold.solver.quarkus.testdata.superclass.domain.TestdataEntity;
 import ai.timefold.solver.quarkus.testdata.superclass.domain.TestdataSolution;
 

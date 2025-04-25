@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.domain.variable.cascade;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single.TestdataSingleCascadingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single.TestdataSingleCascadingSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrongcascade.TestdataCascadingInvalidField;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrongcascade.TestdataCascadingInvalidPiggyback;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrongcascade.TestdataCascadingInvalidSource;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrongcascade.TestdataCascadingWrongMethod;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingEntity;
+import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingSolution;
+import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidField;
+import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidPiggyback;
+import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidSource;
+import ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingWrongMethod;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

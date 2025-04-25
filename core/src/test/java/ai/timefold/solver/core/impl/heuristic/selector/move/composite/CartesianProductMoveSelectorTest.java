@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.DO_NOT_ASSERT_SIZE;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfMoveSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertEmptyNeverEndingMoveSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerAssert.DO_NOT_ASSERT_SIZE;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -23,8 +23,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 
 import org.junit.jupiter.api.Test;
 

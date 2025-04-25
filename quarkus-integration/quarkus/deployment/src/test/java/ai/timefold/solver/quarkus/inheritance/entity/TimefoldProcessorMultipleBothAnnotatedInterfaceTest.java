@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childtoo.TestMultipleBothAnnotatedInterfaceConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childtoo.TestMultipleBothAnnotatedInterfaceConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childtoo.TestdataMultipleBothAnnotatedInterfaceSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

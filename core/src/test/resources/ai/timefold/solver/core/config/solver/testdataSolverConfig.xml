@@ -1,7 +1,7 @@
 <solver>
-  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
-  <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
+  <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+  <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
   <scoreDirectorFactory>
-    <easyScoreCalculatorClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator</easyScoreCalculatorClass>
+    <easyScoreCalculatorClass>ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator</easyScoreCalculatorClass>
   </scoreDirectorFactory>
 </solver>

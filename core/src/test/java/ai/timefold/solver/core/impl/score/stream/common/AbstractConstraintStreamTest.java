@@ -22,7 +22,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.extension.ExtendWith;

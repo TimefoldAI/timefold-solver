@@ -4,11 +4,11 @@ import static org.assertj.core.api.Fail.fail;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestMultipleBothAnnotatedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedSecondChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestMultipleBothAnnotatedConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedSecondChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.childtoo.TestdataMultipleBothAnnotatedSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

@@ -8,13 +8,13 @@ import static org.mockito.Mockito.when;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntityGroup;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValue;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValueGroup;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
 
 import org.junit.jupiter.api.Test;
 

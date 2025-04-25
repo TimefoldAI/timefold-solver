@@ -2,7 +2,7 @@ package ai.timefold.solver.jaxb.impl.testdata.domain;
 
 import jakarta.xml.bind.annotation.XmlID;
 
-import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
+import ai.timefold.solver.core.testutil.CodeAssertable;
 
 public abstract class JaxbTestdataObject implements CodeAssertable {
 

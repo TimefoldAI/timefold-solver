@@ -15,8 +15,8 @@
     <name>First Fit</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -63,8 +63,8 @@
     <name>First Fit Decreasing</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -111,8 +111,8 @@
     <name>Tabu Search</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -177,8 +177,8 @@
     <name>Late Acceptance</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -243,8 +243,8 @@
     <name>Tabu Search Nearby</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>
@@ -331,8 +331,8 @@
     <name>Late Acceptance Nearby</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity</entityClass>
       <scoreDirectorFactory>
         <incrementalScoreCalculatorClass>ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResultTest$DummyIncrementalScoreCalculator</incrementalScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>

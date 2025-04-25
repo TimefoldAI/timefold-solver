@@ -12,10 +12,10 @@ import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorFactory;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.reflect.accessmodifier.TestdataVisibilityModifierSolution;
-import ai.timefold.solver.core.impl.testdata.domain.reflect.field.TestdataFieldAnnotatedEntity;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.reflect.accessmodifier.TestdataVisibilityModifierSolution;
+import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedEntity;
 
 import org.junit.jupiter.api.Test;
 

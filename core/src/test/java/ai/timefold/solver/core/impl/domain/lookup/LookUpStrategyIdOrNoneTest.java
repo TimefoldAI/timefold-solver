@@ -6,11 +6,11 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectIntegerId;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectIntegerIdSubclass;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectMultipleIds;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectNoId;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectPrimitiveIntId;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectIntegerId;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectIntegerIdSubclass;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectMultipleIds;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectNoId;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectPrimitiveIntId;
 
 import org.junit.jupiter.api.Test;
 

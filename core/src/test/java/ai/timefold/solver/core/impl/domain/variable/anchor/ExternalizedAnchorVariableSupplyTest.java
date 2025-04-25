@@ -9,9 +9,9 @@ import java.util.Arrays;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 
 import org.junit.jupiter.api.Test;
 

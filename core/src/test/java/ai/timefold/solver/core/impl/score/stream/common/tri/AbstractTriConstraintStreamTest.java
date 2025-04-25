@@ -40,17 +40,17 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleBigDecimalScoreSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleLongScoreSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntityGroup;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishExtra;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValue;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValueGroup;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.score.TestdataSimpleBigDecimalScoreSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataSimpleLongScoreSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishExtra;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
 
 import org.junit.jupiter.api.TestTemplate;
 

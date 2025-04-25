@@ -4,8 +4,8 @@ import java.util.Collection;
 import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testutil.CodeAssertable;
 
 public class DummyMove extends AbstractMove<TestdataSolution> implements CodeAssertable {
 

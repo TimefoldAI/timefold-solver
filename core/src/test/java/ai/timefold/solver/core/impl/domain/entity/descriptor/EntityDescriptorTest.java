@@ -5,14 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.noplanningvar.TestdataNoVariableSolution;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.immutable.TestdataSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.invalid.noplanningvar.TestdataNoVariableSolution;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
+import ai.timefold.solver.core.testdomain.pinned.extended.TestdataExtendedPinnedEntity;
+import ai.timefold.solver.core.testdomain.pinned.extended.TestdataExtendedPinnedSolution;
 
 import org.junit.jupiter.api.Test;
 

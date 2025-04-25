@@ -1,6 +1,6 @@
 package ai.timefold.solver.jackson.impl.testdata.domain;
 
-import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
+import ai.timefold.solver.core.testutil.CodeAssertable;
 
 public abstract class JacksonTestdataObject implements CodeAssertable {
 

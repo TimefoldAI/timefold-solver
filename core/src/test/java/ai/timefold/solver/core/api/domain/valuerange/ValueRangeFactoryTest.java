@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.TestdataValueRangeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.TestdataValueRangeSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeEntity;
+import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

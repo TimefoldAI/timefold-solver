@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.mixed.TestMultipleMixedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.mixed.TestdataMultipleMixedBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.mixed.TestdataMultipleMixedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.classes.mixed.TestdataMultipleMixedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.mixed.TestMultipleMixedConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.mixed.TestdataMultipleMixedBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.mixed.TestdataMultipleMixedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.classes.mixed.TestdataMultipleMixedSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

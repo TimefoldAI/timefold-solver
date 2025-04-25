@@ -9,7 +9,7 @@ import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.toMa
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.toSet;
 import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
 import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.asMap;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.asMap;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.Arrays;
@@ -24,9 +24,9 @@ import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractAdvancedGroupByConstraintStreamTest;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntityGroup;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
 import ai.timefold.solver.core.impl.util.Pair;
 
 import org.junit.jupiter.api.TestTemplate;

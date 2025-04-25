@@ -6,7 +6,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.testutil.TestRandom;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

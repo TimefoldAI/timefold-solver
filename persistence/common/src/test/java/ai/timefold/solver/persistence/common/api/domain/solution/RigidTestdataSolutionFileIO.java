@@ -3,9 +3,9 @@ package ai.timefold.solver.persistence.common.api.domain.solution;
 import java.io.File;
 import java.util.Arrays;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 
 public class RigidTestdataSolutionFileIO implements SolutionFileIO<TestdataSolution> {
 

@@ -4,10 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfiguration;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.extended.TestdataExtendedConstraintConfiguration;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.extended.TestdataExtendedConstraintConfigurationSolution;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfiguration;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfigurationSolution;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.extended.TestdataExtendedConstraintConfiguration;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.extended.TestdataExtendedConstraintConfigurationSolution;
 
 import org.junit.jupiter.api.Test;
 

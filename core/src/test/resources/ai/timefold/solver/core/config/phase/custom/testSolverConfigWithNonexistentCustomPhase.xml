@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <solver>
-    <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
-    <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
+    <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+    <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
     <scoreDirectorFactory>
         <easyScoreCalculatorClass>ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator</easyScoreCalculatorClass>
         <initializingScoreTrend>ONLY_DOWN</initializingScoreTrend>

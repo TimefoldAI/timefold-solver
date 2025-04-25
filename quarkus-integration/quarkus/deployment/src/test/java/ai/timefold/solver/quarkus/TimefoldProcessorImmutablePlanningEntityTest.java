@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordEntity;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordValue;
+import ai.timefold.solver.core.testconstraint.DummyConstraintProvider;
+import ai.timefold.solver.core.testdomain.immutable.TestdataSolution;
+import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordEntity;
+import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordValue;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

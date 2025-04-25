@@ -13,13 +13,13 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedSolution;
-import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
+import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.testutil.AbstractMeterTest;
 
 import org.junit.jupiter.api.Test;
 

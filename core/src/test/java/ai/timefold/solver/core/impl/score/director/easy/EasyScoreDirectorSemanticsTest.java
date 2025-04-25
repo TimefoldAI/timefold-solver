@@ -12,13 +12,13 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeightEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfigurationSolution;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintWeightEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;

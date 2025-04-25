@@ -34,10 +34,10 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.comparable.TestdataDifficultyComparingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.comparable.TestdataDifficultyComparingSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.comparable.TestdataDifficultyComparingEntity;
+import ai.timefold.solver.core.testdomain.comparable.TestdataDifficultyComparingSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.params.ParameterizedTest;

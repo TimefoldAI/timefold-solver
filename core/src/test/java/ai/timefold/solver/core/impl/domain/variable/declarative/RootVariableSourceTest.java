@@ -12,9 +12,9 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.invalid.TestdataInvalidDeclarativeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.invalid.TestdataInvalidDeclarativeSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.invalid.TestdataInvalidDeclarativeValue;
+import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeEntity;
+import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeSolution;
+import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeValue;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;

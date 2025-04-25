@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.preview.api.variable.declarative.concurrent_values;
 
-import static ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentValue.BASE_START_TIME;
+import static ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue.BASE_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -19,11 +19,11 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableN
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentAssertionEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentEntity;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentValue;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentAssertionEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentConstraintProvider;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;

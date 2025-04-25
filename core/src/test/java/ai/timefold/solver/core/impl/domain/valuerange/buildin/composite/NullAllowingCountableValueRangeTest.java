@@ -1,14 +1,14 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllElementsOfIterator;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertElementsOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
 
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
-import ai.timefold.solver.core.impl.testutil.TestRandom;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 

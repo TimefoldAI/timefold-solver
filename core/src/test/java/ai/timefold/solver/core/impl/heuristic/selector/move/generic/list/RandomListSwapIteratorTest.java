@@ -1,18 +1,18 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockEntityIndependentValueSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfIterator;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntityIndependentValueSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 

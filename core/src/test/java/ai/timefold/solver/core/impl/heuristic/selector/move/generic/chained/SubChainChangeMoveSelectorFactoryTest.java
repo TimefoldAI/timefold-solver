@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained;
 
-import static ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution.buildSolutionDescriptor;
+import static ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution.buildSolutionDescriptor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -9,7 +9,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicyTestUtils;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 
 import org.junit.jupiter.api.Test;
 

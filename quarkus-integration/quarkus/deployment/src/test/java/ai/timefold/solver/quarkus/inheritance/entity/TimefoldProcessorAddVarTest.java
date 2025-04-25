@@ -7,10 +7,10 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.addvar.TestAddVarConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestAddVarConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

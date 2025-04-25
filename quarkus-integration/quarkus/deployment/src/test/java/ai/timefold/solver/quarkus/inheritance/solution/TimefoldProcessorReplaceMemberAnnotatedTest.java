@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberExtendedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.replacemember.TestdataReplaceMemberSolution;
 import ai.timefold.solver.quarkus.testdata.superclass.constraints.DummyConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;

@@ -5,14 +5,14 @@
         ai.timefold.solver.quarkus.testdata.inheritance.solution.TestdataBothAnnotatedNoRawListExtendedSolution
     </solutionClass>
     <entityClass>
-        ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity
+        ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity
     </entityClass>
     <entityClass>
-        ai.timefold.solver.core.impl.testdata.domain.TestdataEntity
+        ai.timefold.solver.core.testdomain.TestdataEntity
     </entityClass>
     <scoreDirectorFactory>
         <constraintProviderClass>
-            ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedConstraintProvider
+            ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedConstraintProvider
         </constraintProviderClass>
     </scoreDirectorFactory>
 </solver>

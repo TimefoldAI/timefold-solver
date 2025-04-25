@@ -10,19 +10,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.cyclic.TestdataSevenNonCyclicShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.cyclic.invalid.TestdataCyclicReferencedShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.cyclic.invalid.TestdataCyclicShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.extended.TestdataExtendedShadowedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.extended.TestdataExtendedShadowedParentEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.extended.TestdataExtendedShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedEntityUniqueEvents;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wronglistener.TestdataWrongBasicShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wronglistener.TestdataWrongListShadowEntity;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.TestdataSevenNonCyclicShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicReferencedShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataExtendedShadowedChildEntity;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataExtendedShadowedParentEntity;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataExtendedShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntity;
+import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntityUniqueEvents;
+import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.wronglistener.TestdataWrongBasicShadowEntity;
+import ai.timefold.solver.core.testdomain.shadow.wronglistener.TestdataWrongListShadowEntity;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

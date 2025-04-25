@@ -14,9 +14,9 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableListener;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedAnchor;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.InOrder;

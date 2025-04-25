@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCode;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
@@ -34,15 +34,15 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
+import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
+import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 
