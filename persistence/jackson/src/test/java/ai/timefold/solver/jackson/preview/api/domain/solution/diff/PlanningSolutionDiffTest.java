@@ -46,7 +46,7 @@ class PlanningSolutionDiffTest {
                                    "code": "Generated Value 1"
                                  }
                                },
-                               "entity_class": "ai.timefold.solver.core.impl.testdata.domain.equals.TestdataEqualsByCodeEntity",
+                               "entity_class": "ai.timefold.solver.core.testdomain.equals.TestdataEqualsByCodeEntity",
                                "variable_diffs": [
                                  {
                                    "name": "value",

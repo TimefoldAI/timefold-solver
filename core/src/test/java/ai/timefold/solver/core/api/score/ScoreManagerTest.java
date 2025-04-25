@@ -41,7 +41,7 @@ public class ScoreManagerTest {
             softly.assertThat(scoreExplanation.getScore()).isNotNull();
             softly.assertThat(scoreExplanation.getSummary()).isNotBlank();
             softly.assertThat(scoreExplanation.getConstraintMatchTotalMap())
-                    .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain/testConstraint");
+                    .containsOnlyKeys("ai.timefold.solver.core.testdomain/testConstraint");
             softly.assertThat(scoreExplanation.getIndictmentMap())
                     .containsOnlyKeys(solution.getEntityList().toArray());
 

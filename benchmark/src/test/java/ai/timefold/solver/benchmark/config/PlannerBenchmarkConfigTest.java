@@ -68,8 +68,8 @@ class PlannerBenchmarkConfigTest {
                 + "    <name>Entity Tabu Search</name>\n"
                 + "    <solver>\n"
                 // Intentionally wrong to simulate a typo.
-                + "      <solutionKlazz>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionKlazz>\n"
-                + "      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>\n"
+                + "      <solutionKlazz>ai.timefold.solver.core.testdomain.TestdataSolution</solutionKlazz>\n"
+                + "      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>\n"
                 + "    </solver>\n"
                 + "    <problemBenchmarks>\n"
                 + "      <solutionFileIOClass>" + TestdataSolutionFileIO.class.getCanonicalName() + "</solutionFileIOClass>\n"

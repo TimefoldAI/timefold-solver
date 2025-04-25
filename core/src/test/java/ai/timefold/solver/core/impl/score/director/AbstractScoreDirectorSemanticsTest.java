@@ -148,7 +148,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
                 softly.assertThat(score1.fullyAssigned()).isTrue();
                 softly.assertThat(score1.raw().score()).isEqualTo(1);
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
-                        .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
+                        .containsOnlyKeys("ai.timefold.solver.core.testdomain.constraintconfiguration/First weight");
             });
 
             // Make sure nothing matches, but the constraint is still present.
@@ -161,7 +161,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
                 softly.assertThat(score2.fullyAssigned()).isFalse();
                 softly.assertThat(score2.raw().score()).isZero();
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
-                        .containsOnlyKeys("ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration/First weight");
+                        .containsOnlyKeys("ai.timefold.solver.core.testdomain.constraintconfiguration/First weight");
             });
         }
     }

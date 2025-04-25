@@ -115,7 +115,7 @@ class SolverConfigTest {
 
     @Test
     void whiteCharsInClassName() {
-        var solutionClassName = "ai.timefold.solver.core.impl.testdata.domain.TestdataSolution";
+        var solutionClassName = "ai.timefold.solver.core.testdomain.TestdataSolution";
         // Intentionally included white chars around the class name.
         var xmlFragment = """
                 <solver xmlns="https://timefold.ai/xsd/solver">
