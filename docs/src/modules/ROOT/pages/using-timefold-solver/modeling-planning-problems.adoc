@@ -991,7 +991,7 @@ This approach allows access to all the fields and methods of the declaring class
 This feature is currently in xref:/upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview] and may be subject to change.
 ====
 
-To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specifying the name of a supplier method.
+To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specify the name of a supplier method.
 Annotate the supplier method with `@ShadowSources`, listing all the planning variables (genuine or shadow) it depends on.
 
 Whenever any of the declared sources change, the supplier method is invoked, and its return value is set on all fields that reference it via @ShadowVariable.
