@@ -36,9 +36,9 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntit
 import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values.TestdataConcurrentEntity;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values.TestdataConcurrentSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent_values.TestdataConcurrentValue;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.order.TestdataShadowVariableOrderSolution;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;

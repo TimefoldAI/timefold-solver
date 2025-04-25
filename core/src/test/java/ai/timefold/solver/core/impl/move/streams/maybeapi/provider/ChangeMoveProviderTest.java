@@ -13,8 +13,8 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSessi
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedSolution;
 
 import org.junit.jupiter.api.Test;
 

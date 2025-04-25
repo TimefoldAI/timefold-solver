@@ -9,12 +9,12 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.list.shadowhistory.TestdataListEntityWithShadowHistory;
 
 import org.junit.jupiter.api.Test;
 
-public class ListVariableTrackerTest {
-    final static ListVariableDescriptor<TestdataListSolution> VARIABLE_DESCRIPTOR =
+class ListVariableTrackerTest {
+    static final ListVariableDescriptor<TestdataListSolution> VARIABLE_DESCRIPTOR =
             TestdataListEntity.buildVariableDescriptorForValueList();
 
     @Test

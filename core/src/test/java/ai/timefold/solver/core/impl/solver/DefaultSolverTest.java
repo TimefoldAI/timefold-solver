@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -76,16 +77,16 @@ import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.Testdata
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataMultiEntitySolution;
@@ -662,12 +663,12 @@ class DefaultSolverTest extends AbstractMeterTest {
             if (step.get() != -1) {
                 assertThat(
                         meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                        .isEqualTo(0);
+                        .isZero();
             }
             if (step.get() == 0) {
                 assertThat(
                         meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
-                        .isEqualTo(0);
+                        .isZero();
             } else if (step.get() == 1) {
                 assertThat(
                         meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
@@ -691,7 +692,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                .isEqualTo(0);
+                .isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
                 .isEqualTo(2);
     }
@@ -778,13 +779,13 @@ class DefaultSolverTest extends AbstractMeterTest {
                         assertThat(
                                 meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".hard.score", "VALUE")
                                         .intValue())
-                                .isEqualTo(0);
+                                .isZero();
 
                         if (step.get() == 2) {
                             assertThat(
                                     meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
                                             .intValue())
-                                    .isEqualTo(0);
+                                    .isZero();
                         } else if (step.get() == 3) {
                             assertThat(
                                     meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
@@ -815,7 +816,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                .isEqualTo(0);
+                .isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
                 .isEqualTo(3);
     }
@@ -1440,8 +1441,8 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         @Override
         public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
-            var random = (int) (Math.random() * 1000);
-            return SimpleScore.of(random);
+            var random = new Random();
+            return SimpleScore.of(random.nextInt(1000));
         }
     }
 
@@ -1450,7 +1451,7 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         @Override
         public void resetWorkingSolution(@NonNull TestdataSolution workingSolution, boolean constraintMatchEnabled) {
-
+            // Ignore
         }
 
         @Override
@@ -1466,43 +1467,43 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         @Override
         public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
-
+            // Ignore
         }
 
         @Override
         public void beforeEntityAdded(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void afterEntityAdded(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+            // Ignore
         }
 
         @Override
         public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+            // Ignore
         }
 
         @Override
         public void beforeEntityRemoved(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void afterEntityRemoved(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public @NonNull SimpleScore calculateScore() {
-            var random = (int) (Math.random() * 1000);
-            return SimpleScore.of(random);
+            var random = new Random();
+            return SimpleScore.of(random.nextInt(1000));
         }
     }
 

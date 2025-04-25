@@ -15,9 +15,9 @@ import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
+import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.unassignedvar.TestdataAllowsUnassignedSolution;
 
 import org.junit.jupiter.api.Test;
 

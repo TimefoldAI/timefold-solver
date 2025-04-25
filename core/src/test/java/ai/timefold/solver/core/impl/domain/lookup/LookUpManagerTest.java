@@ -6,8 +6,8 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectIntegerId;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceEntity;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceValue;
+import ai.timefold.solver.core.impl.testdata.domain.interfaces.TestdataInterfaceEntity;
+import ai.timefold.solver.core.impl.testdata.domain.interfaces.TestdataInterfaceValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -57,7 +57,7 @@ class LookUpManagerTest extends AbstractLookupTest {
 
         @Override
         public void setValue(TestdataInterfaceValue value) {
-
+            // Ignore
         }
     }
 

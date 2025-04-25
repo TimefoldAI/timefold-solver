@@ -13,12 +13,12 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowExtendedShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowVariable;
-import ai.timefold.solver.quarkus.testdata.extended.TestdataExtendedShadowSolutionConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowExtendedShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowSolution;
+import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowVariable;
+import ai.timefold.solver.quarkus.testdata.inheritance.solution.TestdataExtendedShadowSolutionConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

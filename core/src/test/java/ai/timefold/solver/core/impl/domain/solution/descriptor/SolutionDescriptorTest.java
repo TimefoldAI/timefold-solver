@@ -35,7 +35,7 @@ import ai.timefold.solver.core.impl.testdata.domain.invalid.duplicateweightoverr
 import ai.timefold.solver.core.impl.testdata.domain.invalid.nosolution.TestdataNoSolution;
 import ai.timefold.solver.core.impl.testdata.domain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericSolution;
 import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.TestdataNoProblemFactPropertySolution;

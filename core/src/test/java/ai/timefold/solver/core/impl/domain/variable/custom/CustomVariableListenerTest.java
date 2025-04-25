@@ -11,7 +11,6 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
@@ -24,8 +23,8 @@ import ai.timefold.solver.core.impl.testdata.domain.shadow.extended.TestdataExte
 import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedEntityUniqueEvents;
 import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_listener.TestdataWrongBasicShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_listener.TestdataWrongListShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wronglistener.TestdataWrongBasicShadowEntity;
+import ai.timefold.solver.core.impl.testdata.domain.shadow.wronglistener.TestdataWrongListShadowEntity;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
@@ -44,8 +43,7 @@ class CustomVariableListenerTest {
 
     @Test
     void nonCyclicWithSevenDisorderedShadows() {
-        SolutionDescriptor<TestdataSevenNonCyclicShadowedSolution> solutionDescriptor =
-                TestdataSevenNonCyclicShadowedSolution.buildSolutionDescriptor();
+        TestdataSevenNonCyclicShadowedSolution.buildSolutionDescriptor();
     }
 
     @Test
@@ -84,14 +82,14 @@ class CustomVariableListenerTest {
         scoreDirector.afterVariableChanged(variableDescriptor, a);
         scoreDirector.triggerVariableListeners();
         assertThat(a.getFirstShadow()).isEqualTo("1/firstShadow");
-        assertThat(a.getThirdShadow()).isEqualTo(null);
+        assertThat(a.getThirdShadow()).isNull();
 
         scoreDirector.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val3);
         scoreDirector.afterVariableChanged(variableDescriptor, a);
         scoreDirector.triggerVariableListeners();
         assertThat(a.getFirstShadow()).isEqualTo("3/firstShadow");
-        assertThat(a.getThirdShadow()).isEqualTo(null);
+        assertThat(a.getThirdShadow()).isNull();
 
         scoreDirector.beforeVariableChanged(variableDescriptor, c);
         c.setValue(val1);
@@ -138,8 +136,8 @@ class CustomVariableListenerTest {
         a.setPrimaryValue(val1);
         scoreDirector.afterVariableChanged(primaryVariableDescriptor, a);
         scoreDirector.triggerVariableListeners();
-        assertThat(a.getComposedCode()).isEqualTo(null);
-        assertThat(a.getReverseComposedCode()).isEqualTo(null);
+        assertThat(a.getComposedCode()).isNull();
+        assertThat(a.getReverseComposedCode()).isNull();
 
         scoreDirector.beforeVariableChanged(secondaryVariableDescriptor, a);
         a.setSecondaryValue(val3);
@@ -166,8 +164,8 @@ class CustomVariableListenerTest {
         a.setPrimaryValue(null);
         scoreDirector.afterVariableChanged(primaryVariableDescriptor, a);
         scoreDirector.triggerVariableListeners();
-        assertThat(a.getComposedCode()).isEqualTo(null);
-        assertThat(a.getReverseComposedCode()).isEqualTo(null);
+        assertThat(a.getComposedCode()).isNull();
+        assertThat(a.getReverseComposedCode()).isNull();
 
         scoreDirector.beforeVariableChanged(primaryVariableDescriptor, c);
         c.setPrimaryValue(val1);

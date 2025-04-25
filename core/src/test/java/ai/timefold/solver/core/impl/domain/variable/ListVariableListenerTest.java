@@ -15,9 +15,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubList
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListEntityWithShadowHistory;
-import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListSolutionWithShadowHistory;
-import ai.timefold.solver.core.impl.testdata.domain.list.shadow_history.TestdataListValueWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.list.shadowhistory.TestdataListEntityWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.list.shadowhistory.TestdataListSolutionWithShadowHistory;
+import ai.timefold.solver.core.impl.testdata.domain.list.shadowhistory.TestdataListValueWithShadowHistory;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.junit.jupiter.api.DisplayName;

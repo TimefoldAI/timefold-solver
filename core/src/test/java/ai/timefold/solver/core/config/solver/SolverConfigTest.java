@@ -48,9 +48,9 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceEntity;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceSolution;
+import ai.timefold.solver.core.impl.testdata.domain.interfaces.TestdataInterfaceConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.interfaces.TestdataInterfaceEntity;
+import ai.timefold.solver.core.impl.testdata.domain.interfaces.TestdataInterfaceSolution;
 import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordEntity;
 import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordSolution;
 

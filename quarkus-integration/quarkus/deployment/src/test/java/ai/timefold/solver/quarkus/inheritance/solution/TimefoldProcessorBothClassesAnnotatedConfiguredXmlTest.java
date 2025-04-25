@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseann
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedSolution;
-import ai.timefold.solver.quarkus.testdata.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedNoRawListExtendedSolution;
+import ai.timefold.solver.quarkus.testdata.inheritance.solution.TestdataBothAnnotatedNoRawListExtendedSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

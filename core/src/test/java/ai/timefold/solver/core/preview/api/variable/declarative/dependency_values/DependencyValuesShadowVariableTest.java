@@ -12,10 +12,10 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values.TestdataDependencyConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values.TestdataDependencyEntity;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values.TestdataDependencySolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency_values.TestdataDependencyValue;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency.TestdataDependencyConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency.TestdataDependencyEntity;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency.TestdataDependencySolution;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.dependency.TestdataDependencyValue;
 
 import org.junit.jupiter.api.Test;
 

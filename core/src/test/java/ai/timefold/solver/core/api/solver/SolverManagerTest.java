@@ -5,6 +5,7 @@ import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_ACTIVE;
 import static ai.timefold.solver.core.api.solver.SolverStatus.SOLVING_SCHEDULED;
 import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertSolutionInitialized;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.fail;
@@ -34,7 +35,6 @@ import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -54,10 +54,10 @@ import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
 import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListConstraintProvider;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.impl.testdata.domain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 
 import org.apache.commons.lang3.mutable.MutableBoolean;
@@ -77,13 +77,15 @@ class SolverManagerTest {
 
     @Test
     void create() {
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        SolverManager.create(solverConfig).close();
-        var solverManagerConfig = new SolverManagerConfig();
-        SolverManager.create(solverConfig, solverManagerConfig).close();
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        SolverManager.create(solverFactory).close();
-        SolverManager.create(solverFactory, solverManagerConfig).close();
+        assertThatCode(() -> {
+            var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
+            SolverManager.create(solverConfig).close();
+            var solverManagerConfig = new SolverManagerConfig();
+            SolverManager.create(solverConfig, solverManagerConfig).close();
+            SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
+            SolverManager.create(solverFactory).close();
+            SolverManager.create(solverFactory, solverManagerConfig).close();
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -415,10 +417,10 @@ class SolverManagerTest {
                 var solution = new TestdataAllowsUnassignedValuesListSolution();
                 solution.setEntityList(IntStream.range(0, 2)
                         .mapToObj(i -> new TestdataAllowsUnassignedValuesListEntity("Generated Entity " + i))
-                        .collect(Collectors.toList()));
+                        .toList());
                 solution.setValueList(IntStream.range(0, 2)
                         .mapToObj(i -> new TestdataAllowsUnassignedValuesListValue("Generated Value " + i))
-                        .collect(Collectors.toList()));
+                        .toList());
                 return solution;
             };
 
@@ -944,7 +946,7 @@ class SolverManagerTest {
     private SolverManager<TestdataSolution, Long> createSolverManagerTestableByDifferentConsumers() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(IntStream.of(0, 1)
-                        .mapToObj((x) -> new CustomPhaseConfig().withCustomPhaseCommands(
+                        .mapToObj(x -> new CustomPhaseConfig().withCustomPhaseCommands(
                                 (ScoreDirector<TestdataSolution> scoreDirector, BooleanSupplier booleanSupplier) -> {
                                     var solution = scoreDirector.getWorkingSolution();
                                     var entity = solution.getEntityList().get(x);
@@ -983,15 +985,13 @@ class SolverManagerTest {
                         .withProblemId(id)
                         .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2))
                         .withBestSolutionConsumer(consumedBestSolutions::add)
-                        .withFinalBestSolutionConsumer((finalBestSolution) -> {
-                            finalBestSolutionConsumed.countDown();
-                        })
+                        .withFinalBestSolutionConsumer(finalBestSolution -> finalBestSolutionConsumed.countDown())
                         .run());
             } else {
                 jobs.add(solverManager.solveBuilder()
                         .withProblemId(id)
                         .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2))
-                        .withFinalBestSolutionConsumer((finalBestSolution) -> {
+                        .withFinalBestSolutionConsumer(finalBestSolution -> {
                             consumedBestSolutions.add(finalBestSolution);
                             finalBestSolutionConsumed.countDown();
                         })

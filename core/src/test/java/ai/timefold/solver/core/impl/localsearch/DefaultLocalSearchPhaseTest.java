@@ -32,8 +32,8 @@ import ai.timefold.solver.core.impl.testdata.domain.list.externalized.TestdataLi
 import ai.timefold.solver.core.impl.testdata.domain.list.externalized.TestdataListSolutionExternalized;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedSolution;
+import ai.timefold.solver.core.impl.testdata.domain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
+import ai.timefold.solver.core.impl.testdata.domain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
 import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 
