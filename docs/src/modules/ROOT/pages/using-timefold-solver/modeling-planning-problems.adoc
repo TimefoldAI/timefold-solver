@@ -1184,7 +1184,7 @@ Python::
 ----
 ====
 
-This property (isLooped in the example above) is typically used in a constraint filter to penalize looped entities via a hard constraint,
+This property (`isLooped` in the example above) is typically used in a constraint filter to penalize looped entities via a hard constraint,
 since PlanningSolution instances containing loops are generally considered invalid.
 
 === Shadow variable cloning
