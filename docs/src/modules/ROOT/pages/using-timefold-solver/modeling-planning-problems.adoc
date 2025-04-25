@@ -1033,7 +1033,7 @@ Python::
 ====
 
 In the example above, whenever the solver changes the `startDate` planning variable, the `endDateSupplier()` method is called.
-Its return value is assigned to the endDate field, as declared by the `@ShadowVariable(supplierName="endDateSupplier")` annotation.
+Its return value is assigned to the `endDate` field, as declared by the `@ShadowVariable(supplierName="endDateSupplier")` annotation.
 
 Some key considerations:
 
