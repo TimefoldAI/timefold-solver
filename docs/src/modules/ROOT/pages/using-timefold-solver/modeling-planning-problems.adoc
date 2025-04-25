@@ -1059,7 +1059,7 @@ These paths must follow 1 of 3 syntactic forms:
 
 |Simple Variable Name
 |"variableName"
-|Refers to a variable (planning or shadow) on the same planning entity.
+|Refers to a variable (genuine or shadow) on the same planning entity.
 
 |Chained Property Path
 |"a.b.c"
@@ -1088,28 +1088,30 @@ public class Job {
     private Collection<Job> dependencies;
 
     @ShadowVariable(supplierName="startDateSupplier")
-    LocalDateTime startDate;
+    private LocalDateTime startDate;
 
     @ShadowVariable(supplierName="endDateSupplier")
     private LocalDate endDate;
 
     @ShadowSources({"previous.endDate", "dependencies[].endDate"})
     public LocalDate startDateSupplier() {
-      LocalDateTime readyTime = null;
+      LocalDate readyDate = null;
       if (previous != null) {
-          readyTime = previous.endTime;
+          readyDate = previous.endDate;
       } else {
           return null;
       }
       if (dependencies != null) {
           for (var dependency : dependencies) {
-              if (dependency.endTime == null) {
+              if (dependency.endDate == null) {
                   return null;
               }
-              readyTime = readyTime.isBefore(dependency.endTime) ? dependency.endTime: readyTime;
+              if (readyDate.isBefore(dependency.endDate)) {
+                  readyDate = dependency.endDate;
+              }
           }
       }
-      return readyTime;
+      return readyDate;
     }
 
     @ShadowSources("startDate")
