@@ -8,7 +8,6 @@ import ai.timefold.solver.benchmark.impl.statistic.common.AbstractTimeLineChartP
 
 public class MoveEvaluationSpeedProblemStatisticTime extends AbstractTimeLineChartProblemStatistic {
 
-    @SuppressWarnings("unused")
     protected MoveEvaluationSpeedProblemStatisticTime() {
         super(ProblemStatisticType.MOVE_EVALUATION_SPEED);
     }

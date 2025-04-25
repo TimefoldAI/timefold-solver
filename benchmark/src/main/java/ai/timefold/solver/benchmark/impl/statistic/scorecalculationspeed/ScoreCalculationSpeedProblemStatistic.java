@@ -8,7 +8,6 @@ import ai.timefold.solver.benchmark.impl.statistic.common.AbstractTimeLineChartP
 
 public class ScoreCalculationSpeedProblemStatistic extends AbstractTimeLineChartProblemStatistic {
 
-    @SuppressWarnings("unused")
     protected ScoreCalculationSpeedProblemStatistic() {
         super(ProblemStatisticType.SCORE_CALCULATION_SPEED);
     }
