@@ -779,7 +779,6 @@ class Customer:
 <<shadowVariable,This class should already be registered as a planning entity.>>
 The `sourceVariableName` property is the name of the chained variable on the same entity class.
 
-
 [#customVariableListener]
 === Custom `VariableListener`
 
@@ -981,7 +980,247 @@ capacity: Annotated[int, PiggybackShadowVariable(shadow_variable_name="transport
 ----
 ====
 
-==== Shadow variable cloning
+[#declarativeShadowVariable]
+=== Declarative Shadow Variable
+
+Declarative shadow variables are the simplest way to calculate shadow variables.
+This approach allows access to all the fields and methods of the declaring class.
+
+[WARNING]
+====
+This feature is currently in xref:/upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview] and may be subject to change.
+====
+[NOTE]
+====
+Declarative Shadow Variables are currently not supported in Python.
+====
+
+To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specify the name of a supplier method.
+Annotate the supplier method with `@ShadowSources`, listing all the planning variables (genuine or shadow) it depends on.
+
+Whenever any of the declared sources change, the supplier method is invoked, and its return value is set on all fields that reference it via @ShadowVariable.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+
+    @PlanningVariable
+    private LocalDate startDate;
+
+    private int durationInDays;
+
+    @ShadowVariable(supplierName="endDateSupplier")
+    private LocalDate endDate;
+
+    @ShadowSources("startDate")
+    public LocalDate endDateSupplier() {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+In the example above, whenever the solver changes the `startDate` planning variable, the `endDateSupplier()` method is called.
+Its return value is assigned to the `endDate` field, as declared by the `@ShadowVariable(supplierName="endDateSupplier")` annotation.
+
+Some key considerations:
+
+- _Type consistency_: The return type of the supplier method must match the type of the field it is assigned to.
+- _Explicit dependencies_: All planning variables used in the supplier logic must be explicitly listed in `@ShadowSources`.
+Undeclared dependencies will not trigger updates, leading to stale or incorrect shadow values.
+
+
+==== @ShadowSources paths
+
+When using `@ShadowSources`, you must specify the paths to the variables that the supplier method depends on to compute its value.
+These paths must follow 1 of 3 syntactic forms:
+
+[cols="1,1,3", options="header"]
+|===
+|Form
+|Syntax Example
+|Description
+
+|Simple Variable Name
+|"variableName"
+|Refers to a variable (genuine or shadow) on the same planning entity.
+
+|Chained Property Path
+|"a.b.c"
+|Refers to a supplier variable reachable via chained properties. Intermediate elements must be facts or variables; the final one must be a supplier variable.
+
+|Collection Element Access
+|"collectionVar[].varName"
+|Refers to a variable (`varName`) on each element in a collection (`collectionVar`) on the entity. The collection must not change during solving.
+|===
+
+Concrete example
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+
+    @PreviousElementShadowVariable
+    Job previous;
+
+    private int durationInDays;
+
+    private Collection<Job> dependencies;
+
+    @ShadowVariable(supplierName="startDateSupplier")
+    private LocalDateTime startDate;
+
+    @ShadowVariable(supplierName="endDateSupplier")
+    private LocalDate endDate;
+
+    @ShadowSources({"previous.endDate", "dependencies[].endDate"})
+    public LocalDate startDateSupplier() {
+      LocalDate readyDate = null;
+      if (previous != null) {
+          readyDate = previous.endDate;
+      } else {
+          return null;
+      }
+      if (dependencies != null) {
+          for (var dependency : dependencies) {
+              if (dependency.endDate == null) {
+                  return null;
+              }
+              if (readyDate.isBefore(dependency.endDate)) {
+                  readyDate = dependency.endDate;
+              }
+          }
+      }
+      return readyDate;
+    }
+
+    @ShadowSources("startDate")
+    public LocalDate endDateSupplier() {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+[cols="1,1,2", options="header"]
+|===
+|Reference
+|Form
+|Meaning
+
+|"startDate"
+|Simple Variable Name
+|Direct reference to the `startDate` field.
+
+|"previous.endDate"
+|Chained Property Path
+|Accesses `endDate` from the `previous` variable.
+
+|"dependencies[].endTime"
+|Collection Element Access
+|Accesses `endTime` of each element in the `dependencies` collection.
+|===
+
+
+==== Detecting Loops in Shadow Variables
+
+In certain cases, shadow variables may form an infinite loop.
+When this occurs, the solver detects the cycle, breaks the loop, and assigns `null` to the involved shadow variables.
+
+A supplier variable is considered part of a _loop_ if:
+
+- It directly or indirectly depends on itself.
+For example, if variable `a` depends on `b` and `b` depends on `a`, both are in a loop.
+- It depends on another variable that is already part of a loop.
+For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
+
+To detect whether an entity has been affected by a shadow variable loop, annotate a boolean field with `@ShadowVariableLooped`.
+The solver will set this field to true if the entity is part of a loop.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+    @ShadowVariableLooped
+    boolean looped;
+
+    public boolean isLooped() {
+        return looped;
+    }
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+This property (`looped` in the example above) is typically used in a constraint filter to penalize looped entities via a hard constraint,
+since PlanningSolution instances containing loops are generally considered invalid.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+//Example constraint
+Constraint penalizeLoopedJobs(ConstraintFactory factory) {
+    return factory.forEach(Job.class)
+            .filter(job -> job.isLooped())
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Job has looped shadow variables.");
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+=== Shadow variable cloning
 
 A shadow variable's value (just like a genuine variable's value)
 isn't <<cloningASolution,planning cloned>> by the default solution cloner,
