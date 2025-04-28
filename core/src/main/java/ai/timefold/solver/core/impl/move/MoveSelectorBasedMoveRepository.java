@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.move;
 import java.util.Iterator;
 import java.util.Objects;
 
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
@@ -29,7 +30,7 @@ public final class MoveSelectorBasedMoveRepository<Solution_>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution) {
+    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
         // No need to do anything.
     }
 

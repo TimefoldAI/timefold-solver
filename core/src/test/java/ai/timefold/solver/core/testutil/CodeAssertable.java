@@ -18,8 +18,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubList
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListSwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.SubListUnassignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
 public interface CodeAssertable {
 
@@ -105,9 +105,9 @@ public interface CodeAssertable {
             return () -> code;
         } else if (o instanceof SubList subList) {
             return () -> convert(subList.entity()) + "[" + subList.fromIndex() + "+" + subList.length() + "]";
-        } else if (o instanceof UnassignedLocation unassignedLocation) {
+        } else if (o instanceof UnassignedElement unassignedLocation) {
             return unassignedLocation::toString;
-        } else if (o instanceof LocationInList locationInList) {
+        } else if (o instanceof PositionInList locationInList) {
             return () -> convert(locationInList.entity()) + "[" + locationInList.index() + "]";
         } else if (o instanceof SubChain subChain) {
             final String code = convert(subChain.getEntityList()).getCode();

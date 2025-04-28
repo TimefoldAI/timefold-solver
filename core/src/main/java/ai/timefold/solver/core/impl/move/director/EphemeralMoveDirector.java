@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.move.director;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -32,7 +32,7 @@ final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation
+    public <Entity_, Value_> ElementPosition
             getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return getPositionOf(getVariableChangeRecordingScoreDirector().getBacking(), variableMetaModel, value);
 

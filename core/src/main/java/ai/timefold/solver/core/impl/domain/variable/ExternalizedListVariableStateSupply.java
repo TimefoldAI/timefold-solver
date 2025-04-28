@@ -7,7 +7,8 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelat
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 import org.jspecify.annotations.NonNull;
 
@@ -19,6 +20,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     private boolean previousExternalized = false;
     private boolean nextExternalized = false;
+    private Solution_ workingSolution;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.sourceVariableDescriptor = sourceVariableDescriptor;
@@ -49,9 +51,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
 
     @Override
     public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
+        workingSolution = scoreDirector.getWorkingSolution();
         listVariableState.initialize((InnerScoreDirector<Solution_, ?>) scoreDirector,
-                (int) sourceVariableDescriptor.getValueRangeSize(scoreDirector.getWorkingSolution(), null));
-        var workingSolution = scoreDirector.getWorkingSolution();
+                (int) sourceVariableDescriptor.getValueRangeSize(workingSolution, null));
         // Will run over all entities and unmark all present elements as unassigned.
         sourceVariableDescriptor.getEntityDescriptor()
                 .visitAllEntities(workingSolution, this::insert);
@@ -114,9 +116,9 @@ final class ExternalizedListVariableStateSupply<Solution_>
         // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
         var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
         for (var index = firstChangeIndex; index < elementCount; index++) {
-            var locationsDiffer = listVariableState.changeElement(entity, assignedElements, index);
-            if (!locationsDiffer && index >= lastChangeIndex) {
-                // Location is unchanged and we are past the part of the list that changed.
+            var positionsDiffer = listVariableState.changeElement(entity, assignedElements, index);
+            if (!positionsDiffer && index >= lastChangeIndex) {
+                // Position is unchanged and we are past the part of the list that changed.
                 // We can terminate the loop prematurely.
                 return;
             }
@@ -124,8 +126,8 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public ElementLocation getLocationInList(Object planningValue) {
-        return listVariableState.getLocationInList(planningValue);
+    public ElementPosition getElementPosition(Object planningValue) {
+        return listVariableState.getElementPosition(planningValue);
     }
 
     @Override
@@ -141,6 +143,20 @@ final class ExternalizedListVariableStateSupply<Solution_>
     @Override
     public boolean isAssigned(Object element) {
         return getInverseSingleton(element) != null;
+    }
+
+    @Override
+    public boolean isPinned(Object element) {
+        if (!sourceVariableDescriptor.supportsPinning()) {
+            return false;
+        }
+        var position = getElementPosition(element);
+        if (position instanceof PositionInList assignedPosition) {
+            return sourceVariableDescriptor.isElementPinned(workingSolution, assignedPosition.entity(),
+                    assignedPosition.index());
+        } else {
+            return false;
+        }
     }
 
     @Override

@@ -27,7 +27,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     private final Set<Object> affectedEntitySet;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
-    private final Map<Object, NavigableSet<RuinedLocation>> entityToNewPositionMap;
+    private final Map<Object, NavigableSet<RuinedPosition>> entityToNewPositionMap;
 
     public ListRuinRecreateMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
@@ -47,12 +47,12 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         try (var listVariableStateSupply = variableChangeRecordingScoreDirector.getBacking().getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand())) {
             var entityToOriginalPositionMap =
-                    CollectionUtils.<Object, NavigableSet<RuinedLocation>> newIdentityHashMap(affectedEntitySet.size());
+                    CollectionUtils.<Object, NavigableSet<RuinedPosition>> newIdentityHashMap(affectedEntitySet.size());
             for (var valueToRuin : ruinedValueList) {
-                var location = listVariableStateSupply.getLocationInList(valueToRuin)
+                var position = listVariableStateSupply.getElementPosition(valueToRuin)
                         .ensureAssigned();
-                entityToOriginalPositionMap.computeIfAbsent(location.entity(),
-                        ignored -> new TreeSet<>()).add(new RuinedLocation(valueToRuin, location.index()));
+                entityToOriginalPositionMap.computeIfAbsent(position.entity(),
+                        ignored -> new TreeSet<>()).add(new RuinedPosition(valueToRuin, position.index()));
             }
 
             var nonRecordingScoreDirector = variableChangeRecordingScoreDirector.getBacking();
@@ -99,11 +99,11 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
             }
 
             for (var ruinedValue : ruinedValueList) {
-                var location = listVariableStateSupply.getLocationInList(ruinedValue)
+                var position = listVariableStateSupply.getElementPosition(ruinedValue)
                         .ensureAssigned();
-                entityToNewPositionMap.computeIfAbsent(location.entity(), ignored -> new TreeSet<>())
-                        .add(new RuinedLocation(ruinedValue, location.index()));
-                entityToInsertedValuesMap.computeIfAbsent(location.entity(), ignored -> new ArrayList<>()).add(ruinedValue);
+                entityToNewPositionMap.computeIfAbsent(position.entity(), ignored -> new TreeSet<>())
+                        .add(new RuinedPosition(ruinedValue, position.index()));
+                entityToInsertedValuesMap.computeIfAbsent(position.entity(), ignored -> new ArrayList<>()).add(ruinedValue);
             }
 
             var onlyRecordingChangesScoreDirector = variableChangeRecordingScoreDirector.getNonDelegating();
@@ -189,7 +189,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
     public String toString() {
         return "ListRuinMove{" +
                 "values=" + ruinedValueList +
-                ", newLocationsByEntity=" + (!entityToNewPositionMap.isEmpty() ? entityToNewPositionMap : "?") +
+                ", newPositionsByEntity=" + (!entityToNewPositionMap.isEmpty() ? entityToNewPositionMap : "?") +
                 '}';
     }
 }

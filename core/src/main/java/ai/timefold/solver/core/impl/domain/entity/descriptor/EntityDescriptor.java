@@ -127,7 +127,7 @@ public class EntityDescriptor<Solution_> {
 
     // Caches the inherited, declared and descending movable filters (including @PlanningPin filters) as a composite filter
     private MovableFilter<Solution_> effectiveMovableEntityFilter;
-    private PlanningPinToIndexReader<Solution_> effectivePlanningPinToIndexReader;
+    private PlanningPinToIndexReader effectivePlanningPinToIndexReader;
 
     // Caches the inherited and declared variable descriptors
     private Map<String, GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorMap;
@@ -265,6 +265,10 @@ public class EntityDescriptor<Solution_> {
         processDifficulty(entityAnnotation);
     }
 
+    /**
+     * @deprecated Remove in the next major version of Timefold Solver.
+     */
+    @Deprecated(forRemoval = true, since = "1.23.0")
     private void processMovable(PlanningEntity entityAnnotation) {
         if (entityAnnotation == null) {
             return;
@@ -612,8 +616,7 @@ public class EntityDescriptor<Solution_> {
             case 0 -> effectivePlanningPinToIndexReader = null;
             case 1 -> {
                 var memberAccessor = planningPinIndexMemberAccessorList.get(0);
-                effectivePlanningPinToIndexReader =
-                        (solution, entity) -> (int) memberAccessor.executeGetter(entity);
+                effectivePlanningPinToIndexReader = entity -> (int) memberAccessor.executeGetter(entity);
             }
             default -> throw new IllegalStateException(
                     "The entityClass (%s) has (%d) @%s-annotated members (%s), where it should only have one."
@@ -654,6 +657,10 @@ public class EntityDescriptor<Solution_> {
 
     public boolean matchesEntity(Object entity) {
         return entityClass.isAssignableFrom(entity.getClass());
+    }
+
+    public boolean hasPinningFilter() {
+        return declaredMovableEntityFilter != null;
     }
 
     public boolean hasEffectiveMovableEntityFilter() {
@@ -840,7 +847,7 @@ public class EntityDescriptor<Solution_> {
         });
     }
 
-    public PlanningPinToIndexReader<Solution_> getEffectivePlanningPinToIndexReader() {
+    public PlanningPinToIndexReader getEffectivePlanningPinToIndexReader() {
         return effectivePlanningPinToIndexReader;
     }
 

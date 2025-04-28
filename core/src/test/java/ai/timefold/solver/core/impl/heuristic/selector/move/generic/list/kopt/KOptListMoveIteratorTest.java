@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 import org.junit.jupiter.api.Test;
 
@@ -144,8 +144,8 @@ public class KOptListMoveIteratorTest {
             entityToOffset.put(entity, 1);
 
             for (int i = 0; i < entityList.size(); i++) {
-                when(mocks.listVariableStateSupply.getLocationInList(entityList.get(i)))
-                        .thenReturn(ElementLocation.of(entity, i));
+                when(mocks.listVariableStateSupply.getElementPosition(entityList.get(i)))
+                        .thenReturn(ElementPosition.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
                 when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
                 when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);
@@ -249,8 +249,8 @@ public class KOptListMoveIteratorTest {
             entityToOffset.put(entity, 1);
 
             for (int i = 0; i < entityList.size(); i++) {
-                when(mocks.listVariableStateSupply.getLocationInList(entityList.get(i)))
-                        .thenReturn(ElementLocation.of(entity, i));
+                when(mocks.listVariableStateSupply.getElementPosition(entityList.get(i)))
+                        .thenReturn(ElementPosition.of(entity, i));
                 when(mocks.listVariableStateSupply.getInverseSingleton(entityList.get(i))).thenReturn(entity);
                 when(mocks.listVariableStateSupply.getIndex(entityList.get(i))).thenReturn(i);
                 when(mocks.listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(mocks.listVariableDescriptor);

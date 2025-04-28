@@ -29,7 +29,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.Li
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -109,9 +109,9 @@ class MoveDirectorTest {
         var actualValue1 = moveDirector.getValueAtIndex(variableMetaModel, entity, 0);
         assertThat(actualValue1).isEqualTo(expectedValue1);
 
-        var expectedLocation = ElementLocation.of(entity, 1);
+        var expectedLocation = ElementPosition.of(entity, 1);
         var supplyMock = mock(ListVariableStateSupply.class);
-        when(supplyMock.getLocationInList(expectedValue2))
+        when(supplyMock.getElementPosition(expectedValue2))
                 .thenReturn(expectedLocation);
         when(mockScoreDirector.getListVariableStateSupply(any()))
                 .thenReturn(supplyMock);
@@ -250,8 +250,8 @@ class MoveDirectorTest {
         when(supplyManager.demand(any())).thenReturn(listVariableStateSupply);
         // 1 - v1 is on e1 list
         // 2 - v1 moves to e2 list
-        when(listVariableStateSupply.getLocationInList(any()))
-                .thenReturn(ElementLocation.of(e1, 0), ElementLocation.of(e2, 1));
+        when(listVariableStateSupply.getElementPosition(any()))
+                .thenReturn(ElementPosition.of(e1, 0), ElementPosition.of(e2, 1));
         when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
         when(listVariableDescriptor.getFirstUnpinnedIndex(any())).thenReturn(0);
         when(listVariableDescriptor.getListSize(any())).thenReturn(1);

@@ -6,7 +6,6 @@ import java.util.Arrays;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 
@@ -42,19 +41,6 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
     <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiJoiner<A, B>... joiners);
 
     /**
-     * Create a new {@link UniDataStream} for every A where B exists for which the {@link BiJoiner}s are true
-     * (for the properties they extract from both facts).
-     * For classes annotated with {@link PlanningEntity},
-     * this method also includes entities with null variables,
-     * or entities that are not assigned to any list variable.
-     *
-     * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B exists for which the {@link BiJoiner}s are true
-     */
-    @SuppressWarnings("unchecked")
-    <B> UniDataStream<Solution_, A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners);
-
-    /**
      * Create a new {@link UniDataStream} for every A, if another A exists that does not {@link Object#equals(Object)}
      * the first, and for which the {@link BiJoiner}s are true (for the properties they extract from both facts).
      *
@@ -68,26 +54,6 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
         return ifExists(otherClass, allJoiners);
-    }
-
-    /**
-     * Create a new {@link UniDataStream} for every A,
-     * if another A exists that does not {@link Object#equals(Object)} the first,
-     * and for which the {@link BiJoiner}s are true (for the properties they extract from both facts).
-     * For classes annotated with {@link PlanningEntity},
-     * this method also includes entities with null variables,
-     * or entities that are not assigned to any list variable.
-     *
-     * @return a stream that matches every A where a different A exists for which the {@link BiJoiner}s are true
-     */
-    @SuppressWarnings("unchecked")
-    default UniDataStream<Solution_, A> ifExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
-
-        @SuppressWarnings("unchecked")
-        BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
-                .toArray(BiJoiner[]::new);
-        return ifExistsIncludingUnassigned(otherClass, allJoiners);
     }
 
     /**
@@ -111,19 +77,6 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
     <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream, BiJoiner<A, B>... joiners);
 
     /**
-     * Create a new {@link UniDataStream} for every A where B does not exist for which the {@link BiJoiner}s are true
-     * (for the properties they extract from both facts).
-     * For classes annotated with {@link PlanningEntity},
-     * this method also includes entities with null variables,
-     * or entities that are not assigned to any list variable.
-     *
-     * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B does not exist for which the {@link BiJoiner}s are true
-     */
-    @SuppressWarnings("unchecked")
-    <B> UniDataStream<Solution_, A> ifNotExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners);
-
-    /**
      * Create a new {@link UniDataStream} for every A, if no other A exists that does not {@link Object#equals(Object)}
      * the first,
      * for which the {@link BiJoiner}s are true (for the properties they extract from both facts).
@@ -138,26 +91,6 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
         BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
                 .toArray(BiJoiner[]::new);
         return ifNotExists(otherClass, allJoiners);
-    }
-
-    /**
-     * Create a new {@link UniDataStream} for every A,
-     * if no other A exists that does not {@link Object#equals(Object)} the first,
-     * for which the {@link BiJoiner}s are true (for the properties they extract from both facts).
-     * For classes annotated with {@link PlanningEntity},
-     * this method also includes entities with null variables,
-     * or entities that are not assigned to any list variable.
-     *
-     * @return a stream that matches every A where a different A does not exist
-     */
-    @SuppressWarnings("unchecked")
-    default UniDataStream<Solution_, A> ifNotExistsOtherIncludingUnassigned(Class<A> otherClass, BiJoiner<A, A>... joiners) {
-        BiJoiner<A, A> otherness = Joiners.filtering(notEquals());
-
-        @SuppressWarnings("unchecked")
-        BiJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
-                .toArray(BiJoiner[]::new);
-        return ifNotExistsIncludingUnassigned(otherClass, allJoiners);
     }
 
 }

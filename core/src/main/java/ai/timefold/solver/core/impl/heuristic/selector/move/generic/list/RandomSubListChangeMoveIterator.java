@@ -9,13 +9,13 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final Iterator<SubList> subListIterator;
-    private final Iterator<ElementLocation> destinationIterator;
+    private final Iterator<ElementPosition> destinationIterator;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final Random workingRandom;
     private final boolean selectReversingMoveToo;
@@ -42,7 +42,7 @@ class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterat
         var destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (destination == null) {
             return noUpcomingSelection();
-        } else if (destination instanceof LocationInList destinationElement) {
+        } else if (destination instanceof PositionInList destinationElement) {
             var reversing = selectReversingMoveToo && workingRandom.nextBoolean();
             return new SubListChangeMove<>(listVariableDescriptor, subList, destinationElement.entity(),
                     destinationElement.index(), reversing);

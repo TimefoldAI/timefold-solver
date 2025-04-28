@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamSession;
 import ai.timefold.solver.core.impl.move.streams.MoveIterable;
@@ -30,11 +31,6 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
     private @Nullable Random workingRandom;
 
     public MoveStreamsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            MoveProducer<Solution_> moveProducer) {
-        this(moveStreamFactory, moveProducer, false);
-    }
-
-    public MoveStreamsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
             MoveProducer<Solution_> moveProducer, boolean random) {
         this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
         this.moveProducer = Objects.requireNonNull(moveProducer);
@@ -47,11 +43,11 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution) {
+    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
         if (moveStreamSession != null) {
             throw new IllegalStateException("Impossible state: move repository initialized twice.");
         }
-        moveStreamSession = moveStreamFactory.createSession(workingSolution);
+        moveStreamSession = moveStreamFactory.createSession(workingSolution, supplyManager);
         moveStreamFactory.getSolutionDescriptor().visitAll(workingSolution, moveStreamSession::insert);
         moveStreamSession.settle();
         moveIterable = moveProducer.getMoveIterable(moveStreamSession);
@@ -92,6 +88,10 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        if (moveStreamSession != null) {
+            moveStreamSession.close();
+            moveStreamSession = null;
+        }
         phaseScope.getScoreDirector().setMoveRepository(null);
     }
 

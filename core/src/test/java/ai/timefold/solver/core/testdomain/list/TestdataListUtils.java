@@ -14,8 +14,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListValue;
@@ -106,23 +106,23 @@ public final class TestdataListUtils {
     }
 
     public static DestinationSelector<TestdataListSolution> mockNeverEndingDestinationSelector(
-            ElementLocation... locationsInList) {
+            ElementPosition... locationsInList) {
         return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
     }
 
     public static DestinationSelector<TestdataPinnedWithIndexListSolution> mockPinnedNeverEndingDestinationSelector(
-            LocationInList... locationsInList) {
+            PositionInList... locationsInList) {
         return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
     }
 
     public static DestinationSelector<TestdataAllowsUnassignedValuesListSolution>
             mockAllowsUnassignedValuesNeverEndingDestinationSelector(
-                    ElementLocation... locationsInList) {
+                    ElementPosition... locationsInList) {
         return mockNeverEndingDestinationSelector(locationsInList.length, locationsInList);
     }
 
     public static <Solution_> DestinationSelector<Solution_> mockNeverEndingDestinationSelector(long size,
-            ElementLocation... locationsInList) {
+            ElementPosition... locationsInList) {
         var destinationSelector = mock(DestinationSelector.class);
         when(destinationSelector.isCountable()).thenReturn(true);
         when(destinationSelector.isNeverEnding()).thenReturn(true);
@@ -131,7 +131,7 @@ public final class TestdataListUtils {
         return destinationSelector;
     }
 
-    public static <Solution_> DestinationSelector<Solution_> mockDestinationSelector(ElementLocation... locationsInList) {
+    public static <Solution_> DestinationSelector<Solution_> mockDestinationSelector(ElementPosition... locationsInList) {
         DestinationSelector<Solution_> destinationSelector = mock(DestinationSelector.class);
         var refList = Arrays.asList(locationsInList);
         when(destinationSelector.isCountable()).thenReturn(true);

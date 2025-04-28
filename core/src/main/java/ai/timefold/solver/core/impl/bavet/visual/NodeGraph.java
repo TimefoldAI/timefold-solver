@@ -115,7 +115,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
 
     private static String getMetadata(AbstractNode node) {
         var metadata = getBaseDOTProperties("lightgrey", false);
-        if (node instanceof AbstractForEachUniNode<?, ?>) {
+        if (node instanceof AbstractForEachUniNode<?>) {
             metadata.put("style", "filled");
             metadata.put("fillcolor", "#3e00ff");
             metadata.put("fontcolor", "white");
@@ -171,7 +171,7 @@ public record NodeGraph<Solution_>(Solution_ solution, List<AbstractNode> source
     private static String nodeLabel(AbstractNode node) {
         var className = node.getClass().getSimpleName()
                 .replace("Node", "");
-        if (node instanceof AbstractForEachUniNode<?, ?> forEachNode) {
+        if (node instanceof AbstractForEachUniNode<?> forEachNode) {
             return "<B>%s</B><BR/>(%s)".formatted(className, forEachNode.getForEachClass().getSimpleName());
         } else {
             return "<B>%s</B>".formatted(className);

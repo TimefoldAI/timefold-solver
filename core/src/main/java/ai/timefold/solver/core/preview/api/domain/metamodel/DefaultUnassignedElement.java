@@ -5,12 +5,12 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-record DefaultUnassignedLocation() implements UnassignedLocation {
+record DefaultUnassignedElement() implements UnassignedElement {
 
-    public static final DefaultUnassignedLocation INSTANCE = new DefaultUnassignedLocation();
+    public static final DefaultUnassignedElement INSTANCE = new DefaultUnassignedElement();
 
     @Override
-    public LocationInList ensureAssigned(Supplier<String> messageSupplier) {
+    public PositionInList ensureAssigned(Supplier<String> messageSupplier) {
         throw new IllegalStateException(messageSupplier.get());
     }
 

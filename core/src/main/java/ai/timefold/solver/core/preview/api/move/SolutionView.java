@@ -2,7 +2,7 @@ package ai.timefold.solver.core.preview.api.move;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
@@ -58,7 +58,7 @@ public interface SolutionView<Solution_> {
      * @param value The value to locate.
      * @return the location of the value in the variable
      */
-    <Entity_, Value_> ElementLocation getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    <Entity_, Value_> ElementPosition getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value);
 
 }

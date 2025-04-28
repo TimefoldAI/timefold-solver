@@ -76,12 +76,12 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         Object firstValue = originIterator.next();
         Object secondValue = valueIterator.next();
 
-        var firstElementLocation = listVariableStateSupply.getLocationInList(firstValue)
+        var firstElementPosition = listVariableStateSupply.getElementPosition(firstValue)
                 .ensureAssigned();
-        var secondElementLocation = listVariableStateSupply.getLocationInList(secondValue)
+        var secondElementPosition = listVariableStateSupply.getElementPosition(secondValue)
                 .ensureAssigned();
-        return new TwoOptListMove<>(listVariableDescriptor, firstElementLocation.entity(), secondElementLocation.entity(),
-                firstElementLocation.index(), secondElementLocation.index());
+        return new TwoOptListMove<>(listVariableDescriptor, firstElementPosition.entity(), secondElementPosition.entity(),
+                firstElementPosition.index(), secondElementPosition.index());
     }
 
     @SuppressWarnings("unchecked")
@@ -377,15 +377,15 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     private int getSegmentSize(EntityOrderInfo entityOrderInfo, Object from, Object to) {
         var entityToEntityIndex = entityOrderInfo.entityToEntityIndex();
-        var startElementLocation = listVariableStateSupply.getLocationInList(from)
+        var startElementPosition = listVariableStateSupply.getElementPosition(from)
                 .ensureAssigned();
-        var endElementLocation = listVariableStateSupply.getLocationInList(to)
+        var endElementPosition = listVariableStateSupply.getElementPosition(to)
                 .ensureAssigned();
-        var startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
-        var endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());
+        var startEntityIndex = entityToEntityIndex.get(startElementPosition.entity());
+        var endEntityIndex = entityToEntityIndex.get(endElementPosition.entity());
         var offsets = entityOrderInfo.offsets();
-        var startIndex = offsets[startEntityIndex] + startElementLocation.index();
-        var endIndex = offsets[endEntityIndex] + endElementLocation.index();
+        var startIndex = offsets[startEntityIndex] + startElementPosition.index();
+        var endIndex = offsets[endEntityIndex] + endElementPosition.index();
 
         if (startIndex <= endIndex) {
             return endIndex - startIndex;
@@ -420,14 +420,14 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     private boolean isNodeEndpointOfList(Object node) {
-        var elementLocation = listVariableStateSupply.getLocationInList(node)
+        var elementPosition = listVariableStateSupply.getElementPosition(node)
                 .ensureAssigned();
-        var index = elementLocation.index();
-        var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(elementLocation.entity());
+        var index = elementPosition.index();
+        var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(elementPosition.entity());
         if (index == firstUnpinnedIndex) {
             return true;
         }
-        var size = listVariableDescriptor.getListSize(elementLocation.entity());
+        var size = listVariableDescriptor.getListSize(elementPosition.entity());
         return index == size - 1;
     }
 
