@@ -24,7 +24,7 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <version.apache.collections4>4.4</version.apache.collections4>
+    <version.apache.collections4>4.5.0</version.apache.collections4>
     <maven.compiler.release>17</maven.compiler.release>
   </properties>
 
