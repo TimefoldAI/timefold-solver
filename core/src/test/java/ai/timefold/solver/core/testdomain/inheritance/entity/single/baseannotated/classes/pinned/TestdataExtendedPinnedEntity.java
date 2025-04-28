@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.pinned.extended;
+package ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.pinned;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.constraintconfiguration.extended;
+package ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.configuration;
 
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfigurationProvider;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;

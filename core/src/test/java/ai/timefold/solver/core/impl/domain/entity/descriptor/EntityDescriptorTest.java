@@ -11,8 +11,8 @@ import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.chi
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
 import ai.timefold.solver.core.testdomain.invalid.noplanningvar.TestdataNoVariableSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
-import ai.timefold.solver.core.testdomain.pinned.extended.TestdataExtendedPinnedEntity;
-import ai.timefold.solver.core.testdomain.pinned.extended.TestdataExtendedPinnedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.pinned.TestdataExtendedPinnedEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.pinned.TestdataExtendedPinnedSolution;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.extended;
+package ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow;
 
 import java.util.List;
 

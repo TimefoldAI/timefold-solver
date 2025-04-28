@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.shadow.extended;
+package ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;

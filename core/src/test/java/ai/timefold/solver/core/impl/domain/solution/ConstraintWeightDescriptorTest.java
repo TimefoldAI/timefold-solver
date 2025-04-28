@@ -6,8 +6,8 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfiguration;
 import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfigurationSolution;
-import ai.timefold.solver.core.testdomain.constraintconfiguration.extended.TestdataExtendedConstraintConfiguration;
-import ai.timefold.solver.core.testdomain.constraintconfiguration.extended.TestdataExtendedConstraintConfigurationSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.configuration.TestdataExtendedConstraintConfiguration;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.configuration.TestdataExtendedConstraintConfigurationSolution;
 
 import org.junit.jupiter.api.Test;
 
