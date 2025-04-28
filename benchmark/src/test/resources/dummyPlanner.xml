@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plannerBenchmarkResult>
+  <name>unit-test</name>
+  <aggregation>false</aggregation>
+  <availableProcessors>4</availableProcessors>
+  <solverBenchmarkResult>
+    <name>Config_0</name>
+    <subSingleCount>1</subSingleCount>
+    <solverConfig>
+      <solutionClass>ai.timefold.solver.benchmark.util.TestSolution</solutionClass>
+      <entityClass>ai.timefold.solver.benchmark.util.TestEntity</entityClass>
+      <scoreDirectorFactory>
+        <constraintProviderClass>ai.timefold.solver.benchmark.util.DummyConstraintProvider</constraintProviderClass>
+      </scoreDirectorFactory>
+      <termination>
+        <secondsSpentLimit>1</secondsSpentLimit>
+      </termination>
+    </solverConfig>
+    <singleBenchmarkResult id="1">
+      <subSingleBenchmarkResult>
+        <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
+        <succeeded>true</succeeded>
+        <initialized>false</initialized>
+        <timeMillisSpent>-1</timeMillisSpent>
+        <scoreCalculationCount>0</scoreCalculationCount>
+        <moveEvaluationCount>0</moveEvaluationCount>
+      </subSingleBenchmarkResult>
+      <allScoresInitialized>false</allScoresInitialized>
+      <timeMillisSpent>-1</timeMillisSpent>
+      <scoreCalculationCount>-1</scoreCalculationCount>
+      <moveEvaluationCount>-1</moveEvaluationCount>
+    </singleBenchmarkResult>
+  </solverBenchmarkResult>
+
+  <unifiedProblemBenchmarkResult>
+    <name>P-1</name>
+    <writeOutputSolutionEnabled>false</writeOutputSolutionEnabled>
+    <bestScoreProblemStatistic>
+      <problemStatisticType>BEST_SCORE</problemStatisticType>
+    </bestScoreProblemStatistic>
+    <stepScoreProblemStatistic>
+      <problemStatisticType>STEP_SCORE</problemStatisticType>
+    </stepScoreProblemStatistic>
+    <memoryUseProblemStatistic>
+      <problemStatisticType>MEMORY_USE</problemStatisticType>
+    </memoryUseProblemStatistic>
+    <bestSolutionMutationProblemStatistic>
+      <problemStatisticType>BEST_SOLUTION_MUTATION</problemStatisticType>
+    </bestSolutionMutationProblemStatistic>
+    <moveCountPerStepProblemStatistic>
+      <problemStatisticType>MOVE_COUNT_PER_STEP</problemStatisticType>
+    </moveCountPerStepProblemStatistic>
+    <bestScoreProblemStatistic>
+      <problemStatisticType>MOVE_COUNT_PER_TYPE</problemStatisticType>
+    </bestScoreProblemStatistic>
+    <moveEvaluationSpeedProblemStatistic>
+      <problemStatisticType>MOVE_EVALUATION_SPEED</problemStatisticType>
+      <reportFileName>moveEvaluationSpeedProblemStatisticChart</reportFileName>
+      <reportTitle>P-1 move evaluation speed statistic</reportTitle>
+      <yLabel>Move evaluation speed per second</yLabel>
+      <statisticType>MOVE_EVALUATION_SPEED</statisticType>
+    </moveEvaluationSpeedProblemStatistic>
+    <scoreCalculationSpeedProblemStatistic>
+      <problemStatisticType>SCORE_CALCULATION_SPEED</problemStatisticType>
+      <reportFileName>scoreCalculationSpeedProblemStatisticChart</reportFileName>
+      <reportTitle>P-1 score calculation speed statistic</reportTitle>
+      <yLabel>Score calculation speed per second</yLabel>
+      <statisticType>SCORE_CALCULATION_SPEED</statisticType>
+    </scoreCalculationSpeedProblemStatistic>
+    <singleBenchmarkResult>1</singleBenchmarkResult>
+  </unifiedProblemBenchmarkResult>
+  <startingTimestamp>2025-04-28T09:50:14+02:00</startingTimestamp>
+</plannerBenchmarkResult>
