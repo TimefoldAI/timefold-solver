@@ -16,6 +16,7 @@
         <secondsSpentLimit>1</secondsSpentLimit>
       </termination>
     </solverConfig>
+
     <singleBenchmarkResult id="1">
       <subSingleBenchmarkResult>
         <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
@@ -30,6 +31,7 @@
       <scoreCalculationCount>-1</scoreCalculationCount>
       <moveEvaluationCount>-1</moveEvaluationCount>
     </singleBenchmarkResult>
+
   </solverBenchmarkResult>
 
   <unifiedProblemBenchmarkResult>
