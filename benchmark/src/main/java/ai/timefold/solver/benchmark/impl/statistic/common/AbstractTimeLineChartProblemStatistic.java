@@ -12,13 +12,20 @@ import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;
 
 public abstract class AbstractTimeLineChartProblemStatistic extends ProblemStatistic<LineChart<Long, Long>> {
 
-    private final String reportFileName;
-    private final String reportTitle;
-    private final String yLabel;
+    private String reportFileName;
+    private String reportTitle;
+    private String yLabel;
+    private ProblemStatisticType statisticType;
+
+    protected AbstractTimeLineChartProblemStatistic(ProblemStatisticType statisticType) {
+        super(null, statisticType);
+        this.statisticType = statisticType;
+    }
 
     protected AbstractTimeLineChartProblemStatistic(ProblemStatisticType statisticType,
             ProblemBenchmarkResult<?> problemBenchmarkResult, String reportFileName, String reportTitle, String yLabel) {
         super(problemBenchmarkResult, statisticType);
+        this.statisticType = statisticType;
         this.reportFileName = reportFileName;
         this.reportTitle = reportTitle;
         this.yLabel = yLabel;
@@ -47,4 +54,17 @@ public abstract class AbstractTimeLineChartProblemStatistic extends ProblemStati
         }
         return singletonList(builder.build(reportFileName, reportTitle, "Time spent", yLabel, false, true, false));
     }
+
+    public void setReportFileName(String reportFileName) {
+        this.reportFileName = reportFileName;
+    }
+
+    public void setReportTitle(String reportTitle) {
+        this.reportTitle = reportTitle;
+    }
+
+    public void setyLabel(String yLabel) {
+        this.yLabel = yLabel;
+    }
+
 }

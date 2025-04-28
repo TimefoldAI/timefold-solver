@@ -8,9 +8,8 @@ import ai.timefold.solver.benchmark.impl.statistic.common.AbstractTimeLineChartP
 
 public class ScoreCalculationSpeedProblemStatistic extends AbstractTimeLineChartProblemStatistic {
 
-    private ScoreCalculationSpeedProblemStatistic() {
-        // For JAXB.
-        this(null);
+    protected ScoreCalculationSpeedProblemStatistic() {
+        super(ProblemStatisticType.SCORE_CALCULATION_SPEED);
     }
 
     public ScoreCalculationSpeedProblemStatistic(ProblemBenchmarkResult problemBenchmarkResult) {
@@ -22,5 +21,13 @@ public class ScoreCalculationSpeedProblemStatistic extends AbstractTimeLineChart
     @Override
     public SubSingleStatistic createSubSingleStatistic(SubSingleBenchmarkResult subSingleBenchmarkResult) {
         return new ScoreCalculationSpeedSubSingleStatistic(subSingleBenchmarkResult);
+    }
+
+    @Override
+    public void setProblemBenchmarkResult(ProblemBenchmarkResult problemBenchmarkResult) {
+        super.setProblemBenchmarkResult(problemBenchmarkResult);
+        this.setyLabel("Score calculation speed per second");
+        this.setReportTitle(problemBenchmarkResult.getName() + " score calculation speed statistic");
+        this.setReportFileName("scoreCalculationSpeedProblemStatisticChart");
     }
 }
