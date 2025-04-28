@@ -100,10 +100,10 @@ public final class PlannerTestUtils {
         var solution = new TestdataSolution(code);
         solution.setValueList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataValue("v" + i))
-                .toList());
+                .collect(Collectors.toList()));
         solution.setEntityList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataEntity("e" + i))
-                .toList());
+                .collect(Collectors.toList()));
         return solution;
     }
 
