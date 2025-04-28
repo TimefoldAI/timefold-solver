@@ -15,7 +15,6 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 {sonarBadge}&style=for-the-badge&metric=reliability_rating["Reliability Rating", {sonarLink}]
 {sonarBadge}&metric=security_rating["Security Rating", {sonarLink}]
 {sonarBadge}&metric=sqale_rating["Maintainability Rating", {sonarLink}]
-{sonarBadge}&metric=coverage["Coverage", {sonarLink}]
 
 Timefold Solver is an AI constraint solver for Java,
 https://github.com/TimefoldAI/timefold-solver/tree/main/python#readme[Python] and Kotlin.
