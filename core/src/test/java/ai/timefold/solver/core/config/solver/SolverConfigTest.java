@@ -43,16 +43,16 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.io.jaxb.SolverConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceEntity;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceSolution;
-import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordEntity;
-import ai.timefold.solver.core.impl.testdata.domain.record.TestdataRecordSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceConstraintProvider;
+import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceEntity;
+import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceSolution;
+import ai.timefold.solver.core.testdomain.record.TestdataRecordEntity;
+import ai.timefold.solver.core.testdomain.record.TestdataRecordSolution;
 
 import org.apache.commons.io.IOUtils;
 import org.jspecify.annotations.NonNull;
@@ -115,7 +115,7 @@ class SolverConfigTest {
 
     @Test
     void whiteCharsInClassName() {
-        var solutionClassName = "ai.timefold.solver.core.impl.testdata.domain.TestdataSolution";
+        var solutionClassName = "ai.timefold.solver.core.testdomain.TestdataSolution";
         // Intentionally included white chars around the class name.
         var xmlFragment = """
                 <solver xmlns="https://timefold.ai/xsd/solver">
@@ -215,9 +215,9 @@ class SolverConfigTest {
         var solverConfig = readSolverConfig(TEST_SOLVER_CONFIG_WITHOUT_NAMESPACE);
         var classVisitor = (Consumer<Class<?>>) mock(Consumer.class);
         solverConfig.visitReferencedClasses(classVisitor);
-        verify(classVisitor, atLeastOnce()).accept(TestdataAnnotatedExtendedSolution.class);
+        verify(classVisitor, atLeastOnce()).accept(TestdataBothAnnotatedSolution.class);
         verify(classVisitor, atLeastOnce()).accept(TestdataEntity.class);
-        verify(classVisitor, atLeastOnce()).accept(TestdataAnnotatedExtendedEntity.class);
+        verify(classVisitor, atLeastOnce()).accept(TestdataBothAnnotatedChildEntity.class);
         verify(classVisitor, atLeastOnce()).accept(DummyEasyScoreCalculator.class);
         verify(classVisitor, atLeastOnce()).accept(DummyConstraintProvider.class);
         verify(classVisitor, atLeastOnce()).accept(DummyIncrementalScoreCalculator.class);

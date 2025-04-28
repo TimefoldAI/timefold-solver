@@ -14,7 +14,7 @@ The need to create plans generally arises from a desire to achieve a *goal*:
 Achieving those goals involves organizing the available *resources*.
 To correctly staff a hospital you need enough qualified personnel in a variety of fields and specializations to cover the opening hours of the hospital.
 
-Any plan to deploy resources, whether to staff a hospital shift or to assemble the building materials for a new house, is done under *constraints*.
+Any plan to deploy resources, whether to staff a hospital shift or to assemble the building materials for a new house, is done under *testconstraint*.
 
 Constraints could be laws of the universe; people can't work two shifts in two separate locations at the same time,
 and you can't mount a roof on a house that doesn't exist.

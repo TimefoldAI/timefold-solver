@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.DefaultSubChainSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChainSelector;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
 
 import org.junit.jupiter.api.Test;
 

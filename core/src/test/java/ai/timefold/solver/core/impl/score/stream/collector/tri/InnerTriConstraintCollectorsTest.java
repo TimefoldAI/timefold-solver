@@ -4,10 +4,10 @@ import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.comp
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countLongTri;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.asMap;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.asSet;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.asSortedMap;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.asSortedSet;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.asMap;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.asSet;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.asSortedMap;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.asSortedSet;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.emptyMap;

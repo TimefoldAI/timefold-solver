@@ -13,10 +13,10 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter;
-import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter;
+import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -32,7 +32,7 @@ class TimefoldProcessorSolverPropertiesTest {
             .overrideConfigKey("quarkus.timefold.solver.environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.daemon", "true")
             .overrideConfigKey("quarkus.timefold.solver.nearby-distance-meter-class",
-                    "ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter")
+                    "ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter")
             .overrideConfigKey("quarkus.timefold.solver.move-thread-count", "2")
             .overrideConfigKey("quarkus.timefold.solver.domain-access-type", "REFLECTION")
             .overrideConfigKey("quarkus.timefold.solver.termination.spent-limit", "4h")

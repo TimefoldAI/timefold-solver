@@ -1,6 +1,6 @@
 package ai.timefold.solver.benchmark.impl.ranking;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCompareToOrder;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCompareToOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

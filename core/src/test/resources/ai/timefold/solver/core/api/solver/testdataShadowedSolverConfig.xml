@@ -1,7 +1,7 @@
 <solver>
-  <solutionClass>ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedSolution</solutionClass>
-  <entityClass>ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedEntity</entityClass>
+  <solutionClass>ai.timefold.solver.core.testdomain.shadow.TestdataShadowedSolution</solutionClass>
+  <entityClass>ai.timefold.solver.core.testdomain.shadow.TestdataShadowedEntity</entityClass>
   <scoreDirectorFactory>
-    <incrementalScoreCalculatorClass>ai.timefold.solver.core.impl.testdata.domain.shadow.TestdataShadowedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
+    <incrementalScoreCalculatorClass>ai.timefold.solver.core.testdomain.shadow.TestdataShadowedIncrementalScoreCalculator</incrementalScoreCalculatorClass>
   </scoreDirectorFactory>
 </solver>

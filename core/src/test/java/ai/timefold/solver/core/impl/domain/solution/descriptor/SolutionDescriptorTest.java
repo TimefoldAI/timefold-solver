@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfCollection;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfCollection;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -14,55 +14,55 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataArrayBasedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.collection.TestdataSetBasedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.enumeration.TestdataEnumSolution;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.record.TestdataRecordSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.badconfiguration.TestdataBadConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.duplicateweightoverrides.TestdataDuplicateWeightConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.nosolution.TestdataNoSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.variablemap.TestdataMapConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericEntity;
-import ai.timefold.solver.core.impl.testdata.domain.reflect.generic.TestdataGenericSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.TestdataNoProblemFactPropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.TestdataProblemFactPropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.TestdataReadMethodProblemFactCollectionPropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.TestdataWildcardSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.autodiscover.TestdataAutoDiscoverFieldOverrideSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.autodiscover.TestdataAutoDiscoverFieldSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.autodiscover.TestdataAutoDiscoverGetterOverrideSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.autodiscover.TestdataAutoDiscoverGetterSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.autodiscover.TestdataAutoDiscoverUnannotatedEntitySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.autodiscover.TestdataExtendedAutoDiscoverGetterSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataDuplicatePlanningEntityCollectionPropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataDuplicatePlanningScorePropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataDuplicateProblemFactCollectionPropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataMissingScorePropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataProblemFactCollectionPropertyWithArgumentSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataProblemFactIsPlanningEntityCollectionPropertySolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataUnknownFactTypeSolution;
-import ai.timefold.solver.core.impl.testdata.domain.solutionproperties.invalid.TestdataUnsupportedWildcardSolution;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.TestdataValueRangeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.TestdataValueRangeSolution;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.entityproviding.TestdataEntityProvidingSolution;
-import ai.timefold.solver.core.impl.testdata.util.CodeAssertableArrayList;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
 import ai.timefold.solver.core.impl.util.MathUtils;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedSolution;
+import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedSolution;
+import ai.timefold.solver.core.testdomain.immutable.enumeration.TestdataEnumSolution;
+import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.invalid.badconfiguration.TestdataBadConfigurationSolution;
+import ai.timefold.solver.core.testdomain.invalid.badfactcollection.TestdataBadFactCollectionSolution;
+import ai.timefold.solver.core.testdomain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
+import ai.timefold.solver.core.testdomain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
+import ai.timefold.solver.core.testdomain.invalid.duplicateweightoverrides.TestdataDuplicateWeightConfigurationSolution;
+import ai.timefold.solver.core.testdomain.invalid.nosolution.TestdataNoSolution;
+import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigurationSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericEntity;
+import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.TestdataNoProblemFactPropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.TestdataProblemFactPropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.TestdataReadMethodProblemFactCollectionPropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.TestdataWildcardSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverFieldOverrideSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverFieldSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverGetterOverrideSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverGetterSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataAutoDiscoverUnannotatedEntitySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.autodiscover.TestdataExtendedAutoDiscoverGetterSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataDuplicatePlanningEntityCollectionPropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataDuplicatePlanningScorePropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataDuplicateProblemFactCollectionPropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataMissingScorePropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataProblemFactCollectionPropertyWithArgumentSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataProblemFactIsPlanningEntityCollectionPropertySolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnknownFactTypeSolution;
+import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnsupportedWildcardSolution;
+import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeEntity;
+import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.CodeAssertableArrayList;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.assertj.core.data.Percentage;
 import org.junit.jupiter.api.Test;
@@ -157,12 +157,13 @@ class SolutionDescriptorTest {
 
     @Test
     void extended() {
-        var solutionDescriptor = TestdataAnnotatedExtendedSolution.buildExtendedSolutionDescriptor();
+        var solutionDescriptor = TestdataBothAnnotatedExtendedSolution.buildSolutionDescriptor();
         assertThat(solutionDescriptor.getProblemFactMemberAccessorMap()).isEmpty();
         assertThat(solutionDescriptor.getProblemFactCollectionMemberAccessorMap()).containsOnlyKeys("valueList",
                 "subValueList");
-        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).isEmpty();
-        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList", "subEntityList");
+        assertThat(solutionDescriptor.getEntityMemberAccessorMap()).containsOnlyKeys("entity", "subEntity");
+        assertThat(solutionDescriptor.getEntityCollectionMemberAccessorMap()).containsOnlyKeys("entityList", "subEntityList",
+                "rawEntityList", "entityList", "objectEntityList");
     }
 
     @Test
@@ -301,9 +302,9 @@ class SolutionDescriptorTest {
         var singleProblemFact = new TestdataObject("p1");
         var valueList = Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2"));
         var entityList = Arrays.asList(
-                new TestdataUnannotatedExtendedEntity("u1"),
-                new TestdataUnannotatedExtendedEntity("u2"));
-        var otherEntity = new TestdataUnannotatedExtendedEntity("otherU1");
+                new TestdataOnlyBaseAnnotatedChildEntity("u1"),
+                new TestdataOnlyBaseAnnotatedChildEntity("u2"));
+        var otherEntity = new TestdataOnlyBaseAnnotatedChildEntity("otherU1");
         var solution =
                 new TestdataAutoDiscoverUnannotatedEntitySolution("s1", singleProblemFact, valueList, entityList, otherEntity);
 

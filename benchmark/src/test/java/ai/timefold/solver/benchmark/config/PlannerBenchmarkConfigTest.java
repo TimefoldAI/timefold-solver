@@ -13,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 
 import ai.timefold.solver.benchmark.impl.io.PlannerBenchmarkConfigIO;
 import ai.timefold.solver.core.impl.io.jaxb.TimefoldXmlSerializationException;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.jackson.impl.domain.solution.JacksonSolutionFileIO;
 import ai.timefold.solver.persistence.common.api.domain.solution.RigidTestdataSolutionFileIO;
 import ai.timefold.solver.persistence.common.api.domain.solution.SolutionFileIO;
@@ -68,8 +68,8 @@ class PlannerBenchmarkConfigTest {
                 + "    <name>Entity Tabu Search</name>\n"
                 + "    <solver>\n"
                 // Intentionally wrong to simulate a typo.
-                + "      <solutionKlazz>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionKlazz>\n"
-                + "      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>\n"
+                + "      <solutionKlazz>ai.timefold.solver.core.testdomain.TestdataSolution</solutionKlazz>\n"
+                + "      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>\n"
                 + "    </solver>\n"
                 + "    <problemBenchmarks>\n"
                 + "      <solutionFileIOClass>" + TestdataSolutionFileIO.class.getCanonicalName() + "</solutionFileIOClass>\n"

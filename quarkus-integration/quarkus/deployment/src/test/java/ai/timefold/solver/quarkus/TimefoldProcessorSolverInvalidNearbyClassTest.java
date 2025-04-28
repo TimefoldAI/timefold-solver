@@ -3,10 +3,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter;
-import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter;
+import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -24,7 +24,7 @@ class TimefoldProcessorSolverInvalidNearbyClassTest {
             .overrideConfigKey("quarkus.timefold.solver.environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.daemon", "true")
             .overrideConfigKey("quarkus.timefold.solver.nearby-distance-meter-class",
-                    "ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter")
+                    "ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter")
             .overrideConfigKey("quarkus.timefold.solver.move-thread-count", "2")
             .overrideConfigKey("quarkus.timefold.solver.domain-access-type", "REFLECTION")
             .overrideConfigKey("quarkus.timefold.solver.termination.spent-limit", "4h")
@@ -46,7 +46,7 @@ class TimefoldProcessorSolverInvalidNearbyClassTest {
             .overrideConfigKey("quarkus.timefold.solver.environment-mode", "FULL_ASSERT")
             .overrideConfigKey("quarkus.timefold.solver.daemon", "true")
             .overrideConfigKey("quarkus.timefold.solver.nearby-distance-meter-class",
-                    "ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution")
+                    "ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution")
             .overrideConfigKey("quarkus.timefold.solver.move-thread-count", "2")
             .overrideConfigKey("quarkus.timefold.solver.domain-access-type", "REFLECTION")
             .overrideConfigKey("quarkus.timefold.solver.termination.spent-limit", "4h")

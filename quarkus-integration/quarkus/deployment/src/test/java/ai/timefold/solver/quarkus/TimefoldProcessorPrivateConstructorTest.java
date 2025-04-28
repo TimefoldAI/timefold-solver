@@ -8,9 +8,9 @@ import java.util.concurrent.ExecutionException;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.testdata.gizmo.PrivateNoArgsConstructorConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.gizmo.PrivateNoArgsConstructorEntity;
-import ai.timefold.solver.quarkus.testdata.gizmo.PrivateNoArgsConstructorSolution;
+import ai.timefold.solver.quarkus.testdomain.gizmo.PrivateNoArgsConstructorConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.gizmo.PrivateNoArgsConstructorEntity;
+import ai.timefold.solver.quarkus.testdomain.gizmo.PrivateNoArgsConstructorSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

@@ -25,7 +25,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestDistanceMeter;
+import ai.timefold.solver.core.testdomain.list.TestDistanceMeter;
 
 import org.junit.jupiter.api.Test;
 

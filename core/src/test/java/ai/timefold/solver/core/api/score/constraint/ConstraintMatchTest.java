@@ -8,7 +8,7 @@ import java.util.Arrays;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
-import ai.timefold.solver.core.impl.testdata.util.PlannerAssert;
+import ai.timefold.solver.core.testutil.PlannerAssert;
 
 import org.junit.jupiter.api.Test;
 

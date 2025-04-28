@@ -24,12 +24,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIterator
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.partitionedsearch.partitioner.SolutionPartitioner;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
 import ai.timefold.solver.quarkus.gizmo.TimefoldGizmoBeanFactory;
-import ai.timefold.solver.quarkus.testdata.gizmo.DummyVariableListener;
+import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -50,7 +50,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
                     .addClasses(
                             TestdataSolution.class,
                             TestdataEntity.class,
-                            TestdataAnnotatedExtendedEntity.class,
+                            TestdataBothAnnotatedChildEntity.class,
                             DummyInterfaceEntity.class,
                             DummyAbstractEntity.class,
                             DummyVariableListener.class,
@@ -102,7 +102,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
     }
 
     @PlanningEntity
-    public static abstract class DummyAbstractEntity {
+    public abstract static class DummyAbstractEntity {
         @ShadowVariable(variableListenerClass = DummyVariableListener.class,
                 sourceEntityClass = TestdataEntity.class, sourceVariableName = "value")
         abstract Integer getLength();
@@ -128,37 +128,37 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
             implements IncrementalScoreCalculator<TestdataSolution, SimpleScore> {
         @Override
         public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
-
+            // Ignore
         }
 
         @Override
         public void beforeEntityAdded(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void afterEntityAdded(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+            // Ignore
         }
 
         @Override
         public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+            // Ignore
         }
 
         @Override
         public void beforeEntityRemoved(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void afterEntityRemoved(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override

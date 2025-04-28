@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockEntityIndependentValueSelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfIterator;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfValueSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfValueSelectorForEntity;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelectorForEntity;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -17,9 +17,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentVa
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 

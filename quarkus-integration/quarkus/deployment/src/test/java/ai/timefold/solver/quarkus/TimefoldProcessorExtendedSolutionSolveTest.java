@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import jakarta.inject.Inject;
@@ -15,15 +14,14 @@ import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverFactory;
 import ai.timefold.solver.core.impl.solver.DefaultSolverManager;
-import ai.timefold.solver.quarkus.testdata.extended.TestdataExtendedQuarkusSolution;
-import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.inheritance.solution.TestdataExtendedQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -65,15 +63,15 @@ class TimefoldProcessorExtendedSolutionSolveTest {
 
     @Test
     void solve() throws ExecutionException, InterruptedException {
-        TestdataQuarkusSolution problem = new TestdataExtendedQuarkusSolution("Extra Data");
+        var problem = new TestdataExtendedQuarkusSolution("Extra Data");
         problem.setValueList(IntStream.range(1, 3)
                 .mapToObj(i -> "v" + i)
-                .collect(Collectors.toList()));
+                .toList());
         problem.setEntityList(IntStream.range(1, 3)
                 .mapToObj(i -> new TestdataQuarkusEntity())
-                .collect(Collectors.toList()));
-        SolverJob<TestdataQuarkusSolution, Long> solverJob = solverManager.solve(1L, problem);
-        TestdataExtendedQuarkusSolution solution = (TestdataExtendedQuarkusSolution) solverJob.getFinalBestSolution();
+                .toList());
+        var solverJob = solverManager.solve(1L, problem);
+        var solution = (TestdataExtendedQuarkusSolution) solverJob.getFinalBestSolution();
         assertNotNull(solution);
         assertTrue(solution.getScore().score() >= 0);
         assertEquals("Extra Data", solution.getExtraData());

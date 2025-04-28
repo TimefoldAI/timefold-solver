@@ -8,17 +8,16 @@ import java.util.concurrent.ExecutionException;
 
 import jakarta.inject.Inject;
 
-import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowExtendedShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extendedshadow.TestdataExtendedShadowVariable;
-import ai.timefold.solver.quarkus.testdata.extended.TestdataExtendedShadowSolutionConstraintProvider;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowExtendedShadowEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowShadowEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowVariable;
+import ai.timefold.solver.quarkus.testdomain.inheritance.solution.TestdataExtendedShadowSolutionConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -47,11 +46,10 @@ class TimefoldProcessorExtendedShadowSolutionSolveTest {
 
     @Test
     void solve() throws ExecutionException, InterruptedException {
-        TestdataExtendedShadowShadowEntity shadowEntity =
-                new TestdataExtendedShadowExtendedShadowEntity();
-        TestdataExtendedShadowSolution problem = new TestdataExtendedShadowSolution(shadowEntity);
-        SolverJob<TestdataExtendedShadowSolution, Long> solverJob = solverManager.solve(1L, problem);
-        TestdataExtendedShadowSolution solution = solverJob.getFinalBestSolution();
+        var shadowEntity = new TestdataExtendedShadowExtendedShadowEntity();
+        var problem = new TestdataExtendedShadowSolution(shadowEntity);
+        var solverJob = solverManager.solve(1L, problem);
+        var solution = solverJob.getFinalBestSolution();
         assertNotNull(solution);
         assertNotSame(solution, problem);
         assertEquals(0, solution.score.score());

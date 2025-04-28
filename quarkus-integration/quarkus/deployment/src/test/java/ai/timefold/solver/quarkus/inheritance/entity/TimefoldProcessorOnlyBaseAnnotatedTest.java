@@ -7,10 +7,10 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childnot.TestChildNotAnnotatedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childnot.TestChildNotAnnotatedConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

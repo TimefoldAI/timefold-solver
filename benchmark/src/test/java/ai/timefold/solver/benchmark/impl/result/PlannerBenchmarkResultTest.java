@@ -22,8 +22,8 @@ import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.random.RandomType;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;

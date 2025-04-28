@@ -7,10 +7,10 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.addvar.TestAddVarInterfaceConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.addvar.TestAddVarInterfaceConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

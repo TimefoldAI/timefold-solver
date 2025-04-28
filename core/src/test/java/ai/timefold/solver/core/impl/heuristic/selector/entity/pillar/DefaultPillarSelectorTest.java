@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.pillar;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfPillarSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingPillarSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertEmptyNeverEndingPillarSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfPillarSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingPillarSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingPillarSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -25,12 +25,12 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.TestRandom;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

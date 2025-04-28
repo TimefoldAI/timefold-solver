@@ -11,28 +11,28 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierConstraintProvider;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierExtendedSolution;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierFirstEntity;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierJustificationProvider;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSecondEntity;
-import ai.timefold.solver.test.api.score.stream.testdata.TestdataConstraintVerifierSolution;
-import ai.timefold.solver.test.api.score.stream.testdata.justification.TestFirstJustification;
-import ai.timefold.solver.test.api.score.stream.testdata.justification.TestSecondJustification;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
+import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
+import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableValue;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierConstraintProvider;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierExtendedSolution;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierFirstEntity;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierJustificationProvider;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierSecondEntity;
+import ai.timefold.solver.test.api.testdomain.TestdataConstraintVerifierSolution;
+import ai.timefold.solver.test.api.testdomain.justification.TestFirstJustification;
+import ai.timefold.solver.test.api.testdomain.justification.TestSecondJustification;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -709,7 +709,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith(new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -725,7 +725,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith(new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -743,7 +743,7 @@ class SingleConstraintAssertionTest {
                                 new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
@@ -762,7 +762,7 @@ class SingleConstraintAssertionTest {
                                 new TestSecondJustification("1")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("TestFirstJustification[id=Generated Entity 0]")
@@ -787,7 +787,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -803,7 +803,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWith("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -882,7 +882,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWithExactly(new TestFirstJustification("2")))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -904,7 +904,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWithExactly("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -921,7 +921,7 @@ class SingleConstraintAssertionTest {
                         .justifiesWithExactly("Custom Message", new TestFirstJustification("2")))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Justification: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Justification: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestFirstJustification[id=2]")
                 .hasMessageContaining("Actual")
@@ -999,7 +999,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1015,7 +1015,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1032,7 +1032,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(solution.getEntityList().get(0), badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(solution.getEntityList().get(0).toString())
                 .hasMessageContaining(badEntity.toString())
@@ -1050,7 +1050,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith(solution.getEntityList().get(0), badEntity, "bad indictment"))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='Generated Entity 0')")
                 .hasMessageContaining("TestdataConstraintVerifierFirstEntity(code='bad code')")
@@ -1077,7 +1077,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1093,7 +1093,7 @@ class SingleConstraintAssertionTest {
                         .indictsWith("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1170,7 +1170,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1186,7 +1186,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly(badEntity))
                 .hasMessageContaining("Broken expectation")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1210,7 +1210,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")
@@ -1227,7 +1227,7 @@ class SingleConstraintAssertionTest {
                         .indictsWithExactly("Custom Message", badEntity))
                 .hasMessageContaining("Custom Message")
                 .hasMessageContaining(
-                        "Indictment: ai.timefold.solver.test.api.score.stream.testdata/Justify with first justification")
+                        "Indictment: ai.timefold.solver.test.api.testdomain/Justify with first justification")
                 .hasMessageContaining("Expected")
                 .hasMessageContaining(badEntity.toString())
                 .hasMessageContaining("Actual")

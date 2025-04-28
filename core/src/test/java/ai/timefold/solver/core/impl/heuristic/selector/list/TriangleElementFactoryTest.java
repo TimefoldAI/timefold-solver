@@ -8,7 +8,7 @@ import java.util.Random;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.heuristic.selector.list.TriangleElementFactory.TriangleElement;
-import ai.timefold.solver.core.impl.testutil.TestRandom;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;

@@ -29,22 +29,22 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ruin.Li
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingSolution;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.single_var.TestdataSingleCascadingValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullMultiSwapListMove;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.full.TestdataShadowedFullValue;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingEntity;
+import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingSolution;
+import ai.timefold.solver.core.testdomain.cascade.single.TestdataSingleCascadingValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity;
+import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullMultiSwapListMove;
+import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
+import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;
 
 import org.junit.jupiter.api.Test;
 

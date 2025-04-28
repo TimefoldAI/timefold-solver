@@ -14,8 +14,8 @@
   <solverBenchmark>
     <name>Entity Tabu Search</name>
     <solver>
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
     </solver>
     <problemBenchmarks>
       <solutionFileIOClass>ai.timefold.solver.benchmark.config.PlannerBenchmarkConfigTest$TestdataSolutionFileIO</solutionFileIOClass>

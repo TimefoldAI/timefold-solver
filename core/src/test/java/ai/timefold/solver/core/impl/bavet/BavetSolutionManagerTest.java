@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.bavet;
 
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractSolutionManagerTest;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.pinned.TestdataPinnedUnassignedValuesListConstraintProvider;
+import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListConstraintProvider;
 
 final class BavetSolutionManagerTest extends AbstractSolutionManagerTest {
 

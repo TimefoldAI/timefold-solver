@@ -4,9 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.replacevar.TestdataReplaceVarChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.replacevar.TestdataReplaceVarSolution;
+import ai.timefold.solver.core.testconstraint.DummyConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.replacevar.TestdataReplaceVarChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.replacevar.TestdataReplaceVarSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

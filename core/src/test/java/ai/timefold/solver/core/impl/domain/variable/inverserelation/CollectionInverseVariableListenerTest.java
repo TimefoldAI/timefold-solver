@@ -10,9 +10,9 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.inverserelation.TestdataInverseRelationEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.inverserelation.TestdataInverseRelationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.inverserelation.TestdataInverseRelationValue;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationValue;
 
 import org.junit.jupiter.api.Test;
 

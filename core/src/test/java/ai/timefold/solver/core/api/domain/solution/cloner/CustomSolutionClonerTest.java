@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.clone.customcloner.TestdataCorrectlyClonedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.clone.customcloner.TestdataEntitiesNotClonedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.clone.customcloner.TestdataScoreNotClonedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.clone.customcloner.TestdataScoreNotEqualSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.clone.customcloner.TestdataCorrectlyClonedSolution;
+import ai.timefold.solver.core.testdomain.clone.customcloner.TestdataEntitiesNotClonedSolution;
+import ai.timefold.solver.core.testdomain.clone.customcloner.TestdataScoreNotClonedSolution;
+import ai.timefold.solver.core.testdomain.clone.customcloner.TestdataScoreNotEqualSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

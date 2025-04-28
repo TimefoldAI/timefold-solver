@@ -18,7 +18,7 @@ import ai.timefold.solver.benchmark.impl.result.SubSingleBenchmarkResult;
 import ai.timefold.solver.benchmark.impl.statistic.AbstractSubSingleStatisticTest;
 import ai.timefold.solver.benchmark.impl.statistic.SubSingleStatistic;
 import ai.timefold.solver.benchmark.impl.statistic.common.LongStatisticPoint;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;

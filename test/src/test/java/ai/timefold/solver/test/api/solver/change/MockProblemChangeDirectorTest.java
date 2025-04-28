@@ -1,11 +1,11 @@
 package ai.timefold.solver.test.api.solver.change;
 
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntityGroup;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValue;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValueGroup;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;

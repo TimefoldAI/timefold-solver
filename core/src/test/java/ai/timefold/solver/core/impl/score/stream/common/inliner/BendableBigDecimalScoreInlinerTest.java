@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.score.buildin.bendablebigdecimal.BendableBigD
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.testdata.domain.score.TestdataBendableBigDecimalScoreSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataBendableBigDecimalScoreSolution;
 
 import org.junit.jupiter.api.Test;
 

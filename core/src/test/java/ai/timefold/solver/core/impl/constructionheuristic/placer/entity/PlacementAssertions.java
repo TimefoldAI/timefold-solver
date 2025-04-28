@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.constructionheuristic.placer.entity;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCode;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Iterator;

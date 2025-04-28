@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.temporal;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllElementsOfIterator;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertElementsOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
@@ -19,7 +19,7 @@ import java.time.temporal.TemporalUnit;
 import java.util.Iterator;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.testutil.TestRandom;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 

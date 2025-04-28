@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.custom;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.verify;
@@ -9,24 +10,19 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.cyclic.TestdataSevenNonCyclicShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.cyclic.invalid.TestdataCyclicReferencedShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.cyclic.invalid.TestdataCyclicShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.extended.TestdataExtendedShadowedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.extended.TestdataExtendedShadowedParentEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.extended.TestdataExtendedShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedEntityUniqueEvents;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.manytomany.TestdataManyToManyShadowedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_listener.TestdataWrongBasicShadowEntity;
-import ai.timefold.solver.core.impl.testdata.domain.shadow.wrong_listener.TestdataWrongListShadowEntity;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedParentEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.TestdataSevenNonCyclicShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicReferencedShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntity;
+import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntityUniqueEvents;
+import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.wronglistener.TestdataWrongBasicShadowEntity;
+import ai.timefold.solver.core.testdomain.shadow.wronglistener.TestdataWrongListShadowEntity;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 
@@ -44,8 +40,8 @@ class CustomVariableListenerTest {
 
     @Test
     void nonCyclicWithSevenDisorderedShadows() {
-        SolutionDescriptor<TestdataSevenNonCyclicShadowedSolution> solutionDescriptor =
-                TestdataSevenNonCyclicShadowedSolution.buildSolutionDescriptor();
+        assertThatCode(TestdataSevenNonCyclicShadowedSolution::buildSolutionDescriptor)
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -62,19 +58,18 @@ class CustomVariableListenerTest {
 
     @Test
     void extendedZigZag() {
-        GenuineVariableDescriptor<TestdataExtendedShadowedSolution> variableDescriptor =
-                TestdataExtendedShadowedParentEntity.buildVariableDescriptorForValue();
-        InnerScoreDirector<TestdataExtendedShadowedSolution, SimpleScore> scoreDirector =
+        var variableDescriptor = TestdataExtendedShadowedParentEntity.buildVariableDescriptorForValue();
+        var scoreDirector =
                 PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataValue val1 = new TestdataValue("1");
-        TestdataValue val2 = new TestdataValue("2");
-        TestdataValue val3 = new TestdataValue("3");
-        TestdataExtendedShadowedParentEntity a = new TestdataExtendedShadowedParentEntity("a", null);
-        TestdataExtendedShadowedParentEntity b = new TestdataExtendedShadowedParentEntity("b", null);
-        TestdataExtendedShadowedChildEntity c = new TestdataExtendedShadowedChildEntity("c", null);
+        var val1 = new TestdataValue("1");
+        var val2 = new TestdataValue("2");
+        var val3 = new TestdataValue("3");
+        var a = new TestdataExtendedShadowedParentEntity("a", null);
+        var b = new TestdataExtendedShadowedParentEntity("b", null);
+        var c = new TestdataExtendedShadowedChildEntity("c", null);
 
-        TestdataExtendedShadowedSolution solution = new TestdataExtendedShadowedSolution("solution");
+        var solution = new TestdataExtendedShadowedSolution("solution");
         solution.setEntityList(Arrays.asList(a, b, c));
         solution.setValueList(Arrays.asList(val1, val2, val3));
         scoreDirector.setWorkingSolution(solution);
@@ -84,14 +79,14 @@ class CustomVariableListenerTest {
         scoreDirector.afterVariableChanged(variableDescriptor, a);
         scoreDirector.triggerVariableListeners();
         assertThat(a.getFirstShadow()).isEqualTo("1/firstShadow");
-        assertThat(a.getThirdShadow()).isEqualTo(null);
+        assertThat(a.getThirdShadow()).isNull();
 
         scoreDirector.beforeVariableChanged(variableDescriptor, a);
         a.setValue(val3);
         scoreDirector.afterVariableChanged(variableDescriptor, a);
         scoreDirector.triggerVariableListeners();
         assertThat(a.getFirstShadow()).isEqualTo("3/firstShadow");
-        assertThat(a.getThirdShadow()).isEqualTo(null);
+        assertThat(a.getThirdShadow()).isNull();
 
         scoreDirector.beforeVariableChanged(variableDescriptor, c);
         c.setValue(val1);
@@ -112,24 +107,21 @@ class CustomVariableListenerTest {
 
     @Test
     void manyToMany() {
-        EntityDescriptor<TestdataManyToManyShadowedSolution> entityDescriptor =
-                TestdataManyToManyShadowedEntity.buildEntityDescriptor();
-        GenuineVariableDescriptor<TestdataManyToManyShadowedSolution> primaryVariableDescriptor =
-                entityDescriptor.getGenuineVariableDescriptor("primaryValue");
-        GenuineVariableDescriptor<TestdataManyToManyShadowedSolution> secondaryVariableDescriptor =
-                entityDescriptor.getGenuineVariableDescriptor("secondaryValue");
-        InnerScoreDirector<TestdataManyToManyShadowedSolution, SimpleScore> scoreDirector =
+        var entityDescriptor = TestdataManyToManyShadowedEntity.buildEntityDescriptor();
+        var primaryVariableDescriptor = entityDescriptor.getGenuineVariableDescriptor("primaryValue");
+        var secondaryVariableDescriptor = entityDescriptor.getGenuineVariableDescriptor("secondaryValue");
+        var scoreDirector =
                 PlannerTestUtils.mockScoreDirector(primaryVariableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
-        TestdataValue val1 = new TestdataValue("1");
-        TestdataValue val2 = new TestdataValue("2");
-        TestdataValue val3 = new TestdataValue("3");
-        TestdataValue val4 = new TestdataValue("4");
-        TestdataManyToManyShadowedEntity a = new TestdataManyToManyShadowedEntity("a", null, null);
-        TestdataManyToManyShadowedEntity b = new TestdataManyToManyShadowedEntity("b", null, null);
-        TestdataManyToManyShadowedEntity c = new TestdataManyToManyShadowedEntity("c", null, null);
+        var val1 = new TestdataValue("1");
+        var val2 = new TestdataValue("2");
+        var val3 = new TestdataValue("3");
+        var val4 = new TestdataValue("4");
+        var a = new TestdataManyToManyShadowedEntity("a", null, null);
+        var b = new TestdataManyToManyShadowedEntity("b", null, null);
+        var c = new TestdataManyToManyShadowedEntity("c", null, null);
 
-        TestdataManyToManyShadowedSolution solution = new TestdataManyToManyShadowedSolution("solution");
+        var solution = new TestdataManyToManyShadowedSolution("solution");
         solution.setEntityList(Arrays.asList(a, b, c));
         solution.setValueList(Arrays.asList(val1, val2, val3, val4));
         scoreDirector.setWorkingSolution(solution);
@@ -138,8 +130,8 @@ class CustomVariableListenerTest {
         a.setPrimaryValue(val1);
         scoreDirector.afterVariableChanged(primaryVariableDescriptor, a);
         scoreDirector.triggerVariableListeners();
-        assertThat(a.getComposedCode()).isEqualTo(null);
-        assertThat(a.getReverseComposedCode()).isEqualTo(null);
+        assertThat(a.getComposedCode()).isNull();
+        assertThat(a.getReverseComposedCode()).isNull();
 
         scoreDirector.beforeVariableChanged(secondaryVariableDescriptor, a);
         a.setSecondaryValue(val3);
@@ -166,8 +158,8 @@ class CustomVariableListenerTest {
         a.setPrimaryValue(null);
         scoreDirector.afterVariableChanged(primaryVariableDescriptor, a);
         scoreDirector.triggerVariableListeners();
-        assertThat(a.getComposedCode()).isEqualTo(null);
-        assertThat(a.getReverseComposedCode()).isEqualTo(null);
+        assertThat(a.getComposedCode()).isNull();
+        assertThat(a.getReverseComposedCode()).isNull();
 
         scoreDirector.beforeVariableChanged(primaryVariableDescriptor, c);
         c.setPrimaryValue(val1);
@@ -182,18 +174,14 @@ class CustomVariableListenerTest {
 
     @Test
     void manyToManyRequiresUniqueEntityEvents() {
-        EntityDescriptor<TestdataManyToManyShadowedSolution> entityDescriptor =
-                TestdataManyToManyShadowedEntityUniqueEvents.buildEntityDescriptor();
-        GenuineVariableDescriptor<TestdataManyToManyShadowedSolution> primaryVariableDescriptor =
-                entityDescriptor.getGenuineVariableDescriptor("primaryValue");
-        GenuineVariableDescriptor<TestdataManyToManyShadowedSolution> secondaryVariableDescriptor =
-                entityDescriptor.getGenuineVariableDescriptor("secondaryValue");
-        InnerScoreDirector<TestdataManyToManyShadowedSolution, SimpleScore> scoreDirector =
-                PlannerTestUtils.mockScoreDirector(entityDescriptor.getSolutionDescriptor());
+        var entityDescriptor = TestdataManyToManyShadowedEntityUniqueEvents.buildEntityDescriptor();
+        var primaryVariableDescriptor = entityDescriptor.getGenuineVariableDescriptor("primaryValue");
+        var secondaryVariableDescriptor = entityDescriptor.getGenuineVariableDescriptor("secondaryValue");
+        var scoreDirector = PlannerTestUtils.mockScoreDirector(entityDescriptor.getSolutionDescriptor());
 
-        TestdataValue val1 = new TestdataValue("1");
-        TestdataManyToManyShadowedEntityUniqueEvents b = new TestdataManyToManyShadowedEntityUniqueEvents("b", null, null);
-        TestdataManyToManyShadowedSolution solution = new TestdataManyToManyShadowedSolution("solution");
+        var val1 = new TestdataValue("1");
+        var b = new TestdataManyToManyShadowedEntityUniqueEvents("b", null, null);
+        var solution = new TestdataManyToManyShadowedSolution("solution");
         solution.setEntityList(new ArrayList<>());
         solution.setValueList(List.of(val1));
         scoreDirector.setWorkingSolution(solution);

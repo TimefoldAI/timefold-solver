@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.domain.common.accessor;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.reflect.field.TestdataFieldAnnotatedEntity;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedEntity;
 
 import org.junit.jupiter.api.Test;
 

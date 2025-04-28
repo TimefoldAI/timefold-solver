@@ -13,9 +13,9 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedAnchor;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;

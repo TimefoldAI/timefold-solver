@@ -4,14 +4,14 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreCalculator;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator;
-import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
-import ai.timefold.solver.quarkus.testdata.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusEasyScoreCalculator;
+import ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusIncrementalScoreCalculator;
+import ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator;
+import ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator;
+import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -45,9 +45,9 @@ class TimefoldProcessorSolverInvalidConstraintClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple score classes")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusEasyScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator")
                     .hasMessageContaining("that implements EasyScoreCalculator were found"));
 
     // Multiple classes - EasyScoreCalculator with XML
@@ -65,9 +65,9 @@ class TimefoldProcessorSolverInvalidConstraintClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple score classes")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusEasyScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusEasyScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusShadowVariableEasyScoreCalculator")
                     .hasMessageContaining("that implements EasyScoreCalculator were found"));
 
     // Multiple classes - ConstraintProvider
@@ -82,9 +82,9 @@ class TimefoldProcessorSolverInvalidConstraintClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple score classes")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider")
+                            "ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider")
+                            "ai.timefold.solver.quarkus.testdomain.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider")
                     .hasMessageContaining("that implements ConstraintProvider were found"));
     // Multiple classes - ConstraintProvider with XML
     @RegisterExtension
@@ -100,9 +100,9 @@ class TimefoldProcessorSolverInvalidConstraintClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple score classes")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider")
+                            "ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider")
+                            "ai.timefold.solver.quarkus.testdomain.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider")
                     .hasMessageContaining("that implements ConstraintProvider were found"));
 
     // Multiple classes - IncrementalScoreCalculator
@@ -117,9 +117,9 @@ class TimefoldProcessorSolverInvalidConstraintClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple score classes")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusIncrementalScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator")
                     .hasMessageContaining("that implements IncrementalScoreCalculator were found"));
     // Multiple classes - IncrementalScoreCalculator with XML
     @RegisterExtension
@@ -137,9 +137,9 @@ class TimefoldProcessorSolverInvalidConstraintClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple score classes")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusIncrementalScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusIncrementalScoreCalculator")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdata.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator")
+                            "ai.timefold.solver.quarkus.testdomain.dummy.DummyTestdataQuarkusShadowVariableIncrementalScoreCalculator")
                     .hasMessageContaining("that implements IncrementalScoreCalculator were found"));
 
     @Test

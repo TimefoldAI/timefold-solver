@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectIntegerId;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceEntity;
-import ai.timefold.solver.core.impl.testdata.domain.interface_domain.TestdataInterfaceValue;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectIntegerId;
+import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceEntity;
+import ai.timefold.solver.core.testdomain.interfaces.TestdataInterfaceValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,8 +24,8 @@ class LookUpManagerTest extends AbstractLookupTest {
 
     @Test
     void resetWorkingObjects() {
-        TestdataObjectIntegerId o = new TestdataObjectIntegerId(0);
-        TestdataObjectIntegerId p = new TestdataObjectIntegerId(1);
+        var o = new TestdataObjectIntegerId(0);
+        var p = new TestdataObjectIntegerId(1);
         // The objects should be added during the reset
         lookUpManager.reset();
         for (Object fact : Arrays.asList(o, p)) {
@@ -57,7 +57,7 @@ class LookUpManagerTest extends AbstractLookupTest {
 
         @Override
         public void setValue(TestdataInterfaceValue value) {
-
+            // Ignore
         }
     }
 

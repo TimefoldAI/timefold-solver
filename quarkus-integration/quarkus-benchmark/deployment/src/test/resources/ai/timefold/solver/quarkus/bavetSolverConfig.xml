@@ -1,6 +1,6 @@
 <solver>
   <scoreDirectorFactory>
-    <constraintProviderClass>ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider</constraintProviderClass>
+    <constraintProviderClass>ai.timefold.solver.benchmark.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider</constraintProviderClass>
   </scoreDirectorFactory>
   <termination>
     <scoreCalculationCountLimit>50</scoreCalculationCountLimit>

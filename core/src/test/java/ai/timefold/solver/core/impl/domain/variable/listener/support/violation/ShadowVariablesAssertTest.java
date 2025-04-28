@@ -4,9 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.shadow.TestdataShadowingChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedAnchor;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
 
 import org.junit.jupiter.api.Test;
 

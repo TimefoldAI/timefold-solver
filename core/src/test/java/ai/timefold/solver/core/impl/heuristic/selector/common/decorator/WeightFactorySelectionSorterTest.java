@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfIterator;
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
@@ -8,8 +8,8 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 

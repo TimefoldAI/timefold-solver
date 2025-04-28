@@ -4,11 +4,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.util.CodeAssertable;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testutil.CodeAssertable;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

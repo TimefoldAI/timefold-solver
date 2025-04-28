@@ -4,11 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyAnnotatedBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedSolution;
-import ai.timefold.solver.quarkus.testdata.superclass.constraints.DummyConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseanot.TestdataOnlyAnnotatedBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseanot.TestdataOnlyChildAnnotatedSolution;
+import ai.timefold.solver.quarkus.testdomain.superclass.constraints.DummyConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

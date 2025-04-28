@@ -6,11 +6,11 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.anonymous.TestdataAnonymousArraySolution;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.anonymous.TestdataAnonymousListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.anonymous.TestdataAnonymousValueRangeEntity;
-import ai.timefold.solver.core.impl.testdata.domain.valuerange.anonymous.TestdataAnonymousValueRangeSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.valuerange.anonymous.TestdataAnonymousArraySolution;
+import ai.timefold.solver.core.testdomain.valuerange.anonymous.TestdataAnonymousListSolution;
+import ai.timefold.solver.core.testdomain.valuerange.anonymous.TestdataAnonymousValueRangeEntity;
+import ai.timefold.solver.core.testdomain.valuerange.anonymous.TestdataAnonymousValueRangeSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;
