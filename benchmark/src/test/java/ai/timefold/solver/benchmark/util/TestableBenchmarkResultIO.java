@@ -1,13 +1,13 @@
 package ai.timefold.solver.benchmark.util;
 
-import ai.timefold.solver.benchmark.impl.result.BenchmarkResultIO;
-import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+
+import ai.timefold.solver.benchmark.impl.result.BenchmarkResultIO;
+import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
 
 final class TestableBenchmarkResultIO extends BenchmarkResultIO {
 

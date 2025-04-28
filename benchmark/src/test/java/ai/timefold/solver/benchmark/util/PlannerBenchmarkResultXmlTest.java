@@ -1,10 +1,6 @@
 package ai.timefold.solver.benchmark.util;
 
-import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
-import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
-import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.net.URL;
@@ -14,20 +10,24 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import ai.timefold.solver.benchmark.config.statistic.ProblemStatisticType;
+import ai.timefold.solver.benchmark.impl.result.PlannerBenchmarkResult;
+import ai.timefold.solver.benchmark.impl.statistic.ProblemStatistic;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 class PlannerBenchmarkResultXmlTest {
 
-    private static final String RESOURCE = "/dummyPlanner.xml";
+    private static final String RESOURCE = "/dummyPlannerBenchmarkResult.xml";
     private final TestableBenchmarkResultIO io = new TestableBenchmarkResultIO();
     private static URL url;
 
     @BeforeAll
-    static void setUp(){
+    static void setUp() {
         url = PlannerBenchmarkResultXmlTest.class.getResource(RESOURCE);
         assertThat(url).withFailMessage("Resource not found").isNotNull();
     }
-
 
     @Test
     void shouldDeserializeXml() throws Exception {
@@ -71,4 +71,3 @@ class PlannerBenchmarkResultXmlTest {
         assertThat(roundTripXml).isEqualToIgnoringWhitespace(originalXml.trim());
     }
 }
-
