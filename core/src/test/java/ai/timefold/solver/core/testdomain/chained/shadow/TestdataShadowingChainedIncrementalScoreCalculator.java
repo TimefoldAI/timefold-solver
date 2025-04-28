@@ -21,32 +21,32 @@ public class TestdataShadowingChainedIncrementalScoreCalculator
 
     @Override
     public void beforeEntityAdded(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override
     public void afterEntityAdded(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override
     public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+        // Ignore
     }
 
     @Override
     public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+        // Ignore
     }
 
     @Override
     public void beforeEntityRemoved(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override
     public void afterEntityRemoved(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override

@@ -21,9 +21,6 @@ public class TestdataListEntityProvidingSolution {
 
     private SimpleScore score;
 
-    public TestdataListEntityProvidingSolution() {
-    }
-
     @PlanningEntityCollectionProperty
     public List<TestdataEntityProvidingEntity> getEntityList() {
         return entityList;

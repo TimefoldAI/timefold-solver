@@ -58,9 +58,11 @@ public class GizmoTestdataEntity {
     }
 
     public void getVoid() {
+        // Ignore
     }
 
     public void voidMethod() {
+        // Ignore
     }
 
     public String isAMethodThatHasABadName() {

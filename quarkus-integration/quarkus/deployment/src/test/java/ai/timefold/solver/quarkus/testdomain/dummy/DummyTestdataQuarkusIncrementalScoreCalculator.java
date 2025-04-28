@@ -9,37 +9,37 @@ public class DummyTestdataQuarkusIncrementalScoreCalculator implements Increment
 
     @Override
     public void resetWorkingSolution(@NonNull Object workingSolution) {
-
+        // Ignore
     }
 
     @Override
     public void beforeEntityAdded(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override
     public void afterEntityAdded(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override
     public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+        // Ignore
     }
 
     @Override
     public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+        // Ignore
     }
 
     @Override
     public void beforeEntityRemoved(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override
     public void afterEntityRemoved(@NonNull Object entity) {
-
+        // Ignore
     }
 
     @Override

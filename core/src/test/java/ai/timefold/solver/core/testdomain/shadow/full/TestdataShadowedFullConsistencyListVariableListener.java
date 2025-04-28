@@ -11,7 +11,7 @@ public class TestdataShadowedFullConsistencyListVariableListener
     @Override
     public void afterListVariableElementUnassigned(ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             TestdataShadowedFullValue value) {
-
+        // Ignore
     }
 
     @Override
@@ -29,24 +29,25 @@ public class TestdataShadowedFullConsistencyListVariableListener
     @Override
     public void beforeEntityAdded(ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             TestdataShadowedFullEntity entity) {
+        // Ignore
     }
 
     @Override
     public void afterEntityAdded(ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             TestdataShadowedFullEntity entity) {
-
+        // Ignore
     }
 
     @Override
     public void beforeEntityRemoved(ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             TestdataShadowedFullEntity entity) {
-
+        // Ignore
     }
 
     @Override
     public void afterEntityRemoved(ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             TestdataShadowedFullEntity entity) {
-
+        // Ignore
     }
 
     private void checkRange(TestdataShadowedFullEntity entity, int fromIndex, int toIndex) {

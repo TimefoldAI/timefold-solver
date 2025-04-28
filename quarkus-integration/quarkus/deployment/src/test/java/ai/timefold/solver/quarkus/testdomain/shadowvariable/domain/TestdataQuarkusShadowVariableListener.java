@@ -10,7 +10,7 @@ public class TestdataQuarkusShadowVariableListener
     @Override
     public void beforeEntityAdded(@NonNull ScoreDirector<TestdataQuarkusShadowVariableSolution> scoreDirector,
             @NonNull TestdataQuarkusShadowVariableEntity testdataQuarkusShadowVariableEntity) {
-
+        // Ignore
     }
 
     @Override
@@ -22,19 +22,19 @@ public class TestdataQuarkusShadowVariableListener
     @Override
     public void beforeEntityRemoved(@NonNull ScoreDirector<TestdataQuarkusShadowVariableSolution> scoreDirector,
             @NonNull TestdataQuarkusShadowVariableEntity testdataQuarkusShadowVariableEntity) {
-
+        // Ignore
     }
 
     @Override
     public void afterEntityRemoved(@NonNull ScoreDirector<TestdataQuarkusShadowVariableSolution> scoreDirector,
             @NonNull TestdataQuarkusShadowVariableEntity testdataQuarkusShadowVariableEntity) {
-
+        // Ignore
     }
 
     @Override
     public void beforeVariableChanged(@NonNull ScoreDirector<TestdataQuarkusShadowVariableSolution> scoreDirector,
             @NonNull TestdataQuarkusShadowVariableEntity testdataQuarkusShadowVariableEntity) {
-
+        // Ignore
     }
 
     @Override

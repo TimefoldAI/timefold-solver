@@ -100,10 +100,10 @@ public final class PlannerTestUtils {
         var solution = new TestdataSolution(code);
         solution.setValueList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataValue("v" + i))
-                .collect(Collectors.toList()));
+                .toList());
         solution.setEntityList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataEntity("e" + i))
-                .collect(Collectors.toList()));
+                .toList());
         return solution;
     }
 
@@ -136,7 +136,7 @@ public final class PlannerTestUtils {
             mockRebasingScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor, Object[][] lookUpMappings) {
         InnerScoreDirector<Solution_, Score_> scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        when(scoreDirector.lookUpWorkingObject(any())).thenAnswer((invocation) -> {
+        when(scoreDirector.lookUpWorkingObject(any())).thenAnswer(invocation -> {
             var externalObject = invocation.getArguments()[0];
             if (externalObject == null) {
                 return null;

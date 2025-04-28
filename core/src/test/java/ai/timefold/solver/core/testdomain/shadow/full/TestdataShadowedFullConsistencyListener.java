@@ -18,7 +18,7 @@ public class TestdataShadowedFullConsistencyListener
     @Override
     public void beforeVariableChanged(@NonNull ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             @NonNull TestdataShadowedFullValue testdataShadowedFullValue) {
-
+        // Ignore
     }
 
     @Override
@@ -30,7 +30,7 @@ public class TestdataShadowedFullConsistencyListener
     @Override
     public void beforeEntityAdded(@NonNull ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             @NonNull TestdataShadowedFullValue testdataShadowedFullValue) {
-
+        // Ignore
     }
 
     @Override
@@ -42,6 +42,7 @@ public class TestdataShadowedFullConsistencyListener
     @Override
     public void beforeEntityRemoved(@NonNull ScoreDirector<TestdataShadowedFullSolution> scoreDirector,
             @NonNull TestdataShadowedFullValue testdataShadowedFullValue) {
+        // Ignore
     }
 
     @Override

@@ -22,16 +22,8 @@ public class TestdataCorruptedShadowedEntity extends TestdataObject {
     private TestdataValue value;
     private Integer count;
 
-    public TestdataCorruptedShadowedEntity() {
-    }
-
     public TestdataCorruptedShadowedEntity(String code) {
         super(code);
-    }
-
-    public TestdataCorruptedShadowedEntity(String code, TestdataValue value, int count) {
-        this(code);
-        this.value = value;
     }
 
     @PlanningVariable(valueRangeProviderRefs = "valueRange")
