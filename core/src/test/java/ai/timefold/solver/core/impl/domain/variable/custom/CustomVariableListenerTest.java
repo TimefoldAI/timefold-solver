@@ -11,12 +11,12 @@ import java.util.Arrays;
 import java.util.List;
 
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.shadow.cyclic.TestdataSevenNonCyclicShadowedSolution;
-import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicReferencedShadowedSolution;
-import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicShadowedSolution;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedParentEntity;
 import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.shadow.TestdataExtendedShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.TestdataSevenNonCyclicShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicReferencedShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.cyclic.invalid.TestdataCyclicShadowedSolution;
 import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntity;
 import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedEntityUniqueEvents;
 import ai.timefold.solver.core.testdomain.shadow.manytomany.TestdataManyToManyShadowedSolution;
