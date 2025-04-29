@@ -563,7 +563,7 @@ Advanced configuration:
 [IMPORTANT]
 ====
 The new acceptor is available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature]
-and must be specifically enabled with `<enablePreviewFeature>`.
+It may be subject to change and must be enabled in the solver configuration by setting: `<enablePreviewFeature>DIVERSIFIED_LATE_ACCEPTANCE</enablePreviewFeature>`
 ====
 
 [#greatDeluge]
