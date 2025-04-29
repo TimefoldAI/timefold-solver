@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import ai.timefold.solver.benchmark.impl.statistic.movecountpertype.MoveCountPerTypeProblemStatistic;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlIDREF;
@@ -71,6 +72,7 @@ public class ProblemBenchmarkResult<Solution_> {
             @XmlElement(name = "moveEvaluationSpeedProblemStatistic", type = MoveEvaluationSpeedProblemStatisticTime.class),
             @XmlElement(name = "bestSolutionMutationProblemStatistic", type = BestSolutionMutationProblemStatistic.class),
             @XmlElement(name = "moveCountPerStepProblemStatistic", type = MoveCountPerStepProblemStatistic.class),
+            @XmlElement(name = "moveCountPerTypeProblemStatistic", type = MoveCountPerTypeProblemStatistic.class),
             @XmlElement(name = "memoryUseProblemStatistic", type = MemoryUseProblemStatistic.class),
     })
     private List<ProblemStatistic> problemStatisticList = null;
