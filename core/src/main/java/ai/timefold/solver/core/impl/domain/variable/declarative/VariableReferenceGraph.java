@@ -16,6 +16,9 @@ import java.util.function.IntFunction;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 public class VariableReferenceGraph<Solution_> {
     private final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair>> variableReferenceToInstanceMap;
     private final List<EntityVariablePair> instanceList;
@@ -93,18 +96,26 @@ public class VariableReferenceGraph<Solution_> {
         }
     }
 
-    public EntityVariablePair lookup(VariableMetaModel<?, ?, ?> variableId, Object entity) {
+    public @Nullable EntityVariablePair lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
         return variableReferenceToInstanceMap.getOrDefault(variableId, Collections.emptyMap()).get(entity);
     }
 
-    public void addFixedEdge(EntityVariablePair from, EntityVariablePair to) {
+    public @NonNull EntityVariablePair lookupOrError(VariableMetaModel<?, ?, ?> variableId, Object entity) {
+        var out = lookupOrNull(variableId, entity);
+        if (out == null) {
+            throw new IllegalArgumentException();
+        }
+        return out;
+    }
+
+    public void addFixedEdge(@NonNull EntityVariablePair from, @NonNull EntityVariablePair to) {
         if (from.graphNodeId() == to.graphNodeId()) {
             return;
         }
         fixedEdges.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
     }
 
-    public void addEdge(EntityVariablePair from, EntityVariablePair to) {
+    public void addEdge(@NonNull EntityVariablePair from, @NonNull EntityVariablePair to) {
         if (from.graphNodeId() == to.graphNodeId()) {
             return;
         }
@@ -119,7 +130,7 @@ public class VariableReferenceGraph<Solution_> {
         markChanged(to);
     }
 
-    public void removeEdge(EntityVariablePair from, EntityVariablePair to) {
+    public void removeEdge(@NonNull EntityVariablePair from, @NonNull EntityVariablePair to) {
         if (from.graphNodeId() == to.graphNodeId()) {
             return;
         }
@@ -133,7 +144,7 @@ public class VariableReferenceGraph<Solution_> {
         markChanged(to);
     }
 
-    public void markChanged(EntityVariablePair node) {
+    public void markChanged(@NonNull EntityVariablePair node) {
         if (changed.isEmpty()) {
             graph.startBatchChange();
         }
@@ -156,6 +167,9 @@ public class VariableReferenceGraph<Solution_> {
     }
 
     public void updateChanged() {
+        if (changed.isEmpty()) {
+            return;
+        }
         graph.endBatchChange();
         var visited = new boolean[instanceList.size()];
         var loopedTracker = new LoopedTracker(visited.length);
@@ -306,7 +320,7 @@ public class VariableReferenceGraph<Solution_> {
     public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
         if (variableReference.entity().type().isInstance(entity)) {
             var updaterList = variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList());
-            var node = lookup(variableReference, entity);
+            var node = lookupOrNull(variableReference, entity);
             if (node != null) {
                 markChanged(node);
             }
