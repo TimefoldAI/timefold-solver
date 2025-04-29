@@ -32,7 +32,7 @@ abstract sealed class AbstractForEachDataStream<Solution_, A>
     @Override
     public final void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        int outputStoreSize = buildHelper.extractTupleStoreSize(this);
+        var outputStoreSize = buildHelper.extractTupleStoreSize(this);
         var node = getNode(tupleLifecycle, outputStoreSize);
         buildHelper.addNode(node, this, null);
     }
