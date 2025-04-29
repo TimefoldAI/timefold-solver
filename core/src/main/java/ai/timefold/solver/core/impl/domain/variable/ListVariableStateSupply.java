@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 /**
  * Single source of truth for all information about elements inside {@link PlanningListVariable list variables}.
@@ -61,10 +61,17 @@ public interface ListVariableStateSupply<Solution_> extends
 
     /**
      *
+     * @param element never null
+     * @return true if the element is in a pinned part of a list variable of any entity
+     */
+    boolean isPinned(Object element);
+
+    /**
+     *
      * @param value never null
      * @return never null
      */
-    ElementLocation getLocationInList(Object value);
+    ElementPosition getElementPosition(Object value);
 
     /**
      * Consider calling this before {@link #isAssigned(Object)} to eliminate some map accesses.

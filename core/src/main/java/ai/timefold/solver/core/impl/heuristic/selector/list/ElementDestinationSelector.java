@@ -18,12 +18,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 /**
  * Selects destinations for list variable change moves. The destination specifies a future position in a list variable,
- * expressed as an {@link LocationInList}, where a moved element or subList can be inserted.
+ * expressed as an {@link PositionInList}, where a moved element or subList can be inserted.
  * <p>
  * Destination completeness is achieved by using both entity and value child selectors.
  * When an entity <em>A</em> is selected, the destination becomes <em>A[0]</em>.
@@ -106,7 +106,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     @Override
-    public Iterator<ElementLocation> iterator() {
+    public Iterator<ElementPosition> iterator() {
         if (randomSelection) {
             var allowsUnassignedValues = listVariableDescriptor.allowsUnassignedValues();
 
@@ -114,7 +114,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             var totalValueSize = valueSelector.getSize()
                     - (allowsUnassignedValues ? listVariableStateSupply.getUnassignedCount() : 0);
             var totalSize = Math.addExact(entitySelector.getSize(), totalValueSize);
-            return new ElementLocationRandomIterator<>(listVariableStateSupply, entitySelector, valueSelector,
+            return new ElementPositionRandomIterator<>(listVariableStateSupply, entitySelector, valueSelector,
                     workingRandom, totalSize, allowsUnassignedValues);
         } else {
             if (entitySelector.getSize() == 0) {
@@ -122,18 +122,18 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
             }
             // Start with the first unpinned value of each entity, or zero if no pinning.
             // Entity selector is guaranteed to return only unpinned entities.
-            Stream<ElementLocation> stream = StreamSupport.stream(entitySelector.spliterator(), false)
-                    .map(entity -> ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity)));
+            Stream<ElementPosition> stream = StreamSupport.stream(entitySelector.spliterator(), false)
+                    .map(entity -> ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity)));
             // Filter guarantees that we only get values that are actually in one of the lists.
             // Value selector guarantees only unpinned values.
             // Simplify tests.
             stream = Stream.concat(stream,
                     StreamSupport.stream(valueSelector.spliterator(), false)
-                            .map(v -> listVariableStateSupply.getLocationInList(v).ensureAssigned())
-                            .map(locationInList -> ElementLocation.of(locationInList.entity(), locationInList.index() + 1)));
+                            .map(v -> listVariableStateSupply.getElementPosition(v).ensureAssigned())
+                            .map(positionInList -> ElementPosition.of(positionInList.entity(), positionInList.index() + 1)));
             // If the list variable allows unassigned values, add the option of unassigning.
             if (listVariableDescriptor.allowsUnassignedValues()) {
-                stream = Stream.concat(stream, Stream.of(ElementLocation.unassigned()));
+                stream = Stream.concat(stream, Stream.of(ElementPosition.unassigned()));
             }
             return stream.iterator();
         }

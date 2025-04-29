@@ -27,6 +27,21 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         var list = getValue(entity);
         return list.contains(element);
     };
+    private final BiPredicate<Object, Object> entityContainsPinnedValuePredicate = (value, entity) -> {
+        // Find an entity that has this value at a pinned position.
+        var parentEntityDescriptor = getEntityDescriptor();
+        // The null here is safe, because PinningFilter is not supported with move streams
+        // and no other MovableFilter actually needs the solution argument.
+        var entityMovable = parentEntityDescriptor.isMovable(null, entity);
+        var pinToIndex = entityMovable ? parentEntityDescriptor.getEffectivePlanningPinToIndexReader()
+                .applyAsInt(entity) : Integer.MAX_VALUE;
+        var valueIndex = getValue(entity).indexOf(value);
+        if (valueIndex < 0) { // Entity list variable does not contain the value.
+            return false;
+        }
+        return valueIndex < pinToIndex;
+    };
+
     private boolean allowsUnassignedValues = true;
 
     public ListVariableDescriptor(int ordinal, EntityDescriptor<Solution_> entityDescriptor,
@@ -41,6 +56,11 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     @SuppressWarnings("unchecked")
     public <A> BiPredicate<A, Object> getInListPredicate() {
         return (BiPredicate<A, Object>) inListPredicate;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <A, B> BiPredicate<A, B> getEntityContainsPinnedValuePredicate() {
+        return (BiPredicate<A, B>) entityContainsPinnedValuePredicate;
     }
 
     public boolean allowsUnassignedValues() {
@@ -207,7 +227,7 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         if (effectivePlanningPinToIndexReader == null) { // There is no @PlanningPinToIndex.
             return 0;
         } else {
-            return effectivePlanningPinToIndexReader.applyAsInt(null, entity);
+            return effectivePlanningPinToIndexReader.applyAsInt(entity);
         }
     }
 

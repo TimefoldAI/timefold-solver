@@ -7,13 +7,13 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * A supertype for {@link LocationInList} and {@link UnassignedLocation}.
+ * A supertype for {@link PositionInList} and {@link UnassignedElement}.
  * <p>
  * {@link PlanningListVariable#allowsUnassignedValues()} allows for a value to not be part of any entity's list.
  * This introduces null into user code, and makes it harder to reason about the code.
- * Therefore, we introduce {@link UnassignedLocation} to represent this null value,
+ * Therefore, we introduce {@link UnassignedElement} to represent this null value,
  * and user code must explicitly decide how to handle this case.
- * This prevents accidental use of {@link UnassignedLocation} in places where {@link LocationInList} is expected,
+ * This prevents accidental use of {@link UnassignedElement} in places where {@link PositionInList} is expected,
  * catching this error as early as possible.
  * <p>
  * <strong>This package and all of its contents are part of the Move Streams API,
@@ -28,47 +28,47 @@ import org.jspecify.annotations.NullMarked;
  * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
  */
 @NullMarked
-public sealed interface ElementLocation permits LocationInList, UnassignedLocation {
+public sealed interface ElementPosition permits PositionInList, UnassignedElement {
 
     /**
-     * Create a new instance of {@link LocationInList}.
+     * Create a new instance of {@link PositionInList}.
      * User code should never need to call this method.
      *
      * @param entity Entity whose {@link PlanningListVariable} contains the value.
      * @param index 0 or higher
      * @return never null
      */
-    static LocationInList of(Object entity, int index) {
-        return new DefaultLocationInList(entity, index);
+    static PositionInList of(Object entity, int index) {
+        return new DefaultPositionInList(entity, index);
     }
 
     /**
-     * Returns a singleton instance of {@link UnassignedLocation}.
+     * Returns a singleton instance of {@link UnassignedElement}.
      * User code should never need to call this method.
      *
      * @return never null
      */
-    static UnassignedLocation unassigned() {
-        return DefaultUnassignedLocation.INSTANCE;
+    static UnassignedElement unassigned() {
+        return DefaultUnassignedElement.INSTANCE;
     }
 
     /**
-     * Returns {@link LocationInList} if this location is assigned, otherwise throws an exception.
+     * Returns {@link PositionInList} if this position is assigned, otherwise throws an exception.
      *
-     * @return Location of the value in an entity's {@link PlanningListVariable}.
-     * @throws IllegalStateException If this location is unassigned.
+     * @return Position of the value in an entity's {@link PlanningListVariable}.
+     * @throws IllegalStateException If this position is unassigned.
      */
-    default LocationInList ensureAssigned() {
-        return ensureAssigned(() -> "Unexpected unassigned location.");
+    default PositionInList ensureAssigned() {
+        return ensureAssigned(() -> "Unexpected unassigned position.");
     }
 
     /**
-     * Returns {@link LocationInList} if this location is assigned, otherwise throws an exception.
+     * Returns {@link PositionInList} if this position is assigned, otherwise throws an exception.
      *
      * @param messageSupplier The message to give the exception.
-     * @return Location of the value in an entity's {@link PlanningListVariable}.
-     * @throws IllegalStateException If this location is unassigned.
+     * @return Position of the value in an entity's {@link PlanningListVariable}.
+     * @throws IllegalStateException If this position is unassigned.
      */
-    LocationInList ensureAssigned(Supplier<String> messageSupplier);
+    PositionInList ensureAssigned(Supplier<String> messageSupplier);
 
 }

@@ -8,9 +8,9 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
-final class ElementLocationRandomIterator<Solution_> implements Iterator<ElementLocation> {
+final class ElementPositionRandomIterator<Solution_> implements Iterator<ElementPosition> {
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
@@ -22,7 +22,7 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
     private final boolean allowsUnassignedValues;
     private Iterator<Object> valueIterator;
 
-    public ElementLocationRandomIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    public ElementPositionRandomIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
             EntitySelector<Solution_> entitySelector, EntityIndependentValueSelector<Solution_> valueSelector,
             Random workingRandom, long totalSize, boolean allowsUnassignedValues) {
         this.listVariableStateSupply = listVariableStateSupply;
@@ -48,7 +48,7 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
     }
 
     @Override
-    public ElementLocation next() {
+    public ElementPosition next() {
         // This code operates under the assumption that the entity selector already filtered out all immovable entities.
         // At this point, entities are only partially pinned, or not pinned at all.
         var entitySize = entitySelector.getSize();
@@ -59,11 +59,11 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
         if (allowsUnassignedValues && random == 0) {
             // We have already excluded all unassigned elements,
             // the only way to get an unassigned destination is to explicitly add it.
-            return ElementLocation.unassigned();
+            return ElementPosition.unassigned();
         } else if (random < entityBoundary) {
             // Start with the first unpinned value of each entity, or zero if no pinning.
             var entity = entityIterator.next();
-            return ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
+            return ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity));
         } else { // Value selector already returns only unpinned values.
             if (valueIterator == null) {
                 valueIterator = valueSelector.iterator();
@@ -79,15 +79,15 @@ final class ElementLocationRandomIterator<Solution_> implements Iterator<Element
                 var entity = entityIterator.next();
                 var unpinnedSize = listVariableDescriptor.getUnpinnedSubListSize(entity);
                 if (unpinnedSize == 0) { // Only the last destination remains.
-                    return ElementLocation.of(entity, listVariableDescriptor.getListSize(entity));
+                    return ElementPosition.of(entity, listVariableDescriptor.getListSize(entity));
                 } else { // +1 to include the destination after the final element in the list.
                     var randomIndex = workingRandom.nextInt(unpinnedSize + 1);
-                    return ElementLocation.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
+                    return ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
                 }
             } else { // +1 to include the destination after the final element in the list.
-                var elementLocation = listVariableStateSupply.getLocationInList(value)
+                var elementPosition = listVariableStateSupply.getElementPosition(value)
                         .ensureAssigned();
-                return ElementLocation.of(elementLocation.entity(), elementLocation.index() + 1);
+                return ElementPosition.of(elementPosition.entity(), elementPosition.index() + 1);
             }
         }
     }

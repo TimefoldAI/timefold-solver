@@ -11,7 +11,8 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSessi
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class DefaultMoveStreamSession<Solution_> implements MoveStreamSession<Solution_> {
+public final class DefaultMoveStreamSession<Solution_>
+        implements MoveStreamSession<Solution_>, AutoCloseable {
 
     private final DatasetSession<Solution_> datasetSession;
     private final Solution_ workingSolution;
@@ -46,4 +47,8 @@ public final class DefaultMoveStreamSession<Solution_> implements MoveStreamSess
         return workingSolution;
     }
 
+    @Override
+    public void close() {
+        datasetSession.close();
+    }
 }

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
 /**
  *
@@ -53,10 +53,10 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
             return NoChangeMove.getInstance();
         }
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-        var upcomingLeft = listVariableStateSupply.getLocationInList(upcomingLeftValue);
-        var upcomingRight = listVariableStateSupply.getLocationInList(upcomingRightValue);
-        var leftUnassigned = upcomingLeft instanceof UnassignedLocation;
-        var rightUnassigned = upcomingRight instanceof UnassignedLocation;
+        var upcomingLeft = listVariableStateSupply.getElementPosition(upcomingLeftValue);
+        var upcomingRight = listVariableStateSupply.getElementPosition(upcomingRightValue);
+        var leftUnassigned = upcomingLeft instanceof UnassignedElement;
+        var rightUnassigned = upcomingRight instanceof UnassignedElement;
         if (leftUnassigned && rightUnassigned) { // No need to swap two unassigned elements.
             return NoChangeMove.getInstance();
         } else if (leftUnassigned) { // Unassign right, put left where right used to be.

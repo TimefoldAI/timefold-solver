@@ -31,7 +31,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     @SafeVarargs
     @Override
     public final <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        return ifExists(dataStreamFactory.forEach(otherClass), joiners);
+        return ifExists(dataStreamFactory.forEachNonDiscriminating(otherClass), joiners);
     }
 
     @SafeVarargs
@@ -42,14 +42,8 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
 
     @SafeVarargs
     @Override
-    public final <B> UniDataStream<Solution_, A> ifExistsIncludingUnassigned(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        return ifExists(dataStreamFactory.forEachIncludingUnassigned(otherClass), joiners);
-    }
-
-    @SafeVarargs
-    @Override
     public final <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        return ifExistsOrNot(false, dataStreamFactory.forEach(otherClass), joiners);
+        return ifExistsOrNot(false, dataStreamFactory.forEachNonDiscriminating(otherClass), joiners);
     }
 
     @SafeVarargs
@@ -57,13 +51,6 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     public final <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream,
             BiJoiner<A, B>... joiners) {
         return ifExistsOrNot(false, otherStream, joiners);
-    }
-
-    @SafeVarargs
-    @Override
-    public final <B> UniDataStream<Solution_, A> ifNotExistsIncludingUnassigned(Class<B> otherClass,
-            BiJoiner<A, B>... joiners) {
-        return ifNotExists(dataStreamFactory.forEachIncludingUnassigned(otherClass), joiners);
     }
 
     private <B> UniDataStream<Solution_, A> ifExistsOrNot(boolean shouldExist, UniDataStream<Solution_, B> otherStream,

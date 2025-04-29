@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.bavet.uni;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
 
 import org.jspecify.annotations.NullMarked;
@@ -23,7 +24,8 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public final class ForEachFromSolutionUniNode<Solution_, A>
-        extends ForEachIncludingUnassignedUniNode<Solution_, A> {
+        extends ForEachIncludingUnassignedUniNode<A>
+        implements AbstractForEachUniNode.InitializableForEachNode<Solution_> {
 
     private final FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction;
 
@@ -36,7 +38,7 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution) {
+    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
         if (this.isInitialized) { // Failsafe.
             throw new IllegalStateException("Impossible state: initialize() has already been called on %s."
                     .formatted(this));
@@ -65,7 +67,12 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
 
     @Override
     public boolean supports(LifecycleOperation lifecycleOperation) {
-        return lifecycleOperation == LifecycleOperation.INITIALIZE || lifecycleOperation == LifecycleOperation.UPDATE;
+        return lifecycleOperation == LifecycleOperation.UPDATE;
+    }
+
+    @Override
+    public void close() {
+        // No need to do anything; initialization doesn't perform anything that'd need cleanup.
     }
 
 }

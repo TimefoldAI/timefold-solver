@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
 /**
  * Specifies that an {@code int} property (or field) of a {@link PlanningEntity} determines
@@ -32,6 +33,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
  * </ul>
  *
  * To pin the entire list and disallow any changes, use {@link PlanningPin} instead.
+ * The index must never change during planning; to change it, trigger a {@link ProblemChange}.
  *
  * <p>
  * Example: Assuming a list of values {@code [A, B, C]}:
@@ -47,6 +49,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
  * If the same entity also specifies a {@link PlanningPin} and the pin is enabled,
  * any value of {@link PlanningPinToIndex} is ignored.
  * In other words, enabling {@link PlanningPin} pins the entire list without exception.
+ *
+ * @see PlanningPin Pin the entire entity.
+ * @see ProblemChange Use ProblemChange to trigger pinning changes.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)

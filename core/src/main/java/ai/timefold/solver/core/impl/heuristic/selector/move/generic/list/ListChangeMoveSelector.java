@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveS
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
 public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
@@ -60,11 +60,11 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
                 (scoreDirector, selection) -> {
                     var listVariableStateSupply = listVariableStateSupplier.get();
-                    var elementLocation = listVariableStateSupply.getLocationInList(selection);
-                    if (elementLocation instanceof UnassignedLocation) {
+                    var elementPosition = listVariableStateSupply.getElementPosition(selection);
+                    if (elementPosition instanceof UnassignedElement) {
                         return true;
                     }
-                    var elementDestination = elementLocation.ensureAssigned();
+                    var elementDestination = elementPosition.ensureAssigned();
                     var entity = elementDestination.entity();
                     return !listVariableDescriptor.isElementPinned(scoreDirector.getWorkingSolution(), entity,
                             elementDestination.index());

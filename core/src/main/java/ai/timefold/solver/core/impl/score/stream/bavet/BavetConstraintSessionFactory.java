@@ -119,11 +119,11 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner,
             Consumer<String> nodeNetworkVisualizationConsumer) {
         var buildHelper = new ConstraintNodeBuildHelper<>(constraintStreamSet, scoreInliner);
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?, ?>>>();
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
         var nodeList = buildHelper.buildNodeList(constraintStreamSet, buildHelper,
                 BavetAbstractConstraintStream::buildNode,
                 node -> {
-                    if (!(node instanceof AbstractForEachUniNode<?, ?> forEachUniNode)) {
+                    if (!(node instanceof AbstractForEachUniNode<?> forEachUniNode)) {
                         return;
                     }
                     var forEachClass = forEachUniNode.getForEachClass();

@@ -36,10 +36,10 @@ public final class DatasetSessionFactory<Solution_> {
 
     private NodeNetwork buildNodeNetwork(Set<AbstractDataStream<Solution_>> dataStreamSet,
             DataNodeBuildHelper<Solution_> buildHelper, Consumer<String> nodeNetworkVisualizationConsumer) {
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?, ?>>>();
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
         var nodeList = buildHelper.buildNodeList(dataStreamSet, buildHelper,
                 AbstractDataStream::buildNode, node -> {
-                    if (!(node instanceof AbstractForEachUniNode<?, ?> forEachUniNode)) {
+                    if (!(node instanceof AbstractForEachUniNode<?> forEachUniNode)) {
                         return;
                     }
                     var forEachClass = forEachUniNode.getForEachClass();

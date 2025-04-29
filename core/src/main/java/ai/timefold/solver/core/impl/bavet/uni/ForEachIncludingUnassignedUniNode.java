@@ -6,8 +6,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public sealed class ForEachIncludingUnassignedUniNode<Solution_, A>
-        extends AbstractForEachUniNode<Solution_, A>
+public sealed class ForEachIncludingUnassignedUniNode<A>
+        extends AbstractForEachUniNode<A>
         permits ForEachFromSolutionUniNode {
 
     public ForEachIncludingUnassignedUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
@@ -26,14 +26,8 @@ public sealed class ForEachIncludingUnassignedUniNode<Solution_, A>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution) {
-        throw new UnsupportedOperationException("Impossible state: initialize() is not supported on %s."
-                .formatted(this));
-    }
-
-    @Override
     public boolean supports(LifecycleOperation lifecycleOperation) {
-        return lifecycleOperation != LifecycleOperation.INITIALIZE;
+        return true;
     }
 
 }

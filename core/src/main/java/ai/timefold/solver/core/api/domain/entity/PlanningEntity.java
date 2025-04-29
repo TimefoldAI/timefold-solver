@@ -37,18 +37,23 @@ public @interface PlanningEntity {
     /**
      * A pinned planning entity is never changed during planning,
      * this is useful in repeated planning use cases (such as continuous planning and real-time planning).
-     * <p>
      * This applies to all the planning variables of this planning entity.
-     * To pin individual variables, see https://issues.redhat.com/browse/PLANNER-124
      * <p>
      * The method {@link PinningFilter#accept(Object, Object)} returns false if the selection entity is pinned
      * and it returns true if the selection entity is movable
      *
      * @return {@link NullPinningFilter} when it is null (workaround for annotation limitation)
+     * @deprecated Prefer using {@link PlanningPin}.
      */
+    @Deprecated(forRemoval = true, since = "1.23.0")
     Class<? extends PinningFilter> pinningFilter() default NullPinningFilter.class;
 
-    /** Workaround for annotation limitation in {@link #pinningFilter()} ()}. */
+    /**
+     * Workaround for annotation limitation in {@link #pinningFilter()}.
+     * 
+     * @deprecated Prefer using {@link PlanningPin}.
+     */
+    @Deprecated(forRemoval = true, since = "1.23.0")
     interface NullPinningFilter extends PinningFilter {
     }
 

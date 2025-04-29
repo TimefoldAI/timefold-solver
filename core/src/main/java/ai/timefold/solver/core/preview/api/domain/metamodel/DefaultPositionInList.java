@@ -10,9 +10,9 @@ import org.jspecify.annotations.Nullable;
  * Points to a list variable position specified by an entity and an index.
  */
 @NullMarked
-record DefaultLocationInList(Object entity, int index) implements LocationInList {
+record DefaultPositionInList(Object entity, int index) implements PositionInList {
 
-    public DefaultLocationInList {
+    public DefaultPositionInList {
         Objects.requireNonNull(entity);
         if (index < 0) {
             throw new IllegalArgumentException("Impossible state: index (%d) not positive."
@@ -21,13 +21,13 @@ record DefaultLocationInList(Object entity, int index) implements LocationInList
     }
 
     @Override
-    public LocationInList ensureAssigned(Supplier<String> messageSupplier) {
+    public PositionInList ensureAssigned(Supplier<String> messageSupplier) {
         return this;
     }
 
     @Override
     public boolean equals(@Nullable Object element) {
-        if (!(element instanceof DefaultLocationInList that)) {
+        if (!(element instanceof DefaultPositionInList that)) {
             return false;
         }
         return index == that.index && entity == that.entity;
@@ -47,7 +47,7 @@ record DefaultLocationInList(Object entity, int index) implements LocationInList
     }
 
     @Override
-    public int compareTo(LocationInList other) {
+    public int compareTo(PositionInList other) {
         return Integer.compare(index, other.index());
     }
 }

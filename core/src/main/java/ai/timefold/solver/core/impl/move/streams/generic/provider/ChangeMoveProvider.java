@@ -35,10 +35,10 @@ public class ChangeMoveProvider<Solution_, Entity_, Value_>
     @Override
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
         var defaultMoveStreamFactory = (DefaultMoveStreamFactory<Solution_>) moveStreamFactory;
+        var entityStream = defaultMoveStreamFactory.enumerate(variableMetaModel.entity().type())
+                .filter(this::acceptEntity);
         var valueStream = defaultMoveStreamFactory.enumeratePossibleValues(variableMetaModel)
                 .filter(this::acceptValue);
-        var entityStream = defaultMoveStreamFactory.enumerateEntities(variableMetaModel)
-                .filter(this::acceptEntity);
         return moveStreamFactory.pick(entityStream)
                 .pick(valueStream, this::acceptEntityValuePair)
                 .asMove((solution, entity, value) -> new ChangeMove<>(variableMetaModel, entity, value));

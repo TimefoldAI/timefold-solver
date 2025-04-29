@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -17,7 +17,7 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
-    private final Iterator<ElementLocation> destinationIterator;
+    private final Iterator<ElementPosition> destinationIterator;
 
     public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
             EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {

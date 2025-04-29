@@ -2,7 +2,7 @@ package ai.timefold.solver.core.api.domain.entity;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Decides on accepting or discarding a {@link PlanningEntity}.
@@ -10,7 +10,10 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Entity_> the entity type, the class with the {@link PlanningEntity} annotation
+ * @deprecated Use {@link PlanningPin} instead.
  */
+@Deprecated(forRemoval = true, since = "1.23.0")
+@NullMarked
 public interface PinningFilter<Solution_, Entity_> {
 
     /**
@@ -18,6 +21,6 @@ public interface PinningFilter<Solution_, Entity_> {
      * @param entity a {@link PlanningEntity}
      * @return true if the entity it is pinned, false if the entity is movable.
      */
-    boolean accept(@NonNull Solution_ solution, @NonNull Entity_ entity);
+    boolean accept(Solution_ solution, Entity_ entity);
 
 }

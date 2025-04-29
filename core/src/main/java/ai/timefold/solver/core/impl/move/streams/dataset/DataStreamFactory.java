@@ -24,44 +24,36 @@ public final class DataStreamFactory<Solution_> {
         this.solutionDescriptor = solutionDescriptor;
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    public <A> UniDataStream<Solution_, A> forEach(Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass) {
         assertValidForEachType(sourceClass);
-        var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
-        if (entityDescriptor == null) {
-            // Not genuine or shadow entity; no need for filtering.
-            return share(new ForEachDataStream<>(this, sourceClass));
-        }
+        return share(new ForEachIncludingPinnedDataStream<>(this, sourceClass));
+    }
+
+    public <A> UniDataStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass) {
+        assertValidForEachType(sourceClass);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        // We have a basic variable, or the sourceClass is not a valid type for a list variable value.
+        // In that case, we use the standard exclusion logic.
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
-            // No applicable list variable; don't need to check inverse relationships.
-            return share(new ForEachDataStream<>(this, sourceClass, entityDescriptor.getHasNoNullVariablesPredicateBasicVar()));
+            return share(new ForEachExcludingPinnedDataStream<>(this,
+                    solutionDescriptor.getMetaModel().entity(sourceClass)));
         }
-        var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
-        if (entityClass == sourceClass) {
-            throw new IllegalStateException("Impossible state: entityClass (%s) and sourceClass (%s) are the same."
-                    .formatted(entityClass.getCanonicalName(), sourceClass.getCanonicalName()));
+        // The sourceClass is a list variable value, therefore we need to specialize the exclusion logic.
+        var parentEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
+        if (!parentEntityDescriptor.supportsPinning()) { // Should have been eliminated earlier.
+            throw new UnsupportedOperationException("Impossible state: the list variable (%s) does not support pinning."
+                    .formatted(listVariableDescriptor.getVariableName()));
         }
-        var shadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
-        if (shadowDescriptor == null) {
-            // The list variable element doesn't have the @InverseRelationShadowVariable annotation.
-            // We don't want the users to be forced to implement it in quickstarts,
-            // so we'll do this expensive thing instead.
-            return forEachIncludingUnassigned(sourceClass)
-                    .ifExists((Class) entityClass,
-                            Joiners.filtering(listVariableDescriptor.getInListPredicate()));
-        } else { // We have the inverse relation variable, so we can read its value directly.
-            return share(new ForEachDataStream<>(this, sourceClass, entityDescriptor.getHasNoNullVariablesPredicateListVar()));
-        }
+        var stream = forEachNonDiscriminating(sourceClass)
+                .ifNotExists(parentEntityDescriptor.getEntityClass(),
+                        Joiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
+        return share((AbstractUniDataStream<Solution_, A>) stream);
+
     }
 
-    public <A> UniDataStream<Solution_, A> forEachIncludingUnassigned(Class<A> sourceClass) {
-        assertValidForEachType(sourceClass);
-        return share(new ForEachDataStream<>(this, sourceClass));
-    }
-
-    public <A> UniDataStream<Solution_, A> forEach(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
-        return share(new ForEachDataStream<>(this, valueCollectingFunction));
+    public <A> UniDataStream<Solution_, A>
+            forEachFromSolution(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
+        return share(new ForEachFromSolutionDataStream<>(this, valueCollectingFunction));
     }
 
     public <A> void assertValidForEachType(Class<A> fromType) {

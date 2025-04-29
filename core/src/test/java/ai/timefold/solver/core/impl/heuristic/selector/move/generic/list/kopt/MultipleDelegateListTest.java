@@ -18,7 +18,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 import org.junit.jupiter.api.Test;
 
@@ -42,15 +42,15 @@ public class MultipleDelegateListTest {
         doAnswer(invocation -> {
             String value = invocation.getArgument(0);
             return switch (value) {
-                case "a" -> ElementLocation.of("e1", 0);
-                case "b" -> ElementLocation.of("e1", 1);
-                case "c" -> ElementLocation.of("e1", 2);
-                case "d" -> ElementLocation.of("e2", 0);
-                case "e" -> ElementLocation.of("e2", 1);
-                case "f" -> ElementLocation.of("e3", 0);
-                default -> ElementLocation.unassigned();
+                case "a" -> ElementPosition.of("e1", 0);
+                case "b" -> ElementPosition.of("e1", 1);
+                case "c" -> ElementPosition.of("e1", 2);
+                case "d" -> ElementPosition.of("e2", 0);
+                case "e" -> ElementPosition.of("e2", 1);
+                case "f" -> ElementPosition.of("e3", 0);
+                default -> ElementPosition.unassigned();
             };
-        }).when(listVariableStateSupply).getLocationInList(anyString());
+        }).when(listVariableStateSupply).getElementPosition(anyString());
         when(listVariableStateSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptor);
 
         List<String> expectedOrder = List.of("a", "b", "c", "d", "e", "f");

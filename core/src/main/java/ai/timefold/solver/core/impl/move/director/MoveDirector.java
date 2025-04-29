@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -173,15 +173,15 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public <Entity_, Value_> ElementLocation
+    public <Entity_, Value_> ElementPosition
             getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return getPositionOf(backingScoreDirector, variableMetaModel, value);
     }
 
-    protected static <Solution_, Entity_, Value_> ElementLocation getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
+    protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
-                .getLocationInList(value);
+                .getElementPosition(value);
     }
 
     @Override
