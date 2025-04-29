@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningSolution
 public class TestdataDeclarativeExtendedSolution extends TestdataObject {
