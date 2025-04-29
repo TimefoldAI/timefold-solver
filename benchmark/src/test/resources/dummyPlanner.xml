@@ -36,6 +36,11 @@
 
   <unifiedProblemBenchmarkResult>
     <name>P-1</name>
+    <fileProblemProvider>
+      <problemFile>
+        dummyPlannerBenchmarkResult.xml
+      </problemFile>
+    </fileProblemProvider>
     <writeOutputSolutionEnabled>false</writeOutputSolutionEnabled>
     <bestScoreProblemStatistic>
       <problemStatisticType>BEST_SCORE</problemStatisticType>
