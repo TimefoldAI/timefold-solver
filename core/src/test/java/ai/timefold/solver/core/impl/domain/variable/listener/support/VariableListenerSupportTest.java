@@ -330,8 +330,11 @@ class VariableListenerSupportTest {
         // Edges are added only when variable listeners are triggered,
         // since we require ListVariableState to be up-to-date
         visitC.setPreviousValue(visitA1);
+        variableListenerSupport.afterVariableChanged(previousElementDescriptor, visitC);
         visitC.setEntity(vehicle1);
+        variableListenerSupport.afterVariableChanged(vehicleDescriptor, visitC);
         visitB1.setPreviousValue(null);
+        variableListenerSupport.afterVariableChanged(previousElementDescriptor, visitB1);
 
         variableListenerSupport.triggerVariableListenersInNotificationQueues();
 

@@ -7,11 +7,15 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.extended.TestdataDeclarativeExtendedBaseValue;
+import ai.timefold.solver.core.impl.testdata.domain.declarative.extended.TestdataDeclarativeExtendedSubclassValue;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -495,5 +499,91 @@ class RootVariableSourceTest {
                         " starting from root entity (TestdataInvalidDeclarativeValue)" +
                         " referencing multiple facts (fact, fact)" +
                         " in a row.");
+    }
+
+    @Test
+    void preferGetterWhenFieldTheSameType() {
+        record TestClass(String name) {
+            public String getName() {
+                return name;
+            }
+        }
+
+        var member = RootVariableSource.getMember(TestClass.class, "name", TestClass.class, "name");
+        assertThat(member).isInstanceOf(Method.class);
+    }
+
+    @Test
+    void preferGetterWhenGetterIsMoreSpecificThanField() {
+        record TestClass(TestdataDeclarativeExtendedBaseValue value) {
+            public TestdataDeclarativeExtendedSubclassValue getValue() {
+                return (TestdataDeclarativeExtendedSubclassValue) value;
+            }
+        }
+
+        var member = RootVariableSource.getMember(TestClass.class, "value", TestClass.class, "value");
+        assertThat(member).isInstanceOf(Method.class);
+    }
+
+    @Test
+    void preferGetterWhenGetterIsNotCovariantWithField() {
+        record TestClass(String value) {
+            public Integer getValue() {
+                return 1;
+            }
+        }
+
+        var member = RootVariableSource.getMember(TestClass.class, "value", TestClass.class, "value");
+        assertThat(member).isInstanceOf(Method.class);
+    }
+
+    @Test
+    void preferFieldWhenFieldMoreSpecificThanGetter() {
+        record TestClass(TestdataDeclarativeExtendedSubclassValue value) {
+            public TestdataDeclarativeExtendedBaseValue getValue() {
+                return value;
+            }
+        }
+
+        var member = RootVariableSource.getMember(TestClass.class, "value", TestClass.class, "value");
+        assertThat(member).isInstanceOf(Field.class);
+    }
+
+    @Test
+    void useFieldIfNoGetter() {
+        record TestClass(String value) {
+        }
+
+        var member = RootVariableSource.getMember(TestClass.class, "value", TestClass.class, "value");
+        assertThat(member).isInstanceOf(Field.class);
+    }
+
+    @Test
+    void useGetterIfNoField() {
+        record TestClass() {
+            String getValue() {
+                return "value";
+            }
+        }
+
+        var member = RootVariableSource.getMember(TestClass.class, "value", TestClass.class, "value");
+        assertThat(member).isInstanceOf(Method.class);
+    }
+
+    @Test
+    void errorIfNoMember() {
+        record TestClass() {
+        }
+
+        record RootClass(TestClass inner) {
+        }
+
+        assertThatCode(() -> RootVariableSource.getMember(RootClass.class, "inner.value", TestClass.class, "value"))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("The source path (inner.value)",
+                        "starting from root class (RootClass)",
+                        "references a member (value)",
+                        "on class (TestClass)",
+                        "that does not exist.");
     }
 }

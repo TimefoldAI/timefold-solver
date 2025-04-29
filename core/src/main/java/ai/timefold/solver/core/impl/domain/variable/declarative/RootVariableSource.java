@@ -243,18 +243,45 @@ public record RootVariableSource<Entity_, Value_>(
         }
     }
 
+    public static Member getMember(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
+            String memberName) {
+        var field = ReflectionHelper.getDeclaredField(declaringClass, memberName);
+        var getterMethod = ReflectionHelper.getDeclaredGetterMethod(declaringClass, memberName);
+        Member member;
+        if (field == null && getterMethod == null) {
+            throw new IllegalArgumentException(
+                    "The source path (%s) starting from root class (%s) references a member (%s) on class (%s) that does not exist."
+                            .formatted(sourcePath, rootClass.getSimpleName(), memberName, declaringClass.getSimpleName()));
+        } else if (field != null && getterMethod == null) {
+            member = field;
+        } else if (field == null) { // method is not guaranteed to not be null
+            member = getterMethod;
+        } else {
+            var fieldType = field.getType();
+            var methodType = getterMethod.getReturnType();
+            if (fieldType.equals(methodType)) {
+                // Prefer getter if types are the same
+                member = getterMethod;
+            } else if (fieldType.isAssignableFrom(methodType)) {
+                // Getter is more specific than field
+                member = getterMethod;
+            } else if (methodType.isAssignableFrom(fieldType)) {
+                // Field is more specific than getter
+                member = field;
+            } else {
+                // Field and getter are not covariant; prefer method
+                member = getterMethod;
+            }
+        }
+
+        return member;
+    }
+
     private static MemberAccessor getMemberAccessor(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
             String memberName,
             MemberAccessorFactory memberAccessorFactory, DescriptorPolicy descriptorPolicy) {
-        Member member = ReflectionHelper.getDeclaredField(declaringClass, memberName);
-        if (member == null) {
-            member = ReflectionHelper.getDeclaredGetterMethod(declaringClass, memberName);
-            if (member == null) {
-                throw new IllegalArgumentException(
-                        "The source path (%s) starting from root class (%s) references a member (%s) on class (%s) that does not exist."
-                                .formatted(sourcePath, rootClass.getSimpleName(), memberName, declaringClass.getSimpleName()));
-            }
-        }
+        var member = getMember(rootClass, sourcePath, declaringClass, memberName);
+
         return memberAccessorFactory.buildAndCacheMemberAccessor(member,
                 MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD,
                 descriptorPolicy.getDomainAccessType());
