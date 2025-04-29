@@ -32,11 +32,22 @@ However, their APIs and behavior are not yet considered stable, pending user fee
 Any class, method or field related to these features may change or be removed without prior notice,
 although we strive to avoid this as much as possible.
 
+Preview features need to be activated in the solverConfig.xml file.
+
+[source,xml,options="nowrap"]
+----
+<solver xmlns="https://timefold.ai/xsd/solver">
+  <enablePreviewFeature>DIVERSIFIED_LATE_ACCEPTANCE</enablePreviewFeature>
+  <enablePreviewFeature>DECLARATIVE_SHADOW_VARIABLES</enablePreviewFeature>
+  <enablePreviewFeature>PLANNING_SOLUTION_DIFF</enablePreviewFeature>
+</solver>
+----
+
 Preview features often live in the `preview.api` package, and they are:
 
 - xref:optimization-algorithms/local-search.adoc#diversifiedLateAcceptance[Diversified Late Acceptance] acceptor
-- xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
 - xref:using-timefold-solver/modeling-planning-problems.adoc#declarativeShadowVariable[Declarative Shadow Variables]
+- xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
 in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package,
 and in the `SolutionManager`
 - _Timefold Solver for Python_, which is currently in beta
