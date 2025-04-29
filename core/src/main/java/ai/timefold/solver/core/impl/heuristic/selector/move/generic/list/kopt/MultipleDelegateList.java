@@ -68,14 +68,14 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
     }
 
     public int getIndexOfValue(ListVariableStateSupply<?> listVariableStateSupply, Object value) {
-        var elementLocationInList = listVariableStateSupply.getLocationInList(value)
+        var elementPosition = listVariableStateSupply.getElementPosition(value)
                 .ensureAssigned(() -> "Value (" + value + ") is not contained in any entity list");
-        var entity = elementLocationInList.entity();
+        var entity = elementPosition.entity();
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         for (var i = 0; i < delegateEntities.length; i++) {
             if (delegateEntities[i] == entity) {
                 var firstUnpinnedIndex = listVariableDescriptor.getFirstUnpinnedIndex(delegateEntities[i]);
-                return offsets[i] + (elementLocationInList.index() - firstUnpinnedIndex);
+                return offsets[i] + (elementPosition.index() - firstUnpinnedIndex);
             }
         }
         throw new IllegalArgumentException("Impossible state: value (%s) not found"

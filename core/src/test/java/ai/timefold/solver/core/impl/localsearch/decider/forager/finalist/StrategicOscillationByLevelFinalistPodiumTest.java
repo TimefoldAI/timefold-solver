@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.localsearch.decider.forager.finalist;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.extractSingleton;
+import static ai.timefold.solver.core.testutil.PlannerAssert.extractSingleton;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 

@@ -6,9 +6,9 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
-import ai.timefold.solver.core.impl.testdata.TestConstraint;
-import ai.timefold.solver.core.impl.testdata.TestConstraintFactory;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testconstraint.TestConstraint;
+import ai.timefold.solver.core.testconstraint.TestConstraintFactory;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;

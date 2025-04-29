@@ -4,18 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;

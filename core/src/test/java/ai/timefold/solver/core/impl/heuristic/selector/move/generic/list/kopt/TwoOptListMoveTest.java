@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.kopt;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.verify;
@@ -10,10 +10,10 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

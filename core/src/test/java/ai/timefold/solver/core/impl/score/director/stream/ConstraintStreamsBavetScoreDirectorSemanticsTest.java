@@ -7,12 +7,12 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorSemanticsTest;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintConfigurationSolution;
-import ai.timefold.solver.core.impl.testdata.domain.constraintconfiguration.TestdataConstraintWeightConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintConfigurationSolution;
+import ai.timefold.solver.core.testdomain.constraintconfiguration.TestdataConstraintWeightConstraintProvider;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListConstraintProvider;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListConstraintProvider;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 
 final class ConstraintStreamsBavetScoreDirectorSemanticsTest extends AbstractScoreDirectorSemanticsTest {
 

@@ -4,16 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
@@ -21,17 +16,15 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.AbstractSolutionClonerTest;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
 import ai.timefold.solver.core.impl.util.MutableReference;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedSolution;
 
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.gizmo.ClassCreator;
-import io.quarkus.gizmo.ClassOutput;
 import io.quarkus.gizmo.FieldDescriptor;
 import io.quarkus.gizmo.MethodDescriptor;
 
@@ -46,11 +39,11 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
 
     @Override
     protected <Solution_> SolutionCloner<Solution_> createSolutionCloner(SolutionDescriptor<Solution_> solutionDescriptor) {
-        String className = GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor);
-        MutableReference<byte[]> classBytecodeHolder = new MutableReference<>(null);
-        ClassOutput classOutput =
+        var className = GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor);
+        var classBytecodeHolder = new MutableReference<byte[]>(null);
+        var classOutput =
                 GizmoSolutionClonerImplementor.createClassOutputWithDebuggingCapability(classBytecodeHolder);
-        ClassCreator classCreator = ClassCreator.builder()
+        var classCreator = ClassCreator.builder()
                 .className(className)
                 .interfaces(GizmoSolutionCloner.class)
                 .superClass(Object.class)
@@ -58,9 +51,9 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                 .setFinal(true)
                 .build();
 
-        Map<Class<?>, GizmoSolutionOrEntityDescriptor> memoizedSolutionOrEntityDescriptorMap = new HashMap<>();
+        var memoizedSolutionOrEntityDescriptorMap = new HashMap<Class<?>, GizmoSolutionOrEntityDescriptor>();
 
-        Set<Class<?>> deepClonedClassSet = GizmoCloningUtils.getDeepClonedClasses(solutionDescriptor, Collections.emptyList());
+        var deepClonedClassSet = GizmoCloningUtils.getDeepClonedClasses(solutionDescriptor, Collections.emptyList());
         Stream.concat(Stream.of(solutionDescriptor.getSolutionClass()),
                 Stream.concat(solutionDescriptor.getEntityClassSet().stream(),
                         deepClonedClassSet.stream()))
@@ -73,9 +66,9 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                 Collections.singleton(solutionDescriptor.getSolutionClass()),
                 memoizedSolutionOrEntityDescriptorMap, deepClonedClassSet);
         classCreator.close();
-        final byte[] byteCode = classBytecodeHolder.getValue();
+        final var byteCode = classBytecodeHolder.getValue();
 
-        ClassLoader gizmoClassLoader = new ClassLoader() {
+        var gizmoClassLoader = new ClassLoader() {
             // getName() is an abstract method in Java 11 but not in Java 8
             @Override
             public String getName() {
@@ -95,7 +88,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
 
         try {
             @SuppressWarnings("unchecked")
-            GizmoSolutionCloner<Solution_> solutionCloner =
+            var solutionCloner =
                     (GizmoSolutionCloner<Solution_>) gizmoClassLoader.loadClass(className).getConstructor().newInstance();
             solutionCloner.setSolutionDescriptor(solutionDescriptor);
             return solutionCloner;
@@ -108,27 +101,27 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
     // TODO: should this be another DomainAccessType? DomainAccessType.GIZMO_RELAXED_ACCESS?
     private GizmoSolutionOrEntityDescriptor generateGizmoSolutionOrEntityDescriptor(SolutionDescriptor solutionDescriptor,
             Class<?> entityClass) {
-        Map<Field, GizmoMemberDescriptor> solutionFieldToMemberDescriptor = new HashMap<>();
-        Class<?> currentClass = entityClass;
+        var solutionFieldToMemberDescriptor = new HashMap<Field, GizmoMemberDescriptor>();
+        var currentClass = entityClass;
 
         while (currentClass != null) {
-            for (Field field : currentClass.getDeclaredFields()) {
+            for (var field : currentClass.getDeclaredFields()) {
                 if (!Modifier.isStatic(field.getModifiers())) {
                     GizmoMemberDescriptor member;
-                    Class<?> declaringClass = field.getDeclaringClass();
-                    FieldDescriptor memberDescriptor = FieldDescriptor.of(field);
-                    String name = field.getName();
+                    var declaringClass = field.getDeclaringClass();
+                    var memberDescriptor = FieldDescriptor.of(field);
+                    var name = field.getName();
 
                     if (Modifier.isPublic(field.getModifiers())) {
                         member = new GizmoMemberDescriptor(name, memberDescriptor, declaringClass);
                     } else {
-                        Method getter = ReflectionHelper.getGetterMethod(currentClass, field.getName());
-                        Method setter = ReflectionHelper.getSetterMethod(currentClass, field.getName());
+                        var getter = ReflectionHelper.getGetterMethod(currentClass, field.getName());
+                        var setter = ReflectionHelper.getSetterMethod(currentClass, field.getName());
                         if (getter != null && setter != null) {
-                            MethodDescriptor getterDescriptor = MethodDescriptor.ofMethod(field.getDeclaringClass().getName(),
+                            var getterDescriptor = MethodDescriptor.ofMethod(field.getDeclaringClass().getName(),
                                     getter.getName(),
                                     field.getType());
-                            MethodDescriptor setterDescriptor = MethodDescriptor.ofMethod(field.getDeclaringClass().getName(),
+                            var setterDescriptor = MethodDescriptor.ofMethod(field.getDeclaringClass().getName(),
                                     setter.getName(),
                                     setter.getReturnType(),
                                     field.getType());
@@ -144,9 +137,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
             }
             currentClass = currentClass.getSuperclass();
         }
-        GizmoSolutionOrEntityDescriptor out =
-                new GizmoSolutionOrEntityDescriptor(solutionDescriptor, entityClass, solutionFieldToMemberDescriptor);
-        return out;
+        return new GizmoSolutionOrEntityDescriptor(solutionDescriptor, entityClass, solutionFieldToMemberDescriptor);
     }
 
     private interface Animal {
@@ -164,19 +155,19 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
     // This test verifies the instanceof comparator works correctly
     @Test
     void instanceOfComparatorTest() {
-        Set<Class<?>> classSet = new HashSet<>(Arrays.asList(
+        var classSet = new HashSet<>(Arrays.asList(
                 Animal.class,
                 Robot.class,
                 Zebra.class,
                 RobotZebra.class));
 
-        Comparator<Class<?>> comparator = GizmoSolutionClonerImplementor.getInstanceOfComparator(classSet);
+        var comparator = GizmoSolutionClonerImplementor.getInstanceOfComparator(classSet);
 
         // assert that the comparator works on equality
-        assertThat(comparator.compare(Animal.class, Animal.class)).isEqualTo(0);
-        assertThat(comparator.compare(Robot.class, Robot.class)).isEqualTo(0);
-        assertThat(comparator.compare(Zebra.class, Zebra.class)).isEqualTo(0);
-        assertThat(comparator.compare(RobotZebra.class, RobotZebra.class)).isEqualTo(0);
+        assertThat(comparator.compare(Animal.class, Animal.class)).isZero();
+        assertThat(comparator.compare(Robot.class, Robot.class)).isZero();
+        assertThat(comparator.compare(Zebra.class, Zebra.class)).isZero();
+        assertThat(comparator.compare(RobotZebra.class, RobotZebra.class)).isZero();
 
         // Zebra < Animal and Robot
         // Since Animal and Robot are base classes (i.e. not subclasses of anything in the set)
@@ -199,30 +190,31 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
     @Override
     @Test
     protected void cloneExtendedSolution() {
-        SolutionDescriptor solutionDescriptor = TestdataUnannotatedExtendedSolution.buildSolutionDescriptor();
-        SolutionCloner<TestdataUnannotatedExtendedSolution> cloner = createSolutionCloner(solutionDescriptor);
+        var solutionDescriptor = TestdataOnlyBaseAnnotatedExtendedSolution.buildBaseSolutionDescriptor();
+        var cloner = createSolutionCloner(solutionDescriptor);
 
-        TestdataValue val1 = new TestdataValue("1");
-        TestdataValue val2 = new TestdataValue("2");
-        TestdataValue val3 = new TestdataValue("3");
-        TestdataUnannotatedExtendedEntity a = new TestdataUnannotatedExtendedEntity("a", val1, null);
-        TestdataUnannotatedExtendedEntity b = new TestdataUnannotatedExtendedEntity("b", val1, "extraObjectOnEntity");
-        TestdataUnannotatedExtendedEntity c = new TestdataUnannotatedExtendedEntity("c", val3);
-        TestdataUnannotatedExtendedEntity d = new TestdataUnannotatedExtendedEntity("d", val3, c);
+        var val1 = new TestdataValue("1");
+        var val2 = new TestdataValue("2");
+        var val3 = new TestdataValue("3");
+        var a = new TestdataOnlyBaseAnnotatedChildEntity("a", val1, null);
+        var b = new TestdataOnlyBaseAnnotatedChildEntity("b", val1, "extraObjectOnEntity");
+        var c = new TestdataOnlyBaseAnnotatedChildEntity("c", val3);
+        var d = new TestdataOnlyBaseAnnotatedChildEntity("d", val3, c);
         c.setExtraObject(d);
 
-        TestdataUnannotatedExtendedSolution original = new TestdataUnannotatedExtendedSolution("solution",
-                "extraObjectOnSolution");
-        List<TestdataValue> valueList = Arrays.asList(val1, val2, val3);
+        var original = new TestdataOnlyBaseAnnotatedExtendedSolution("solution", "extraObjectOnSolution");
+        var valueList = Arrays.asList(val1, val2, val3);
         original.setValueList(valueList);
-        List<TestdataEntity> originalEntityList = Arrays.asList(a, b, c, d);
+        var originalEntityList = Arrays.asList(a, b, c, d);
         original.setEntityList(originalEntityList);
 
         assertThatCode(() -> cloner.cloneSolution(original))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessage(
                         "Failed to create clone: encountered (" + original.getClass() + ") which is not a known subclass of " +
-                                "the solution class (" + TestdataSolution.class + "). The known subclasses are " +
-                                "[" + TestdataSolution.class.getName() + "].\nMaybe use DomainAccessType.REFLECTION?");
+                                "the solution class (" + TestdataOnlyBaseAnnotatedSolution.class
+                                + "). The known subclasses are " +
+                                "[" + TestdataOnlyBaseAnnotatedSolution.class.getName()
+                                + "].\nMaybe use DomainAccessType.REFLECTION?");
     }
 }

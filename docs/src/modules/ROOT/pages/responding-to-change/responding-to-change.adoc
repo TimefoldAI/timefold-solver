@@ -264,65 +264,10 @@ class Lecture:
 In the example above, if `pinned` is `true`,
 the lecture will not be assigned to another period or room (even if the current period and rooms fields are `null`).
 
-[#configureAPinningFilter]
-===== Configure a `PinningFilter`
+NOTE: Planning pin value must never change during planning.
+To change whether an entity is pinned or not,
+use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange]
 
-Alternatively, to pin some planning entities down, add a `PinningFilter` that returns `true` if an entity is pinned, and `false` if it is movable.
-This is more flexible and more verbose than the `@PlanningPin` approach.
-
-For example, on the employee scheduling quickstart:
-
-. Add the `PinningFilter`:
-+
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class ShiftPinningFilter implements PinningFilter<EmployeeSchedule, Shift> {
-
-    @Override
-    public boolean accept(EmployeeSchedule employeeSchedule, Shift shift) {
-        ScheduleState scheduleState = employeeSchedule.getScheduleState();
-        return !scheduleState.isDraft(shift);
-    }
-}
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def is_shift_pinned(employee_schedule: 'EmployeeSchedule', shift: 'Shift') -> bool:
-    schedule_state = employee_schedule.schedule_state
-    return not schedule_state.is_draft(shift)
-----
-====
-
-. Configure the `PinningFilter`:
-+
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity(pinningFilter = ShiftPinningFilter.class)
-public class Shift {
-    ...
-}
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity(pinning_filter=is_entity_pinned)
-class Shift:
-    ...
-----
-====
 
 [#partiallyPinnedPlanningListVariable]
 ==== Pinning a planning list variable
@@ -383,6 +328,45 @@ but the list can still be extended by adding to the end of the list.
 
 To pin the entire list, preventing any modifications to the list whatsoever,
 <<pinDownPlanningEntities, `@PlanningPin`>> needs to be used on the entity itself.
+
+NOTE: Value of the index must never change during planning.
+To change how far the list is pinned,
+use xref:responding-to-change/responding-to-change.adoc#problemChange[ProblemChange].
+
+[#configureAPinningFilter]
+==== Configure a `PinningFilter`
+
+WARNING: `PinningFilter` is deprecated for removal in a future version of Timefold Solver.
+Use `@PlanningPin` as described above.
+
+Alternatively, to pin some planning entities down,
+add a `PinningFilter` that returns `true` if an entity is pinned,
+and `false` if it is movable.
+
+For example, on the employee scheduling quickstart:
+
+[source,java,options="nowrap"]
+----
+public class ShiftPinningFilter implements PinningFilter<EmployeeSchedule, Shift> {
+
+    @Override
+    public boolean accept(EmployeeSchedule employeeSchedule, Shift shift) {
+        ScheduleState scheduleState = employeeSchedule.getScheduleState();
+        return !scheduleState.isDraft(shift);
+    }
+}
+----
+
+Configure the `PinningFilter`:
+
+[source,java,options="nowrap"]
+----
+@PlanningEntity(pinningFilter = ShiftPinningFilter.class)
+public class Shift {
+    ...
+}
+----
+
 
 [#nonvolatileReplanning]
 === Nonvolatile replanning to minimize disruption (semi-movable planning entities)

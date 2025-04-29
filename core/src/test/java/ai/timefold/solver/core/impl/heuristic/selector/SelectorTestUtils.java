@@ -33,8 +33,8 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedObject;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedObject;
 
 public class SelectorTestUtils {
 

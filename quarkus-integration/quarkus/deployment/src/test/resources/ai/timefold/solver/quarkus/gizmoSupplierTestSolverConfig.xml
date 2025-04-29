@@ -2,9 +2,10 @@
 <solver>
     <environmentMode>FULL_ASSERT</environmentMode>
     <moveThreadCount>AUTO</moveThreadCount>
-    <solutionClass>ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedSolution</solutionClass>
-    <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
-    <entityClass>ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity</entityClass>
+    <solutionClass>ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution</solutionClass>
+    <solutionClass>ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedSolution</solutionClass>
+    <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
+    <entityClass>ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity</entityClass>
     <entityClass>ai.timefold.solver.quarkus.TimefoldProcessorGeneratedGizmoSupplierTest$DummyInterfaceEntity</entityClass>
     <entityClass>ai.timefold.solver.quarkus.TimefoldProcessorGeneratedGizmoSupplierTest$DummyAbstractEntity</entityClass>
     <scoreDirectorFactory>
@@ -17,7 +18,7 @@
         <constructionHeuristicType>FIRST_FIT_DECREASING</constructionHeuristicType>
         <queuedEntityPlacer>
             <entitySelector id="placerEntitySelector">
-                <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
+                <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
                 <cacheType>PHASE</cacheType>
                 <selectionOrder>SORTED</selectionOrder>
                 <filterClass>ai.timefold.solver.quarkus.TimefoldProcessorGeneratedGizmoSupplierTest$DummyEntityFilter</filterClass>
@@ -27,7 +28,7 @@
                 <changeMoveSelector>
                     <entitySelector mimicSelectorRef="placerEntitySelector"/>
                     <valueSelector variableName="subValue">
-                        <downcastEntityClass>ai.timefold.solver.core.impl.testdata.domain.extended.TestdataAnnotatedExtendedEntity</downcastEntityClass>
+                        <downcastEntityClass>ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity</downcastEntityClass>
                         <cacheType>PHASE</cacheType>
                         <selectionOrder>SORTED</selectionOrder>
                         <sorterManner>INCREASING_STRENGTH</sorterManner>

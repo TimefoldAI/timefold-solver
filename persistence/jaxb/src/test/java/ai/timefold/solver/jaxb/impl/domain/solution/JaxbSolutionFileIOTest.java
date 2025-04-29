@@ -1,16 +1,16 @@
 package ai.timefold.solver.jaxb.impl.domain.solution;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfIterator;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCode;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.jaxb.impl.testdata.domain.JaxbTestdataEntity;
-import ai.timefold.solver.jaxb.impl.testdata.domain.JaxbTestdataSolution;
-import ai.timefold.solver.jaxb.impl.testdata.domain.JaxbTestdataValue;
+import ai.timefold.solver.jaxb.testdomain.JaxbTestdataEntity;
+import ai.timefold.solver.jaxb.testdomain.JaxbTestdataSolution;
+import ai.timefold.solver.jaxb.testdomain.JaxbTestdataValue;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;

@@ -10,10 +10,10 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.testdata.invalid.inverserelation.constraints.TestdataInvalidQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationEntity;
-import ai.timefold.solver.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationSolution;
-import ai.timefold.solver.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue;
+import ai.timefold.solver.quarkus.testdomain.invalid.inverserelation.constraints.TestdataInvalidQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.invalid.inverserelation.domain.TestdataInvalidInverseRelationEntity;
+import ai.timefold.solver.quarkus.testdomain.invalid.inverserelation.domain.TestdataInvalidInverseRelationSolution;
+import ai.timefold.solver.quarkus.testdomain.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -34,10 +34,10 @@ class TimefoldProcessorInvalidTest {
             .assertException(exception -> {
                 assertEquals(IllegalStateException.class, exception.getClass());
                 assertEquals("The field (entityList) with a @InverseRelationShadowVariable annotation is" +
-                        " in a class (ai.timefold.solver.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue)"
+                        " in a class (ai.timefold.solver.quarkus.testdomain.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue)"
                         +
                         " that does not have a @PlanningEntity annotation.\n" +
-                        "Maybe add a @PlanningEntity annotation on the class (ai.timefold.solver.quarkus.testdata.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue).",
+                        "Maybe add a @PlanningEntity annotation on the class (ai.timefold.solver.quarkus.testdomain.invalid.inverserelation.domain.TestdataInvalidInverseRelationValue).",
                         exception.getMessage());
             });
 

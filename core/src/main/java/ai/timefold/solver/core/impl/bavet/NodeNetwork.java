@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
  * @param layeredNodes nodes grouped first by their layer, then by their index within the layer;
  *        propagation needs to happen in this order.
  */
-public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?, ?>>> declaredClassToNodeMap,
+public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?>>> declaredClassToNodeMap,
         Propagator[][] layeredNodes) {
 
     public static final NodeNetwork EMPTY = new NodeNetwork(Map.of(), new Propagator[0][0]);
@@ -32,7 +32,7 @@ public record NodeNetwork(Map<Class<?>, List<AbstractForEachUniNode<?, ?>>> decl
         return layeredNodes.length;
     }
 
-    public Stream<AbstractForEachUniNode<?, ?>> getForEachNodes(Class<?> factClass) {
+    public Stream<AbstractForEachUniNode<?>> getForEachNodes(Class<?> factClass) {
         // The node needs to match the fact, or the node needs to be applicable to the entire solution.
         // The latter is for FromSolution nodes.
         return declaredClassToNodeMap.entrySet()

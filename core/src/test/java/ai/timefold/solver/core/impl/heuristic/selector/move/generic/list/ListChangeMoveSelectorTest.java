@@ -2,32 +2,32 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getPinnedListVariableDescriptor;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockAllowsUnassignedValuesNeverEndingDestinationSelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockDestinationSelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockEntityIndependentValueSelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockNeverEndingDestinationSelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockNeverEndingEntityIndependentValueSelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockPinnedNeverEndingDestinationSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfMoveSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfMoveSelectorWithoutSize;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockAllowsUnassignedValuesNeverEndingDestinationSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockDestinationSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntityIndependentValueSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockNeverEndingDestinationSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockNeverEndingEntityIndependentValueSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockPinnedNeverEndingDestinationSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelectorWithoutSize;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListValue;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -51,12 +51,12 @@ class ListChangeMoveSelectorTest {
         var moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v3, v1, v2),
                 mockDestinationSelector(
-                        ElementLocation.of(a, 0),
-                        ElementLocation.of(b, 0),
-                        ElementLocation.of(c, 0),
-                        ElementLocation.of(c, 1),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.of(a, 1)),
+                        ElementPosition.of(a, 0),
+                        ElementPosition.of(b, 0),
+                        ElementPosition.of(c, 0),
+                        ElementPosition.of(c, 1),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.of(a, 1)),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -113,10 +113,10 @@ class ListChangeMoveSelectorTest {
         var moveSelector = new ListChangeMoveSelector<>(
                 mockEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v4, v3, v1, v2),
                 mockDestinationSelector(
-                        ElementLocation.of(c, 0),
-                        ElementLocation.of(c, 1),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.of(a, 1)),
+                        ElementPosition.of(c, 0),
+                        ElementPosition.of(c, 1),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.of(a, 1)),
                 false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
@@ -164,13 +164,13 @@ class ListChangeMoveSelectorTest {
                 mockEntityIndependentValueSelector(getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector), v3, v1, v4,
                         v2),
                 mockDestinationSelector(
-                        ElementLocation.of(a, 0),
-                        ElementLocation.of(b, 0),
-                        ElementLocation.of(c, 0),
-                        ElementLocation.of(c, 1),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.of(a, 1),
-                        ElementLocation.unassigned()),
+                        ElementPosition.of(a, 0),
+                        ElementPosition.of(b, 0),
+                        ElementPosition.of(c, 0),
+                        ElementPosition.of(c, 1),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.of(a, 1),
+                        ElementPosition.unassigned()),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -228,11 +228,11 @@ class ListChangeMoveSelectorTest {
         var moveSelector = new ListChangeMoveSelector<>(
                 mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v2, v1, v3, v3, v3),
                 mockNeverEndingDestinationSelector(
-                        ElementLocation.of(b, 0),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.of(a, 0),
-                        ElementLocation.of(a, 1),
-                        ElementLocation.of(a, 2)),
+                        ElementPosition.of(b, 0),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.of(a, 0),
+                        ElementPosition.of(a, 1),
+                        ElementPosition.of(a, 2)),
                 true);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -275,10 +275,10 @@ class ListChangeMoveSelectorTest {
                 mockNeverEndingEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v2, v1, v4, v3,
                         v3),
                 mockPinnedNeverEndingDestinationSelector(
-                        ElementLocation.of(c, 0),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.of(a, 1),
-                        ElementLocation.of(c, 0)),
+                        ElementPosition.of(c, 0),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.of(a, 1),
+                        ElementPosition.of(c, 0)),
                 true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
@@ -320,12 +320,12 @@ class ListChangeMoveSelectorTest {
                         v2, v1, v4, v3,
                         v3, v3),
                 mockAllowsUnassignedValuesNeverEndingDestinationSelector(
-                        ElementLocation.of(b, 0),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.of(a, 0),
-                        ElementLocation.of(a, 1),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.unassigned()),
+                        ElementPosition.of(b, 0),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.of(a, 0),
+                        ElementPosition.of(a, 1),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.unassigned()),
                 true);
 
         solvingStarted(moveSelector, scoreDirector);

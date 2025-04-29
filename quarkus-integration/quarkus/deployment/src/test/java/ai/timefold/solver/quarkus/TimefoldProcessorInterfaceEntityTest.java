@@ -11,9 +11,9 @@ import java.util.stream.IntStream;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.quarkus.testdata.interfaceentity.domain.TestdataInterfaceEntity;
-import ai.timefold.solver.quarkus.testdata.interfaceentity.domain.TestdataInterfaceEntityImplementation;
-import ai.timefold.solver.quarkus.testdata.interfaceentity.domain.TestdataInterfaceEntitySolution;
+import ai.timefold.solver.quarkus.testdomain.interfaceentity.domain.TestdataInterfaceEntity;
+import ai.timefold.solver.quarkus.testdomain.interfaceentity.domain.TestdataInterfaceEntityImplementation;
+import ai.timefold.solver.quarkus.testdomain.interfaceentity.domain.TestdataInterfaceEntitySolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -28,7 +28,7 @@ class TimefoldProcessorInterfaceEntityTest {
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackages(true, "ai.timefold.solver.quarkus.testdata.interfaceentity"));
+                    .addPackages(true, "ai.timefold.solver.quarkus.testdomain.interfaceentity"));
 
     @Inject
     SolverFactory<TestdataInterfaceEntitySolution> solverFactory;

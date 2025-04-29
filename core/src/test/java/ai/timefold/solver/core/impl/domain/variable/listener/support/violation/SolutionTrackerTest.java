@@ -8,8 +8,8 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

@@ -5,12 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Map;
 
-import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.AnnotatedTestdataVariousTypes;
-import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.ExtraDeepClonedObject;
-import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.TestdataDeepCloningEntity;
-import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.TestdataVariousTypes;
-import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningEntity;
-import ai.timefold.solver.core.impl.testdata.domain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningSolution;
+import ai.timefold.solver.core.testdomain.clone.deepcloning.AnnotatedTestdataVariousTypes;
+import ai.timefold.solver.core.testdomain.clone.deepcloning.ExtraDeepClonedObject;
+import ai.timefold.solver.core.testdomain.clone.deepcloning.TestdataDeepCloningEntity;
+import ai.timefold.solver.core.testdomain.clone.deepcloning.TestdataVariousTypes;
+import ai.timefold.solver.core.testdomain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningEntity;
+import ai.timefold.solver.core.testdomain.clone.deepcloning.field.TestdataFieldAnnotatedDeepCloningSolution;
 
 import org.junit.jupiter.api.Test;
 

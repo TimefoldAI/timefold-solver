@@ -6,8 +6,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
 import ai.timefold.solver.core.impl.util.Pair;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 import org.junit.jupiter.api.Test;
 

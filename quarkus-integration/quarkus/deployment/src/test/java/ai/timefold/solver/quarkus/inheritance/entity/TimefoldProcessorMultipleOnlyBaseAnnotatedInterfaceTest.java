@@ -4,11 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestMultipleChildNotAnnotatedInterfaceConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceSecondEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestMultipleChildNotAnnotatedInterfaceConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceSecondEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.multiple.baseannotated.interfaces.childnot.TestdataMultipleChildNotAnnotatedInterfaceSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

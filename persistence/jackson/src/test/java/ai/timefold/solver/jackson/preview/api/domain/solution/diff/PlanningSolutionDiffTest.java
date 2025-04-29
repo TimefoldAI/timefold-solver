@@ -2,7 +2,7 @@ package ai.timefold.solver.jackson.preview.api.domain.solution.diff;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.impl.testdata.domain.equals.TestdataEqualsByCodeSolution;
+import ai.timefold.solver.core.testdomain.equals.TestdataEqualsByCodeSolution;
 import ai.timefold.solver.jackson.api.TimefoldJacksonModule;
 
 import org.junit.jupiter.api.Test;
@@ -46,7 +46,7 @@ class PlanningSolutionDiffTest {
                                    "code": "Generated Value 1"
                                  }
                                },
-                               "entity_class": "ai.timefold.solver.core.impl.testdata.domain.equals.TestdataEqualsByCodeEntity",
+                               "entity_class": "ai.timefold.solver.core.testdomain.equals.TestdataEqualsByCodeEntity",
                                "variable_diffs": [
                                  {
                                    "name": "value",

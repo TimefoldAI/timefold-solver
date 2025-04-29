@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 import ai.timefold.solver.core.api.score.buildin.AbstractScoreTest;
 import ai.timefold.solver.core.impl.score.buildin.BendableLongScoreDefinition;
-import ai.timefold.solver.core.impl.testdata.util.PlannerAssert;
+import ai.timefold.solver.core.testutil.PlannerAssert;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;

@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfValueSelectorForEntity;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelectorForEntity;
+import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.atMost;
 import static org.mockito.Mockito.mock;
@@ -15,9 +15,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 
 import org.junit.jupiter.api.Test;
 

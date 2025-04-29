@@ -12,6 +12,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
@@ -63,40 +64,40 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.TestdataChainedBrownEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.TestdataChainedGreenEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.TestdataChainedMultiEntityAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.multientity.TestdataChainedMultiEntitySolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.TestdataPinnedListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.index.TestdataPinnedWithIndexListValue;
-import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataHerdEntity;
-import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataLeadEntity;
-import ai.timefold.solver.core.impl.testdata.domain.multientity.TestdataMultiEntitySolution;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
-import ai.timefold.solver.core.impl.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedBrownEntity;
+import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedGreenEntity;
+import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntityAnchor;
+import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListValue;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.multientity.TestdataHerdEntity;
+import ai.timefold.solver.core.testdomain.multientity.TestdataLeadEntity;
+import ai.timefold.solver.core.testdomain.multientity.TestdataMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
+import ai.timefold.solver.core.testutil.AbstractMeterTest;
+import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
@@ -662,12 +663,12 @@ class DefaultSolverTest extends AbstractMeterTest {
             if (step.get() != -1) {
                 assertThat(
                         meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                        .isEqualTo(0);
+                        .isZero();
             }
             if (step.get() == 0) {
                 assertThat(
                         meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
-                        .isEqualTo(0);
+                        .isZero();
             } else if (step.get() == 1) {
                 assertThat(
                         meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
@@ -691,7 +692,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                .isEqualTo(0);
+                .isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
                 .isEqualTo(2);
     }
@@ -778,13 +779,13 @@ class DefaultSolverTest extends AbstractMeterTest {
                         assertThat(
                                 meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".hard.score", "VALUE")
                                         .intValue())
-                                .isEqualTo(0);
+                                .isZero();
 
                         if (step.get() == 2) {
                             assertThat(
                                     meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
                                             .intValue())
-                                    .isEqualTo(0);
+                                    .isZero();
                         } else if (step.get() == 3) {
                             assertThat(
                                     meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
@@ -815,7 +816,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         meterRegistry.publish();
         assertThat(solution).isNotNull();
         assertThat(meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                .isEqualTo(0);
+                .isZero();
         assertThat(meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
                 .isEqualTo(3);
     }
@@ -1440,8 +1441,8 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         @Override
         public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
-            var random = (int) (Math.random() * 1000);
-            return SimpleScore.of(random);
+            var random = new Random();
+            return SimpleScore.of(random.nextInt(1000));
         }
     }
 
@@ -1450,7 +1451,7 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         @Override
         public void resetWorkingSolution(@NonNull TestdataSolution workingSolution, boolean constraintMatchEnabled) {
-
+            // Ignore
         }
 
         @Override
@@ -1466,43 +1467,43 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         @Override
         public void resetWorkingSolution(@NonNull TestdataSolution workingSolution) {
-
+            // Ignore
         }
 
         @Override
         public void beforeEntityAdded(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void afterEntityAdded(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void beforeVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+            // Ignore
         }
 
         @Override
         public void afterVariableChanged(@NonNull Object entity, @NonNull String variableName) {
-
+            // Ignore
         }
 
         @Override
         public void beforeEntityRemoved(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public void afterEntityRemoved(@NonNull Object entity) {
-
+            // Ignore
         }
 
         @Override
         public @NonNull SimpleScore calculateScore() {
-            var random = (int) (Math.random() * 1000);
-            return SimpleScore.of(random);
+            var random = new Random();
+            return SimpleScore.of(random.nextInt(1000));
         }
     }
 

@@ -4,29 +4,29 @@ import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.list.TriangularNumbers.nthTriangle;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.getListVariableDescriptor;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.listSize;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockEntitySelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockNeverEndingDestinationSelector;
-import static ai.timefold.solver.core.impl.testdata.domain.list.TestdataListUtils.mockNeverEndingEntityIndependentValueSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertEmptyNeverEndingMoveSelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.verifyPhaseLifecycle;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockScoreDirector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.listSize;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntitySelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockNeverEndingDestinationSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockNeverEndingEntityIndependentValueSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
 import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testutil.TestRandom;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 
@@ -61,7 +61,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementPosition.of(b, 0)),
                 false);
 
         var random = new TestRandom(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, -1);
@@ -121,12 +121,12 @@ class RandomSubListChangeMoveSelectorTest {
                         minimumSubListSize,
                         maximumSubListSize),
                 mockNeverEndingDestinationSelector(destinationSize,
-                        ElementLocation.of(a, 0),
-                        ElementLocation.of(a, 1),
-                        ElementLocation.of(a, 2),
-                        ElementLocation.of(b, 0),
-                        ElementLocation.of(b, 1),
-                        ElementLocation.unassigned()),
+                        ElementPosition.of(a, 0),
+                        ElementPosition.of(a, 1),
+                        ElementPosition.of(a, 2),
+                        ElementPosition.of(b, 0),
+                        ElementPosition.of(b, 1),
+                        ElementPosition.unassigned()),
                 false);
 
         var random = new TestRandom(
@@ -196,7 +196,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementPosition.of(b, 0)),
                 true);
 
         // Each row is consumed by 1 createUpcomingSelection() call.
@@ -256,7 +256,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementPosition.of(b, 0)),
                 false);
 
         var random = new TestRandom(0, 1, 2, 3, 4, -1);
@@ -327,7 +327,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v4, v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementPosition.of(b, 0)),
                 false);
 
         var random = new TestRandom(0, 1, -1);
@@ -373,7 +373,7 @@ class RandomSubListChangeMoveSelectorTest {
                                 v1, v2, v3, v4, v5),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.unassigned()),
+                mockNeverEndingDestinationSelector(destinationSize, ElementPosition.unassigned()),
                 false);
 
         var random = new TestRandom(0, 0);
@@ -421,7 +421,7 @@ class RandomSubListChangeMoveSelectorTest {
                         mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
                         minimumSubListSize,
                         maximumSubListSize),
-                mockNeverEndingDestinationSelector(destinationSize, ElementLocation.of(b, 0)),
+                mockNeverEndingDestinationSelector(destinationSize, ElementPosition.of(b, 0)),
                 false);
 
         var random = new TestRandom(0);

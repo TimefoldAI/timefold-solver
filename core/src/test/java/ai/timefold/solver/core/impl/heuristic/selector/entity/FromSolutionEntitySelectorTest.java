@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertAllCodesOfEntitySelector;
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCodesOfNeverEndingOfEntitySelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfEntitySelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingOfEntitySelector;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -18,10 +18,10 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.TestRandom;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 

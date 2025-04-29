@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
 import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectEquals;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectEqualsNoHashCode;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectEqualsSubclass;
-import ai.timefold.solver.core.impl.testdata.domain.clone.lookup.TestdataObjectNoId;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectEquals;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectEqualsNoHashCode;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectEqualsSubclass;
+import ai.timefold.solver.core.testdomain.clone.lookup.TestdataObjectNoId;
 
 import org.junit.jupiter.api.Test;
 

@@ -5,11 +5,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntityGroup;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
 
 import org.junit.jupiter.api.Test;
 

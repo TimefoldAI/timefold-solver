@@ -7,12 +7,13 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedSolution;
+import ai.timefold.solver.quarkus.testdomain.inheritance.solution.TestdataBothAnnotatedNoRawListExtendedSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -30,14 +31,13 @@ class TimefoldProcessorBothClassesAnnotatedConfiguredXmlTest {
                     "ai/timefold/solver/quarkus/inheritance/bothClassAnnotatedConfig.xml")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataBothAnnotatedExtendedConstraintProvider.class,
-                            TestdataBothAnnotatedConstraintProvider.class,
-                            TestdataBothAnnotatedExtendedSolution.class, TestdataBothAnnotatedSolution.class,
-                            TestdataBothAnnotatedChildEntity.class,
-                            TestdataBothAnnotatedBaseEntity.class)
+                            TestdataBothAnnotatedConstraintProvider.class, TestdataBothAnnotatedNoRawListExtendedSolution.class,
+                            TestdataBothAnnotatedSolution.class, TestdataBothAnnotatedChildEntity.class, TestdataEntity.class,
+                            TestdataObject.class)
                     .addAsResource("ai/timefold/solver/quarkus/inheritance/bothClassAnnotatedConfig.xml"));
 
     @Inject
-    SolverFactory<TestdataBothAnnotatedExtendedSolution> solverFactory;
+    SolverFactory<TestdataBothAnnotatedNoRawListExtendedSolution> solverFactory;
 
     /**
      * This test validates the behavior of the solver
@@ -45,9 +45,9 @@ class TimefoldProcessorBothClassesAnnotatedConfiguredXmlTest {
      */
     @Test
     void testBothClassesAnnotated() {
-        var problem = TestdataBothAnnotatedExtendedSolution.generateSolution(3, 2);
+        var problem = TestdataBothAnnotatedNoRawListExtendedSolution.generateSolution(3, 2);
         var solution = solverFactory.buildSolver().solve(problem);
         assertNotNull(solution);
-        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(8));
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(12));
     }
 }

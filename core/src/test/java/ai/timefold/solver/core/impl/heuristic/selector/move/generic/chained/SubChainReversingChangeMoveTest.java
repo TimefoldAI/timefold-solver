@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils.mockRebasingScoreDirector;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -16,10 +16,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

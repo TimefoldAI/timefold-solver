@@ -8,10 +8,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
 /**
  * Specifies that a boolean property (or field) of a {@link PlanningEntity} determines if the planning entity is pinned.
- * A pinned planning entity is never changed during planning.
+ * A pinned planning entity is never changed during planning;
+ * to change a pinned planning entity, even to make it not pinned anymore, trigger a {@link ProblemChange}.
  * For example, it allows the user to pin a shift to a specific employee before solving
  * and the solver will not undo that, regardless of the constraints.
  * <p>
@@ -20,9 +22,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
  * It applies to all the planning variables of that planning entity.
  * If set on an entity with {@link PlanningListVariable},
  * this will pin the entire list of planning values as well.
- * <p>
- * This is syntactic sugar for {@link PlanningEntity#pinningFilter()},
- * which is a more flexible and verbose way to pin a planning entity.
+ * 
+ * @see PlanningPinToIndex Read more about how to only pin part of the planning list variable.
+ * @see ProblemChange Use ProblemChange to trigger pinning changes.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)

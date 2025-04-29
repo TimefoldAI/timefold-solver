@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import java.math.BigDecimal;
 
 import ai.timefold.solver.core.api.score.buildin.AbstractScoreTest;
-import ai.timefold.solver.core.impl.testdata.util.PlannerAssert;
+import ai.timefold.solver.core.testutil.PlannerAssert;
 
 import org.assertj.core.api.SoftAssertions;
 import org.junit.jupiter.api.Test;

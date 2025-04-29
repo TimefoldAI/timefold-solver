@@ -49,8 +49,6 @@ class PlanningPin(JavaAnnotation):
     The boolean is ``False`` if the planning entity is movable and ``True`` if the planning entity is pinned.
     It applies to all the planning variables of that planning entity.
     If set on an entity with PlanningListVariable, this will pin the entire list of planning values as well.
-    This is syntactic sugar for ``@planning_entity(pinning_filter=...)``,
-    which is a more flexible and verbose way to pin a planning entity.
 
     Examples
     --------
@@ -77,6 +75,7 @@ class PlanningPinToIndex(JavaAnnotation):
     """
     Specifies that an int attribute of a `planning_entity` determines how far
     a PlanningListVariable is pinned.
+    The index never changes during planning.
 
     This annotation can only be specified on an attribute of the same entity,
     which also specifies a PlanningListVariable.
@@ -745,10 +744,7 @@ class _PythonPinningFilter:
 @overload
 def planning_entity(entity_class: Type[Entity_]) -> Type[Entity_]:
     ...
-@overload
-def planning_entity(pinning_filter: Callable = None) -> Callable[[Type[Entity_]], Type[Entity_]]:
-    ...
-def planning_entity(entity_class = None, /, *, pinning_filter = None):
+def planning_entity(entity_class = None):
     """
     Specifies that the class is a planning entity.
     There are two types of entities:
@@ -761,16 +757,6 @@ def planning_entity(entity_class = None, /, *, pinning_filter = None):
 
     If a planning entity has neither a genuine nor a shadow variable,
     it is not a planning entity and the solver will fail fast.
-
-    Parameters
-    ----------
-    pinning_filter : Callable[[Solution, Entity], bool], optional
-        A pinned planning entity is never changed during planning,
-        this is useful in repeated planning use cases (such as continuous planning and real-time planning).
-        This applies to all the planning variables of this planning entity.
-
-        The predicate should return ``False`` if the selection entity is pinned,
-        and it should return ``True`` if the selection entity is movable
 
     Examples
     --------
@@ -791,19 +777,11 @@ def planning_entity(entity_class = None, /, *, pinning_filter = None):
         from .._timefold_java_interop import _add_to_compilation_queue
         from _jpyinterpreter import add_class_annotation
 
-        pinning_filter_function = None
-        if pinning_filter is not None:
-            pinning_filter_function = pinning_filter
-
-        out = add_class_annotation(JavaPlanningEntity,
-                                   pinningFilter=pinning_filter_function)(entity_class_argument)
+        out = add_class_annotation(JavaPlanningEntity)(entity_class_argument)
         _add_to_compilation_queue(out)
         return out
 
-    if entity_class:  # Called as @planning_entity
-        return planning_entity_wrapper(entity_class)
-    else:  # Called as @planning_entity(pinning_filter=some_function)
-        return planning_entity_wrapper
+    return planning_entity_wrapper(entity_class)
 
 
 def planning_solution(planning_solution_class: Type[Solution_]) -> Type[Solution_]:

@@ -53,10 +53,10 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     @SuppressWarnings("unchecked")
     public <Node_> Node_ successor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-        var elementLocation = listVariableStateSupply.getLocationInList(object)
+        var elementPosition = listVariableStateSupply.getElementPosition(object)
                 .ensureAssigned();
-        var entity = elementLocation.entity();
-        var indexInEntityList = elementLocation.index();
+        var entity = elementPosition.entity();
+        var indexInEntityList = elementPosition.index();
         var listVariable = listVariableDescriptor.getValue(entity);
         if (indexInEntityList == listVariable.size() - 1) {
             var nextEntityIndex = (entityToEntityIndex.get(entity) + 1) % entities.length;
@@ -71,10 +71,10 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     @SuppressWarnings("unchecked")
     public <Node_> Node_ predecessor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-        var elementLocation = listVariableStateSupply.getLocationInList(object)
+        var elementPosition = listVariableStateSupply.getElementPosition(object)
                 .ensureAssigned();
-        var entity = elementLocation.entity();
-        var indexInEntityList = elementLocation.index();
+        var entity = elementPosition.entity();
+        var indexInEntityList = elementPosition.index();
         var firstUnpinnedIndexInList = listVariableDescriptor.getFirstUnpinnedIndex(entity);
         if (indexInEntityList == firstUnpinnedIndexInList) {
             // add entities.length to ensure modulo result is positive
@@ -87,19 +87,19 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     }
 
     public <Node_> boolean between(Node_ start, Node_ middle, Node_ end, ListVariableStateSupply<?> listVariableStateSupply) {
-        var startElementLocation = listVariableStateSupply.getLocationInList(start)
+        var startElementPosition = listVariableStateSupply.getElementPosition(start)
                 .ensureAssigned();
-        var middleElementLocation = listVariableStateSupply.getLocationInList(middle)
+        var middleElementPosition = listVariableStateSupply.getElementPosition(middle)
                 .ensureAssigned();
-        var endElementLocation = listVariableStateSupply.getLocationInList(end)
+        var endElementPosition = listVariableStateSupply.getElementPosition(end)
                 .ensureAssigned();
-        int startEntityIndex = entityToEntityIndex.get(startElementLocation.entity());
-        int middleEntityIndex = entityToEntityIndex.get(middleElementLocation.entity());
-        int endEntityIndex = entityToEntityIndex.get(endElementLocation.entity());
+        int startEntityIndex = entityToEntityIndex.get(startElementPosition.entity());
+        int middleEntityIndex = entityToEntityIndex.get(middleElementPosition.entity());
+        int endEntityIndex = entityToEntityIndex.get(endElementPosition.entity());
 
-        var startIndex = startElementLocation.index() + offsets[startEntityIndex];
-        var middleIndex = middleElementLocation.index() + offsets[middleEntityIndex];
-        var endIndex = endElementLocation.index() + offsets[endEntityIndex];
+        var startIndex = startElementPosition.index() + offsets[startEntityIndex];
+        var middleIndex = middleElementPosition.index() + offsets[middleEntityIndex];
+        var endIndex = endElementPosition.index() + offsets[endEntityIndex];
 
         if (startIndex <= endIndex) {
             // test middleIndex in [startIndex, endIndex]

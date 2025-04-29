@@ -26,11 +26,11 @@ import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.DiminishedReturnsTerminationConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationCompositionStyle;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.util.MockClock;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testutil.MockClock;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

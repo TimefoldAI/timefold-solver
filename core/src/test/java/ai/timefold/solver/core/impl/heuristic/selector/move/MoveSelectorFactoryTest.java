@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringM
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ProbabilityMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ShufflingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.SortingMoveSelector;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;

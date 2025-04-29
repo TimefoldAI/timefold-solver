@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -21,9 +22,9 @@ import org.jspecify.annotations.NullMarked;
  * @param <A>
  */
 @NullMarked
-public abstract sealed class AbstractForEachUniNode<Solution_, A>
+public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
-        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode {
+        permits ForEachExcludingUnassignedUniNode, ForEachExcludingPinnedUniNode, ForEachIncludingUnassignedUniNode {
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;
@@ -36,8 +37,6 @@ public abstract sealed class AbstractForEachUniNode<Solution_, A>
         this.outputStoreSize = outputStoreSize;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
-
-    public abstract void initialize(Solution_ workingSolution);
 
     public void insert(A a) {
         var tuple = new UniTuple<>(a, outputStoreSize);
@@ -116,10 +115,6 @@ public abstract sealed class AbstractForEachUniNode<Solution_, A>
      */
     public enum LifecycleOperation {
         /**
-         * Called when initializing a new working solution.
-         */
-        INITIALIZE,
-        /**
          * Represents the operation of inserting a new tuple into the node.
          * This operation is typically performed when a new fact is added to the working solution
          * and needs to be propagated through the node network.
@@ -138,6 +133,15 @@ public abstract sealed class AbstractForEachUniNode<Solution_, A>
          * and its corresponding tuple needs to be removed from the node network.
          */
         RETRACT
+    }
+
+    public interface InitializableForEachNode<Solution_> extends AutoCloseable {
+
+        void initialize(Solution_ workingSolution, SupplyManager supplyManager);
+
+        @Override
+        void close(); // Drop the checked exception.
+
     }
 
 }

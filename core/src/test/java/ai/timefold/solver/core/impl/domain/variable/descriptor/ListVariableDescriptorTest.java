@@ -6,11 +6,11 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.valuerange.TestdataListEntityProvidingSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.valuerange.TestdataListEntityWithArrayValueRange;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityWithArrayValueRange;
 
 import org.junit.jupiter.api.Test;
 

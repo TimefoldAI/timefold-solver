@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
-import ai.timefold.solver.benchmark.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.benchmark.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.benchmark.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.benchmark.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.benchmark.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

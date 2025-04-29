@@ -81,8 +81,9 @@ import org.jspecify.annotations.NullMarked;
 public interface ProblemChange<Solution_> {
 
     /**
-     * Do the change on the {@link PlanningSolution}. Every modification to the {@link PlanningSolution} must
-     * be done via the {@link ProblemChangeDirector}, otherwise the {@link Score} calculation will be corrupted.
+     * Do the change on the {@link PlanningSolution}.
+     * Every modification to the {@link PlanningSolution} must be done via the {@link ProblemChangeDirector},
+     * otherwise the {@link Score} calculation will be corrupted.
      *
      * @param workingSolution the {@link PlanningSolution working solution} which contains the problem facts
      *        (and {@link PlanningEntity planning entities}) to change

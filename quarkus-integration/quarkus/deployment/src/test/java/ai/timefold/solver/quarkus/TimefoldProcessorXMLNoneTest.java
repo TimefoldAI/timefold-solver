@@ -11,9 +11,9 @@ import jakarta.inject.Inject;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

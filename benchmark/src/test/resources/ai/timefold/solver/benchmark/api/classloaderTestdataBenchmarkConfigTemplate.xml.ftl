@@ -10,16 +10,16 @@
     </problemBenchmarks>
     <solver>
       <!-- Using these classnames doesn't work because the className still differs from class.getName()-->
-      <!--<solutionClass>divertThroughClassLoader.ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>-->
-      <!--<entityClass>divertThroughClassLoader.ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>-->
-      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
+      <!--<solutionClass>divertThroughClassLoader.ai.timefold.solver.core.impl.testdata.testdomain.TestdataSolution</solutionClass>-->
+      <!--<entityClass>divertThroughClassLoader.ai.timefold.solver.core.impl.testdata.testdomain.TestdataEntity</entityClass>-->
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
 
       <!-- Score configuration -->
       <scoreDirectorFactory>
         <!-- Using these classnames doesn't work because the className still differs from class.getName()-->
-        <!-- <constraintProviderClass>divertThroughClassLoader.ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider</constraintProviderClass>-->
-        <constraintProviderClass>ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider</constraintProviderClass>
+        <!-- <constraintProviderClass>divertThroughClassLoader.ai.timefold.solver.core.impl.testdata.testdomain.TestdataConstraintProvider</constraintProviderClass>-->
+        <constraintProviderClass>ai.timefold.solver.core.testdomain.TestdataConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <secondsSpentLimit>0</secondsSpentLimit>

@@ -7,10 +7,11 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestBothAnnotatedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBaseEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childtoo.TestBothAnnotatedConstraintProvider;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -27,7 +28,7 @@ class TimefoldProcessorBothAnnotatedTest {
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestBothAnnotatedConstraintProvider.class, TestdataBothAnnotatedSolution.class,
                             TestdataBothAnnotatedChildEntity.class,
-                            TestdataBaseEntity.class));
+                            TestdataEntity.class, TestdataObject.class));
     @Inject
     SolverFactory<TestdataBothAnnotatedSolution> solverFactory;
 

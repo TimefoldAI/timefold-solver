@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUna
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recommendation_, In_, Out_>
@@ -57,10 +57,10 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
         if (listVariableDescriptor != null) {
             var demand = listVariableDescriptor.getStateDemand();
             var listVariableStateSupply = supplyManager.demand(demand);
-            var elementLocation = listVariableStateSupply.getLocationInList(clonedElement);
-            if (elementLocation instanceof LocationInList locationInList) { // Unassign the cloned element.
-                var entity = locationInList.entity();
-                var index = locationInList.index();
+            var elementPosition = listVariableStateSupply.getElementPosition(clonedElement);
+            if (elementPosition instanceof PositionInList positionInList) { // Unassign the cloned element.
+                var entity = positionInList.entity();
+                var index = positionInList.index();
                 wrapAndExecute(moveDirector, new ListUnassignMove<>(listVariableDescriptor, entity, index));
             }
             supplyManager.cancel(demand);

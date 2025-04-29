@@ -6,12 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.childnot.TestdataChildNotAnnotatedInterfaceSolution;
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.addvar.TestdataAddVarSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childnot.TestdataChildNotAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.childtoo.TestdataBothAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.addvar.TestdataAddVarInterfaceSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.childnot.TestdataChildNotAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.inheritance.entity.AddVarInterfaceSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.inheritance.entity.AddVarSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.inheritance.entity.BothAnnotatedInterfaceSpringTestConfiguration;

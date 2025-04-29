@@ -10,10 +10,10 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -68,17 +68,17 @@ class ExternalizedListVariableStateSupplyTest {
 
             assertSoftly(softly -> {
                 softly.assertThat(supply.getUnassignedCount()).isEqualTo(2);
-                softly.assertThat(supply.getLocationInList(v1)).isEqualTo(ElementLocation.of(e1, 0));
-                softly.assertThat(supply.getLocationInList(v2)).isEqualTo(ElementLocation.unassigned());
-                softly.assertThat(supply.getLocationInList(v3)).isEqualTo(ElementLocation.unassigned());
+                softly.assertThat(supply.getElementPosition(v1)).isEqualTo(ElementPosition.of(e1, 0));
+                softly.assertThat(supply.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
+                softly.assertThat(supply.getElementPosition(v3)).isEqualTo(ElementPosition.unassigned());
             });
 
             supply.afterListVariableElementUnassigned(scoreDirector, v1);
             assertSoftly(softly -> {
                 softly.assertThat(supply.getUnassignedCount()).isEqualTo(3);
-                softly.assertThat(supply.getLocationInList(v1)).isEqualTo(ElementLocation.unassigned());
-                softly.assertThat(supply.getLocationInList(v2)).isEqualTo(ElementLocation.unassigned());
-                softly.assertThat(supply.getLocationInList(v3)).isEqualTo(ElementLocation.unassigned());
+                softly.assertThat(supply.getElementPosition(v1)).isEqualTo(ElementPosition.unassigned());
+                softly.assertThat(supply.getElementPosition(v2)).isEqualTo(ElementPosition.unassigned());
+                softly.assertThat(supply.getElementPosition(v3)).isEqualTo(ElementPosition.unassigned());
             });
 
             // Cannot unassign again.

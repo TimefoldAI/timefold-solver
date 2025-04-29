@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.exhaustivesearch;
 
-import static ai.timefold.solver.core.impl.testdata.util.PlannerAssert.assertCode;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.any;
@@ -34,17 +34,17 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.allows_unassigned.TestdataPinnedAllowsUnassignedSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
-import ai.timefold.solver.core.impl.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
+import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
+import ai.timefold.solver.core.testutil.AbstractMeterTest;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 
@@ -55,10 +55,10 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     @Test
     void restoreWorkingSolution() {
-        ExhaustiveSearchPhaseScope<TestdataSolution> phaseScope = mock(ExhaustiveSearchPhaseScope.class);
-        ExhaustiveSearchStepScope<TestdataSolution> lastCompletedStepScope = mock(ExhaustiveSearchStepScope.class);
+        var phaseScope = mock(ExhaustiveSearchPhaseScope.class);
+        var lastCompletedStepScope = mock(ExhaustiveSearchStepScope.class);
         when(phaseScope.getLastCompletedStepScope()).thenReturn(lastCompletedStepScope);
-        ExhaustiveSearchStepScope<TestdataSolution> stepScope = mock(ExhaustiveSearchStepScope.class);
+        var stepScope = mock(ExhaustiveSearchStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
         var workingSolution = new TestdataSolution();
         when(phaseScope.getWorkingSolution()).thenReturn(workingSolution);

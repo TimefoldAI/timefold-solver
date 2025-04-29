@@ -1,6 +1,6 @@
 package ai.timefold.solver.spring.boot.autoconfigure.inheritance.entity;
 
-import ai.timefold.solver.core.impl.testdata.domain.inheritance.entity.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.interfaces.childtoo.TestdataBothAnnotatedInterfaceSolution;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.domain.EntityScan;

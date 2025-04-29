@@ -1,8 +1,8 @@
 package ai.timefold.solver.test.api.score.stream;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.constraintweightoverrides.TestdataConstraintWeightOverridesConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesConstraintProvider;
+import ai.timefold.solver.core.testdomain.constraintweightoverrides.TestdataConstraintWeightOverridesSolution;
 
 import org.junit.jupiter.api.Test;
 

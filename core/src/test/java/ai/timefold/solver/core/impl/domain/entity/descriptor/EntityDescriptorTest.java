@@ -5,14 +5,14 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.List;
 
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extended.entity.TestdataExtendedEntitySolution;
-import ai.timefold.solver.core.impl.testdata.domain.immutable.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.invalid.noplanningvar.TestdataNoVariableSolution;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.TestdataPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.pinned.extended.TestdataExtendedPinnedSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.immutable.TestdataSolution;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.pinned.TestdataExtendedPinnedEntity;
+import ai.timefold.solver.core.testdomain.inheritance.entity.single.baseannotated.classes.pinned.TestdataExtendedPinnedSolution;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childtoo.TestdataBothAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.invalid.noplanningvar.TestdataNoVariableSolution;
+import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 
 import org.junit.jupiter.api.Test;
 
@@ -61,25 +61,25 @@ class EntityDescriptorTest {
 
     @Test
     void extractExtendedEntities() {
-        var solution = new TestdataExtendedEntitySolution();
+        var solution = new TestdataBothAnnotatedExtendedSolution("s1");
 
         var entity = new TestdataEntity("entity-singleton");
         solution.setEntity(entity);
 
-        var subEntity = new TestdataUnannotatedExtendedEntity("subEntity-singleton");
+        var subEntity = new TestdataBothAnnotatedChildEntity("subEntity-singleton");
         solution.setSubEntity(subEntity);
 
         var e1 = new TestdataEntity("entity1");
         var e2 = new TestdataEntity("entity2");
         solution.setEntityList(List.of(e1, e2));
 
-        var s1 = new TestdataUnannotatedExtendedEntity("subEntity1");
-        var s2 = new TestdataUnannotatedExtendedEntity("subEntity2");
-        var s3 = new TestdataUnannotatedExtendedEntity("subEntity3");
+        var s1 = new TestdataBothAnnotatedChildEntity("subEntity1");
+        var s2 = new TestdataBothAnnotatedChildEntity("subEntity2");
+        var s3 = new TestdataBothAnnotatedChildEntity("subEntity3");
         solution.setSubEntityList(List.of(s1, s2, s3));
 
-        var r1 = new TestdataUnannotatedExtendedEntity("subEntity1-R");
-        var r2 = new TestdataUnannotatedExtendedEntity("subEntity2-R");
+        var r1 = new TestdataBothAnnotatedChildEntity("subEntity1-R");
+        var r2 = new TestdataBothAnnotatedChildEntity("subEntity2-R");
         solution.setRawEntityList(List.of(r1, r2));
 
         var e3 = new TestdataEntity("entity3");
@@ -88,7 +88,7 @@ class EntityDescriptorTest {
         solution.setObjectEntityList(List.of(e3, e4, randomData));
 
         var entityDescriptor =
-                TestdataExtendedEntitySolution.buildEntityDescriptor();
+                TestdataBothAnnotatedExtendedSolution.buildEntityDescriptor();
         assertThat(entityDescriptor.extractEntities(solution))
                 .containsExactlyInAnyOrder(entity, subEntity, e1, e2, e3, e4, s1, s2, s3, r1, r2);
     }

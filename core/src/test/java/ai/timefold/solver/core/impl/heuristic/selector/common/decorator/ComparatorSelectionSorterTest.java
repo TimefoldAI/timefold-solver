@@ -8,7 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 

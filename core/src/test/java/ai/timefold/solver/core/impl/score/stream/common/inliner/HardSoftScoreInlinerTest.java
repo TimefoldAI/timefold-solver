@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
-import ai.timefold.solver.core.impl.testdata.domain.score.TestdataHardSoftScoreSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
 
 import org.junit.jupiter.api.Test;
 

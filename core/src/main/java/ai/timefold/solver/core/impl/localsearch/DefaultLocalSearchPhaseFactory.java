@@ -3,6 +3,9 @@ package ai.timefold.solver.core.impl.localsearch;
 import java.util.Collections;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.entity.PinningFilter;
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
@@ -23,6 +26,7 @@ import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchPic
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
@@ -98,10 +102,22 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     "Move Streams currently only support solutions with a single variable class, not multiple.");
         }
         var variableMetaModel = entityMetaModel.genuineVariables().get(0);
-        if (!(variableMetaModel instanceof PlanningVariableMetaModel<Solution_, ?, ?> planningVariableMetaModel)) {
-            throw new UnsupportedOperationException("Move Streams don't yet support solutions with list variables.");
-        } else if (planningVariableMetaModel.isChained()) {
-            throw new UnsupportedOperationException("Move Streams don't yet support solutions with chained variables.");
+        if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, ?, ?> planningVariableMetaModel
+                && planningVariableMetaModel.isChained()) {
+            throw new UnsupportedOperationException("""
+                    Move Streams don't support solutions with chained variables.
+                    Convert your model to use @%s instead."""
+                    .formatted(PlanningListVariable.class.getSimpleName()));
+        }
+        var entitiesWithPinningFilters = solutionDescriptor.getEntityDescriptors().stream()
+                .filter(EntityDescriptor::hasPinningFilter)
+                .toList();
+        if (!entitiesWithPinningFilters.isEmpty()) {
+            throw new UnsupportedOperationException("""
+                    %s is deprecated and Move Streams do not support it.
+                    Convert your entities (%s) to use @%s instead."""
+                    .formatted(PinningFilter.class.getSimpleName(), entitiesWithPinningFilters,
+                            PlanningPin.class.getSimpleName()));
         }
 
         if (!MoveProviders.class.isAssignableFrom(moveProvidersClass)) {

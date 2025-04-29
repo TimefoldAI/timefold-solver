@@ -16,8 +16,8 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamNodeSharingTest;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;

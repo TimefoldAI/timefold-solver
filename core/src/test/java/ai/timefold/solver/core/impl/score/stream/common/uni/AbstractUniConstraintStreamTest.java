@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
@@ -40,31 +41,31 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.extended.TestdataUnannotatedExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.TestdataListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.allows_unassigned.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
-import ai.timefold.solver.core.impl.testdata.domain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
-import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleBigDecimalScoreSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.TestdataSimpleLongScoreSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntity;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishEntityGroup;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishExtra;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishSolution;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValue;
-import ai.timefold.solver.core.impl.testdata.domain.score.lavish.TestdataLavishValueGroup;
+import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
+import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
+import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.score.TestdataSimpleBigDecimalScoreSolution;
+import ai.timefold.solver.core.testdomain.score.TestdataSimpleLongScoreSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishExtra;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
+import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 
 import org.junit.jupiter.api.TestTemplate;
 
@@ -966,22 +967,23 @@ public abstract class AbstractUniConstraintStreamTest
 
     @TestTemplate
     public void forEach_polymorphism() {
-        TestdataSolution solution = new TestdataUnannotatedExtendedSolution();
+        var solution = new TestdataOnlyBaseAnnotatedExtendedSolution("s1");
+        solution.setConstraintWeightOverrides(ConstraintWeightOverrides.none());
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");
         solution.setValueList(List.of(v1, v2));
-        var cat = new TestdataUnannotatedExtendedEntity("Cat", v1);
-        var animal = new TestdataEntity("Animal", v1);
-        var dog = new TestdataUnannotatedExtendedEntity("Dog", v1);
+        var cat = new TestdataOnlyBaseAnnotatedChildEntity("Cat", v1);
+        var animal = new TestdataOnlyBaseAnnotatedBaseEntity("Animal", v1);
+        var dog = new TestdataOnlyBaseAnnotatedChildEntity("Dog", v1);
         solution.setEntityList(List.of(cat, animal, dog));
 
-        InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = buildScoreDirector(
-                TestdataSolution.buildSolutionDescriptor(),
+        InnerScoreDirector<TestdataOnlyBaseAnnotatedExtendedSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataOnlyBaseAnnotatedExtendedSolution.buildSolutionDescriptor(),
                 factory -> new Constraint[] {
-                        factory.forEach(TestdataEntity.class)
+                        factory.forEach(TestdataOnlyBaseAnnotatedBaseEntity.class)
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint("superclassConstraint"),
-                        factory.forEach(TestdataUnannotatedExtendedEntity.class)
+                        factory.forEach(TestdataOnlyBaseAnnotatedChildEntity.class)
                                 .penalize(SimpleScore.ONE)
                                 .asConstraint("subclassConstraint")
                 });
@@ -3629,7 +3631,7 @@ public abstract class AbstractUniConstraintStreamTest
         // From scratch
         scoreDirector.setWorkingSolution(solution);
         scoreDirector.calculateScore();
-        assertThat(zeroWeightMonitorCount.getAndSet(0L)).isEqualTo(0);
+        assertThat(zeroWeightMonitorCount.getAndSet(0L)).isZero();
         assertThat(oneWeightMonitorCount.getAndSet(0L)).isEqualTo(3);
 
         // Incremental
@@ -3637,8 +3639,8 @@ public abstract class AbstractUniConstraintStreamTest
         entity1.setStringProperty("myProperty2");
         scoreDirector.afterProblemPropertyChanged(entity1);
         scoreDirector.calculateScore();
-        assertThat(zeroWeightMonitorCount.get()).isEqualTo(0);
-        assertThat(oneWeightMonitorCount.get()).isEqualTo(1);
+        assertThat(zeroWeightMonitorCount.get()).isZero();
+        assertThat(oneWeightMonitorCount.get()).isOne();
     }
 
     @TestTemplate

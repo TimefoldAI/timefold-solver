@@ -10,8 +10,8 @@ import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.preview.api.domain.metamodel.ElementLocation;
-import ai.timefold.solver.core.preview.api.domain.metamodel.LocationInList;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 /**
  *
@@ -22,7 +22,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
-    private Iterator<ElementLocation> destinationIterator;
+    private Iterator<ElementPosition> destinationIterator;
 
     private Object upcomingValue;
 
@@ -52,22 +52,22 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     }
 
     static <Solution_> Move<Solution_> buildChangeMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            Object upcomingLeftValue, Iterator<ElementLocation> destinationIterator) {
+            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (upcomingDestination == null) {
             return null;
         }
-        var upcomingSource = listVariableStateSupply.getLocationInList(upcomingLeftValue);
-        if (upcomingSource instanceof LocationInList sourceElement) {
-            if (upcomingDestination instanceof LocationInList destinationElement) {
+        var upcomingSource = listVariableStateSupply.getElementPosition(upcomingLeftValue);
+        if (upcomingSource instanceof PositionInList sourceElement) {
+            if (upcomingDestination instanceof PositionInList destinationElement) {
                 return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
                         destinationElement.entity(), destinationElement.index());
             } else {
                 return new ListUnassignMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index());
             }
         } else {
-            if (upcomingDestination instanceof LocationInList destinationElement) {
+            if (upcomingDestination instanceof PositionInList destinationElement) {
                 return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
                         destinationElement.index());
             } else {

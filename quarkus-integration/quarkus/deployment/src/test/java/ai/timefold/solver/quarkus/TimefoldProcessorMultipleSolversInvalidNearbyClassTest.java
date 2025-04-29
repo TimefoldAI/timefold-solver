@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import ai.timefold.solver.quarkus.rest.TestdataQuarkusSolutionConfigResource;
-import ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter;
-import ai.timefold.solver.quarkus.testdata.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter;
+import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -25,7 +25,7 @@ class TimefoldProcessorMultipleSolversInvalidNearbyClassTest {
     static final QuarkusUnitTest config1 = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".termination.spent-limit", "8s")
             .overrideConfigKey("quarkus.timefold.solver.\"solver1\".nearby-distance-meter-class",
-                    "ai.timefold.solver.quarkus.testdata.dummy.DummyDistanceMeter")
+                    "ai.timefold.solver.quarkus.testdomain.dummy.DummyDistanceMeter")
             .overrideConfigKey("quarkus.timefold.solver.\"solver2\".termination.spent-limit", "4s")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class, TestdataQuarkusSolution.class,

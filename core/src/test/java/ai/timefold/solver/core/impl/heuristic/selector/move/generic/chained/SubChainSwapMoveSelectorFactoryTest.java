@@ -8,7 +8,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.Su
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.testdata.domain.chained.TestdataChainedSolution;
+import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 
 import org.junit.jupiter.api.Test;
 

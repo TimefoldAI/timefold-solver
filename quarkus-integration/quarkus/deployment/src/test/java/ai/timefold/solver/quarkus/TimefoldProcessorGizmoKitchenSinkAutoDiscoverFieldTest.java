@@ -3,10 +3,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.quarkus.testdata.gizmo.DummyConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.gizmo.DummyVariableListener;
-import ai.timefold.solver.quarkus.testdata.gizmo.TestDataKitchenSinkAutoDiscoverFieldSolution;
-import ai.timefold.solver.quarkus.testdata.gizmo.TestDataKitchenSinkEntity;
+import ai.timefold.solver.quarkus.testdomain.gizmo.DummyConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.gizmo.DummyVariableListener;
+import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkAutoDiscoverFieldSolution;
+import ai.timefold.solver.quarkus.testdomain.gizmo.TestDataKitchenSinkEntity;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

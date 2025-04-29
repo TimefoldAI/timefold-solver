@@ -7,9 +7,9 @@ import java.util.stream.IntStream;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.impl.testdata.constraints.DummyConstraintProvider;
-import ai.timefold.solver.quarkus.testdata.superclass.domain.TestdataEntity;
-import ai.timefold.solver.quarkus.testdata.superclass.domain.TestdataSolution;
+import ai.timefold.solver.core.testconstraint.DummyConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.superclass.domain.TestdataEntity;
+import ai.timefold.solver.quarkus.testdomain.superclass.domain.TestdataSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -24,7 +24,7 @@ class TimefoldProcessorPlanningIdTest {
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addPackage("ai.timefold.solver.quarkus.testdata.superclass.domain") // Cannot reference a non-public class.
+                    .addPackage("ai.timefold.solver.quarkus.testdomain.superclass.domain") // Cannot reference a non-public class.
                     .addClasses(DummyConstraintProvider.class));
 
     @Inject

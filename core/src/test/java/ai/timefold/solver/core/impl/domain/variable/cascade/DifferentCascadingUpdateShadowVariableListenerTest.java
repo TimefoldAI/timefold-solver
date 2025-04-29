@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.domain.variable.cascade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import ai.timefold.solver.core.impl.testdata.domain.cascade.different_var.TestdataDifferentCascadingEntity;
-import ai.timefold.solver.core.impl.testdata.domain.cascade.different_var.TestdataDifferentCascadingSolution;
-import ai.timefold.solver.core.impl.testdata.util.PlannerTestUtils;
+import ai.timefold.solver.core.testdomain.cascade.distinct.TestdataDifferentCascadingEntity;
+import ai.timefold.solver.core.testdomain.cascade.distinct.TestdataDifferentCascadingSolution;
+import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
 

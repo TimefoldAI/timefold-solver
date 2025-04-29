@@ -25,10 +25,10 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataValue;
-import ai.timefold.solver.core.impl.testdata.domain.difficultyweight.TestdataDifficultyWeightSolution;
-import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarEntity;
-import ai.timefold.solver.core.impl.testdata.domain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.difficultyweight.TestdataDifficultyWeightSolution;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 
 import org.junit.jupiter.api.Test;
 

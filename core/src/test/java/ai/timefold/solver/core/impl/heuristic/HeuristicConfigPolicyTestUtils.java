@@ -6,7 +6,7 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterMann
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 public final class HeuristicConfigPolicyTestUtils {
 

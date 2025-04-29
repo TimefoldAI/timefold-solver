@@ -18,8 +18,8 @@ import jakarta.ws.rs.core.MediaType;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdata.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
 
 @Path("/solver-config")
 @ApplicationScoped

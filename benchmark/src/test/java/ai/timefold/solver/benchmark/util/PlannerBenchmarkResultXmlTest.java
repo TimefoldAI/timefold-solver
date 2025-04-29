@@ -19,7 +19,7 @@ import org.junit.jupiter.api.Test;
 
 class PlannerBenchmarkResultXmlTest {
 
-    private static final String RESOURCE = "/dummyPlanner.xml";
+    private static final String RESOURCE = "/dummyPlannerBenchmarkResult.xml";
     private final TestableBenchmarkResultIO io = new TestableBenchmarkResultIO();
     private static URL url;
 

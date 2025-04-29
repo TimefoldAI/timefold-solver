@@ -53,11 +53,23 @@ Every upgrade note indicates how likely your code will be affected by that chang
 
 - icon:magic[] *Automated*: Can be applied automatically using our <<automaticUpgradeToLatestVersion,upgrade tooling>>.
 - icon:exclamation-triangle[role=red] *Major*: Likely to affect your code.
-- icon:info-circle[role=yellow] *Minor*: Unlikely to affect your code, especially if you stick to public API.
+- icon:info-circle[role=yellow] *Minor*: Lesser used feature, unlikely to affect your code.
 - icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
 
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin and Python users to translate the changes accordingly.
+
+=== Upgrade from 1.22.0 to 1.23.0
+
+.icon:info-circle[role=yellow] `@PlanningEntity` `pinningFilter` deprecated for removal
+[%collapsible%open]
+====
+Pinning filters are an outdated way of specifying whether or not any particular entity might be changed by the solver.
+It makes more sense to keep this information in the dataset, as opposed to having it in the runtime.
+We have now deprecated the `pinningFilter` field on `@PlanningEntity` annotation,
+and we encourage you to use the xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[`@PlanningPin` annotation] instead.
+====
+
 
 === Upgrade from 1.21.0 to 1.22.0
 

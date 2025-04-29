@@ -12,12 +12,12 @@ import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepS
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataEntity;
-import ai.timefold.solver.core.impl.testdata.domain.TestdataSolution;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEasyScoreCalculator;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.allows_unassigned.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 
 import org.junit.jupiter.api.Test;
 
