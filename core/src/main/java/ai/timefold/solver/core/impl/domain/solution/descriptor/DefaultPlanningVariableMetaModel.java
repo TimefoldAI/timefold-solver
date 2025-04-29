@@ -39,7 +39,7 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
 
     @Override
     public boolean equals(Object o) {
-        // DO NOT USE entity in equality checks;
+        // Do not use entity in equality checks;
         // If an entity is subclassed, that subclass will have it
         // own distinct VariableMetaModel
         if (o instanceof DefaultPlanningVariableMetaModel<?, ?, ?> that) {
