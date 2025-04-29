@@ -15,11 +15,11 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.extended.TestdataDeclarativeExtendedBaseValue;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.extended.TestdataDeclarativeExtendedConstraintProvider;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.extended.TestdataDeclarativeExtendedEntity;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.extended.TestdataDeclarativeExtendedSolution;
-import ai.timefold.solver.core.impl.testdata.domain.declarative.extended.TestdataDeclarativeExtendedSubclassValue;
+import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedBaseValue;
+import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedConstraintProvider;
+import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedEntity;
+import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedSolution;
+import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedSubclassValue;
 
 import org.junit.jupiter.api.Test;
 

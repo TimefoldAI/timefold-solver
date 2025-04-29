@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.testdata.domain.declarative.extended;
+package ai.timefold.solver.core.testdomain.declarative.extended;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
