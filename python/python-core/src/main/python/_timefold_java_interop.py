@@ -88,7 +88,9 @@ def init(*args, path: list[str] = None, include_timefold_jars: bool = True) -> N
         path = path + extract_timefold_jars()
     if len(args) == 0:
         args = [get_default_jvm_path()]
-    init(*args, path=path, include_translator_jars=False)
+
+    # JDK 24 bug: Compiler tier 4 (C2) cause a crash at exit
+    init(*args, '-XX:TieredStopAtLevel=3', path=path, include_translator_jars=False)
 
     from ai.timefold.solver.python.logging import PythonDelegateAppender
     PythonDelegateAppender.setLogEventConsumer(PythonConsumer(forward_logging_events))
