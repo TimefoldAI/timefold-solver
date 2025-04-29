@@ -7,10 +7,10 @@
     <name>Config_0</name>
     <subSingleCount>1</subSingleCount>
     <solverConfig>
-      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
-      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
+      <solutionClass>ai.timefold.solver.core.impl.testdata.domain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.impl.testdata.domain.TestdataEntity</entityClass>
       <scoreDirectorFactory>
-        <constraintProviderClass>ai.timefold.solver.core.testdomain.TestdataConstraintProvider</constraintProviderClass>
+        <constraintProviderClass>ai.timefold.solver.core.impl.testdata.domain.TestdataConstraintProvider</constraintProviderClass>
       </scoreDirectorFactory>
       <termination>
         <secondsSpentLimit>1</secondsSpentLimit>
@@ -52,9 +52,9 @@
     <moveCountPerStepProblemStatistic>
       <problemStatisticType>MOVE_COUNT_PER_STEP</problemStatisticType>
     </moveCountPerStepProblemStatistic>
-    <bestScoreProblemStatistic>
+    <moveCountPerTypeProblemStatistic>
       <problemStatisticType>MOVE_COUNT_PER_TYPE</problemStatisticType>
-    </bestScoreProblemStatistic>
+    </moveCountPerTypeProblemStatistic>
     <moveEvaluationSpeedProblemStatistic>
       <problemStatisticType>MOVE_EVALUATION_SPEED</problemStatisticType>
       <reportFileName>moveEvaluationSpeedProblemStatisticChart</reportFileName>
