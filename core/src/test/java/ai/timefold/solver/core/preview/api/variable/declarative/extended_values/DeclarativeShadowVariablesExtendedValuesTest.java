@@ -6,11 +6,6 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
-import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
@@ -34,11 +29,6 @@ public class DeclarativeShadowVariablesExtendedValuesTest {
                         TestdataDeclarativeExtendedBaseValue.class,
                         TestdataDeclarativeExtendedSubclassValue.class)
                 .withConstraintProviderClass(TestdataDeclarativeExtendedConstraintProvider.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig(),
-                        new LocalSearchPhaseConfig()
-                                .withMoveSelectorConfig(new UnionMoveSelectorConfig()
-                                        .withMoveSelectors(new ListChangeMoveSelectorConfig(),
-                                                new ListSwapMoveSelectorConfig())))
                 .withTerminationConfig(new TerminationConfig()
                         .withScoreCalculationCountLimit(1000L));
 

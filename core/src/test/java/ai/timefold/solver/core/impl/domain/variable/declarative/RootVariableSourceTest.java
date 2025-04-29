@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -14,6 +15,8 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
@@ -26,6 +29,7 @@ import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDec
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class RootVariableSourceTest {
     PlanningSolutionMetaModel<TestdataInvalidDeclarativeSolution> planningSolutionMetaModel;
@@ -54,7 +58,13 @@ class RootVariableSourceTest {
 
         when(entityMetaModel.type()).thenReturn(TestdataInvalidDeclarativeEntity.class);
         when(entityMetaModel.variables()).thenReturn(List.of(listVariableMetaModel));
-        when(entityMetaModel.variable("values")).thenReturn((PlanningListVariableMetaModel) listVariableMetaModel);
+        when(entityMetaModel.variable(any())).thenAnswer(invocation -> {
+            var query = invocation.getArgument(0, String.class);
+            return switch (query) {
+                case "values" -> listVariableMetaModel;
+                default -> throw new IllegalArgumentException();
+            };
+        });
 
         shadowEntityMetaModel = mock(PlanningEntityMetaModel.class);
 
@@ -73,14 +83,28 @@ class RootVariableSourceTest {
         when(shadowEntityMetaModel.type()).thenReturn(TestdataInvalidDeclarativeValue.class);
         when(shadowEntityMetaModel.variables())
                 .thenReturn(List.of(previousElementMetaModel, shadowVariableMetaModel, dependencyMetaModel));
-        when(shadowEntityMetaModel.variable("previous")).thenReturn((ShadowVariableMetaModel) previousElementMetaModel);
-        when(shadowEntityMetaModel.variable("shadow")).thenReturn((ShadowVariableMetaModel) shadowVariableMetaModel);
-        when(shadowEntityMetaModel.variable("dependency")).thenReturn((ShadowVariableMetaModel) dependencyMetaModel);
+        when(shadowEntityMetaModel.variable(any())).thenAnswer(invocation -> {
+            var query = invocation.getArgument(0, String.class);
+            return switch (query) {
+                case "previous" -> previousElementMetaModel;
+                case "shadow" -> shadowVariableMetaModel;
+                case "dependency" -> dependencyMetaModel;
+                default -> throw new IllegalArgumentException();
+            };
+        });
 
         when(planningSolutionMetaModel.type()).thenReturn(TestdataInvalidDeclarativeSolution.class);
         when(planningSolutionMetaModel.entities()).thenReturn(List.of(entityMetaModel, shadowEntityMetaModel));
-        when(planningSolutionMetaModel.entity(TestdataInvalidDeclarativeEntity.class)).thenReturn(entityMetaModel);
-        when(planningSolutionMetaModel.entity(TestdataInvalidDeclarativeValue.class)).thenReturn(shadowEntityMetaModel);
+        when(planningSolutionMetaModel.entity(any())).thenAnswer(invocation -> {
+            var query = invocation.getArgument(0, Class.class);
+            if (query.equals(TestdataInvalidDeclarativeEntity.class)) {
+                return entityMetaModel;
+            } else if (query.equals(TestdataInvalidDeclarativeValue.class)) {
+                return shadowEntityMetaModel;
+            } else {
+                throw new IllegalArgumentException();
+            }
+        });
 
         memberAccessorFactory = new MemberAccessorFactory();
         descriptorPolicy = new DescriptorPolicy();
@@ -585,5 +609,44 @@ class RootVariableSourceTest {
                         "references a member (value)",
                         "on class (TestClass)",
                         "that does not exist.");
+    }
+
+    @Test
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    void isVariableIsTrueForVariableOnEntity() {
+        record EntityClass() {
+        }
+        var planningSolutionMetaModel = Mockito.mock(PlanningSolutionMetaModel.class);
+        var entityMetaModel = Mockito.mock(PlanningEntityMetaModel.class);
+        var variableDescriptor = Mockito.mock(BasicVariableDescriptor.class);
+
+        when(planningSolutionMetaModel.entity(EntityClass.class)).thenReturn(entityMetaModel);
+        when(entityMetaModel.variable("variable"))
+                .thenReturn(new DefaultPlanningVariableMetaModel<>(entityMetaModel, variableDescriptor));
+        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, EntityClass.class, "variable")).isTrue();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void isVariableIsFalseForFactOnEntity() {
+        record EntityClass() {
+        }
+        var planningSolutionMetaModel = Mockito.mock(PlanningSolutionMetaModel.class);
+        var entityMetaModel = Mockito.mock(PlanningEntityMetaModel.class);
+
+        when(planningSolutionMetaModel.entity(EntityClass.class)).thenReturn(entityMetaModel);
+        when(entityMetaModel.variable("fact")).thenThrow(new IllegalArgumentException());
+        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, EntityClass.class, "fact")).isFalse();
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    void isVariableIsFalseForFactClass() {
+        record FactClass() {
+        }
+        var planningSolutionMetaModel = Mockito.mock(PlanningSolutionMetaModel.class);
+
+        when(planningSolutionMetaModel.entity(FactClass.class)).thenThrow(new IllegalArgumentException());
+        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, FactClass.class, "variable")).isFalse();
     }
 }

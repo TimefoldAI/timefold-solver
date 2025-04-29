@@ -12,7 +12,6 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -98,15 +97,7 @@ public record RootVariableSource<Entity_, Value_>(
                     listMemberAccessors.add(memberAccessor);
                 }
 
-                var isVariable = false;
-
-                for (var annotation : EntityDescriptor.getVariableAnnotationClasses()) {
-                    if (getAnnotation(currentEntity, memberAccessor.getName(), annotation) != null) {
-                        isVariable = true;
-                        break;
-                    }
-                }
-
+                var isVariable = isVariable(solutionMetaModel, memberAccessor.getDeclaringClass(), pathPart);
                 chainToVariable.add(memberAccessor);
                 for (var chain : chainStartingFromSourceVariableList) {
                     chain.add(memberAccessor);
@@ -285,6 +276,17 @@ public record RootVariableSource<Entity_, Value_>(
         return memberAccessorFactory.buildAndCacheMemberAccessor(member,
                 MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD,
                 descriptorPolicy.getDomainAccessType());
+    }
+
+    public static boolean isVariable(PlanningSolutionMetaModel<?> metaModel, Class<?> declaringClass, String memberName) {
+        try {
+            metaModel.entity(declaringClass).variable(memberName);
+            // We got a variable, hence it is a variable
+            return true;
+        } catch (IllegalArgumentException e) {
+            // Either declaringClass is not an entity or it does not have a variable with that name
+            return false;
+        }
     }
 
     private static <T extends Annotation> T getAnnotation(Class<?> declaringClass, String memberName,
