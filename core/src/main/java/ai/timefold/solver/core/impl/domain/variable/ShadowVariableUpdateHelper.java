@@ -248,16 +248,16 @@ public final class ShadowVariableUpdateHelper {
                     .orElse(null);
         }
 
-        private void updateShadowVariable(Object entity, String variableName, @Nullable Object value) {
-            if (solutionDescriptor.getDeclarativeShadowVariableDescriptors().isEmpty()) {
-                solutionDescriptor.getEntityDescriptorStrict(entity.getClass()).getVariableDescriptor(variableName)
-                        .setValue(entity, value);
-            } else {
-                var variableMetamodel = solutionDescriptor.getMetaModel().entity(entity.getClass()).variable(variableName);
-                graph.beforeVariableChanged(variableMetamodel, entity);
-                solutionDescriptor.getEntityDescriptorStrict(entity.getClass()).getVariableDescriptor(variableName)
-                        .setValue(entity, value);
-                graph.afterVariableChanged(variableMetamodel, entity);
+        private void updateShadowVariable(Object destination, String variableName, @Nullable Object value) {
+            var variableDescriptor =
+                    solutionDescriptor.getEntityDescriptorStrict(destination.getClass()).getVariableDescriptor(variableName);
+            if (solutionDescriptor.getDeclarativeShadowVariableDescriptors().isEmpty() && variableDescriptor != null) {
+                variableDescriptor.setValue(destination, value);
+            } else if (variableDescriptor != null) {
+                var variableMetamodel = solutionDescriptor.getMetaModel().entity(destination.getClass()).variable(variableName);
+                graph.beforeVariableChanged(variableMetamodel, destination);
+                variableDescriptor.setValue(destination, value);
+                graph.afterVariableChanged(variableMetamodel, destination);
             }
         }
 
