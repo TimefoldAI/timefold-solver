@@ -52,9 +52,9 @@
     <moveCountPerStepProblemStatistic>
       <problemStatisticType>MOVE_COUNT_PER_STEP</problemStatisticType>
     </moveCountPerStepProblemStatistic>
-    <bestScoreProblemStatistic>
+    <moveCountPerTypeProblemStatistic>
       <problemStatisticType>MOVE_COUNT_PER_TYPE</problemStatisticType>
-    </bestScoreProblemStatistic>
+    </moveCountPerTypeProblemStatistic>
     <moveEvaluationSpeedProblemStatistic>
       <problemStatisticType>MOVE_EVALUATION_SPEED</problemStatisticType>
       <reportFileName>moveEvaluationSpeedProblemStatisticChart</reportFileName>
