@@ -27,7 +27,7 @@ jobs:
           - os: ubuntu-latest
             java-version: 17
           - os: ubuntu-latest
-            java-version: 23
+            java-version: 24
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +91,7 @@ jobs:
           - os: ubuntu-latest
             java-version: 17
           - os: ubuntu-latest
-            java-version: 23
+            java-version: 24
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -134,7 +134,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest ] # Windows doesn't work, Mac is not a deploy OS.
         module: ["spring-integration", "quarkus-integration"]
-        java-version: [ 17, 21, 23 ] # LTS + latest.
+        java-version: [ 17, 21, 24 ] # LTS + latest.
         exclude:
           # Quarkus 3.17.2 has weird issues with Java 17 GraalVM,
           # with Java 21+ GraalVM being recommended even for
