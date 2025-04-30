@@ -151,6 +151,24 @@ public final class ReflectionHelper {
         return null;
     }
 
+    /**
+     * @param containingClass never null
+     * @param methodName never null
+     * @return sometimes null
+     */
+    public static Method getDeclaredMethod(Class<?> containingClass, String methodName) {
+        var baseClass = containingClass;
+
+        while (baseClass != null) {
+            try {
+                return containingClass.getDeclaredMethod(methodName);
+            } catch (NoSuchMethodException e) {
+                baseClass = baseClass.getSuperclass();
+            }
+        }
+        return null;
+    }
+
     private static String capitalizePropertyName(String propertyName) {
         if (propertyName.isEmpty() || Character.isUpperCase(propertyName.charAt(0))) {
             return propertyName;

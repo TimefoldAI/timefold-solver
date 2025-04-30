@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -9,6 +8,7 @@ import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -48,12 +48,11 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
             throw new IllegalStateException("DeclarativeShadowVariableDescriptor was created when method is empty.");
         }
 
-        Method method;
-        try {
-            method = variableMemberAccessor.getDeclaringClass().getMethod(methodName);
-        } catch (NoSuchMethodException e) {
+        var method = ReflectionHelper.getDeclaredMethod(variableMemberAccessor.getDeclaringClass(), methodName);
+
+        if (method == null) {
             throw new IllegalArgumentException("Could not find method named %s on the class %s. Maybe you misspelled it?"
-                    .formatted(methodName, variableMemberAccessor.getDeclaringClass().getSimpleName()), e);
+                    .formatted(methodName, variableMemberAccessor.getDeclaringClass().getSimpleName()));
         }
 
         var shadowVariableUpdater = method.getAnnotation(ShadowSources.class);
