@@ -1,94 +1,63 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.concurrent_values;
+package ai.timefold.solver.core.preview.api.variable.declarative.concurrent;
 
 import static ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue.BASE_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verifyNoInteractions;
 
 import java.time.Duration;
 import java.util.List;
 
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableNotifier;
-import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
-import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
-import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
 import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentAssertionEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentConstraintProvider;
 import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
 import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class ConcurrentValuesShadowVariableTest {
-    private record MockShadowVariableSession<Solution_>(SolutionDescriptor<Solution_> solutionDescriptor,
-            VariableReferenceGraph<Solution_> graph) {
-
-        public void setVariable(Object entity, String variableName, @Nullable Object value) {
-            var variableMetamodel = solutionDescriptor.getMetaModel().entity(entity.getClass()).variable(variableName);
-            graph.beforeVariableChanged(variableMetamodel, entity);
-            solutionDescriptor.getEntityDescriptorStrict(entity.getClass()).getVariableDescriptor(variableName)
-                    .setValue(entity, value);
-            graph.afterVariableChanged(variableMetamodel, entity);
-        }
-
-        public void updateVariables() {
-            graph.updateChanged();
-        }
-    }
-
-    private <Solution_> MockShadowVariableSession<Solution_> createSession(SolutionDescriptor<Solution_> solutionDescriptor,
-            Object... entities) {
-        var variableReferenceGraph = new VariableReferenceGraph<Solution_>(ChangedVariableNotifier.empty());
-
-        DefaultShadowVariableSessionFactory.visitGraph(solutionDescriptor, variableReferenceGraph, entities,
-                DefaultTopologicalOrderGraph::new);
-
-        return new MockShadowVariableSession<>(solutionDescriptor, variableReferenceGraph);
-    }
 
     @Test
     void simpleChain() {
-        var entity = spy(new TestdataConcurrentEntity("v1"));
-        var value1 = spy(new TestdataConcurrentValue("c1"));
-        var value2 = spy(new TestdataConcurrentValue("c2"));
-        var value3 = spy(new TestdataConcurrentValue("c3"));
-
-        var session = createSession(
-                TestdataConcurrentSolution.buildSolutionDescriptor(),
-                entity, value1, value2, value3);
+        var entity = new TestdataConcurrentEntity("v1");
+        var value1 = new TestdataConcurrentValue("c1");
+        var value2 = new TestdataConcurrentValue("c2");
+        var value3 = new TestdataConcurrentValue("c3");
+        entity.setValues(List.of(value1, value2, value3));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity, value1, value2, value3);
 
         // First, test value1 -> value2 -> value3
-        session.setVariable(value1, "entity", entity);
-        session.setVariable(value2, "previousValue", value1);
-        session.setVariable(value3, "previousValue", value2);
-
-        Mockito.reset(entity, value1, value2, value3);
-        session.updateVariables();
-
+        assertThat(value1.getPreviousValue()).isNull();
+        assertThat(value1.getNextValue()).isSameAs(value2);
+        assertThat(value1.getIndex()).isZero();
+        assertThat(value1.getCascadingTime()).isEqualTo(BASE_START_TIME.plusDays(value1.getIndex()));
+        assertThat(value2.getPreviousValue()).isSameAs(value1);
+        assertThat(value2.getNextValue()).isSameAs(value3);
+        assertThat(value2.getIndex()).isOne();
+        assertThat(value2.getCascadingTime()).isEqualTo(BASE_START_TIME.plusDays(value2.getIndex()));
+        assertThat(value3.getPreviousValue()).isSameAs(value2);
+        assertThat(value3.getNextValue()).isNull();
+        assertThat(value3.getIndex()).isEqualTo(2);
+        assertThat(value3.getCascadingTime()).isEqualTo(BASE_START_TIME.plusDays(value3.getIndex()));
         assertStartsAfterDuration(Duration.ZERO, value1);
         assertStartsAfterDuration(Duration.ofMinutes(60L), value2);
         assertStartsAfterDuration(Duration.ofMinutes(120L), value3);
 
         // Second, test value1 -> value3 -> value2
-        session.setVariable(value2, "previousValue", value3);
-        session.setVariable(value3, "previousValue", value1);
-
-        Mockito.reset(entity, value1, value2, value3);
-        session.updateVariables();
-
-        // value1 should have no interactions, since none of its dependencies are updated
-        verifyNoInteractions(value1);
-
+        entity.setValues(List.of(value1, value3, value2));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity, value1, value2, value3);
+        assertThat(value1.getPreviousValue()).isNull();
+        assertThat(value1.getNextValue()).isSameAs(value3);
+        assertThat(value3.getPreviousValue()).isSameAs(value1);
+        assertThat(value3.getNextValue()).isSameAs(value2);
+        assertThat(value2.getPreviousValue()).isSameAs(value3);
+        assertThat(value2.getNextValue()).isNull();
         assertStartsAfterDuration(Duration.ZERO, value1);
         assertStartsAfterDuration(Duration.ofMinutes(60), value3);
         assertStartsAfterDuration(Duration.ofMinutes(120), value2);
@@ -117,21 +86,15 @@ class ConcurrentValuesShadowVariableTest {
         valueB2.setConcurrentValueGroup(concurrentGroupB);
         valueB3.setConcurrentValueGroup(concurrentGroupB);
 
-        var session = createSession(TestdataConcurrentSolution.buildSolutionDescriptor(),
-                entity1, entity2, entity3, valueA1, valueA2, valueB1, valueB2, valueB3, valueC);
-
         // First test:
         // entity1: valueA1 -> valueB2
         // entity2: valueA2 -> valueB3
         // entity3: valueB1 -> valueC
-        session.setVariable(valueA1, "entity", entity1);
-        session.setVariable(valueA2, "entity", entity2);
-        session.setVariable(valueB1, "entity", entity3);
-        session.setVariable(valueB2, "previousValue", valueA1);
-        session.setVariable(valueB3, "previousValue", valueA2);
-        session.setVariable(valueC, "previousValue", valueB1);
-
-        session.updateVariables();
+        entity1.setValues(List.of(valueA1, valueB2));
+        entity2.setValues(List.of(valueA2, valueB3));
+        entity3.setValues(List.of(valueB1, valueC));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
+                valueB1, valueB2, valueB3, valueC);
 
         // No delay for A1/A2, since their entities arrive at the same time
         assertStartsAfterDuration(Duration.ZERO, valueA1, valueA2);
@@ -144,11 +107,11 @@ class ConcurrentValuesShadowVariableTest {
         // entity1: valueC -> valueA1 -> valueB2
         // entity2: valueA2 -> valueB3
         // entity3: valueB1
-        session.setVariable(valueC, "previousValue", null);
-        session.setVariable(valueC, "entity", entity1);
-        session.setVariable(valueA1, "previousValue", valueC);
-
-        session.updateVariables();
+        entity1.setValues(List.of(valueC, valueA1, valueB2));
+        entity2.setValues(List.of(valueA2, valueB3));
+        entity3.setValues(List.of(valueB1));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
+                valueB1, valueB2, valueB3, valueC);
 
         // A1 is delayed because it is now after C
         // A2 is now delayed until A1 is ready
@@ -183,22 +146,15 @@ class ConcurrentValuesShadowVariableTest {
         valueB2.setConcurrentValueGroup(concurrentGroupB);
         valueB3.setConcurrentValueGroup(concurrentGroupB);
 
-        var session = createSession(TestdataConcurrentSolution.buildSolutionDescriptor(),
-                entity1, entity2, entity3, valueA1, valueA2, valueB1, valueB2, valueB3, valueC);
-
         // First test:
         // entity1: valueA1 -> valueB2
         // entity2: valueA2 -> valueB3
         // entity3: valueB1 -> valueC
-        session.setVariable(valueA1, "entity", entity1);
-        session.setVariable(valueA2, "entity", entity2);
-        session.setVariable(valueB1, "entity", entity3);
-        session.setVariable(valueB2, "previousValue", valueA1);
-        session.setVariable(valueB3, "previousValue", valueA2);
-        session.setVariable(valueC, "previousValue", valueB1);
-
-        session.updateVariables();
-
+        entity1.setValues(List.of(valueA1, valueB2));
+        entity2.setValues(List.of(valueA2, valueB3));
+        entity3.setValues(List.of(valueB1, valueC));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
+                valueB1, valueB2, valueB3, valueC);
         assertStartsAfterDuration(Duration.ZERO, valueA1, valueA2);
         assertStartsAfterDuration(Duration.ofMinutes(60L), valueB1, valueB2, valueB3);
         assertStartsAfterDuration(Duration.ofMinutes(120L), valueC);
@@ -210,11 +166,11 @@ class ConcurrentValuesShadowVariableTest {
         // Loop between entity1 & entity2:
         // B2 is waiting for B3, which is waiting for A2
         // A2 is waiting for A1, which is waiting for B2
-        session.setVariable(valueA1, "previousValue", valueB2);
-        session.setVariable(valueB2, "entity", entity1);
-        session.setVariable(valueB2, "previousValue", null);
-
-        session.updateVariables();
+        entity1.setValues(List.of(valueB2, valueA1));
+        entity2.setValues(List.of(valueA2, valueB3));
+        entity3.setValues(List.of(valueB1, valueC));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
+                valueB1, valueB2, valueB3, valueC);
 
         // Everything is invalid/null, since no values are prior to the looped
         // groups.
@@ -228,11 +184,11 @@ class ConcurrentValuesShadowVariableTest {
         // Loop between entity1 & entity2:
         // B2 is waiting for B3, which is waiting for A2
         // A2 is waiting for A1, which is waiting for B2
-        session.setVariable(valueC, "previousValue", null);
-        session.setVariable(valueC, "entity", entity2);
-        session.setVariable(valueA2, "previousValue", valueC);
-
-        session.updateVariables();
+        entity1.setValues(List.of(valueB2, valueA1));
+        entity2.setValues(List.of(valueC, valueA2, valueB3));
+        entity3.setValues(List.of(valueB1));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
+                valueB1, valueB2, valueB3, valueC);
 
         assertInvalid(valueA1, valueA2, valueB1, valueB2, valueB3);
         // C is valid, since it is prior to the concurrent loop
@@ -262,9 +218,6 @@ class ConcurrentValuesShadowVariableTest {
         valueB2.setConcurrentValueGroup(concurrentGroupB);
         valueB3.setConcurrentValueGroup(concurrentGroupB);
 
-        var session = createSession(TestdataConcurrentSolution.buildSolutionDescriptor(),
-                entity1, entity2, entity3, valueA1, valueA2, valueB1, valueB2, valueB3, valueC);
-
         // First test:
         // entity1: valueB1 -> valueA1 -> valueB3
         // entity2: valueA2 -> valueB2
@@ -272,15 +225,11 @@ class ConcurrentValuesShadowVariableTest {
         // Loop between entity1 & entity2:
         // B1 is waiting for B2, which is waiting for A2
         // A2 is waiting for A1, which is waiting for B1
-        session.setVariable(valueA1, "entity", entity1);
-        session.setVariable(valueA2, "entity", entity2);
-        session.setVariable(valueC, "entity", entity3);
-        session.setVariable(valueB2, "previousValue", valueA1);
-        session.setVariable(valueB3, "previousValue", valueA2);
-        session.setVariable(valueA1, "previousValue", valueB1);
-
-        session.updateVariables();
-
+        entity1.setValues(List.of(valueB1, valueA1, valueB3));
+        entity2.setValues(List.of(valueA2, valueB2));
+        entity3.setValues(List.of(valueC));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
+                valueB1, valueB2, valueB3, valueC);
         // Everything except C is invalid
         assertInvalid(valueA1, valueA2, valueB1, valueB2, valueB3);
         // C is valid because it is not involved in or after a loop
@@ -293,11 +242,11 @@ class ConcurrentValuesShadowVariableTest {
         // Loop between entity1 & entity2:
         // B1 is waiting for B2, which is waiting for A2
         // A2 is waiting for A1, which is waiting for B1
-        session.setVariable(valueA1, "previousValue", null);
-        session.setVariable(valueB1, "entity", entity3);
-        session.setVariable(valueC, "previousValue", valueB1);
-
-        session.updateVariables();
+        entity1.setValues(List.of(valueA1));
+        entity2.setValues(List.of(valueA2, valueB2));
+        entity3.setValues(List.of(valueB1, valueC));
+        SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
+                valueB1, valueB2, valueB3, valueC);
 
         assertStartsAfterDuration(Duration.ZERO, valueA1, valueA2);
         assertStartsAfterDuration(Duration.ofMinutes(60), valueB1, valueB2, valueB3);

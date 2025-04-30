@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.dependency_values;
+package ai.timefold.solver.core.preview.api.variable.declarative.dependent;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
