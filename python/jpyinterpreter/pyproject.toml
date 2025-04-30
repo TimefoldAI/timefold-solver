@@ -2,7 +2,7 @@
 requires = [
     "setuptools>=69.1.1",
     "stubgenj>=0.2.5",
-    "JPype1>=1.4.1",
+    "JPype1==1.5.1", # pinned to 1.5.1 to avoid https://github.com/jpype-project/jpype/issues/1261
     "wheel"
 ]
 build-backend = "setuptools.build_meta"
