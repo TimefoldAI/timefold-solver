@@ -6,11 +6,12 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class LoopedTracker {
+
     private final LoopedStatus[] statuses;
 
-    public LoopedTracker(int count) {
-        statuses = new LoopedStatus[count];
-        Arrays.fill(statuses, LoopedStatus.UNKNOWN);
+    LoopedTracker(int count) {
+        this.statuses = new LoopedStatus[count];
+        clear();
     }
 
     public void mark(int node, LoopedStatus status) {
@@ -20,4 +21,9 @@ public final class LoopedTracker {
     public LoopedStatus status(int node) {
         return statuses[node];
     }
+
+    public void clear() {
+        Arrays.fill(statuses, LoopedStatus.UNKNOWN);
+    }
+
 }

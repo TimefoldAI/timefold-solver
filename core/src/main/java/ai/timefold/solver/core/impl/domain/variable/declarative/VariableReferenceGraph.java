@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +32,14 @@ public class VariableReferenceGraph<Solution_> {
     private int[][] counts;
     private TopologicalOrderGraph graph;
     private BitSet changed;
+
+    // These two fields are stored once, and reused from there on.
+    // Otherwise they were observed being re-created so often
+    // that the allocation of arrays would become a major bottleneck.
+    // This is made possible by the fact that the instances are only used within {@link #updateChanged()}
+    // and do not survive it.
+    private LoopedTracker loopedTrackerForUpdateChanged;
+    private boolean[] visitedForUpdateChanged;
 
     public VariableReferenceGraph(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.changedVariableNotifier = changedVariableNotifier;
@@ -71,10 +80,13 @@ public class VariableReferenceGraph<Solution_> {
     }
 
     public void createGraph(IntFunction<TopologicalOrderGraph> graphCreator) {
-        counts = new int[instanceList.size()][instanceList.size()];
-        graph = graphCreator.apply(instanceList.size());
+        var instanceCount = instanceList.size();
+        counts = new int[instanceCount][instanceCount];
+        graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
-        changed = new BitSet(instanceList.size());
+        changed = new BitSet(instanceCount);
+        loopedTrackerForUpdateChanged = new LoopedTracker(instanceCount);
+        visitedForUpdateChanged = new boolean[instanceCount];
 
         graph.startBatchChange();
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
@@ -171,33 +183,33 @@ public class VariableReferenceGraph<Solution_> {
             return;
         }
         graph.endBatchChange();
-        var visited = new boolean[instanceList.size()];
-        var loopedTracker = new LoopedTracker(visited.length);
         var affectedEntities = Collections.newSetFromMap(new IdentityHashMap<AffectedEntity, Boolean>());
         var nodeHeap = createInitialChangeQueue();
 
         while (!nodeHeap.isEmpty()) {
             var nextNode = nodeHeap.poll().nodeId;
-            if (visited[nextNode]) {
+            if (visitedForUpdateChanged[nextNode]) {
                 continue;
             }
-            visited[nextNode] = true;
+            visitedForUpdateChanged[nextNode] = true;
             var shadowVariable = instanceList.get(nextNode);
             var isChanged = updateShadowVariable(shadowVariable,
-                    graph.isLooped(loopedTracker, nextNode),
+                    graph.isLooped(loopedTrackerForUpdateChanged, nextNode),
                     affectedEntities);
 
             if (isChanged) {
-                graph.nodeForwardEdges(nextNode).forEachRemaining(
-                        (int node) -> {
-                            if (!visited[node]) {
-                                nodeHeap.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node)));
-                            }
-                        });
+                graph.nodeForwardEdges(nextNode).forEachRemaining((int node) -> {
+                    if (!visitedForUpdateChanged[node]) {
+                        nodeHeap.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node)));
+                    }
+                });
             }
         }
 
-        updateInvalidityStatusOfAffectedEntities(affectedEntities, loopedTracker);
+        updateLoopedStatusOfAffectedEntities(affectedEntities, loopedTrackerForUpdateChanged);
+        // Prepare for the next time updateChanged() is called.
+        loopedTrackerForUpdateChanged.clear();
+        Arrays.fill(visitedForUpdateChanged, false);
     }
 
     @SuppressWarnings("unchecked")
@@ -281,7 +293,7 @@ public class VariableReferenceGraph<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    private void updateInvalidityStatusOfAffectedEntities(Set<AffectedEntity> affectedEntities, LoopedTracker loopedTracker) {
+    private void updateLoopedStatusOfAffectedEntities(Set<AffectedEntity> affectedEntities, LoopedTracker loopedTracker) {
         for (var affectedEntity : affectedEntities) {
             var shadowVariableLoopedDescriptor = affectedEntity.variableUpdaterInfo.shadowVariableLoopedDescriptor();
             if (shadowVariableLoopedDescriptor == null) {
