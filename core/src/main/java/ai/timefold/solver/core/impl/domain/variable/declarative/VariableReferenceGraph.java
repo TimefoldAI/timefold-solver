@@ -322,23 +322,26 @@ public class VariableReferenceGraph<Solution_> {
 
     public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
         if (variableReference.entity().type().isInstance(entity)) {
-            var updaterList = variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList());
-            for (var consumer : updaterList) {
-                consumer.accept(this, entity);
-            }
+            processEntity(variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
+        }
+    }
+
+    private void processEntity(List<BiConsumer<VariableReferenceGraph<Solution_>, Object>> processorList, Object entity) {
+        var processorCount = processorList.size();
+        // Avoid creation of iterators on the hot path.
+        // The short-lived instances were observed to cause considerable GC pressure.
+        for (int i = 0; i < processorCount; i++) {
+            processorList.get(i).accept(this, entity);
         }
     }
 
     public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
         if (variableReference.entity().type().isInstance(entity)) {
-            var updaterList = variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList());
             var node = lookupOrNull(variableReference, entity);
             if (node != null) {
                 markChanged(node);
             }
-            for (var consumer : updaterList) {
-                consumer.accept(this, entity);
-            }
+            processEntity(variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
         }
     }
 
