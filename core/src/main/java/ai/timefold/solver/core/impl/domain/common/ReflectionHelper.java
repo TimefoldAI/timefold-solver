@@ -133,20 +133,22 @@ public final class ReflectionHelper {
     public static Method getDeclaredGetterMethod(Class<?> containingClass, String propertyName) {
         var capitalizedPropertyName = capitalizePropertyName(propertyName);
         var getterName = PROPERTY_ACCESSOR_PREFIX_GET + capitalizedPropertyName;
-        try {
-            return containingClass.getMethod(getterName);
-        } catch (NoSuchMethodException e) {
-            // intentionally empty
+        var baseClass = containingClass;
+        while (baseClass != null) {
+            try {
+                return containingClass.getDeclaredMethod(getterName);
+            } catch (NoSuchMethodException e) {
+                baseClass = baseClass.getSuperclass();
+            }
         }
         var isserName = PROPERTY_ACCESSOR_PREFIX_IS + capitalizedPropertyName;
-        try {
-
-            var method = containingClass.getDeclaredMethod(isserName);
-            if (method.getReturnType() == boolean.class) {
-                return method;
+        baseClass = containingClass;
+        while (baseClass != null) {
+            try {
+                return baseClass.getDeclaredMethod(isserName);
+            } catch (NoSuchMethodException e) {
+                baseClass = baseClass.getSuperclass();
             }
-        } catch (NoSuchMethodException e) {
-            // intentionally empty
         }
         return null;
     }
@@ -205,11 +207,15 @@ public final class ReflectionHelper {
      * @return sometimes null
      */
     public static Field getDeclaredField(Class<?> containingClass, String fieldName) {
-        try {
-            return containingClass.getDeclaredField(fieldName);
-        } catch (NoSuchFieldException e) {
-            return null;
+        var baseClass = containingClass;
+        while (baseClass != null) {
+            try {
+                return baseClass.getDeclaredField(fieldName);
+            } catch (NoSuchFieldException e) {
+                baseClass = baseClass.getSuperclass();
+            }
         }
+        return null;
     }
 
     /**

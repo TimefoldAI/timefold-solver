@@ -77,7 +77,7 @@ setup(
     test_suite='tests',
     python_requires='>=3.10',
     install_requires=[
-        'JPype1>=1.5.0',
+        'JPype1==1.5.1',  # pinned to 1.5.1 to avoid https://github.com/jpype-project/jpype/issues/1261
     ],
     cmdclass={'build_py': FetchDependencies},
     package_data={
