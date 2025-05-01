@@ -74,4 +74,11 @@ public class FileProblemProvider<Solution_> implements ProblemProvider<Solution_
         return problemFile.toString();
     }
 
+    public File getProblemFile() {
+        return problemFile;
+    }
+
+    public void setProblemFile(File problemFile) {
+        this.problemFile = problemFile;
+    }
 }
