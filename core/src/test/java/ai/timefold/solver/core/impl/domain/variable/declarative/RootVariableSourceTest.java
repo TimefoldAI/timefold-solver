@@ -2,113 +2,58 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
+import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedBaseValue;
 import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedSubclassValue;
 import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeEntity;
 import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeSolution;
 import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeValue;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 class RootVariableSourceTest {
-    PlanningSolutionMetaModel<TestdataInvalidDeclarativeSolution> planningSolutionMetaModel;
 
-    PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity> entityMetaModel;
-    PlanningListVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity, List<TestdataInvalidDeclarativeValue>> listVariableMetaModel;
+    private static final MemberAccessorFactory DEFAULT_MEMBER_ACCESSOR_FACTORY = new MemberAccessorFactory();
+    private static final DescriptorPolicy DEFAULT_DESCRIPTOR_POLICY = new DescriptorPolicy();
 
-    PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel;
-    ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> previousElementMetaModel;
-    ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> shadowVariableMetaModel;
-    ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> dependencyMetaModel;
+    private final PlanningSolutionMetaModel<TestdataInvalidDeclarativeSolution> planningSolutionMetaModel =
+            SolutionDescriptor.buildSolutionDescriptor(EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+                    TestdataInvalidDeclarativeSolution.class, TestdataInvalidDeclarativeEntity.class,
+                    TestdataInvalidDeclarativeValue.class)
+                    .getMetaModel();
+    private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity> entityMetaModel =
+            planningSolutionMetaModel.entity(TestdataInvalidDeclarativeEntity.class);
+    private final PlanningListVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity, List<TestdataInvalidDeclarativeValue>> listVariableMetaModel =
+            entityMetaModel.planningListVariable("values");
 
-    MemberAccessorFactory memberAccessorFactory;
-    DescriptorPolicy descriptorPolicy;
-
-    @BeforeEach
-    @SuppressWarnings({ "unchecked", "rawtypes" })
-    void setUp() {
-        planningSolutionMetaModel = mock(PlanningSolutionMetaModel.class);
-
-        entityMetaModel = mock(PlanningEntityMetaModel.class);
-
-        listVariableMetaModel = mock(PlanningListVariableMetaModel.class);
-        when(listVariableMetaModel.name()).thenReturn("values");
-        when(listVariableMetaModel.type()).thenReturn((Class) List.class);
-
-        when(entityMetaModel.type()).thenReturn(TestdataInvalidDeclarativeEntity.class);
-        when(entityMetaModel.variables()).thenReturn(List.of(listVariableMetaModel));
-        when(entityMetaModel.variable(any())).thenAnswer(invocation -> {
-            var query = invocation.getArgument(0, String.class);
-            return switch (query) {
-                case "values" -> listVariableMetaModel;
-                default -> throw new IllegalArgumentException();
-            };
-        });
-
-        shadowEntityMetaModel = mock(PlanningEntityMetaModel.class);
-
-        previousElementMetaModel = mock(ShadowVariableMetaModel.class);
-        when(previousElementMetaModel.name()).thenReturn("previous");
-        when(previousElementMetaModel.type()).thenReturn(TestdataInvalidDeclarativeValue.class);
-
-        shadowVariableMetaModel = mock(ShadowVariableMetaModel.class);
-        when(shadowVariableMetaModel.name()).thenReturn("shadow");
-        when(shadowVariableMetaModel.type()).thenReturn(TestdataInvalidDeclarativeValue.class);
-
-        dependencyMetaModel = mock(ShadowVariableMetaModel.class);
-        when(dependencyMetaModel.name()).thenReturn("dependency");
-        when(dependencyMetaModel.type()).thenReturn(TestdataInvalidDeclarativeValue.class);
-
-        when(shadowEntityMetaModel.type()).thenReturn(TestdataInvalidDeclarativeValue.class);
-        when(shadowEntityMetaModel.variables())
-                .thenReturn(List.of(previousElementMetaModel, shadowVariableMetaModel, dependencyMetaModel));
-        when(shadowEntityMetaModel.variable(any())).thenAnswer(invocation -> {
-            var query = invocation.getArgument(0, String.class);
-            return switch (query) {
-                case "previous" -> previousElementMetaModel;
-                case "shadow" -> shadowVariableMetaModel;
-                case "dependency" -> dependencyMetaModel;
-                default -> throw new IllegalArgumentException();
-            };
-        });
-
-        when(planningSolutionMetaModel.type()).thenReturn(TestdataInvalidDeclarativeSolution.class);
-        when(planningSolutionMetaModel.entities()).thenReturn(List.of(entityMetaModel, shadowEntityMetaModel));
-        when(planningSolutionMetaModel.entity(any())).thenAnswer(invocation -> {
-            var query = invocation.getArgument(0, Class.class);
-            if (query.equals(TestdataInvalidDeclarativeEntity.class)) {
-                return entityMetaModel;
-            } else if (query.equals(TestdataInvalidDeclarativeValue.class)) {
-                return shadowEntityMetaModel;
-            } else {
-                throw new IllegalArgumentException();
-            }
-        });
-
-        memberAccessorFactory = new MemberAccessorFactory();
-        descriptorPolicy = new DescriptorPolicy();
-    }
+    private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel =
+            planningSolutionMetaModel.entity(TestdataInvalidDeclarativeValue.class);
+    private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> previousElementMetaModel =
+            shadowEntityMetaModel.shadowVariable("previous");
+    private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> shadowVariableMetaModel =
+            shadowEntityMetaModel.shadowVariable("shadow");
+    private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> dependencyMetaModel =
+            shadowEntityMetaModel.shadowVariable("dependency");
 
     private void assertChainToVariableEntity(VariableSourceReference variableSourceReference, String... expectedNames) {
         var chain = variableSourceReference.chainToVariableEntity();
@@ -132,8 +77,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "previous",
-                memberAccessorFactory,
-                descriptorPolicy);
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
@@ -167,8 +112,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "dependency",
-                memberAccessorFactory,
-                descriptorPolicy);
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
@@ -202,8 +147,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "group[].dependency",
-                memberAccessorFactory,
-                descriptorPolicy);
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
@@ -242,8 +187,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "group[].previous",
-                memberAccessorFactory,
-                descriptorPolicy);
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
@@ -282,8 +227,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "fact.group[].dependency",
-                memberAccessorFactory,
-                descriptorPolicy);
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
@@ -324,8 +269,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "previous.dependency",
-                memberAccessorFactory,
-                descriptorPolicy);
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(2);
@@ -371,8 +316,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "group[].previous.dependency",
-                memberAccessorFactory,
-                descriptorPolicy);
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(2);
@@ -420,8 +365,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "missing",
-                memberAccessorFactory,
-                descriptorPolicy))
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The source path (missing)" +
                         " starting from root class (TestdataInvalidDeclarativeValue)" +
@@ -437,8 +382,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "previous.previous",
-                memberAccessorFactory,
-                descriptorPolicy))
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The source path (previous.previous)" +
                         " starting from root entity class (TestdataInvalidDeclarativeValue)" +
@@ -453,8 +398,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "fact.previous",
-                memberAccessorFactory,
-                descriptorPolicy))
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The source path (fact.previous)" +
                         " starting from root entity class (TestdataInvalidDeclarativeValue)" +
@@ -469,8 +414,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "group[].group[].previous",
-                memberAccessorFactory,
-                descriptorPolicy))
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The source path (group[].group[].previous)" +
                         " starting from root class (TestdataInvalidDeclarativeValue)" +
@@ -485,8 +430,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "dependency.dependency",
-                memberAccessorFactory,
-                descriptorPolicy))
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The source path (dependency.dependency)" +
                         " starting from root entity class (TestdataInvalidDeclarativeValue)" +
@@ -501,8 +446,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "fact",
-                memberAccessorFactory,
-                descriptorPolicy))
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The source path (fact)" +
                         " starting from root entity class (TestdataInvalidDeclarativeValue)" +
@@ -516,8 +461,8 @@ class RootVariableSourceTest {
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "fact.fact.dependency",
-                memberAccessorFactory,
-                descriptorPolicy))
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("The source path (fact.fact.dependency)" +
                         " starting from root entity (TestdataInvalidDeclarativeValue)" +
@@ -612,41 +557,23 @@ class RootVariableSourceTest {
     }
 
     @Test
-    @SuppressWarnings({ "unchecked", "rawtypes" })
     void isVariableIsTrueForVariableOnEntity() {
-        record EntityClass() {
-        }
-        var planningSolutionMetaModel = Mockito.mock(PlanningSolutionMetaModel.class);
-        var entityMetaModel = Mockito.mock(PlanningEntityMetaModel.class);
-        var variableDescriptor = Mockito.mock(BasicVariableDescriptor.class);
-
-        when(planningSolutionMetaModel.entity(EntityClass.class)).thenReturn(entityMetaModel);
-        when(entityMetaModel.variable("variable"))
-                .thenReturn(new DefaultPlanningVariableMetaModel<>(entityMetaModel, variableDescriptor));
-        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, EntityClass.class, "variable")).isTrue();
+        var planningSolutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class)
+                .getMetaModel();
+        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, TestdataEntity.class, "value")).isTrue();
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void isVariableIsFalseForFactOnEntity() {
-        record EntityClass() {
-        }
-        var planningSolutionMetaModel = Mockito.mock(PlanningSolutionMetaModel.class);
-        var entityMetaModel = Mockito.mock(PlanningEntityMetaModel.class);
-
-        when(planningSolutionMetaModel.entity(EntityClass.class)).thenReturn(entityMetaModel);
-        when(entityMetaModel.variable("fact")).thenThrow(new IllegalArgumentException());
-        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, EntityClass.class, "fact")).isFalse();
+        var planningSolutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class)
+                .getMetaModel();
+        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, TestdataEntity.class, "code")).isFalse();
     }
 
     @Test
-    @SuppressWarnings("unchecked")
     void isVariableIsFalseForFactClass() {
-        record FactClass() {
-        }
-        var planningSolutionMetaModel = Mockito.mock(PlanningSolutionMetaModel.class);
-
-        when(planningSolutionMetaModel.entity(FactClass.class)).thenThrow(new IllegalArgumentException());
-        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, FactClass.class, "variable")).isFalse();
+        var planningSolutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class)
+                .getMetaModel();
+        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, TestdataObject.class, "code")).isFalse();
     }
 }

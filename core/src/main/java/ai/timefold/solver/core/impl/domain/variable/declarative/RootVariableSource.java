@@ -238,39 +238,35 @@ public record RootVariableSource<Entity_, Value_>(
             String memberName) {
         var field = ReflectionHelper.getDeclaredField(declaringClass, memberName);
         var getterMethod = ReflectionHelper.getDeclaredGetterMethod(declaringClass, memberName);
-        Member member;
         if (field == null && getterMethod == null) {
             throw new IllegalArgumentException(
                     "The source path (%s) starting from root class (%s) references a member (%s) on class (%s) that does not exist."
                             .formatted(sourcePath, rootClass.getSimpleName(), memberName, declaringClass.getSimpleName()));
         } else if (field != null && getterMethod == null) {
-            member = field;
+            return field;
         } else if (field == null) { // method is not guaranteed to not be null
-            member = getterMethod;
+            return getterMethod;
         } else {
             var fieldType = field.getType();
             var methodType = getterMethod.getReturnType();
             if (fieldType.equals(methodType)) {
                 // Prefer getter if types are the same
-                member = getterMethod;
+                return getterMethod;
             } else if (fieldType.isAssignableFrom(methodType)) {
                 // Getter is more specific than field
-                member = getterMethod;
+                return getterMethod;
             } else if (methodType.isAssignableFrom(fieldType)) {
                 // Field is more specific than getter
-                member = field;
+                return field;
             } else {
                 // Field and getter are not covariant; prefer method
-                member = getterMethod;
+                return getterMethod;
             }
         }
-
-        return member;
     }
 
     private static MemberAccessor getMemberAccessor(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
-            String memberName,
-            MemberAccessorFactory memberAccessorFactory, DescriptorPolicy descriptorPolicy) {
+            String memberName, MemberAccessorFactory memberAccessorFactory, DescriptorPolicy descriptorPolicy) {
         var member = getMember(rootClass, sourcePath, declaringClass, memberName);
 
         return memberAccessorFactory.buildAndCacheMemberAccessor(member,
@@ -279,14 +275,10 @@ public record RootVariableSource<Entity_, Value_>(
     }
 
     public static boolean isVariable(PlanningSolutionMetaModel<?> metaModel, Class<?> declaringClass, String memberName) {
-        try {
-            metaModel.entity(declaringClass).variable(memberName);
-            // We got a variable, hence it is a variable
-            return true;
-        } catch (IllegalArgumentException e) {
-            // Either declaringClass is not an entity or it does not have a variable with that name
+        if (!metaModel.hasEntity(declaringClass)) {
             return false;
         }
+        return metaModel.entity(declaringClass).hasVariable(memberName);
     }
 
     private static <T extends Annotation> T getAnnotation(Class<?> declaringClass, String memberName,
