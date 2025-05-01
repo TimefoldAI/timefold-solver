@@ -40,9 +40,6 @@ class RootVariableSourceTest {
                     TestdataInvalidDeclarativeSolution.class, TestdataInvalidDeclarativeEntity.class,
                     TestdataInvalidDeclarativeValue.class)
                     .getMetaModel();
-    private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity> entityMetaModel =
-            planningSolutionMetaModel.entity(TestdataInvalidDeclarativeEntity.class);
-
     private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel =
             planningSolutionMetaModel.entity(TestdataInvalidDeclarativeValue.class);
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> previousElementMetaModel =
