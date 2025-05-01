@@ -57,7 +57,7 @@ public interface PlanningSolutionMetaModel<Solution_> {
      *
      * @param entityClass Expected class of the entity.
      * @return An entity declared by the solution.
-     * @throws IllegalArgumentException if the entity class is not known to the solution
+     * @throws IllegalArgumentException where {@link #hasEntity(Class)} would have returned false.
      */
     @SuppressWarnings("unchecked")
     default <Entity_> PlanningEntityMetaModel<Solution_, Entity_> entity(Class<Entity_> entityClass) {
@@ -67,7 +67,22 @@ public interface PlanningSolutionMetaModel<Solution_> {
             }
         }
         throw new IllegalArgumentException(
-                "The type (%s) does not exist in the entities (%s).".formatted(entityClass, entities()));
+                "The type (%s) is not among known entities (%s).".formatted(entityClass, entities()));
+    }
+
+    /**
+     * Checks whether an {@link PlanningEntity}-annotated class is known by the solution.
+     *
+     * @return True if known, false otherwise.
+     * @see #entity(Class) Method to retrieve the entity's meta-model, or fail if it is not present.
+     */
+    default boolean hasEntity(Class<?> entityClass) {
+        for (var entityMetaModel : entities()) {
+            if (entityMetaModel.type().equals(entityClass)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

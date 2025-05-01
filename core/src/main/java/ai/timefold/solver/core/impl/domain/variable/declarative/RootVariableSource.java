@@ -12,7 +12,6 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -98,15 +97,7 @@ public record RootVariableSource<Entity_, Value_>(
                     listMemberAccessors.add(memberAccessor);
                 }
 
-                var isVariable = false;
-
-                for (var annotation : EntityDescriptor.getVariableAnnotationClasses()) {
-                    if (getAnnotation(currentEntity, memberAccessor.getName(), annotation) != null) {
-                        isVariable = true;
-                        break;
-                    }
-                }
-
+                var isVariable = isVariable(solutionMetaModel, memberAccessor.getDeclaringClass(), pathPart);
                 chainToVariable.add(memberAccessor);
                 for (var chain : chainStartingFromSourceVariableList) {
                     chain.add(memberAccessor);
@@ -243,21 +234,51 @@ public record RootVariableSource<Entity_, Value_>(
         }
     }
 
-    private static MemberAccessor getMemberAccessor(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
-            String memberName,
-            MemberAccessorFactory memberAccessorFactory, DescriptorPolicy descriptorPolicy) {
-        Member member = ReflectionHelper.getDeclaredField(declaringClass, memberName);
-        if (member == null) {
-            member = ReflectionHelper.getDeclaredGetterMethod(declaringClass, memberName);
-            if (member == null) {
-                throw new IllegalArgumentException(
-                        "The source path (%s) starting from root class (%s) references a member (%s) on class (%s) that does not exist."
-                                .formatted(sourcePath, rootClass.getSimpleName(), memberName, declaringClass.getSimpleName()));
+    public static Member getMember(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
+            String memberName) {
+        var field = ReflectionHelper.getDeclaredField(declaringClass, memberName);
+        var getterMethod = ReflectionHelper.getDeclaredGetterMethod(declaringClass, memberName);
+        if (field == null && getterMethod == null) {
+            throw new IllegalArgumentException(
+                    "The source path (%s) starting from root class (%s) references a member (%s) on class (%s) that does not exist."
+                            .formatted(sourcePath, rootClass.getSimpleName(), memberName, declaringClass.getSimpleName()));
+        } else if (field != null && getterMethod == null) {
+            return field;
+        } else if (field == null) { // method is not guaranteed to not be null
+            return getterMethod;
+        } else {
+            var fieldType = field.getType();
+            var methodType = getterMethod.getReturnType();
+            if (fieldType.equals(methodType)) {
+                // Prefer getter if types are the same
+                return getterMethod;
+            } else if (fieldType.isAssignableFrom(methodType)) {
+                // Getter is more specific than field
+                return getterMethod;
+            } else if (methodType.isAssignableFrom(fieldType)) {
+                // Field is more specific than getter
+                return field;
+            } else {
+                // Field and getter are not covariant; prefer method
+                return getterMethod;
             }
         }
+    }
+
+    private static MemberAccessor getMemberAccessor(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
+            String memberName, MemberAccessorFactory memberAccessorFactory, DescriptorPolicy descriptorPolicy) {
+        var member = getMember(rootClass, sourcePath, declaringClass, memberName);
+
         return memberAccessorFactory.buildAndCacheMemberAccessor(member,
                 MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD,
                 descriptorPolicy.getDomainAccessType());
+    }
+
+    public static boolean isVariable(PlanningSolutionMetaModel<?> metaModel, Class<?> declaringClass, String memberName) {
+        if (!metaModel.hasEntity(declaringClass)) {
+            return false;
+        }
+        return metaModel.entity(declaringClass).hasVariable(memberName);
     }
 
     private static <T extends Annotation> T getAnnotation(Class<?> declaringClass, String memberName,

@@ -261,6 +261,12 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
+        if (shadowVariableSession != null) {
+            shadowVariableSession.afterVariableChanged(variableDescriptor, entity);
+        }
+    }
+
     public void afterElementUnassigned(ListVariableDescriptor<Solution_> variableDescriptor, Object element) {
         var notifiables = notifiableRegistry.get(variableDescriptor);
         if (!notifiables.isEmpty()) {

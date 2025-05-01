@@ -4,6 +4,9 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public record EntityVariablePair(Object entity, VariableMetaModel<?, ?, ?> variableId,
         VariableUpdaterInfo variableReference, int graphNodeId) {
     @Override

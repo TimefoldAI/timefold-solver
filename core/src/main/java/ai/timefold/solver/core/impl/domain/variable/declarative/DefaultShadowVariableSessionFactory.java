@@ -104,17 +104,21 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 // non-declarative variables are not in the graph and must have their
                 // own processor
                 if (!sourcePart.isDeclarative()) {
-                    variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) ->
-                    // Exploits the fact the source entity and the target entity must be the same,
-                    // since non-declarative variables can only be accessed from the root entity
-                    // i.e. paths like "otherVisit.previous"
-                    // or "visitGroup[].otherVisit.previous" are not allowed,
-                    // but paths like "previous" or
-                    // "visitGroup[].previous" are.
-                    // Without this invariant, an inverse set must be calculated
-                    // and maintained,
-                    // and this code is complicated enough.
-                    graph.markChanged(graph.lookup(fromVariableId, entity)));
+                    variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) -> {
+                        // Exploits the fact the source entity and the target entity must be the same,
+                        // since non-declarative variables can only be accessed from the root entity
+                        // i.e. paths like "otherVisit.previous"
+                        // or "visitGroup[].otherVisit.previous" are not allowed,
+                        // but paths like "previous" or
+                        // "visitGroup[].previous" are.
+                        // Without this invariant, an inverse set must be calculated
+                        // and maintained,
+                        // and this code is complicated enough.
+                        var changed = graph.lookupOrNull(fromVariableId, entity);
+                        if (changed != null) {
+                            graph.markChanged(changed);
+                        }
+                    });
                 }
             }
         }
@@ -131,14 +135,34 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             if (!alias.isDeclarative() && alias.affectGraphEdges()) {
                 // Exploit the same fact as above
                 variableReferenceGraph.addBeforeProcessor(sourceVariableId,
-                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity,
-                                fromEntity -> graph.removeEdge(
-                                        graph.lookup(fromVariableId, fromEntity),
-                                        graph.lookup(toVariableId, toEntity))));
+                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity()
+                                .accept(toEntity, fromEntity -> {
+                                    // from/to can be null in extended models
+                                    // ex: previous is used as a source, but only an extended class
+                                    // has the to variable
+                                    var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                                    if (from == null) {
+                                        return;
+                                    }
+                                    var to = graph.lookupOrNull(toVariableId, toEntity);
+                                    if (to == null) {
+                                        return;
+                                    }
+                                    graph.removeEdge(from, to);
+                                }));
                 variableReferenceGraph.addAfterProcessor(sourceVariableId,
-                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity().accept(toEntity,
-                                fromEntity -> graph.addEdge(graph.lookup(fromVariableId, fromEntity),
-                                        graph.lookup(toVariableId, toEntity))));
+                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity()
+                                .accept(toEntity, fromEntity -> {
+                                    var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                                    if (from == null) {
+                                        return;
+                                    }
+                                    var to = graph.lookupOrNull(toVariableId, toEntity);
+                                    if (to == null) {
+                                        return;
+                                    }
+                                    graph.addEdge(from, to);
+                                }));
             }
             // Note: it is impossible to have a declarative variable affect graph edges,
             // since accessing a declarative variable from another declarative variable is prohibited.
@@ -161,9 +185,9 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                 sourceRoot.valueEntityFunction()
                                         .accept(entity, fromEntity -> variableReferenceGraph.addFixedEdge(
                                                 variableReferenceGraph
-                                                        .lookup(fromVariableId, fromEntity),
+                                                        .lookupOrError(fromVariableId, fromEntity),
                                                 variableReferenceGraph
-                                                        .lookup(toVariableId, entity)));
+                                                        .lookupOrError(toVariableId, entity)));
                                 break;
                             }
                         }

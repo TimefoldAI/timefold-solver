@@ -103,7 +103,7 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
      * Returns a {@link VariableMetaModel} for a variable with the given name.
      *
      * @return A variable declared by the entity.
-     * @throws IllegalArgumentException if the variable does not exist on the entity
+     * @throws IllegalArgumentException where {@link #hasVariable(String)} would have returned false.
      */
     @SuppressWarnings("unchecked")
     default <Value_> VariableMetaModel<Solution_, Entity_, Value_> variable(String variableName) {
@@ -114,6 +114,21 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
         }
         throw new IllegalArgumentException(
                 "The variableName (%s) does not exist in the variables (%s).".formatted(variableName, variables()));
+    }
+
+    /**
+     * Checks whether a variable is present on the entity.
+     *
+     * @return True if present, false otherwise.
+     * @see #variable(String) Method to retrieve the variable's meta-model, or fail if it is not present.
+     */
+    default boolean hasVariable(String variableName) {
+        for (var variableMetaModel : variables()) {
+            if (variableMetaModel.name().equals(variableName)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -132,6 +147,15 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
     @SuppressWarnings("unchecked")
     default <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariable(String variableName) {
         return (PlanningListVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
+    }
+
+    /**
+     * As defined by {@link #variable(String)},
+     * but only succeeds if the variable is a shadow variable}.
+     */
+    @SuppressWarnings("unchecked")
+    default <Value_> ShadowVariableMetaModel<Solution_, Entity_, Value_> shadowVariable(String variableName) {
+        return (ShadowVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
     }
 
     /**

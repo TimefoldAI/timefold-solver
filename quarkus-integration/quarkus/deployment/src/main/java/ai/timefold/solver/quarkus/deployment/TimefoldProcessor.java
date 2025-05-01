@@ -3,6 +3,8 @@ package ai.timefold.solver.quarkus.deployment;
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static java.lang.String.format;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -956,43 +958,7 @@ class TimefoldProcessor {
             for (var dotName : DotNames.GIZMO_MEMBER_ACCESSOR_ANNOTATIONS) {
                 membersToGeneratedAccessorsForCollection.addAll(indexView.getAnnotationsWithRepeatable(dotName, indexView));
             }
-            for (var shadowSources : indexView.getAnnotations(DotNames.SHADOW_SOURCES)) {
-                var rootType = shadowSources.target().asMethod().declaringClass();
-                var sources = shadowSources.value().asStringArray();
-                for (var source : sources) {
-                    var currentType = rootType;
-                    var parts = source.split(RootVariableSource.MEMBER_SEPERATOR_REGEX);
-                    for (var part : parts) {
-                        var memberName = part.endsWith(RootVariableSource.COLLECTION_REFERENCE_SUFFIX)
-                                ? part.substring(0, part.length() - RootVariableSource.COLLECTION_REFERENCE_SUFFIX.length())
-                                : part;
-                        ClassInfo nextType = null;
-                        AnnotationTarget target = null;
-                        var field = currentType.field(memberName);
-                        if (field == null) {
-                            var method = currentType
-                                    .method("get" + memberName.substring(0, 1).toUpperCase() + memberName.substring(1));
-                            if (method == null) {
-                                throw new IllegalStateException(
-                                        "Cannot find field or getter for (%s) in class (%s) which is referenced by the %s path (%s) with root entity (%s)."
-                                                .formatted(memberName, currentType.simpleName(),
-                                                        ShadowSources.class.getSimpleName(), source, rootType.simpleName()));
-                            }
-                            target = method;
-                            nextType = method.declaringClass();
-                        } else {
-                            target = field;
-                            nextType = field.declaringClass();
-                        }
-                        // Create a fake annotation for it
-                        membersToGeneratedAccessorsForCollection.add(
-                                AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
-                                        .value(source)
-                                        .buildWithTarget(target));
-                        currentType = nextType;
-                    }
-                }
-            }
+            generateDomainAccessorsForShadowSources(indexView, membersToGeneratedAccessorsForCollection);
             membersToGeneratedAccessorsForCollection.removeIf(this::shouldIgnoreMember);
 
             // Fail fast on auto-discovery.
@@ -1112,6 +1078,51 @@ class TimefoldProcessor {
 
         entityEnhancer.generateGizmoBeanFactory(beanClassOutput, reflectiveClassSet, transformers);
         return new GeneratedGizmoClasses(generatedMemberAccessorsClassNameSet, gizmoSolutionClonerClassNameSet);
+    }
+
+    private static void generateDomainAccessorsForShadowSources(IndexView indexView,
+            ArrayList<AnnotationInstance> membersToGeneratedAccessorsForCollection) {
+        for (var shadowSources : indexView.getAnnotations(DotNames.SHADOW_SOURCES)) {
+            Class<?> rootType;
+            try {
+                rootType = Thread.currentThread().getContextClassLoader().loadClass(
+                        shadowSources.target().asMethod().declaringClass().name().toString());
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException("Unable to load class (%s) which has a @%s annotation."
+                        .formatted(shadowSources.target().asMethod().declaringClass().name(),
+                                ShadowSources.class.getSimpleName()));
+            }
+            var sources = shadowSources.value().asStringArray();
+            for (var source : sources) {
+                var currentType = rootType;
+                var parts = source.split(RootVariableSource.MEMBER_SEPERATOR_REGEX);
+                for (var part : parts) {
+                    var memberName = part.endsWith(RootVariableSource.COLLECTION_REFERENCE_SUFFIX)
+                            ? part.substring(0, part.length() - RootVariableSource.COLLECTION_REFERENCE_SUFFIX.length())
+                            : part;
+                    var member = RootVariableSource.getMember(rootType, source, currentType, memberName);
+
+                    AnnotationTarget target;
+                    Class<?> nextType;
+                    if (member instanceof Field field) {
+                        target = indexView.getClassByName(field.getDeclaringClass()).field(field.getName());
+                        nextType = field.getType();
+                    } else if (member instanceof Method method) {
+                        target = indexView.getClassByName(method.getDeclaringClass()).method(method.getName());
+                        nextType = method.getReturnType();
+                    } else {
+                        throw new IllegalStateException("Member (%s) is not on a field or method."
+                                .formatted(member));
+                    }
+                    // Create a fake annotation for it
+                    membersToGeneratedAccessorsForCollection.add(
+                            AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
+                                    .value(source)
+                                    .buildWithTarget(target));
+                    currentType = nextType;
+                }
+            }
+        }
     }
 
     private static void buildFieldAccessor(AnnotationInstance annotatedMember, Set<String> generatedMemberAccessorsClassNameSet,
