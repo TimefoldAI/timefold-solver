@@ -11,6 +11,8 @@ import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 
 /*
  *  Should have one of every annotation, even annotations that
@@ -35,6 +37,12 @@ public class TestDataKitchenSinkEntity {
             sourceEntityClass = TestDataKitchenSinkEntity.class, sourceVariableName = "stringVariable")
     private String shadow2;
 
+    @ShadowVariable(supplierName = "copyStringVariable")
+    private String declarativeShadowVariable;
+
+    @ShadowVariableLooped
+    private boolean shadowVariableLooped;
+
     @PiggybackShadowVariable(shadowVariableName = "shadow2")
     private String piggybackShadow;
 
@@ -57,6 +65,11 @@ public class TestDataKitchenSinkEntity {
     }
 
     public String testGetStringVariable() {
+        return stringVariable;
+    }
+
+    @ShadowSources("stringVariable")
+    private String copyStringVariable() {
         return stringVariable;
     }
 

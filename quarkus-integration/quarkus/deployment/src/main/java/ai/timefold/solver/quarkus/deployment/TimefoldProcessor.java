@@ -1007,35 +1007,36 @@ class TimefoldProcessor {
 
             for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
                 switch (annotatedMember.target().kind()) {
-                    case FIELD: {
+                    case FIELD -> {
                         var fieldInfo = annotatedMember.target().asField();
                         var classInfo = fieldInfo.declaringClass();
                         buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, fieldInfo, transformers);
                         if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
                             // The source method name also must be included
-                            var targetMethodName = annotatedMember.values().stream()
-                                    .filter(v -> v.name().equals("targetMethodName"))
-                                    .findFirst()
-                                    .map(AnnotationValue::asString)
-                                    .orElseThrow(() -> new IllegalStateException(
-                                            "Fail to generate member accessor of the source method listener (%s) of the class(%s)."
-                                                    .formatted(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE.local(),
-                                                            classInfo.name().toString())));
+                            // targetMethodName is a required field and is always present
+                            var targetMethodName = annotatedMember.value("targetMethodName").asString();
                             var methodInfo = classInfo.method(targetMethodName);
                             buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                     classInfo, methodInfo, false, transformers);
+                        } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
+                                && annotatedMember.value("supplierName") != null) {
+                            // The source method name also must be included
+                            var targetMethodName = annotatedMember.value("supplierName")
+                                    .asString();
+                            var methodInfo = classInfo.method(targetMethodName);
+                            buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer,
+                                    classOutput,
+                                    classInfo, methodInfo, true, transformers);
                         }
-                        break;
                     }
-                    case METHOD: {
+                    case METHOD -> {
                         var methodInfo = annotatedMember.target().asMethod();
                         var classInfo = methodInfo.declaringClass();
                         buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, methodInfo, true, transformers);
-                        break;
                     }
-                    default: {
+                    default -> {
                         throw new IllegalStateException(
                                 "The member (%s) is not on a field or method.".formatted(annotatedMember));
                     }
