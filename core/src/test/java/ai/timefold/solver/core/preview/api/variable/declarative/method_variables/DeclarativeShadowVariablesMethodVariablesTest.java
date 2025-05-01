@@ -18,9 +18,10 @@ import ai.timefold.solver.core.testdomain.declarative.method_variables.TestdataD
 
 import org.junit.jupiter.api.Test;
 
-public class DeclarativeShadowVariablesMethodVariablesTest {
+class DeclarativeShadowVariablesMethodVariablesTest {
+
     @Test
-    public void methodDefinedVariables() {
+    void methodDefinedVariables() {
         var solverConfig = new SolverConfig()
                 .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
@@ -50,4 +51,5 @@ public class DeclarativeShadowVariablesMethodVariablesTest {
 
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, 6));
     }
+
 }

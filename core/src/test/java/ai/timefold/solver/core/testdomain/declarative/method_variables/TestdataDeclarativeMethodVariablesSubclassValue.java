@@ -17,6 +17,7 @@ public class TestdataDeclarativeMethodVariablesSubclassValue extends TestdataDec
         codeSum = code;
     }
 
+    @Override
     public TestdataDeclarativeMethodVariablesSubclassValue getPrevious() {
         return (TestdataDeclarativeMethodVariablesSubclassValue) previous;
     }

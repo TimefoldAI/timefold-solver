@@ -17,6 +17,7 @@ public class TestdataDeclarativeExtendedSubclassValue extends TestdataDeclarativ
         codeSum = code;
     }
 
+    @Override
     public TestdataDeclarativeExtendedSubclassValue getPrevious() {
         return (TestdataDeclarativeExtendedSubclassValue) previous;
     }
