@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -43,8 +42,6 @@ class RootVariableSourceTest {
                     .getMetaModel();
     private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity> entityMetaModel =
             planningSolutionMetaModel.entity(TestdataInvalidDeclarativeEntity.class);
-    private final PlanningListVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeEntity, List<TestdataInvalidDeclarativeValue>> listVariableMetaModel =
-            entityMetaModel.planningListVariable("values");
 
     private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel =
             planningSolutionMetaModel.entity(TestdataInvalidDeclarativeValue.class);
@@ -558,22 +555,19 @@ class RootVariableSourceTest {
 
     @Test
     void isVariableIsTrueForVariableOnEntity() {
-        var planningSolutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class)
-                .getMetaModel();
-        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, TestdataEntity.class, "value")).isTrue();
+        var metaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class).getMetaModel();
+        assertThat(RootVariableSource.isVariable(metaModel, TestdataEntity.class, "value")).isTrue();
     }
 
     @Test
     void isVariableIsFalseForFactOnEntity() {
-        var planningSolutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class)
-                .getMetaModel();
-        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, TestdataEntity.class, "code")).isFalse();
+        var metaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class).getMetaModel();
+        assertThat(RootVariableSource.isVariable(metaModel, TestdataEntity.class, "code")).isFalse();
     }
 
     @Test
     void isVariableIsFalseForFactClass() {
-        var planningSolutionMetaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class)
-                .getMetaModel();
-        assertThat(RootVariableSource.isVariable(planningSolutionMetaModel, TestdataObject.class, "code")).isFalse();
+        var metaModel = SolutionDescriptor.buildSolutionDescriptor(TestdataSolution.class, TestdataEntity.class).getMetaModel();
+        assertThat(RootVariableSource.isVariable(metaModel, TestdataObject.class, "code")).isFalse();
     }
 }
