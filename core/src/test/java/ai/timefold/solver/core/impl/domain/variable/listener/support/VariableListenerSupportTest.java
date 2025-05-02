@@ -173,7 +173,7 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public void withNodeData(List<EntityVariablePair> nodes) {
+        public <Solution_> void withNodeData(List<EntityVariablePair<Solution_>> nodes) {
             nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
             nodeToVariableMetamodel = nodes.stream()
                     .map(e -> e.variableReference().id())

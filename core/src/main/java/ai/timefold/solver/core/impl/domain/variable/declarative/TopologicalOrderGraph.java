@@ -26,7 +26,7 @@ public interface TopologicalOrderGraph {
      * @param nodes A list of entity/variable pairs, where the nth item in the list
      *        corresponds to the node with id n in the graph.
      */
-    default void withNodeData(List<EntityVariablePair> nodes) {
+    default <Solution_> void withNodeData(List<EntityVariablePair<Solution_>> nodes) {
     }
 
     /**

@@ -5,10 +5,10 @@ import java.util.Objects;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public record EntityVariablePair(Object entity, VariableUpdaterInfo variableReference, int graphNodeId) {
+public record EntityVariablePair<Solution_>(Object entity, VariableUpdaterInfo<Solution_> variableReference, int graphNodeId) {
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof EntityVariablePair that))
+        if (!(object instanceof EntityVariablePair<?> that))
             return false;
         return graphNodeId == that.graphNodeId;
     }

@@ -35,7 +35,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             VariableReferenceGraph<Solution_> variableReferenceGraph, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         var declarativeShadowVariableDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
-        var variableIdToUpdater = new HashMap<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo>();
+        var variableIdToUpdater = new HashMap<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo<Solution_>>();
 
         // Maps a variable id to it source aliases;
         // For instance, "previousVisit.startTime" is a source alias of "startTime"
@@ -56,19 +56,19 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
         // Create the fixed edges in the graph
         createFixedVariableRelationEdges(variableReferenceGraph, entities, declarativeShadowVariableDescriptors);
-        variableReferenceGraph.createGraph(graphCreator);
+        variableReferenceGraph.initialize(graphCreator);
     }
 
     private static <Solution_> void createGraphNodes(VariableReferenceGraph<Solution_> graph, Object[] entities,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-            Map<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo> variableIdToUpdater,
+            Map<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo<Solution_>> variableIdToUpdater,
             Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap) {
         for (var entity : entities) {
             for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
                 var entityClass = declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass();
                 if (entityClass.isInstance(entity)) {
                     var variableId = declarativeShadowVariableDescriptor.getVariableMetaModel();
-                    var updater = variableIdToUpdater.computeIfAbsent(variableId, ignored -> new VariableUpdaterInfo(
+                    var updater = variableIdToUpdater.computeIfAbsent(variableId, ignored -> new VariableUpdaterInfo<>(
                             variableId,
                             declarativeShadowVariableDescriptor,
                             declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariableLoopedDescriptor(),
@@ -104,11 +104,9 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 if (!sourcePart.isDeclarative()) {
                     variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) -> {
                         // Exploits the fact the source entity and the target entity must be the same,
-                        // since non-declarative variables can only be accessed from the root entity
-                        // i.e. paths like "otherVisit.previous"
-                        // or "visitGroup[].otherVisit.previous" are not allowed,
-                        // but paths like "previous" or
-                        // "visitGroup[].previous" are.
+                        // since non-declarative variables can only be accessed from the root entity;
+                        // paths like "otherVisit.previous" or "visitGroup[].otherVisit.previous" are not allowed,
+                        // but paths like "previous" or "visitGroup[].previous" are.
                         // Without this invariant, an inverse set must be calculated
                         // and maintained,
                         // and this code is complicated enough.
