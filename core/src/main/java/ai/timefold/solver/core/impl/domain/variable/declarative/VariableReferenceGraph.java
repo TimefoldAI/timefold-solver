@@ -163,27 +163,12 @@ public class VariableReferenceGraph<Solution_> {
         changed.set(node.graphNodeId());
     }
 
-    record AffectedEntity(Object entity, VariableUpdaterInfo variableUpdaterInfo) {
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof AffectedEntity other) {
-                return entity == other.entity;
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(entity);
-        }
-    }
-
     public void updateChanged() {
         if (changed.isEmpty()) {
             return;
         }
         graph.endBatchChange();
-        var affectedEntities = Collections.newSetFromMap(new IdentityHashMap<AffectedEntity, Boolean>());
+        var affectedEntities = new AffectedEntities(loopedTrackerForUpdateChanged);
         var nodeHeap = createInitialChangeQueue();
 
         while (!nodeHeap.isEmpty()) {
@@ -195,7 +180,7 @@ public class VariableReferenceGraph<Solution_> {
             var shadowVariable = instanceList.get(nextNode);
             var isChanged = updateShadowVariable(shadowVariable,
                     graph.isLooped(loopedTrackerForUpdateChanged, nextNode),
-                    affectedEntities);
+                    affectedEntities::add);
 
             if (isChanged) {
                 graph.nodeForwardEdges(nextNode).forEachRemaining((int node) -> {
@@ -206,17 +191,14 @@ public class VariableReferenceGraph<Solution_> {
             }
         }
 
-        updateLoopedStatusOfAffectedEntities(affectedEntities, loopedTrackerForUpdateChanged);
+        affectedEntities.forEach(this::updateLoopedStatusOfAffectedEntity);
         // Prepare for the next time updateChanged() is called.
         loopedTrackerForUpdateChanged.clear();
         Arrays.fill(visitedForUpdateChanged, false);
     }
 
-    @SuppressWarnings("unchecked")
-    private boolean updateShadowVariable(EntityVariablePair shadowVariable,
-            boolean isLooped,
-            Set<AffectedEntity> affectedEntities) {
-        var isChanged = false;
+    private boolean updateShadowVariable(EntityVariablePair shadowVariable, boolean isLooped,
+            BiConsumer<Object, VariableUpdaterInfo> affectedEntityMarker) {
         var entity = shadowVariable.entity();
         var shadowVariableReference = shadowVariable.variableReference();
         var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
@@ -225,29 +207,29 @@ public class VariableReferenceGraph<Solution_> {
             // null might be a valid value, and thus it could be the case
             // that is was not looped and null, then turned to looped and null,
             // which is still considered a change.
-            isChanged = true;
-            affectedEntities.add(new AffectedEntity(entity, shadowVariableReference));
+            affectedEntityMarker.accept(entity, shadowVariableReference);
             if (oldValue != null) {
-                changedVariableNotifier.beforeVariableChanged().accept(
-                        (VariableDescriptor<Solution_>) shadowVariableReference.variableDescriptor(), entity);
-                shadowVariableReference.memberAccessor().executeSetter(entity, null);
-                changedVariableNotifier.afterVariableChanged().accept(
-                        (VariableDescriptor<Solution_>) shadowVariableReference.variableDescriptor(), entity);
+                changeShadowVariableAndNotify(shadowVariableReference, entity, null);
             }
+            return true;
         } else {
             var newValue = shadowVariableReference.calculator().apply(entity);
 
             if (!Objects.equals(oldValue, newValue)) {
-                affectedEntities.add(new AffectedEntity(entity, shadowVariableReference));
-                changedVariableNotifier.beforeVariableChanged().accept(
-                        (VariableDescriptor<Solution_>) shadowVariableReference.variableDescriptor(), entity);
-                shadowVariableReference.memberAccessor().executeSetter(entity, newValue);
-                changedVariableNotifier.afterVariableChanged().accept(
-                        (VariableDescriptor<Solution_>) shadowVariableReference.variableDescriptor(), entity);
-                isChanged = true;
+                affectedEntityMarker.accept(entity, shadowVariableReference);
+                changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
+                return true;
             }
         }
-        return isChanged;
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private void changeShadowVariableAndNotify(VariableUpdaterInfo shadowVariableReference, Object entity, Object newValue) {
+        var variableDescriptor = (VariableDescriptor<Solution_>) shadowVariableReference.variableDescriptor();
+        changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, entity);
+        shadowVariableReference.memberAccessor().executeSetter(entity, newValue);
+        changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
     }
 
     record AffectedShadowVariable(int nodeId, int topologicalIndex) implements Comparable<AffectedShadowVariable> {
@@ -292,31 +274,27 @@ public class VariableReferenceGraph<Solution_> {
         return heap;
     }
 
-    @SuppressWarnings("unchecked")
-    private void updateLoopedStatusOfAffectedEntities(Set<AffectedEntity> affectedEntities, LoopedTracker loopedTracker) {
-        for (var affectedEntity : affectedEntities) {
-            var shadowVariableLoopedDescriptor = affectedEntity.variableUpdaterInfo.shadowVariableLoopedDescriptor();
-            if (shadowVariableLoopedDescriptor == null) {
-                continue;
+    private void updateLoopedStatusOfAffectedEntity(AffectedEntity affectedEntity, LoopedTracker loopedTracker) {
+        var shadowVariableLoopedDescriptor = affectedEntity.variableUpdaterInfo.shadowVariableLoopedDescriptor();
+        var entity = affectedEntity.entity;
+        var isEntityLooped = false;
+        for (var node : entityToVariableReferenceMap.get(entity)) {
+            if (graph.isLooped(loopedTracker, node.graphNodeId())) {
+                isEntityLooped = true;
+                break;
             }
-            var entity = affectedEntity.entity;
-            var isEntityLooped = false;
-            for (var node : entityToVariableReferenceMap.get(entity)) {
-                if (graph.isLooped(loopedTracker, node.graphNodeId())) {
-                    isEntityLooped = true;
-                    break;
-                }
-            }
-            var oldValue = shadowVariableLoopedDescriptor.getValue(entity);
-            if (!Objects.equals(oldValue, isEntityLooped)) {
-                changedVariableNotifier.beforeVariableChanged().accept(
-                        (VariableDescriptor<Solution_>) shadowVariableLoopedDescriptor,
-                        entity);
-                shadowVariableLoopedDescriptor.setValue(entity, isEntityLooped);
-                changedVariableNotifier.afterVariableChanged().accept(
-                        (VariableDescriptor<Solution_>) shadowVariableLoopedDescriptor,
-                        entity);
-            }
+        }
+        var oldValue = shadowVariableLoopedDescriptor.getValue(entity);
+        if (!Objects.equals(oldValue, isEntityLooped)) {
+            // TODO what if we don't let users treat this as a shadow var?
+            //  Nobody can hook up to it => we need not trigger events?
+            changedVariableNotifier.beforeVariableChanged().accept(
+                    (VariableDescriptor<Solution_>) shadowVariableLoopedDescriptor,
+                    entity);
+            shadowVariableLoopedDescriptor.setValue(entity, isEntityLooped);
+            changedVariableNotifier.afterVariableChanged().accept(
+                    (VariableDescriptor<Solution_>) shadowVariableLoopedDescriptor,
+                    entity);
         }
     }
 
@@ -368,4 +346,44 @@ public class VariableReferenceGraph<Solution_> {
         builder.append("}");
         return builder.toString();
     }
+
+    private static final class AffectedEntities {
+
+        private final Set<AffectedEntity> entitiesForLoopedVarUpdateSet = Collections.newSetFromMap(new IdentityHashMap<>());
+        private final LoopedTracker loopedTracker;
+
+        public AffectedEntities(LoopedTracker loopedTracker) {
+            this.loopedTracker = loopedTracker;
+        }
+
+        public void add(Object entity, VariableUpdaterInfo variableUpdaterInfo) {
+            if (variableUpdaterInfo.shadowVariableLoopedDescriptor() == null) {
+                return;
+            }
+            entitiesForLoopedVarUpdateSet.add(new AffectedEntity(entity, variableUpdaterInfo));
+        }
+
+        public void forEach(BiConsumer<AffectedEntity, LoopedTracker> consumer) {
+            for (var affectedEntity : entitiesForLoopedVarUpdateSet) {
+                consumer.accept(affectedEntity, loopedTracker);
+            }
+        }
+
+    }
+
+    record AffectedEntity(Object entity, VariableUpdaterInfo variableUpdaterInfo) {
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof AffectedEntity other) {
+                return entity == other.entity;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(entity);
+        }
+    }
+
 }
