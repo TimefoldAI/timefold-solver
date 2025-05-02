@@ -69,14 +69,12 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 if (entityClass.isInstance(entity)) {
                     var variableId = declarativeShadowVariableDescriptor.getVariableMetaModel();
                     var updater = variableIdToUpdater.computeIfAbsent(variableId, ignored -> new VariableUpdaterInfo(
+                            variableId,
                             declarativeShadowVariableDescriptor,
                             declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariableLoopedDescriptor(),
                             declarativeShadowVariableDescriptor.getMemberAccessor(),
                             declarativeShadowVariableDescriptor.getCalculator()::executeGetter));
-                    graph.addVariableReferenceEntity(
-                            variableId,
-                            entity,
-                            updater);
+                    graph.addVariableReferenceEntity(entity, updater);
                     for (var sourceRoot : declarativeShadowVariableDescriptor.getSources()) {
                         for (var source : sourceRoot.variableSourceReferences()) {
                             if (source.downstreamDeclarativeVariableMetamodel() != null) {
