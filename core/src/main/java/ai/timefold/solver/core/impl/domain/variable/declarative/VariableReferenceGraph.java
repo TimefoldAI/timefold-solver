@@ -21,14 +21,15 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public class VariableReferenceGraph<Solution_> {
-    private final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair>> variableReferenceToInstanceMap;
+
     private final List<EntityVariablePair> instanceList;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
-
     private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
     private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
     private final Map<EntityVariablePair, List<EntityVariablePair>> fixedEdges;
     private final IdentityHashMap<Object, List<EntityVariablePair>> entityToVariableReferenceMap;
+
+    private Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair>> variableReferenceToInstanceMap;
     private int[][] counts;
     private TopologicalOrderGraph graph;
     private BitSet changed;
@@ -82,6 +83,8 @@ public class VariableReferenceGraph<Solution_> {
 
     public void createGraph(IntFunction<TopologicalOrderGraph> graphCreator) {
         var instanceCount = instanceList.size();
+        // Often the map is a singleton; we improve performance by actually making it so.
+        variableReferenceToInstanceMap = Map.copyOf(variableReferenceToInstanceMap);
         counts = new int[instanceCount][instanceCount];
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
