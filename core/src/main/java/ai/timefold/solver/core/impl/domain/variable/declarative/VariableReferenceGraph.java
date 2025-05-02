@@ -91,14 +91,13 @@ public class VariableReferenceGraph<Solution_> {
         graph.startBatchChange();
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         for (var instance : instanceList) {
-            if (visited.add(instance.entity())) {
+            var entity = instance.entity();
+            if (visited.add(entity)) {
                 for (var variableId : variableReferenceToAfterProcessor.keySet()) {
-                    if (variableId.entity().type().isInstance(instance.entity())) {
-                        afterVariableChanged(variableId, instance.entity());
-                    }
+                    afterVariableChanged(variableId, entity);
                 }
             }
-            entityToVariableReferenceMap.computeIfAbsent(instance.entity(), ignored -> new ArrayList<>())
+            entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
                     .add(instance);
         }
         for (var fixedEdgeEntry : fixedEdges.entrySet()) {
