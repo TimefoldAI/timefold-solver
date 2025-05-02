@@ -47,7 +47,7 @@ final class WorkingReferenceGraph<Solution_> {
         instanceList = List.copyOf(outerGraph.instanceList);
         var instanceCount = instanceList.size();
         // Often the map is a singleton; we improve performance by actually making it so.
-        variableReferenceToInstanceMap = Map.copyOf(outerGraph.variableReferenceToInstanceMap);
+        variableReferenceToInstanceMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToInstanceMap);
         counts = new int[instanceCount][instanceCount];
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
@@ -74,7 +74,7 @@ final class WorkingReferenceGraph<Solution_> {
             }
         }
         // Immutable optimized version of the map, now that it won't be updated anymore.
-        this.entityToVariableReferenceMap = Map.copyOf(entityToVariableReferenceMap);
+        this.entityToVariableReferenceMap = mapOfListsDeepCopyOf(entityToVariableReferenceMap);
     }
 
     public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
@@ -82,31 +82,40 @@ final class WorkingReferenceGraph<Solution_> {
     }
 
     public void addEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        if (from.graphNodeId() == to.graphNodeId()) {
+        var fromNodeId = from.graphNodeId();
+        var toNodeId = to.graphNodeId();
+        if (fromNodeId == toNodeId) {
             return;
         }
+
         if (changed.isEmpty()) {
             graph.startBatchChange();
         }
-        var oldCount = counts[from.graphNodeId()][to.graphNodeId()]++;
+
+        var oldCount = counts[fromNodeId][toNodeId]++;
         if (oldCount == 0) {
-            graph.addEdge(from.graphNodeId(), to.graphNodeId());
+            graph.addEdge(fromNodeId, toNodeId);
         }
 
         markChanged(to);
     }
 
     public void removeEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        if (from.graphNodeId() == to.graphNodeId()) {
+        var fromNodeId = from.graphNodeId();
+        var toNodeId = to.graphNodeId();
+        if (fromNodeId == toNodeId) {
             return;
         }
+
         if (changed.isEmpty()) {
             graph.startBatchChange();
         }
-        var newCount = --counts[from.graphNodeId()][to.graphNodeId()];
+
+        var newCount = --counts[fromNodeId][toNodeId];
         if (newCount == 0) {
-            graph.removeEdge(from.graphNodeId(), to.graphNodeId());
+            graph.removeEdge(fromNodeId, toNodeId);
         }
+
         markChanged(to);
     }
 
@@ -315,6 +324,24 @@ final class WorkingReferenceGraph<Solution_> {
         public int hashCode() {
             return nodeId;
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K1, K2, V> Map<K1, Map<K2, V>> mapOfMapsDeepCopyOf(Map<K1, Map<K2, V>> map) {
+        var entryArray = map.entrySet()
+                .stream()
+                .map(e -> Map.entry(e.getKey(), Map.copyOf(e.getValue())))
+                .toArray(Map.Entry[]::new);
+        return Map.ofEntries(entryArray);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <K1, V> Map<K1, List<V>> mapOfListsDeepCopyOf(Map<K1, List<V>> map) {
+        var entryArray = map.entrySet()
+                .stream()
+                .map(e -> Map.entry(e.getKey(), List.copyOf(e.getValue())))
+                .toArray(Map.Entry[]::new);
+        return Map.ofEntries(entryArray);
     }
 
 }
