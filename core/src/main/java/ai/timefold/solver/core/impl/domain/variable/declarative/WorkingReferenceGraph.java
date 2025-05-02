@@ -40,6 +40,7 @@ final class WorkingReferenceGraph<Solution_> {
     // and do not survive it.
     private final LoopedTracker loopedTracker;
     private final boolean[] visited;
+    private final PriorityQueue<AffectedShadowVariable> changeQueue;
 
     public WorkingReferenceGraph(VariableReferenceGraph<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
@@ -54,6 +55,7 @@ final class WorkingReferenceGraph<Solution_> {
         changed = new BitSet(instanceCount);
         loopedTracker = new LoopedTracker(instanceCount);
         visited = new boolean[instanceCount];
+        changeQueue = new PriorityQueue<>(instanceCount);
 
         var entityToVariableReferenceMap = new IdentityHashMap<Object, List<EntityVariablePair<Solution_>>>();
         graph.startBatchChange();
@@ -132,10 +134,10 @@ final class WorkingReferenceGraph<Solution_> {
         }
         graph.endBatchChange();
         var affectedEntities = new AffectedEntities<Solution_>(loopedTracker);
-        var nodeHeap = createInitialChangeQueue();
 
-        while (!nodeHeap.isEmpty()) {
-            var nextNode = nodeHeap.poll().nodeId;
+        initializeChangeQueue();
+        while (!changeQueue.isEmpty()) {
+            var nextNode = changeQueue.poll().nodeId;
             if (visited[nextNode]) {
                 continue;
             }
@@ -148,7 +150,7 @@ final class WorkingReferenceGraph<Solution_> {
             if (isChanged) {
                 graph.nodeForwardEdges(nextNode).forEachRemaining((int node) -> {
                     if (!visited[node]) {
-                        nodeHeap.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node)));
+                        changeQueue.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node)));
                     }
                 });
             }
@@ -156,6 +158,7 @@ final class WorkingReferenceGraph<Solution_> {
 
         affectedEntities.forEach(this::updateLoopedStatusOfAffectedEntity);
         // Prepare for the next time updateChanged() is called.
+        // No need to clear changeQueue, as that already finishes empty.
         loopedTracker.clear();
         Arrays.fill(visited, false);
     }
@@ -200,8 +203,7 @@ final class WorkingReferenceGraph<Solution_> {
         changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
     }
 
-    private PriorityQueue<AffectedShadowVariable> createInitialChangeQueue() {
-        var heap = new PriorityQueue<AffectedShadowVariable>(instanceList.size());
+    private void initializeChangeQueue() {
         // BitSet iteration: get the first set bit at or after 0,
         // then get the first set bit after that bit.
         // Iteration ends when nextSetBit returns -1.
@@ -213,13 +215,12 @@ final class WorkingReferenceGraph<Solution_> {
         // to slightly less than Integer.MAX_VALUE.
         for (var i = changed.nextSetBit(0); i >= 0; i = changed.nextSetBit(i + 1)) {
             var topologicalOrder = graph.getTopologicalOrder(i);
-            heap.add(new AffectedShadowVariable(i, topologicalOrder));
+            changeQueue.add(new AffectedShadowVariable(i, topologicalOrder));
             if (i == Integer.MAX_VALUE) {
                 break; // or (i+1) would overflow
             }
         }
         changed.clear();
-        return heap;
     }
 
     private void updateLoopedStatusOfAffectedEntity(AffectedEntity<Solution_> affectedEntity, LoopedTracker loopedTracker) {
