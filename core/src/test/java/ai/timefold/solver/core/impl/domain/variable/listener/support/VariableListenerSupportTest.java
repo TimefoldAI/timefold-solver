@@ -175,7 +175,9 @@ class VariableListenerSupportTest {
         @Override
         public void withNodeData(List<EntityVariablePair> nodes) {
             nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
-            nodeToVariableMetamodel = nodes.stream().map(EntityVariablePair::variableId).toArray(VariableMetaModel[]::new);
+            nodeToVariableMetamodel = nodes.stream()
+                    .map(e -> e.variableReference().id())
+                    .toArray(VariableMetaModel[]::new);
         }
 
         public void addEdge(VariableMetaModel<?, ?, ?> fromId, Object fromEntity, VariableMetaModel<?, ?, ?> toId,

@@ -51,18 +51,19 @@ public class VariableReferenceGraph<Solution_> {
         entityToVariableReferenceMap = new IdentityHashMap<>();
     }
 
-    public <Entity_> EntityVariablePair addVariableReferenceEntity(
-            VariableMetaModel<?, ?, ?> variableId,
-            Entity_ entity,
-            VariableUpdaterInfo variableReference) {
-        if (variableReferenceToInstanceMap.containsKey(variableId) &&
-                variableReferenceToInstanceMap.get(variableId).containsKey(entity)) {
-            return variableReferenceToInstanceMap.get(variableId).get(entity);
+    public <Entity_> EntityVariablePair addVariableReferenceEntity(Entity_ entity, VariableUpdaterInfo variableReference) {
+        var variableId = variableReference.id();
+        var instanceMap = variableReferenceToInstanceMap.get(variableId);
+        var instance = instanceMap == null ? null : instanceMap.get(entity);
+        if (instance != null) {
+            return instance;
         }
-        var node = new EntityVariablePair(entity, variableId,
-                variableReference, instanceList.size());
-        variableReferenceToInstanceMap.computeIfAbsent(variableId, k -> new IdentityHashMap<>())
-                .put(entity, node);
+        if (instanceMap == null) {
+            instanceMap = new IdentityHashMap<>();
+            variableReferenceToInstanceMap.put(variableId, instanceMap);
+        }
+        var node = new EntityVariablePair(entity, variableReference, instanceList.size());
+        instanceMap.put(entity, node);
         instanceList.add(node);
         return node;
     }

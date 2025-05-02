@@ -2,13 +2,10 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
-
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public record EntityVariablePair(Object entity, VariableMetaModel<?, ?, ?> variableId,
-        VariableUpdaterInfo variableReference, int graphNodeId) {
+public record EntityVariablePair(Object entity, VariableUpdaterInfo variableReference, int graphNodeId) {
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof EntityVariablePair that))
@@ -23,6 +20,6 @@ public record EntityVariablePair(Object entity, VariableMetaModel<?, ?, ?> varia
 
     @Override
     public String toString() {
-        return entity + ":" + variableId;
+        return entity + ":" + variableReference.id();
     }
 }
