@@ -9,10 +9,10 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public record VariableUpdaterInfo(
-        VariableMetaModel<?, ?, ?> id,
-        DeclarativeShadowVariableDescriptor<?> variableDescriptor,
-        @Nullable ShadowVariableLoopedVariableDescriptor<?> shadowVariableLoopedDescriptor,
+public record VariableUpdaterInfo<Solution_>(
+        VariableMetaModel<Solution_, ?, ?> id,
+        DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
+        @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator) {
 }
