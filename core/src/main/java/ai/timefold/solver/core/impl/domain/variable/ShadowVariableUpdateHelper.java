@@ -1,8 +1,16 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.BASIC;
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CASCADING_UPDATE;
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CUSTOM_LISTENER;
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.DECLARATIVE;
+import static ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy.DISABLED;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -10,7 +18,9 @@ import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
+import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultShadowVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -23,12 +33,16 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType;
+import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
+import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -36,10 +50,24 @@ import org.jspecify.annotations.Nullable;
  */
 public final class ShadowVariableUpdateHelper {
 
-    private ShadowVariableUpdateHelper() {
+    public static ShadowVariableUpdateHelper create() {
+        return new ShadowVariableUpdateHelper(List.of(BASIC, CUSTOM_LISTENER, CASCADING_UPDATE, DECLARATIVE));
     }
 
-    public static <Solution_> void updateShadowVariables(Class<Solution_> solutionClass, Object... entities) {
+    // Testing purposes
+    @SuppressWarnings("ProtectedMemberInFinalClass")
+    protected static ShadowVariableUpdateHelper create(ShadowVariableType... supportedTypes) {
+        return new ShadowVariableUpdateHelper(Arrays.asList(supportedTypes));
+    }
+
+    private final List<ShadowVariableType> supportedShadowVariableTypes;
+
+    private ShadowVariableUpdateHelper(List<ShadowVariableType> supportedShadowVariableTypes) {
+        this.supportedShadowVariableTypes = supportedShadowVariableTypes;
+    }
+
+    public <Solution_> void updateShadowVariables(Class<Solution_> solutionClass,
+            Object... entities) {
         var entityClassList = Arrays.stream(entities).map(Object::getClass)
                 .filter(clazz -> clazz.isAnnotationPresent(PlanningEntity.class))
                 .distinct().toList();
@@ -53,6 +81,16 @@ public final class ShadowVariableUpdateHelper {
             throw new IllegalArgumentException(
                     "Custom shadow variable descriptors are not supported (%s)".formatted(customShadowVariableDescriptorList));
         }
+
+        var variableListenerSupport = VariableListenerSupport.create(new InternalScoreDirector<>(solutionDescriptor));
+        var missingShadowVariableTypeList = variableListenerSupport.getSupportedShadowVariableTypes().stream()
+                .filter(type -> !supportedShadowVariableTypes.contains(type))
+                .toList();
+        if (!missingShadowVariableTypeList.isEmpty()) {
+            throw new IllegalStateException(
+                    "The following shadow variable types are not currently supported (%s)."
+                            .formatted(missingShadowVariableTypeList));
+        }
         var session = new InternalShadowVariableSession<>(solutionDescriptor,
                 new VariableReferenceGraph<>(ChangedVariableNotifier.empty()));
         session.init(entities);
@@ -64,7 +102,7 @@ public final class ShadowVariableUpdateHelper {
         session.triggerUpdateShadowVariables();
     }
 
-    public record InternalShadowVariableSession<Solution_>(SolutionDescriptor<Solution_> solutionDescriptor,
+    private record InternalShadowVariableSession<Solution_>(SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraph<Solution_> graph) {
 
         public void init(Object... entities) {
@@ -230,7 +268,7 @@ public final class ShadowVariableUpdateHelper {
                     var cascadingVariableDescriptor =
                             findShadowVariableDescriptor(entity.getClass(), CascadingUpdateShadowVariableDescriptor.class);
                     if (cascadingVariableDescriptor != null) {
-                        cascadingVariableDescriptor.update(new InternalScoreDirector<>(), entity);
+                        cascadingVariableDescriptor.update(new InternalScoreDirector<>(solutionDescriptor), entity);
                     }
                 }
             }
@@ -268,68 +306,50 @@ public final class ShadowVariableUpdateHelper {
         }
     }
 
-    private static class InternalScoreDirector<Solution_> implements ScoreDirector<Solution_> {
+    private static class InternalScoreDirectorFactory<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
+            extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_> {
+
+        public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
+            super(solutionDescriptor);
+        }
 
         @Override
-        public @NonNull Solution_ getWorkingSolution() {
+        public AbstractScoreDirector.AbstractScoreDirectorBuilder<Solution_, Score_, ?, ?> createScoreDirectorBuilder() {
             throw new UnsupportedOperationException();
         }
-
-        @Override
-        public void beforeVariableChanged(Object entity, String variableName) {
-            // Ignore
-        }
-
-        @Override
-        public void afterVariableChanged(Object entity, String variableName) {
-            // Ignore
-        }
-
-        @Override
-        public void beforeListVariableElementAssigned(Object entity, String variableName, Object element) {
-            // Ignore
-        }
-
-        @Override
-        public void afterListVariableElementAssigned(Object entity, String variableName, Object element) {
-            // Ignore
-        }
-
-        @Override
-        public void beforeListVariableElementUnassigned(Object entity, String variableName, Object element) {
-            // Ignore
-        }
-
-        @Override
-        public void afterListVariableElementUnassigned(Object entity, String variableName, Object element) {
-            // Ignore
-        }
-
-        @Override
-        public void beforeListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-            //Ignore
-        }
-
-        @Override
-        public void afterListVariableChanged(Object entity, String variableName, int fromIndex, int toIndex) {
-            // Ignore
-        }
-
-        @Override
-        public void triggerVariableListeners() {
-            // Ignore
-        }
-
-        @Override
-        public <E> @Nullable E lookUpWorkingObject(@Nullable E externalObject) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public <E> @Nullable E lookUpWorkingObjectOrReturnNull(@Nullable E externalObject) {
-            throw new UnsupportedOperationException();
-        }
-
     }
 
+    private static class InternalScoreDirector<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
+            extends AbstractScoreDirector<Solution_, Score_, Factory_> {
+
+        public InternalScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor) {
+            super((Factory_) new InternalScoreDirectorFactory<Solution_, Score_, Factory_>(solutionDescriptor), false, DISABLED,
+                    false);
+        }
+
+        @Override
+        public void setWorkingSolution(Solution_ workingSolution) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public InnerScore<Score_> calculateScore() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Map<String, ConstraintMatchTotal<Score_>> getConstraintMatchTotalMap() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Map<Object, Indictment<Score_>> getIndictmentMap() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean requiresFlushing() {
+            throw new UnsupportedOperationException();
+        }
+    }
 }

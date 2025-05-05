@@ -1,6 +1,8 @@
-package ai.timefold.solver.core.preview.api.variable.declarative;
+package ai.timefold.solver.core.impl.domain.variable;
 
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.BASIC;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Duration;
 import java.util.List;
@@ -23,7 +25,8 @@ class ShadowVariableUpdateTest {
 
     @Test
     void emptyEntities() {
-        Assertions.assertThatCode(() -> SolutionManager.updateShadowVariables(TestdataShadowedFullSolution.class, new Object[0]))
+        Assertions
+                .assertThatCode(() -> SolutionManager.updateShadowVariables(TestdataShadowedFullSolution.class, new Object[0]))
                 .hasMessageContaining("The entity array cannot be empty.");
     }
 
@@ -62,6 +65,16 @@ class ShadowVariableUpdateTest {
                 .hasMessageContaining(
                         "The entity", "has a variable (value) with value",
                         "which has a sourceVariableName variable (entityList) which is null.");
+    }
+
+    @Test
+    void unsupportedShadowVariableType() {
+        var shadowVariableHelper = ShadowVariableUpdateHelper.create(BASIC);
+        var value1 = new TestdataBasicVarValue("v1", Duration.ofSeconds(10));
+        var entity1 = new TestdataBasicVarEntity("e1", value1);
+        assertThatCode(() -> shadowVariableHelper.updateShadowVariables(TestdataBasicVarSolution.class, entity1, value1))
+                .hasMessageContaining(
+                        "The following shadow variable types are not currently supported ([CUSTOM_LISTENER, CASCADING_UPDATE, DECLARATIVE])");
     }
 
     @Test

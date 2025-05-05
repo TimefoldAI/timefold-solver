@@ -108,7 +108,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
         if (entities.length == 0) {
             throw new IllegalArgumentException("The entity array cannot be empty.");
         }
-        ShadowVariableUpdateHelper.updateShadowVariables(solutionClass, entities);
+        ShadowVariableUpdateHelper.create().updateShadowVariables(solutionClass, entities);
     }
 
     /**
@@ -123,7 +123,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
                 Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
                 solution.getClass());
         var entities = solutionDescriptor.getAllEntitiesAndProblemFacts(solution);
-        ShadowVariableUpdateHelper.updateShadowVariables(solution.getClass(), entities.toArray(Object[]::new));
+        ShadowVariableUpdateHelper.create().updateShadowVariables(solution.getClass(), entities.toArray(Object[]::new));
     }
 
     /**
