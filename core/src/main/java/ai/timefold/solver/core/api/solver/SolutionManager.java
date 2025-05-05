@@ -5,6 +5,7 @@ import static ai.timefold.solver.core.api.solver.SolutionUpdatePolicy.UPDATE_ALL
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -16,6 +17,8 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ShadowVariableUpdateHelper;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
@@ -106,6 +109,21 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
             throw new IllegalArgumentException("The entity array cannot be empty.");
         }
         ShadowVariableUpdateHelper.updateShadowVariables(solutionClass, entities);
+    }
+
+    /**
+     * Same as {@link #updateShadowVariables(Class, Object...)},
+     * this method accepts a solution rather than a list of entities.
+     *
+     * @param solution the solution
+     */
+    static <Solution_> void updateShadowVariables(@NonNull Solution_ solution) {
+        Objects.requireNonNull(solution);
+        var solutionDescriptor = (SolutionDescriptor<Solution_>) SolutionDescriptor.buildSolutionDescriptor(
+                Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+                solution.getClass());
+        var entities = solutionDescriptor.getAllEntitiesAndProblemFacts(solution);
+        ShadowVariableUpdateHelper.updateShadowVariables(solution.getClass(), entities.toArray(Object[]::new));
     }
 
     /**

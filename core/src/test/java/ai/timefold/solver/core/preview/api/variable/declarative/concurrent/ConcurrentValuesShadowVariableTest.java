@@ -64,6 +64,49 @@ class ConcurrentValuesShadowVariableTest {
     }
 
     @Test
+    void solutionSimpleChain() {
+        var entity = new TestdataConcurrentEntity("v1");
+        var value1 = new TestdataConcurrentValue("c1");
+        var value2 = new TestdataConcurrentValue("c2");
+        var value3 = new TestdataConcurrentValue("c3");
+        entity.setValues(List.of(value1, value2, value3));
+        var solution = new TestdataConcurrentSolution();
+        solution.setEntities(List.of(entity));
+        solution.setValues(List.of(value1, value2, value3));
+        SolutionManager.updateShadowVariables(solution);
+
+        // First, test value1 -> value2 -> value3
+        assertThat(value1.getPreviousValue()).isNull();
+        assertThat(value1.getNextValue()).isSameAs(value2);
+        assertThat(value1.getIndex()).isZero();
+        assertThat(value1.getCascadingTime()).isEqualTo(BASE_START_TIME.plusDays(value1.getIndex()));
+        assertThat(value2.getPreviousValue()).isSameAs(value1);
+        assertThat(value2.getNextValue()).isSameAs(value3);
+        assertThat(value2.getIndex()).isOne();
+        assertThat(value2.getCascadingTime()).isEqualTo(BASE_START_TIME.plusDays(value2.getIndex()));
+        assertThat(value3.getPreviousValue()).isSameAs(value2);
+        assertThat(value3.getNextValue()).isNull();
+        assertThat(value3.getIndex()).isEqualTo(2);
+        assertThat(value3.getCascadingTime()).isEqualTo(BASE_START_TIME.plusDays(value3.getIndex()));
+        assertStartsAfterDuration(Duration.ZERO, value1);
+        assertStartsAfterDuration(Duration.ofMinutes(60L), value2);
+        assertStartsAfterDuration(Duration.ofMinutes(120L), value3);
+
+        // Second, test value1 -> value3 -> value2
+        entity.setValues(List.of(value1, value3, value2));
+        SolutionManager.updateShadowVariables(solution);
+        assertThat(value1.getPreviousValue()).isNull();
+        assertThat(value1.getNextValue()).isSameAs(value3);
+        assertThat(value3.getPreviousValue()).isSameAs(value1);
+        assertThat(value3.getNextValue()).isSameAs(value2);
+        assertThat(value2.getPreviousValue()).isSameAs(value3);
+        assertThat(value2.getNextValue()).isNull();
+        assertStartsAfterDuration(Duration.ZERO, value1);
+        assertStartsAfterDuration(Duration.ofMinutes(60), value3);
+        assertStartsAfterDuration(Duration.ofMinutes(120), value2);
+    }
+
+    @Test
     void groupChain() {
         var entity1 = new TestdataConcurrentEntity("v1");
         var entity2 = new TestdataConcurrentEntity("v2");
