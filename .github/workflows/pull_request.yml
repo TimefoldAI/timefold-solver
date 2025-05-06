@@ -21,12 +21,16 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        os: [ ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest ]
         java-version: [ 21 ] # Latest LTS if not Ubuntu
         include:
           - os: ubuntu-latest
             java-version: 17
+          - os: ubuntu-24.04-arm
+            java-version: 17
           - os: ubuntu-latest
+            java-version: 24
+          - os: ubuntu-24.04-arm
             java-version: 24
     timeout-minutes: 120
     steps:
@@ -132,7 +136,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        os: [ ubuntu-latest ] # Windows doesn't work, Mac is not a deploy OS.
+        os: [ ubuntu-latest, ubuntu-24.04-arm ] # Windows doesn't work, Mac is not a deploy OS.
         module: ["spring-integration", "quarkus-integration"]
         java-version: [ 17, 21, 24 ] # LTS + latest.
         exclude:
