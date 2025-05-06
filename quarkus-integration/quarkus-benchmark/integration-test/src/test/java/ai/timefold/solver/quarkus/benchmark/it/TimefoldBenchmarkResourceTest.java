@@ -23,7 +23,7 @@ import io.restassured.path.xml.XmlPath;
 class TimefoldBenchmarkResourceTest extends TimefoldBenchmarkAbstract {
 
     @BeforeEach
-    void setup() throws IOException {
+    void setup() {
         deleteAllFolders(Paths.get("target", "benchmarks").toFile().getAbsoluteFile());
     }
 
