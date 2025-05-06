@@ -3,7 +3,6 @@ package ai.timefold.solver.quarkus.benchmark.it;
 import static org.apache.http.params.CoreConnectionPNames.SO_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
