@@ -3080,6 +3080,256 @@ def generate_demo_data(demo_data: DemoData) -> Timetable:
 Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data and creates the uninitialized planning entity instances for the solver to plan.
 
+[#shadowVariableTest]
+=== Testing a shadow Variable
+
+Testing the logic of shadow variables is crucial for maintaining consistency and preventing issues such as xref:constraint-and-score/overview.adoc#invalidScoreDetection[score corruption].
+The Timefold Solver API includes a facility method that automatically updates shadow variables from a given model, allowing you to create unit tests easily.
+Consider the following solution class:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class Schedule {
+
+     @PlanningEntityCollectionProperty
+     private List<Job> jobs;
+     ...
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+Next, let's reuse the following model from previous section.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class Job {
+
+    public Job(LocalDate startDate, int durationInDays) {
+        ...
+    }
+
+    @PlanningVariable
+    private LocalDate startDate;
+
+    private int durationInDays;
+
+    @ShadowVariable(supplierName="endDateSupplier")
+    private LocalDate endDate;
+
+    @ShadowSources("startDate")
+    public LocalDate endDateSupplier() {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+Finally, let's create a unit test that will validate the defined shadow variable `endDate`.
+The utility method `SolutionManager::updateShadowVariables` reads the entity and updates its shadow variables.
+Notably, the method `updateShadowVariables` simplifies the logic and does not require proper solver configuration to update the shadow variables.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @Test
+    void updateShadowVariables() {
+        var job = new Job(LocalDate.now(), 10);
+        SolutionManager.updateShadowVariables(Schedule.class, job);
+        assertThat(job.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
+    }
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+It is also possible to pass a solution instance rather than the solution class along with the related planning entities.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @Test
+    void updateShadowVariables() {
+        var solution = new Schedule();
+        var job = new Job(LocalDate.now(), 10);
+        solution.setJobs(List.of(job));
+        SolutionManager.updateShadowVariables(solution);
+        assertThat(job.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
+    }
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+[NOTE]
+====
+In the example above, only declarative shadow variables are used, but it is not limited to this variable type.
+The method `SolutionManager::updateShadowVariables` is also capable of automatically updating the xref:#bidirectionalVariable[inverse relationships].
+====
+
+[WARNING]
+====
+Models that use xref:#customVariableListener[custom variable listeners] are incompatible with `SolutionManager::updateShadowVariables`,
+and attempting to use them will result in failure.
+====
+
+In the following example, a model that uses a planning list variable is employed to demonstrate the test feature.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class VehicleRoutePlan {
+
+     @PlanningEntityCollectionProperty
+     private List<Vehicle> vehicles;
+     ...
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+The planning entity:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Vehicle {
+
+    @PlanningListVariable
+    List<Customer> customers;
+    ...
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+On the element side:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Customer {
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    Customer previousCustomer;
+
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    Customer nextCustomer;
+
+    ...
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+The test is defined as follows:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    void updateShadowVariables() {
+        var vehicle = new Vehicle();
+        var customer1 = new Customer();
+        var customer2 = new Customer();
+        vehicle.setCustomers(List.of(customer1, customer2));
+
+        SolutionManager.updateShadowVariables(VehicleRoutePlan.class, vehicle, customer1, customer2);
+        assertThat(customer1.previousCustomer).isNull();
+        assertThat(customer1.nextCustomer).isSameAs(customer2);
+        assertThat(customer2.previousCustomer).isSameAs(customer1);
+        assertThat(customer2.nextCustomer).isNull();
+    }
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+# Currently not supported in Python.
+----
+====
+
+[NOTE]
+====
+In the example above, only two types of shadow variables are used, but it is not limited to these variable types.
+The method `SolutionManager::updateShadowVariables` is also capable of automatically updating the xref:#listVariableShadowVariablesInverseRelation[inverse relationship],
+xref:#listVariableShadowVariablesIndex[index position],
+and xref:#tailChainVariable[tail chains].
+====
+
 [#planningModelSolutionInheritance]
 == Inheritance for Planning Solutions
 
