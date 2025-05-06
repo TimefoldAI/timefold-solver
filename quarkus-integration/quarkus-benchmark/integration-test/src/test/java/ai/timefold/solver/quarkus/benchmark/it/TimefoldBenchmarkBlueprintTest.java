@@ -3,11 +3,14 @@ package ai.timefold.solver.quarkus.benchmark.it;
 import static org.apache.http.params.CoreConnectionPNames.SO_TIMEOUT;
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
@@ -23,7 +26,12 @@ import io.restassured.path.xml.XmlPath;
  */
 @QuarkusTest
 @TestProfile(TimefoldBenchmarkBlueprintTest.BlueprintTestProfile.class)
-class TimefoldBenchmarkBlueprintTest {
+class TimefoldBenchmarkBlueprintTest extends TimefoldBenchmarkAbstract {
+
+    @BeforeEach
+    void setup() throws IOException {
+        deleteAllFolders(Paths.get("target", "benchmark").toFile());
+    }
 
     @Test
     void benchmark() throws Exception {

@@ -1,8 +1,5 @@
 package ai.timefold.solver.quarkus.benchmark.it;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
 import java.util.List;
 
 import jakarta.inject.Inject;
@@ -41,25 +38,10 @@ public class TimefoldBenchmarkTestResource {
                 new TestdataListValueShadowEntity("ccc")));
         PlannerBenchmark benchmark = benchmarkFactory.buildPlannerBenchmark(planningProblem);
         try {
-            // We have tests that share the benchmark folder,
-            // and we need to ensure the benchmark is executed in a clean folder.
-            deleteAllFolders(((DefaultPlannerBenchmark) benchmark).getBenchmarkDirectory());
             return benchmark.benchmark().toPath().toAbsolutePath().toString();
         } catch (PlannerBenchmarkException e) {
             // ignore the exception
             return ((DefaultPlannerBenchmark) benchmark).getBenchmarkDirectory().getAbsolutePath();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
         }
-    }
-
-    private static void deleteAllFolders(File directoryToBeDeleted) throws IOException {
-        File[] allContents = directoryToBeDeleted.listFiles();
-        if (allContents != null) {
-            for (File file : allContents) {
-                deleteAllFolders(file);
-            }
-        }
-        Files.delete(directoryToBeDeleted.toPath());
     }
 }
