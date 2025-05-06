@@ -3081,12 +3081,12 @@ Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data and creates the uninitialized planning entity instances for the solver to plan.
 
 [#shadowVariableTest]
-=== Testing a shadow Variable
+== Testing a shadow Variable
 
-xref:optimization-algorithms/exhaustive-search.adoc#exhaustiveSearch[exhaustive search],
-
-Testing the logic of shadow variables is crucial for maintaining consistency and preventing issues such as xref:constraints-and-score/overview.adoc#invalidScoreDetection[score corruption].
-The Timefold Solver API includes a facility method that automatically updates shadow variables from a given model, allowing you to create unit tests easily.
+Testing the logic of shadow variables is crucial for maintaining consistency
+and preventing issues such as xref:constraints-and-score/overview.adoc#invalidScoreDetection[score corruption].
+The Timefold Solver API includes a facility method that automatically updates shadow variables from a given model,
+allowing you to create unit tests easily.
 Consider the following solution class:
 
 [tabs]
