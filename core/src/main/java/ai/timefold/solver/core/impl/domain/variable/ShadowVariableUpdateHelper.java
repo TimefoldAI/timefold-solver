@@ -60,7 +60,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
     }
 
     // Testing purposes
-    static <Solution_> ShadowVariableUpdateHelper create(ShadowVariableType... supportedTypes) {
+    static <Solution_> ShadowVariableUpdateHelper<Solution_> create(ShadowVariableType... supportedTypes) {
         var typesSet = EnumSet.noneOf(ShadowVariableType.class);
         typesSet.addAll(Arrays.asList(supportedTypes));
         return new ShadowVariableUpdateHelper<Solution_>(typesSet);

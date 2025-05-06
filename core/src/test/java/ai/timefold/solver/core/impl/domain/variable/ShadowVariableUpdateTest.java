@@ -63,7 +63,7 @@ class ShadowVariableUpdateTest {
 
     @Test
     void unsupportedShadowVariableType() {
-        var shadowVariableHelper = ShadowVariableUpdateHelper.create(BASIC);
+        var shadowVariableHelper = ShadowVariableUpdateHelper.<TestdataBasicVarSolution> create(BASIC);
         var value1 = new TestdataBasicVarValue("v1", Duration.ofSeconds(10));
         var entity1 = new TestdataBasicVarEntity("e1", value1);
         assertThatCode(() -> shadowVariableHelper.updateShadowVariables(TestdataBasicVarSolution.class, entity1, value1))
