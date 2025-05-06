@@ -3081,7 +3081,7 @@ Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data and creates the uninitialized planning entity instances for the solver to plan.
 
 [#shadowVariableTest]
-== Testing a shadow Variable
+== Testing a shadow variable
 
 Testing the logic of shadow variables is crucial for maintaining consistency
 and preventing issues such as xref:constraints-and-score/overview.adoc#invalidScoreDetection[score corruption].
@@ -3204,16 +3204,11 @@ Python::
 ----
 ====
 
-[NOTE]
-====
-In the example above, only the declarative shadow variable is used, but it is not limited to this variable type.
-The method `SolutionManager::updateShadowVariables` is also capable of automatically updating the xref:#bidirectionalVariable[inverse relationships].
-====
-
 [WARNING]
 ====
-Models that use xref:#customVariableListener[custom variable listeners] are incompatible with `SolutionManager::updateShadowVariables`,
-and attempting to use them will result in failure.
+Models using xref:#customVariableListener[custom variable listeners] are not compatible with `SolutionManager::updateShadowVariables(Class, Object...)`,
+leading to failure if attempted.
+However, this limitation does not apply when the solution is passed instead.
 ====
 
 In the following example, a model that uses a planning list variable is employed to demonstrate the test feature.

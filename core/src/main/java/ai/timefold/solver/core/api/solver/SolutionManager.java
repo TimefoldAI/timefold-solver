@@ -5,7 +5,6 @@ import static ai.timefold.solver.core.api.solver.SolutionUpdatePolicy.UPDATE_ALL
 
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 import java.util.function.Function;
 
@@ -17,8 +16,6 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ShadowVariableUpdateHelper;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
@@ -98,7 +95,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * it does not require the complete configuration necessary to obtain an instance of {@link SolutionManager}.
      * <p>
      * However, this method requires that the entity does not define any shadow variables that rely on listeners,
-     * as it requires a complete solution.
+     * as that would require a complete solution.
      *
      * @param solutionClass the solution class
      * @param entities all entities to be updated
@@ -110,7 +107,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
         if (entities.length == 0) {
             throw new IllegalArgumentException("The entity array cannot be empty.");
         }
-        ShadowVariableUpdateHelper.create().updateShadowVariables(solutionClass, entities);
+        ShadowVariableUpdateHelper.<Solution_>create().updateShadowVariables(solutionClass, entities);
     }
 
     /**
@@ -121,11 +118,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      */
     static <Solution_> void updateShadowVariables(@NonNull Solution_ solution) {
         Objects.requireNonNull(solution);
-        var solutionDescriptor = (SolutionDescriptor<Solution_>) SolutionDescriptor.buildSolutionDescriptor(
-                Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
-                solution.getClass());
-        var entities = solutionDescriptor.getAllEntitiesAndProblemFacts(solution);
-        updateShadowVariables(solution.getClass(), entities.toArray(Object[]::new));
+        ShadowVariableUpdateHelper.<Solution_>create().updateShadowVariables(solution);
     }
 
     /**

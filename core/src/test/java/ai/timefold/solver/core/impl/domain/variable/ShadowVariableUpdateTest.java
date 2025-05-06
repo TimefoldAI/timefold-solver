@@ -41,10 +41,6 @@ class ShadowVariableUpdateTest {
                 .assertThatCode(
                         () -> SolutionManager.updateShadowVariables(TestdataShadowedFullSolution.class, entity, value))
                 .hasMessageContaining("Custom shadow variable descriptors are not supported");
-        Assertions
-                .assertThatCode(
-                        () -> SolutionManager.updateShadowVariables(solution))
-                .hasMessageContaining("Custom shadow variable descriptors are not supported");
     }
 
     @Test
@@ -62,9 +58,7 @@ class ShadowVariableUpdateTest {
         Assertions
                 .assertThatCode(
                         () -> SolutionManager.updateShadowVariables(solution))
-                .hasMessageContaining(
-                        "The entity", "has a variable (value) with value",
-                        "which has a sourceVariableName variable (entityList) which is null.");
+                .isInstanceOf(NullPointerException.class);
     }
 
     @Test
