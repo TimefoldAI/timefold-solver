@@ -88,8 +88,14 @@ public class VariableReferenceGraph<Solution_> {
                 .add(consumer);
     }
 
+    @SuppressWarnings("unchecked")
     public void initialize(IntFunction<TopologicalOrderGraph> graphCreator) {
-        this.workingReferenceGraph = new WorkingReferenceGraph<>(this, graphCreator);
+        // TODO empty shows up in VRP example when using it as CVRP, not CVRPTW
+        //  In that case, TimeWindowedCustomer does not exist
+        //  and therefore Customer has no shadow variable.
+        //  Surely there has to be an earlier way to catch this?
+        this.workingReferenceGraph = instanceList.isEmpty() ? EmptyWorkingReferenceGraph.INSTANCE
+                : new DefaultWorkingReferenceGraph<>(this, graphCreator);
     }
 
     public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
