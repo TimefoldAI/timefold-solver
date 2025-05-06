@@ -58,7 +58,7 @@ public class TestdataBasicVarValue {
 
     @ShadowSources({ "entityList" })
     public LocalDateTime calculateStartTime() {
-        LocalDateTime readyTime = null;
+        LocalDateTime readyTime = DEFAULT_TIME.plusDays(10);
         if (!entityList.isEmpty()) {
             readyTime = DEFAULT_TIME.plusDays(entityList.size());
         }

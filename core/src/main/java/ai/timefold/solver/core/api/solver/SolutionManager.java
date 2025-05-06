@@ -85,6 +85,8 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * @param solutionUpdatePolicy if unsure, pick {@link SolutionUpdatePolicy#UPDATE_ALL}
      * @return possibly null if already null and {@link SolutionUpdatePolicy} didn't cause its update
      * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
+     * @see #updateShadowVariables(Object) Alternative logic that does not require a solver configuration to update shadow
+     *      variables
      */
     @Nullable
     Score_ update(@NonNull Solution_ solution, @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
@@ -123,7 +125,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
                 Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
                 solution.getClass());
         var entities = solutionDescriptor.getAllEntitiesAndProblemFacts(solution);
-        ShadowVariableUpdateHelper.create().updateShadowVariables(solution.getClass(), entities.toArray(Object[]::new));
+        updateShadowVariables(solution.getClass(), entities.toArray(Object[]::new));
     }
 
     /**

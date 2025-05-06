@@ -99,7 +99,7 @@ public final class ShadowVariableUpdateHelper {
         session.processChainedVariable(entities);
         session.processListVariable(entities);
         session.processCascadingVariable(entities);
-        session.triggerUpdateShadowVariables();
+        session.processDeclarativeVariables();
     }
 
     private record InternalShadowVariableSession<Solution_>(SolutionDescriptor<Solution_> solutionDescriptor,
@@ -276,7 +276,13 @@ public final class ShadowVariableUpdateHelper {
 
         @SuppressWarnings("unchecked")
         private <T> T findShadowVariableDescriptor(Class<?> entityType, Class<T> descriptorType) {
-            var valueMetaModel = solutionDescriptor.getMetaModel().entity(entityType);
+            var valueMetaModel = solutionDescriptor.getMetaModel().entities().stream()
+                    .filter(type -> type.type().equals(entityType))
+                    .findFirst()
+                    .orElse(null);
+            if (valueMetaModel == null) {
+                return null;
+            }
             return (T) valueMetaModel.variables().stream()
                     .filter(ShadowVariableMetaModel.class::isInstance)
                     .map(DefaultShadowVariableMetaModel.class::cast)
@@ -299,7 +305,7 @@ public final class ShadowVariableUpdateHelper {
             }
         }
 
-        public void triggerUpdateShadowVariables() {
+        public void processDeclarativeVariables() {
             if (!solutionDescriptor.getDeclarativeShadowVariableDescriptors().isEmpty()) {
                 graph.updateChanged();
             }
