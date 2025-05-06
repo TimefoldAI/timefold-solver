@@ -55,8 +55,7 @@ public final class ShadowVariableUpdateHelper {
     }
 
     // Testing purposes
-    @SuppressWarnings("ProtectedMemberInFinalClass")
-    protected static ShadowVariableUpdateHelper create(ShadowVariableType... supportedTypes) {
+    static ShadowVariableUpdateHelper create(ShadowVariableType... supportedTypes) {
         return new ShadowVariableUpdateHelper(Arrays.asList(supportedTypes));
     }
 

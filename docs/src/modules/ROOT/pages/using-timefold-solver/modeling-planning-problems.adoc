@@ -3206,7 +3206,7 @@ Python::
 
 [NOTE]
 ====
-In the example above, only declarative shadow variables are used, but it is not limited to this variable type.
+In the example above, only the declarative shadow variable is used, but it is not limited to this variable type.
 The method `SolutionManager::updateShadowVariables` is also capable of automatically updating the xref:#bidirectionalVariable[inverse relationships].
 ====
 
