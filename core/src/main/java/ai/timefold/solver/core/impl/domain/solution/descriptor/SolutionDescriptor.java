@@ -1231,6 +1231,14 @@ public class SolutionDescriptor<Solution_> {
         return scale;
     }
 
+    public List<ShadowVariableDescriptor<Solution_>> getAllShadowVariableDescriptors() {
+        var out = new ArrayList<ShadowVariableDescriptor<Solution_>>();
+        for (var entityDescriptor : entityDescriptorMap.values()) {
+            out.addAll(entityDescriptor.getShadowVariableDescriptors());
+        }
+        return out;
+    }
+
     public List<DeclarativeShadowVariableDescriptor<Solution_>> getDeclarativeShadowVariableDescriptors() {
         var out = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
         for (var entityDescriptor : entityDescriptorMap.values()) {

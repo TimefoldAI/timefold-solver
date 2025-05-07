@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
@@ -39,6 +41,12 @@ public class TestdataConcurrentValue {
 
     @NextElementShadowVariable(sourceVariableName = "values")
     TestdataConcurrentValue nextValue;
+
+    @IndexShadowVariable(sourceVariableName = "values")
+    Integer index;
+
+    @CascadingUpdateShadowVariable(targetMethodName = "cascadingMethod")
+    LocalDateTime cascadingTime;
 
     List<TestdataConcurrentValue> concurrentValueGroup;
 
@@ -84,12 +92,28 @@ public class TestdataConcurrentValue {
         this.nextValue = nextValue;
     }
 
+    public Integer getIndex() {
+        return index;
+    }
+
+    public void setIndex(Integer index) {
+        this.index = index;
+    }
+
     public LocalDateTime getServiceStartTime() {
         return serviceStartTime;
     }
 
     public void setServiceStartTime(LocalDateTime serviceStartTime) {
         this.serviceStartTime = serviceStartTime;
+    }
+
+    public LocalDateTime getCascadingTime() {
+        return cascadingTime;
+    }
+
+    public void setCascadingTime(LocalDateTime cascadingTime) {
+        this.cascadingTime = cascadingTime;
     }
 
     @ShadowSources({ "previousValue.serviceFinishTime", "entity" })
@@ -125,6 +149,14 @@ public class TestdataConcurrentValue {
             return null;
         }
         return serviceStartTime.plusMinutes(30L);
+    }
+
+    public void cascadingMethod() {
+        if (index == null) {
+            cascadingTime = null;
+        } else {
+            cascadingTime = BASE_START_TIME.plusDays(index);
+        }
     }
 
     public LocalDateTime getServiceFinishTime() {

@@ -1,5 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.BASIC;
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CASCADING_UPDATE;
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.CUSTOM_LISTENER;
+import static ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVariableType.DECLARATIVE;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,6 +77,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
     @Nullable
     private ListVariableStateSupply<Solution_> listVariableStateSupply = null;
+    private final List<ShadowVariableType> supportedShadowVariableTypeList;
 
     VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry,
             @NonNull IntFunction<TopologicalOrderGraph> shadowVariableGraphCreator) {
@@ -89,6 +95,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         this.unassignedValueWithEmptyInverseEntitySet =
                 hasCascadingUpdates ? new LinkedIdentityHashSet<>() : Collections.emptySet();
         this.shadowVariableGraphCreator = shadowVariableGraphCreator;
+        // Existing dependencies rely on this list
+        // to ensure consistency in supporting all available shadow variable types
+        // See ShadowVariableUpdateHelper
+        this.supportedShadowVariableTypeList = List.of(BASIC, CUSTOM_LISTENER, CASCADING_UPDATE, DECLARATIVE);
+    }
+
+    public List<ShadowVariableType> getSupportedShadowVariableTypes() {
+        return supportedShadowVariableTypeList;
     }
 
     public void linkVariableListeners() {
