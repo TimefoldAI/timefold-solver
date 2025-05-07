@@ -137,8 +137,10 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     private void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
             Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
-        // There is no need to clone the solution because the caller has already done that
-        solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.getBestSolution());
+        // We need to clone the solution again, or we may use the same instance employed by the solver scope,
+        // which is restored between solver phases.
+        // The operation won't block the solving process.
+        solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.cloneBestSolution());
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
