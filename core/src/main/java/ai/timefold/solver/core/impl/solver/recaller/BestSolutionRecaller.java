@@ -152,8 +152,8 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
             Solution_ bestSolution) {
         if (bestScore.fullyAssigned() && !solverScope.isBestSolutionInitialized()) {
-                solverScope.setStartingInitializedScore(bestScore.raw());
-            }
+            solverScope.setStartingInitializedScore(bestScore.raw());
+        }
 
         solverScope.setBestSolution(bestSolution);
         solverScope.setBestScore(bestScore);
