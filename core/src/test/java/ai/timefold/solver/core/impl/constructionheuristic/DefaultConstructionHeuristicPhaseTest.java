@@ -91,7 +91,8 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                 new TestdataEntity("e3", v3)));
 
         var solution = PlannerTestUtils.solve(solverConfig, inputProblem, false);
-        assertThat(inputProblem).isSameAs(solution);
+        assertThat(inputProblem.getEntityList().stream().map(TestdataEntity::getValue).toList())
+                .isEqualTo(solution.getEntityList().stream().map(TestdataEntity::getValue).toList());
     }
 
     @Test
