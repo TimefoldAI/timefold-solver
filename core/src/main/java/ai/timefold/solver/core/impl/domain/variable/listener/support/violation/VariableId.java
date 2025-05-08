@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
  * <p>
  * Note: The entity is compared using {@link Object#equals(Object)} and {@link Object#hashCode()},
  * so it's important that the planning entity class properly overrides both methods,
- * typically based on a unique identifier (e.g. a database ID or business key).
+ * typically based on a unique identifier (e.g. a UId).
  * <p>
  * @param variableDescriptor The variable this {@link VariableId} refers to.
  * @param entity The entity this {@link VariableId} refers to.
