@@ -37,8 +37,14 @@ final class SolverBridgePhaseTermination<Solution_>
     }
 
     @Override
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        return solverTermination.isSolverTerminated(phaseScope.getSolverScope());
+        var terminated = solverTermination.isSolverTerminated(phaseScope.getSolverScope());
+        // If the solver is not finished yet, we need to check the phase termination
+        if (!terminated && solverTermination instanceof PhaseTermination phaseTermination) {
+            return phaseTermination.isPhaseTerminated(phaseScope);
+        }
+        return terminated;
     }
 
     @Override
