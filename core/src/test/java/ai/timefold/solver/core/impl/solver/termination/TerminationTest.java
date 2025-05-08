@@ -329,6 +329,24 @@ class TerminationTest {
         assertThat(resultingSolution).isNotNull();
     }
 
+    @Test
+    void mixedSolverPhaseTerminations() {
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withSpentLimit(Duration.ofHours(1)))
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(4)));
+        var solution = TestdataSolution.generateSolution(2, 2);
+        var solver = SolverFactory.<TestdataSolution> create(solverConfig)
+                .buildSolver();
+        var bestSolution = solver.solve(solution);
+        // The global spent limit is one hour, but the phase limit is four steps.
+        // The solver process is finished after 4 steps
+        assertThat(bestSolution).isNotNull();
+    }
+
     static class TerminationArgumentSource implements ArgumentsProvider {
 
         @Override
