@@ -11,6 +11,10 @@ import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final Random workingRandom;
@@ -96,7 +100,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     }
 
     @SuppressWarnings("unchecked")
-    private KOptDescriptor<Node_> pickKOptMove(int k) {
+    private @Nullable KOptDescriptor<Node_> pickKOptMove(int k) {
         // The code in the paper used 1-index arrays
         var pickedValues = (Node_[]) new Object[2 * k + 1];
         var originIterator = (Iterator<Node_>) originSelector.iterator();
@@ -135,18 +139,17 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         }
     }
 
-    private KOptDescriptor<Node_> pickKOptMoveRec(Iterator<Node_> valueIterator,
-            EntityOrderInfo entityOrderInfo,
-            Node_[] pickedValues,
-            int pickedSoFar,
-            int k,
-            boolean canSelectNewEntities) {
+    private @Nullable KOptDescriptor<Node_> pickKOptMoveRec(Iterator<Node_> valueIterator, EntityOrderInfo entityOrderInfo,
+            Node_[] pickedValues, int pickedSoFar, int k, boolean canSelectNewEntities) {
         var previousRemovedEdgeEndpoint = pickedValues[2 * pickedSoFar - 2];
         Node_ nextRemovedEdgePoint, nextRemovedEdgeOppositePoint;
 
         var remainingAttempts = (k - pickedSoFar + 3) * 2;
         while (remainingAttempts > 0) {
-            nextRemovedEdgePoint = valueIterator.next();
+            nextRemovedEdgePoint = getNextNodeOrNull(valueIterator);
+            if (nextRemovedEdgePoint == null) {
+                return null;
+            }
             var newEntityOrderInfo =
                     entityOrderInfo.withNewNode(nextRemovedEdgePoint, listVariableStateSupply);
             while (nextRemovedEdgePoint == getNodePredecessor(newEntityOrderInfo, previousRemovedEdgeEndpoint) ||
@@ -161,7 +164,10 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
                 if (remainingAttempts == 0) {
                     return null;
                 }
-                nextRemovedEdgePoint = valueIterator.next();
+                nextRemovedEdgePoint = getNextNodeOrNull(valueIterator);
+                if (nextRemovedEdgePoint == null) {
+                    return null;
+                }
                 newEntityOrderInfo =
                         entityOrderInfo.withNewNode(nextRemovedEdgePoint, listVariableStateSupply);
                 remainingAttempts--;
@@ -191,24 +197,19 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             }
 
             if (pickedSoFar < k) {
-                var descriptor = pickKOptMoveRec(valueIterator, newEntityOrderInfo, pickedValues,
-                        pickedSoFar + 1, k, canSelectNewEntities);
+                var descriptor = pickKOptMoveRec(valueIterator, newEntityOrderInfo, pickedValues, pickedSoFar + 1, k,
+                        canSelectNewEntities);
                 if (descriptor != null && descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 }
             } else {
-                var descriptor = new KOptDescriptor<Node_>(pickedValues,
-                        KOptUtils.getMultiEntitySuccessorFunction(pickedValues,
-                                listVariableStateSupply),
-                        KOptUtils.getMultiEntityBetweenPredicate(pickedValues,
-                                listVariableStateSupply));
+                var descriptor = new KOptDescriptor<>(pickedValues,
+                        KOptUtils.getMultiEntitySuccessorFunction(pickedValues, listVariableStateSupply),
+                        KOptUtils.getMultiEntityBetweenPredicate(pickedValues, listVariableStateSupply));
                 if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                     return descriptor;
                 } else {
-                    descriptor = patchCycles(
-                            descriptor,
-                            newEntityOrderInfo, pickedValues,
-                            pickedSoFar);
+                    descriptor = patchCycles(descriptor, newEntityOrderInfo, pickedValues, pickedSoFar);
                     if (descriptor.isFeasible(minK, maxCyclesPatchedInInfeasibleMove)) {
                         return descriptor;
                     }
@@ -216,6 +217,16 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
             }
         }
         return null;
+    }
+
+    private @Nullable Node_ getNextNodeOrNull(Iterator<Node_> iterator) {
+        if (!iterator.hasNext()) {
+            return null;
+        }
+        // This may still be null.
+        // Either due to filtering the underlying iterator, 
+        // or due to the underlying iterator returning null.
+        return iterator.next();
     }
 
     KOptDescriptor<Node_> patchCycles(KOptDescriptor<Node_> descriptor, EntityOrderInfo entityOrderInfo,
