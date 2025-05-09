@@ -204,7 +204,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             restartSolver = checkProblemFactChanges();
         }
         outerSolvingEnded(solverScope);
-        return solverScope.getBestSolution();
+        return solverScope.cloneBestSolution();
     }
 
     public void outerSolvingStarted(SolverScope<Solution_> solverScope) {
