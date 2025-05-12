@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar;
+package ai.timefold.solver.core.testdomain.multivar.basic;
 
 import java.util.Collection;
 import java.util.Collections;

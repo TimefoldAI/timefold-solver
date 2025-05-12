@@ -27,8 +27,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.difficultyweight.TestdataDifficultyWeightSolution;
-import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
-import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultiVarSolution;
 
 import org.junit.jupiter.api.Test;
 
