@@ -21,7 +21,7 @@ import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataMultiEntitySolution;
-import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultiVarSolution;
 
 import org.junit.jupiter.api.Test;
 
