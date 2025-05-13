@@ -31,6 +31,8 @@ import org.jspecify.annotations.Nullable;
 })
 public class QueuedValuePlacerConfig extends EntityPlacerConfig<QueuedValuePlacerConfig> {
 
+    public static final String XML_ELEMENT_NAME = "queuedValuePlacer";
+
     protected Class<?> entityClass = null;
 
     @XmlElement(name = "valueSelector")

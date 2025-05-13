@@ -8,9 +8,11 @@ import jakarta.xml.bind.annotation.XmlElements;
 import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.CartesianProductQueuedMultipleEntityValuePlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedMultipleEntityValuePlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
@@ -54,7 +56,11 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
     @XmlElements({
             @XmlElement(name = "queuedEntityPlacer", type = QueuedEntityPlacerConfig.class),
             @XmlElement(name = "queuedValuePlacer", type = QueuedValuePlacerConfig.class),
-            @XmlElement(name = "pooledEntityPlacer", type = PooledEntityPlacerConfig.class)
+            @XmlElement(name = "pooledEntityPlacer", type = PooledEntityPlacerConfig.class),
+            @XmlElement(name = "cartesianProductQueuedEntityValuePlacer",
+                    type = CartesianProductQueuedMultipleEntityValuePlacerConfig.class),
+            @XmlElement(name = "queuedMultipleEntityValuePlacer",
+                    type = QueuedMultipleEntityValuePlacerConfig.class)
     })
     protected EntityPlacerConfig entityPlacerConfig = null;
 
