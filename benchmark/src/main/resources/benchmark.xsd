@@ -684,6 +684,12 @@
                                     
             
             <xs:element name="pooledEntityPlacer" type="tns:pooledEntityPlacerConfig"/>
+                                    
+            
+            <xs:element name="cartesianProductQueuedEntityValuePlacer" type="tns:cartesianProductQueuedMultipleEntityValuePlacerConfig"/>
+                                    
+            
+            <xs:element name="queuedMultipleEntityValuePlacer" type="tns:queuedMultipleEntityValuePlacerConfig"/>
                                   
           
           </xs:choice>
@@ -2157,6 +2163,99 @@
                                     
             
             <xs:element name="unionMoveSelector" type="tns:unionMoveSelectorConfig"/>
+                                  
+          
+          </xs:choice>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="cartesianProductQueuedMultipleEntityValuePlacerConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:abstractMultipleEntityValuePlacerConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:choice maxOccurs="unbounded" minOccurs="0">
+                                    
+            
+            <xs:element name="queuedEntityPlacer" type="tns:queuedEntityPlacerConfig"/>
+                                    
+            
+            <xs:element name="queuedValuePlacer" type="tns:queuedValuePlacerConfig"/>
+                                  
+          
+          </xs:choice>
+                            
+        
+        </xs:sequence>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType abstract="true" name="abstractMultipleEntityValuePlacerConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:entityPlacerConfig">
+                        
+        
+        <xs:sequence/>
+                      
+      
+      </xs:extension>
+                
+    
+    </xs:complexContent>
+          
+  
+  </xs:complexType>
+      
+  
+  <xs:complexType name="queuedMultipleEntityValuePlacerConfig">
+            
+    
+    <xs:complexContent>
+                  
+      
+      <xs:extension base="tns:abstractMultipleEntityValuePlacerConfig">
+                        
+        
+        <xs:sequence>
+                              
+          
+          <xs:choice maxOccurs="unbounded" minOccurs="0">
+                                    
+            
+            <xs:element name="queuedEntityPlacer" type="tns:queuedEntityPlacerConfig"/>
+                                    
+            
+            <xs:element name="queuedValuePlacer" type="tns:queuedValuePlacerConfig"/>
                                   
           
           </xs:choice>

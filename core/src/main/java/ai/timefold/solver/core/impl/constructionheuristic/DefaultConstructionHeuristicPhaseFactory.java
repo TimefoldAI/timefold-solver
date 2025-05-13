@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -9,6 +10,7 @@ import ai.timefold.solver.core.config.constructionheuristic.decider.forager.Cons
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedMultipleEntityValuePlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -103,11 +105,28 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         return Optional.of(entityPlacerConfig);
     }
 
+    @SuppressWarnings("rawtypes")
     private EntityPlacerConfig<?> buildDefaultEntityPlacerConfig(HeuristicConfigPolicy<Solution_> configPolicy,
             ConstructionHeuristicType constructionHeuristicType) {
-        return findValidListVariableDescriptor(configPolicy.getSolutionDescriptor())
-                .map(listVariableDescriptor -> buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor))
-                .orElseGet(() -> buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
+        var listVariableDescriptor = findValidListVariableDescriptor(configPolicy.getSolutionDescriptor()).orElse(null);
+        if (configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
+            if (listVariableDescriptor == null) {
+                throw new IllegalStateException("Impossible state: the list variable descriptor is null.");
+            }
+            var placerConfigList = new ArrayList<EntityPlacerConfig>();
+            // Generate the default configuration for the list variable
+            placerConfigList.add(buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor));
+            // Generate a single config for the basic variable(s)
+            // When multiple basic variables are defined, a Cartesian product is created
+            placerConfigList.add(buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
+            return new QueuedMultipleEntityValuePlacerConfig().withPlacerConfigList(placerConfigList);
+        } else {
+            if (listVariableDescriptor != null) {
+                return buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor);
+            } else {
+                return buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType);
+            }
+        }
     }
 
     private Optional<ListVariableDescriptor<?>>
@@ -144,7 +163,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         }
         // Prepare replaying ValueSelector config.
         var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
-                .withMimicSelectorRef(mimicSelectorId);
+                .withMimicSelectorRef(mimicSelectorId)
+                .withVariableName(variableDescriptor.getVariableName());
 
         // ListChangeMoveSelector uses the replaying ValueSelector.
         var listChangeMoveSelectorConfig = new ListChangeMoveSelectorConfig()

@@ -134,7 +134,6 @@ public class ValueSelectorFactory<Solution_>
 
     protected ValueSelector<Solution_> buildMimicReplaying(HeuristicConfigPolicy<Solution_> configPolicy) {
         if (config.getId() != null
-                || config.getVariableName() != null
                 || config.getCacheType() != null
                 || config.getSelectionOrder() != null
                 || config.getNearbySelectionConfig() != null

@@ -150,6 +150,10 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     // Worker methods
     // ************************************************************************
 
+    public boolean isSourceVariableCollectionType() {
+        return Collection.class.isAssignableFrom(sourceVariableDescriptor.getVariablePropertyType());
+    }
+
     @Override
     public Demand<?> getProvidedDemand() {
         if (singleton) {

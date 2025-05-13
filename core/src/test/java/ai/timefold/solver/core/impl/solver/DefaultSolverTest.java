@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -92,6 +91,11 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.multivar.list.TestdataListMultiVarEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.multivar.list.TestdataListMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.list.TestdataListMultiVarOtherValue;
+import ai.timefold.solver.core.testdomain.multivar.list.TestdataListMultiVarSolution;
+import ai.timefold.solver.core.testdomain.multivar.list.TestdataListMultiVarValue;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
@@ -1023,7 +1027,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         final var entityCount = 5;
         solution.setEntityList(IntStream.rangeClosed(1, entityCount)
                 .mapToObj(id -> new TestdataEntity("e" + id))
-                .collect(Collectors.toList()));
+                .toList());
 
         var score = SolutionManager.create(solverFactory).update(solution);
         assertThat(score).isNotNull();
@@ -1377,6 +1381,23 @@ class DefaultSolverTest extends AbstractMeterTest {
                         solution.getValueList().get(2),
                         solution.getValueList().get(3));
         assertThat(solution.getEntityList().get(2).getValueList())
+                .isEmpty();
+    }
+
+    @Test
+    void solveWithListAndBasicVariables() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                // Currently, the goal is to support the model for CH.
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
                 .isEmpty();
     }
 

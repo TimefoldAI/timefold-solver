@@ -85,4 +85,13 @@ public interface PlanningSolutionMetaModel<Solution_> {
         return false;
     }
 
+    /**
+     * Checks whether a basic and a list variables are defined by the same entity.
+     * 
+     * @return True if both are present, false otherwise.
+     */
+    default boolean hasBothBasicAndListVariables() {
+        return entities().stream().anyMatch(e -> e.hasBasicVariable() && e.hasListVariable());
+    }
+
 }

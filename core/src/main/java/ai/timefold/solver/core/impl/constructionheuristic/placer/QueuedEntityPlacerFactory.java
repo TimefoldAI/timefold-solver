@@ -87,7 +87,9 @@ public class QueuedEntityPlacerFactory<Solution_>
             return moveSelectorConfigList;
         }
         var entityDescriptor = entitySelector.getEntityDescriptor();
-        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList().stream()
+                .filter(variableDescriptor -> !variableDescriptor.isListVariable())
+                .toList();
         var subMoveSelectorConfigList = new ArrayList<MoveSelectorConfig>(variableDescriptorList.size());
         for (var variableDescriptor : variableDescriptorList) {
             subMoveSelectorConfigList

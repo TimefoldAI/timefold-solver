@@ -291,19 +291,6 @@ class SolverConfigTest {
                 .hasMessageContaining("secondListVariable");
     }
 
-    @Test
-    void entityWithMixedBasicAndPlanningListVariables() {
-        var solverConfig = new SolverConfig()
-                .withSolutionClass(DummySolutionWithMixedSimpleAndListVariableEntity.class)
-                .withEntityClasses(DummyEntityWithMixedSimpleAndListVariable.class)
-                .withEasyScoreCalculatorClass(DummyRecordEasyScoreCalculator.class);
-        assertThatThrownBy(() -> SolverFactory.create(solverConfig))
-                .isExactlyInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining(DummyEntityWithMixedSimpleAndListVariable.class.getSimpleName())
-                .hasMessageContaining("listVariable")
-                .hasMessageContaining("basicVariable");
-    }
-
     @PlanningSolution
     private record DummyRecordSolution(
             @PlanningEntityCollectionProperty List<TestdataEntity> entities,

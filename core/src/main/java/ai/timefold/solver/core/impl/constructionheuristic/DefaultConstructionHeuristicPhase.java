@@ -58,9 +58,9 @@ public class DefaultConstructionHeuristicPhase<Solution_>
 
         var solutionDescriptor = solverScope.getSolutionDescriptor();
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        var hasListVariable = listVariableDescriptor != null;
+        var hasOnlyListVariable = listVariableDescriptor != null && !solutionDescriptor.hasBothBasicAndListVariables();
         var maxStepCount = -1;
-        if (hasListVariable) {
+        if (hasOnlyListVariable) {
             // In case of list variable with support for unassigned values, the placer will iterate indefinitely.
             // (When it exhausts all values, it will start over from the beginning.)
             // To prevent that, we need to limit the number of steps to the number of unassigned values.
@@ -102,7 +102,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             doStep(stepScope);
             stepEnded(stepScope);
             phaseScope.setLastCompletedStepScope(stepScope);
-            if (hasListVariable && stepScope.getStepIndex() >= maxStepCount) {
+            if (hasOnlyListVariable && stepScope.getStepIndex() >= maxStepCount) {
                 earlyTerminationStatus = TerminationStatus.regular(phaseScope.getNextStepIndex());
                 break;
             } else if (phaseTermination.isPhaseTerminated(phaseScope)) {
