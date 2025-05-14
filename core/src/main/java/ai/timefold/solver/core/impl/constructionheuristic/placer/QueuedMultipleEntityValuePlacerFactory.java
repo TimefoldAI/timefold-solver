@@ -16,11 +16,17 @@ public final class QueuedMultipleEntityValuePlacerFactory<Solution_, EntityPlace
     @Override
     public EntityPlacer<Solution_> buildEntityPlacer(HeuristicConfigPolicy<Solution_> configPolicy) {
         var queuedPlacerList = new ArrayList<EntityPlacer<Solution_>>();
+        // When multiple variable types are used,
+        // it is essential to test all values and entities
+        // before selecting a specific value and its corresponding destination entity.
+        // Therefore, we need to ensure that the QueuedValuePlacer is finite.
+        // Otherwise, we may end up streaming unassigned values indefinitely, as the iterator would never finish.
+        var sequentialSelection = config instanceof QueuedMultipleEntityValuePlacerConfig;
+        var updatedConfigPolicy = configPolicy.createQueuedPlacerConfigPolicy(!sequentialSelection);
         for (var placerConfig : config.getPlacerConfigList()) {
-            var placer = EntityPlacerFactory.<Solution_> create(placerConfig).buildEntityPlacer(configPolicy);
+            var placer = EntityPlacerFactory.<Solution_> create(placerConfig).buildEntityPlacer(updatedConfigPolicy);
             queuedPlacerList.add(placer);
         }
-        return new QueuedMultipleEntityValuePlacer<>(this, configPolicy, queuedPlacerList,
-                config instanceof QueuedMultipleEntityValuePlacerConfig);
+        return new QueuedMultipleEntityValuePlacer<>(this, configPolicy, queuedPlacerList, sequentialSelection);
     }
 }
