@@ -7,10 +7,10 @@ import java.util.Optional;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.CartesianProductQueuedMultipleEntityValuePlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
-import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedMultipleEntityValuePlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -119,7 +119,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             // Generate a single config for the basic variable(s)
             // When multiple basic variables are defined, a Cartesian product is created
             placerConfigList.add(buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
-            return new QueuedMultipleEntityValuePlacerConfig().withPlacerConfigList(placerConfigList);
+            // By default, we generate a cartesian product
+            return new CartesianProductQueuedMultipleEntityValuePlacerConfig().withPlacerConfigList(placerConfigList);
         } else {
             if (listVariableDescriptor != null) {
                 return buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor);
