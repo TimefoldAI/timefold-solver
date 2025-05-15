@@ -12,6 +12,7 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -71,8 +72,18 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 : EntitySelectorFactory.<Solution_> create(destinationEntitySelectorConfig)
                         .extractEntityDescriptor(configPolicy);
         var entityDescriptors =
-                onlyEntityDescriptor == null ? configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors()
+                onlyEntityDescriptor == null ? configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors().stream()
+                        // We need to filter the entity that defines the list variable
+                        .filter(EntityDescriptor::hasAnyGenuineListVariables)
+                        .toList()
                         : Collections.singletonList(onlyEntityDescriptor);
+
+        if (entityDescriptors.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The listChangeMoveSelector (%s) cannot unfold because there are no planning list variables."
+                            .formatted(config));
+        }
+
         if (entityDescriptors.size() > 1) {
             throw new IllegalArgumentException("""
                     The listChangeMoveSelector (%s) cannot unfold when there are multiple entities (%s).
@@ -122,11 +133,6 @@ public class ListChangeMoveSelectorFactory<Solution_>
                             .filter(VariableDescriptor::isListVariable)
                             .map(variableDescriptor -> ((ListVariableDescriptor<Solution_>) variableDescriptor))
                             .toList());
-        }
-        if (variableDescriptorList.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The listChangeMoveSelector (%s) cannot unfold because there are no planning list variables."
-                            .formatted(config));
         }
         if (variableDescriptorList.size() > 1) {
             throw new IllegalArgumentException(

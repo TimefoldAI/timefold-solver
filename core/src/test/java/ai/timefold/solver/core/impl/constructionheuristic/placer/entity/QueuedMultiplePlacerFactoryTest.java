@@ -26,7 +26,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.MutableInt;
-import ai.timefold.solver.core.testdomain.multivar.list.TestdataListMultiVarSolution;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarSolution;
 
 import org.junit.jupiter.api.Test;
 
