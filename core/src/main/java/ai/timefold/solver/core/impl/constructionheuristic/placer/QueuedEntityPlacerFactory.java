@@ -106,7 +106,7 @@ public class QueuedEntityPlacerFactory<Solution_>
     public EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
         var entitySelectorConfig = config.getEntitySelectorConfig();
         if (entitySelectorConfig == null) {
-            var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
+            var entityDescriptor = getTheOnlyEntityDescriptorWithBasicVariables(configPolicy.getSolutionDescriptor());
             entitySelectorConfig = getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor);
         } else {
             // The default phase configuration generates the entity selector config without an updated version of the configuration policy.

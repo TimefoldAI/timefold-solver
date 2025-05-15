@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.testdomain.multivar.list.TestdataListMultiVarValue;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarValue;
 
 @PlanningSolution
 public class TestdataInvalidMultiVarSolution {

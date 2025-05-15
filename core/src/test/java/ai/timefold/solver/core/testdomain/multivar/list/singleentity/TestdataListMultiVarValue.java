@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar.list;
+package ai.timefold.solver.core.testdomain.multivar.list.singleentity;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;

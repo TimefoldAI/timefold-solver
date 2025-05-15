@@ -20,8 +20,11 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
+import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -31,10 +34,20 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListVarEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntityFirstEntity;
+import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntitySecondEntity;
+import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarOtherValue;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarSolution;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarValue;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
@@ -387,6 +400,123 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
                 .hasMessageContaining(
                         "The Construction Heuristic configuration (ConstructionHeuristicPhaseConfig) does not support multiple configurations when using the pooled placer configuration PooledEntityPlacerConfig.");
+    }
+
+    @Test
+    void failMultiEntityWithListAndBasicVariables() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiEntitySolution.class, TestdataListMultiEntityFirstEntity.class,
+                TestdataListMultiEntitySecondEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiEntitySolution.generateUninitializedSolution(2, 2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("has no entityClass configured and because there are multiple in the entityClassSet")
+                .hasMessageContaining("it cannot be deduced automatically");
+    }
+
+    @Test
+    void solveWithListAndBasicVariables() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solveCustomConfigurationMultiEntityWithListAndBasicVariables() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig))
+                .withEntityClass(TestdataListMultiEntityFirstEntity.class);
+        var entityPlacerConfig = new QueuedEntityPlacerConfig();
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiEntitySolution.class, TestdataListMultiEntityFirstEntity.class,
+                TestdataListMultiEntitySecondEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig)
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiEntityEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiEntitySolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty()))
+                .isEmpty();
+        assertThat(solution.getOtherEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
+                .isEmpty();
+    }
+
+    @Test
+    void solveCustomConfigurationWithListAndBasicVariables() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+        var entityPlacerConfig = new QueuedEntityPlacerConfig();
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig)
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solveCustomConfigurationWithListVariables() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(valuePlacerConfig)
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class);
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty()))
+                .isEmpty();
     }
 
 }

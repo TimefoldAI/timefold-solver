@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.AbstractConfig;
@@ -19,7 +18,7 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
 
     protected final Config_ config;
 
-    public AbstractFromConfigFactory(Config_ config) {
+    protected AbstractFromConfigFactory(Config_ config) {
         this.config = config;
     }
 
@@ -76,6 +75,21 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
         return entityDescriptors.iterator().next();
     }
 
+    protected EntityDescriptor<Solution_>
+            getTheOnlyEntityDescriptorWithBasicVariables(SolutionDescriptor<Solution_> solutionDescriptor) {
+        Collection<EntityDescriptor<Solution_>> entityDescriptors = solutionDescriptor.getGenuineEntityDescriptors()
+                .stream()
+                .filter(EntityDescriptor::hasAnyGenuineBasicVariables)
+                .toList();
+        if (entityDescriptors.size() != 1) {
+            throw new IllegalArgumentException("The config (" + config
+                    + ") has no entityClass configured and because there are multiple in the entityClassSet ("
+                    + solutionDescriptor.getEntityClassSet()
+                    + ") defining basic variables, it cannot be deduced automatically.");
+        }
+        return entityDescriptors.iterator().next();
+    }
+
     protected GenuineVariableDescriptor<Solution_> deduceGenuineVariableDescriptor(EntityDescriptor<Solution_> entityDescriptor,
             String variableName) {
         return variableName == null
@@ -126,6 +140,6 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
                                 + ") has a variableNameInclude (" + variableNameInclude
                                 + ") which does not exist in the entity (" + entityDescriptor.getEntityClass()
                                 + ")'s variableDescriptorList (" + variableDescriptorList + ").")))
-                .collect(Collectors.toList());
+                .toList();
     }
 }
