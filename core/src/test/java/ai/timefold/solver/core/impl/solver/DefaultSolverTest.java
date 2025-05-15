@@ -38,11 +38,14 @@ import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
@@ -78,6 +81,7 @@ import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMul
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListVarEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListValue;
@@ -1397,7 +1401,62 @@ class DefaultSolverTest extends AbstractMeterTest {
         var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getEntityList().stream()
-                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solveCustomConfigurationWithListAndBasicVariables() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+        var entityPlacerConfig = new QueuedEntityPlacerConfig();
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                // Currently, the goal is to support the model for CH.
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig)
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solveCustomConfigurationWithListVariables() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(valuePlacerConfig)
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class);
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty()))
                 .isEmpty();
     }
 

@@ -96,11 +96,22 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                     "The Construction Heuristic configuration (%s) only support a maximum of two entity placers."
                             .formatted(phaseConfig));
         }
-        if (phaseConfig.getEntityPlacerConfigList().stream().map(EntityPlacerConfig::getClass).distinct().count() == 1
+        if (phaseConfig.getEntityPlacerConfigList().stream().anyMatch(PooledEntityPlacerConfig.class::isInstance)
                 && phaseConfig.getEntityPlacerConfigList().size() == 2) {
             throw new IllegalArgumentException(
-                    "The Construction Heuristic configuration (%s) cannot contain duplicate placer configurations."
-                            .formatted(phaseConfig));
+                    "The Construction Heuristic configuration (%s) does not support multiple configurations when using the pooled placer configuration %s."
+                            .formatted(phaseConfig, PooledEntityPlacerConfig.class.getSimpleName()));
+        }
+        if (phaseConfig.getEntityPlacerConfigList().stream().map(EntityPlacerConfig::getClass).distinct().count() == 1
+                && phaseConfig.getEntityPlacerConfigList().size() == 2) {
+            var message = "The Construction Heuristic configuration (%s) cannot contain duplicate placer configurations."
+                    .formatted(phaseConfig);
+            if (phaseConfig.getEntityPlacerConfigList().get(0) instanceof QueuedEntityPlacerConfig) {
+                throw new IllegalArgumentException("""
+                        %s
+                        Maybe define multiple move selectors if there are more than one basic variables.""".formatted(message));
+            }
+            throw new IllegalArgumentException(message);
         }
 
         var entityPlacerConfig = phaseConfig.getEntityPlacerConfigList().get(0);
@@ -108,7 +119,6 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             entityPlacerConfig = new QueuedMultiplePlacerConfig()
                     .withPlacerConfigList(phaseConfig.getEntityPlacerConfigList());
         }
-
         if (phaseConfig.getConstructionHeuristicType() != null) {
             throw new IllegalArgumentException(
                     "The constructionHeuristicType (%s) must not be configured if the entityPlacerConfig (%s) is explicitly configured."
@@ -120,6 +130,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                     "The moveSelectorConfigList (%s) cannot be configured if the entityPlacerConfig (%s) is explicitly configured."
                             .formatted(moveSelectorConfigList, entityPlacerConfig));
         }
+
         return Optional.of(entityPlacerConfig);
     }
 

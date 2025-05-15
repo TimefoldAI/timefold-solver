@@ -9,9 +9,15 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
 public class TestdataListMultiVarSolution {
+
+    public static SolutionDescriptor<TestdataListMultiVarSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class,
+                TestdataListMultiVarValue.class, TestdataListMultiVarOtherValue.class);
+    }
 
     public static TestdataListMultiVarSolution generateUninitializedSolution(int entityListSize, int valueListSize,
             int otherValueListSize) {
@@ -28,7 +34,7 @@ public class TestdataListMultiVarSolution {
         solution.setOtherValueList(otherValueList);
         var entityList = new ArrayList<TestdataListMultiVarEntity>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
-            var entity = new TestdataListMultiVarEntity(String.valueOf(i));
+            var entity = new TestdataListMultiVarEntity("Entity " + i);
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
