@@ -42,7 +42,6 @@ public class HeuristicConfigPolicy<Solution_> {
     private final boolean reinitializeVariableFilterEnabled;
     private final boolean initializedChainedValueFilterEnabled;
     private final boolean unassignedValuesAllowed;
-    private final boolean stopWhenQueuedValueIteratorExhausted;
     private final Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
     private final Random random;
 
@@ -65,7 +64,6 @@ public class HeuristicConfigPolicy<Solution_> {
         this.reinitializeVariableFilterEnabled = builder.reinitializeVariableFilterEnabled;
         this.initializedChainedValueFilterEnabled = builder.initializedChainedValueFilterEnabled;
         this.unassignedValuesAllowed = builder.unassignedValuesAllowed;
-        this.stopWhenQueuedValueIteratorExhausted = builder.stopWhenQueuedValueIteratorExhausted;
         this.nearbyDistanceMeterClass = builder.nearbyDistanceMeterClass;
         this.random = builder.random;
     }
@@ -122,10 +120,6 @@ public class HeuristicConfigPolicy<Solution_> {
         return unassignedValuesAllowed;
     }
 
-    public boolean isStopWhenQueuedValueIteratorExhausted() {
-        return stopWhenQueuedValueIteratorExhausted;
-    }
-
     public Class<? extends NearbyDistanceMeter> getNearbyDistanceMeterClass() {
         return nearbyDistanceMeterClass;
     }
@@ -160,23 +154,11 @@ public class HeuristicConfigPolicy<Solution_> {
                 .withReinitializeVariableFilterEnabled(reinitializeVariableFilterEnabled)
                 .withInitializedChainedValueFilterEnabled(initializedChainedValueFilterEnabled)
                 .withUnassignedValuesAllowed(unassignedValuesAllowed)
-                .withStopWhenQueuedValueIteratorExhausted(stopWhenQueuedValueIteratorExhausted)
                 .build();
     }
 
     public HeuristicConfigPolicy<Solution_> createPhaseConfigPolicy() {
         return cloneBuilder().build();
-    }
-
-    public HeuristicConfigPolicy<Solution_> createQueuedPlacerConfigPolicy(boolean stopWhenQueuedValueIteratorExhausted) {
-        return cloneBuilder()
-                .withEntitySorterManner(entitySorterManner)
-                .withValueSorterManner(valueSorterManner)
-                .withReinitializeVariableFilterEnabled(reinitializeVariableFilterEnabled)
-                .withInitializedChainedValueFilterEnabled(initializedChainedValueFilterEnabled)
-                .withUnassignedValuesAllowed(unassignedValuesAllowed)
-                .withStopWhenQueuedValueIteratorExhausted(stopWhenQueuedValueIteratorExhausted)
-                .build();
     }
 
     public HeuristicConfigPolicy<Solution_> createChildThreadConfigPolicy(ChildThreadType childThreadType) {
@@ -283,7 +265,6 @@ public class HeuristicConfigPolicy<Solution_> {
         private boolean reinitializeVariableFilterEnabled = false;
         private boolean initializedChainedValueFilterEnabled = false;
         private boolean unassignedValuesAllowed = false;
-        private boolean stopWhenQueuedValueIteratorExhausted = false;
 
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
         private Random random;
@@ -366,11 +347,6 @@ public class HeuristicConfigPolicy<Solution_> {
 
         public Builder<Solution_> withUnassignedValuesAllowed(boolean unassignedValuesAllowed) {
             this.unassignedValuesAllowed = unassignedValuesAllowed;
-            return this;
-        }
-
-        public Builder<Solution_> withStopWhenQueuedValueIteratorExhausted(boolean stopWhenQueuedValueIteratorExhausted) {
-            this.stopWhenQueuedValueIteratorExhausted = stopWhenQueuedValueIteratorExhausted;
             return this;
         }
 

@@ -334,25 +334,20 @@
         },
         {
           "ignore": true,
-          "code": "java.annotation.attributeValueChanged",
+          "code": "java.field.removed",
           "old": "field ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig.entityPlacerConfig",
-          "new": "field ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig.entityPlacerConfig",
-          "annotationType": "jakarta.xml.bind.annotation.XmlElements",
-          "attribute": "value",
-          "oldValue": "{@jakarta.xml.bind.annotation.XmlElement(name = \"queuedEntityPlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig.class), @jakarta.xml.bind.annotation.XmlElement(name = \"queuedValuePlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig.class), @jakarta.xml.bind.annotation.XmlElement(name = \"pooledEntityPlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig.class)}",
-          "newValue": "{@jakarta.xml.bind.annotation.XmlElement(name = \"queuedEntityPlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig.class), @jakarta.xml.bind.annotation.XmlElement(name = \"queuedValuePlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig.class), @jakarta.xml.bind.annotation.XmlElement(name = \"pooledEntityPlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig.class), @jakarta.xml.bind.annotation.XmlElement(name = \"cartesianProductQueuedEntityValuePlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.CartesianProductQueuedMultipleEntityValuePlacerConfig.class), @jakarta.xml.bind.annotation.XmlElement(name = \"queuedMultipleEntityValuePlacer\", type = ai.timefold.solver.core.config.constructionheuristic.placer.QueuedMultipleEntityValuePlacerConfig.class)}",
-          "justification": "Add new configuration"
+          "justification": "New CH configuration with multiple placers"
         },
         {
           "ignore": true,
           "code": "java.annotation.attributeValueChanged",
-          "old": "class ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig<Config_ extends ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig<Config_>>",
-          "new": "class ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig<Config_ extends ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig<Config_>>",
-          "annotationType": "jakarta.xml.bind.annotation.XmlSeeAlso",
-          "attribute": "value",
-          "oldValue": "{ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig.class, ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig.class, ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig.class}",
-          "newValue": "{ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig.class, ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig.class, ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig.class, ai.timefold.solver.core.config.constructionheuristic.placer.CartesianProductQueuedMultipleEntityValuePlacerConfig.class, ai.timefold.solver.core.config.constructionheuristic.placer.QueuedMultipleEntityValuePlacerConfig.class}",
-          "justification": "Add new configuration"
+          "old": "class ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig",
+          "new": "class ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfig\", \"moveSelectorConfigList\", \"foragerConfig\"}",
+          "newValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfigList\", \"moveSelectorConfigList\", \"foragerConfig\"}",
+          "justification": "New CH configuration with multiple placers"
         }
       ]
     }

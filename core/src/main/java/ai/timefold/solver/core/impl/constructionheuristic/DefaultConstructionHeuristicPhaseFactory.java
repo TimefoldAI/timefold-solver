@@ -7,7 +7,6 @@ import java.util.Optional;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig;
-import ai.timefold.solver.core.config.constructionheuristic.placer.CartesianProductQueuedMultipleEntityValuePlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
@@ -30,6 +29,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFac
 import ai.timefold.solver.core.impl.constructionheuristic.placer.PooledEntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacerFactory;
+import ai.timefold.solver.core.impl.constructionheuristic.placer.internal.QueuedMultiplePlacerConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -87,10 +87,28 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     private Optional<EntityPlacerConfig<?>> getValidEntityPlacerConfig() {
-        var entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
-        if (entityPlacerConfig == null) {
+        if (phaseConfig.getEntityPlacerConfigList() == null || phaseConfig.getEntityPlacerConfigList().isEmpty()) {
             return Optional.empty();
         }
+
+        if (phaseConfig.getEntityPlacerConfigList().size() > 2) {
+            throw new IllegalArgumentException(
+                    "The Construction Heuristic configuration (%s) only support a maximum of two entity placers."
+                            .formatted(phaseConfig));
+        }
+        if (phaseConfig.getEntityPlacerConfigList().stream().map(EntityPlacerConfig::getClass).distinct().count() == 1
+                && phaseConfig.getEntityPlacerConfigList().size() == 2) {
+            throw new IllegalArgumentException(
+                    "The Construction Heuristic configuration (%s) cannot contain duplicate placer configurations."
+                            .formatted(phaseConfig));
+        }
+
+        var entityPlacerConfig = phaseConfig.getEntityPlacerConfigList().get(0);
+        if (phaseConfig.getEntityPlacerConfigList().size() == 2) {
+            entityPlacerConfig = new QueuedMultiplePlacerConfig()
+                    .withPlacerConfigList(phaseConfig.getEntityPlacerConfigList());
+        }
+
         if (phaseConfig.getConstructionHeuristicType() != null) {
             throw new IllegalArgumentException(
                     "The constructionHeuristicType (%s) must not be configured if the entityPlacerConfig (%s) is explicitly configured."
@@ -119,8 +137,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             // Generate a single config for the basic variable(s)
             // When multiple basic variables are defined, a Cartesian product is created
             placerConfigList.add(buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
-            // By default, we generate a cartesian product
-            return new CartesianProductQueuedMultipleEntityValuePlacerConfig().withPlacerConfigList(placerConfigList);
+            return new QueuedMultiplePlacerConfig().withPlacerConfigList(placerConfigList);
         } else {
             if (listVariableDescriptor != null) {
                 return buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor);
@@ -137,7 +154,6 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             return Optional.empty();
         }
         failIfConfigured(phaseConfig.getConstructionHeuristicType(), "constructionHeuristicType");
-        failIfConfigured(phaseConfig.getEntityPlacerConfig(), "entityPlacerConfig");
         failIfConfigured(phaseConfig.getMoveSelectorConfigList(), "moveSelectorConfigList");
         return Optional.of(listVariableDescriptor);
     }

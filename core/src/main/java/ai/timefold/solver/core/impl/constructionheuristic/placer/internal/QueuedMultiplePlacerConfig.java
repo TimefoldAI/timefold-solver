@@ -1,31 +1,18 @@
-package ai.timefold.solver.core.config.constructionheuristic.placer;
+package ai.timefold.solver.core.impl.constructionheuristic.placer.internal;
 
 import java.util.List;
 import java.util.function.Consumer;
 
-import jakarta.xml.bind.annotation.XmlElement;
-import jakarta.xml.bind.annotation.XmlElements;
-import jakarta.xml.bind.annotation.XmlType;
-
+import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-@XmlType(propOrder = {
-        "placerConfigList"
-})
-public class QueuedMultipleEntityValuePlacerConfig
-        extends AbstractMultipleEntityValuePlacerConfig<QueuedMultipleEntityValuePlacerConfig> {
+public class QueuedMultiplePlacerConfig extends EntityPlacerConfig<QueuedMultiplePlacerConfig> {
 
-    @XmlElements({
-            @XmlElement(name = QueuedEntityPlacerConfig.XML_ELEMENT_NAME,
-                    type = QueuedEntityPlacerConfig.class),
-            @XmlElement(name = QueuedValuePlacerConfig.XML_ELEMENT_NAME, type = QueuedValuePlacerConfig.class),
-    })
     protected List<EntityPlacerConfig> placerConfigList = null;
 
-    @Override
     public List<EntityPlacerConfig> getPlacerConfigList() {
         return placerConfigList;
     }
@@ -38,7 +25,7 @@ public class QueuedMultipleEntityValuePlacerConfig
     // With methods
     // ************************************************************************
 
-    public @NonNull QueuedMultipleEntityValuePlacerConfig
+    public @NonNull QueuedMultiplePlacerConfig
             withPlacerConfigList(@NonNull List<@NonNull EntityPlacerConfig> placerConfigList) {
         setPlacerConfigList(placerConfigList);
         return this;
@@ -49,16 +36,16 @@ public class QueuedMultipleEntityValuePlacerConfig
     // ************************************************************************
 
     @Override
-    public @NonNull QueuedMultipleEntityValuePlacerConfig
-            inherit(@NonNull QueuedMultipleEntityValuePlacerConfig inheritedConfig) {
+    public @NonNull QueuedMultiplePlacerConfig
+            inherit(@NonNull QueuedMultiplePlacerConfig inheritedConfig) {
         placerConfigList =
                 ConfigUtils.inheritMergeableListConfig(placerConfigList, inheritedConfig.getPlacerConfigList());
         return this;
     }
 
     @Override
-    public @NonNull QueuedMultipleEntityValuePlacerConfig copyConfig() {
-        return new QueuedMultipleEntityValuePlacerConfig().inherit(this);
+    public @NonNull QueuedMultiplePlacerConfig copyConfig() {
+        return new QueuedMultiplePlacerConfig().inherit(this);
     }
 
     @Override

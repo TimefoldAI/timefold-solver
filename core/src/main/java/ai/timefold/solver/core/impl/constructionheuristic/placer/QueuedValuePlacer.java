@@ -28,28 +28,22 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
 
     @Override
     public Iterator<Placement<Solution_>> iterator() {
-        return new QueuedValuePlacingIterator(configPolicy.isStopWhenQueuedValueIteratorExhausted());
+        return new QueuedValuePlacingIterator();
     }
 
     private class QueuedValuePlacingIterator extends UpcomingSelectionIterator<Placement<Solution_>> {
 
-        private boolean started = false;
-        private final boolean stopWhenValueExhausted;
         private Iterator<Object> valueIterator;
 
-        private QueuedValuePlacingIterator(boolean stopWhenValueExhausted) {
+        private QueuedValuePlacingIterator() {
             valueIterator = Collections.emptyIterator();
-            this.stopWhenValueExhausted = stopWhenValueExhausted;
         }
 
         @Override
         protected Placement<Solution_> createUpcomingSelection() {
             // If all values are used, there can still be entities uninitialized
             if (!valueIterator.hasNext()) {
-                if (!stopWhenValueExhausted || !started) {
-                    valueIterator = valueSelector.iterator();
-                    started = true;
-                }
+                valueIterator = valueSelector.iterator();
                 if (!valueIterator.hasNext()) {
                     return noUpcomingSelection();
                 }
