@@ -1203,9 +1203,9 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"))
                 .withPhases(
                         // Each planning entity class needs a separate CH phase.
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
                                 .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedBrownEntity.class))),
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
                                 .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedGreenEntity.class))),
                         new LocalSearchPhaseConfig().withMoveSelectorConfig(new UnionMoveSelectorConfig().withMoveSelectors(
                                 new ChangeMoveSelectorConfig(),

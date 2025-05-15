@@ -42,7 +42,7 @@ public final class ListRuinRecreateMoveSelectorFactory<Solution_>
                 listVariableDescriptor);
 
         var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig()
-                .withEntityPlacerConfig(entityPlacerConfig);
+                .withEntityPlacerConfigList(entityPlacerConfig);
         var constructionHeuristicPhaseBuilder =
                 RuinRecreateConstructionHeuristicPhaseBuilder.create(configPolicy, constructionHeuristicPhaseConfig);
         return new ListRuinRecreateMoveSelector<>(valueSelector, listVariableDescriptor, constructionHeuristicPhaseBuilder,
