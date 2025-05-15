@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.constructionheuristic;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -16,6 +17,9 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
+import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
@@ -340,6 +344,49 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
+    }
+
+    @Test
+    void failWithExceededMultipleQueuedEntityPlacers() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(new QueuedEntityPlacerConfig(), new QueuedEntityPlacerConfig(),
+                                new QueuedEntityPlacerConfig()));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
+                .hasMessageContaining(
+                        "The Construction Heuristic configuration (ConstructionHeuristicPhaseConfig) only support a maximum of two entity placers.");
+    }
+
+    @Test
+    void failWithMultipleQueuedEntityPlacers() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(new QueuedEntityPlacerConfig(), new QueuedEntityPlacerConfig()));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
+                .hasMessageContaining(
+                        "The Construction Heuristic configuration (ConstructionHeuristicPhaseConfig) cannot contain duplicate placer configurations.")
+                .hasMessageContaining("Maybe define multiple move selectors if there are more than one basic variables");
+
+        var solverConfig2 = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(new QueuedValuePlacerConfig(), new QueuedValuePlacerConfig()));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig2, new TestdataSolution("s1")))
+                .hasMessageContaining(
+                        "The Construction Heuristic configuration (ConstructionHeuristicPhaseConfig) cannot contain duplicate placer configurations.");
+    }
+
+    @Test
+    void failWithPooledEntityPlacers() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(new QueuedEntityPlacerConfig(), new PooledEntityPlacerConfig()));
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
+                .hasMessageContaining(
+                        "The Construction Heuristic configuration (ConstructionHeuristicPhaseConfig) does not support multiple configurations when using the pooled placer configuration PooledEntityPlacerConfig.");
     }
 
 }
