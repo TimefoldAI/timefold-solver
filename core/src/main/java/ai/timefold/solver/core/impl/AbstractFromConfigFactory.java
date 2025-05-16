@@ -54,12 +54,10 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
             Class<?> entityClass) {
         EntityDescriptor<Solution_> entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(entityClass);
         if (entityDescriptor == null) {
-            throw new IllegalArgumentException("The config (" + config
-                    + ") has an entityClass (" + entityClass + ") that is not a known planning entity.\n"
-                    + "Check your solver configuration. If that class (" + entityClass.getSimpleName()
-                    + ") is not in the entityClassSet (" + solutionDescriptor.getEntityClassSet()
-                    + "), check your @" + PlanningSolution.class.getSimpleName()
-                    + " implementation's annotated methods too.");
+            throw new IllegalArgumentException(
+                    "The config (%s) has an entityClass (%s) that is not a known planning entity.\nCheck your solver configuration. If that class (%s) is not in the entityClassSet (%s), check your @%s implementation's annotated methods too."
+                            .formatted(config, entityClass, entityClass.getSimpleName(), solutionDescriptor.getEntityClassSet(),
+                                    PlanningSolution.class.getSimpleName()));
         }
         return entityDescriptor;
     }
@@ -67,10 +65,9 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
     protected EntityDescriptor<Solution_> getTheOnlyEntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor) {
         Collection<EntityDescriptor<Solution_>> entityDescriptors = solutionDescriptor.getGenuineEntityDescriptors();
         if (entityDescriptors.size() != 1) {
-            throw new IllegalArgumentException("The config (" + config
-                    + ") has no entityClass configured and because there are multiple in the entityClassSet ("
-                    + solutionDescriptor.getEntityClassSet()
-                    + "), it cannot be deduced automatically.");
+            throw new IllegalArgumentException(
+                    "The config (%s) has no entityClass configured and because there are multiple in the entityClassSet (%s), it cannot be deduced automatically."
+                            .formatted(config, solutionDescriptor.getEntityClassSet()));
         }
         return entityDescriptors.iterator().next();
     }
@@ -82,10 +79,9 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
                 .filter(EntityDescriptor::hasAnyGenuineBasicVariables)
                 .toList();
         if (entityDescriptors.size() != 1) {
-            throw new IllegalArgumentException("The config (" + config
-                    + ") has no entityClass configured and because there are multiple in the entityClassSet ("
-                    + solutionDescriptor.getEntityClassSet()
-                    + ") defining basic variables, it cannot be deduced automatically.");
+            throw new IllegalArgumentException(
+                    "The config (%s) has no entityClass configured and because there are multiple in the entityClassSet (%s) defining basic variables, it cannot be deduced automatically."
+                            .formatted(config, solutionDescriptor.getEntityClassSet()));
         }
         return entityDescriptors.iterator().next();
     }
@@ -101,11 +97,10 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
             String variableName) {
         GenuineVariableDescriptor<Solution_> variableDescriptor = entityDescriptor.getGenuineVariableDescriptor(variableName);
         if (variableDescriptor == null) {
-            throw new IllegalArgumentException("The config (" + config
-                    + ") has a variableName (" + variableName
-                    + ") which is not a valid planning variable on entityClass ("
-                    + entityDescriptor.getEntityClass() + ").\n"
-                    + entityDescriptor.buildInvalidVariableNameExceptionMessage(variableName));
+            throw new IllegalArgumentException(
+                    "The config (%s) has a variableName (%s) which is not a valid planning variable on entityClass (%s).\n%s"
+                            .formatted(config, variableName, entityDescriptor.getEntityClass(),
+                                    entityDescriptor.buildInvalidVariableNameExceptionMessage(variableName)));
         }
         return variableDescriptor;
     }
@@ -114,11 +109,10 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
         List<GenuineVariableDescriptor<Solution_>> variableDescriptorList =
                 entityDescriptor.getGenuineVariableDescriptorList();
         if (variableDescriptorList.size() != 1) {
-            throw new IllegalArgumentException("The config (" + config
-                    + ") has no configured variableName for entityClass (" + entityDescriptor.getEntityClass()
-                    + ") and because there are multiple variableNames ("
-                    + entityDescriptor.getGenuineVariableNameSet()
-                    + "), it cannot be deduced automatically.");
+            throw new IllegalArgumentException(
+                    "The config (%s) has no configured variableName for entityClass (%s) and because there are multiple variableNames (%s), it cannot be deduced automatically."
+                            .formatted(config, entityDescriptor.getEntityClass(),
+                                    entityDescriptor.getGenuineVariableNameSet()));
         }
         return variableDescriptorList.iterator().next();
     }
@@ -136,10 +130,10 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
                 .map(variableNameInclude -> variableDescriptorList.stream()
                         .filter(variableDescriptor -> variableDescriptor.getVariableName().equals(variableNameInclude))
                         .findFirst()
-                        .orElseThrow(() -> new IllegalArgumentException("The config (" + config
-                                + ") has a variableNameInclude (" + variableNameInclude
-                                + ") which does not exist in the entity (" + entityDescriptor.getEntityClass()
-                                + ")'s variableDescriptorList (" + variableDescriptorList + ").")))
+                        .orElseThrow(() -> new IllegalArgumentException(
+                                "The config (%s) has a variableNameInclude (%s) which does not exist in the entity (%s)'s variableDescriptorList (%s)."
+                                        .formatted(config, variableNameInclude, entityDescriptor.getEntityClass(),
+                                                variableDescriptorList))))
                 .toList();
     }
 }

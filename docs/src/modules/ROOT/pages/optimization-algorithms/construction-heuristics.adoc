@@ -712,12 +712,13 @@ for solving all related variables.
 
 === Algorithm description
 
-Allocate To Value From Queue works like this:
+The allocations works like this:
 
 . Put all values in a round-robin queue.
 . Put all entities in a second queue.
 . Combine the moves from the allocation of entity and values.
-. Assign the first entity from the queue to the best value, and the best entity from the second queue to the first value (best combination from both allocations).
+.. Assign the first entity from the queue to the best value.
+.. Assign the best entity from the second queue to the first value.
 . Repeat until all entities are assigned.
 
 [#mixedModelConfiguration]
