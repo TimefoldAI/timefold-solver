@@ -132,6 +132,26 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
     }
 
     /**
+     * Checks whether a basic variable is defined by the entity.
+     * 
+     * @return True if present, false otherwise.
+     */
+    default boolean hasBasicVariable() {
+        return variables().stream()
+                .anyMatch(variable -> variable.isGenuine() && !variable.isList());
+    }
+
+    /**
+     * Checks whether a list variable is defined by the entity.
+     * 
+     * @return True if present, false otherwise.
+     */
+    default boolean hasListVariable() {
+        return variables().stream()
+                .anyMatch(VariableMetaModel::isList);
+    }
+
+    /**
      * As defined by {@link #variable(String)},
      * but only succeeds if the variable is a {@link PlanningVariable basic planning variable}.
      */

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.config.constructionheuristic;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -36,7 +37,7 @@ import org.jspecify.annotations.Nullable;
         "constructionHeuristicType",
         "entitySorterManner",
         "valueSorterManner",
-        "entityPlacerConfig",
+        "entityPlacerConfigList",
         "moveSelectorConfigList",
         "foragerConfig"
 })
@@ -56,9 +57,9 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
             @XmlElement(name = "queuedValuePlacer", type = QueuedValuePlacerConfig.class),
             @XmlElement(name = "pooledEntityPlacer", type = PooledEntityPlacerConfig.class)
     })
-    protected EntityPlacerConfig entityPlacerConfig = null;
+    protected List<EntityPlacerConfig> entityPlacerConfigList = null;
 
-    /** Simpler alternative for {@link #entityPlacerConfig}. */
+    /** Simpler alternative for {@link #entityPlacerConfigList}. */
     @XmlElements({
             @XmlElement(name = CartesianProductMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = CartesianProductMoveSelectorConfig.class),
@@ -110,12 +111,35 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
         this.valueSorterManner = valueSorterManner;
     }
 
-    public @Nullable EntityPlacerConfig getEntityPlacerConfig() {
-        return entityPlacerConfig;
+    public List<EntityPlacerConfig> getEntityPlacerConfigList() {
+        return entityPlacerConfigList;
     }
 
-    public void setEntityPlacerConfig(@Nullable EntityPlacerConfig entityPlacerConfig) {
-        this.entityPlacerConfig = entityPlacerConfig;
+    public void setEntityPlacerConfigList(List<EntityPlacerConfig> entityPlacerConfigList) {
+        this.entityPlacerConfigList = entityPlacerConfigList;
+    }
+
+    /**
+     * @deprecated Use {@link #setEntityPlacerConfigList(List)}} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.22.0")
+    public void setEntityPlacerConfig(EntityPlacerConfig entityPlacerConfig) {
+        setEntityPlacerConfigList(List.of(entityPlacerConfig));
+    }
+
+    /**
+     * @deprecated Use {@link #getEntityPlacerConfigList()} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.22.0")
+    public @Nullable EntityPlacerConfig getEntityPlacerConfig() {
+        if (entityPlacerConfigList == null || entityPlacerConfigList.isEmpty()) {
+            return null;
+        }
+        if (entityPlacerConfigList.size() > 1) {
+            throw new IllegalStateException(
+                    "Returning a single entity placer configuration is not possible. Maybe use getEntityPlacerConfigList instead.");
+        }
+        return entityPlacerConfigList.get(0);
     }
 
     public @Nullable List<@NonNull MoveSelectorConfig> getMoveSelectorConfigList() {
@@ -154,8 +178,19 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
         return this;
     }
 
-    public @NonNull ConstructionHeuristicPhaseConfig withEntityPlacerConfig(@NonNull EntityPlacerConfig<?> entityPlacerConfig) {
-        this.entityPlacerConfig = entityPlacerConfig;
+    public @NonNull ConstructionHeuristicPhaseConfig
+            withEntityPlacerConfigList(@NonNull EntityPlacerConfig<?>... entityPlacerConfig) {
+        setEntityPlacerConfigList(Arrays.asList(entityPlacerConfig));
+        return this;
+    }
+
+    /**
+     * @deprecated use {@link #withEntityPlacerConfigList(EntityPlacerConfig[])} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.22.0")
+    public @NonNull ConstructionHeuristicPhaseConfig
+            withEntityPlacerConfig(@NonNull EntityPlacerConfig entityPlacerConfig) {
+        setEntityPlacerConfigList(List.of(entityPlacerConfig));
         return this;
     }
 
@@ -180,8 +215,8 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
                 inheritedConfig.getEntitySorterManner());
         valueSorterManner = ConfigUtils.inheritOverwritableProperty(valueSorterManner,
                 inheritedConfig.getValueSorterManner());
-        setEntityPlacerConfig(ConfigUtils.inheritOverwritableProperty(
-                getEntityPlacerConfig(), inheritedConfig.getEntityPlacerConfig()));
+        entityPlacerConfigList = ConfigUtils.inheritMergeableListConfig(
+                entityPlacerConfigList, inheritedConfig.getEntityPlacerConfigList());
         moveSelectorConfigList = ConfigUtils.inheritMergeableListConfig(
                 moveSelectorConfigList, inheritedConfig.getMoveSelectorConfigList());
         foragerConfig = ConfigUtils.inheritConfig(foragerConfig, inheritedConfig.getForagerConfig());
@@ -198,8 +233,8 @@ public class ConstructionHeuristicPhaseConfig extends PhaseConfig<ConstructionHe
         if (terminationConfig != null) {
             terminationConfig.visitReferencedClasses(classVisitor);
         }
-        if (entityPlacerConfig != null) {
-            entityPlacerConfig.visitReferencedClasses(classVisitor);
+        if (entityPlacerConfigList != null) {
+            entityPlacerConfigList.forEach(entityPlacerConfig -> entityPlacerConfig.visitReferencedClasses(classVisitor));
         }
         if (moveSelectorConfigList != null) {
             moveSelectorConfigList.forEach(ms -> ms.visitReferencedClasses(classVisitor));

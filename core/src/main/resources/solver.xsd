@@ -255,7 +255,7 @@
                     
           <xs:element minOccurs="0" name="valueSorterManner" type="tns:valueSorterManner"/>
                     
-          <xs:choice minOccurs="0">
+          <xs:choice maxOccurs="unbounded" minOccurs="0">
                         
             <xs:element name="queuedEntityPlacer" type="tns:queuedEntityPlacerConfig"/>
                         

@@ -4,17 +4,21 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerC
 import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
+import ai.timefold.solver.core.impl.constructionheuristic.placer.internal.QueuedMultiplePlacerConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 
 public interface EntityPlacerFactory<Solution_> {
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     static <Solution_> EntityPlacerFactory<Solution_> create(EntityPlacerConfig<?> entityPlacerConfig) {
-        if (PooledEntityPlacerConfig.class.isAssignableFrom(entityPlacerConfig.getClass())) {
-            return new PooledEntityPlacerFactory<>((PooledEntityPlacerConfig) entityPlacerConfig);
-        } else if (QueuedEntityPlacerConfig.class.isAssignableFrom(entityPlacerConfig.getClass())) {
-            return new QueuedEntityPlacerFactory<>((QueuedEntityPlacerConfig) entityPlacerConfig);
-        } else if (QueuedValuePlacerConfig.class.isAssignableFrom(entityPlacerConfig.getClass())) {
-            return new QueuedValuePlacerFactory<>((QueuedValuePlacerConfig) entityPlacerConfig);
+        if (entityPlacerConfig instanceof PooledEntityPlacerConfig pooledEntityPlacerConfig) {
+            return new PooledEntityPlacerFactory<>(pooledEntityPlacerConfig);
+        } else if (entityPlacerConfig instanceof QueuedEntityPlacerConfig queuedEntityPlacerConfig) {
+            return new QueuedEntityPlacerFactory<>(queuedEntityPlacerConfig);
+        } else if (entityPlacerConfig instanceof QueuedValuePlacerConfig queuedValuePlacerConfig) {
+            return new QueuedValuePlacerFactory<>(queuedValuePlacerConfig);
+        } else if (entityPlacerConfig instanceof QueuedMultiplePlacerConfig queuedMultiplePlacerConfig) {
+            return new QueuedMultiplePlacerFactory<>(queuedMultiplePlacerConfig);
         } else {
             throw new IllegalArgumentException(String.format("Unknown %s type: (%s).",
                     EntityPlacerConfig.class.getSimpleName(), entityPlacerConfig.getClass().getName()));

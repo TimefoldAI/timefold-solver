@@ -87,7 +87,9 @@ public class QueuedEntityPlacerFactory<Solution_>
             return moveSelectorConfigList;
         }
         var entityDescriptor = entitySelector.getEntityDescriptor();
-        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList();
+        var variableDescriptorList = entityDescriptor.getGenuineVariableDescriptorList().stream()
+                .filter(variableDescriptor -> !variableDescriptor.isListVariable())
+                .toList();
         var subMoveSelectorConfigList = new ArrayList<MoveSelectorConfig>(variableDescriptorList.size());
         for (var variableDescriptor : variableDescriptorList) {
             subMoveSelectorConfigList
@@ -104,7 +106,7 @@ public class QueuedEntityPlacerFactory<Solution_>
     public EntitySelectorConfig buildEntitySelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
         var entitySelectorConfig = config.getEntitySelectorConfig();
         if (entitySelectorConfig == null) {
-            var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
+            var entityDescriptor = getTheOnlyEntityDescriptorWithBasicVariables(configPolicy.getSolutionDescriptor());
             entitySelectorConfig = getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor);
         } else {
             // The default phase configuration generates the entity selector config without an updated version of the configuration policy.
