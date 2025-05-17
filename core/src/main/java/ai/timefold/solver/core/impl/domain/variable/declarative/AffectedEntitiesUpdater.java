@@ -26,7 +26,7 @@ final class AffectedEntitiesUpdater<Solution_>
     // Internal state; expensive to create, therefore we reuse.
     private final LoopedTracker loopedTracker;
     private final boolean[] visited;
-    private final PriorityQueue<AffectedShadowVariable> changeQueue;
+    private final PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> changeQueue;
 
     AffectedEntitiesUpdater(BaseTopologicalOrderGraph graph, List<EntityVariablePair<Solution_>> instanceList,
             Function<Object, List<EntityVariablePair<Solution_>>> entityVariablePairFunction,
@@ -47,7 +47,7 @@ final class AffectedEntitiesUpdater<Solution_>
         initializeChangeQueue(changed);
 
         while (!changeQueue.isEmpty()) {
-            var nextNode = changeQueue.poll().nodeId;
+            var nextNode = changeQueue.poll().nodeId();
             if (visited[nextNode]) {
                 continue;
             }
@@ -60,7 +60,7 @@ final class AffectedEntitiesUpdater<Solution_>
             if (isChanged) {
                 graph.nodeForwardEdges(nextNode).forEachRemaining((int node) -> {
                     if (!visited[node]) {
-                        changeQueue.add(new AffectedShadowVariable(node, graph.getTopologicalOrder(node)));
+                        changeQueue.add(graph.getTopologicalOrder(node));
                     }
                 });
             }
@@ -84,8 +84,7 @@ final class AffectedEntitiesUpdater<Solution_>
         // This should never happen, since arrays in Java are limited
         // to slightly less than Integer.MAX_VALUE.
         for (var i = changed.nextSetBit(0); i >= 0; i = changed.nextSetBit(i + 1)) {
-            var topologicalOrder = graph.getTopologicalOrder(i);
-            changeQueue.add(new AffectedShadowVariable(i, topologicalOrder));
+            changeQueue.add(graph.getTopologicalOrder(i));
             if (i == Integer.MAX_VALUE) {
                 break; // or (i+1) would overflow
             }
@@ -192,28 +191,6 @@ final class AffectedEntitiesUpdater<Solution_>
         @Override
         public int hashCode() {
             return System.identityHashCode(entity);
-        }
-    }
-
-    private record AffectedShadowVariable(int nodeId, int topologicalIndex)
-            implements
-                Comparable<AffectedShadowVariable> {
-        @Override
-        public int compareTo(AffectedShadowVariable heapItem) {
-            return topologicalIndex - heapItem.topologicalIndex;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof AffectedShadowVariable other) {
-                return nodeId == other.nodeId;
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return nodeId;
         }
     }
 

@@ -12,21 +12,22 @@ import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
-    private final int[] ord;
+
+    private final NodeTopologicalOrder[] nodeIdToTopologicalOrderMap;
     private final Map<Integer, List<Integer>> componentMap;
     private final Set<Integer>[] forwardEdges;
     private final Set<Integer>[] backEdges;
 
     @SuppressWarnings({ "unchecked" })
     public DefaultTopologicalOrderGraph(final int size) {
-        this.ord = new int[size];
+        this.nodeIdToTopologicalOrderMap = new NodeTopologicalOrder[size];
         this.componentMap = CollectionUtils.newLinkedHashMap(size);
         this.forwardEdges = new Set[size];
         this.backEdges = new Set[size];
         for (var i = 0; i < size; i++) {
             forwardEdges[i] = new HashSet<>();
             backEdges[i] = new HashSet<>();
-            ord[i] = i;
+            nodeIdToTopologicalOrderMap[i] = new NodeTopologicalOrder(i, i);
         }
     }
 
@@ -73,8 +74,8 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public int getTopologicalOrder(int node) {
-        return ord[node];
+    public NodeTopologicalOrder getTopologicalOrder(int node) {
+        return nodeIdToTopologicalOrderMap[node];
     }
 
     @Override
@@ -100,7 +101,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
             var component = components.get(i);
             var componentNodes = new ArrayList<Integer>(component.cardinality());
             for (var node = component.nextSetBit(0); node >= 0; node = component.nextSetBit(node + 1)) {
-                ord[node] = ordIndex;
+                nodeIdToTopologicalOrderMap[node] = new NodeTopologicalOrder(node, ordIndex);
                 componentNodes.add(node);
                 componentMap.put(node, componentNodes);
                 ordIndex++;

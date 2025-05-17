@@ -28,7 +28,7 @@ public interface BaseTopologicalOrderGraph {
     boolean isLooped(LoopedTracker loopedTracker, int node);
 
     /**
-     * Returns a number corresponding to the topological order of a node.
+     * Returns a tuple containing node ID and a number corresponding to its topological order.
      * In particular, after {@link TopologicalOrderGraph#endBatchChange()} is called, the following
      * must be true for any pair of nodes A, B where:
      * <ul>
@@ -39,5 +39,36 @@ public interface BaseTopologicalOrderGraph {
      * <p>
      * Said number may not be unique.
      */
-    int getTopologicalOrder(int node);
+    NodeTopologicalOrder getTopologicalOrder(int node);
+
+    /**
+     * If {@code order == 0},
+     * then the node should be processed first.
+     * Likewise, if {@code order == 1},
+     * the node "y" node should be processed second.
+     */
+    record NodeTopologicalOrder(int nodeId, int order)
+            implements
+                Comparable<NodeTopologicalOrder> {
+
+        @Override
+        public int compareTo(NodeTopologicalOrder other) {
+            return order - other.order;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o instanceof NodeTopologicalOrder other) {
+                return nodeId == other.nodeId;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return nodeId;
+        }
+
+    }
+
 }
