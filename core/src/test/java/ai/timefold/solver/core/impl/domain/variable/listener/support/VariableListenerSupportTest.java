@@ -191,14 +191,18 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public void addEdge(int from, int to) {
-            super.addEdge(from, to);
+        public void addEdge(Edge edge) {
+            super.addEdge(edge);
+            var from = edge.from();
+            var to = edge.to();
             addEdge(nodeToVariableMetamodel[from], nodeToEntities[from], nodeToVariableMetamodel[to], nodeToEntities[to]);
         }
 
         @Override
-        public void removeEdge(int from, int to) {
-            super.addEdge(from, to);
+        public void removeEdge(Edge edge) {
+            super.addEdge(edge);
+            var from = edge.from();
+            var to = edge.to();
             removeEdge(nodeToVariableMetamodel[from], nodeToEntities[from], nodeToVariableMetamodel[to], nodeToEntities[to]);
         }
     }

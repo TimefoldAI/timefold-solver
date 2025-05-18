@@ -35,7 +35,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.
      */
-    void addEdge(int from, int to);
+    void addEdge(Edge edge);
 
     /**
      * Called when a graph edge is removed.
@@ -43,6 +43,14 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.
      */
-    void removeEdge(int from, int to);
+    void removeEdge(Edge edge);
+
+    interface Edge {
+
+        int from();
+
+        int to();
+
+    }
 
 }

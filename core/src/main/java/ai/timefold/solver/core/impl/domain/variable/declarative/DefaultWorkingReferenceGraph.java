@@ -21,7 +21,7 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
     private final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
 
     // These structures are mutable.
-    private final int[][] counts;
+    private final DefaultEdge[][] edges;
     private final TopologicalOrderGraph graph;
     private final BitSet changed;
 
@@ -33,7 +33,7 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
         var instanceCount = instanceList.size();
         // Often the map is a singleton; we improve performance by actually making it so.
         variableReferenceToInstanceMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToInstanceMap);
-        counts = new int[instanceCount][instanceCount];
+        edges = new DefaultEdge[instanceCount][instanceCount];
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
         changed = new BitSet(instanceCount);
@@ -82,9 +82,13 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
             graph.startBatchChange();
         }
 
-        var oldCount = counts[fromNodeId][toNodeId]++;
-        if (oldCount == 0) {
-            graph.addEdge(fromNodeId, toNodeId);
+        var edge = edges[fromNodeId][toNodeId];
+        if (edge == null) {
+            edge = new DefaultEdge(fromNodeId, toNodeId);
+            edges[fromNodeId][toNodeId] = edge;
+            graph.addEdge(edge);
+        } else {
+            edge.count++;
         }
 
         markChanged(to);
@@ -102,9 +106,12 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
             graph.startBatchChange();
         }
 
-        var newCount = --counts[fromNodeId][toNodeId];
-        if (newCount == 0) {
-            graph.removeEdge(fromNodeId, toNodeId);
+        var edge = edges[fromNodeId][toNodeId];
+        if (edge.count == 1) {
+            graph.removeEdge(edge);
+            edges[fromNodeId][toNodeId] = null;
+        } else {
+            edge.count--;
         }
 
         markChanged(to);
@@ -130,10 +137,12 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
     @Override
     public String toString() {
         var builder = new StringBuilder("{\n");
-        for (int from = 0; from < counts.length; from++) {
+        for (int from = 0; from < edges.length; from++) {
+            var row = edges[from];
             var first = true;
-            for (int to = 0; to < counts.length; to++) {
-                if (counts[from][to] != 0) {
+            for (int to = 0; to < row.length; to++) {
+                var edge = row[to];
+                if (edge != null) {
                     if (first) {
                         first = false;
                         builder.append("    \"").append(instanceList.get(from)).append("\": [");
@@ -167,6 +176,44 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
                 .map(e -> Map.entry(e.getKey(), List.copyOf(e.getValue())))
                 .toArray(Map.Entry[]::new);
         return Map.ofEntries(entryArray);
+    }
+
+    public static final class DefaultEdge implements TopologicalOrderGraph.Edge {
+
+        private final int from;
+        private final int to;
+        int count = 1;
+
+        public DefaultEdge(int from, int to) {
+            this.from = from;
+            this.to = to;
+        }
+
+        @Override
+        public int from() {
+            return from;
+        }
+
+        @Override
+        public int to() {
+            return to;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            return o instanceof DefaultEdge other &&
+                    from == other.from &&
+                    to == other.to;
+        }
+
+        @Override
+        public int hashCode() {
+            var hash = 31;
+            hash = hash * 31 + from;
+            hash = hash * 31 + to;
+            return hash;
+        }
+
     }
 
 }

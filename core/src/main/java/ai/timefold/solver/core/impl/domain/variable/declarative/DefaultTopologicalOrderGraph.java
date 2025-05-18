@@ -32,13 +32,17 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public void addEdge(int from, int to) {
+    public void addEdge(Edge edge) {
+        var from = edge.from();
+        var to = edge.to();
         forwardEdges[from].add(to);
         backEdges[to].add(from);
     }
 
     @Override
-    public void removeEdge(int from, int to) {
+    public void removeEdge(Edge edge) {
+        var from = edge.from();
+        var to = edge.to();
         forwardEdges[from].remove(to);
         backEdges[to].remove(from);
     }
