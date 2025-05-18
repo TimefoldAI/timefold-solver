@@ -209,11 +209,15 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
         @Override
         public int hashCode() {
             var hash = 31;
-            hash = hash * 31 + from;
-            hash = hash * 31 + to;
+            hash += 31 * from;
+            hash += 31 * to * to; // Make sure order of nodes matters.
             return hash;
         }
 
+        @Override
+        public String toString() {
+            return "%d->%d".formatted(from, to);
+        }
     }
 
 }
