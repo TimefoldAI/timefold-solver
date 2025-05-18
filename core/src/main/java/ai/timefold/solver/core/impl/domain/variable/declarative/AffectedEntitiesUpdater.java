@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
-import java.util.Collections;
-import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -13,6 +13,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
 
 final class AffectedEntitiesUpdater<Solution_>
         implements Consumer<BitSet> {
@@ -24,10 +25,12 @@ final class AffectedEntitiesUpdater<Solution_>
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 
     // Internal state; expensive to create, therefore we reuse.
+    private final AffectedEntities<Solution_> affectedEntities;
     private final LoopedTracker loopedTracker;
     private final boolean[] visited;
     private final PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> changeQueue;
 
+    @SuppressWarnings("unchecked")
     AffectedEntitiesUpdater(BaseTopologicalOrderGraph graph, List<EntityVariablePair<Solution_>> instanceList,
             Function<Object, List<EntityVariablePair<Solution_>>> entityVariablePairFunction,
             ChangedVariableNotifier<Solution_> changedVariableNotifier) {
@@ -36,6 +39,11 @@ final class AffectedEntitiesUpdater<Solution_>
         this.entityVariablePairFunction = entityVariablePairFunction;
         this.changedVariableNotifier = changedVariableNotifier;
         var instanceCount = instanceList.size();
+        this.affectedEntities = new AffectedEntities<>(this::updateLoopedStatusOfAffectedEntity, instanceList.stream()
+                .map(e -> e.variableReference().shadowVariableLoopedDescriptor())
+                .filter(Objects::nonNull)
+                .distinct()
+                .toArray(ShadowVariableLoopedVariableDescriptor[]::new));
         this.loopedTracker = new LoopedTracker(instanceCount);
         this.visited = new boolean[instanceCount];
         this.changeQueue = new PriorityQueue<>(instanceCount);
@@ -43,7 +51,6 @@ final class AffectedEntitiesUpdater<Solution_>
 
     @Override
     public void accept(BitSet changed) {
-        var affectedEntities = new AffectedEntities<Solution_>(loopedTracker);
         initializeChangeQueue(changed);
 
         while (!changeQueue.isEmpty()) {
@@ -53,20 +60,20 @@ final class AffectedEntitiesUpdater<Solution_>
             }
             visited[nextNode] = true;
             var shadowVariable = instanceList.get(nextNode);
-            var isChanged = updateShadowVariable(shadowVariable,
-                    graph.isLooped(loopedTracker, nextNode),
-                    affectedEntities::add);
+            var isChanged = updateShadowVariable(shadowVariable, graph.isLooped(loopedTracker, nextNode));
 
             if (isChanged) {
-                graph.nodeForwardEdges(nextNode).forEachRemaining((int node) -> {
-                    if (!visited[node]) {
-                        changeQueue.add(graph.getTopologicalOrder(node));
+                var iterator = graph.nodeForwardEdges(nextNode);
+                while (iterator.hasNext()) {
+                    var nextNodeForwardEdge = iterator.nextInt();
+                    if (!visited[nextNodeForwardEdge]) {
+                        changeQueue.add(graph.getTopologicalOrder(nextNodeForwardEdge));
                     }
-                });
+                }
             }
         }
 
-        affectedEntities.forEach(this::updateLoopedStatusOfAffectedEntity);
+        affectedEntities.processAndClear();
         // Prepare for the next time updateChanged() is called.
         // No need to clear changeQueue, as that already finishes empty.
         loopedTracker.clear();
@@ -95,36 +102,35 @@ final class AffectedEntitiesUpdater<Solution_>
         changed.clear();
     }
 
-    private void updateLoopedStatusOfAffectedEntity(AffectedEntity<Solution_> affectedEntity, LoopedTracker loopedTracker) {
-        var shadowVariableLoopedDescriptor = affectedEntity.variableUpdaterInfo.shadowVariableLoopedDescriptor();
-        var entity = affectedEntity.entity;
+    private void updateLoopedStatusOfAffectedEntity(Object affectedEntity,
+            ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor) {
         var isEntityLooped = false;
-        for (var node : entityVariablePairFunction.apply(entity)) {
+        for (var node : entityVariablePairFunction.apply(affectedEntity)) {
             if (graph.isLooped(loopedTracker, node.graphNodeId())) {
                 isEntityLooped = true;
                 break;
             }
         }
-        var oldValue = shadowVariableLoopedDescriptor.getValue(entity);
+        var oldValue = shadowVariableLoopedDescriptor.getValue(affectedEntity);
         if (!Objects.equals(oldValue, isEntityLooped)) {
             // TODO what if we don't let users treat this as a shadow var?
             //  Nobody can hook up to it => we need not trigger events?
-            changeShadowVariableAndNotify(shadowVariableLoopedDescriptor, entity, isEntityLooped);
+            changeShadowVariableAndNotify(shadowVariableLoopedDescriptor, affectedEntity, isEntityLooped);
         }
 
     }
 
-    private boolean updateShadowVariable(EntityVariablePair<Solution_> shadowVariable, boolean isLooped,
-            BiConsumer<Object, VariableUpdaterInfo<Solution_>> affectedEntityMarker) {
+    private boolean updateShadowVariable(EntityVariablePair<Solution_> shadowVariable, boolean isLooped) {
         var entity = shadowVariable.entity();
         var shadowVariableReference = shadowVariable.variableReference();
+        var shadowVariableLoopedDescriptor = shadowVariableReference.shadowVariableLoopedDescriptor();
         var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
 
         if (isLooped) {
             // null might be a valid value, and thus it could be the case
             // that is was not looped and null, then turned to looped and null,
             // which is still considered a change.
-            affectedEntityMarker.accept(entity, shadowVariableReference);
+            affectedEntities.add(entity, shadowVariableLoopedDescriptor);
             if (oldValue != null) {
                 changeShadowVariableAndNotify(shadowVariableReference, entity, null);
             }
@@ -133,7 +139,7 @@ final class AffectedEntitiesUpdater<Solution_>
             var newValue = shadowVariableReference.calculator().apply(entity);
 
             if (!Objects.equals(oldValue, newValue)) {
-                affectedEntityMarker.accept(entity, shadowVariableReference);
+                affectedEntities.add(entity, shadowVariableLoopedDescriptor);
                 changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
                 return true;
             }
@@ -156,42 +162,38 @@ final class AffectedEntitiesUpdater<Solution_>
 
     private static final class AffectedEntities<Solution_> {
 
-        private final Set<AffectedEntity<Solution_>> entitiesForLoopedVarUpdateSet =
-                Collections.newSetFromMap(new IdentityHashMap<>());
-        private final LoopedTracker loopedTracker;
+        private final BiConsumer<Object, ShadowVariableLoopedVariableDescriptor<Solution_>> consumer;
+        private final Map<ShadowVariableLoopedVariableDescriptor<Solution_>, Set<Object>> entitiesForLoopedVarUpdateSet;
 
-        public AffectedEntities(LoopedTracker loopedTracker) {
-            this.loopedTracker = loopedTracker;
+        @SuppressWarnings("unchecked")
+        public AffectedEntities(BiConsumer<Object, ShadowVariableLoopedVariableDescriptor<Solution_>> consumer,
+                ShadowVariableLoopedVariableDescriptor<Solution_>... shadowVariableLoopedDescriptors) {
+            this.consumer = consumer;
+
+            var entryList = new ArrayList<Map.Entry<ShadowVariableLoopedVariableDescriptor<Solution_>, Set<Object>>>();
+            for (var shadowVariableLoopedDescriptor : shadowVariableLoopedDescriptors) {
+                entryList.add(Map.entry(shadowVariableLoopedDescriptor, new LinkedIdentityHashSet<>()));
+            }
+            this.entitiesForLoopedVarUpdateSet = Map.ofEntries(entryList.toArray(new Map.Entry[0]));
         }
 
-        public void add(Object entity, VariableUpdaterInfo<Solution_> variableUpdaterInfo) {
-            if (variableUpdaterInfo.shadowVariableLoopedDescriptor() == null) {
+        public void add(Object entity, ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor) {
+            if (shadowVariableLoopedDescriptor == null) {
                 return;
             }
-            entitiesForLoopedVarUpdateSet.add(new AffectedEntity<>(entity, variableUpdaterInfo));
+            entitiesForLoopedVarUpdateSet.get(shadowVariableLoopedDescriptor).add(entity);
         }
 
-        public void forEach(BiConsumer<AffectedEntity<Solution_>, LoopedTracker> consumer) {
-            for (var affectedEntity : entitiesForLoopedVarUpdateSet) {
-                consumer.accept(affectedEntity, loopedTracker);
+        public void processAndClear() {
+            for (var affectedEntitiesPerDescriptor : entitiesForLoopedVarUpdateSet.entrySet()) {
+                var affectedEntitySet = affectedEntitiesPerDescriptor.getValue();
+                for (var affectedEntity : affectedEntitySet) {
+                    consumer.accept(affectedEntity, affectedEntitiesPerDescriptor.getKey());
+                }
+                affectedEntitySet.clear(); // Keep the set, to not have to recreate and resize later.
             }
         }
 
-    }
-
-    private record AffectedEntity<Solution_>(Object entity, VariableUpdaterInfo<Solution_> variableUpdaterInfo) {
-        @Override
-        public boolean equals(Object o) {
-            if (o instanceof AffectedEntity<?> other) {
-                return entity == other.entity;
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return System.identityHashCode(entity);
-        }
     }
 
 }
