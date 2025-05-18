@@ -15,9 +15,9 @@ class ListBasedScalingOrderedSetTest {
     void emptySetProperties() {
         var set = new ListBasedScalingOrderedSet<String>();
 
-        assertThat(set).isEmpty();
-        assertThat(set).hasSize(0);
-        assertThat(set).doesNotContain("test");
+        assertThat(set)
+                .doesNotContain("test")
+                .isEmpty();
     }
 
     @Test
@@ -27,8 +27,9 @@ class ListBasedScalingOrderedSetTest {
         var changed = set.add("test");
 
         assertThat(changed).isTrue();
-        assertThat(set).hasSize(1);
-        assertThat(set).contains("test");
+        assertThat(set)
+                .hasSize(1)
+                .contains("test");
     }
 
     @Test
@@ -39,8 +40,9 @@ class ListBasedScalingOrderedSetTest {
         var changed = set.add("test");
 
         assertThat(changed).isFalse();
-        assertThat(set).hasSize(1);
-        assertThat(set).containsExactly("test");
+        assertThat(set)
+                .hasSize(1)
+                .containsExactly("test");
     }
 
     @Test
@@ -50,8 +52,9 @@ class ListBasedScalingOrderedSetTest {
         var changed = set.addAll(Arrays.asList("a", "b", "c"));
 
         assertThat(changed).isTrue();
-        assertThat(set).hasSize(3);
-        assertThat(set).containsExactly("a", "b", "c");
+        assertThat(set)
+                .hasSize(3)
+                .containsExactly("a", "b", "c");
     }
 
     @Test
@@ -63,8 +66,9 @@ class ListBasedScalingOrderedSetTest {
         var changed = set.addAll(Arrays.asList("b", "c"));
 
         assertThat(changed).isTrue();
-        assertThat(set).hasSize(3);
-        assertThat(set).containsExactly("a", "b", "c");
+        assertThat(set)
+                .hasSize(3)
+                .containsExactly("a", "b", "c");
     }
 
     @Test
@@ -76,8 +80,9 @@ class ListBasedScalingOrderedSetTest {
         var changed = set.addAll(Arrays.asList("a", "b"));
 
         assertThat(changed).isFalse();
-        assertThat(set).hasSize(2);
-        assertThat(set).containsExactly("a", "b");
+        assertThat(set)
+                .hasSize(2)
+                .containsExactly("a", "b");
     }
 
     @Test
@@ -99,8 +104,9 @@ class ListBasedScalingOrderedSetTest {
         var removed = set.remove("b");
 
         assertThat(removed).isFalse();
-        assertThat(set).hasSize(1);
-        assertThat(set).contains("a");
+        assertThat(set)
+                .hasSize(1)
+                .contains("a");
     }
 
     @Test
@@ -144,9 +150,9 @@ class ListBasedScalingOrderedSetTest {
 
         var iterator = set.iterator();
 
-        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator).hasNext();
         assertThat(iterator.next()).isEqualTo("a");
-        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator).hasNext();
         assertThat(iterator.next()).isEqualTo("b");
         assertThat(iterator.hasNext()).isFalse();
     }
@@ -168,8 +174,9 @@ class ListBasedScalingOrderedSetTest {
         var set = new ListBasedScalingOrderedSet<String>();
         set.add("a");
 
-        assertThat(set.contains("a")).isTrue();
-        assertThat(set.contains("b")).isFalse();
+        assertThat(set)
+                .contains("a")
+                .doesNotContain("b");
     }
 
     @Test
@@ -178,7 +185,7 @@ class ListBasedScalingOrderedSetTest {
         set.add("a");
         set.add("b");
 
-        assertThat(set.containsAll(Arrays.asList("a", "b"))).isTrue();
+        assertThat(set).containsAll(Arrays.asList("a", "b"));
         assertThat(set.containsAll(Arrays.asList("a", "c"))).isFalse();
     }
 
@@ -186,7 +193,8 @@ class ListBasedScalingOrderedSetTest {
     void retainAllThrowsException() {
         var set = new ListBasedScalingOrderedSet<String>();
 
-        assertThatThrownBy(() -> set.retainAll(List.of("a")))
+        var list = List.of("a");
+        assertThatThrownBy(() -> set.retainAll(list))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("retainAll()");
     }
@@ -195,7 +203,8 @@ class ListBasedScalingOrderedSetTest {
     void removeAllThrowsException() {
         var set = new ListBasedScalingOrderedSet<String>();
 
-        assertThatThrownBy(() -> set.removeAll(List.of("a")))
+        var list = List.of("a");
+        assertThatThrownBy(() -> set.removeAll(list))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("removeAll()");
     }
@@ -227,7 +236,7 @@ class ListBasedScalingOrderedSetTest {
         // Verify it still works correctly
         assertThat(set).hasSize(ListBasedScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
         for (var i = 0; i <= ListBasedScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
-            assertThat(set.contains(i)).isTrue();
+            assertThat(set).contains(i);
         }
     }
 
@@ -252,10 +261,11 @@ class ListBasedScalingOrderedSetTest {
         set.remove(0);
 
         // Verify it still works correctly
-        assertThat(set).hasSize(ListBasedScalingOrderedSet.LIST_SIZE_THRESHOLD - 1);
-        assertThat(set.contains(0)).isFalse();
+        assertThat(set)
+                .hasSize(ListBasedScalingOrderedSet.LIST_SIZE_THRESHOLD - 1)
+                .doesNotContain(0);
         for (var i = 1; i < ListBasedScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
-            assertThat(set.contains(i)).isTrue();
+            assertThat(set).contains(i);
         }
     }
 
@@ -283,7 +293,7 @@ class ListBasedScalingOrderedSetTest {
         assertThat(changed).isTrue();
         assertThat(set).hasSize(ListBasedScalingOrderedSet.LIST_SIZE_THRESHOLD + 1);
         for (var i = 0; i <= ListBasedScalingOrderedSet.LIST_SIZE_THRESHOLD; i++) {
-            assertThat(set.contains(i)).isTrue();
+            assertThat(set).contains(i);
         }
     }
 

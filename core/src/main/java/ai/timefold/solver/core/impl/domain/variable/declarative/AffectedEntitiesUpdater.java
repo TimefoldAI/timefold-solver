@@ -149,7 +149,7 @@ final class AffectedEntitiesUpdater<Solution_>
 
     private void changeShadowVariableAndNotify(VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity,
             Object newValue) {
-        var variableDescriptor = (VariableDescriptor<Solution_>) shadowVariableReference.variableDescriptor();
+        var variableDescriptor = shadowVariableReference.variableDescriptor();
         changeShadowVariableAndNotify(variableDescriptor, entity, newValue);
     }
 
