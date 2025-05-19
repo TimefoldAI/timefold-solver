@@ -118,33 +118,25 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope) {
         updateBestSolutionWithoutFiring(solverScope);
-        // We need to clone the solution again, or we may use the same instance employed by the solver scope,
-        // which is restored between solver phases.
-        // The operation won't block the solving process.
-        solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.cloneBestSolution());
+        solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.getBestSolution());
     }
 
     public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope) {
         updateBestSolutionWithoutFiring(solverScope);
         if (solverScope.isBestSolutionInitialized()) {
-            // We need to clone the solution again, or we may use the same instance employed by the solver scope,
-            // which is restored between solver phases.
-            // The operation won't block the solving process.
-            solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.cloneBestSolution());
+            solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.getBestSolution());
         }
     }
 
     private void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
             Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
-        // We need to clone the solution again, or we may use the same instance employed by the solver scope,
-        // which is restored between solver phases.
-        // The operation won't block the solving process.
-        solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.cloneBestSolution());
+        solverEventSupport.fireBestSolutionChanged(solverScope, bestSolution);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope) {
+        // We clone the existing working solution to set it as the best current solution
         var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
         var newBestScore = solverScope.getSolutionDescriptor().<Score> getScore(newBestSolution);
         var innerScore = InnerScore.withUnassignedCount(newBestScore, -solverScope.getScoreDirector().getWorkingInitScore());
