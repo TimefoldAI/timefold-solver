@@ -727,13 +727,9 @@ public class SolutionDescriptor<Solution_> {
 
         var listVariableDescriptor = listVariableDescriptorList.get(0);
         var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
-        var hasChained = listVariableEntityDescriptor.getGenuineVariableDescriptorList().stream()
-                .anyMatch(
-                        variableDescriptor -> variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
-                                && basicVariableDescriptor.isChained());
         // We will not support chained and list variables at the same entity,
         // and the validation can be removed once we discontinue support for chained variables.
-        if (hasChained) {
+        if (hasChainedVariable()) {
             var basicVariableDescriptorList = new ArrayList<>(listVariableEntityDescriptor.getGenuineVariableDescriptorList());
             basicVariableDescriptorList.remove(listVariableDescriptor);
             throw new UnsupportedOperationException(
@@ -883,8 +879,20 @@ public class SolutionDescriptor<Solution_> {
         return planningSolutionMetaModel;
     }
 
+    public boolean hasBasicVariable() {
+        return getGenuineEntityDescriptors().stream().anyMatch(EntityDescriptor::hasAnyGenuineBasicVariables);
+    }
+
+    public boolean hasChainedVariable() {
+        return getGenuineEntityDescriptors().stream().anyMatch(EntityDescriptor::hasAnyGenuineChainedVariables);
+    }
+
+    public boolean hasListVariable() {
+        return getListVariableDescriptor() != null;
+    }
+
     public boolean hasBothBasicAndListVariables() {
-        return getMetaModel().hasBothBasicAndListVariables();
+        return hasBasicVariable() && hasListVariable();
     }
 
     /**

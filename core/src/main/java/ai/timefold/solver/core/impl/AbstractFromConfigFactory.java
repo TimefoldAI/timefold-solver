@@ -55,7 +55,9 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
         EntityDescriptor<Solution_> entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(entityClass);
         if (entityDescriptor == null) {
             throw new IllegalArgumentException(
-                    "The config (%s) has an entityClass (%s) that is not a known planning entity.\nCheck your solver configuration. If that class (%s) is not in the entityClassSet (%s), check your @%s implementation's annotated methods too."
+                    """
+                            The config (%s) has an entityClass (%s) that is not a known planning entity.
+                            Check your solver configuration. If that class (%s) is not in the entityClassSet (%s), check your @%s implementation's annotated methods too."""
                             .formatted(config, entityClass, entityClass.getSimpleName(), solutionDescriptor.getEntityClassSet(),
                                     PlanningSolution.class.getSimpleName()));
         }
@@ -98,9 +100,10 @@ public abstract class AbstractFromConfigFactory<Solution_, Config_ extends Abstr
         GenuineVariableDescriptor<Solution_> variableDescriptor = entityDescriptor.getGenuineVariableDescriptor(variableName);
         if (variableDescriptor == null) {
             throw new IllegalArgumentException(
-                    "The config (%s) has a variableName (%s) which is not a valid planning variable on entityClass (%s).\n%s"
-                            .formatted(config, variableName, entityDescriptor.getEntityClass(),
-                                    entityDescriptor.buildInvalidVariableNameExceptionMessage(variableName)));
+                    """
+                            The config (%s) has a variableName (%s) which is not a valid planning variable on entityClass (%s).
+                            %s""".formatted(config, variableName, entityDescriptor.getEntityClass(),
+                            entityDescriptor.buildInvalidVariableNameExceptionMessage(variableName)));
         }
         return variableDescriptor;
     }

@@ -107,44 +107,28 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public void linkVariableListeners() {
         listVariableStateSupply = listVariableDescriptor == null ? null : demand(listVariableDescriptor.getStateDemand());
-        var hasBothBasicListVariables = scoreDirector.getSolutionDescriptor().hasBothBasicAndListVariables();
         scoreDirector.getSolutionDescriptor().getEntityDescriptors().stream()
                 .map(EntityDescriptor::getDeclaredShadowVariableDescriptors)
                 .flatMap(Collection::stream)
                 .filter(ShadowVariableDescriptor::hasVariableListener)
                 .sorted(Comparator.comparingInt(ShadowVariableDescriptor::getGlobalShadowOrder))
-                .forEach(d -> {
+                .forEach(descriptor -> {
                     // All information about elements in all shadow variables is tracked in a centralized place.
-                    // Therefore all list-related shadow variables need to be connected to that centralized place.
+                    // Therefore, all list-related shadow variables need to be connected to that centralized place.
                     // Shadow variables which are not related to a list variable are processed normally.
                     if (listVariableStateSupply == null) {
-                        processShadowVariableDescriptorWithoutListVariable(d);
+                        processShadowVariableDescriptorWithoutListVariable(descriptor);
                     } else {
                         // When multiple variable types are used,
                         // the shadow variable process needs to account for each variable
                         // and process them according to their types.
-                        if (!hasBothBasicListVariables) {
-                            processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
-                        } else if (isOnlyShadowBasicVariable(d)) {
-                            processShadowVariableDescriptorWithoutListVariable(d);
-                        } else if (isOnlyShadowListVariable(d)) {
-                            processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                        if (descriptor.isListVariableSource()) {
+                            processShadowVariableDescriptorWithListVariable(descriptor, listVariableStateSupply);
                         } else {
-                            processShadowVariableDescriptorWithBothBasicListVariable(d, listVariableStateSupply);
+                            processShadowVariableDescriptorWithoutListVariable(descriptor);
                         }
                     }
                 });
-    }
-
-    private boolean isOnlyShadowBasicVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        return !(shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_>)
-                && !isOnlyShadowListVariable(shadowVariableDescriptor);
-    }
-
-    private boolean isOnlyShadowListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor) {
-        return shadowVariableDescriptor instanceof IndexShadowVariableDescriptor<Solution_> ||
-                shadowVariableDescriptor instanceof PreviousElementShadowVariableDescriptor<Solution_> ||
-                shadowVariableDescriptor instanceof NextElementShadowVariableDescriptor<Solution_>;
     }
 
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
@@ -176,23 +160,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     listenerWithSources.getSourceVariableDescriptors(),
                     AbstractNotifiable.buildNotifiable(scoreDirector, variableListener, globalOrder));
             nextGlobalOrder = globalOrder + 1;
-        }
-    }
-
-    private void processShadowVariableDescriptorWithBothBasicListVariable(
-            ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
-            ListVariableStateSupply<Solution_> listVariableStateSupply) {
-        if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
-            // If the source type is a collection, then it is a list variable
-            if (inverseRelationShadowVariableDescriptor.isSourceVariableCollectionType()) {
-                processShadowVariableDescriptorWithListVariable(shadowVariableDescriptor, listVariableStateSupply);
-            } else {
-                processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
-            }
-        } else {
-            // The shadow variables supported by list variables have been already verified.
-            // Therefore, we can proceed with the process without list variable
-            processShadowVariableDescriptorWithoutListVariable(shadowVariableDescriptor);
         }
     }
 

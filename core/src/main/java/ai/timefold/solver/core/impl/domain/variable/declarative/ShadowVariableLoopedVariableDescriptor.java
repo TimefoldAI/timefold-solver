@@ -61,4 +61,9 @@ public class ShadowVariableLoopedVariableDescriptor<Solution_> extends ShadowVar
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         // no action needed
     }
+
+    @Override
+    public boolean isListVariableSource() {
+        return false;
+    }
 }

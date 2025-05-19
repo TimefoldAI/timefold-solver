@@ -712,7 +712,7 @@ for solving all related variables.
 
 === Algorithm description
 
-The allocations works like this:
+The allocations work like this:
 
 . Put all values in a round-robin queue.
 . Put all entities in a second queue.

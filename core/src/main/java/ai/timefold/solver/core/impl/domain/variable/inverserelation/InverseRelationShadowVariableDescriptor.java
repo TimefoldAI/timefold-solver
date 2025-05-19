@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
@@ -150,10 +151,6 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     // Worker methods
     // ************************************************************************
 
-    public boolean isSourceVariableCollectionType() {
-        return Collection.class.isAssignableFrom(sourceVariableDescriptor.getVariablePropertyType());
-    }
-
     @Override
     public Demand<?> getProvidedDemand() {
         if (singleton) {
@@ -186,4 +183,8 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         }
     }
 
+    @Override
+    public boolean isListVariableSource() {
+        return sourceVariableDescriptor instanceof ListVariableDescriptor<Solution_>;
+    }
 }

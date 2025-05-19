@@ -48,6 +48,9 @@ import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataLis
 import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarOtherValue;
 import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarSolution;
 import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarValue;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar.TestdataUnassignedListMultiVarEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar.TestdataUnassignedListMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar.TestdataUnassignedListMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
@@ -431,6 +434,32 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
                 .isEmpty();
+    }
+
+    @Test
+    void solveUnassignedWithListAndBasicVariables() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataUnassignedListMultiVarSolution.class, TestdataUnassignedListMultiVarEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataUnassignedListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        // Block values and make the basic and list variables unassigned
+        problem.getValueList().get(0).setBlocked(true);
+        problem.getValueList().get(1).setBlocked(true);
+        problem.getOtherValueList().get(0).setBlocked(true);
+        problem.getOtherValueList().get(1).setBlocked(true);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null))
+                .hasSize(2);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getSecondBasicValue() != null))
+                .hasSize(2);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty()))
+                .hasSize(2);
     }
 
     @Test

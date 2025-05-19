@@ -231,4 +231,9 @@ public final class LegacyCustomShadowVariableDescriptor<Solution_> extends Shado
         return new VariableListenerWithSources<>(variableListener, sourceVariableDescriptorList).toCollection();
     }
 
+    @Override
+    public boolean isListVariableSource() {
+        return false;
+    }
+
 }

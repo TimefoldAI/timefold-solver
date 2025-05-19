@@ -110,4 +110,9 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
         throw new UnsupportedOperationException("The piggybackShadowVariableDescriptor (" + this
                 + ") cannot build a variable listener.");
     }
+
+    @Override
+    public boolean isListVariableSource() {
+        return false;
+    }
 }
