@@ -437,6 +437,26 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
     }
 
     @Test
+    void solvePinnedWithListAndBasicVariables() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        // Pin the first entity
+        problem.getEntityList().get(0).setPinned(true);
+        problem.getEntityList().get(0).setPinnedIndex(0);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        // The first entity should remain unchanged
+        assertThat(solution.getEntityList().get(0).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(0).getSecondBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(0).getValueList()).isEmpty();
+    }
+
+    @Test
     void solveUnassignedWithListAndBasicVariables() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataUnassignedListMultiVarSolution.class, TestdataUnassignedListMultiVarEntity.class)
@@ -460,6 +480,36 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValueList().isEmpty()))
                 .hasSize(2);
+    }
+
+    @Test
+    void solvePinnedAndUnassignedWithListAndBasicVariables() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataUnassignedListMultiVarSolution.class, TestdataUnassignedListMultiVarEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataUnassignedListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        // Pin the first entity
+        problem.getEntityList().get(0).setPinned(true);
+        problem.getEntityList().get(0).setPinnedIndex(0);
+        problem.getEntityList().get(0).setBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setSecondBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setValueList(List.of(problem.getValueList().get(0)));
+        // Block values and make the basic and list variables unassigned
+        problem.getValueList().get(0).setBlocked(true);
+        problem.getValueList().get(1).setBlocked(true);
+        problem.getOtherValueList().get(0).setBlocked(true);
+        problem.getOtherValueList().get(1).setBlocked(true);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        // The first entity should remain unchanged
+        assertThat(solution.getEntityList().get(0).getBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(0).getSecondBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(0).getValueList()).hasSize(1);
+        assertThat(solution.getEntityList().get(1).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(1).getSecondBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(1).getValueList()).isEmpty();
     }
 
     @Test

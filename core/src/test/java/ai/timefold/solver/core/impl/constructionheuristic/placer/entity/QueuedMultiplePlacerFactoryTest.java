@@ -144,6 +144,84 @@ class QueuedMultiplePlacerFactoryTest {
     }
 
     @Test
+    void testPinnedPlacersForConstructionHeuristic() {
+        var solutionDescriptor = TestdataListMultiVarSolution.buildSolutionDescriptor();
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataListMultiVarSolution>()
+                .withEnvironmentMode(PHASE_ASSERT)
+                .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] { ANY }))
+                .withSolutionDescriptor(solutionDescriptor)
+                .withEntitySorterManner(DECREASING_DIFFICULTY_IF_AVAILABLE)
+                .withValueSorterManner(INCREASING_STRENGTH_IF_AVAILABLE)
+                .withReinitializeVariableFilterEnabled(true)
+                .withInitializedChainedValueFilterEnabled(true)
+                .withUnassignedValuesAllowed(true)
+                .withRandom(new Random(0))
+                .build();
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+        var entityPlacerConfig = new QueuedEntityPlacerConfig();
+        var placerConfig = new QueuedMultiplePlacerConfig()
+                .withPlacerConfigList(List.of(valuePlacerConfig, entityPlacerConfig));
+        var placer = EntityPlacerFactory.<TestdataListMultiVarSolution> create(placerConfig).buildEntityPlacer(configPolicy);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        // Pin the first entity
+        problem.getEntityList().get(0).setPinned(true);
+        problem.getEntityList().get(0).setPinnedIndex(2);
+        problem.getEntityList().get(0).setBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setSecondBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setValueList(List.of(problem.getValueList().get(0)));
+
+        var solverScope = mock(SolverScope.class);
+        var scoreDirector = mock(InnerScoreDirector.class);
+        var random = new Random(0L);
+        when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
+        when(solverScope.getWorkingRandom()).thenReturn(random);
+        when(scoreDirector.getWorkingSolution()).thenReturn(problem);
+        when(scoreDirector.getWorkingSolution()).thenReturn(problem);
+        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
+
+        var supplyManager = VariableListenerSupport.create(scoreDirector);
+        when(scoreDirector.getSupplyManager()).thenReturn(supplyManager);
+        supplyManager.linkVariableListeners();
+        supplyManager.resetWorkingSolution();
+
+        placer.solvingStarted(solverScope);
+        var phaseScope = mock(AbstractPhaseScope.class);
+        when(phaseScope.getScoreDirector()).thenReturn(scoreDirector);
+        placer.phaseStarted(phaseScope);
+
+        var placerIterator = placer.iterator();
+
+        // Step 1
+        // 1 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 0 -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 2 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 0 -> basicValue - Generated Other Value 1 -> secondBasicValue
+        // 3 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 1 -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 4 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 1 -> basicValue - Generated Other Value 1 -> secondBasicValue
+        assertThat(placerIterator.hasNext()).isTrue();
+        var counter = new MutableInt();
+        placerIterator.next().iterator().forEachRemaining(move -> counter.increment());
+        assertThat(counter.intValue()).isEqualTo(4);
+
+        // Accept the move -> 1 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 0 -> basicValue - Generated Other Value 0 -> secondBasicValue
+        problem.getEntityList().get(1).setValueList(List.of(problem.getValueList().get(1)));
+        problem.getEntityList().get(1).setBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(1).setSecondBasicValue(problem.getOtherValueList().get(0));
+        // Update all variables
+        supplyManager.resetWorkingSolution();
+        var stepScope = mock(AbstractStepScope.class);
+        placer.stepEnded(stepScope);
+        assertThat(placerIterator.hasNext()).isFalse();
+    }
+
+    @Test
     void testUnassignedPlacersForConstructionHeuristic() {
         var solutionDescriptor = TestdataUnassignedListMultiVarSolution.buildSolutionDescriptor();
         var configPolicy = new HeuristicConfigPolicy.Builder<TestdataUnassignedListMultiVarSolution>()
@@ -302,5 +380,97 @@ class QueuedMultiplePlacerFactoryTest {
         counter.setValue(0);
         placerIterator.next().iterator().forEachRemaining(move -> counter.increment());
         assertThat(counter.intValue()).isEqualTo(18);
+    }
+
+    @Test
+    void testPinnedUnassignedPlacersForConstructionHeuristic() {
+        var solutionDescriptor = TestdataUnassignedListMultiVarSolution.buildSolutionDescriptor();
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataUnassignedListMultiVarSolution>()
+                .withEnvironmentMode(PHASE_ASSERT)
+                .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] { ANY }))
+                .withSolutionDescriptor(solutionDescriptor)
+                .withEntitySorterManner(DECREASING_DIFFICULTY_IF_AVAILABLE)
+                .withValueSorterManner(INCREASING_STRENGTH_IF_AVAILABLE)
+                .withReinitializeVariableFilterEnabled(true)
+                .withInitializedChainedValueFilterEnabled(true)
+                .withUnassignedValuesAllowed(true)
+                .withRandom(new Random(0))
+                .build();
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+        var entityPlacerConfig = new QueuedEntityPlacerConfig();
+        var placerConfig = new QueuedMultiplePlacerConfig()
+                .withPlacerConfigList(List.of(valuePlacerConfig, entityPlacerConfig));
+        var placer = EntityPlacerFactory.<TestdataUnassignedListMultiVarSolution> create(placerConfig)
+                .buildEntityPlacer(configPolicy);
+
+        var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        // Pin the first entity
+        problem.getEntityList().get(0).setPinned(true);
+        problem.getEntityList().get(0).setPinnedIndex(2);
+        problem.getEntityList().get(0).setBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setSecondBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setValueList(List.of(problem.getValueList().get(0)));
+
+        var solverScope = mock(SolverScope.class);
+        var scoreDirector = mock(InnerScoreDirector.class);
+        var random = new Random(0L);
+        when(solverScope.getScoreDirector()).thenReturn(scoreDirector);
+        when(solverScope.getWorkingRandom()).thenReturn(random);
+        when(scoreDirector.getWorkingSolution()).thenReturn(problem);
+        when(scoreDirector.getWorkingSolution()).thenReturn(problem);
+        when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
+
+        var supplyManager = VariableListenerSupport.create(scoreDirector);
+        when(scoreDirector.getSupplyManager()).thenReturn(supplyManager);
+        supplyManager.linkVariableListeners();
+        supplyManager.resetWorkingSolution();
+
+        placer.solvingStarted(solverScope);
+        var phaseScope = mock(AbstractPhaseScope.class);
+        when(phaseScope.getScoreDirector()).thenReturn(scoreDirector);
+        placer.phaseStarted(phaseScope);
+
+        var placerIterator = placer.iterator();
+        // Step 1
+        // 1 = Generated Value 1 -> Entity 1[0] - Entity 1 - null -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 2 = Generated Value 1 -> Entity 1[0] - Entity 1 - null -> basicValue - Generated Other Value 1 -> secondBasicValue
+        // 3 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 0 -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 4 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 0 -> basicValue - Generated Other Value 1 -> secondBasicValue
+        // 5 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 1 -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 6 = Generated Value 1 -> Entity 1[0] - Entity 1 - Generated Other Value 1 -> basicValue - Generated Other Value 1 -> secondBasicValue
+        // 7 = NoChange - Entity 1 - null -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 8 = NoChange - Entity 1 - null -> basicValue - Generated Other Value 1 -> secondBasicValue
+        // 9 = NoChange - Entity 1 - Generated Other Value 0 -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 10 = NoChange - Entity 1 - Generated Other Value 0 -> basicValue - Generated Other Value 1 -> secondBasicValue
+        // 11 = NoChange - Entity 1 - Generated Other Value 1 -> basicValue - Generated Other Value 0 -> secondBasicValue
+        // 12 = NoChange - Entity 1 - Generated Other Value 1 -> basicValue - Generated Other Value 1 -> secondBasicValue
+        assertThat(placerIterator.hasNext()).isTrue();
+        var counter = new MutableInt();
+        placerIterator.next().iterator().forEachRemaining(move -> counter.increment());
+        assertThat(counter.intValue()).isEqualTo(12);
+
+        // Accept the move - 7 = NoChange - Entity 1 - null -> basicValue - Generated Other Value 0 -> secondBasicValue
+        problem.getEntityList().get(1).setSecondBasicValue(problem.getOtherValueList().get(0));
+        // Update all variables
+        supplyManager.resetWorkingSolution();
+        var stepScope = mock(AbstractStepScope.class);
+        placer.stepEnded(stepScope);
+        counter.setValue(0);
+        // 1 = Generated Value 1 -> Entity 1[0] - null -> secondBasicValue
+        // 2 = Generated Value 1 -> Entity 1[0] - Generated Other Value 0 -> secondBasicValue
+        // 3 = Generated Value 1 -> Entity 1[0] - Generated Other Value 1 -> secondBasicValue
+        // 4 = NoChange - null -> secondBasicValue
+        // 5 = NoChange - Generated Other Value 0 -> secondBasicValue
+        // 6 = NoChange - Generated Other Value 1 -> secondBasicValue
+        placerIterator.next().iterator().forEachRemaining(move -> counter.increment());
+        assertThat(counter.intValue()).isEqualTo(6);
     }
 }
