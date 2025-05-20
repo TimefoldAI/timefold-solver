@@ -22,6 +22,8 @@ public class TestdataUnassignedListMultiVarEasyScoreCalculator
             }
             if (entity.getValueList().stream().anyMatch(TestdataUnassignedListMultiVarValue::isBlocked)) {
                 score -= 10;
+            } else if (entity.getValueList().size() == 3) {
+                score += 2;
             } else {
                 score++;
             }
