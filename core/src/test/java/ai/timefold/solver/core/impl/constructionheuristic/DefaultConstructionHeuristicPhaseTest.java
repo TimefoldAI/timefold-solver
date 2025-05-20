@@ -22,6 +22,7 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
@@ -418,6 +419,21 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
                 .hasMessageContaining("has no entityClass configured and because there are multiple in the entityClassSet")
                 .hasMessageContaining("it cannot be deduced automatically");
+    }
+
+    @Test
+    void failLocalSearchWithListAndBasicVariables() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)),
+                        new LocalSearchPhaseConfig())
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("A mixed model using both basic and list variables is not supported yet.");
     }
 
     @Test

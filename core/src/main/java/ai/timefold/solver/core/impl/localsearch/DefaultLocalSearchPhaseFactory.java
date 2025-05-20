@@ -68,7 +68,10 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                     The solver configuration enabled both move selectors and Move Streams.
                     These are mutually exclusive features, please pick one or the other.""");
         }
-
+        if (solverConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
+            throw new UnsupportedOperationException(
+                    "A mixed model using both basic and list variables is not supported yet.");
+        }
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var decider = moveStreamsEnabled
