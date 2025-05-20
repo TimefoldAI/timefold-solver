@@ -490,10 +490,9 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                         .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
                 .withEasyScoreCalculatorClass(TestdataUnassignedListMultiVarEasyScoreCalculator.class);
 
+        // Pin the entire first entity
         var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
-        // Pin the first entity
         problem.getEntityList().get(0).setPinned(true);
-        problem.getEntityList().get(0).setPinnedIndex(0);
         problem.getEntityList().get(0).setBasicValue(problem.getOtherValueList().get(0));
         problem.getEntityList().get(0).setSecondBasicValue(problem.getOtherValueList().get(0));
         problem.getEntityList().get(0).setValueList(List.of(problem.getValueList().get(0)));
@@ -510,6 +509,29 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().get(1).getBasicValue()).isNull();
         assertThat(solution.getEntityList().get(1).getSecondBasicValue()).isNotNull();
         assertThat(solution.getEntityList().get(1).getValueList()).isEmpty();
+
+        // Pin partially the first entity list
+        problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 3, 2);
+        problem.getEntityList().get(0).setPinnedIndex(2);
+        problem.getEntityList().get(0).setBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setSecondBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setValueList(problem.getValueList().subList(1, 3));
+        // Block values and make the basic variable unassigned
+        problem.getOtherValueList().get(0).setBlocked(true);
+        problem.getOtherValueList().get(1).setBlocked(true);
+        solution = PlannerTestUtils.solve(solverConfig, problem);
+        // The basic value is set to null because the entire entity is not fixed.
+        assertThat(solution.getEntityList().get(0).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(0).getSecondBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(0).getValueList()).hasSize(3);
+        // The pinning index fixed the values 1 and 2. The only remaining option is value 0.
+        assertThat(solution.getEntityList().get(0).getValueList())
+                .hasSameElementsAs(
+                        List.of(problem.getValueList().get(1), problem.getValueList().get(2), problem.getValueList().get(0)));
+        assertThat(solution.getEntityList().get(1).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(1).getSecondBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(1).getValueList()).isEmpty();
+
     }
 
     @Test
