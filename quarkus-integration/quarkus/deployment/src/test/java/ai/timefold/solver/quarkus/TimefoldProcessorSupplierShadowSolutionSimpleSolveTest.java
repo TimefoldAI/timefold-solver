@@ -10,9 +10,9 @@ import java.util.concurrent.ExecutionException;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.constraints.TestdataQuarkusSupplierVariableConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.domain.TestdataQuarkusSupplierVariableEntity;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.domain.TestdataQuarkusSupplierVariableSolution;
+import ai.timefold.solver.quarkus.testdomain.suppliervariable.simple.constraints.TestdataQuarkusSupplierVariableSimpleConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.suppliervariable.simple.domain.TestdataQuarkusSupplierVariableSimpleEntity;
+import ai.timefold.solver.quarkus.testdomain.suppliervariable.simple.domain.TestdataQuarkusSupplierVariableSimpleSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -21,24 +21,24 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 import io.quarkus.test.QuarkusUnitTest;
 
-class TimefoldProcessorSupplierShadowSolutionSolveTest {
+class TimefoldProcessorSupplierShadowSolutionSimpleSolveTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
             .overrideConfigKey("quarkus.timefold.solver.enabled-preview-features", "DECLARATIVE_SHADOW_VARIABLES")
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "0")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
-                    .addClasses(TestdataQuarkusSupplierVariableSolution.class,
-                            TestdataQuarkusSupplierVariableEntity.class,
-                            TestdataQuarkusSupplierVariableConstraintProvider.class));
+                    .addClasses(TestdataQuarkusSupplierVariableSimpleSolution.class,
+                            TestdataQuarkusSupplierVariableSimpleEntity.class,
+                            TestdataQuarkusSupplierVariableSimpleConstraintProvider.class));
     @Inject
-    SolverManager<TestdataQuarkusSupplierVariableSolution, Long> solverManager;
+    SolverManager<TestdataQuarkusSupplierVariableSimpleSolution, Long> solverManager;
 
     @Test
     void solve() throws ExecutionException, InterruptedException {
         var shadowEntity =
-                new TestdataQuarkusSupplierVariableEntity();
-        var problem = new TestdataQuarkusSupplierVariableSolution();
+                new TestdataQuarkusSupplierVariableSimpleEntity();
+        var problem = new TestdataQuarkusSupplierVariableSimpleSolution();
         problem.setEntityList(List.of(shadowEntity));
         problem.setValueList(List.of("a", "b"));
         var solverJob = solverManager.solve(1L, problem);

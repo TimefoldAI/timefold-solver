@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdomain.suppliervariable.domain;
+package ai.timefold.solver.quarkus.testdomain.suppliervariable.simple.domain;
 
 import java.util.List;
 
@@ -10,10 +10,10 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 
 @PlanningSolution
-public class TestdataQuarkusSupplierVariableSolution {
+public class TestdataQuarkusSupplierVariableSimpleSolution {
 
     private List<String> valueList;
-    private List<TestdataQuarkusSupplierVariableEntity> entityList;
+    private List<TestdataQuarkusSupplierVariableSimpleEntity> entityList;
 
     private SimpleScore score;
 
@@ -28,11 +28,11 @@ public class TestdataQuarkusSupplierVariableSolution {
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataQuarkusSupplierVariableEntity> getEntityList() {
+    public List<TestdataQuarkusSupplierVariableSimpleEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataQuarkusSupplierVariableEntity> entityList) {
+    public void setEntityList(List<TestdataQuarkusSupplierVariableSimpleEntity> entityList) {
         this.entityList = entityList;
     }
 
