@@ -699,6 +699,24 @@ public class EntityDescriptor<Solution_> {
         return !effectiveGenuineVariableDescriptorMap.isEmpty();
     }
 
+    public boolean hasAnyGenuineBasicVariables() {
+        if (!isGenuine()) {
+            return false;
+        }
+        return getDeclaredGenuineVariableDescriptors().stream()
+                .anyMatch(descriptor -> !descriptor.isListVariable());
+    }
+
+    public boolean hasAnyGenuineChainedVariables() {
+        if (!isGenuine()) {
+            return false;
+        }
+        return getDeclaredGenuineVariableDescriptors().stream()
+                .filter(descriptor -> descriptor instanceof BasicVariableDescriptor<Solution_>)
+                .map(descriptor -> (BasicVariableDescriptor<Solution_>) descriptor)
+                .anyMatch(BasicVariableDescriptor::isChained);
+    }
+
     public boolean hasAnyGenuineListVariables() {
         if (!isGenuine()) {
             return false;

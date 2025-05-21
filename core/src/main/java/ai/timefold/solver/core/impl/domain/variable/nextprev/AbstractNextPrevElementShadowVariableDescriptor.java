@@ -97,4 +97,9 @@ abstract class AbstractNextPrevElementShadowVariableDescriptor<Solution_> extend
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
+
+    @Override
+    public boolean isListVariableSource() {
+        return true;
+    }
 }

@@ -250,7 +250,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                             .getDefaultEntitySelectorConfigForEntity(configPolicy, genuineEntityDescriptor));
                 }
 
-                constructionHeuristicPhaseConfig.setEntityPlacerConfig(entityPlacerConfig);
+                constructionHeuristicPhaseConfig.setEntityPlacerConfigList(List.of(entityPlacerConfig));
                 phaseConfigList.add(constructionHeuristicPhaseConfig);
             }
             phaseConfigList.add(new LocalSearchPhaseConfig());

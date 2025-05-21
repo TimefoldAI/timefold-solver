@@ -65,6 +65,11 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
     }
 
     /**
+     * return true if the source variable is a list variable; otherwise, return false.
+     */
+    public abstract boolean isListVariableSource();
+
+    /**
      * @param supplyManager never null
      * @return never null
      */

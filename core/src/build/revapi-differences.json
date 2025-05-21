@@ -331,6 +331,23 @@
           "new": "class ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore",
           "annotation": "@org.jspecify.annotations.NullMarked",
           "justification": "@NonNull replaced by @NullMarked"
+        },
+        {
+          "ignore": true,
+          "code": "java.field.removed",
+          "old": "field ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig.entityPlacerConfig",
+          "justification": "New CH configuration with multiple placers"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig",
+          "new": "class ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfig\", \"moveSelectorConfigList\", \"foragerConfig\"}",
+          "newValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfigList\", \"moveSelectorConfigList\", \"foragerConfig\"}",
+          "justification": "New CH configuration with multiple placers"
         }
       ]
     }

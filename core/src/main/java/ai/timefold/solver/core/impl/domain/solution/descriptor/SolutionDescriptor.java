@@ -727,11 +727,13 @@ public class SolutionDescriptor<Solution_> {
 
         var listVariableDescriptor = listVariableDescriptorList.get(0);
         var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
-        if (listVariableEntityDescriptor.getGenuineVariableDescriptorList().size() > 1) {
+        // We will not support chained and list variables at the same entity,
+        // and the validation can be removed once we discontinue support for chained variables.
+        if (hasChainedVariable()) {
             var basicVariableDescriptorList = new ArrayList<>(listVariableEntityDescriptor.getGenuineVariableDescriptorList());
             basicVariableDescriptorList.remove(listVariableDescriptor);
             throw new UnsupportedOperationException(
-                    "Combining basic variables (%s) with list variables (%s) on a single planning entity (%s) is not supported."
+                    "Combining chained variables (%s) with list variables (%s) on a single planning entity (%s) is not supported."
                             .formatted(basicVariableDescriptorList, listVariableDescriptor,
                                     listVariableDescriptor.getEntityDescriptor().getEntityClass().getCanonicalName()));
         }
@@ -875,6 +877,22 @@ public class SolutionDescriptor<Solution_> {
             this.planningSolutionMetaModel = metaModel;
         }
         return planningSolutionMetaModel;
+    }
+
+    public boolean hasBasicVariable() {
+        return getGenuineEntityDescriptors().stream().anyMatch(EntityDescriptor::hasAnyGenuineBasicVariables);
+    }
+
+    public boolean hasChainedVariable() {
+        return getGenuineEntityDescriptors().stream().anyMatch(EntityDescriptor::hasAnyGenuineChainedVariables);
+    }
+
+    public boolean hasListVariable() {
+        return getListVariableDescriptor() != null;
+    }
+
+    public boolean hasBothBasicAndListVariables() {
+        return hasBasicVariable() && hasListVariable();
     }
 
     /**

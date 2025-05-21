@@ -165,6 +165,11 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
         throw new UnsupportedOperationException("Cascade update element generates no listeners.");
     }
 
+    @Override
+    public boolean isListVariableSource() {
+        return false;
+    }
+
     private record ShadowVariableTarget<Solution_>(EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
 

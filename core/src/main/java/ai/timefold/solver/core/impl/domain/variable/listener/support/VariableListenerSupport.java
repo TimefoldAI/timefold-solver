@@ -112,14 +112,21 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 .flatMap(Collection::stream)
                 .filter(ShadowVariableDescriptor::hasVariableListener)
                 .sorted(Comparator.comparingInt(ShadowVariableDescriptor::getGlobalShadowOrder))
-                .forEach(d -> {
+                .forEach(descriptor -> {
                     // All information about elements in all shadow variables is tracked in a centralized place.
-                    // Therefore all list-related shadow variables need to be connected to that centralized place.
+                    // Therefore, all list-related shadow variables need to be connected to that centralized place.
                     // Shadow variables which are not related to a list variable are processed normally.
                     if (listVariableStateSupply == null) {
-                        processShadowVariableDescriptorWithoutListVariable(d);
+                        processShadowVariableDescriptorWithoutListVariable(descriptor);
                     } else {
-                        processShadowVariableDescriptorWithListVariable(d, listVariableStateSupply);
+                        // When multiple variable types are used,
+                        // the shadow variable process needs to account for each variable
+                        // and process them according to their types.
+                        if (descriptor.isListVariableSource()) {
+                            processShadowVariableDescriptorWithListVariable(descriptor, listVariableStateSupply);
+                        } else {
+                            processShadowVariableDescriptorWithoutListVariable(descriptor);
+                        }
                     }
                 });
     }

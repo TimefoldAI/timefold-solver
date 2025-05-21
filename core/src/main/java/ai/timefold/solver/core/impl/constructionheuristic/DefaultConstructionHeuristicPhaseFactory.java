@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
+import java.util.ArrayList;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -28,6 +29,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacerFac
 import ai.timefold.solver.core.impl.constructionheuristic.placer.PooledEntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedEntityPlacerFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacerFactory;
+import ai.timefold.solver.core.impl.constructionheuristic.placer.internal.QueuedMultiplePlacerConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -85,9 +87,37 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     }
 
     private Optional<EntityPlacerConfig<?>> getValidEntityPlacerConfig() {
-        var entityPlacerConfig = phaseConfig.getEntityPlacerConfig();
-        if (entityPlacerConfig == null) {
+        if (phaseConfig.getEntityPlacerConfigList() == null || phaseConfig.getEntityPlacerConfigList().isEmpty()) {
             return Optional.empty();
+        }
+
+        if (phaseConfig.getEntityPlacerConfigList().size() > 2) {
+            throw new IllegalArgumentException(
+                    "The Construction Heuristic configuration (%s) only support a maximum of two entity placers."
+                            .formatted(phaseConfig));
+        }
+        if (phaseConfig.getEntityPlacerConfigList().stream().anyMatch(PooledEntityPlacerConfig.class::isInstance)
+                && phaseConfig.getEntityPlacerConfigList().size() == 2) {
+            throw new IllegalArgumentException(
+                    "The Construction Heuristic configuration (%s) does not support multiple configurations when using the pooled placer configuration %s."
+                            .formatted(phaseConfig, PooledEntityPlacerConfig.class.getSimpleName()));
+        }
+        if (phaseConfig.getEntityPlacerConfigList().stream().map(EntityPlacerConfig::getClass).distinct().count() == 1
+                && phaseConfig.getEntityPlacerConfigList().size() == 2) {
+            var message = "The Construction Heuristic configuration (%s) cannot contain duplicate placer configurations."
+                    .formatted(phaseConfig);
+            if (phaseConfig.getEntityPlacerConfigList().get(0) instanceof QueuedEntityPlacerConfig) {
+                throw new IllegalArgumentException("""
+                        %s
+                        Maybe define multiple move selectors if there are more than one basic variables.""".formatted(message));
+            }
+            throw new IllegalArgumentException(message);
+        }
+
+        var entityPlacerConfig = phaseConfig.getEntityPlacerConfigList().get(0);
+        if (phaseConfig.getEntityPlacerConfigList().size() == 2) {
+            entityPlacerConfig = new QueuedMultiplePlacerConfig()
+                    .withPlacerConfigList(phaseConfig.getEntityPlacerConfigList());
         }
         if (phaseConfig.getConstructionHeuristicType() != null) {
             throw new IllegalArgumentException(
@@ -100,14 +130,32 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                     "The moveSelectorConfigList (%s) cannot be configured if the entityPlacerConfig (%s) is explicitly configured."
                             .formatted(moveSelectorConfigList, entityPlacerConfig));
         }
+
         return Optional.of(entityPlacerConfig);
     }
 
+    @SuppressWarnings("rawtypes")
     private EntityPlacerConfig<?> buildDefaultEntityPlacerConfig(HeuristicConfigPolicy<Solution_> configPolicy,
             ConstructionHeuristicType constructionHeuristicType) {
-        return findValidListVariableDescriptor(configPolicy.getSolutionDescriptor())
-                .map(listVariableDescriptor -> buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor))
-                .orElseGet(() -> buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
+        var listVariableDescriptor = findValidListVariableDescriptor(configPolicy.getSolutionDescriptor()).orElse(null);
+        if (configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
+            if (listVariableDescriptor == null) {
+                throw new IllegalStateException("Impossible state: the list variable descriptor is null.");
+            }
+            var placerConfigList = new ArrayList<EntityPlacerConfig>();
+            // Generate the default configuration for the list variable
+            placerConfigList.add(buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor));
+            // Generate a single config for the basic variable(s)
+            // When multiple basic variables are defined, a Cartesian product is created
+            placerConfigList.add(buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType));
+            return new QueuedMultiplePlacerConfig().withPlacerConfigList(placerConfigList);
+        } else {
+            if (listVariableDescriptor != null) {
+                return buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor);
+            } else {
+                return buildUnfoldedEntityPlacerConfig(configPolicy, constructionHeuristicType);
+            }
+        }
     }
 
     private Optional<ListVariableDescriptor<?>>
@@ -117,7 +165,6 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
             return Optional.empty();
         }
         failIfConfigured(phaseConfig.getConstructionHeuristicType(), "constructionHeuristicType");
-        failIfConfigured(phaseConfig.getEntityPlacerConfig(), "entityPlacerConfig");
         failIfConfigured(phaseConfig.getMoveSelectorConfigList(), "moveSelectorConfigList");
         return Optional.of(listVariableDescriptor);
     }
@@ -144,7 +191,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         }
         // Prepare replaying ValueSelector config.
         var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
-                .withMimicSelectorRef(mimicSelectorId);
+                .withMimicSelectorRef(mimicSelectorId)
+                .withVariableName(variableDescriptor.getVariableName());
 
         // ListChangeMoveSelector uses the replaying ValueSelector.
         var listChangeMoveSelectorConfig = new ListChangeMoveSelectorConfig()

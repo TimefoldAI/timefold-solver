@@ -92,4 +92,9 @@ public final class AnchorShadowVariableDescriptor<Solution_> extends ShadowVaria
                 sourceVariableDescriptor).toCollection();
     }
 
+    @Override
+    public boolean isListVariableSource() {
+        return false;
+    }
+
 }

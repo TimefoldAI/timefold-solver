@@ -22,7 +22,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BooleanSupplier;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -1023,7 +1022,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         final var entityCount = 5;
         solution.setEntityList(IntStream.rangeClosed(1, entityCount)
                 .mapToObj(id -> new TestdataEntity("e" + id))
-                .collect(Collectors.toList()));
+                .toList());
 
         var score = SolutionManager.create(solverFactory).update(solution);
         assertThat(score).isNotNull();
@@ -1199,9 +1198,9 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"))
                 .withPhases(
                         // Each planning entity class needs a separate CH phase.
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
                                 .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedBrownEntity.class))),
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
                                 .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedGreenEntity.class))),
                         new LocalSearchPhaseConfig().withMoveSelectorConfig(new UnionMoveSelectorConfig().withMoveSelectors(
                                 new ChangeMoveSelectorConfig(),

@@ -114,4 +114,9 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
     public Integer getValue(Object entity) {
         return super.getValue(entity);
     }
+
+    @Override
+    public boolean isListVariableSource() {
+        return true;
+    }
 }

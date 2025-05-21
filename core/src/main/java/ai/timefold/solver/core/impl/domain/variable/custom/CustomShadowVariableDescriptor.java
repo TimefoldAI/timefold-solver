@@ -148,4 +148,9 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
             return new VariableListenerWithSources<>(variableListener, classListEntry.getValue());
         }).collect(Collectors.toList());
     }
+
+    @Override
+    public boolean isListVariableSource() {
+        return false;
+    }
 }

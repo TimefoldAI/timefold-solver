@@ -113,6 +113,11 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         }
     }
 
+    @Override
+    public boolean isListVariableSource() {
+        return false;
+    }
+
     public MemberAccessor getMemberAccessor() {
         return variableMemberAccessor;
     }

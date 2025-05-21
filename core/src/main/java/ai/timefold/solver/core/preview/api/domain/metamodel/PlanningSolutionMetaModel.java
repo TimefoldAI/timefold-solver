@@ -84,5 +84,4 @@ public interface PlanningSolutionMetaModel<Solution_> {
         }
         return false;
     }
-
 }
