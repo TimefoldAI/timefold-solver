@@ -1095,48 +1095,14 @@ class TimefoldProcessor {
             }
             var sources = shadowSources.value().asStringArray();
             for (var source : sources) {
-                var currentType = rootType;
-                java.lang.reflect.Type currentGenericType = rootType;
-                var parts = source.split(RootVariableSource.MEMBER_SEPERATOR_REGEX);
-                boolean isAfterCollection = false;
-                String collectionName = "";
-                for (var part : parts) {
-                    var isCollection = part.endsWith(RootVariableSource.COLLECTION_REFERENCE_SUFFIX);
-                    var memberName = isCollection
-                            ? part.substring(0, part.length() - RootVariableSource.COLLECTION_REFERENCE_SUFFIX.length())
-                            : part;
-                    if (isAfterCollection) {
-                        var message =
-                                "Unable to infer collection type of member (%s) referenced by source path (%s) for root entity (%s)."
-                                        .formatted(memberName,
-                                                source, rootType);
-                        if (!(currentGenericType instanceof java.lang.reflect.ParameterizedType parameterizedType)) {
-                            throw new IllegalArgumentException(message);
-                        }
-                        if (parameterizedType.getActualTypeArguments().length != 1) {
-                            throw new IllegalArgumentException(message);
-                        }
-                        currentGenericType = parameterizedType.getActualTypeArguments()[0];
-                        if (currentGenericType instanceof Class<?> clazz) {
-                            currentType = clazz;
-                        } else if (currentGenericType instanceof java.lang.reflect.ParameterizedType currentParameterizedType) {
-                            currentType = (Class<?>) currentParameterizedType.getRawType();
-                        } else {
-                            throw new IllegalArgumentException(message);
-                        }
-                    }
-                    var member = RootVariableSource.getMember(rootType, source, currentType, memberName);
-
+                for (var iterator = RootVariableSource.pathIterator(rootType, source); iterator.hasNext();) {
+                    var member = iterator.next().member();
                     AnnotationTarget target;
-                    Class<?> nextType;
+
                     if (member instanceof Field field) {
                         target = indexView.getClassByName(field.getDeclaringClass()).field(field.getName());
-                        nextType = field.getType();
-                        currentGenericType = field.getGenericType();
                     } else if (member instanceof Method method) {
                         target = indexView.getClassByName(method.getDeclaringClass()).method(method.getName());
-                        nextType = method.getReturnType();
-                        currentGenericType = method.getGenericReturnType();
                     } else {
                         throw new IllegalStateException("Member (%s) is not on a field or method."
                                 .formatted(member));
@@ -1146,10 +1112,6 @@ class TimefoldProcessor {
                             AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
                                     .value(source)
                                     .buildWithTarget(target));
-                    currentType = nextType;
-
-                    collectionName = memberName;
-                    isAfterCollection = isCollection;
                 }
             }
         }
