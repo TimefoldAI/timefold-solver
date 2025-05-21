@@ -70,11 +70,12 @@ public final class PlannerTestUtils {
                                 new TerminationConfig().withStepCountLimit(TERMINATION_STEP_COUNT_LIMIT)));
     }
 
-    public static <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem) {
+    public static synchronized <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem) {
         return solve(solverConfig, problem, true);
     }
 
-    public static <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem, boolean bestSolutionEventExists) {
+    public static synchronized <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem,
+            boolean bestSolutionEventExists) {
         SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
         var solver = solverFactory.buildSolver();
         var eventBestSolutionRef = new AtomicReference<Solution_>();
@@ -100,10 +101,10 @@ public final class PlannerTestUtils {
         var solution = new TestdataSolution(code);
         solution.setValueList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataValue("v" + i))
-                .collect(Collectors.toList()));
+                .toList());
         solution.setEntityList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataEntity("e" + i))
-                .collect(Collectors.toList()));
+                .toList());
         return solution;
     }
 
