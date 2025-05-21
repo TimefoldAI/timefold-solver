@@ -10,7 +10,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
-import org.junit.jupiter.api.parallel.ResourceLock;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.MockClock;
@@ -18,8 +17,6 @@ import io.micrometer.core.instrument.config.NamingConvention;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
-// Mutual exclusion to prevent flaky tests from different test suites
-@ResourceLock(value = "metrics")
 // We also want to ensure that tests of the same suite do not update the registry concurrently
 @Execution(ExecutionMode.SAME_THREAD)
 public abstract class AbstractMeterTest {

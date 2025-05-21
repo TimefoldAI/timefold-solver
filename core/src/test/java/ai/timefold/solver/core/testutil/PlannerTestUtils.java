@@ -74,6 +74,10 @@ public final class PlannerTestUtils {
         return solve(solverConfig, problem, true);
     }
 
+    /**
+     * We need to synchronize the solving process because there are some shared resources, such as the Meter registry,
+     * which could be updated concurrently.
+     */
     public static synchronized <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem,
             boolean bestSolutionEventExists) {
         SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
@@ -101,10 +105,10 @@ public final class PlannerTestUtils {
         var solution = new TestdataSolution(code);
         solution.setValueList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataValue("v" + i))
-                .toList());
+                .collect(Collectors.toList()));
         solution.setEntityList(IntStream.range(1, entityAndValueCount + 1)
                 .mapToObj(i -> new TestdataEntity("e" + i))
-                .toList());
+                .collect(Collectors.toList()));
         return solution;
     }
 
