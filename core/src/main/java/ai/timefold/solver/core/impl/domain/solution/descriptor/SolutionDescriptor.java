@@ -569,9 +569,11 @@ public class SolutionDescriptor<Solution_> {
             Class<? extends Annotation> annotationClass) {
         var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                 FIELD_OR_READ_METHOD, annotationClass, descriptorPolicy.getDomainAccessType());
+        Class<?> problemFactType;
         assertNoFieldAndGetterDuplicationOrConflict(memberAccessor, annotationClass);
         if (annotationClass == ProblemFactProperty.class) {
             problemFactMemberAccessorMap.put(memberAccessor.getName(), memberAccessor);
+            problemFactType = memberAccessor.getType();
         } else if (annotationClass == ProblemFactCollectionProperty.class) {
             var type = memberAccessor.getType();
             if (!(Collection.class.isAssignableFrom(type) || type.isArray())) {
@@ -581,8 +583,21 @@ public class SolutionDescriptor<Solution_> {
                                         Collection.class.getSimpleName()));
             }
             problemFactCollectionMemberAccessorMap.put(memberAccessor.getName(), memberAccessor);
+            problemFactType = type;
         } else {
             throw new IllegalStateException("Impossible situation with annotationClass (" + annotationClass + ").");
+        }
+        if (problemFactType.isAnnotationPresent(PlanningEntity.class)) {
+            throw new IllegalStateException(
+                    "The solutionClass (%s) has a @%s annotated member (%s) that returns a @%s. Maybe use @%s instead?"
+                            .formatted(
+                                    solutionClass,
+                                    annotationClass,
+                                    memberAccessor.getName(),
+                                    PlanningEntity.class.getSimpleName(),
+                                    ((annotationClass == ProblemFactProperty.class)
+                                            ? PlanningEntityProperty.class.getSimpleName()
+                                            : PlanningEntityCollectionProperty.class.getSimpleName())));
         }
     }
 
