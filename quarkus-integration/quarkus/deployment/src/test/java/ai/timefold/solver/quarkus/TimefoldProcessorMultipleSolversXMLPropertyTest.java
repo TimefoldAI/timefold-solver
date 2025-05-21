@@ -3,13 +3,13 @@ package ai.timefold.solver.quarkus;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import ai.timefold.solver.quarkus.rest.TestdataQuarkusShadowSolutionConfigResource;
-import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableEntity;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableListener;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableEntity;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableListener;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

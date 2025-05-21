@@ -8,7 +8,7 @@ import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.mul
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.multiple.TestdataMultipleInheritanceChildSolution;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.multiple.TestdataMultipleInheritanceEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.multiple.TestdataMultipleInheritanceExtendedSolution;
-import ai.timefold.solver.quarkus.testdomain.superclass.constraints.DummyConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.superclass.DummyConstraintProvider;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

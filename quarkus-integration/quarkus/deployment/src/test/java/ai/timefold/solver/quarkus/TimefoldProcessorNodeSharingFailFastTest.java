@@ -3,9 +3,9 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

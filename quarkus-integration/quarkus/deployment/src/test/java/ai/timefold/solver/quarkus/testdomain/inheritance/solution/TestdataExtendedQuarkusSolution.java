@@ -1,6 +1,6 @@
 package ai.timefold.solver.quarkus.testdomain.inheritance.solution;
 
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
 
 public class TestdataExtendedQuarkusSolution extends TestdataQuarkusSolution {
     private String extraData;

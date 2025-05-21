@@ -11,9 +11,9 @@ import java.util.stream.IntStream;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.quarkus.testdomain.interfaceentity.domain.TestdataInterfaceEntity;
-import ai.timefold.solver.quarkus.testdomain.interfaceentity.domain.TestdataInterfaceEntityImplementation;
-import ai.timefold.solver.quarkus.testdomain.interfaceentity.domain.TestdataInterfaceEntitySolution;
+import ai.timefold.solver.quarkus.testdomain.interfaceentity.TestdataInterfaceEntity;
+import ai.timefold.solver.quarkus.testdomain.interfaceentity.TestdataInterfaceEntityImplementation;
+import ai.timefold.solver.quarkus.testdomain.interfaceentity.TestdataInterfaceEntitySolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
