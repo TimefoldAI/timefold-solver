@@ -70,11 +70,16 @@ public final class PlannerTestUtils {
                                 new TerminationConfig().withStepCountLimit(TERMINATION_STEP_COUNT_LIMIT)));
     }
 
-    public static <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem) {
+    public static synchronized <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem) {
         return solve(solverConfig, problem, true);
     }
 
-    public static <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem, boolean bestSolutionEventExists) {
+    /**
+     * We need to synchronize the solving process because there are some shared resources, such as the Meter registry,
+     * which could be updated concurrently.
+     */
+    public static synchronized <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem,
+            boolean bestSolutionEventExists) {
         SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
         var solver = solverFactory.buildSolver();
         var eventBestSolutionRef = new AtomicReference<Solution_>();
