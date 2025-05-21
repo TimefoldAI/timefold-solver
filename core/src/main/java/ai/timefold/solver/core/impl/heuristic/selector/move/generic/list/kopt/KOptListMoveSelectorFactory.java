@@ -9,7 +9,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -29,24 +28,29 @@ public final class KOptListMoveSelectorFactory<Solution_>
     @Override
     protected MoveSelector<Solution_> buildBaseMoveSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        var originSelectorConfig = Objects.requireNonNullElseGet(config.getOriginSelectorConfig(), ValueSelectorConfig::new);
-        var valueSelectorConfig = Objects.requireNonNullElseGet(config.getValueSelectorConfig(), ValueSelectorConfig::new);
-
-        var entityDescriptor = getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
-
-        var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
-        var originSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, originSelectorConfig,
-                minimumCacheType, selectionOrder);
-        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
-                minimumCacheType, selectionOrder);
-        // TODO support coexistence of list and basic variables https://issues.redhat.com/browse/PLANNER-2755
-        var variableDescriptor = getTheOnlyVariableDescriptor(entityDescriptor);
-        if (!variableDescriptor.isListVariable()) {
+        var listVariableDescriptor = configPolicy.getSolutionDescriptor().getListVariableDescriptor();
+        if (listVariableDescriptor == null) {
             throw new IllegalArgumentException("""
                     The kOptListMoveSelector (%s) can only be used when the domain model has a list variable.
                     Check your @%s and make sure it has a @%s."""
                     .formatted(config, PlanningEntity.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
         }
+
+        var originSelectorConfig = Objects.requireNonNullElseGet(config.getOriginSelectorConfig(), ValueSelectorConfig::new);
+        var valueSelectorConfig = Objects.requireNonNullElseGet(config.getValueSelectorConfig(), ValueSelectorConfig::new);
+
+        var entityDescriptor = getTheOnlyEntityDescriptorWithListVariable(configPolicy.getSolutionDescriptor());
+        if (originSelectorConfig.getVariableName() == null) {
+            originSelectorConfig.setVariableName(listVariableDescriptor.getVariableName());
+        }
+        if (valueSelectorConfig.getVariableName() == null) {
+            valueSelectorConfig.setVariableName(listVariableDescriptor.getVariableName());
+        }
+        var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
+        var originSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, originSelectorConfig,
+                minimumCacheType, selectionOrder);
+        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
+                minimumCacheType, selectionOrder);
 
         int minimumK = Objects.requireNonNullElse(config.getMinimumK(), DEFAULT_MINIMUM_K);
         if (minimumK < 2) {
@@ -71,8 +75,8 @@ public final class KOptListMoveSelectorFactory<Solution_>
             total = remainder;
         }
         pickedKDistribution[pickedKDistribution.length - 1] = total;
-        return new KOptListMoveSelector<>(((ListVariableDescriptor<Solution_>) variableDescriptor),
-                originSelector, valueSelector, minimumK, maximumK, pickedKDistribution);
+        return new KOptListMoveSelector<>(listVariableDescriptor, originSelector, valueSelector, minimumK, maximumK,
+                pickedKDistribution);
     }
 
     private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(

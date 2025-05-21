@@ -740,6 +740,12 @@ public class EntityDescriptor<Solution_> {
         return effectiveGenuineVariableDescriptorList;
     }
 
+    public List<GenuineVariableDescriptor<Solution_>> getGenuineBasicVariableDescriptorList() {
+        return effectiveGenuineVariableDescriptorList.stream()
+                .filter(descriptor -> !descriptor.isListVariable())
+                .toList();
+    }
+
     public long getGenuineVariableCount() {
         return effectiveGenuineVariableDescriptorList.size();
     }
