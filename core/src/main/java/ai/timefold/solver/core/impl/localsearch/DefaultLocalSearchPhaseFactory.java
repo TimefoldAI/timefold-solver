@@ -1,6 +1,8 @@
 package ai.timefold.solver.core.impl.localsearch;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PinningFilter;
@@ -27,7 +29,6 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -67,10 +68,6 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             throw new UnsupportedOperationException("""
                     The solver configuration enabled both move selectors and Move Streams.
                     These are mutually exclusive features, please pick one or the other.""");
-        }
-        if (solverConfigPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
-            throw new UnsupportedOperationException(
-                    "A mixed model using both basic and list variables is not supported yet.");
         }
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
@@ -280,46 +277,31 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     private UnionMoveSelectorConfig determineDefaultMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
         var solutionDescriptor = configPolicy.getSolutionDescriptor();
-        var basicVariableDescriptorList = solutionDescriptor.getEntityDescriptors().stream()
-                .flatMap(entityDescriptor -> entityDescriptor.getGenuineVariableDescriptorList().stream())
-                .filter(variableDescriptor -> !variableDescriptor.isListVariable())
-                .distinct()
-                .toList();
-        var hasChainedVariable = basicVariableDescriptorList.stream()
-                .filter(v -> v instanceof BasicVariableDescriptor<Solution_>)
-                .anyMatch(v -> ((BasicVariableDescriptor<?>) v).isChained());
-        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-        if (basicVariableDescriptorList.isEmpty()) { // We only have the one list variable.
-            return new UnionMoveSelectorConfig()
-                    .withMoveSelectors(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
-                            new KOptListMoveSelectorConfig());
-        } else if (listVariableDescriptor == null) { // We only have basic variables.
-            if (hasChainedVariable && basicVariableDescriptorList.size() == 1) {
+        if (solutionDescriptor.hasBothBasicAndListVariables()) {
+            var moveSelectorList = new ArrayList<MoveSelectorConfig>();
+            // Specific basic variable moves
+            moveSelectorList.addAll(List.of(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig()));
+            // Specific list variable moves
+            moveSelectorList.addAll(List.of(new ListChangeMoveSelectorConfig(), new ListSwapMoveSelectorConfig(),
+                    new KOptListMoveSelectorConfig()));
+            return new UnionMoveSelectorConfig().withMoveSelectorList(moveSelectorList);
+        } else if (solutionDescriptor.hasListVariable()) {
+            // We only have the one list variable.
+            return new UnionMoveSelectorConfig().withMoveSelectors(new ListChangeMoveSelectorConfig(),
+                    new ListSwapMoveSelectorConfig(), new KOptListMoveSelectorConfig());
+        } else {
+            // We only have basic variables.
+            var basicVariableDescriptorList = solutionDescriptor.getBasicVariableDescriptorList();
+            if (solutionDescriptor.hasChainedVariable() && basicVariableDescriptorList.size() == 1) {
+                // if there is only one chained variable, we add TailChainSwapMoveSelectorConfig
                 return new UnionMoveSelectorConfig()
                         .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig(),
                                 new TailChainSwapMoveSelectorConfig());
             } else {
-                return new UnionMoveSelectorConfig()
-                        .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
+                // Basic variables or a mixed model with basic and chained variables
+                return new UnionMoveSelectorConfig().withMoveSelectors(new ChangeMoveSelectorConfig(),
+                        new SwapMoveSelectorConfig());
             }
-        } else {
-            /*
-             * We have a mix of basic and list variables.
-             * The "old" move selector configs handle this situation correctly but they complain of it being deprecated.
-             *
-             * Combining essential variables with list variables in a single entity is not supported. Therefore,
-             * default selectors do not support enabling Nearby Selection with multiple entities.
-             */
-            if (configPolicy.getNearbyDistanceMeterClass() != null) {
-                throw new IllegalArgumentException("""
-                        The configuration contains both basic and list variables, \
-                        which makes it incompatible with using a top-level nearbyDistanceMeterClass (%s).
-                        Specify move selectors manually or \
-                        remove the top-level nearbyDistanceMeterClass from your solver config."""
-                        .formatted(configPolicy.getNearbyDistanceMeterClass()));
-            }
-            return new UnionMoveSelectorConfig()
-                    .withMoveSelectors(new ChangeMoveSelectorConfig(), new SwapMoveSelectorConfig());
         }
     }
 }
