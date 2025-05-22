@@ -102,21 +102,23 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntityEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntityFirstEntity;
-import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntitySecondEntity;
-import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntitySolution;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarEntity;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarOtherValue;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarSolution;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarValue;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedListMultiVarEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedListMultiVarEntity;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedListMultiVarSolution;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedSolution;
 import ai.timefold.solver.core.testdomain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
@@ -1197,23 +1199,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
     }
 
-    @Test
-    void solveWithMultipleGenuinePlanningEntities() {
-        var solverConfig = new SolverConfig()
-                .withSolutionClass(TestdataMultiEntitySolution.class)
-                .withEntityClasses(TestdataLeadEntity.class, TestdataHerdEntity.class)
-                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
-                .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"));
-
-        var solution = new TestdataMultiEntitySolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        solution.setLeadEntityList(Arrays.asList(new TestdataLeadEntity("lead1"), new TestdataLeadEntity("lead2")));
-        solution.setHerdEntityList(Arrays.asList(new TestdataHerdEntity("herd1"), new TestdataHerdEntity("herd2")));
-
-        solution = PlannerTestUtils.solve(solverConfig, solution);
-        assertThat(solution).isNotNull();
-    }
-
     /**
      * Verifies <a href="https://issues.redhat.com/browse/PLANNER-2798">PLANNER-2798</a>.
      */
@@ -1433,16 +1418,113 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .isEmpty();
     }
 
+    private static List<MoveSelectorConfig> generateMovesMultiVarModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataMultiVarEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("primaryValue");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesMultiVarModel")
+    void solveMoveConfigMultiVar(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMultiVarSolution.class, TestdataMultiVarEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataMultiVarSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesMultiEntityModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataLeadEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("value");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesMultiEntityModel")
+    void solveMoveConfigMultiEntity(MoveSelectorConfig moveSelectionConfig) {
+        // Construction Heuristic
+        var leadConstructionHeuristicConfig = new ConstructionHeuristicPhaseConfig()
+                .withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
+                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                .withId(TestdataLeadEntity.class.getName())
+                                .withEntityClass(TestdataLeadEntity.class)));
+        var herdConstructionHeuristicConfig = new ConstructionHeuristicPhaseConfig()
+                .withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
+                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                .withId(TestdataHerdEntity.class.getName())
+                                .withEntityClass(TestdataHerdEntity.class)));
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMultiEntitySolution.class, TestdataLeadEntity.class, TestdataHerdEntity.class)
+                .withPhases(leadConstructionHeuristicConfig, herdConstructionHeuristicConfig, localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"));
+
+        var problem = TestdataMultiEntitySolution.generateUninitializedSolution(2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution).isNotNull();
+    }
+
     @Test
     void solveMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
-                TestdataListMultiVarOtherValue.class)
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
-                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
-        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
@@ -1453,12 +1535,12 @@ class DefaultSolverTest extends AbstractMeterTest {
     void solvePinnedMixedModel() {
         // We don't enable the LS because we want to ensure the pinned entity remains uninitialized
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
-                TestdataListMultiVarOtherValue.class)
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig())
-                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
-        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
         // Pin the first entity
         problem.getEntityList().get(0).setPinned(true);
         problem.getEntityList().get(0).setPinnedIndex(0);
@@ -1472,12 +1554,12 @@ class DefaultSolverTest extends AbstractMeterTest {
     @Test
     void solveUnassignedMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataUnassignedListMultiVarSolution.class, TestdataUnassignedListMultiVarEntity.class)
+                TestdataUnassignedMixedSolution.class, TestdataUnassignedMixedEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
-                .withEasyScoreCalculatorClass(TestdataUnassignedListMultiVarEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(TestdataUnassignedMixedEasyScoreCalculator.class);
 
-        var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 2, 2);
         // Block values and make the basic and list variables unassigned
         problem.getValueList().get(0).setBlocked(true);
         problem.getValueList().get(1).setBlocked(true);
@@ -1498,13 +1580,13 @@ class DefaultSolverTest extends AbstractMeterTest {
     @Test
     void solvePinnedAndUnassignedMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataUnassignedListMultiVarSolution.class, TestdataUnassignedListMultiVarEntity.class)
+                TestdataUnassignedMixedSolution.class, TestdataUnassignedMixedEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
-                .withEasyScoreCalculatorClass(TestdataUnassignedListMultiVarEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(TestdataUnassignedMixedEasyScoreCalculator.class);
 
         // Pin the entire first entity
-        var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 2, 2);
         problem.getEntityList().get(0).setPinned(true);
         problem.getEntityList().get(0).setBasicValue(problem.getOtherValueList().get(0));
         problem.getEntityList().get(0).setSecondBasicValue(problem.getOtherValueList().get(0));
@@ -1524,7 +1606,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().get(1).getValueList()).isEmpty();
 
         // Pin partially the first entity list
-        problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 4, 2);
+        problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 4, 2);
         problem.getEntityList().get(0).setPinnedIndex(2);
         problem.getEntityList().get(0).setValueList(problem.getValueList().subList(1, 3));
         // Block values and make the basic variable unassigned
@@ -1559,14 +1641,14 @@ class DefaultSolverTest extends AbstractMeterTest {
         var entityPlacerConfig = new QueuedEntityPlacerConfig();
 
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
-                TestdataListMultiVarOtherValue.class)
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig()
                         .withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
-                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
-        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
@@ -1583,7 +1665,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Pillar change - basic
         var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
         var pillarChangeEntitySelectorConfig =
-                new EntitySelectorConfig().withEntityClass(TestdataListMultiVarEntity.class);
+                new EntitySelectorConfig().withEntityClass(TestdataMixedEntity.class);
         var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
         pillarChangeMoveSelectorConfig
                 .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
@@ -1620,12 +1702,12 @@ class DefaultSolverTest extends AbstractMeterTest {
                         .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
-                TestdataListMultiVarOtherValue.class)
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
-                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
-        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
@@ -1642,7 +1724,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Pillar change - basic
         var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
         var pillarChangeEntitySelectorConfig =
-                new EntitySelectorConfig().withEntityClass(TestdataListMultiEntitySecondEntity.class);
+                new EntitySelectorConfig().withEntityClass(TestdataMixedMultiEntitySecondEntity.class);
         var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
         pillarChangeMoveSelectorConfig
                 .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
@@ -1681,7 +1763,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withValueSelectorConfig(valueSelectorConfig)
                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                         .withValueSelectorConfig(mimicReplayingValueSelectorConfig))
-                .withEntityClass(TestdataListMultiEntityFirstEntity.class);
+                .withEntityClass(TestdataMixedMultiEntityFirstEntity.class);
         var entityPlacerConfig = new QueuedEntityPlacerConfig();
         var constructionHeuristicConfig =
                 new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig);
@@ -1692,12 +1774,12 @@ class DefaultSolverTest extends AbstractMeterTest {
                         .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
         // Solver Config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListMultiEntitySolution.class, TestdataListMultiEntityFirstEntity.class,
-                TestdataListMultiEntitySecondEntity.class)
+                TestdataMixedMultiEntitySolution.class, TestdataMixedMultiEntityFirstEntity.class,
+                TestdataMixedMultiEntitySecondEntity.class)
                 .withPhases(constructionHeuristicConfig, localSearchConfig)
-                .withEasyScoreCalculatorClass(TestdataListMultiEntityEasyScoreCalculator.class);
+                .withEasyScoreCalculatorClass(TestdataMixedEntityEasyScoreCalculator.class);
 
-        var problem = TestdataListMultiEntitySolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataMixedMultiEntitySolution.generateUninitializedSolution(2, 2, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValueList().isEmpty()))

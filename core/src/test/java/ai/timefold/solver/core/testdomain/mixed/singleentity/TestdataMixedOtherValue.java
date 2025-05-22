@@ -8,25 +8,25 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListMultiVarOtherValue extends TestdataObject {
+public class TestdataMixedOtherValue extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "basicValue")
-    private List<TestdataListMultiVarEntity> entityList;
+    private List<TestdataMixedEntity> entityList;
 
-    public TestdataListMultiVarOtherValue() {
+    public TestdataMixedOtherValue() {
         // Required for cloner
     }
 
-    public TestdataListMultiVarOtherValue(String code) {
+    public TestdataMixedOtherValue(String code) {
         super(code);
         entityList = new ArrayList<>();
     }
 
-    public List<TestdataListMultiVarEntity> getEntityList() {
+    public List<TestdataMixedEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataListMultiVarEntity> entityList) {
+    public void setEntityList(List<TestdataMixedEntity> entityList) {
         this.entityList = entityList;
     }
 }

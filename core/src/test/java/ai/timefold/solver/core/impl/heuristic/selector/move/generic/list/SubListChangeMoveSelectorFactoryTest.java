@@ -18,7 +18,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelecto
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
-import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -46,11 +46,11 @@ class SubListChangeMoveSelectorFactoryTest {
     @Test
     void buildMoveSelectorMultiEntity() {
         var config = new SubListChangeMoveSelectorConfig();
-        var moveSelectorFactory = new SubListChangeMoveSelectorFactory<TestdataListMultiEntitySolution>(config);
+        var moveSelectorFactory = new SubListChangeMoveSelectorFactory<TestdataMixedMultiEntitySolution>(config);
 
-        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataListMultiEntitySolution.buildSolutionDescriptor());
+        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataMixedMultiEntitySolution.buildSolutionDescriptor());
 
-        var selector = (RandomSubListChangeMoveSelector<TestdataListMultiEntitySolution>) moveSelectorFactory
+        var selector = (RandomSubListChangeMoveSelector<TestdataMixedMultiEntitySolution>) moveSelectorFactory
                 .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
                         false);
 

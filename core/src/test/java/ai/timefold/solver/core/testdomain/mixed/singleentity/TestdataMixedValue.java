@@ -8,49 +8,49 @@ import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListMultiVarValue extends TestdataObject {
+public class TestdataMixedValue extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataListMultiVarEntity entity;
+    private TestdataMixedEntity entity;
 
     @PreviousElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataListMultiVarValue previousElement;
+    private TestdataMixedValue previousElement;
 
     @NextElementShadowVariable(sourceVariableName = "valueList")
-    private TestdataListMultiVarValue nextElement;
+    private TestdataMixedValue nextElement;
 
     @IndexShadowVariable(sourceVariableName = "valueList")
     private Integer index;
 
-    public TestdataListMultiVarValue() {
+    public TestdataMixedValue() {
         // Required for cloner
     }
 
-    public TestdataListMultiVarValue(String code) {
+    public TestdataMixedValue(String code) {
         super(code);
     }
 
-    public TestdataListMultiVarEntity getEntity() {
+    public TestdataMixedEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataListMultiVarEntity entity) {
+    public void setEntity(TestdataMixedEntity entity) {
         this.entity = entity;
     }
 
-    public TestdataListMultiVarValue getPreviousElement() {
+    public TestdataMixedValue getPreviousElement() {
         return previousElement;
     }
 
-    public void setPreviousElement(TestdataListMultiVarValue previousElement) {
+    public void setPreviousElement(TestdataMixedValue previousElement) {
         this.previousElement = previousElement;
     }
 
-    public TestdataListMultiVarValue getNextElement() {
+    public TestdataMixedValue getNextElement() {
         return nextElement;
     }
 
-    public void setNextElement(TestdataListMultiVarValue nextElement) {
+    public void setNextElement(TestdataMixedValue nextElement) {
         this.nextElement = nextElement;
     }
 
