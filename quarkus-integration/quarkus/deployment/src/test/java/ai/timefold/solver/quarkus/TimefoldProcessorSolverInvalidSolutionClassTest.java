@@ -4,10 +4,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -40,8 +40,8 @@ class TimefoldProcessorSolverInvalidSolutionClassTest {
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining("Multiple classes")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableSolution")
-                    .hasMessageContaining("ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution")
+                            TestdataQuarkusShadowVariableSolution.class.getName())
+                    .hasMessageContaining(TestdataQuarkusSolution.class.getName())
                     .hasMessageContaining("found in the classpath with a @PlanningSolution annotation."));
 
     @Test

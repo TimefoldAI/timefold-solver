@@ -1095,22 +1095,14 @@ class TimefoldProcessor {
             }
             var sources = shadowSources.value().asStringArray();
             for (var source : sources) {
-                var currentType = rootType;
-                var parts = source.split(RootVariableSource.MEMBER_SEPERATOR_REGEX);
-                for (var part : parts) {
-                    var memberName = part.endsWith(RootVariableSource.COLLECTION_REFERENCE_SUFFIX)
-                            ? part.substring(0, part.length() - RootVariableSource.COLLECTION_REFERENCE_SUFFIX.length())
-                            : part;
-                    var member = RootVariableSource.getMember(rootType, source, currentType, memberName);
-
+                for (var iterator = RootVariableSource.pathIterator(rootType, source); iterator.hasNext();) {
+                    var member = iterator.next().member();
                     AnnotationTarget target;
-                    Class<?> nextType;
+
                     if (member instanceof Field field) {
                         target = indexView.getClassByName(field.getDeclaringClass()).field(field.getName());
-                        nextType = field.getType();
                     } else if (member instanceof Method method) {
                         target = indexView.getClassByName(method.getDeclaringClass()).method(method.getName());
-                        nextType = method.getReturnType();
                     } else {
                         throw new IllegalStateException("Member (%s) is not on a field or method."
                                 .formatted(member));
@@ -1120,7 +1112,6 @@ class TimefoldProcessor {
                             AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
                                     .value(source)
                                     .buildWithTarget(target));
-                    currentType = nextType;
                 }
             }
         }

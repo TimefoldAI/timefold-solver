@@ -8,14 +8,14 @@ import jakarta.inject.Inject;
 import jakarta.inject.Named;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.testdomain.chained.domain.TestdataChainedQuarkusSolution;
-import ai.timefold.solver.quarkus.testdomain.normal.constraints.TestdataQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusEntity;
-import ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.constraints.TestdataQuarkusShadowVariableConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableEntity;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableListener;
-import ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableSolution;
+import ai.timefold.solver.quarkus.testdomain.chained.TestdataChainedQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.normal.TestdataQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableEntity;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableListener;
+import ai.timefold.solver.quarkus.testdomain.shadowvariable.TestdataQuarkusShadowVariableSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -56,8 +56,8 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
                     .hasMessageContaining("solver2")
                     .hasMessageContaining("don't specify a PlanningSolution class, yet there are multiple available")
                     .hasMessageContaining(
-                            "ai.timefold.solver.quarkus.testdomain.shadowvariable.domain.TestdataQuarkusShadowVariableSolution")
-                    .hasMessageContaining("ai.timefold.solver.quarkus.testdomain.normal.domain.TestdataQuarkusSolution")
+                            TestdataQuarkusShadowVariableSolution.class.getName())
+                    .hasMessageContaining(TestdataQuarkusSolution.class.getName())
                     .hasMessageContaining("on the classpath."));
 
     // Unused classes
@@ -80,7 +80,8 @@ class TimefoldProcessorMultipleSolversInvalidSolutionClassTest {
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalStateException.class)
                     .hasMessageContaining(
-                            "Unused classes ([ai.timefold.solver.quarkus.testdomain.chained.domain.TestdataChainedQuarkusSolution]) found with a @PlanningSolution annotation."));
+                            "Unused classes ([%s]) found with a @PlanningSolution annotation."
+                                    .formatted(TestdataChainedQuarkusSolution.class.getName())));
 
     @Inject
     @Named("solver1")

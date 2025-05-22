@@ -5,7 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.quarkus.testdomain.multiple.constraintprovider.domain.TestdataMultipleConstraintSolution;
+import ai.timefold.solver.quarkus.testdomain.multiple.constraintprovider.TestdataMultipleConstraintSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

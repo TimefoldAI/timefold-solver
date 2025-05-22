@@ -6,11 +6,11 @@ import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.quarkus.testdomain.chained.constraints.TestdataChainedQuarkusConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.chained.domain.TestdataChainedQuarkusAnchor;
-import ai.timefold.solver.quarkus.testdomain.chained.domain.TestdataChainedQuarkusEntity;
-import ai.timefold.solver.quarkus.testdomain.chained.domain.TestdataChainedQuarkusObject;
-import ai.timefold.solver.quarkus.testdomain.chained.domain.TestdataChainedQuarkusSolution;
+import ai.timefold.solver.quarkus.testdomain.chained.TestdataChainedQuarkusAnchor;
+import ai.timefold.solver.quarkus.testdomain.chained.TestdataChainedQuarkusConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.chained.TestdataChainedQuarkusEntity;
+import ai.timefold.solver.quarkus.testdomain.chained.TestdataChainedQuarkusObject;
+import ai.timefold.solver.quarkus.testdomain.chained.TestdataChainedQuarkusSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

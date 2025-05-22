@@ -33,6 +33,7 @@ import ai.timefold.solver.core.testdomain.invalid.badfactcollection.TestdataBadF
 import ai.timefold.solver.core.testdomain.invalid.constraintconfiguration.TestdataInvalidConfigurationSolution;
 import ai.timefold.solver.core.testdomain.invalid.constraintweightoverrides.TestdataInvalidConstraintWeightOverridesSolution;
 import ai.timefold.solver.core.testdomain.invalid.duplicateweightoverrides.TestdataDuplicateWeightConfigurationSolution;
+import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.TestdataEntityAnnotatedAsProblemFactSolution;
 import ai.timefold.solver.core.testdomain.invalid.multivar.TestdataInvalidMultiVarSolution;
 import ai.timefold.solver.core.testdomain.invalid.nosolution.TestdataNoSolution;
 import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigurationSolution;
@@ -124,6 +125,16 @@ class SolutionDescriptorTest {
     void problemFactIsPlanningEntityCollectionProperty() {
         assertThatIllegalStateException().isThrownBy(
                 TestdataProblemFactIsPlanningEntityCollectionPropertySolution::buildSolutionDescriptor);
+    }
+
+    @Test
+    void planningEntityIsProblemFactProperty() {
+        assertThatIllegalStateException().isThrownBy(TestdataEntityAnnotatedAsProblemFactSolution::buildSolutionDescriptor);
+    }
+
+    @Test
+    void planningEntityIsProblemFactCollectionProperty() {
+        assertThatIllegalStateException().isThrownBy(TestdataEntityAnnotatedAsProblemFactSolution::buildSolutionDescriptor);
     }
 
     @Test

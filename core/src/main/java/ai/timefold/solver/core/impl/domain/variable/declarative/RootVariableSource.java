@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -45,6 +46,11 @@ public record RootVariableSource<Entity_, Value_>(
         }
     }
 
+    public static Iterator<PathPart> pathIterator(Class<?> rootEntity, String path) {
+        final var parts = path.split(MEMBER_SEPERATOR_REGEX);
+        return new PathPartIterator(rootEntity, parts, path);
+    }
+
     public static <Entity_, Value_> RootVariableSource<Entity_, Value_> from(
             PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass,
@@ -52,7 +58,6 @@ public record RootVariableSource<Entity_, Value_>(
             String variablePath,
             MemberAccessorFactory memberAccessorFactory,
             DescriptorPolicy descriptorPolicy) {
-        var pathParts = variablePath.split(MEMBER_SEPERATOR_REGEX);
         List<MemberAccessor> chainToVariable = new ArrayList<>();
         List<MemberAccessor> listMemberAccessors = new ArrayList<>();
         var hasListMemberAccessor = false;
@@ -61,23 +66,23 @@ public record RootVariableSource<Entity_, Value_>(
         Class<?> currentEntity = rootEntityClass;
         var factCount = 0;
 
-        for (var pathPart : pathParts) {
-            if (pathPart.endsWith(COLLECTION_REFERENCE_SUFFIX)) {
+        for (var iterator = pathIterator(rootEntityClass, variablePath); iterator.hasNext();) {
+            var pathPart = iterator.next();
+            if (pathPart.isCollection()) {
                 if (isAfterVariable) {
                     throw new IllegalArgumentException(
-                            "The source path (%s) starting from root class (%s) accesses a collection (%s) after a variable (%s), which is not allowed."
-                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart,
+                            "The source path (%s) starting from root class (%s) accesses a collection (%s[]) after a variable (%s), which is not allowed."
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name(),
                                             chainStartingFromSourceVariableList.get(0).get(0).getName()));
                 }
                 if (hasListMemberAccessor) {
                     throw new IllegalArgumentException(
-                            "The source path (%s) starting from root class (%s) accesses a collection (%s) after another collection (%s), which is not allowed."
-                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart,
+                            "The source path (%s) starting from root class (%s) accesses a collection (%s[]) after another collection (%s), which is not allowed."
+                                    .formatted(variablePath, rootEntityClass.getSimpleName(), pathPart.name(),
                                             listMemberAccessors.get(listMemberAccessors.size() - 1).getName()));
                 }
-                var memberName = pathPart.substring(0, pathPart.length() - COLLECTION_REFERENCE_SUFFIX.length());
                 var memberAccessor =
-                        getMemberAccessor(rootEntityClass, variablePath, currentEntity, memberName, memberAccessorFactory,
+                        getMemberAccessor(pathPart.member(), memberAccessorFactory,
                                 descriptorPolicy);
                 listMemberAccessors.add(memberAccessor);
                 chainToVariable = new ArrayList<>();
@@ -90,14 +95,14 @@ public record RootVariableSource<Entity_, Value_>(
 
                 hasListMemberAccessor = true;
             } else {
-                var memberAccessor = getMemberAccessor(rootEntityClass, variablePath, currentEntity, pathPart,
+                var memberAccessor = getMemberAccessor(pathPart.member(),
                         memberAccessorFactory, descriptorPolicy);
 
                 if (!hasListMemberAccessor) {
                     listMemberAccessors.add(memberAccessor);
                 }
 
-                var isVariable = isVariable(solutionMetaModel, memberAccessor.getDeclaringClass(), pathPart);
+                var isVariable = isVariable(solutionMetaModel, memberAccessor.getDeclaringClass(), pathPart.name());
                 chainToVariable.add(memberAccessor);
                 for (var chain : chainStartingFromSourceVariableList) {
                     chain.add(memberAccessor);
@@ -265,10 +270,8 @@ public record RootVariableSource<Entity_, Value_>(
         }
     }
 
-    private static MemberAccessor getMemberAccessor(Class<?> rootClass, String sourcePath, Class<?> declaringClass,
-            String memberName, MemberAccessorFactory memberAccessorFactory, DescriptorPolicy descriptorPolicy) {
-        var member = getMember(rootClass, sourcePath, declaringClass, memberName);
-
+    private static MemberAccessor getMemberAccessor(Member member, MemberAccessorFactory memberAccessorFactory,
+            DescriptorPolicy descriptorPolicy) {
         return memberAccessorFactory.buildAndCacheMemberAccessor(member,
                 MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD,
                 descriptorPolicy.getDomainAccessType());
@@ -303,4 +306,5 @@ public record RootVariableSource<Entity_, Value_>(
         }
         return !shadowVariable.supplierName().isEmpty();
     }
+
 }
