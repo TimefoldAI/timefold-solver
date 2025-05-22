@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar.list.multientity;
+package ai.timefold.solver.core.testdomain.mixed.multientity;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;

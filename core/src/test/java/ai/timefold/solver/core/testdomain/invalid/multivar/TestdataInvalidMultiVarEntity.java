@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedObject;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarValue;
 
 @PlanningEntity
 public class TestdataInvalidMultiVarEntity extends TestdataObject implements TestdataChainedObject {

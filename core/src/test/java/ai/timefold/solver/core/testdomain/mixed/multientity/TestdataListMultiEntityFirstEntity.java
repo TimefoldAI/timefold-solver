@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar.list.multientity;
+package ai.timefold.solver.core.testdomain.mixed.multientity;
 
 import java.util.ArrayList;
 import java.util.List;

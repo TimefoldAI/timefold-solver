@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar.basic;
+package ai.timefold.solver.core.testdomain.multivar;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;

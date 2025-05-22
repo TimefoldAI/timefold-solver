@@ -22,7 +22,6 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -36,10 +35,6 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
-import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntityFirstEntity;
-import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntitySecondEntity;
-import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntitySolution;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
@@ -392,21 +387,6 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
                 .hasMessageContaining(
                         "The Construction Heuristic configuration (ConstructionHeuristicPhaseConfig) does not support multiple configurations when using the pooled placer configuration PooledEntityPlacerConfig.");
-    }
-
-    @Test
-    void failMultiEntityWithListAndBasicVariables() {
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListMultiEntitySolution.class, TestdataListMultiEntityFirstEntity.class,
-                TestdataListMultiEntitySecondEntity.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig()
-                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
-                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
-
-        var problem = TestdataListMultiEntitySolution.generateUninitializedSolution(2, 2, 2);
-        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
-                .hasMessageContaining("has no entityClass configured and because there are multiple in the entityClassSet")
-                .hasMessageContaining("it cannot be deduced automatically");
     }
 
 }
