@@ -30,12 +30,14 @@ public final class ListRuinRecreateMoveSelectorFactory<Solution_>
         CountSupplier minimumSelectedSupplier = ruinMoveSelectorConfig::determineMinimumRuinedCount;
         CountSupplier maximumSelectedSupplier = ruinMoveSelectorConfig::determineMaximumRuinedCount;
 
-        this.getTheOnlyEntityDescriptor(configPolicy.getSolutionDescriptor());
+        this.getTheOnlyEntityDescriptorWithListVariable(configPolicy.getSolutionDescriptor());
 
         var listVariableDescriptor = configPolicy.getSolutionDescriptor().getListVariableDescriptor();
         var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
         var valueSelector =
-                (EntityIndependentValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(new ValueSelectorConfig())
+                (EntityIndependentValueSelector<Solution_>) ValueSelectorFactory
+                        .<Solution_> create(
+                                new ValueSelectorConfig().withVariableName(listVariableDescriptor.getVariableName()))
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, SelectionOrder.RANDOM,
                                 false, ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED);
         var entityPlacerConfig = DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,

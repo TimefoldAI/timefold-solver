@@ -41,6 +41,7 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
@@ -49,7 +50,10 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwap
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
@@ -98,21 +102,21 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntityFirstEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntitySecondEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataListMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarOtherValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarSolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedListMultiVarEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedListMultiVarEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedListMultiVarSolution;
 import ai.timefold.solver.core.testdomain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataMultiEntitySolution;
-import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntityEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntityFirstEntity;
-import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntitySecondEntity;
-import ai.timefold.solver.core.testdomain.multivar.list.multientity.TestdataListMultiEntitySolution;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarEntity;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarOtherValue;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarSolution;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarValue;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar.TestdataUnassignedListMultiVarEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar.TestdataUnassignedListMultiVarEntity;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar.TestdataUnassignedListMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
@@ -1404,7 +1408,33 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solveWithListAndBasicVariables() {
+    void solveCustomConfigListVariable() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(valuePlacerConfig),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class);
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solveMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
                 TestdataListMultiVarOtherValue.class)
@@ -1420,7 +1450,7 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solvePinnedWithListAndBasicVariables() {
+    void solvePinnedMixedModel() {
         // We don't enable the LS because we want to ensure the pinned entity remains uninitialized
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
@@ -1440,7 +1470,7 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solveUnassignedWithListAndBasicVariables() {
+    void solveUnassignedMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataUnassignedListMultiVarSolution.class, TestdataUnassignedListMultiVarEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
@@ -1466,7 +1496,7 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solvePinnedAndUnassignedWithListAndBasicVariables() {
+    void solvePinnedAndUnassignedMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataUnassignedListMultiVarSolution.class, TestdataUnassignedListMultiVarEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
@@ -1515,7 +1545,94 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(problem.getValueList().get(3)));
     }
 
-    private static List<MoveSelectorConfig> generateMultiEntityListAndBasicMoveConfig() {
+    @Test
+    void solveCustomConfigMixedModel() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+        var entityPlacerConfig = new QueuedEntityPlacerConfig();
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesMixedModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataListMultiVarEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Change - list
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - list
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Sublist change - list
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Sublist swap - list
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig().withSubListSelectorConfig(
+                new SubListSelectorConfig().withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))));
+        // KOpt - list
+        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // R&R - list
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesMixedModel")
+    void solveMoveConfigMixedModel(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
+                TestdataListMultiVarOtherValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
+
+        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    private static List<MoveSelectorConfig> generateMultiEntityMovesMixedModel() {
         // Local Search
         var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
         // Change - basic
@@ -1538,16 +1655,22 @@ class DefaultSolverTest extends AbstractMeterTest {
         allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
         // Swap - list
         allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Sublist change - list
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Sublist swap - list
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
         // KOpt - list
         allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // R&R - list
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
         // Union of all moves
         allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
         return allMoveSelectionConfigList;
     }
 
     @ParameterizedTest
-    @MethodSource("generateMultiEntityListAndBasicMoveConfig")
-    void solveCustomConfigurationMultiEntityWithListAndBasicVariables(MoveSelectorConfig moveSelectionConfig) {
+    @MethodSource("generateMultiEntityMovesMixedModel")
+    void solveMultiEntityMoveConfigMixedModel(MoveSelectorConfig moveSelectionConfig) {
         // Construction Heuristic
         var valueSelectorConfig = new ValueSelectorConfig("valueList")
                 .withId("valueList");
@@ -1581,60 +1704,6 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .isEmpty();
         assertThat(solution.getOtherEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
-                .isEmpty();
-    }
-
-    @Test
-    void solveCustomConfigurationWithListAndBasicVariables() {
-        var valueSelectorConfig = new ValueSelectorConfig("valueList")
-                .withId("valueList");
-        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
-                .withMimicSelectorRef("valueList")
-                .withVariableName("valueList");
-        var valuePlacerConfig = new QueuedValuePlacerConfig()
-                .withValueSelectorConfig(valueSelectorConfig)
-                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
-                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
-        var entityPlacerConfig = new QueuedEntityPlacerConfig();
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class, TestdataListMultiVarValue.class,
-                TestdataListMultiVarOtherValue.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig()
-                        .withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig),
-                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
-                .withEasyScoreCalculatorClass(TestdataListMultiVarEasyScoreCalculator.class);
-
-        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
-        var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution.getEntityList().stream()
-                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
-                .isEmpty();
-    }
-
-    @Test
-    void solveCustomConfigurationWithListVariables() {
-        var valueSelectorConfig = new ValueSelectorConfig("valueList")
-                .withId("valueList");
-        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
-                .withMimicSelectorRef("valueList")
-                .withVariableName("valueList");
-        var valuePlacerConfig = new QueuedValuePlacerConfig()
-                .withValueSelectorConfig(valueSelectorConfig)
-                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
-                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig()
-                        .withEntityPlacerConfigList(valuePlacerConfig),
-                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
-                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class);
-
-        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
-        var solution = PlannerTestUtils.solve(solverConfig, problem);
-        assertThat(solution.getEntityList().stream()
-                .filter(e -> e.getValueList().isEmpty()))
                 .isEmpty();
     }
 

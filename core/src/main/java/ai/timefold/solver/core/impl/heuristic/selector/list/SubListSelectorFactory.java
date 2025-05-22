@@ -48,15 +48,15 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                     + ") which is not supported. SubListSelector only supports random selection order.");
         }
 
-        EntityIndependentValueSelector<Solution_> valueSelector = buildEntityIndependentValueSelector(configPolicy,
-                entitySelector.getEntityDescriptor(), minimumCacheType, inheritedSelectionOrder);
+        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
+                minimumCacheType, inheritedSelectionOrder);
 
-        int minimumSubListSize = Objects.requireNonNullElse(config.getMinimumSubListSize(), DEFAULT_MINIMUM_SUB_LIST_SIZE);
-        int maximumSubListSize = Objects.requireNonNullElse(config.getMaximumSubListSize(), DEFAULT_MAXIMUM_SUB_LIST_SIZE);
-        RandomSubListSelector<Solution_> baseSubListSelector =
+        var minimumSubListSize = Objects.requireNonNullElse(config.getMinimumSubListSize(), DEFAULT_MINIMUM_SUB_LIST_SIZE);
+        var maximumSubListSize = Objects.requireNonNullElse(config.getMaximumSubListSize(), DEFAULT_MAXIMUM_SUB_LIST_SIZE);
+        var baseSubListSelector =
                 new RandomSubListSelector<>(entitySelector, valueSelector, minimumSubListSize, maximumSubListSize);
 
-        SubListSelector<Solution_> subListSelector =
+        var subListSelector =
                 applyNearbySelection(configPolicy, minimumCacheType, inheritedSelectionOrder, baseSubListSelector);
 
         subListSelector = applyMimicRecording(configPolicy, subListSelector);

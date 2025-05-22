@@ -13,8 +13,8 @@ import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultiVarEntity;
-import ai.timefold.solver.core.testdomain.multivar.basic.TestdataOtherValue;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 

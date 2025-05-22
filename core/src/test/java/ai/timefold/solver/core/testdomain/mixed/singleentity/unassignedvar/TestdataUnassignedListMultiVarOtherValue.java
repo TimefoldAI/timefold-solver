@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar;
+package ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar;
 
 import ai.timefold.solver.core.testdomain.TestdataObject;
 

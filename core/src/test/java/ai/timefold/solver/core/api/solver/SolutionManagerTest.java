@@ -31,10 +31,10 @@ import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListEntityW
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListSolutionWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListValueWithShadowHistory;
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListWithShadowHistoryIncrementalScoreCalculator;
-import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultiVarEntity;
-import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultiVarSolution;
-import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultivarIncrementalScoreCalculator;
-import ai.timefold.solver.core.testdomain.multivar.basic.TestdataOtherValue;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultivarIncrementalScoreCalculator;
+import ai.timefold.solver.core.testdomain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedEntity;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedSolution;
