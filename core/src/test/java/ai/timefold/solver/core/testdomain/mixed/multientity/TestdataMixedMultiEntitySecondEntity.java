@@ -5,35 +5,35 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListMultiEntitySecondEntity extends TestdataObject {
+public class TestdataMixedMultiEntitySecondEntity extends TestdataObject {
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
-    private TestdataListMultiEntitySecondValue basicValue;
+    private TestdataMixedMultiEntitySecondValue basicValue;
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
-    private TestdataListMultiEntitySecondValue secondBasicValue;
+    private TestdataMixedMultiEntitySecondValue secondBasicValue;
 
-    public TestdataListMultiEntitySecondEntity() {
+    public TestdataMixedMultiEntitySecondEntity() {
         // Required for cloner
     }
 
-    public TestdataListMultiEntitySecondEntity(String code) {
+    public TestdataMixedMultiEntitySecondEntity(String code) {
         super(code);
     }
 
-    public TestdataListMultiEntitySecondValue getBasicValue() {
+    public TestdataMixedMultiEntitySecondValue getBasicValue() {
         return basicValue;
     }
 
-    public void setBasicValue(TestdataListMultiEntitySecondValue basicValue) {
+    public void setBasicValue(TestdataMixedMultiEntitySecondValue basicValue) {
         this.basicValue = basicValue;
     }
 
-    public TestdataListMultiEntitySecondValue getSecondBasicValue() {
+    public TestdataMixedMultiEntitySecondValue getSecondBasicValue() {
         return secondBasicValue;
     }
 
-    public void setSecondBasicValue(TestdataListMultiEntitySecondValue secondBasicValue) {
+    public void setSecondBasicValue(TestdataMixedMultiEntitySecondValue secondBasicValue) {
         this.secondBasicValue = secondBasicValue;
     }
 }

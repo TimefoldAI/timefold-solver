@@ -11,16 +11,16 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListMultiVarEntity extends TestdataObject {
+public class TestdataMixedEntity extends TestdataObject {
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
-    private TestdataListMultiVarOtherValue basicValue;
+    private TestdataMixedOtherValue basicValue;
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
-    private TestdataListMultiVarOtherValue secondBasicValue;
+    private TestdataMixedOtherValue secondBasicValue;
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataListMultiVarValue> valueList;
+    private List<TestdataMixedValue> valueList;
 
     @PlanningPin
     private boolean pinned = false;
@@ -28,36 +28,36 @@ public class TestdataListMultiVarEntity extends TestdataObject {
     @PlanningPinToIndex
     private int pinnedIndex = 0;
 
-    public TestdataListMultiVarEntity() {
+    public TestdataMixedEntity() {
         // Required for cloner
     }
 
-    public TestdataListMultiVarEntity(String code) {
+    public TestdataMixedEntity(String code) {
         super(code);
         valueList = new ArrayList<>();
     }
 
-    public TestdataListMultiVarOtherValue getBasicValue() {
+    public TestdataMixedOtherValue getBasicValue() {
         return basicValue;
     }
 
-    public void setBasicValue(TestdataListMultiVarOtherValue basicValue) {
+    public void setBasicValue(TestdataMixedOtherValue basicValue) {
         this.basicValue = basicValue;
     }
 
-    public TestdataListMultiVarOtherValue getSecondBasicValue() {
+    public TestdataMixedOtherValue getSecondBasicValue() {
         return secondBasicValue;
     }
 
-    public void setSecondBasicValue(TestdataListMultiVarOtherValue secondBasicValue) {
+    public void setSecondBasicValue(TestdataMixedOtherValue secondBasicValue) {
         this.secondBasicValue = secondBasicValue;
     }
 
-    public List<TestdataListMultiVarValue> getValueList() {
+    public List<TestdataMixedValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListMultiVarValue> valueList) {
+    public void setValueList(List<TestdataMixedValue> valueList) {
         this.valueList = valueList;
     }
 

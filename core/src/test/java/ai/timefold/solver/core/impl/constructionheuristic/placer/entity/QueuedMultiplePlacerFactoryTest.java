@@ -26,8 +26,8 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.MutableInt;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataListMultiVarSolution;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedListMultiVarSolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -35,8 +35,8 @@ class QueuedMultiplePlacerFactoryTest {
 
     @Test
     void testPlacersForConstructionHeuristic() {
-        var solutionDescriptor = TestdataListMultiVarSolution.buildSolutionDescriptor();
-        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataListMultiVarSolution>()
+        var solutionDescriptor = TestdataMixedSolution.buildSolutionDescriptor();
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataMixedSolution>()
                 .withEnvironmentMode(PHASE_ASSERT)
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] { ANY }))
                 .withSolutionDescriptor(solutionDescriptor)
@@ -59,9 +59,9 @@ class QueuedMultiplePlacerFactoryTest {
         var entityPlacerConfig = new QueuedEntityPlacerConfig();
         var placerConfig = new QueuedMultiplePlacerConfig()
                 .withPlacerConfigList(List.of(valuePlacerConfig, entityPlacerConfig));
-        var placer = EntityPlacerFactory.<TestdataListMultiVarSolution> create(placerConfig).buildEntityPlacer(configPolicy);
+        var placer = EntityPlacerFactory.<TestdataMixedSolution> create(placerConfig).buildEntityPlacer(configPolicy);
 
-        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
         var solverScope = mock(SolverScope.class);
         var scoreDirector = mock(InnerScoreDirector.class);
         var random = new Random(0L);
@@ -145,8 +145,8 @@ class QueuedMultiplePlacerFactoryTest {
 
     @Test
     void testPinnedPlacersForConstructionHeuristic() {
-        var solutionDescriptor = TestdataListMultiVarSolution.buildSolutionDescriptor();
-        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataListMultiVarSolution>()
+        var solutionDescriptor = TestdataMixedSolution.buildSolutionDescriptor();
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataMixedSolution>()
                 .withEnvironmentMode(PHASE_ASSERT)
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] { ANY }))
                 .withSolutionDescriptor(solutionDescriptor)
@@ -169,9 +169,9 @@ class QueuedMultiplePlacerFactoryTest {
         var entityPlacerConfig = new QueuedEntityPlacerConfig();
         var placerConfig = new QueuedMultiplePlacerConfig()
                 .withPlacerConfigList(List.of(valuePlacerConfig, entityPlacerConfig));
-        var placer = EntityPlacerFactory.<TestdataListMultiVarSolution> create(placerConfig).buildEntityPlacer(configPolicy);
+        var placer = EntityPlacerFactory.<TestdataMixedSolution> create(placerConfig).buildEntityPlacer(configPolicy);
 
-        var problem = TestdataListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
         // Pin the first entity
         problem.getEntityList().get(0).setPinned(true);
         problem.getEntityList().get(0).setPinnedIndex(2);
@@ -223,8 +223,8 @@ class QueuedMultiplePlacerFactoryTest {
 
     @Test
     void testUnassignedPlacersForConstructionHeuristic() {
-        var solutionDescriptor = TestdataUnassignedListMultiVarSolution.buildSolutionDescriptor();
-        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataUnassignedListMultiVarSolution>()
+        var solutionDescriptor = TestdataUnassignedMixedSolution.buildSolutionDescriptor();
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataUnassignedMixedSolution>()
                 .withEnvironmentMode(PHASE_ASSERT)
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] { ANY }))
                 .withSolutionDescriptor(solutionDescriptor)
@@ -247,10 +247,10 @@ class QueuedMultiplePlacerFactoryTest {
         var entityPlacerConfig = new QueuedEntityPlacerConfig();
         var placerConfig = new QueuedMultiplePlacerConfig()
                 .withPlacerConfigList(List.of(valuePlacerConfig, entityPlacerConfig));
-        var placer = EntityPlacerFactory.<TestdataUnassignedListMultiVarSolution> create(placerConfig)
+        var placer = EntityPlacerFactory.<TestdataUnassignedMixedSolution> create(placerConfig)
                 .buildEntityPlacer(configPolicy);
 
-        var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 2, 2);
         var solverScope = mock(SolverScope.class);
         var scoreDirector = mock(InnerScoreDirector.class);
         var random = new Random(0L);
@@ -384,8 +384,8 @@ class QueuedMultiplePlacerFactoryTest {
 
     @Test
     void testPinnedUnassignedPlacersForConstructionHeuristic() {
-        var solutionDescriptor = TestdataUnassignedListMultiVarSolution.buildSolutionDescriptor();
-        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataUnassignedListMultiVarSolution>()
+        var solutionDescriptor = TestdataUnassignedMixedSolution.buildSolutionDescriptor();
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataUnassignedMixedSolution>()
                 .withEnvironmentMode(PHASE_ASSERT)
                 .withInitializingScoreTrend(new InitializingScoreTrend(new InitializingScoreTrendLevel[] { ANY }))
                 .withSolutionDescriptor(solutionDescriptor)
@@ -408,10 +408,10 @@ class QueuedMultiplePlacerFactoryTest {
         var entityPlacerConfig = new QueuedEntityPlacerConfig();
         var placerConfig = new QueuedMultiplePlacerConfig()
                 .withPlacerConfigList(List.of(valuePlacerConfig, entityPlacerConfig));
-        var placer = EntityPlacerFactory.<TestdataUnassignedListMultiVarSolution> create(placerConfig)
+        var placer = EntityPlacerFactory.<TestdataUnassignedMixedSolution> create(placerConfig)
                 .buildEntityPlacer(configPolicy);
 
-        var problem = TestdataUnassignedListMultiVarSolution.generateUninitializedSolution(2, 2, 2);
+        var problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 2, 2);
         // Pin the first entity
         problem.getEntityList().get(0).setPinned(true);
         problem.getEntityList().get(0).setPinnedIndex(2);

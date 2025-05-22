@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.testdomain.multientity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -18,6 +19,24 @@ public class TestdataMultiEntitySolution extends TestdataObject {
     public static SolutionDescriptor<TestdataMultiEntitySolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataMultiEntitySolution.class,
                 TestdataLeadEntity.class, TestdataHerdEntity.class);
+    }
+
+    public static TestdataMultiEntitySolution generateUninitializedSolution(int entityListSize, int valueListSize) {
+        var solution = new TestdataMultiEntitySolution();
+        var valueList = new ArrayList<TestdataValue>(valueListSize);
+        for (int i = 0; i < valueListSize; i++) {
+            valueList.add(new TestdataValue("Generated Value " + i));
+        }
+        solution.setValueList(valueList);
+        var entityLeadList = new ArrayList<TestdataLeadEntity>(entityListSize);
+        var entityHerdList = new ArrayList<TestdataHerdEntity>(entityListSize);
+        for (int i = 0; i < entityListSize; i++) {
+            entityLeadList.add(new TestdataLeadEntity("LeadEntity " + i));
+            entityHerdList.add(new TestdataHerdEntity("HerdEntity " + i));
+        }
+        solution.setLeadEntityList(entityLeadList);
+        solution.setHerdEntityList(entityHerdList);
+        return solution;
     }
 
     private List<TestdataValue> valueList;

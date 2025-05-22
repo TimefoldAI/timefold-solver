@@ -12,29 +12,29 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
-public class TestdataListMultiVarSolution {
+public class TestdataMixedSolution {
 
-    public static SolutionDescriptor<TestdataListMultiVarSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataListMultiVarSolution.class, TestdataListMultiVarEntity.class,
-                TestdataListMultiVarValue.class, TestdataListMultiVarOtherValue.class);
+    public static SolutionDescriptor<TestdataMixedSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataMixedSolution.class, TestdataMixedEntity.class,
+                TestdataMixedValue.class, TestdataMixedOtherValue.class);
     }
 
-    public static TestdataListMultiVarSolution generateUninitializedSolution(int entityListSize, int valueListSize,
+    public static TestdataMixedSolution generateUninitializedSolution(int entityListSize, int valueListSize,
             int otherValueListSize) {
-        var solution = new TestdataListMultiVarSolution();
-        var valueList = new ArrayList<TestdataListMultiVarValue>(valueListSize);
-        var otherValueList = new ArrayList<TestdataListMultiVarOtherValue>(otherValueListSize);
+        var solution = new TestdataMixedSolution();
+        var valueList = new ArrayList<TestdataMixedValue>(valueListSize);
+        var otherValueList = new ArrayList<TestdataMixedOtherValue>(otherValueListSize);
         for (int i = 0; i < valueListSize; i++) {
-            valueList.add(new TestdataListMultiVarValue("Generated Value " + i));
+            valueList.add(new TestdataMixedValue("Generated Value " + i));
         }
         for (int i = 0; i < otherValueListSize; i++) {
-            otherValueList.add(new TestdataListMultiVarOtherValue("Generated Other Value " + i));
+            otherValueList.add(new TestdataMixedOtherValue("Generated Other Value " + i));
         }
         solution.setValueList(valueList);
         solution.setOtherValueList(otherValueList);
-        var entityList = new ArrayList<TestdataListMultiVarEntity>(entityListSize);
+        var entityList = new ArrayList<TestdataMixedEntity>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
-            var entity = new TestdataListMultiVarEntity("Entity " + i);
+            var entity = new TestdataMixedEntity("Entity " + i);
             entityList.add(entity);
         }
         solution.setEntityList(entityList);
@@ -43,36 +43,36 @@ public class TestdataListMultiVarSolution {
 
     @ValueRangeProvider(id = "valueRange")
     @ProblemFactCollectionProperty
-    private List<TestdataListMultiVarValue> valueList;
+    private List<TestdataMixedValue> valueList;
     @ValueRangeProvider(id = "otherValueRange")
     @ProblemFactCollectionProperty
-    private List<TestdataListMultiVarOtherValue> otherValueList;
+    private List<TestdataMixedOtherValue> otherValueList;
     @PlanningEntityCollectionProperty
-    private List<TestdataListMultiVarEntity> entityList;
+    private List<TestdataMixedEntity> entityList;
     @PlanningScore
     private SimpleScore score;
 
-    public List<TestdataListMultiVarValue> getValueList() {
+    public List<TestdataMixedValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListMultiVarValue> valueList) {
+    public void setValueList(List<TestdataMixedValue> valueList) {
         this.valueList = valueList;
     }
 
-    public List<TestdataListMultiVarOtherValue> getOtherValueList() {
+    public List<TestdataMixedOtherValue> getOtherValueList() {
         return otherValueList;
     }
 
-    public void setOtherValueList(List<TestdataListMultiVarOtherValue> otherValueList) {
+    public void setOtherValueList(List<TestdataMixedOtherValue> otherValueList) {
         this.otherValueList = otherValueList;
     }
 
-    public List<TestdataListMultiVarEntity> getEntityList() {
+    public List<TestdataMixedEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataListMultiVarEntity> entityList) {
+    public void setEntityList(List<TestdataMixedEntity> entityList) {
         this.entityList = entityList;
     }
 

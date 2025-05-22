@@ -4,13 +4,13 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListMultiEntityFirstValue extends TestdataObject {
+public class TestdataMixedMultiEntityFirstValue extends TestdataObject {
 
-    public TestdataListMultiEntityFirstValue() {
+    public TestdataMixedMultiEntityFirstValue() {
         // Required for cloner
     }
 
-    public TestdataListMultiEntityFirstValue(String code) {
+    public TestdataMixedMultiEntityFirstValue(String code) {
         super(code);
     }
 }
