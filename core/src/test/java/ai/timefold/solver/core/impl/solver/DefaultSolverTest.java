@@ -40,9 +40,12 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
@@ -125,6 +128,8 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Metrics;
@@ -1510,8 +1515,39 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(problem.getValueList().get(3)));
     }
 
-    @Test
-    void solveCustomConfigurationMultiEntityWithListAndBasicVariables() {
+    private static List<MoveSelectorConfig> generateMultiEntityListAndBasicMoveConfig() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataListMultiEntitySecondEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Change - list
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - list
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // KOpt - list
+        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMultiEntityListAndBasicMoveConfig")
+    void solveCustomConfigurationMultiEntityWithListAndBasicVariables(MoveSelectorConfig moveSelectionConfig) {
         // Construction Heuristic
         var valueSelectorConfig = new ValueSelectorConfig("valueList")
                 .withId("valueList");
@@ -1526,18 +1562,11 @@ class DefaultSolverTest extends AbstractMeterTest {
         var entityPlacerConfig = new QueuedEntityPlacerConfig();
         var constructionHeuristicConfig =
                 new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig);
-        // Local Search
-        var moveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
-        moveSelectionConfigList.add(new ChangeMoveSelectorConfig());
-        moveSelectionConfigList.add(new SwapMoveSelectorConfig());
-        moveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
-        moveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
-        moveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
-        moveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // Local search
         var localSearchConfig =
                 new LocalSearchPhaseConfig()
-                        .withMoveSelectorConfig(new UnionMoveSelectorConfig(moveSelectionConfigList))
-                        .withTerminationConfig(new TerminationConfig().withStepCountLimit(16));
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
         // Solver Config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataListMultiEntitySolution.class, TestdataListMultiEntityFirstEntity.class,

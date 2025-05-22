@@ -9,9 +9,15 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
 public class TestdataListMultiEntitySolution {
+
+    public static SolutionDescriptor<TestdataListMultiEntitySolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataListMultiEntitySolution.class,
+                TestdataListMultiEntityFirstEntity.class, TestdataListMultiEntitySecondEntity.class);
+    }
 
     public static TestdataListMultiEntitySolution generateUninitializedSolution(int entityListSize, int valueListSize,
             int otherValueListSize) {
