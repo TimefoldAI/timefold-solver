@@ -1,14 +1,14 @@
-package ai.timefold.solver.core.testdomain.multivar.list.singleentity;
+package ai.timefold.solver.core.testdomain.mixed.singleentity;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataListMultiVarEasyScoreCalculator implements EasyScoreCalculator<TestdataListMultiVarSolution, SimpleScore> {
+public class TestdataMixedEasyScoreCalculator implements EasyScoreCalculator<TestdataMixedSolution, SimpleScore> {
 
     @Override
-    public @NonNull SimpleScore calculateScore(@NonNull TestdataListMultiVarSolution solution) {
+    public @NonNull SimpleScore calculateScore(@NonNull TestdataMixedSolution solution) {
         int score = 0;
         for (var entity : solution.getEntityList()) {
             if (entity.getBasicValue() != null) {

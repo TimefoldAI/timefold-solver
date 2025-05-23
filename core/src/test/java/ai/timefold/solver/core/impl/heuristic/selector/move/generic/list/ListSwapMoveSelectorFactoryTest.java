@@ -53,7 +53,7 @@ class ListSwapMoveSelectorFactoryTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy,
                         SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM, false))
-                .withMessageContaining("cannot unfold");
+                .withMessageContaining("it cannot be deduced automatically");
     }
 
     @Test
@@ -70,7 +70,7 @@ class ListSwapMoveSelectorFactoryTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy,
                         SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM, false))
-                .withMessageContaining("not a planning list variable");
+                .withMessageContaining("it cannot be deduced automatically");
     }
 
     // TODO test or remove secondary value selector config

@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.multivar.basic.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 
 import org.junit.jupiter.api.Test;
 

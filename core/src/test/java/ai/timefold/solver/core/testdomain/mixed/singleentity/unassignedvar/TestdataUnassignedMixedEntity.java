@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar.list.singleentity;
+package ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,16 +11,16 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListMultiVarEntity extends TestdataObject {
+public class TestdataUnassignedMixedEntity extends TestdataObject {
+
+    @PlanningVariable(valueRangeProviderRefs = "otherValueRange", allowsUnassigned = true)
+    private TestdataUnassignedMixedOtherValue basicValue;
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
-    private TestdataListMultiVarOtherValue basicValue;
+    private TestdataUnassignedMixedOtherValue secondBasicValue;
 
-    @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
-    private TestdataListMultiVarOtherValue secondBasicValue;
-
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataListMultiVarValue> valueList;
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange", allowsUnassignedValues = true)
+    private List<TestdataUnassignedMixedValue> valueList;
 
     @PlanningPin
     private boolean pinned = false;
@@ -28,36 +28,36 @@ public class TestdataListMultiVarEntity extends TestdataObject {
     @PlanningPinToIndex
     private int pinnedIndex = 0;
 
-    public TestdataListMultiVarEntity() {
+    public TestdataUnassignedMixedEntity() {
         // Required for cloner
     }
 
-    public TestdataListMultiVarEntity(String code) {
+    public TestdataUnassignedMixedEntity(String code) {
         super(code);
         valueList = new ArrayList<>();
     }
 
-    public TestdataListMultiVarOtherValue getBasicValue() {
+    public TestdataUnassignedMixedOtherValue getBasicValue() {
         return basicValue;
     }
 
-    public void setBasicValue(TestdataListMultiVarOtherValue basicValue) {
+    public void setBasicValue(TestdataUnassignedMixedOtherValue basicValue) {
         this.basicValue = basicValue;
     }
 
-    public TestdataListMultiVarOtherValue getSecondBasicValue() {
+    public TestdataUnassignedMixedOtherValue getSecondBasicValue() {
         return secondBasicValue;
     }
 
-    public void setSecondBasicValue(TestdataListMultiVarOtherValue secondBasicValue) {
+    public void setSecondBasicValue(TestdataUnassignedMixedOtherValue secondBasicValue) {
         this.secondBasicValue = secondBasicValue;
     }
 
-    public List<TestdataListMultiVarValue> getValueList() {
+    public List<TestdataUnassignedMixedValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListMultiVarValue> valueList) {
+    public void setValueList(List<TestdataUnassignedMixedValue> valueList) {
         this.valueList = valueList;
     }
 

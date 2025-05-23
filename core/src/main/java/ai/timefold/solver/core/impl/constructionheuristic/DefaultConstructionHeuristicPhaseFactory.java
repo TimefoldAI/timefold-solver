@@ -201,6 +201,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         // Finally, QueuedValuePlacer uses the recording ValueSelector and a ListChangeMoveSelector.
         // The ListChangeMoveSelector's replaying ValueSelector mimics the QueuedValuePlacer's recording ValueSelector.
         return new QueuedValuePlacerConfig()
+                .withEntityClass(variableDescriptor.getEntityDescriptor().getEntityClass())
                 .withValueSelectorConfig(mimicRecordingValueSelectorConfig)
                 .withMoveSelectorConfig(listChangeMoveSelectorConfig);
     }

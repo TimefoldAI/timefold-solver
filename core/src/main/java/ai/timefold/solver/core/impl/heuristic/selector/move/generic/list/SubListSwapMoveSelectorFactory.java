@@ -8,9 +8,7 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorCo
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -30,15 +28,17 @@ public class SubListSwapMoveSelectorFactory<Solution_>
                     + ") only supports random selection order.");
         }
 
-        SelectionOrder selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
+        var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
 
-        EntitySelector<Solution_> entitySelector = EntitySelectorFactory
-                .<Solution_> create(new EntitySelectorConfig())
+        var onlyEntityDescriptor = getTheOnlyEntityDescriptorWithListVariable(configPolicy.getSolutionDescriptor());
+        // We defined the entity class since there is a single entity descriptor that includes a list variable
+        var entitySelector = EntitySelectorFactory
+                .<Solution_> create(new EntitySelectorConfig().withEntityClass(onlyEntityDescriptor.getEntityClass()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
 
-        SubListSelectorConfig subListSelectorConfig =
+        var subListSelectorConfig =
                 Objects.requireNonNullElseGet(config.getSubListSelectorConfig(), SubListSelectorConfig::new);
-        SubListSelectorConfig secondarySubListSelectorConfig =
+        var secondarySubListSelectorConfig =
                 Objects.requireNonNullElse(config.getSecondarySubListSelectorConfig(), subListSelectorConfig);
 
         // minimum -> subListSelector
@@ -63,14 +63,14 @@ public class SubListSwapMoveSelectorFactory<Solution_>
                     SubListSwapMoveSelectorConfig::getMaximumSubListSize,
                     "secondarySubListSelector", secondarySubListSelectorConfig);
         }
-        SubListSelector<Solution_> leftSubListSelector = SubListSelectorFactory
+        var leftSubListSelector = SubListSelectorFactory
                 .<Solution_> create(subListSelectorConfig)
                 .buildSubListSelector(configPolicy, entitySelector, minimumCacheType, selectionOrder);
-        SubListSelector<Solution_> rightSubListSelector = SubListSelectorFactory
+        var rightSubListSelector = SubListSelectorFactory
                 .<Solution_> create(secondarySubListSelectorConfig)
                 .buildSubListSelector(configPolicy, entitySelector, minimumCacheType, selectionOrder);
 
-        boolean selectReversingMoveToo = Objects.requireNonNullElse(config.getSelectReversingMoveToo(), true);
+        var selectReversingMoveToo = Objects.requireNonNullElse(config.getSelectReversingMoveToo(), true);
 
         return new RandomSubListSwapMoveSelector<>(leftSubListSelector, rightSubListSelector, selectReversingMoveToo);
     }

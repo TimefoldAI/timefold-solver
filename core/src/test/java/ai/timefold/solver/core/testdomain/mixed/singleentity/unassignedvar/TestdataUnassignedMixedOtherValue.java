@@ -1,16 +1,16 @@
-package ai.timefold.solver.core.testdomain.multivar.list.singleentity.unassignedvar;
+package ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar;
 
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-public class TestdataUnassignedListMultiVarValue extends TestdataObject {
+public class TestdataUnassignedMixedOtherValue extends TestdataObject {
 
     private boolean blocked = false;
 
-    public TestdataUnassignedListMultiVarValue() {
+    public TestdataUnassignedMixedOtherValue() {
         // Required for cloner
     }
 
-    public TestdataUnassignedListMultiVarValue(String code) {
+    public TestdataUnassignedMixedOtherValue(String code) {
         super(code);
     }
 

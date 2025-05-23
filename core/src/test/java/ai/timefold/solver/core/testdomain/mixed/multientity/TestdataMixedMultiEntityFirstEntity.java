@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.multivar.list.multientity;
+package ai.timefold.solver.core.testdomain.mixed.multientity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -8,25 +8,25 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
-public class TestdataListMultiEntityFirstEntity extends TestdataObject {
+public class TestdataMixedMultiEntityFirstEntity extends TestdataObject {
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataListMultiEntityFirstValue> valueList;
+    private List<TestdataMixedMultiEntityFirstValue> valueList;
 
-    public TestdataListMultiEntityFirstEntity() {
+    public TestdataMixedMultiEntityFirstEntity() {
         // Required for cloner
     }
 
-    public TestdataListMultiEntityFirstEntity(String code) {
+    public TestdataMixedMultiEntityFirstEntity(String code) {
         super(code);
         valueList = new ArrayList<>();
     }
 
-    public List<TestdataListMultiEntityFirstValue> getValueList() {
+    public List<TestdataMixedMultiEntityFirstValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListMultiEntityFirstValue> valueList) {
+    public void setValueList(List<TestdataMixedMultiEntityFirstValue> valueList) {
         this.valueList = valueList;
     }
 }
