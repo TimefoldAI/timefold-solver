@@ -29,10 +29,10 @@ public class PillarSwapMoveSelectorFactory<Solution_>
         var leftPillarSelectorConfig =
                 Objects.requireNonNullElseGet(config.getPillarSelectorConfig(), PillarSelectorConfig::new);
         EntityDescriptor<Solution_> leftEntityDescriptor = null;
-        if (leftPillarSelectorConfig.getEntitySelectorConfig() != null
-                && leftPillarSelectorConfig.getEntitySelectorConfig().getEntityClass() != null) {
-            leftEntityDescriptor = configPolicy.getSolutionDescriptor()
-                    .findEntityDescriptor(leftPillarSelectorConfig.getEntitySelectorConfig().getEntityClass());
+        var leftEntitySelectorConfig = leftPillarSelectorConfig.getEntitySelectorConfig();
+        if (leftEntitySelectorConfig != null && leftEntitySelectorConfig.getEntityClass() != null) {
+            leftEntityDescriptor =
+                    configPolicy.getSolutionDescriptor().findEntityDescriptor(leftEntitySelectorConfig.getEntityClass());
         }
         var leftVariableNameIncludeList = config.getVariableNameIncludeList();
         if (leftVariableNameIncludeList == null && leftEntityDescriptor != null
@@ -45,10 +45,10 @@ public class PillarSwapMoveSelectorFactory<Solution_>
         var rightPillarSelectorConfig =
                 Objects.requireNonNullElse(config.getSecondaryPillarSelectorConfig(), leftPillarSelectorConfig);
         EntityDescriptor<Solution_> rightEntityDescriptor = null;
-        if (rightPillarSelectorConfig.getEntitySelectorConfig() != null
-                && rightPillarSelectorConfig.getEntitySelectorConfig().getEntityClass() != null) {
-            rightEntityDescriptor = configPolicy.getSolutionDescriptor()
-                    .findEntityDescriptor(rightPillarSelectorConfig.getEntitySelectorConfig().getEntityClass());
+        var rightEntitySelectorConfig = rightPillarSelectorConfig.getEntitySelectorConfig();
+        if (rightEntitySelectorConfig != null && rightEntitySelectorConfig.getEntityClass() != null) {
+            rightEntityDescriptor =
+                    configPolicy.getSolutionDescriptor().findEntityDescriptor(rightEntitySelectorConfig.getEntityClass());
         }
         var rightVariableNameIncludeList = config.getVariableNameIncludeList();
         if (rightVariableNameIncludeList == null && rightEntityDescriptor != null
