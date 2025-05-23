@@ -42,10 +42,12 @@ public interface BaseTopologicalOrderGraph {
     NodeTopologicalOrder getTopologicalOrder(int node);
 
     /**
-     * If {@code order == 0},
-     * then the node should be processed first.
-     * Likewise, if {@code order == 1},
-     * the node "y" node should be processed second.
+     * Stores a graph node id along its topological order.
+     * Comparisons ignore node id and only use the topological order.
+     * For instance, for x = (0, 0) and y = (1, 5), x is before y, whereas for
+     * x = (0, 5) and y = (1, 0), y is before x. Note {@link BaseTopologicalOrderGraph}
+     * is not guaranteed to return every topological order index (i.e.
+     * it might be the case no nodes has order 0).
      */
     record NodeTopologicalOrder(int nodeId, int order)
             implements
