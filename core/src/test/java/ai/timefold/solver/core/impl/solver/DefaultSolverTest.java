@@ -47,7 +47,10 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMov
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
@@ -56,6 +59,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
@@ -1418,8 +1422,121 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .isEmpty();
     }
 
+    private static List<MoveSelectorConfig> generateMovesSingleVarModel() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        allMoveSelectionConfigList.add(new PillarChangeMoveSelectorConfig());
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig());
+        // R&R - basic
+        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesSingleVarModel")
+    void solveMoveConfigSingleVar(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesChainedVarModel() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - chained
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - chained
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Tail Chain - chained
+        allMoveSelectionConfigList.add(new TailChainSwapMoveSelectorConfig()
+                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")));
+        // Subchain chain - chained
+        allMoveSelectionConfigList
+                .add(new SubChainChangeMoveSelectorConfig().withSubChainSelectorConfig(new SubChainSelectorConfig()
+                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")))
+                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")));
+        // Subchain swap - chained
+        allMoveSelectionConfigList
+                .add(new SubChainSwapMoveSelectorConfig().withSubChainSelectorConfig(new SubChainSelectorConfig()
+                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject"))));
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesChainedVarModel")
+    void solveMoveConfigChainedVar(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataChainedSolution.class, TestdataChainedEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataChainedSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesListVarModel() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Pillar change - basic
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
+        // R&R - basic
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesListVarModel")
+    void solveMoveConfigListVar(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
     private static List<MoveSelectorConfig> generateMovesMultiVarModel() {
-        // Local Search
         var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
         // Change - basic
         allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
@@ -1462,7 +1579,6 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     private static List<MoveSelectorConfig> generateMovesMultiEntityModel() {
-        // Local Search
         var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
         // Change - basic
         allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
