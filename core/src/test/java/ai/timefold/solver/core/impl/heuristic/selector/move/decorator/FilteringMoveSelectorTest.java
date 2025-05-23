@@ -2,10 +2,14 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.decorator;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
+import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
@@ -15,6 +19,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.BasicPlumbingTermination;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -39,6 +44,26 @@ class FilteringMoveSelectorTest {
     @Test
     void filterCacheTypeJustInTime() {
         filter(SelectionCacheType.JUST_IN_TIME, 5);
+    }
+
+    @Test
+    void bailOutByTermination() {
+        var phaseScope = mock(AbstractPhaseScope.class);
+        var moveSelector = mock(MoveSelector.class);
+        var termination = mock(BasicPlumbingTermination.class);
+        var iterator = mock(Iterator.class);
+        // We set the maximum value to force it to run many evaluations
+        when(moveSelector.getSize()).thenReturn(Long.MAX_VALUE / 11);
+        when(moveSelector.isNeverEnding()).thenReturn(true);
+        when(moveSelector.iterator()).thenReturn(iterator);
+        when(iterator.hasNext()).thenReturn(true);
+        when(phaseScope.getTermination()).thenReturn(termination);
+        when(termination.isPhaseTerminated(any(AbstractPhaseScope.class))).thenReturn(false, false, true);
+        var filteredMoveSelector = FilteringMoveSelector.of(moveSelector, (scoreDirector, selection) -> false);
+        filteredMoveSelector.phaseStarted(phaseScope);
+        assertThat(filteredMoveSelector.iterator().hasNext()).isFalse();
+        // The termination returns true at the third call
+        verify(iterator, times(2)).next();
     }
 
     public void filter(SelectionCacheType cacheType, int timesCalled) {
