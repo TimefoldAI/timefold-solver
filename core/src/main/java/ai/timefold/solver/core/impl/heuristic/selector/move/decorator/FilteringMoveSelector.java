@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
 public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
 
@@ -24,6 +25,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
     private final MoveSelector<Solution_> childMoveSelector;
     private final SelectionFilter<Solution_, Move<Solution_>> filter;
     private final boolean bailOutEnabled;
+    private AbstractPhaseScope<Solution_> phaseScope;
 
     private ScoreDirector<Solution_> scoreDirector = null;
 
@@ -42,13 +44,15 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        scoreDirector = phaseScope.getScoreDirector();
+        this.scoreDirector = phaseScope.getScoreDirector();
+        this.phaseScope = phaseScope;
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        scoreDirector = null;
+        this.scoreDirector = null;
+        this.phaseScope = null;
     }
 
     @Override
@@ -68,17 +72,22 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return new JustInTimeFilteringMoveIterator(childMoveSelector.iterator(), determineBailOutSize());
+        return new JustInTimeFilteringMoveIterator(childMoveSelector.iterator(), determineBailOutSize(), phaseScope);
     }
 
     private class JustInTimeFilteringMoveIterator extends UpcomingSelectionIterator<Move<Solution_>> {
 
         private final Iterator<Move<Solution_>> childMoveIterator;
         private final long bailOutSize;
+        private final AbstractPhaseScope<Solution_> phaseScope;
+        private final PhaseTermination<Solution_> termination;
 
-        public JustInTimeFilteringMoveIterator(Iterator<Move<Solution_>> childMoveIterator, long bailOutSize) {
+        public JustInTimeFilteringMoveIterator(Iterator<Move<Solution_>> childMoveIterator, long bailOutSize,
+                AbstractPhaseScope<Solution_> phaseScope) {
             this.childMoveIterator = childMoveIterator;
             this.bailOutSize = bailOutSize;
+            this.phaseScope = phaseScope;
+            this.termination = phaseScope.getTermination();
         }
 
         @Override
@@ -94,6 +103,11 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
                     if (attemptsBeforeBailOut <= 0L) {
                         logger.trace("Bailing out of neverEnding selector ({}) after ({}) attempts to avoid infinite loop.",
                                 FilteringMoveSelector.this, bailOutSize);
+                        return noUpcomingSelection();
+                    } else if (termination != null && termination.isPhaseTerminated(phaseScope)) {
+                        logger.trace(
+                                "Bailing out of neverEnding selector ({}) because the termination setting has been triggered.",
+                                FilteringMoveSelector.this);
                         return noUpcomingSelection();
                     }
                     attemptsBeforeBailOut--;
