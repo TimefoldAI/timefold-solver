@@ -87,7 +87,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
             this.childMoveIterator = childMoveIterator;
             this.bailOutSize = bailOutSize;
             this.phaseScope = phaseScope;
-            this.termination = phaseScope.getTermination();
+            this.termination = phaseScope != null ? phaseScope.getTermination() : null;
         }
 
         @Override
@@ -141,12 +141,11 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
     }
 
     private boolean accept(ScoreDirector<Solution_> scoreDirector, Move<Solution_> move) {
-        if (filter != null) {
-            if (!filter.accept(scoreDirector, move)) {
-                logger.trace("        Move ({}) filtered out by a selection filter ({}).", move, filter);
-                return false;
-            }
+        if (filter != null && !filter.accept(scoreDirector, move)) {
+            logger.trace("        Move ({}) filtered out by a selection filter ({}).", move, filter);
+            return false;
         }
+
         return true;
     }
 
