@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +26,7 @@ final class AffectedEntitiesUpdater<Solution_>
     // Internal state; expensive to create, therefore we reuse.
     private final AffectedEntities<Solution_> affectedEntities;
     private final LoopedTracker loopedTracker;
-    private final boolean[] visited;
+    private final BitSet visited;
     private final PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> changeQueue;
 
     @SuppressWarnings("unchecked")
@@ -45,7 +44,7 @@ final class AffectedEntitiesUpdater<Solution_>
                 .distinct()
                 .toArray(ShadowVariableLoopedVariableDescriptor[]::new));
         this.loopedTracker = new LoopedTracker(instanceCount);
-        this.visited = new boolean[instanceCount];
+        this.visited = new BitSet(instanceCount);
         this.changeQueue = new PriorityQueue<>(instanceCount);
     }
 
@@ -55,10 +54,10 @@ final class AffectedEntitiesUpdater<Solution_>
 
         while (!changeQueue.isEmpty()) {
             var nextNode = changeQueue.poll().nodeId();
-            if (visited[nextNode]) {
+            if (visited.get(nextNode)) {
                 continue;
             }
-            visited[nextNode] = true;
+            visited.set(nextNode);
             var shadowVariable = instanceList.get(nextNode);
             var isChanged = updateShadowVariable(shadowVariable, graph.isLooped(loopedTracker, nextNode));
 
@@ -66,7 +65,7 @@ final class AffectedEntitiesUpdater<Solution_>
                 var iterator = graph.nodeForwardEdges(nextNode);
                 while (iterator.hasNext()) {
                     var nextNodeForwardEdge = iterator.nextInt();
-                    if (!visited[nextNodeForwardEdge]) {
+                    if (!visited.get(nextNodeForwardEdge)) {
                         changeQueue.add(graph.getTopologicalOrder(nextNodeForwardEdge));
                     }
                 }
@@ -77,7 +76,7 @@ final class AffectedEntitiesUpdater<Solution_>
         // Prepare for the next time updateChanged() is called.
         // No need to clear changeQueue, as that already finishes empty.
         loopedTracker.clear();
-        Arrays.fill(visited, false);
+        visited.clear();
     }
 
     private void initializeChangeQueue(BitSet changed) {
