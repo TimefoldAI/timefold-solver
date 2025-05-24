@@ -30,6 +30,7 @@ from ._types import *
 from ._value_range import *
 from ._variable_listener import *
 from typing import TYPE_CHECKING as _TYPE_CHECKING
+from .shift_scheduling import Timeslot, Skill, Employee, Shift
 
 if _TYPE_CHECKING:
     class CountableValueRange:
@@ -43,5 +44,5 @@ def __getattr__(name: str):
 
 if not _TYPE_CHECKING:
     exported = [name for name in globals().keys() if not name.startswith('_')]
-    exported += ['CountableValueRange']
+    exported += ['CountableValueRange', 'Timeslot', 'Skill', 'Employee', 'Shift']
     __all__ = exported
