@@ -1,32 +1,45 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.Arrays;
+import java.util.BitSet;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class LoopedTracker {
 
-    private final @Nullable LoopedStatus[] statuses;
+    // Simple LoopedStatus[] array would have occupied too much memory with large node counts.
+    // Furthermore, allocating and/or clearing these large arrays is expensive as well.
+    private final BitSet present;
+    private final BitSet looped;
 
-    LoopedTracker(int count) {
-        this.statuses = new LoopedStatus[count];
-        clear();
+    public LoopedTracker(int nodeCount) {
+        this.present = new BitSet(nodeCount);
+        this.looped = new BitSet(nodeCount);
     }
 
     public void mark(int node, LoopedStatus status) {
-        statuses[node] = status;
+        if (status == LoopedStatus.UNKNOWN) {
+            present.clear(node);
+            looped.clear(node);
+        } else {
+            present.set(node);
+            looped.set(node, status == LoopedStatus.LOOPED);
+        }
     }
 
     public LoopedStatus status(int node) {
-        var status = statuses[node];
-        return status == null ? LoopedStatus.UNKNOWN : status;
+        if (present.isEmpty() || !present.get(node)) {
+            return LoopedStatus.UNKNOWN;
+        } else if (looped.get(node)) {
+            return LoopedStatus.LOOPED;
+        } else {
+            return LoopedStatus.NOT_LOOPED;
+        }
     }
 
     public void clear() {
-        // Zeroing-out an array appears to be faster than filling it with a value.
-        Arrays.fill(statuses, null);
+        present.clear();
+        looped.clear();
     }
 
 }
