@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
@@ -24,7 +26,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
     private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
 
     // These structures are mutable.
-    private final DefaultEdge[][] edges;
+    private final BitSet[] edgesFromNode;
     private final TopologicalOrderGraph graph;
     private final BitSet changed;
 
@@ -38,7 +40,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
         variableReferenceToInstanceMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToInstanceMap);
         variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
-        edges = new DefaultEdge[instanceCount][instanceCount];
+        edgesFromNode = new BitSet[instanceCount];
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
         changed = new BitSet(instanceCount);
@@ -82,15 +84,20 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        var edge = edges[fromNodeId][toNodeId];
-        if (edge == null) {
-            edge = new DefaultEdge(fromNodeId, toNodeId);
-            edges[fromNodeId][toNodeId] = edge;
-            graph.addEdge(edge);
+        var hasEdge = false;
+        var presentEdges = edgesFromNode[fromNodeId];
+        if (presentEdges == null) {
+            presentEdges = new BitSet(edgesFromNode.length);
+            edgesFromNode[fromNodeId] = presentEdges;
+        } else {
+            hasEdge = presentEdges.get(toNodeId);
         }
-        edge.increaseCount();
 
-        markChanged(to);
+        if (!hasEdge) {
+            presentEdges.set(toNodeId);
+            graph.addEdge(fromNodeId, toNodeId);
+            markChanged(to);
+        }
     }
 
     @Override
@@ -101,13 +108,15 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        var edge = edges[fromNodeId][toNodeId];
-        if (edge.decreaseCount() == 0) {
-            graph.removeEdge(edge);
-            edges[fromNodeId][toNodeId] = null;
+        var presentEdges = edgesFromNode[fromNodeId];
+        if (presentEdges == null) {
+            return;
         }
-
-        markChanged(to);
+        if (presentEdges.get(toNodeId)) {
+            graph.removeEdge(fromNodeId, toNodeId);
+            presentEdges.clear(toNodeId);
+            markChanged(to);
+        }
     }
 
     @Override
@@ -153,28 +162,17 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
 
     @Override
     public String toString() {
-        var builder = new StringBuilder("{\n");
-        for (int from = 0; from < edges.length; from++) {
-            var row = edges[from];
-            var first = true;
-            for (int to = 0; to < row.length; to++) {
-                var edge = row[to];
-                if (edge != null) {
-                    if (first) {
-                        first = false;
-                        builder.append("    \"").append(instanceList.get(from)).append("\": [");
-                    } else {
-                        builder.append(", ");
-                    }
-                    builder.append("\"%s\"".formatted(instanceList.get(to)));
-                }
-            }
-            if (!first) {
-                builder.append("],\n");
-            }
-        }
-        builder.append("}");
-        return builder.toString();
+        var edgeList = new LinkedHashMap<EntityVariablePair<Solution_>, List<EntityVariablePair<Solution_>>>();
+        graph.forEachEdge((from, to) -> edgeList.computeIfAbsent(instanceList.get(from), k -> new ArrayList<>())
+                .add(instanceList.get(to)));
+        return edgeList.entrySet()
+                .stream()
+                .map(e -> e.getKey() + "->" + e.getValue())
+                .collect(Collectors.joining(
+                        "," + System.lineSeparator() + " ",
+                        "{" + System.lineSeparator() + "  ",
+                        "}"));
+
     }
 
     @SuppressWarnings("unchecked")
@@ -193,56 +191,6 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
                 .map(e -> Map.entry(e.getKey(), List.copyOf(e.getValue())))
                 .toArray(Map.Entry[]::new);
         return Map.ofEntries(entryArray);
-    }
-
-    public static final class DefaultEdge implements TopologicalOrderGraph.Edge {
-
-        private final int from;
-        private final int to;
-        private int count = 0;
-
-        public DefaultEdge(int from, int to) {
-            this.from = from;
-            this.to = to;
-        }
-
-        @Override
-        public int from() {
-            return from;
-        }
-
-        @Override
-        public int to() {
-            return to;
-        }
-
-        public void increaseCount() {
-            count++;
-        }
-
-        public int decreaseCount() {
-            return --count;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return o instanceof DefaultEdge other &&
-                    from == other.from &&
-                    to == other.to;
-        }
-
-        @Override
-        public int hashCode() {
-            var hash = 31;
-            hash += 31 * from;
-            hash += 31 * to * to; // Make sure order of nodes matters.
-            return hash;
-        }
-
-        @Override
-        public String toString() {
-            return "%d->%d".formatted(from, to);
-        }
     }
 
 }

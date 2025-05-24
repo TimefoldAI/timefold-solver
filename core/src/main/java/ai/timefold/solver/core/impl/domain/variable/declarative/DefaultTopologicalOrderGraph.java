@@ -32,24 +32,29 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public void addEdge(Edge edge) {
-        var from = edge.from();
-        var to = edge.to();
-        forwardEdges[from].add(to);
-        backEdges[to].add(from);
+    public void addEdge(int fromNode, int toNode) {
+        forwardEdges[fromNode].add(toNode);
+        backEdges[toNode].add(fromNode);
     }
 
     @Override
-    public void removeEdge(Edge edge) {
-        var from = edge.from();
-        var to = edge.to();
-        forwardEdges[from].remove(to);
-        backEdges[to].remove(from);
+    public void removeEdge(int fromNode, int toNode) {
+        forwardEdges[fromNode].remove(toNode);
+        backEdges[toNode].remove(fromNode);
     }
 
     @Override
-    public PrimitiveIterator.OfInt nodeForwardEdges(int from) {
-        return componentMap.get(from).stream()
+    public void forEachEdge(EdgeConsumer edgeConsumer) {
+        for (var fromNode = 0; fromNode < forwardEdges.length; fromNode++) {
+            for (var toNode : forwardEdges[fromNode]) {
+                edgeConsumer.accept(fromNode, toNode);
+            }
+        }
+    }
+
+    @Override
+    public PrimitiveIterator.OfInt nodeForwardEdges(int fromNode) {
+        return componentMap.get(fromNode).stream()
                 .flatMap(member -> forwardEdges[member].stream())
                 .mapToInt(Integer::intValue)
                 .distinct().iterator();
