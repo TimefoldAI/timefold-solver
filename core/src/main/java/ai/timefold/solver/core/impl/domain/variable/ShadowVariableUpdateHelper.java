@@ -13,7 +13,6 @@ import java.util.EnumSet;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
@@ -34,6 +33,7 @@ import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableN
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
+import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraphBuilder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -72,18 +72,19 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         this.supportedShadowVariableTypes = supportedShadowVariableTypes;
     }
 
+    @SuppressWarnings("unchecked")
     public void updateShadowVariables(Solution_ solution) {
-        var initialSolutionDescriptor = (SolutionDescriptor<Solution_>) SolutionDescriptor.buildSolutionDescriptor(
-                Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
-                solution.getClass());
-        var entityClassList = initialSolutionDescriptor.getAllEntitiesAndProblemFacts(solution)
+        var enabledPreviewFeatures = EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES);
+        var solutionClass = (Class<Solution_>) solution.getClass();
+        var initialSolutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
+                enabledPreviewFeatures, solutionClass);
+        var entityClassArray = initialSolutionDescriptor.getAllEntitiesAndProblemFacts(solution)
                 .stream()
                 .map(Object::getClass)
                 .distinct()
-                .toList();
-        var solutionDescriptor = (SolutionDescriptor<Solution_>) SolutionDescriptor.buildSolutionDescriptor(
-                Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
-                solution.getClass(), entityClassList.toArray(Class[]::new));
+                .toArray(Class[]::new);
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(enabledPreviewFeatures, solutionClass,
+                entityClassArray);
         try (var scoreDirector = new InternalScoreDirector<>(solutionDescriptor)) {
             // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
@@ -117,9 +118,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                             .formatted(missingShadowVariableTypeList));
         }
         // No solution, we trigger all supported events manually
-        var session = new InternalShadowVariableSession<>(solutionDescriptor,
-                new VariableReferenceGraph<>(ChangedVariableNotifier.empty()));
-        session.init(entities);
+        var session = InternalShadowVariableSession.build(solutionDescriptor,
+                new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.empty()), entities);
         // Update all built-in shadow variables
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
@@ -135,11 +135,12 @@ public final class ShadowVariableUpdateHelper<Solution_> {
     private record InternalShadowVariableSession<Solution_>(SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraph<Solution_> graph) {
 
-        public void init(Object... entities) {
-            if (!solutionDescriptor.getDeclarativeShadowVariableDescriptors().isEmpty()) {
-                DefaultShadowVariableSessionFactory.visitGraph(solutionDescriptor, graph, entities,
-                        DefaultTopologicalOrderGraph::new);
-            }
+        public static <Solution_> InternalShadowVariableSession<Solution_> build(
+                SolutionDescriptor<Solution_> solutionDescriptor, VariableReferenceGraphBuilder<Solution_> graph,
+                Object... entities) {
+            return new InternalShadowVariableSession<>(solutionDescriptor,
+                    DefaultShadowVariableSessionFactory.buildGraph(solutionDescriptor, graph, entities,
+                            DefaultTopologicalOrderGraph::new));
         }
 
         /**
@@ -249,6 +250,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
          *
          * @param entities the entities to be analyzed
          */
+        @SuppressWarnings("unchecked")
         public void processCascadingVariable(Object... entities) {
             var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
             if (listVariableDescriptor != null) {
@@ -336,8 +338,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
     }
 
-    private static class InternalScoreDirectorFactory<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
-            extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_> {
+    private static class InternalScoreDirectorFactory<Solution_, Score_ extends Score<Score_>>
+            extends AbstractScoreDirectorFactory<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>> {
 
         public InternalScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
             super(solutionDescriptor);
@@ -349,12 +351,11 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
     }
 
-    private static class InternalScoreDirector<Solution_, Score_ extends Score<Score_>, Factory_ extends AbstractScoreDirectorFactory<Solution_, Score_, Factory_>>
-            extends AbstractScoreDirector<Solution_, Score_, Factory_> {
+    private static class InternalScoreDirector<Solution_, Score_ extends Score<Score_>>
+            extends AbstractScoreDirector<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>> {
 
         public InternalScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor) {
-            super((Factory_) new InternalScoreDirectorFactory<Solution_, Score_, Factory_>(solutionDescriptor), false, DISABLED,
-                    false);
+            super(new InternalScoreDirectorFactory<>(solutionDescriptor), false, DISABLED, false);
         }
 
         @Override

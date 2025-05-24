@@ -131,16 +131,16 @@ public final class ListBasedScalingOrderedSet<E> implements Set<E> {
         if (belowThreshold) {
             return list.remove(o);
         } else {
-            int newSize = set.size() - 1;
+            if (!set.remove(o)) {
+                return false;
+            }
+            int newSize = set.size();
             if (newSize <= LIST_SIZE_THRESHOLD) {
-                set.remove(o);
                 list = new ArrayList<>(set);
                 set = null;
                 belowThreshold = true;
-                return true;
-            } else {
-                return set.remove(o);
             }
+            return true;
         }
     }
 
@@ -163,6 +163,11 @@ public final class ListBasedScalingOrderedSet<E> implements Set<E> {
             set = null;
             belowThreshold = true;
         }
+    }
+
+    @Override
+    public String toString() {
+        return belowThreshold ? list.toString() : set.toString();
     }
 
 }
