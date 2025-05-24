@@ -87,9 +87,8 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
             edge = new DefaultEdge(fromNodeId, toNodeId);
             edges[fromNodeId][toNodeId] = edge;
             graph.addEdge(edge);
-        } else {
-            edge.count++;
         }
+        edge.increaseCount();
 
         markChanged(to);
     }
@@ -107,11 +106,9 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
         }
 
         var edge = edges[fromNodeId][toNodeId];
-        if (edge.count == 1) {
+        if (edge.decreaseCount() == 0) {
             graph.removeEdge(edge);
             edges[fromNodeId][toNodeId] = null;
-        } else {
-            edge.count--;
         }
 
         markChanged(to);
@@ -182,7 +179,7 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
 
         private final int from;
         private final int to;
-        int count = 1;
+        private int count = 0;
 
         public DefaultEdge(int from, int to) {
             this.from = from;
@@ -197,6 +194,14 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
         @Override
         public int to() {
             return to;
+        }
+
+        public void increaseCount() {
+            count++;
+        }
+
+        public int decreaseCount() {
+            return --count;
         }
 
         @Override
