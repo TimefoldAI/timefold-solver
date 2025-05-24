@@ -96,9 +96,6 @@ final class AffectedEntitiesUpdater<Solution_>
                 break; // or (i+1) would overflow
             }
         }
-        // TODO why can this not be someplace after here?
-        //  attempts to move the clearing of this bitset to a more prominent place
-        //  have resulted in failing tests, for no obvious reason.
         changed.clear();
     }
 
@@ -113,8 +110,6 @@ final class AffectedEntitiesUpdater<Solution_>
         }
         var oldValue = shadowVariableLoopedDescriptor.getValue(affectedEntity);
         if (!Objects.equals(oldValue, isEntityLooped)) {
-            // TODO what if we don't let users treat this as a shadow var?
-            //  Nobody can hook up to it => we need not trigger events?
             changeShadowVariableAndNotify(shadowVariableLoopedDescriptor, affectedEntity, isEntityLooped);
         }
 
