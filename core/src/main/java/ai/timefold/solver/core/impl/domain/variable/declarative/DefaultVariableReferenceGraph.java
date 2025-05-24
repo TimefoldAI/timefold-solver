@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
@@ -14,11 +15,13 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceGraph<Solution_> {
+final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenceGraph<Solution_> {
 
     // These structures are immutable.
     private final List<EntityVariablePair<Solution_>> instanceList;
     private final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
+    private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
+    private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
 
     // These structures are mutable.
     private final DefaultEdge[][] edges;
@@ -27,12 +30,14 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
 
     private final Consumer<BitSet> affectedEntitiesUpdater;
 
-    public DefaultWorkingReferenceGraph(VariableReferenceGraph<Solution_> outerGraph,
+    public DefaultVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         instanceList = List.copyOf(outerGraph.instanceList);
         var instanceCount = instanceList.size();
-        // Often the map is a singleton; we improve performance by actually making it so.
+        // Often the maps are a singleton; we improve performance by actually making it so.
         variableReferenceToInstanceMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToInstanceMap);
+        variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
+        variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
         edges = new DefaultEdge[instanceCount][instanceCount];
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
@@ -45,7 +50,7 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
             var entity = instance.entity();
             if (visited.add(entity)) {
                 for (var variableId : outerGraph.variableReferenceToAfterProcessor.keySet()) {
-                    outerGraph.afterVariableChanged(this, variableId, entity);
+                    afterVariableChanged(variableId, entity);
                 }
             }
             entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
@@ -129,6 +134,33 @@ final class DefaultWorkingReferenceGraph<Solution_> implements WorkingReferenceG
         }
         graph.endBatchChange();
         affectedEntitiesUpdater.accept(changed);
+    }
+
+    @Override
+    public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+        if (variableReference.entity().type().isInstance(entity)) {
+            processEntity(variableReferenceToBeforeProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
+        }
+    }
+
+    private void processEntity(List<BiConsumer<VariableReferenceGraph<Solution_>, Object>> processorList, Object entity) {
+        var processorCount = processorList.size();
+        // Avoid creation of iterators on the hot path.
+        // The short-lived instances were observed to cause considerable GC pressure.
+        for (int i = 0; i < processorCount; i++) {
+            processorList.get(i).accept(this, entity);
+        }
+    }
+
+    @Override
+    public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
+        if (variableReference.entity().type().isInstance(entity)) {
+            var node = lookupOrNull(variableReference, entity);
+            if (node != null) {
+                markChanged(node);
+            }
+            processEntity(variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
+        }
     }
 
     @Override
