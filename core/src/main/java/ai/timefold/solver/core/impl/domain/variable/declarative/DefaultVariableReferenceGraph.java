@@ -44,7 +44,6 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
         changed = new BitSet(instanceCount);
 
         var entityToVariableReferenceMap = new IdentityHashMap<Object, List<EntityVariablePair<Solution_>>>();
-        graph.startBatchChange();
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         for (var instance : instanceList) {
             var entity = instance.entity();
@@ -83,10 +82,6 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        if (changed.isEmpty()) {
-            graph.startBatchChange();
-        }
-
         var edge = edges[fromNodeId][toNodeId];
         if (edge == null) {
             edge = new DefaultEdge(fromNodeId, toNodeId);
@@ -106,10 +101,6 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        if (changed.isEmpty()) {
-            graph.startBatchChange();
-        }
-
         var edge = edges[fromNodeId][toNodeId];
         if (edge.decreaseCount() == 0) {
             graph.removeEdge(edge);
@@ -121,9 +112,6 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
 
     @Override
     public void markChanged(@NonNull EntityVariablePair<Solution_> node) {
-        if (changed.isEmpty()) {
-            graph.startBatchChange();
-        }
         changed.set(node.graphNodeId());
     }
 
@@ -132,7 +120,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
         if (changed.isEmpty()) {
             return;
         }
-        graph.endBatchChange();
+        graph.commitChanges();
         affectedEntitiesUpdater.accept(changed);
     }
 

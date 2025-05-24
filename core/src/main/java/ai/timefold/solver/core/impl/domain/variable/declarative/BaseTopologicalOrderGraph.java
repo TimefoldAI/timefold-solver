@@ -29,7 +29,7 @@ public interface BaseTopologicalOrderGraph {
 
     /**
      * Returns a tuple containing node ID and a number corresponding to its topological order.
-     * In particular, after {@link TopologicalOrderGraph#endBatchChange()} is called, the following
+     * In particular, after {@link TopologicalOrderGraph#commitChanges()} is called, the following
      * must be true for any pair of nodes A, B where:
      * <ul>
      * <li>A is a predecessor of B</li>

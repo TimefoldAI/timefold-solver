@@ -5,20 +5,11 @@ import java.util.List;
 public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
 
     /**
-     * Called on the first edge modification of a batch.
-     */
-    default void startBatchChange() {
-    }
-
-    /**
-     * Called when all edge modifications are done.
-     * There is no prior {@link #startBatchChange()} call if
-     * no modifications were done.
+     * Called when all edge modifications are queued.
      * After this method returns, {@link #getTopologicalOrder(int)}
      * must be accurate for every node in the graph.
      */
-    default void endBatchChange() {
-    }
+    void commitChanges();
 
     /**
      * Called on graph creation to supply metadata about the graph nodes.
@@ -31,6 +22,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
 
     /**
      * Called when a graph edge is added.
+     * The operation is added to a batch and only executed when {@link #commitChanges()} is called.
      * <p>
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.
@@ -39,6 +31,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
 
     /**
      * Called when a graph edge is removed.
+     * The operation is added to a batch and only executed when {@link #commitChanges()} is called.
      * <p>
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.

@@ -83,7 +83,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public void endBatchChange() {
+    public void commitChanges() {
         var index = new MutableInt(1);
         var stackIndex = new MutableInt(0);
         var size = forwardEdges.length;
