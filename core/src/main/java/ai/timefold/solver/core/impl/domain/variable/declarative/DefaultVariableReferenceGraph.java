@@ -26,7 +26,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
     private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
 
     // These structures are mutable.
-    private final BitSet[] edgesFromNode;
+    private final int[][] edgeCount;
     private final TopologicalOrderGraph graph;
     private final BitSet changed;
 
@@ -40,7 +40,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
         variableReferenceToInstanceMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToInstanceMap);
         variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
-        edgesFromNode = new BitSet[instanceCount];
+        edgeCount = new int[instanceCount][instanceCount];
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
         changed = new BitSet(instanceCount);
@@ -84,20 +84,11 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        var hasEdge = false;
-        var presentEdges = edgesFromNode[fromNodeId];
-        if (presentEdges == null) {
-            presentEdges = new BitSet(edgesFromNode.length);
-            edgesFromNode[fromNodeId] = presentEdges;
-        } else {
-            hasEdge = presentEdges.get(toNodeId);
-        }
-
-        if (!hasEdge) {
-            presentEdges.set(toNodeId);
+        var count = edgeCount[fromNodeId][toNodeId]++;
+        if (count == 0) {
             graph.addEdge(fromNodeId, toNodeId);
-            markChanged(to);
         }
+        markChanged(to);
     }
 
     @Override
@@ -108,15 +99,11 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        var presentEdges = edgesFromNode[fromNodeId];
-        if (presentEdges == null) {
-            return;
-        }
-        if (presentEdges.get(toNodeId)) {
+        var count = --edgeCount[fromNodeId][toNodeId];
+        if (count == 0) {
             graph.removeEdge(fromNodeId, toNodeId);
-            presentEdges.clear(toNodeId);
-            markChanged(to);
         }
+        markChanged(to);
     }
 
     @Override
