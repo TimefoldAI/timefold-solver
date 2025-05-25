@@ -30,11 +30,8 @@ public final class LoopedTracker {
     public LoopedStatus status(int node) {
         if (present.isEmpty() || !present.get(node)) {
             return LoopedStatus.UNKNOWN;
-        } else if (looped.get(node)) {
-            return LoopedStatus.LOOPED;
-        } else {
-            return LoopedStatus.NOT_LOOPED;
         }
+        return looped.get(node) ? LoopedStatus.LOOPED : LoopedStatus.NOT_LOOPED;
     }
 
     public void clear() {

@@ -77,7 +77,11 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
 
     @Override
     public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        return variableReferenceToInstanceMap.getOrDefault(variableId, Collections.emptyMap()).get(entity);
+        var map = variableReferenceToInstanceMap.get(variableId);
+        if (map == null) {
+            return null;
+        }
+        return map.get(entity);
     }
 
     @Override

@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.Objects;
-
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -15,7 +13,7 @@ public record EntityVariablePair<Solution_>(Object entity, VariableUpdaterInfo<S
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(graphNodeId);
+        return Integer.hashCode(graphNodeId);
     }
 
     @Override
