@@ -12,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.impl.util.DynamicIntArray;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
@@ -26,7 +27,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
     private final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
 
     // These structures are mutable.
-    private final int[][] edgeCount;
+    private final DynamicIntArray[] edgeCount;
     private final TopologicalOrderGraph graph;
     private final BitSet changed;
 
@@ -40,7 +41,10 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
         variableReferenceToInstanceMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToInstanceMap);
         variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
-        edgeCount = new int[instanceCount][instanceCount];
+        edgeCount = new DynamicIntArray[instanceCount];
+        for (int i = 0; i < instanceCount; i++) {
+            edgeCount[i] = new DynamicIntArray(instanceCount);
+        }
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(instanceList);
         changed = new BitSet(instanceCount);
@@ -84,10 +88,11 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        var count = edgeCount[fromNodeId][toNodeId]++;
+        var count = edgeCount[fromNodeId].get(toNodeId);
         if (count == 0) {
             graph.addEdge(fromNodeId, toNodeId);
         }
+        edgeCount[fromNodeId].set(toNodeId, count + 1);
         markChanged(to);
     }
 
@@ -99,10 +104,11 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
             return;
         }
 
-        var count = --edgeCount[fromNodeId][toNodeId];
-        if (count == 0) {
+        var count = edgeCount[fromNodeId].get(toNodeId);
+        if (count == 1) {
             graph.removeEdge(fromNodeId, toNodeId);
         }
+        edgeCount[fromNodeId].set(toNodeId, count - 1);
         markChanged(to);
     }
 
