@@ -310,4 +310,87 @@ class DynamicIntArrayTest {
             assertThat(array.length()).isEqualTo(1001); // 0-1000 inclusive
         }
     }
+
+    @Nested
+    @DisplayName("Clear method tests")
+    class ClearMethodTests {
+
+        @Test
+        @DisplayName("Clear on empty array does nothing")
+        void clearEmptyArray() {
+            var array = new DynamicIntArray();
+
+            // Should not throw an exception
+            array.clear();
+
+            assertThat(array.length()).isZero();
+        }
+
+        @Test
+        @DisplayName("Clear resets all values to 0 but preserves array structure")
+        void clearResetsValues() {
+            var array = new DynamicIntArray();
+            array.set(5, 24);
+            array.set(10, 42);
+
+            array.clear();
+
+            // Values should be reset to 0
+            assertThat(array.get(5)).isZero();
+            assertThat(array.get(10)).isZero();
+
+            // Array structure should be preserved
+            assertThat(array.getFirstIndex()).isEqualTo(5);
+            assertThat(array.getLastIndex()).isEqualTo(10);
+            assertThat(array.containsIndex(5)).isTrue();
+            assertThat(array.containsIndex(10)).isTrue();
+            assertThat(array.length()).isEqualTo(11); // 0-10 inclusive
+        }
+
+        @Test
+        @DisplayName("Clear and then set new values")
+        void clearAndSetNewValues() {
+            var array = new DynamicIntArray();
+            array.set(5, 24);
+            array.set(10, 42);
+
+            array.clear();
+
+            // Set new values
+            array.set(7, 99);
+
+            // New values should be set correctly
+            assertThat(array.get(7)).isEqualTo(99);
+
+            // Old indices should still be in the array but with value 0
+            assertThat(array.get(5)).isZero();
+            assertThat(array.get(10)).isZero();
+
+            // Array structure should be updated
+            assertThat(array.getFirstIndex()).isEqualTo(5);
+            assertThat(array.getLastIndex()).isEqualTo(10);
+        }
+
+        @Test
+        @DisplayName("Clear with sparse indices")
+        void clearWithSparseIndices() {
+            var array = new DynamicIntArray();
+            array.set(10, 1);
+            array.set(100, 2);
+            array.set(1000, 3);
+
+            array.clear();
+
+            // All values should be reset to 0
+            assertThat(array.get(10)).isZero();
+            assertThat(array.get(100)).isZero();
+            assertThat(array.get(1000)).isZero();
+
+            // Array structure should be preserved
+            assertThat(array.getFirstIndex()).isEqualTo(10);
+            assertThat(array.getLastIndex()).isEqualTo(1000);
+            assertThat(array.length()).isEqualTo(1001); // 0-1000 inclusive
+        }
+    }
+
 }

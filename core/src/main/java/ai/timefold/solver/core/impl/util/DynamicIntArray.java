@@ -9,6 +9,11 @@ import java.util.Arrays;
  */
 public final class DynamicIntArray {
 
+    // Growth factor for array expansion; not too much, the point of this class is to avoid excessive memory use.
+    private static final double GROWTH_FACTOR = 1.2;
+    // Minimum capacity increment to avoid small incremental growth
+    private static final int MIN_CAPACITY_INCREMENT = 10;
+
     private final int maxLength;
     private int[] array;
     private int firstIndex;
@@ -33,7 +38,8 @@ public final class DynamicIntArray {
     /**
      * Sets the value at the specified index.
      * If this is the first element, the array is created.
-     * If the index is lower than the current firstIndex, the array is reallocated.
+     * If the index is lower than the current firstIndex or higher than the current lastIndex,
+     * the array is reallocated with a growth strategy to reduce frequent reallocations.
      *
      * @param index the index at which to set the value
      * @param value the value to set
@@ -43,40 +49,79 @@ public final class DynamicIntArray {
             throw new ArrayIndexOutOfBoundsException(index);
         }
         if (array == null) {
-            // First element, create the array with size 1
-            array = new int[1];
+            // First element, create the array with initial capacity
+            var initialCapacity = Math.min(MIN_CAPACITY_INCREMENT, maxLength);
+            array = new int[initialCapacity];
             firstIndex = index;
             lastIndex = index;
             array[0] = value;
         } else if (index < firstIndex) {
             // New index is lower than first index, need to reallocate
-            int newSize = lastIndex - index + 1;
-            int[] newArray = new int[newSize];
+            var currentSize = lastIndex - firstIndex + 1;
+            var offset = firstIndex - index;
+
+            // Calculate new capacity with growth strategy
+            var requiredCapacity = currentSize + offset;
+            var newCapacity = calculateNewCapacity(requiredCapacity);
 
             // Copy existing elements to new array with offset
-            int offset = firstIndex - index;
-            System.arraycopy(array, 0, newArray, offset, lastIndex - firstIndex + 1);
-
-            // Update first index and array
-            firstIndex = index;
+            var newArray = new int[newCapacity];
+            System.arraycopy(array, 0, newArray, offset, currentSize);
             array = newArray;
+            firstIndex = index;
             array[0] = value;
         } else if (index > lastIndex) {
             // New index is higher than last index, need to expand
-            int newSize = index - firstIndex + 1;
-            int[] newArray = new int[newSize];
+            var currentSize = lastIndex - firstIndex + 1;
+            var newSize = index - firstIndex + 1;
 
-            // Copy existing elements to new array
-            System.arraycopy(array, 0, newArray, 0, array.length);
+            if (newSize > array.length) {
+                // Calculate new capacity with growth strategy
+                var newCapacity = calculateNewCapacity(newSize);
 
-            // Update last index and array
+                // Copy existing elements to new array
+                var newArray = new int[newCapacity];
+                System.arraycopy(array, 0, newArray, 0, currentSize);
+                array = newArray;
+            }
+
+            // Update last index
             lastIndex = index;
-            array = newArray;
             array[index - firstIndex] = value;
         } else {
             // Index is within existing range
             array[index - firstIndex] = value;
         }
+    }
+
+    /**
+     * Calculates the new capacity based on the required capacity and growth strategy.
+     * 
+     * @param requiredCapacity the minimum capacity needed
+     * @return the new capacity
+     */
+    private int calculateNewCapacity(int requiredCapacity) {
+        var currentCapacity = array != null ? array.length : 0;
+
+        if (requiredCapacity <= currentCapacity) {
+            return currentCapacity;
+        }
+
+        // Calculate new capacity using growth factor
+        var newCapacity = (int) (currentCapacity * GROWTH_FACTOR);
+
+        // Ensure minimum increment
+        if (newCapacity - currentCapacity < MIN_CAPACITY_INCREMENT) {
+            newCapacity = currentCapacity + MIN_CAPACITY_INCREMENT;
+        }
+
+        // Ensure new capacity is at least the required capacity
+        if (newCapacity < requiredCapacity) {
+            newCapacity = requiredCapacity;
+        }
+
+        // Ensure new capacity doesn't exceed maxLength
+        return Math.min(newCapacity, maxLength);
     }
 
     /**
@@ -144,10 +189,19 @@ public final class DynamicIntArray {
         return lastIndex + 1;
     }
 
+    /**
+     * Clears the array by setting all values to 0.
+     * The array structure is preserved, only the values are reset.
+     */
     public void clear() {
-        // Fill rather than reallocate.
-        // We keep the original bounds, assuming the array is likely to be filled up again.
-        Arrays.fill(array, 0);
+        // If array is null, there's nothing to clear
+        if (array == null) {
+            return;
+        }
+
+        // Only clear the used portion of the array (from firstIndex to lastIndex)
+        // This is more efficient for large arrays with sparse indices
+        Arrays.fill(array, 0, lastIndex - firstIndex + 1, 0);
     }
 
 }
