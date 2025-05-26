@@ -327,7 +327,7 @@ jobs:
       - name: Deploy Documentation (Preview Mode)
         if: ${{ env.BRANCH_NAME != 'main' }}
         id: deploy
-        uses: cloudflare/wrangler-action@v3
+        uses: cloudflare/wrangler-action@da0e0dfe58b7a431659754fdf3f186c529afbe65 # v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}

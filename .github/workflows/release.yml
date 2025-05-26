@@ -66,7 +66,7 @@ jobs:
 
       # Need Maven 3.9.0+ to recognize MAVEN_ARGS.
       - name: Set up Maven
-        uses: stCarolas/setup-maven@v5
+        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
         with:
           maven-version: 3.9.3
 
@@ -96,7 +96,7 @@ jobs:
           git push origin $RELEASE_BRANCH_NAME
 
       - name: Run JReleaser
-        uses: jreleaser/release-action@v2
+        uses: jreleaser/release-action@80ffb38fa759704eed4db5c7fcaae3ac1079473e # v2
         env:
           JRELEASER_DRY_RUN: ${{ github.event.inputs.dryRun }}
           JRELEASER_PROJECT_VERSION: ${{ github.event.inputs.version }}
@@ -117,5 +117,5 @@ jobs:
             out/jreleaser/output.properties
 
       - name: Publish distribution to PyPI
-        uses: pypa/gh-action-pypi-publish@release/v1
+        uses: pypa/gh-action-pypi-publish@76f52bc884231f62b9a034ebfe128415bbaabdfc # release/v1
         if: ${{ github.event.inputs.dryRun == 'false' }}
