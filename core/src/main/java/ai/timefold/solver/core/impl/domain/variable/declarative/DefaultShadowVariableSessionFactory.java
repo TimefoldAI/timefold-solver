@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -30,59 +29,62 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         this.graphCreator = graphCreator;
     }
 
-    public static <Solution_> void visitGraph(
+    @SuppressWarnings("unchecked")
+    public static <Solution_> VariableReferenceGraph<Solution_> buildGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
-            VariableReferenceGraph<Solution_> variableReferenceGraph, Object[] entities,
+            VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         var declarativeShadowVariableDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
-        var variableIdToUpdater = new HashMap<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo>();
+        if (declarativeShadowVariableDescriptors.isEmpty()) {
+            return EmptyVariableReferenceGraph.INSTANCE;
+        }
+        var variableIdToUpdater = new HashMap<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo<Solution_>>();
 
+        // Create graph node for each entity/declarative shadow variable pair.
         // Maps a variable id to it source aliases;
         // For instance, "previousVisit.startTime" is a source alias of "startTime"
         // One way to view this concept is "previousVisit.startTime" is a pointer
         // to "startTime" of some visit, and thus alias it.
-        Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap = new HashMap<>();
-
-        // Create graph node for each entity/declarative shadow variable pair
-        createGraphNodes(variableReferenceGraph, entities, declarativeShadowVariableDescriptors, variableIdToUpdater,
-                declarativeShadowVariableToAliasMap);
+        var declarativeShadowVariableToAliasMap = createGraphNodes(variableReferenceGraphBuilder, entities,
+                declarativeShadowVariableDescriptors, variableIdToUpdater);
 
         // Create variable processors for each declarative shadow variable descriptor
         for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
-            final var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
-            createSourceChangeProcessors(variableReferenceGraph, declarativeShadowVariable, fromVariableId);
-            createAliasToVariableChangeProcessors(variableReferenceGraph, declarativeShadowVariableToAliasMap, fromVariableId);
+            var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
+            createSourceChangeProcessors(variableReferenceGraphBuilder, declarativeShadowVariable, fromVariableId);
+            var aliasSet = declarativeShadowVariableToAliasMap.get(fromVariableId);
+            if (aliasSet != null) {
+                createAliasToVariableChangeProcessors(variableReferenceGraphBuilder, aliasSet, fromVariableId);
+            }
         }
 
         // Create the fixed edges in the graph
-        createFixedVariableRelationEdges(variableReferenceGraph, entities, declarativeShadowVariableDescriptors);
-        variableReferenceGraph.createGraph(graphCreator);
+        createFixedVariableRelationEdges(variableReferenceGraphBuilder, entities, declarativeShadowVariableDescriptors);
+        return variableReferenceGraphBuilder.build(graphCreator);
     }
 
-    private static <Solution_> void createGraphNodes(VariableReferenceGraph<Solution_> graph, Object[] entities,
+    private static <Solution_> Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> createGraphNodes(
+            VariableReferenceGraphBuilder<Solution_> graph, Object[] entities,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors,
-            Map<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo> variableIdToUpdater,
-            Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap) {
+            Map<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo<Solution_>> variableIdToUpdater) {
+        var result = new HashMap<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>>();
         for (var entity : entities) {
             for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
                 var entityClass = declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass();
                 if (entityClass.isInstance(entity)) {
                     var variableId = declarativeShadowVariableDescriptor.getVariableMetaModel();
-                    var updater = variableIdToUpdater.computeIfAbsent(variableId, ignored -> new VariableUpdaterInfo(
+                    var updater = variableIdToUpdater.computeIfAbsent(variableId, ignored -> new VariableUpdaterInfo<>(
+                            variableId,
                             declarativeShadowVariableDescriptor,
                             declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariableLoopedDescriptor(),
                             declarativeShadowVariableDescriptor.getMemberAccessor(),
                             declarativeShadowVariableDescriptor.getCalculator()::executeGetter));
-                    graph.addVariableReferenceEntity(
-                            variableId,
-                            entity,
-                            updater);
+                    graph.addVariableReferenceEntity(entity, updater);
                     for (var sourceRoot : declarativeShadowVariableDescriptor.getSources()) {
                         for (var source : sourceRoot.variableSourceReferences()) {
                             if (source.downstreamDeclarativeVariableMetamodel() != null) {
-                                declarativeShadowVariableToAliasMap
-                                        .computeIfAbsent(source.downstreamDeclarativeVariableMetamodel(),
-                                                ignored -> new LinkedHashSet<>())
+                                result.computeIfAbsent(source.downstreamDeclarativeVariableMetamodel(),
+                                        ignored -> new LinkedHashSet<>())
                                         .add(source);
                             }
                         }
@@ -90,9 +92,11 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 }
             }
         }
+        return result;
     }
 
-    private static <Solution_> void createSourceChangeProcessors(VariableReferenceGraph<Solution_> variableReferenceGraph,
+    private static <Solution_> void createSourceChangeProcessors(
+            VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder,
             DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
         for (var source : declarativeShadowVariable.getSources()) {
@@ -104,13 +108,11 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 // non-declarative variables are not in the graph and must have their
                 // own processor
                 if (!sourcePart.isDeclarative()) {
-                    variableReferenceGraph.addAfterProcessor(toVariableId, (graph, entity) -> {
+                    variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
                         // Exploits the fact the source entity and the target entity must be the same,
-                        // since non-declarative variables can only be accessed from the root entity
-                        // i.e. paths like "otherVisit.previous"
-                        // or "visitGroup[].otherVisit.previous" are not allowed,
-                        // but paths like "previous" or
-                        // "visitGroup[].previous" are.
+                        // since non-declarative variables can only be accessed from the root entity;
+                        // paths like "otherVisit.previous" or "visitGroup[].otherVisit.previous" are not allowed,
+                        // but paths like "previous" or "visitGroup[].previous" are.
                         // Without this invariant, an inverse set must be calculated
                         // and maintained,
                         // and this code is complicated enough.
@@ -125,71 +127,78 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     private static <Solution_> void createAliasToVariableChangeProcessors(
-            VariableReferenceGraph<Solution_> variableReferenceGraph,
-            Map<VariableMetaModel<?, ?, ?>, Set<VariableSourceReference>> declarativeShadowVariableToAliasMap,
+            VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Set<VariableSourceReference> aliasSet,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
-        for (var alias : declarativeShadowVariableToAliasMap.getOrDefault(fromVariableId, Collections.emptySet())) {
+        for (var alias : aliasSet) {
             var toVariableId = alias.targetVariableMetamodel();
             var sourceVariableId = alias.variableMetaModel();
 
             if (!alias.isDeclarative() && alias.affectGraphEdges()) {
                 // Exploit the same fact as above
-                variableReferenceGraph.addBeforeProcessor(sourceVariableId,
-                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity()
-                                .accept(toEntity, fromEntity -> {
-                                    // from/to can be null in extended models
-                                    // ex: previous is used as a source, but only an extended class
-                                    // has the to variable
-                                    var from = graph.lookupOrNull(fromVariableId, fromEntity);
-                                    if (from == null) {
-                                        return;
-                                    }
-                                    var to = graph.lookupOrNull(toVariableId, toEntity);
-                                    if (to == null) {
-                                        return;
-                                    }
-                                    graph.removeEdge(from, to);
-                                }));
-                variableReferenceGraph.addAfterProcessor(sourceVariableId,
-                        (graph, toEntity) -> alias.targetEntityFunctionStartingFromVariableEntity()
-                                .accept(toEntity, fromEntity -> {
-                                    var from = graph.lookupOrNull(fromVariableId, fromEntity);
-                                    if (from == null) {
-                                        return;
-                                    }
-                                    var to = graph.lookupOrNull(toVariableId, toEntity);
-                                    if (to == null) {
-                                        return;
-                                    }
-                                    graph.addEdge(from, to);
-                                }));
+                variableReferenceGraphBuilder.addBeforeProcessor(sourceVariableId,
+                        (graph, toEntity) -> {
+                            // from/to can be null in extended models
+                            // ex: previous is used as a source, but only an extended class
+                            // has the to variable
+                            var to = graph.lookupOrNull(toVariableId, toEntity);
+                            if (to == null) {
+                                return;
+                            }
+                            var fromEntity = alias.targetEntityFunctionStartingFromVariableEntity()
+                                    .apply(toEntity);
+                            if (fromEntity == null) {
+                                return;
+                            }
+                            var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                            if (from == null) {
+                                return;
+                            }
+                            graph.removeEdge(from, to);
+                        });
+                variableReferenceGraphBuilder.addAfterProcessor(sourceVariableId,
+                        (graph, toEntity) -> {
+                            var to = graph.lookupOrNull(toVariableId, toEntity);
+                            if (to == null) {
+                                return;
+                            }
+                            var fromEntity = alias.findTargetEntity(toEntity);
+                            if (fromEntity == null) {
+                                return;
+                            }
+                            var from = graph.lookupOrNull(fromVariableId, fromEntity);
+                            if (from == null) {
+                                return;
+                            }
+                            graph.addEdge(from, to);
+                        });
             }
             // Note: it is impossible to have a declarative variable affect graph edges,
             // since accessing a declarative variable from another declarative variable is prohibited.
         }
     }
 
-    private static <Solution_> void createFixedVariableRelationEdges(VariableReferenceGraph<Solution_> variableReferenceGraph,
+    private static <Solution_> void createFixedVariableRelationEdges(
+            VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder,
             Object[] entities,
             List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
         for (var entity : entities) {
             for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
                 var entityClass = declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass();
-                if (entityClass.isInstance(entity)) {
-                    var toVariableId = declarativeShadowVariableDescriptor.getVariableMetaModel();
-                    for (var sourceRoot : declarativeShadowVariableDescriptor.getSources()) {
-                        for (var source : sourceRoot.variableSourceReferences()) {
-                            if (source.isTopLevel() && source.isDeclarative()) {
-                                var fromVariableId = source.variableMetaModel();
-
-                                sourceRoot.valueEntityFunction()
-                                        .accept(entity, fromEntity -> variableReferenceGraph.addFixedEdge(
-                                                variableReferenceGraph
-                                                        .lookupOrError(fromVariableId, fromEntity),
-                                                variableReferenceGraph
-                                                        .lookupOrError(toVariableId, entity)));
-                                break;
-                            }
+                if (!entityClass.isInstance(entity)) {
+                    continue;
+                }
+                var toVariableId = declarativeShadowVariableDescriptor.getVariableMetaModel();
+                var to = variableReferenceGraphBuilder.lookupOrError(toVariableId, entity);
+                for (var sourceRoot : declarativeShadowVariableDescriptor.getSources()) {
+                    for (var source : sourceRoot.variableSourceReferences()) {
+                        if (source.isTopLevel() && source.isDeclarative()) {
+                            var fromVariableId = source.variableMetaModel();
+                            sourceRoot.valueEntityFunction()
+                                    .accept(entity, fromEntity -> {
+                                        var from = variableReferenceGraphBuilder.lookupOrError(fromVariableId, fromEntity);
+                                        variableReferenceGraphBuilder.addFixedEdge(from, to);
+                                    });
+                            break;
                         }
                     }
                 }
@@ -204,10 +213,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     public DefaultShadowVariableSession<Solution_> forEntities(Object... entities) {
-        var variableReferenceGraph = new VariableReferenceGraph<>(ChangedVariableNotifier.of(scoreDirector));
-
-        visitGraph(solutionDescriptor, variableReferenceGraph, entities, graphCreator);
-
-        return new DefaultShadowVariableSession<>(variableReferenceGraph);
+        var builder = new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.of(scoreDirector));
+        var graph = buildGraph(solutionDescriptor, builder, entities, graphCreator);
+        return new DefaultShadowVariableSession<>(graph);
     }
 }

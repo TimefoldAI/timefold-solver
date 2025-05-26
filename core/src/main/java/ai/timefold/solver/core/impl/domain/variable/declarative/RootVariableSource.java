@@ -19,6 +19,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public record RootVariableSource<Entity_, Value_>(
         Class<? extends Entity_> rootEntity,
@@ -32,18 +33,18 @@ public record RootVariableSource<Entity_, Value_>(
             String variableName,
             List<MemberAccessor> memberAccessorsBeforeEntity,
             List<MemberAccessor> memberAccessorsAfterEntity) {
-        public BiConsumer<Object, Consumer<Object>> getValueVisitorFromVariableEntity() {
-            return (entity, consumer) -> {
-                var currentEntity = entity;
-                for (var member : memberAccessorsAfterEntity) {
-                    currentEntity = member.executeGetter(currentEntity);
-                    if (currentEntity == null) {
-                        return;
-                    }
+
+        public @Nullable Object findTargetEntity(Object entity) {
+            var currentEntity = entity;
+            for (var member : memberAccessorsAfterEntity) {
+                currentEntity = member.executeGetter(currentEntity);
+                if (currentEntity == null) {
+                    return null;
                 }
-                consumer.accept(currentEntity);
-            };
+            }
+            return currentEntity;
         }
+
     }
 
     public static Iterator<PathPart> pathIterator(Class<?> rootEntity, String path) {
@@ -215,7 +216,7 @@ public record RootVariableSource<Entity_, Value_>(
                 isDeclarativeShadowVariable(variableMemberAccessor),
                 solutionMetaModel.entity(rootEntityClass).variable(targetVariableName),
                 downstreamDeclarativeVariable,
-                sourceVariablePath.getValueVisitorFromVariableEntity());
+                sourceVariablePath::findTargetEntity);
     }
 
     private static void assertIsValidVariableReference(Class<?> rootEntityClass, String variablePath,

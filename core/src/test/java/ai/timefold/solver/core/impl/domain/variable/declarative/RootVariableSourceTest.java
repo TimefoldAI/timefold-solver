@@ -85,12 +85,10 @@ class RootVariableSourceTest {
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isNull();
 
-        var sourceVisitor = mock(Consumer.class);
         var entity = new TestdataInvalidDeclarativeValue("v1");
-        source.targetEntityFunctionStartingFromVariableEntity().accept(entity, sourceVisitor);
+        var result = source.targetEntityFunctionStartingFromVariableEntity().apply(entity);
 
-        verify(sourceVisitor).accept(entity);
-        verifyNoMoreInteractions(sourceVisitor);
+        assertThat(result).isSameAs(entity);
 
         var rootVisitor = mock(Consumer.class);
         rootVariableSource.valueEntityFunction().accept(entity, rootVisitor);
@@ -120,12 +118,9 @@ class RootVariableSourceTest {
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
 
-        var sourceVisitor = mock(Consumer.class);
         var entity = new TestdataInvalidDeclarativeValue("v1");
-        source.targetEntityFunctionStartingFromVariableEntity().accept(entity, sourceVisitor);
-
-        verify(sourceVisitor).accept(entity);
-        verifyNoMoreInteractions(sourceVisitor);
+        var result = source.targetEntityFunctionStartingFromVariableEntity().apply(entity);
+        assertThat(result).isSameAs(entity);
 
         var rootVisitor = mock(Consumer.class);
         rootVariableSource.valueEntityFunction().accept(entity, rootVisitor);
@@ -155,16 +150,13 @@ class RootVariableSourceTest {
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
 
-        var sourceVisitor = mock(Consumer.class);
         var group = new TestdataInvalidDeclarativeValue("group");
         var v1 = new TestdataInvalidDeclarativeValue("v1");
         var v2 = new TestdataInvalidDeclarativeValue("v2");
 
         group.setGroup(List.of(v1, v2));
-        source.targetEntityFunctionStartingFromVariableEntity().accept(group, sourceVisitor);
-
-        verify(sourceVisitor).accept(group);
-        verifyNoMoreInteractions(sourceVisitor);
+        var result = source.targetEntityFunctionStartingFromVariableEntity().apply(group);
+        assertThat(result).isSameAs(group);
 
         var rootVisitor = mock(Consumer.class);
         rootVariableSource.valueEntityFunction().accept(group, rootVisitor);
@@ -195,16 +187,13 @@ class RootVariableSourceTest {
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isNull();
 
-        var sourceVisitor = mock(Consumer.class);
         var group = new TestdataInvalidDeclarativeValue("group");
         var v1 = new TestdataInvalidDeclarativeValue("v1");
         var v2 = new TestdataInvalidDeclarativeValue("v2");
 
         group.setGroup(List.of(v1, v2));
-        source.targetEntityFunctionStartingFromVariableEntity().accept(group, sourceVisitor);
-
-        verify(sourceVisitor).accept(group);
-        verifyNoMoreInteractions(sourceVisitor);
+        var result = source.targetEntityFunctionStartingFromVariableEntity().apply(group);
+        assertThat(result).isSameAs(group);
 
         var rootVisitor = mock(Consumer.class);
         rootVariableSource.valueEntityFunction().accept(group, rootVisitor);
@@ -235,7 +224,6 @@ class RootVariableSourceTest {
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
 
-        var sourceVisitor = mock(Consumer.class);
         var root = new TestdataInvalidDeclarativeValue("fact");
         var fact = new TestdataInvalidDeclarativeValue("fact");
         var v1 = new TestdataInvalidDeclarativeValue("v1");
@@ -243,10 +231,8 @@ class RootVariableSourceTest {
 
         root.setFact(fact);
         fact.setGroup(List.of(v1, v2));
-        source.targetEntityFunctionStartingFromVariableEntity().accept(root, sourceVisitor);
-
-        verify(sourceVisitor).accept(root);
-        verifyNoMoreInteractions(sourceVisitor);
+        var result = source.targetEntityFunctionStartingFromVariableEntity().apply(root);
+        assertThat(result).isSameAs(root);
 
         var rootVisitor = mock(Consumer.class);
         rootVariableSource.valueEntityFunction().accept(root, rootVisitor);
@@ -286,15 +272,12 @@ class RootVariableSourceTest {
         assertThat(dependencySource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(dependencySource.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
 
-        var sourceVisitor = mock(Consumer.class);
         var previousElement = new TestdataInvalidDeclarativeValue("previous");
         var currentElement = new TestdataInvalidDeclarativeValue("current");
         currentElement.setPrevious(previousElement);
 
-        previousSource.targetEntityFunctionStartingFromVariableEntity().accept(currentElement, sourceVisitor);
-
-        verify(sourceVisitor).accept(previousElement);
-        verifyNoMoreInteractions(sourceVisitor);
+        var result = previousSource.targetEntityFunctionStartingFromVariableEntity().apply(currentElement);
+        assertThat(result).isSameAs(previousElement);
 
         var rootVisitor = mock(Consumer.class);
         rootVariableSource.valueEntityFunction().accept(currentElement, rootVisitor);
@@ -333,7 +316,6 @@ class RootVariableSourceTest {
         assertThat(dependencySource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(dependencySource.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
 
-        var sourceVisitor = mock(Consumer.class);
         var previousElement = new TestdataInvalidDeclarativeValue("previous");
         var currentElement = new TestdataInvalidDeclarativeValue("current");
         var group = new TestdataInvalidDeclarativeValue("group");
@@ -341,10 +323,8 @@ class RootVariableSourceTest {
         currentElement.setPrevious(previousElement);
         group.setGroup(List.of(currentElement));
 
-        previousSource.targetEntityFunctionStartingFromVariableEntity().accept(currentElement, sourceVisitor);
-
-        verify(sourceVisitor).accept(previousElement);
-        verifyNoMoreInteractions(sourceVisitor);
+        var result = previousSource.targetEntityFunctionStartingFromVariableEntity().apply(currentElement);
+        assertThat(result).isSameAs(previousElement);
 
         var rootVisitor = mock(Consumer.class);
         rootVariableSource.valueEntityFunction().accept(group, rootVisitor);

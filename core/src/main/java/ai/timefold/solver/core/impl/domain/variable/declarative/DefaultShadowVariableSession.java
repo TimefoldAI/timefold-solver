@@ -7,6 +7,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class DefaultShadowVariableSession<Solution_> implements Supply {
+
     final VariableReferenceGraph<Solution_> graph;
 
     public DefaultShadowVariableSession(VariableReferenceGraph<Solution_> graph) {
