@@ -59,18 +59,18 @@
       <artifactId>spring-webflux</artifactId>
       <scope>test</scope>
     </dependency>
-      <!--
-        Spring Boot 3.5.0 uses JUnit 5.12.1, while the solver code has upgraded to 5.12.2.
-        The difference between versions is affecting native compilation because of interoperability issues.
-        The following temporary workaround updates the junit-platform-launcher version to a newer one
-        that resolves the interoperability issue: https://junit.org/junit5/docs/current/user-guide/#running-tests-build-maven
-        TODO - Remove this dependency once the Spring Boot uses a consistent JUnit version with the Solver
-      -->
-      <dependency>
-          <groupId>org.junit.platform</groupId>
-          <artifactId>junit-platform-launcher</artifactId>
-          <scope>runtime</scope>
-      </dependency>
+    <!--
+      Spring Boot 3.5.0 uses JUnit 5.12.1, while the solver code has upgraded to 5.12.2.
+      The difference between versions is affecting native compilation because of interoperability issues.
+      The following temporary workaround updates the junit-platform-launcher version to a newer one
+      that resolves the interoperability issue: https://junit.org/junit5/docs/current/user-guide/#running-tests-build-maven
+      TODO - Remove this dependency once the Spring Boot uses a consistent JUnit version with the Solver
+    -->
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-launcher</artifactId>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
 
   <build>
