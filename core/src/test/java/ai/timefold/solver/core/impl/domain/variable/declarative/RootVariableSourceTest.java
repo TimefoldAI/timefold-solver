@@ -316,7 +316,6 @@ class RootVariableSourceTest {
         assertThat(dependencySource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(dependencySource.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
 
-        var sourceVisitor = mock(Consumer.class);
         var previousElement = new TestdataInvalidDeclarativeValue("previous");
         var currentElement = new TestdataInvalidDeclarativeValue("current");
         var group = new TestdataInvalidDeclarativeValue("group");
