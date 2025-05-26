@@ -42,8 +42,10 @@ public class PillarSwapMoveSelectorFactory<Solution_>
                     .map(GenuineVariableDescriptor::getVariableName)
                     .toList();
         }
-        var rightPillarSelectorConfig =
-                Objects.requireNonNullElse(config.getSecondaryPillarSelectorConfig(), leftPillarSelectorConfig);
+        var rightPillarSelectorConfig = config.getSecondaryPillarSelectorConfig();
+        if (rightPillarSelectorConfig == null) {
+            rightPillarSelectorConfig = leftPillarSelectorConfig;
+        }
         EntityDescriptor<Solution_> rightEntityDescriptor = null;
         var rightEntitySelectorConfig = rightPillarSelectorConfig.getEntitySelectorConfig();
         if (rightEntitySelectorConfig != null && rightEntitySelectorConfig.getEntityClass() != null) {
