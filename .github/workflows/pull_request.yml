@@ -59,6 +59,7 @@ jobs:
 
       - name: Build and test timefold-solver using flag -Dfull
         run: mvn -Dfull -B verify
+
   spring_boot_3_3_x:
     name: "Spring Boot 3.3.x"
     runs-on: ubuntu-latest
@@ -77,6 +78,27 @@ jobs:
       - name: Quickly build timefold-solver
         run: mvn -B -Dquickly clean install
       - name: Test Spring Boot 3.3.x
+        run: |
+          cd spring-integration
+          mvn -B verify
+  spring_boot_3_4_x:
+    name: "Spring Boot 3.4.x"
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          java-version: 21 # Latest LTS if not Ubuntu
+          distribution: 'temurin'
+          cache: 'maven'
+      - name: Set release latest 3.4.x version
+        run: |
+          SPRING_VERSION="$(curl -s 'https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter+AND+v:3.4.*' | jq -r '.response.docs[0].v')"
+          mvn versions:set-property -Dproperty=version.org.springframework.boot -DnewVersion=$SPRING_VERSION
+      - name: Quickly build timefold-solver
+        run: mvn -B -Dquickly clean install
+      - name: Test Spring Boot 3.4.x
         run: |
           cd spring-integration
           mvn -B verify
@@ -128,6 +150,7 @@ jobs:
       - name: Run tox on jpyinterpreter test suite
         working-directory: ./python/jpyinterpreter
         run: python -m tox
+
   native:
     name: "Native Image"
     concurrency:
