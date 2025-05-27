@@ -781,6 +781,36 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
     }
 
+    public SolutionTracker.SolutionCorruptionResult getSolutionCorruptionAfterUndo(Move<Solution_> move,
+            InnerScore<Score_> undoInnerScore) {
+        var trackingWorkingSolution = solutionTracker != null;
+        if (trackingWorkingSolution) {
+            solutionTracker.setAfterUndoSolution(workingSolution);
+        }
+        // Precondition: assert that there are probably no corrupted constraints
+        var undoMoveToString = "Undo(%s)".formatted(move);
+        assertWorkingScoreFromScratch(undoInnerScore, undoMoveToString);
+        // Precondition: assert that shadow variables aren't stale after doing the undoMove
+        assertShadowVariablesAreNotStale(undoInnerScore, undoMoveToString);
+        if (trackingWorkingSolution) {
+            // Recalculate all shadow variables from scratch.
+            // We cannot set all shadow variables to null, since some variable listeners
+            // may expect them to be non-null.
+            // Instead, we just simulate a change to all genuine variables.
+            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
+            solutionTracker.setUndoFromScratchSolution(workingSolution);
+
+            // Also calculate from scratch for the before solution, since it might
+            // have been corrupted but was only detected now
+            solutionTracker.restoreBeforeSolution();
+            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
+            solutionTracker.setBeforeFromScratchSolution(workingSolution);
+
+            return solutionTracker.buildSolutionCorruptionResult();
+        }
+        return SolutionTracker.SolutionCorruptionResult.untracked();
+    }
+
     /**
      * @param uncorruptedScoreDirector never null
      * @param predicted true if the score was predicted and might have been calculated on another thread

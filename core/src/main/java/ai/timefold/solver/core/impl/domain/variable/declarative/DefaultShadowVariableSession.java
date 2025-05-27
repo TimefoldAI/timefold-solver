@@ -2,12 +2,12 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class DefaultShadowVariableSession<Solution_> implements Supply {
-
+public final class DefaultShadowVariableSession<Solution_> implements Supply {
     final VariableReferenceGraph<Solution_> graph;
 
     public DefaultShadowVariableSession(VariableReferenceGraph<Solution_> graph) {
@@ -15,12 +15,22 @@ public class DefaultShadowVariableSession<Solution_> implements Supply {
     }
 
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        graph.beforeVariableChanged(variableDescriptor.getVariableMetaModel(),
+        beforeVariableChanged(variableDescriptor.getVariableMetaModel(),
                 entity);
     }
 
     public void afterVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
-        graph.afterVariableChanged(variableDescriptor.getVariableMetaModel(),
+        afterVariableChanged(variableDescriptor.getVariableMetaModel(),
+                entity);
+    }
+
+    public void beforeVariableChanged(VariableMetaModel<Solution_, ?, ?> variableMetaModel, Object entity) {
+        graph.beforeVariableChanged(variableMetaModel,
+                entity);
+    }
+
+    public void afterVariableChanged(VariableMetaModel<Solution_, ?, ?> variableMetaModel, Object entity) {
+        graph.afterVariableChanged(variableMetaModel,
                 entity);
     }
 
