@@ -2612,6 +2612,9 @@
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
                   
       
+      <xs:enumeration value="MIXED_MODEL"/>
+                  
+      
       <xs:enumeration value="MOVE_STREAMS"/>
                 
     

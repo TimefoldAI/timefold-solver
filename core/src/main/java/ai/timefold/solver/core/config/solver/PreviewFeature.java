@@ -22,6 +22,7 @@ public enum PreviewFeature {
     DECLARATIVE_SHADOW_VARIABLES,
     DIVERSIFIED_LATE_ACCEPTANCE,
     PLANNING_SOLUTION_DIFF,
+    MIXED_MODEL,
     /**
      * Unlike other preview features, Move Streams are an active research project.
      * It is intended to simplify the creation of custom moves, eventually replacing move selectors.
