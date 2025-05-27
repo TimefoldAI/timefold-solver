@@ -118,13 +118,18 @@ final class AffectedEntitiesUpdater<Solution_>
         var entity = entityVariable.entity();
         var shadowVariableReference = entityVariable.variableReference();
         var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
+        var loopDescriptor = shadowVariableReference.shadowVariableLoopedDescriptor();
+        if (loopDescriptor != null) {
+            var oldLooped = (boolean) loopDescriptor.getValue(entity);
+            if (oldLooped != isLooped) {
+                // Loop status change; add to affected entities
+                affectedEntities.add(entityVariable);
+            }
+        }
 
         if (isLooped) {
-            // null might be a valid value, and thus it could be the case
-            // that is was not looped and null, then turned to looped and null,
-            // which is still considered a change.
-            affectedEntities.add(entityVariable);
             if (oldValue != null) {
+                affectedEntities.add(entityVariable);
                 changeShadowVariableAndNotify(shadowVariableReference, entity, null);
             }
             return true;
