@@ -1903,6 +1903,11 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(solution.getOtherEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
                 .isEmpty();
+        for (var entity : solution.getOtherEntityList()) {
+            // The strength comparator will cause the basic variables to differ during the CH phase,
+            // and LS will find no improvement
+            assertThat(entity.getBasicValue()).isNotSameAs(entity.getSecondBasicValue());
+        }
     }
 
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator

@@ -27,15 +27,16 @@ public class TestdataMixedMultiEntitySolution {
         for (int i = 0; i < valueListSize; i++) {
             valueList.add(new TestdataMixedMultiEntityFirstValue("Generated Value " + i));
         }
+        var strength = otherValueListSize * 10;
         for (int i = 0; i < otherValueListSize; i++) {
-            otherValueList.add(new TestdataMixedMultiEntitySecondValue("Generated Other Value " + i));
+            otherValueList.add(new TestdataMixedMultiEntitySecondValue("Generated Other Value " + i, strength--));
         }
         solution.setValueList(valueList);
         solution.setOtherValueList(otherValueList);
         var entityList = new ArrayList<TestdataMixedMultiEntityFirstEntity>(entityListSize);
         var otherEntityList = new ArrayList<TestdataMixedMultiEntitySecondEntity>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
-            var entity = new TestdataMixedMultiEntityFirstEntity("Entity " + i);
+            var entity = new TestdataMixedMultiEntityFirstEntity("Entity " + i, i);
             entityList.add(entity);
             var otherEntity = new TestdataMixedMultiEntitySecondEntity("Other Entity " + i);
             otherEntityList.add(otherEntity);

@@ -7,7 +7,8 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 @PlanningEntity
 public class TestdataMixedMultiEntitySecondEntity extends TestdataObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
+    @PlanningVariable(valueRangeProviderRefs = "otherValueRange",
+            strengthComparatorClass = TestdataMixedMultiEntitySecondValueComparator.class)
     private TestdataMixedMultiEntitySecondValue basicValue;
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
