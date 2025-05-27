@@ -28,13 +28,13 @@ public class TestdataMixedSolution {
             valueList.add(new TestdataMixedValue("Generated Value " + i));
         }
         for (int i = 0; i < otherValueListSize; i++) {
-            otherValueList.add(new TestdataMixedOtherValue("Generated Other Value " + i));
+            otherValueList.add(new TestdataMixedOtherValue("Generated Other Value " + i, valueListSize - i));
         }
         solution.setValueList(valueList);
         solution.setOtherValueList(otherValueList);
         var entityList = new ArrayList<TestdataMixedEntity>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
-            var entity = new TestdataMixedEntity("Entity " + i);
+            var entity = new TestdataMixedEntity("Entity " + i, i);
             entityList.add(entity);
         }
         solution.setEntityList(entityList);

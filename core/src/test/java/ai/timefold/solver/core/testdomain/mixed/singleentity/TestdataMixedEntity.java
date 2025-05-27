@@ -10,10 +10,10 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-@PlanningEntity
+@PlanningEntity(difficultyComparatorClass = TestdataMixedEntityComparator.class)
 public class TestdataMixedEntity extends TestdataObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
+    @PlanningVariable(valueRangeProviderRefs = "otherValueRange", strengthComparatorClass = TestdataMixedOtherValueComparator.class)
     private TestdataMixedOtherValue basicValue;
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
@@ -28,12 +28,15 @@ public class TestdataMixedEntity extends TestdataObject {
     @PlanningPinToIndex
     private int pinnedIndex = 0;
 
+    private int difficulty;
+
     public TestdataMixedEntity() {
         // Required for cloner
     }
 
-    public TestdataMixedEntity(String code) {
+    public TestdataMixedEntity(String code, int difficulty) {
         super(code);
+        this.difficulty = difficulty;
         valueList = new ArrayList<>();
     }
 
@@ -75,5 +78,13 @@ public class TestdataMixedEntity extends TestdataObject {
 
     public void setPinnedIndex(int pinnedIndex) {
         this.pinnedIndex = pinnedIndex;
+    }
+
+    public int getDifficulty() {
+        return difficulty;
+    }
+
+    public void setDifficulty(int difficulty) {
+        this.difficulty = difficulty;
     }
 }

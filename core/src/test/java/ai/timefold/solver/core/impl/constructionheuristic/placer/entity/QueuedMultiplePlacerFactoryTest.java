@@ -78,6 +78,7 @@ class QueuedMultiplePlacerFactoryTest {
 
         placer.solvingStarted(solverScope);
         var phaseScope = mock(AbstractPhaseScope.class);
+        when(phaseScope.getSolverScope()).thenReturn(solverScope);
         when(phaseScope.getScoreDirector()).thenReturn(scoreDirector);
         placer.phaseStarted(phaseScope);
 
@@ -195,6 +196,7 @@ class QueuedMultiplePlacerFactoryTest {
 
         placer.solvingStarted(solverScope);
         var phaseScope = mock(AbstractPhaseScope.class);
+        when(phaseScope.getSolverScope()).thenReturn(solverScope);
         when(phaseScope.getScoreDirector()).thenReturn(scoreDirector);
         placer.phaseStarted(phaseScope);
 

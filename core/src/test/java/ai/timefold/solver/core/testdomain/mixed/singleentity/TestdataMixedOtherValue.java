@@ -13,12 +13,15 @@ public class TestdataMixedOtherValue extends TestdataObject {
     @InverseRelationShadowVariable(sourceVariableName = "basicValue")
     private List<TestdataMixedEntity> entityList;
 
+    private int strength;
+
     public TestdataMixedOtherValue() {
         // Required for cloner
     }
 
-    public TestdataMixedOtherValue(String code) {
+    public TestdataMixedOtherValue(String code, int strength) {
         super(code);
+        this.strength = strength;
         entityList = new ArrayList<>();
     }
 
@@ -28,5 +31,13 @@ public class TestdataMixedOtherValue extends TestdataObject {
 
     public void setEntityList(List<TestdataMixedEntity> entityList) {
         this.entityList = entityList;
+    }
+
+    public int getStrength() {
+        return strength;
+    }
+
+    public void setStrength(int strength) {
+        this.strength = strength;
     }
 }

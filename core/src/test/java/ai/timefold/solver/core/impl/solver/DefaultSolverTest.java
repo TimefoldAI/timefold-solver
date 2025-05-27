@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
+import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY;
+import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
@@ -39,7 +41,10 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
@@ -59,6 +64,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubLi
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
@@ -80,6 +86,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -1638,6 +1645,45 @@ class DefaultSolverTest extends AbstractMeterTest {
                 TestdataMixedOtherValue.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    private static List<Pair<EntitySorterManner, ValueSorterManner>> getSortMannerList() {
+        var sortMannerList = new ArrayList<Pair<EntitySorterManner, ValueSorterManner>>();
+        for (var valueSortManner : ValueSorterManner.values()) {
+            sortMannerList.add(new Pair<>(DECREASING_DIFFICULTY, valueSortManner));
+            sortMannerList.add(new Pair<>(DECREASING_DIFFICULTY_IF_AVAILABLE, valueSortManner));
+        }
+        return sortMannerList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("getSortMannerList")
+    void solveMixedModelWithSortManner(Pair<EntitySorterManner, ValueSorterManner> sorterManner) {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(
+                                        new ChangeMoveSelectorConfig()
+                                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withSorterManner(sorterManner.key()))
+                                                .withValueSelectorConfig(
+                                                        new ValueSelectorConfig()
+                                                                .withVariableName("basicValue")
+                                                                .withCacheType(SelectionCacheType.PHASE)
+                                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                                .withSorterManner(sorterManner.value())))
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
         var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
