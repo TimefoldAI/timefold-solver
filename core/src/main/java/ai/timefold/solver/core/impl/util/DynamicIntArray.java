@@ -14,6 +14,7 @@ public final class DynamicIntArray {
     // Minimum capacity increment to avoid small incremental growth
     private static final int MIN_CAPACITY_INCREMENT = 10;
 
+    private final ClearingStrategy clearingStrategy;
     private final int maxLength;
     private int[] array;
     private int firstIndex;
@@ -23,16 +24,18 @@ public final class DynamicIntArray {
         this(Integer.MAX_VALUE);
     }
 
-    /**
-     * Creates a new empty DynamicIntArray.
-     */
+    public DynamicIntArray(ClearingStrategy clearingStrategy) {
+        this(Integer.MAX_VALUE, clearingStrategy);
+    }
+
     public DynamicIntArray(int maxLength) {
+        this(maxLength, ClearingStrategy.FULL);
+    }
+
+    public DynamicIntArray(int maxLength, ClearingStrategy clearingStrategy) {
         this.maxLength = maxLength;
-        // Array is null until first element is set
-        this.array = null;
-        // Initialize with invalid indices
-        this.firstIndex = Integer.MAX_VALUE;
-        this.lastIndex = Integer.MIN_VALUE;
+        this.clearingStrategy = clearingStrategy;
+        initializeArray();
     }
 
     /**
@@ -96,7 +99,7 @@ public final class DynamicIntArray {
 
     /**
      * Calculates the new capacity based on the required capacity and growth strategy.
-     * 
+     *
      * @param requiredCapacity the minimum capacity needed
      * @return the new capacity
      */
@@ -178,30 +181,46 @@ public final class DynamicIntArray {
     }
 
     /**
-     * Gets the length of the array.
-     *
-     * @return the length of the array, or 0 if the array is empty
-     */
-    int length() {
-        if (array == null) {
-            return 0;
-        }
-        return lastIndex + 1;
-    }
-
-    /**
      * Clears the array by setting all values to 0.
      * The array structure is preserved, only the values are reset.
      */
     public void clear() {
-        // If array is null, there's nothing to clear
-        if (array == null) {
-            return;
-        }
+        if (clearingStrategy == ClearingStrategy.FULL) {
+            initializeArray();
+        } else {
+            // If array is null, there's nothing to clear
+            if (array == null) {
+                return;
+            }
 
-        // Only clear the used portion of the array (from firstIndex to lastIndex)
-        // This is more efficient for large arrays with sparse indices
-        Arrays.fill(array, 0, lastIndex - firstIndex + 1, 0);
+            // Only clear the used portion of the array (from firstIndex to lastIndex)
+            // This is more efficient for large arrays with sparse indices
+            Arrays.fill(array, 0, lastIndex - firstIndex + 1, 0);
+        }
+    }
+
+    private void initializeArray() {
+        this.array = null;
+        this.firstIndex = Integer.MAX_VALUE;
+        this.lastIndex = Integer.MIN_VALUE;
+    }
+
+    public enum ClearingStrategy {
+
+        /**
+         * The GC will be allowed to reclaim the array.
+         * This means that, on next access, the array will have to be reallocated and gradually resized,
+         * possibly leading to excessive GC pressure.
+         *
+         * This is the default.
+         */
+        FULL,
+        /**
+         * The array will not be returned to GC and will be filled with zeros instead.
+         * This has no impact on GC, but may result in greater at-rest heap usage than strictly necessary.
+         */
+        PARTIAL
+
     }
 
 }
