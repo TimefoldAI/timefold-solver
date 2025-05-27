@@ -28,7 +28,6 @@ class DynamicIntArrayTest {
                     .isThrownBy(array::getLastIndex)
                     .withMessage("Array is empty");
 
-            assertThat(array.length()).isZero();
             assertThat(array.containsIndex(0)).isFalse();
             assertThat(array.get(0)).isZero();
         }
@@ -40,8 +39,6 @@ class DynamicIntArrayTest {
 
             assertThatExceptionOfType(IllegalStateException.class)
                     .isThrownBy(array::getFirstIndex);
-
-            assertThat(array.length()).isZero();
 
             // Test bound checking with maxSize
             assertThatExceptionOfType(ArrayIndexOutOfBoundsException.class)
@@ -65,7 +62,6 @@ class DynamicIntArrayTest {
             assertThat(array.containsIndex(10)).isTrue();
             assertThat(array.containsIndex(9)).isFalse();
             assertThat(array.containsIndex(11)).isFalse();
-            assertThat(array.length()).isEqualTo(11); // 0-10 inclusive
         }
 
         @Test
@@ -81,7 +77,6 @@ class DynamicIntArrayTest {
             assertThat(array.getLastIndex()).isEqualTo(10);
             assertThat(array.containsIndex(5)).isTrue();
             assertThat(array.containsIndex(10)).isTrue();
-            assertThat(array.length()).isEqualTo(11); // 0-10 inclusive
         }
 
         @Test
@@ -97,7 +92,6 @@ class DynamicIntArrayTest {
             assertThat(array.getLastIndex()).isEqualTo(10);
             assertThat(array.containsIndex(5)).isTrue();
             assertThat(array.containsIndex(10)).isTrue();
-            assertThat(array.length()).isEqualTo(11); // 0-10 inclusive
         }
 
         @Test
@@ -217,34 +211,6 @@ class DynamicIntArrayTest {
     }
 
     @Nested
-    @DisplayName("Length method tests")
-    class LengthMethodTests {
-
-        @Test
-        @DisplayName("Length returns 0 for empty array")
-        void lengthEmptyArray() {
-            var array = new DynamicIntArray();
-
-            assertThat(array.length()).isZero();
-        }
-
-        @Test
-        @DisplayName("Length returns correct value after setting elements")
-        void lengthAfterSettingElements() {
-            var array = new DynamicIntArray();
-            array.set(0, 1);
-
-            assertThat(array.length()).isEqualTo(1);
-
-            array.set(5, 24);
-            assertThat(array.length()).isEqualTo(6); // 0-5 inclusive
-
-            array.set(10, 42);
-            assertThat(array.length()).isEqualTo(11); // 0-10 inclusive
-        }
-    }
-
-    @Nested
     @DisplayName("Complex scenario tests")
     class ComplexScenarioTests {
 
@@ -288,9 +254,6 @@ class DynamicIntArrayTest {
             assertThat(array.containsIndex(15)).isTrue();
             assertThat(array.containsIndex(4)).isFalse();
             assertThat(array.containsIndex(16)).isFalse();
-
-            // Verify length
-            assertThat(array.length()).isEqualTo(16); // 0-15 inclusive
         }
 
         @Test
@@ -307,7 +270,6 @@ class DynamicIntArrayTest {
             assertThat(array.get(10)).isEqualTo(3);
             assertThat(array.get(100)).isEqualTo(1);
             assertThat(array.get(1000)).isEqualTo(2);
-            assertThat(array.length()).isEqualTo(1001); // 0-1000 inclusive
         }
     }
 
@@ -322,8 +284,6 @@ class DynamicIntArrayTest {
 
             // Should not throw an exception
             array.clear();
-
-            assertThat(array.length()).isZero();
         }
 
         @Test
@@ -340,11 +300,8 @@ class DynamicIntArrayTest {
             assertThat(array.get(10)).isZero();
 
             // Array structure should be preserved
-            assertThat(array.getFirstIndex()).isEqualTo(5);
-            assertThat(array.getLastIndex()).isEqualTo(10);
-            assertThat(array.containsIndex(5)).isTrue();
-            assertThat(array.containsIndex(10)).isTrue();
-            assertThat(array.length()).isEqualTo(11); // 0-10 inclusive
+            assertThat(array.containsIndex(5)).isFalse();
+            assertThat(array.containsIndex(10)).isFalse();
         }
 
         @Test
@@ -367,30 +324,10 @@ class DynamicIntArrayTest {
             assertThat(array.get(10)).isZero();
 
             // Array structure should be updated
-            assertThat(array.getFirstIndex()).isEqualTo(5);
-            assertThat(array.getLastIndex()).isEqualTo(10);
+            assertThat(array.getFirstIndex()).isEqualTo(7);
+            assertThat(array.getLastIndex()).isEqualTo(7);
         }
 
-        @Test
-        @DisplayName("Clear with sparse indices")
-        void clearWithSparseIndices() {
-            var array = new DynamicIntArray();
-            array.set(10, 1);
-            array.set(100, 2);
-            array.set(1000, 3);
-
-            array.clear();
-
-            // All values should be reset to 0
-            assertThat(array.get(10)).isZero();
-            assertThat(array.get(100)).isZero();
-            assertThat(array.get(1000)).isZero();
-
-            // Array structure should be preserved
-            assertThat(array.getFirstIndex()).isEqualTo(10);
-            assertThat(array.getLastIndex()).isEqualTo(1000);
-            assertThat(array.length()).isEqualTo(1001); // 0-1000 inclusive
-        }
     }
 
 }
