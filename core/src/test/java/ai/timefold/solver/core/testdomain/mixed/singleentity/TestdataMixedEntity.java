@@ -8,12 +8,15 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity(difficultyComparatorClass = TestdataMixedEntityComparator.class)
 public class TestdataMixedEntity extends TestdataObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "otherValueRange", strengthComparatorClass = TestdataMixedOtherValueComparator.class)
+    @PlanningVariable(valueRangeProviderRefs = "otherValueRange",
+            strengthComparatorClass = TestdataMixedOtherValueComparator.class)
     private TestdataMixedOtherValue basicValue;
 
     @PlanningVariable(valueRangeProviderRefs = "otherValueRange")
@@ -29,6 +32,9 @@ public class TestdataMixedEntity extends TestdataObject {
     private int pinnedIndex = 0;
 
     private int difficulty;
+
+    @ShadowVariable(supplierName = "updateDeclarativeShadowValue")
+    private Integer declarativeShadowVariableValue;
 
     public TestdataMixedEntity() {
         // Required for cloner
@@ -84,7 +90,24 @@ public class TestdataMixedEntity extends TestdataObject {
         return difficulty;
     }
 
+    public Integer getDeclarativeShadowVariableValue() {
+        return declarativeShadowVariableValue;
+    }
+
+    public void setDeclarativeShadowVariableValue(Integer declarativeShadowVariableValue) {
+        this.declarativeShadowVariableValue = declarativeShadowVariableValue;
+    }
+
     public void setDifficulty(int difficulty) {
         this.difficulty = difficulty;
+
+    }
+
+    @ShadowSources("basicValue")
+    public Integer updateDeclarativeShadowValue() {
+        if (basicValue != null) {
+            return basicValue.getStrength();
+        }
+        return null;
     }
 }

@@ -5,6 +5,8 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
@@ -12,6 +14,9 @@ public class TestdataMixedOtherValue extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "basicValue")
     private List<TestdataMixedEntity> entityList;
+
+    @ShadowVariable(supplierName = "updateDeclarativeShadowValue")
+    private Integer declarativeShadowVariableValue;
 
     private int strength;
 
@@ -39,5 +44,21 @@ public class TestdataMixedOtherValue extends TestdataObject {
 
     public void setStrength(int strength) {
         this.strength = strength;
+    }
+
+    public Integer getDeclarativeShadowVariableValue() {
+        return declarativeShadowVariableValue;
+    }
+
+    public void setDeclarativeShadowVariableValue(Integer declarativeShadowVariableValue) {
+        this.declarativeShadowVariableValue = declarativeShadowVariableValue;
+    }
+
+    @ShadowSources("entityList")
+    public Integer updateDeclarativeShadowValue() {
+        if (entityList != null) {
+            return entityList.size() + 2;
+        }
+        return null;
     }
 }

@@ -4,12 +4,14 @@ import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySor
 import static ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner.INCREASING_STRENGTH_IF_AVAILABLE;
 import static ai.timefold.solver.core.config.score.trend.InitializingScoreTrendLevel.ANY;
 import static ai.timefold.solver.core.config.solver.EnvironmentMode.PHASE_ASSERT;
+import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
@@ -157,6 +159,7 @@ class QueuedMultiplePlacerFactoryTest {
                 .withInitializedChainedValueFilterEnabled(true)
                 .withUnassignedValuesAllowed(true)
                 .withRandom(new Random(0))
+                .withPreviewFeatureSet(Set.of(DECLARATIVE_SHADOW_VARIABLES))
                 .build();
         var valueSelectorConfig = new ValueSelectorConfig("valueList")
                 .withId("valueList");

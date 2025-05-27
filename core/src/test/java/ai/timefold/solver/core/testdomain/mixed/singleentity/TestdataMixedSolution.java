@@ -1,12 +1,14 @@
 package ai.timefold.solver.core.testdomain.mixed.singleentity;
 
+import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -15,8 +17,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 public class TestdataMixedSolution {
 
     public static SolutionDescriptor<TestdataMixedSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataMixedSolution.class, TestdataMixedEntity.class,
-                TestdataMixedValue.class, TestdataMixedOtherValue.class);
+        return SolutionDescriptor.buildSolutionDescriptor(Set.of(DECLARATIVE_SHADOW_VARIABLES), TestdataMixedSolution.class,
+                TestdataMixedEntity.class, TestdataMixedValue.class, TestdataMixedOtherValue.class);
     }
 
     public static TestdataMixedSolution generateUninitializedSolution(int entityListSize, int valueListSize,
@@ -42,10 +44,10 @@ public class TestdataMixedSolution {
     }
 
     @ValueRangeProvider(id = "valueRange")
-    @ProblemFactCollectionProperty
+    @PlanningEntityCollectionProperty
     private List<TestdataMixedValue> valueList;
     @ValueRangeProvider(id = "otherValueRange")
-    @ProblemFactCollectionProperty
+    @PlanningEntityCollectionProperty
     private List<TestdataMixedOtherValue> otherValueList;
     @PlanningEntityCollectionProperty
     private List<TestdataMixedEntity> entityList;

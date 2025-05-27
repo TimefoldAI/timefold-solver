@@ -166,7 +166,7 @@ class SolverConfigTest {
     }
 
     @Test
-    void withEnablePreviewFeatureList() {
+    void withEnablePreviewFeatureSet() {
         var solverConfig = new SolverConfig();
         assertThat(solverConfig.getEnablePreviewFeatureSet()).isNull();
         solverConfig.withPreviewFeature(PreviewFeature.DIVERSIFIED_LATE_ACCEPTANCE);

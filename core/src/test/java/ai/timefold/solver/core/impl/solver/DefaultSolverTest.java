@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver;
 
 import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY;
 import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE;
+import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
@@ -1535,6 +1536,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
                 .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
 
@@ -1643,15 +1645,41 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
         var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
         var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        // Check the solution
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
                 .isEmpty();
+
+        // Check custom listener execution
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getShadowVariableListenerValue().equals(v.getIndex())))
+                .isTrue();
+
+        // Check cascading shadow variable
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadingShadowVariableValue().equals(v.getIndex() + 1)))
+                .isTrue();
+
+        // Check declarative shadow variable from basic variable - genuine entity
+        assertThat(solution.getEntityList().stream()
+                .allMatch(v -> v.getDeclarativeShadowVariableValue().equals(v.getBasicValue().getStrength())))
+                .isTrue();
+
+        // Check declarative shadow variable from basic variable - shadow entity
+        assertThat(solution.getOtherValueList().stream()
+                .allMatch(v -> v.getDeclarativeShadowVariableValue().equals(v.getEntityList().size() + 2)))
+                .isTrue();
+
+        // Check declarative shadow variable from list variable - shadow entity
+        assertThat(
+                solution.getValueList().stream().allMatch(v -> v.getDeclarativeShadowVariableValue().equals(v.getIndex() + 2)))
+                .isTrue();
     }
 
     private static List<Pair<EntitySorterManner, ValueSorterManner>> getSortMannerList() {
@@ -1669,6 +1697,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig()
                                 .withMoveSelectorConfig(
@@ -1699,6 +1728,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig())
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
@@ -1805,6 +1835,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig()
                         .withEntityPlacerConfigList(valuePlacerConfig, entityPlacerConfig),
                         new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
@@ -1866,6 +1897,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 

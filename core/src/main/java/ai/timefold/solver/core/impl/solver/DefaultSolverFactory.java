@@ -131,7 +131,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
-                .withPreviewFeatureList(previewFeaturesEnabled)
+                .withPreviewFeatureSet(previewFeaturesEnabled)
                 .withEnvironmentMode(environmentMode)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
