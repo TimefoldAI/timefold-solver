@@ -50,6 +50,7 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSel
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
@@ -118,6 +119,8 @@ import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityE
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomBasicVariableFactory;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomPhase;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
@@ -1680,6 +1683,49 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(
                 solution.getValueList().stream().allMatch(v -> v.getDeclarativeShadowVariableValue().equals(v.getIndex() + 2)))
                 .isTrue();
+    }
+
+    @Test
+    void solveMixedModelCustomMove() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new MoveIteratorFactoryConfig()
+                                        .withMoveIteratorFactoryClass(MixedCustomBasicVariableFactory.class))
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        // Check the solution
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solveMixedModelCustomPhase() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig(),
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommands(new MixedCustomPhase())
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        // Check the solution
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
     }
 
     private static List<Pair<EntitySorterManner, ValueSorterManner>> getSortMannerList() {
