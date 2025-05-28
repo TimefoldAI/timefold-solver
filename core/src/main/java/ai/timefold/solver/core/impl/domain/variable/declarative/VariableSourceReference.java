@@ -1,8 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -18,8 +17,14 @@ public record VariableSourceReference(VariableMetaModel<?, ?, ?> variableMetaMod
         boolean isDeclarative,
         VariableMetaModel<?, ?, ?> targetVariableMetamodel,
         @Nullable VariableMetaModel<?, ?, ?> downstreamDeclarativeVariableMetamodel,
-        BiConsumer<Object, Consumer<Object>> targetEntityFunctionStartingFromVariableEntity) {
+        Function<Object, @Nullable Object> targetEntityFunctionStartingFromVariableEntity) {
+
     public boolean affectGraphEdges() {
         return downstreamDeclarativeVariableMetamodel != null;
     }
+
+    public @Nullable Object findTargetEntity(Object entity) {
+        return targetEntityFunctionStartingFromVariableEntity.apply(entity);
+    }
+
 }

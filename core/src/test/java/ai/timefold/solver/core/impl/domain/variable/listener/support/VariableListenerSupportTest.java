@@ -173,9 +173,11 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public void withNodeData(List<EntityVariablePair> nodes) {
+        public <Solution_> void withNodeData(List<EntityVariablePair<Solution_>> nodes) {
             nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
-            nodeToVariableMetamodel = nodes.stream().map(EntityVariablePair::variableId).toArray(VariableMetaModel[]::new);
+            nodeToVariableMetamodel = nodes.stream()
+                    .map(e -> e.variableReference().id())
+                    .toArray(VariableMetaModel[]::new);
         }
 
         public void addEdge(VariableMetaModel<?, ?, ?> fromId, Object fromEntity, VariableMetaModel<?, ?, ?> toId,
@@ -189,15 +191,17 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public void addEdge(int from, int to) {
-            super.addEdge(from, to);
-            addEdge(nodeToVariableMetamodel[from], nodeToEntities[from], nodeToVariableMetamodel[to], nodeToEntities[to]);
+        public void addEdge(int fromNode, int toNode) {
+            super.addEdge(fromNode, toNode);
+            addEdge(nodeToVariableMetamodel[fromNode], nodeToEntities[fromNode], nodeToVariableMetamodel[toNode],
+                    nodeToEntities[toNode]);
         }
 
         @Override
-        public void removeEdge(int from, int to) {
-            super.addEdge(from, to);
-            removeEdge(nodeToVariableMetamodel[from], nodeToEntities[from], nodeToVariableMetamodel[to], nodeToEntities[to]);
+        public void removeEdge(int fromNode, int toNode) {
+            super.removeEdge(fromNode, toNode);
+            removeEdge(nodeToVariableMetamodel[fromNode], nodeToEntities[fromNode], nodeToVariableMetamodel[toNode],
+                    nodeToEntities[toNode]);
         }
     }
 

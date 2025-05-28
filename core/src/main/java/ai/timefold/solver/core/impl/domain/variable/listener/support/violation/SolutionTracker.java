@@ -111,9 +111,15 @@ public final class SolutionTracker<Solution_> {
         return out;
     }
 
-    public String buildScoreCorruptionMessage() {
+    public record SolutionCorruptionResult(boolean isCorrupted, String message) {
+        public static SolutionCorruptionResult untracked() {
+            return new SolutionCorruptionResult(false, "");
+        }
+    }
+
+    public SolutionCorruptionResult buildSolutionCorruptionResult() {
         if (beforeMoveSolution == null) {
-            return "";
+            return new SolutionCorruptionResult(false, "");
         }
 
         StringBuilder out = new StringBuilder();
@@ -161,11 +167,17 @@ public final class SolutionTracker<Solution_> {
                     """.formatted(formatList(missingEventsBackward)));
         }
 
-        if (out.isEmpty()) {
-            return "Genuine and shadow variables agree with from scratch calculation after the undo move and match the state prior to the move.";
+        var isCorrupted = !out.isEmpty();
+        if (isCorrupted) {
+            return new SolutionCorruptionResult(isCorrupted, out.toString());
+        } else {
+            return new SolutionCorruptionResult(false,
+                    "Genuine and shadow variables agree with from scratch calculation after the undo move and match the state prior to the move.");
         }
+    }
 
-        return out.toString();
+    public String buildScoreCorruptionMessage() {
+        return buildSolutionCorruptionResult().message;
     }
 
     static <Solution_> List<String> getVariableChangedViolations(

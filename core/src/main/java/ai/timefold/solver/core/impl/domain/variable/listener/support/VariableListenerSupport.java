@@ -354,6 +354,12 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
         if (shadowVariableSession != null) {
             shadowVariableSession.updateVariables();
+            // Some internal variable listeners (such as those used
+            // to check for solution corruption) might have a declarative
+            // shadow variable as a source and need to be triggered here.
+            for (var notifiable : notifiableRegistry.getAll()) {
+                notifiable.triggerAllNotifications();
+            }
         }
         notificationQueuesAreEmpty = true;
     }
