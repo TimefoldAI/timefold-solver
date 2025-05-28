@@ -37,6 +37,9 @@ class Employee:
     name: str
     skills: List[Skill] = field(default_factory=list)
     unavailable_timeslots: List[Timeslot] = field(default_factory=list)
+    cannot_work_with: List[str] = field(default_factory=list)
+    classification: str = "unknown"
+    is_senior: bool = False
 
 
 @planning_entity
