@@ -52,18 +52,17 @@ class FilteringMoveSelectorTest {
         var moveSelector = mock(MoveSelector.class);
         var termination = mock(BasicPlumbingTermination.class);
         var iterator = mock(Iterator.class);
-        // We set the maximum value to force it to run many evaluations
-        when(moveSelector.getSize()).thenReturn(Long.MAX_VALUE / 11);
+        when(moveSelector.getSize()).thenReturn(100L);
         when(moveSelector.isNeverEnding()).thenReturn(true);
         when(moveSelector.iterator()).thenReturn(iterator);
         when(iterator.hasNext()).thenReturn(true);
         when(phaseScope.getTermination()).thenReturn(termination);
-        when(termination.isPhaseTerminated(any(AbstractPhaseScope.class))).thenReturn(false, false, true);
+        when(termination.isPhaseTerminated(any(AbstractPhaseScope.class))).thenReturn(false, true);
         var filteredMoveSelector = FilteringMoveSelector.of(moveSelector, (scoreDirector, selection) -> false);
         filteredMoveSelector.phaseStarted(phaseScope);
         assertThat(filteredMoveSelector.iterator().hasNext()).isFalse();
-        // The termination returns true at the third call
-        verify(iterator, times(2)).next();
+        // The termination returns true at the second call, and only (100 * 10) * 30% calls are executed per check
+        verify(iterator, times(200)).next();
     }
 
     public void filter(SelectionCacheType cacheType, int timesCalled) {
