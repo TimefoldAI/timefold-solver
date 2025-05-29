@@ -429,6 +429,21 @@ class RootVariableSourceTest {
     }
 
     @Test
+    void invalidPathEndOnFact() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "previous.fact",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("The source path (previous.fact)" +
+                        " starting from root entity class (TestdataInvalidDeclarativeValue)" +
+                        " does not end on a variable.");
+    }
+
+    @Test
     void invalidPathMultipleFactsInARow() {
         assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,

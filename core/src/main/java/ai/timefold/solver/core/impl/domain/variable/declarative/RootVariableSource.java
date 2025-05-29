@@ -65,7 +65,7 @@ public record RootVariableSource<Entity_, Value_>(
         List<List<MemberAccessor>> chainStartingFromSourceVariableList = new ArrayList<>();
         boolean isAfterVariable = false;
         Class<?> currentEntity = rootEntityClass;
-        var factCount = 0;
+        var factCountSinceLastVariable = 0;
 
         for (var iterator = pathIterator(rootEntityClass, variablePath); iterator.hasNext();) {
             var pathPart = iterator.next();
@@ -87,7 +87,7 @@ public record RootVariableSource<Entity_, Value_>(
                                 descriptorPolicy);
                 listMemberAccessors.add(memberAccessor);
                 chainToVariable = new ArrayList<>();
-                factCount = 0;
+                factCountSinceLastVariable = 0;
 
                 currentEntity = ConfigUtils.extractGenericTypeParameterOrFail(ShadowSources.class.getSimpleName(),
                         currentEntity,
@@ -115,10 +115,10 @@ public record RootVariableSource<Entity_, Value_>(
                     chainStartingFromSourceVariableList.add(chainStartingFromSourceVariable);
 
                     isAfterVariable = true;
-                    factCount = 0;
+                    factCountSinceLastVariable = 0;
                 } else {
-                    factCount++;
-                    if (factCount == 2) {
+                    factCountSinceLastVariable++;
+                    if (factCountSinceLastVariable == 2) {
                         throw new IllegalArgumentException(
                                 "The source path (%s) starting from root entity (%s) referencing multiple facts (%s, %s) in a row."
                                         .formatted(variablePath, rootEntityClass.getSimpleName(),
@@ -153,6 +153,12 @@ public record RootVariableSource<Entity_, Value_>(
         if (variableSourceReferences.isEmpty()) {
             throw new IllegalArgumentException(
                     "The source path (%s) starting from root entity class (%s) does not reference any variables."
+                            .formatted(variablePath, rootEntityClass.getSimpleName()));
+        }
+
+        if (factCountSinceLastVariable != 0) {
+            throw new IllegalArgumentException(
+                    "The source path (%s) starting from root entity class (%s) does not end on a variable."
                             .formatted(variablePath, rootEntityClass.getSimpleName()));
         }
 
