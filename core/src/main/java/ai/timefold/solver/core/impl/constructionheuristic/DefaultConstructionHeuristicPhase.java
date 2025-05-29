@@ -57,7 +57,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         phaseStarted(phaseScope);
 
         var solutionDescriptor = solverScope.getSolutionDescriptor();
-        var hasListVariable = solutionDescriptor.hasListVariable();
+        var hasListVariable = moveRepository.hasListVariable();
         var maxStepCount = -1;
         if (hasListVariable) {
             // In case of list variable with support for unassigned values, the placer will iterate indefinitely.

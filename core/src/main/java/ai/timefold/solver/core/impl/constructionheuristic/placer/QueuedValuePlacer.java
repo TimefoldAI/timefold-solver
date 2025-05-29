@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityIndependentFilteringValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
@@ -29,6 +30,10 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
     @Override
     public Iterator<Placement<Solution_>> iterator() {
         return new QueuedValuePlacingIterator();
+    }
+
+    public boolean isListChangeMoveSelector() {
+        return moveSelector instanceof ListChangeMoveSelector<Solution_>;
     }
 
     private class QueuedValuePlacingIterator extends UpcomingSelectionIterator<Placement<Solution_>> {

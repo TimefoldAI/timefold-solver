@@ -99,6 +99,7 @@ public class QueuedValuePlacerFactory<Solution_>
                     .withSorterManner(configPolicy.getEntitySorterManner());
         }
         ValueSelectorConfig changeValueSelectorConfig = new ValueSelectorConfig()
+                .withVariableName(variableDescriptor.getVariableName())
                 .withMimicSelectorRef(valueSelectorConfigId);
         return changeMoveSelectorConfig.withEntitySelectorConfig(changeEntitySelectorConfig)
                 .withValueSelectorConfig(changeValueSelectorConfig);

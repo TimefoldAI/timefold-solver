@@ -699,6 +699,13 @@ public class EntityDescriptor<Solution_> {
         return !effectiveGenuineVariableDescriptorMap.isEmpty();
     }
 
+    public boolean hasBothGenuineListAndBasicVariables() {
+        if (!isGenuine()) {
+            return false;
+        }
+        return hasAnyGenuineListVariables() && hasAnyGenuineBasicVariables();
+    }
+
     public boolean hasAnyGenuineBasicVariables() {
         if (!isGenuine()) {
             return false;
