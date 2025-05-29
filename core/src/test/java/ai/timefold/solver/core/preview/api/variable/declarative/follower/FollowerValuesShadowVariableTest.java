@@ -67,7 +67,7 @@ class FollowerValuesShadowVariableTest {
 
         var solutionDescriptor = TestdataFollowerSolution.getSolutionDescriptor();
         var variableMetamodel = solutionDescriptor.getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
-        var moveAsserter = MoveAsserter.create(TestdataFollowerSolution.getSolutionDescriptor());
+        var moveAsserter = MoveAsserter.create(solutionDescriptor);
 
         // TODO: Investigate why there are multiple variable descriptors
         //       for the same variable
