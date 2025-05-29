@@ -142,9 +142,6 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .withSolutionDescriptor(solutionDescriptor)
                 .withClassInstanceCache(ClassInstanceCache.create())
                 .build();
-        if (solutionDescriptor.hasBothBasicAndListVariables()) {
-            configPolicy.ensurePreviewFeature(PreviewFeature.MIXED_MODEL);
-        }
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
         var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
