@@ -69,8 +69,6 @@ class FollowerValuesShadowVariableTest {
         var variableMetamodel = solutionDescriptor.getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
 
-        // TODO: Investigate why there are multiple variable descriptors
-        //       for the same variable
         moveAsserter.assertMoveAndApply(solution, new ChangeMove<>(
                 (PlanningVariableMetaModel<TestdataFollowerSolution, ? super TestdataLeaderEntity, ? super TestdataValue>) variableMetamodel,
                 leaderA, value1), newSolution -> {
