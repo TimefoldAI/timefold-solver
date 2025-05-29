@@ -49,7 +49,6 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
         graph.withNodeData(instanceList);
         changed = new BitSet(instanceCount);
 
-        var entityToVariableReferenceMap = new IdentityHashMap<Object, List<EntityVariablePair<Solution_>>>();
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         for (var instance : instanceList) {
             var entity = instance.entity();
@@ -58,21 +57,16 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
                     afterVariableChanged(variableId, entity);
                 }
             }
-            entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
-                    .add(instance);
         }
         for (var fixedEdgeEntry : outerGraph.fixedEdges.entrySet()) {
             for (var toEdge : fixedEdgeEntry.getValue()) {
                 addEdge(fixedEdgeEntry.getKey(), toEdge);
             }
         }
-        // Immutable optimized version of the map, now that it won't be updated anymore.
-        var immutableEntityToVariableReferenceMap = mapOfListsDeepCopyOf(entityToVariableReferenceMap);
         // This mutable structure is created once, and reused from there on.
         // Otherwise its internal collections were observed being re-created so often
         // that the allocation of arrays would become a major bottleneck.
-        affectedEntitiesUpdater = new AffectedEntitiesUpdater<>(graph, instanceList, immutableEntityToVariableReferenceMap::get,
-                outerGraph.changedVariableNotifier);
+        affectedEntitiesUpdater = new AffectedEntitiesUpdater<>(graph, instanceList, outerGraph.changedVariableNotifier);
     }
 
     @Override
