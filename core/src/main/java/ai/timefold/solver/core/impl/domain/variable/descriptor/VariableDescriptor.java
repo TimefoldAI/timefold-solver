@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -138,5 +139,23 @@ public abstract class VariableDescriptor<Solution_> {
         cachedMetamodel = entityDescriptor.getEntityMetaModel()
                 .variable(variableName);
         return cachedMetamodel;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof VariableDescriptor<?> other) {
+            // VariableDescriptors should be compared by identity, but
+            // it appears two different instances of the same VariableDescriptor
+            // get created somewhere
+            // VariableDescriptors can be compared by their entity classes and names
+            return Objects.equals(entityDescriptor.getEntityClass(), other.entityDescriptor.getEntityClass())
+                    && Objects.equals(variableName, other.variableName);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(entityDescriptor.getEntityClass(), variableName);
     }
 }

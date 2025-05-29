@@ -142,7 +142,7 @@ public record RootVariableSource<Entity_, Value_>(
         for (var i = 0; i < chainStartingFromSourceVariableList.size(); i++) {
             var chainStartingFromSourceVariable = chainStartingFromSourceVariableList.get(i);
             var newSourceReference =
-                    createVariableSourceReferenceFromChain(solutionMetaModel,
+                    createVariableSourceReferenceFromChain(variablePath, variableSourceReferences, solutionMetaModel,
                             rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
                             chainToVariable,
                             i == 0,
@@ -191,6 +191,7 @@ public record RootVariableSource<Entity_, Value_>(
     }
 
     private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(
+            String variablePath, List<VariableSourceReference> variableSourceReferences,
             PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass, String targetVariableName, List<MemberAccessor> afterChain,
             List<MemberAccessor> chainToVariable, boolean isTopLevel, boolean isBottomLevel) {
@@ -207,13 +208,29 @@ public record RootVariableSource<Entity_, Value_>(
                     solutionMetaModel.entity(maybeDownstreamVariable.getDeclaringClass())
                             .variable(maybeDownstreamVariable.getName());
         }
+        var isDeclarative = isDeclarativeShadowVariable(variableMemberAccessor);
+        if (!isDeclarative) {
+            for (var previousVariableSourceReference : variableSourceReferences) {
+                if (!previousVariableSourceReference.isDeclarative()) {
+                    throw new IllegalArgumentException(
+                            """
+                                    The source path (%s) starting from root entity class (%s) \
+                                    accesses a non-declarative shadow variable (%s) \
+                                    after another non-declarative shadow variable (%s)."""
+                                    .formatted(
+                                            variablePath, rootEntityClass.getSimpleName(), variableMemberAccessor.getName(),
+                                            previousVariableSourceReference.variableMetaModel().name()));
+                }
+            }
+        }
 
         return new VariableSourceReference(
                 solutionMetaModel.entity(variableMemberAccessor.getDeclaringClass()).variable(variableMemberAccessor.getName()),
                 sourceVariablePath.memberAccessorsBeforeEntity,
+                isTopLevel && sourceVariablePath.memberAccessorsBeforeEntity.isEmpty(),
                 isTopLevel,
                 isBottomLevel,
-                isDeclarativeShadowVariable(variableMemberAccessor),
+                isDeclarative,
                 solutionMetaModel.entity(rootEntityClass).variable(targetVariableName),
                 downstreamDeclarativeVariable,
                 sourceVariablePath::findTargetEntity);
@@ -231,12 +248,6 @@ public record RootVariableSource<Entity_, Value_>(
                                     rootEntityClass.getSimpleName(),
                                     variableSourceReference.downstreamDeclarativeVariableMetamodel().name(),
                                     sourceVariableId.name()));
-        }
-        if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariableEntity().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The source path (%s) starting from root entity class (%s) accesses a non-declarative shadow variable (%s) not from the root entity or collection."
-                            .formatted(variablePath, rootEntityClass.getSimpleName(),
-                                    variableSourceReference.variableMetaModel().name()));
         }
     }
 
