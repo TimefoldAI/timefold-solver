@@ -349,8 +349,11 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * Unlike {@link #triggerVariableListeners()} which only triggers notifications already in the queue,
      * this triggers every variable listener on every genuine variable.
      * This is useful in {@link SolutionManager#update(Object)} to fill in shadow variable values.
+     * 
+     * @param resetShadowVariablesFirst true if the shadow variables should be reset first,
+     *        slowing down the operation but preventing stale dependencies.
      */
-    void forceTriggerVariableListeners();
+    void forceTriggerVariableListeners(boolean resetShadowVariablesFirst);
 
     /**
      * A derived score director is created from a root score director.

@@ -3,6 +3,7 @@ package ai.timefold.solver.test.impl.score.stream;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.ShadowVariableAwareSingleConstraintAssertion;
@@ -25,11 +26,11 @@ public final class DefaultShadowVariableAwareSingleConstraintAssertion<Solution_
     @Override
     public SingleConstraintAssertion settingAllShadowVariables() {
         // Most score directors don't need derived status; CS will override this.
+        SolutionManager.updateShadowVariables(solution);
         try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             scoreDirector.setWorkingSolution(solution);
-            scoreDirector.forceTriggerVariableListeners();
             update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),
                     scoreDirector.getIndictmentMap());
             toggleInitialized();

@@ -122,7 +122,7 @@ class ListVariableListenerTest {
         var ann = new TestdataListEntityWithShadowHistory("Ann", a, b, c);
 
         scoreDirector.setWorkingSolution(buildSolution(ann));
-        scoreDirector.forceTriggerVariableListeners();
+        scoreDirector.forceTriggerVariableListeners(false);
 
         // Assert inverse entity.
         assertEntityHistory(a, ann);
