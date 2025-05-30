@@ -5,7 +5,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataMixedValueListener implements VariableListener<TestdataMixedSolution, TestdataMixedValue> {
+public class TestdataMixedVariableListener implements VariableListener<TestdataMixedSolution, TestdataMixedValue> {
     @Override
     public void beforeVariableChanged(@NonNull ScoreDirector<TestdataMixedSolution> scoreDirector,
             @NonNull TestdataMixedValue value) {

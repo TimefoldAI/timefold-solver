@@ -25,7 +25,7 @@ public class TestdataMixedValue extends TestdataObject {
     @IndexShadowVariable(sourceVariableName = "valueList")
     private Integer index;
 
-    @ShadowVariable(variableListenerClass = TestdataMixedValueListener.class, sourceVariableName = "index")
+    @ShadowVariable(variableListenerClass = TestdataMixedVariableListener.class, sourceVariableName = "index")
     private Integer shadowVariableListenerValue;
 
     @CascadingUpdateShadowVariable(targetMethodName = "updateCascadingShadowValue")

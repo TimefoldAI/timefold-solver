@@ -119,8 +119,8 @@ import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityE
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomBasicVariableFactory;
-import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomPhase;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomMoveIteratorFactory;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomPhaseCommand;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
@@ -1760,7 +1760,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
                         new LocalSearchPhaseConfig()
                                 .withMoveSelectorConfig(new MoveIteratorFactoryConfig()
-                                        .withMoveIteratorFactoryClass(MixedCustomBasicVariableFactory.class))
+                                        .withMoveIteratorFactoryClass(MixedCustomMoveIteratorFactory.class))
                                 .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 
@@ -1783,7 +1783,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                         new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
                         new CustomPhaseConfig()
-                                .withCustomPhaseCommands(new MixedCustomPhase())
+                                .withCustomPhaseCommands(new MixedCustomPhaseCommand())
                                 .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
 

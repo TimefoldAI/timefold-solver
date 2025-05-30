@@ -32,7 +32,7 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
         return new QueuedValuePlacingIterator();
     }
 
-    public boolean isListChangeMoveSelector() {
+    public boolean hasListChangeMoveSelector() {
         return moveSelector instanceof ListChangeMoveSelector<Solution_>;
     }
 

@@ -86,7 +86,7 @@ public final class PlacerBasedMoveRepository<Solution_>
         // However, in certain cases, such as ALLOCATE_TO_VALUE_FROM_QUEUE,
         // a QueuedValuePlacer can be created for a basic planning variable,
         // and in these cases, the move selector does not rely on a list variable.
-        return placer instanceof QueuedValuePlacer<Solution_> queuedValuePlacer && queuedValuePlacer.isListChangeMoveSelector();
+        return placer instanceof QueuedValuePlacer<Solution_> queuedValuePlacer && queuedValuePlacer.hasListChangeMoveSelector();
     }
 
 }
