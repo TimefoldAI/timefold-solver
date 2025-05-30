@@ -95,6 +95,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             solver.phaseStarted(phaseScope);
         }
         phaseTermination.phaseStarted(phaseScope);
+        phaseScope.setTermination(phaseTermination);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
     }
 
