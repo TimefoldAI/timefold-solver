@@ -14,11 +14,11 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
-import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -29,17 +29,30 @@ class SubListChangeMoveSelectorFactoryTest {
 
     @Test
     void buildMoveSelector() {
-        SubListChangeMoveSelectorConfig config = new SubListChangeMoveSelectorConfig();
-        SubListChangeMoveSelectorFactory<TestdataListSolution> moveSelectorFactory =
-                new SubListChangeMoveSelectorFactory<>(config);
+        var config = new SubListChangeMoveSelectorConfig();
+        var moveSelectorFactory = new SubListChangeMoveSelectorFactory<TestdataListSolution>(config);
 
-        HeuristicConfigPolicy<TestdataListSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
+        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
 
-        RandomSubListChangeMoveSelector<TestdataListSolution> selector =
-                (RandomSubListChangeMoveSelector<TestdataListSolution>) moveSelectorFactory
-                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
-                                false);
+        var selector = (RandomSubListChangeMoveSelector<TestdataListSolution>) moveSelectorFactory
+                .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                        false);
+
+        assertThat(selector.isCountable()).isTrue();
+        assertThat(selector.isNeverEnding()).isTrue();
+        assertThat(selector.isSelectReversingMoveToo()).isTrue();
+    }
+
+    @Test
+    void buildMoveSelectorMultiEntity() {
+        var config = new SubListChangeMoveSelectorConfig();
+        var moveSelectorFactory = new SubListChangeMoveSelectorFactory<TestdataMixedMultiEntitySolution>(config);
+
+        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataMixedMultiEntitySolution.buildSolutionDescriptor());
+
+        var selector = (RandomSubListChangeMoveSelector<TestdataMixedMultiEntitySolution>) moveSelectorFactory
+                .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                        false);
 
         assertThat(selector.isCountable()).isTrue();
         assertThat(selector.isNeverEnding()).isTrue();
@@ -48,49 +61,44 @@ class SubListChangeMoveSelectorFactoryTest {
 
     @Test
     void disableSelectReversingMoveToo() {
-        SubListChangeMoveSelectorConfig config = new SubListChangeMoveSelectorConfig();
+        var config = new SubListChangeMoveSelectorConfig();
         config.setSelectReversingMoveToo(false);
-        SubListChangeMoveSelectorFactory<TestdataListSolution> moveSelectorFactory =
-                new SubListChangeMoveSelectorFactory<>(config);
+        var moveSelectorFactory = new SubListChangeMoveSelectorFactory<TestdataListSolution>(config);
 
-        HeuristicConfigPolicy<TestdataListSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
+        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
 
-        RandomSubListChangeMoveSelector<TestdataListSolution> selector =
-                (RandomSubListChangeMoveSelector<TestdataListSolution>) moveSelectorFactory
-                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
-                                false);
+        var selector = (RandomSubListChangeMoveSelector<TestdataListSolution>) moveSelectorFactory
+                .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                        false);
 
         assertThat(selector.isSelectReversingMoveToo()).isFalse();
     }
 
     @Test
     void unfoldingFailsIfThereIsNoListVariable() {
-        SubListChangeMoveSelectorConfig config = new SubListChangeMoveSelectorConfig();
-        SubListChangeMoveSelectorFactory<TestdataSolution> moveSelectorFactory = new SubListChangeMoveSelectorFactory<>(config);
+        var config = new SubListChangeMoveSelectorConfig();
+        var moveSelectorFactory = new SubListChangeMoveSelectorFactory<TestdataSolution>(config);
 
-        HeuristicConfigPolicy<TestdataSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataSolution.buildSolutionDescriptor());
+        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataSolution.buildSolutionDescriptor());
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
                         SelectionOrder.RANDOM, false))
-                .withMessageContaining("cannot unfold");
+                .withMessageContaining("it cannot be deduced automatically");
     }
 
     @Test
     void explicitConfigMustUseListVariable() {
-        SubListChangeMoveSelectorConfig config = new SubListChangeMoveSelectorConfig()
+        var config = new SubListChangeMoveSelectorConfig()
                 .withSubListSelectorConfig(new SubListSelectorConfig()
                         .withValueSelectorConfig(new ValueSelectorConfig("value")))
                 .withDestinationSelectorConfig(new DestinationSelectorConfig()
                         .withEntitySelectorConfig(new EntitySelectorConfig(TestdataEntity.class))
                         .withValueSelectorConfig(new ValueSelectorConfig("value")));
 
-        SubListChangeMoveSelectorFactory<TestdataSolution> moveSelectorFactory =
-                new SubListChangeMoveSelectorFactory<>(config);
+        var moveSelectorFactory = new SubListChangeMoveSelectorFactory<TestdataSolution>(config);
 
-        HeuristicConfigPolicy<TestdataSolution> heuristicConfigPolicy =
+        var heuristicConfigPolicy =
                 buildHeuristicConfigPolicy(TestdataSolution.buildSolutionDescriptor());
 
         assertThatIllegalArgumentException()
@@ -100,14 +108,14 @@ class SubListChangeMoveSelectorFactoryTest {
     }
 
     static SubListChangeMoveSelectorConfig minimumSize_SubListSelector() {
-        SubListChangeMoveSelectorConfig config = new SubListChangeMoveSelectorConfig()
+        var config = new SubListChangeMoveSelectorConfig()
                 .withSubListSelectorConfig(new SubListSelectorConfig().withMinimumSubListSize(10));
         config.setMinimumSubListSize(10);
         return config;
     }
 
     static SubListChangeMoveSelectorConfig maximumSize_SubListSelector() {
-        SubListChangeMoveSelectorConfig config = new SubListChangeMoveSelectorConfig()
+        var config = new SubListChangeMoveSelectorConfig()
                 .withSubListSelectorConfig(new SubListSelectorConfig().withMaximumSubListSize(10));
         config.setMaximumSubListSize(10);
         return config;
@@ -123,10 +131,9 @@ class SubListChangeMoveSelectorFactoryTest {
     @MethodSource("wrongConfigurations")
     void failFast_ifSubListSizeOnBothMoveSelectorAndSubListSelector(
             SubListChangeMoveSelectorConfig config, String propertyName, String childConfigName) {
-        SubListChangeMoveSelectorFactory<TestdataListSolution> factory = new SubListChangeMoveSelectorFactory<>(config);
+        var factory = new SubListChangeMoveSelectorFactory<TestdataListSolution>(config);
 
-        HeuristicConfigPolicy<TestdataListSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
+        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> factory.buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME,
@@ -136,21 +143,19 @@ class SubListChangeMoveSelectorFactoryTest {
 
     @Test
     void transferDeprecatedSubListSizeToChildSelector() {
-        int minimumSubListSize = 21;
-        int maximumSubListSize = 445;
-        SubListChangeMoveSelectorConfig config = new SubListChangeMoveSelectorConfig();
+        var minimumSubListSize = 21;
+        var maximumSubListSize = 445;
+        var config = new SubListChangeMoveSelectorConfig();
         config.setMinimumSubListSize(minimumSubListSize);
         config.setMaximumSubListSize(maximumSubListSize);
 
-        SubListChangeMoveSelectorFactory<TestdataListSolution> factory = new SubListChangeMoveSelectorFactory<>(config);
+        var factory = new SubListChangeMoveSelectorFactory<TestdataListSolution>(config);
 
-        HeuristicConfigPolicy<TestdataListSolution> heuristicConfigPolicy =
-                buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
+        var heuristicConfigPolicy = buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor());
 
-        RandomSubListChangeMoveSelector<TestdataListSolution> moveSelector =
-                (RandomSubListChangeMoveSelector<TestdataListSolution>) factory
-                        .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
-                                false);
+        var moveSelector = (RandomSubListChangeMoveSelector<TestdataListSolution>) factory
+                .buildMoveSelector(heuristicConfigPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM,
+                        false);
 
         assertThat(((RandomSubListSelector<?>) moveSelector.getSubListSelector()).getMinimumSubListSize())
                 .isEqualTo(minimumSubListSize);

@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedValue;
 
 @PlanningSolution
 public class TestdataInvalidMultiVarSolution {
@@ -21,7 +21,7 @@ public class TestdataInvalidMultiVarSolution {
 
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty
-    private List<TestdataListMultiVarValue> valueList;
+    private List<TestdataMixedValue> valueList;
     @ValueRangeProvider(id = "chainedAnchorRange")
     @PlanningEntityCollectionProperty
     private List<TestdataChainedAnchor> chainedAnchorList;
@@ -31,11 +31,11 @@ public class TestdataInvalidMultiVarSolution {
     @PlanningScore
     private SimpleScore score;
 
-    public List<TestdataListMultiVarValue> getValueList() {
+    public List<TestdataMixedValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListMultiVarValue> valueList) {
+    public void setValueList(List<TestdataMixedValue> valueList) {
         this.valueList = valueList;
     }
 

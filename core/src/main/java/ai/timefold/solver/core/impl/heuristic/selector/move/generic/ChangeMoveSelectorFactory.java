@@ -18,12 +18,10 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
 import org.slf4j.Logger;
@@ -43,11 +41,11 @@ public class ChangeMoveSelectorFactory<Solution_>
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         checkUnfolded("entitySelectorConfig", config.getEntitySelectorConfig());
         checkUnfolded("valueSelectorConfig", config.getValueSelectorConfig());
-        SelectionOrder selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
-        EntitySelector<Solution_> entitySelector = EntitySelectorFactory
+        var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
+        var entitySelector = EntitySelectorFactory
                 .<Solution_> create(config.getEntitySelectorConfig())
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
-        ValueSelector<Solution_> valueSelector = ValueSelectorFactory
+        var valueSelector = ValueSelectorFactory
                 .<Solution_> create(config.getValueSelectorConfig())
                 .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
         return new ChangeMoveSelector<>(entitySelector, valueSelector, randomSelection);
@@ -56,7 +54,7 @@ public class ChangeMoveSelectorFactory<Solution_>
     @Override
     protected MoveSelectorConfig<?> buildUnfoldedMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy) {
         Collection<EntityDescriptor<Solution_>> entityDescriptors;
-        EntityDescriptor<Solution_> onlyEntityDescriptor = config.getEntitySelectorConfig() == null ? null
+        var onlyEntityDescriptor = config.getEntitySelectorConfig() == null ? null
                 : EntitySelectorFactory.<Solution_> create(config.getEntitySelectorConfig())
                         .extractEntityDescriptor(configPolicy);
         if (onlyEntityDescriptor != null) {
@@ -64,9 +62,9 @@ public class ChangeMoveSelectorFactory<Solution_>
         } else {
             entityDescriptors = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
         }
-        List<GenuineVariableDescriptor<Solution_>> variableDescriptorList = new ArrayList<>();
+        var variableDescriptorList = new ArrayList<GenuineVariableDescriptor<Solution_>>();
         for (EntityDescriptor<Solution_> entityDescriptor : entityDescriptors) {
-            GenuineVariableDescriptor<Solution_> onlyVariableDescriptor = config.getValueSelectorConfig() == null ? null
+            var onlyVariableDescriptor = config.getValueSelectorConfig() == null ? null
                     : ValueSelectorFactory.<Solution_> create(config.getValueSelectorConfig())
                             .extractVariableDescriptor(configPolicy, entityDescriptor);
             if (onlyVariableDescriptor != null) {
@@ -82,28 +80,35 @@ public class ChangeMoveSelectorFactory<Solution_>
                 variableDescriptorList.addAll(entityDescriptor.getGenuineVariableDescriptorList());
             }
         }
-        return buildUnfoldedMoveSelectorConfig(variableDescriptorList);
+        return buildUnfoldedMoveSelectorConfig(configPolicy, variableDescriptorList);
     }
 
-    protected MoveSelectorConfig<?> buildUnfoldedMoveSelectorConfig(
+    protected MoveSelectorConfig<?> buildUnfoldedMoveSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,
             List<GenuineVariableDescriptor<Solution_>> variableDescriptorList) {
-        List<MoveSelectorConfig> moveSelectorConfigList = new ArrayList<>(variableDescriptorList.size());
-        for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptorList) {
+        var moveSelectorConfigList = new ArrayList<MoveSelectorConfig>(variableDescriptorList.size());
+        for (var variableDescriptor : variableDescriptorList) {
             if (variableDescriptor.isListVariable()) {
+                if (configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()) {
+                    // When using a mixed model,
+                    // we do not create a list move
+                    // and delegate it to the ListChangeMoveSelectorFactory.
+                    // The strategy aims to provide a more normalized move selector collection for mixed models.
+                    continue;
+                }
                 // No childMoveSelectorConfig.inherit() because of unfoldedMoveSelectorConfig.inheritFolded()
-                ListChangeMoveSelectorConfig childMoveSelectorConfig =
+                var childMoveSelectorConfig =
                         buildListChangeMoveSelectorConfig((ListVariableDescriptor<?>) variableDescriptor, false);
                 moveSelectorConfigList.add(childMoveSelectorConfig);
             } else {
                 // No childMoveSelectorConfig.inherit() because of unfoldedMoveSelectorConfig.inheritFolded()
-                ChangeMoveSelectorConfig childMoveSelectorConfig = new ChangeMoveSelectorConfig();
+                var childMoveSelectorConfig = new ChangeMoveSelectorConfig();
                 // Different EntitySelector per child because it is a union
-                EntitySelectorConfig childEntitySelectorConfig = new EntitySelectorConfig(config.getEntitySelectorConfig());
+                var childEntitySelectorConfig = new EntitySelectorConfig(config.getEntitySelectorConfig());
                 if (childEntitySelectorConfig.getMimicSelectorRef() == null) {
                     childEntitySelectorConfig.setEntityClass(variableDescriptor.getEntityDescriptor().getEntityClass());
                 }
                 childMoveSelectorConfig.setEntitySelectorConfig(childEntitySelectorConfig);
-                ValueSelectorConfig childValueSelectorConfig = new ValueSelectorConfig(config.getValueSelectorConfig());
+                var childValueSelectorConfig = new ValueSelectorConfig(config.getValueSelectorConfig());
                 if (childValueSelectorConfig.getMimicSelectorRef() == null) {
                     childValueSelectorConfig.setVariableName(variableDescriptor.getVariableName());
                 }
@@ -130,8 +135,8 @@ public class ChangeMoveSelectorFactory<Solution_>
                         We are keeping this option through the 1.x release stream for backward compatibility reasons.
                         Please update your solver config to use {} now.""",
                 config, ListChangeMoveSelectorConfig.class.getSimpleName());
-        ListChangeMoveSelectorConfig listChangeMoveSelectorConfig = ListChangeMoveSelectorFactory.buildChildMoveSelectorConfig(
-                variableDescriptor, config.getValueSelectorConfig(), createDestinationSelectorConfig());
+        var listChangeMoveSelectorConfig = ListChangeMoveSelectorFactory.buildChildMoveSelectorConfig(variableDescriptor,
+                config.getValueSelectorConfig(), createDestinationSelectorConfig());
         if (inheritFoldedConfig) {
             listChangeMoveSelectorConfig.inheritFolded(config);
         }

@@ -4,7 +4,6 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerC
 import ai.timefold.solver.core.config.constructionheuristic.placer.PooledEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
-import ai.timefold.solver.core.impl.constructionheuristic.placer.internal.QueuedMultiplePlacerConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 
 public interface EntityPlacerFactory<Solution_> {
@@ -17,8 +16,6 @@ public interface EntityPlacerFactory<Solution_> {
             return new QueuedEntityPlacerFactory<>(queuedEntityPlacerConfig);
         } else if (entityPlacerConfig instanceof QueuedValuePlacerConfig queuedValuePlacerConfig) {
             return new QueuedValuePlacerFactory<>(queuedValuePlacerConfig);
-        } else if (entityPlacerConfig instanceof QueuedMultiplePlacerConfig queuedMultiplePlacerConfig) {
-            return new QueuedMultiplePlacerFactory<>(queuedMultiplePlacerConfig);
         } else {
             throw new IllegalArgumentException(String.format("Unknown %s type: (%s).",
                     EntityPlacerConfig.class.getSimpleName(), entityPlacerConfig.getClass().getName()));

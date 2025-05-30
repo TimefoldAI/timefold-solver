@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.solver;
 
+import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY;
+import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE;
+import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
@@ -38,11 +41,33 @@ import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
+import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
+import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
@@ -63,6 +88,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -78,6 +104,7 @@ import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMul
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.TestdataListVarEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.TestdataPinnedListValue;
@@ -88,9 +115,25 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomMoveIteratorFactory;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.MixedCustomPhaseCommand;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedEntity;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.unassignedvar.TestdataUnassignedMixedSolution;
 import ai.timefold.solver.core.testdomain.multientity.TestdataHerdEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataLeadEntity;
 import ai.timefold.solver.core.testdomain.multientity.TestdataMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
+import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
@@ -106,6 +149,8 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import io.micrometer.core.instrument.Meter;
 import io.micrometer.core.instrument.Metrics;
@@ -1169,23 +1214,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
     }
 
-    @Test
-    void solveWithMultipleGenuinePlanningEntities() {
-        var solverConfig = new SolverConfig()
-                .withSolutionClass(TestdataMultiEntitySolution.class)
-                .withEntityClasses(TestdataLeadEntity.class, TestdataHerdEntity.class)
-                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
-                .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"));
-
-        var solution = new TestdataMultiEntitySolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        solution.setLeadEntityList(Arrays.asList(new TestdataLeadEntity("lead1"), new TestdataLeadEntity("lead2")));
-        solution.setHerdEntityList(Arrays.asList(new TestdataHerdEntity("herd1"), new TestdataHerdEntity("herd2")));
-
-        solution = PlannerTestUtils.solve(solverConfig, solution);
-        assertThat(solution).isNotNull();
-    }
-
     /**
      * Verifies <a href="https://issues.redhat.com/browse/PLANNER-2798">PLANNER-2798</a>.
      */
@@ -1198,9 +1226,9 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"))
                 .withPhases(
                         // Each planning entity class needs a separate CH phase.
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
                                 .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedBrownEntity.class))),
-                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfigList(new QueuedEntityPlacerConfig()
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()
                                 .withEntitySelectorConfig(new EntitySelectorConfig(TestdataChainedGreenEntity.class))),
                         new LocalSearchPhaseConfig().withMoveSelectorConfig(new UnionMoveSelectorConfig().withMoveSelectors(
                                 new ChangeMoveSelectorConfig(),
@@ -1377,6 +1405,673 @@ class DefaultSolverTest extends AbstractMeterTest {
                         solution.getValueList().get(3));
         assertThat(solution.getEntityList().get(2).getValueList())
                 .isEmpty();
+    }
+
+    @Test
+    void solveCustomConfigListVariable() {
+        var valueSelectorConfig = new ValueSelectorConfig("valueList")
+                .withId("valueList");
+        var mimicReplayingValueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef("valueList")
+                .withVariableName("valueList");
+        var valuePlacerConfig = new QueuedValuePlacerConfig()
+                .withValueSelectorConfig(valueSelectorConfig)
+                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                        .withValueSelectorConfig(mimicReplayingValueSelectorConfig));
+
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(valuePlacerConfig),
+                        new LocalSearchPhaseConfig().withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataListVarEasyScoreCalculator.class);
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForSingleVar")
+    void solveSingleVarMoveConfig(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataSolution.class, TestdataEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForSingleVar() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        allMoveSelectionConfigList.add(new PillarChangeMoveSelectorConfig());
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig());
+        // R&R - basic
+        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForChainedVar")
+    void solveChainedVarMoveConfig(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataChainedSolution.class, TestdataChainedEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataChainedSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForChainedVar() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - chained
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - chained
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Tail Chain - chained
+        allMoveSelectionConfigList.add(new TailChainSwapMoveSelectorConfig()
+                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")));
+        // Subchain chain - chained
+        allMoveSelectionConfigList
+                .add(new SubChainChangeMoveSelectorConfig().withSubChainSelectorConfig(new SubChainSelectorConfig()
+                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")))
+                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject")));
+        // Subchain swap - chained
+        allMoveSelectionConfigList
+                .add(new SubChainSwapMoveSelectorConfig().withSubChainSelectorConfig(new SubChainSelectorConfig()
+                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("chainedObject"))));
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForListVar")
+    void solveListVarMoveConfig(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataListSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForListVar() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Pillar change - basic
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
+        // R&R - basic
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForMultiVar")
+    void solveMultiVarMoveConfig(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMultiVarSolution.class, TestdataMultiVarEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
+
+        var problem = TestdataMultiVarSolution.generateUninitializedSolution(2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .doesNotThrowAnyException();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForMultiVar() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataMultiVarEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("primaryValue");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @Test
+    void solveMultiEntity() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMultiEntitySolution.class, TestdataLeadEntity.class, TestdataHerdEntity.class)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withPhaseList(Collections.emptyList())
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+
+        var problem = TestdataMultiEntitySolution.generateUninitializedSolution(3, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution).isNotNull();
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForMultiEntity")
+    void solveMultiEntityMoveConfig(MoveSelectorConfig moveSelectionConfig) {
+        // Construction Heuristic
+        var leadConstructionHeuristicConfig = new ConstructionHeuristicPhaseConfig()
+                .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                .withId(TestdataLeadEntity.class.getName())
+                                .withEntityClass(TestdataLeadEntity.class)));
+        var herdConstructionHeuristicConfig = new ConstructionHeuristicPhaseConfig()
+                .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                .withId(TestdataHerdEntity.class.getName())
+                                .withEntityClass(TestdataHerdEntity.class)));
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMultiEntitySolution.class, TestdataLeadEntity.class, TestdataHerdEntity.class)
+                .withPhases(leadConstructionHeuristicConfig, herdConstructionHeuristicConfig, localSearchConfig)
+                .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig().withBestScoreLimit("0"));
+
+        var problem = TestdataMultiEntitySolution.generateUninitializedSolution(2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution).isNotNull();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForMultiEntity() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataLeadEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("value");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @Test
+    void solveMixedModel() {
+        // Same size for both list and basic variables
+        executeSolveMixedModel(2, 2, 2);
+        // Bigger list planning values size
+        executeSolveMixedModel(2, 3, 2);
+        executeSolveMixedModel(2, 2, 3);
+        // Bigger basic planning values size
+        executeSolveMixedModel(3, 2, 2);
+    }
+
+    @Test
+    void solveMultiEntityMixedModel() {
+        // Same size for both list and basic variables
+        executeSolveMultiEntityMixedModel(2, 2, 2);
+        // Bigger list planning values size
+        executeSolveMultiEntityMixedModel(2, 3, 2);
+        executeSolveMultiEntityMixedModel(2, 2, 3);
+        // Bigger basic planning values size
+        executeSolveMultiEntityMixedModel(3, 2, 2);
+    }
+
+    private void executeSolveMixedModel(int entitySize, int valueSize, int otherValueSize) {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhaseList(Collections.emptyList())
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(entitySize, valueSize, otherValueSize);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        // Check the solution
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
+                .isEmpty();
+
+        var expectedSize = Math.max(entitySize - valueSize, 0L);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty())
+                .count()).isEqualTo(expectedSize);
+
+        // Check custom listener execution
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getShadowVariableListenerValue().equals(v.getIndex())))
+                .isTrue();
+
+        // Check cascading shadow variable
+        assertThat(solution.getValueList().stream().allMatch(v -> v.getCascadingShadowVariableValue().equals(v.getIndex() + 1)))
+                .isTrue();
+
+        // Check declarative shadow variable from basic variable - genuine entity
+        assertThat(solution.getEntityList().stream()
+                .allMatch(v -> v.getDeclarativeShadowVariableValue().equals(v.getBasicValue().getStrength())))
+                .isTrue();
+
+        // Check declarative shadow variable from basic variable - shadow entity
+        assertThat(solution.getOtherValueList().stream()
+                .allMatch(v -> v.getDeclarativeShadowVariableValue().equals(v.getEntityList().size() + 2)))
+                .isTrue();
+
+        // Check declarative shadow variable from list variable - shadow entity
+        assertThat(
+                solution.getValueList().stream().allMatch(v -> v.getDeclarativeShadowVariableValue().equals(v.getIndex() + 2)))
+                .isTrue();
+    }
+
+    void executeSolveMultiEntityMixedModel(int entitySize, int valueSize, int otherValueSize) {
+        // Solver Config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedMultiEntitySolution.class, TestdataMixedMultiEntityFirstEntity.class,
+                TestdataMixedMultiEntitySecondEntity.class)
+                .withPhaseList(Collections.emptyList())
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L))
+                .withEasyScoreCalculatorClass(TestdataMixedEntityEasyScoreCalculator.class);
+
+        var problem = TestdataMixedMultiEntitySolution.generateUninitializedSolution(entitySize, valueSize, otherValueSize);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        var expectedSize = Math.max(entitySize - valueSize, 0L);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty())
+                .count()).isEqualTo(expectedSize);
+        assertThat(solution.getOtherEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
+                .isEmpty();
+        for (var entity : solution.getOtherEntityList()) {
+            // The strength comparator will cause the basic variables to differ during the CH phase,
+            // and LS will find no improvement
+            assertThat(entity.getBasicValue()).isNotSameAs(entity.getSecondBasicValue());
+        }
+    }
+
+    @Test
+    void solveMixedModelCustomMove() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(new MoveIteratorFactoryConfig()
+                                        .withMoveIteratorFactoryClass(MixedCustomMoveIteratorFactory.class))
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        // Check the solution
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solveMixedModelCustomPhase() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
+                        new CustomPhaseConfig()
+                                .withCustomPhaseCommands(new MixedCustomPhaseCommand())
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        // Check the solution
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    private static List<Pair<EntitySorterManner, ValueSorterManner>> getSortMannerList() {
+        var sortMannerList = new ArrayList<Pair<EntitySorterManner, ValueSorterManner>>();
+        for (var valueSortManner : ValueSorterManner.values()) {
+            sortMannerList.add(new Pair<>(DECREASING_DIFFICULTY, valueSortManner));
+            sortMannerList.add(new Pair<>(DECREASING_DIFFICULTY_IF_AVAILABLE, valueSortManner));
+        }
+        return sortMannerList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("getSortMannerList")
+    void solveMixedModelWithSortManner(Pair<EntitySorterManner, ValueSorterManner> sorterManner) {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(
+                                        new ChangeMoveSelectorConfig()
+                                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withSorterManner(sorterManner.key()))
+                                                .withValueSelectorConfig(
+                                                        new ValueSelectorConfig()
+                                                                .withVariableName("basicValue")
+                                                                .withCacheType(SelectionCacheType.PHASE)
+                                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                                .withSorterManner(sorterManner.value())))
+                                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16)))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    @Test
+    void solvePinnedMixedModel() {
+        // We don't enable the LS because we want to ensure the pinned entity remains uninitialized
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))))
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(3, 2, 2);
+        // Pin the first entity
+        problem.getEntityList().get(0).setPinned(true);
+        problem.getEntityList().get(0).setPinnedIndex(0);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        // The first entity should remain unchanged
+        assertThat(solution.getEntityList().get(0).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(0).getSecondBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(0).getValueList()).isEmpty();
+    }
+
+    @Test
+    void solveUnassignedMixedModel() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataUnassignedMixedSolution.class, TestdataUnassignedMixedEntity.class)
+                .withPhaseList(Collections.emptyList())
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16))
+                .withEasyScoreCalculatorClass(TestdataUnassignedMixedEasyScoreCalculator.class);
+
+        var problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 2, 2);
+        // Block values and make the basic and list variables unassigned
+        problem.getValueList().get(0).setBlocked(true);
+        problem.getValueList().get(1).setBlocked(true);
+        problem.getOtherValueList().get(0).setBlocked(true);
+        problem.getOtherValueList().get(1).setBlocked(true);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null))
+                .hasSize(2);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getSecondBasicValue() != null))
+                .hasSize(2);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty()))
+                .hasSize(2);
+    }
+
+    @Test
+    void solvePinnedAndUnassignedMixedModel() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataUnassignedMixedSolution.class, TestdataUnassignedMixedEntity.class)
+                .withPhaseList(Collections.emptyList())
+                .withTerminationConfig(new TerminationConfig().withStepCountLimit(16))
+                .withEasyScoreCalculatorClass(TestdataUnassignedMixedEasyScoreCalculator.class);
+
+        // Pin the entire first entity
+        var problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 2, 2);
+        problem.getEntityList().get(0).setPinned(true);
+        problem.getEntityList().get(0).setBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setSecondBasicValue(problem.getOtherValueList().get(0));
+        problem.getEntityList().get(0).setValueList(List.of(problem.getValueList().get(0)));
+        // Block values and make the basic and list variables unassigned
+        problem.getValueList().get(0).setBlocked(true);
+        problem.getValueList().get(1).setBlocked(true);
+        problem.getOtherValueList().get(0).setBlocked(true);
+        problem.getOtherValueList().get(1).setBlocked(true);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        // The first entity should remain unchanged
+        assertThat(solution.getEntityList().get(0).getBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(0).getSecondBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(0).getValueList()).hasSize(1);
+        assertThat(solution.getEntityList().get(1).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(1).getSecondBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(1).getValueList()).isEmpty();
+
+        // Pin partially the first entity list
+        problem = TestdataUnassignedMixedSolution.generateUninitializedSolution(2, 4, 2);
+        problem.getEntityList().get(0).setPinnedIndex(2);
+        problem.getEntityList().get(0).setValueList(problem.getValueList().subList(1, 3));
+        // Block values and make the basic variable unassigned
+        problem.getOtherValueList().get(0).setBlocked(true);
+        problem.getOtherValueList().get(1).setBlocked(true);
+        solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().get(0).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(0).getSecondBasicValue()).isNotNull();
+        // The pinning index fixed the values 1 and 2. The only remaining option is values are 0 and 3.
+        // The score is bigger when the list size is 3
+        assertThat(solution.getEntityList().get(0).getValueList()).hasSize(3);
+        assertThat(solution.getEntityList().get(0).getValueList())
+                .hasSameElementsAs(
+                        List.of(problem.getValueList().get(1), problem.getValueList().get(2), problem.getValueList().get(0)));
+        assertThat(solution.getEntityList().get(1).getBasicValue()).isNull();
+        assertThat(solution.getEntityList().get(1).getSecondBasicValue()).isNotNull();
+        assertThat(solution.getEntityList().get(1).getValueList()).hasSize(1);
+        assertThat(solution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(problem.getValueList().get(3)));
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForMixedModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataMixedEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Change - list
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - list
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Sublist change - list
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Sublist swap - list
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig().withSubListSelectorConfig(
+                new SubListSelectorConfig().withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))));
+        // KOpt - list
+        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // R&R - list
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForMixedModel")
+    void solveMoveConfigMixedModel(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
+                        localSearchConfig)
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
+                .isEmpty();
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForMultiEntityMixedModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeEntitySelectorConfig =
+                new EntitySelectorConfig().withEntityClass(TestdataMixedMultiEntitySecondEntity.class);
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // Change - list
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - list
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Sublist change - list
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Sublist swap - list
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
+        // KOpt - list
+        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // R&R - list
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForMultiEntityMixedModel")
+    void solveMultiEntityMoveConfigMixedModel(MoveSelectorConfig moveSelectionConfig) {
+        // Construction Heuristic
+        var constructionHeuristicValuePlacer =
+                new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                        .withEntityClass(TestdataMixedMultiEntityFirstEntity.class)
+                        .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList")));
+        var constructionHeuristicEntityPlacer =
+                new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig());
+        // Local search
+        var localSearchConfig =
+                new LocalSearchPhaseConfig()
+                        .withMoveSelectorConfig(moveSelectionConfig)
+                        .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+        // Solver Config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedMultiEntitySolution.class, TestdataMixedMultiEntityFirstEntity.class,
+                TestdataMixedMultiEntitySecondEntity.class)
+                .withPhases(constructionHeuristicValuePlacer, constructionHeuristicEntityPlacer, localSearchConfig)
+                .withEasyScoreCalculatorClass(TestdataMixedEntityEasyScoreCalculator.class);
+
+        var problem = TestdataMixedMultiEntitySolution.generateUninitializedSolution(3, 2, 2);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        // Three planning entities and two planning values. One entity will remain unscheduled.
+        assertThat(solution.getEntityList().stream()
+                .filter(e -> e.getValueList().isEmpty())
+                .count()).isEqualTo(1);
+        assertThat(solution.getOtherEntityList().stream()
+                .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null))
+                .isEmpty();
+        for (var entity : solution.getOtherEntityList()) {
+            // The strength comparator will cause the basic variables to differ during the CH phase,
+            // and LS will find no improvement
+            assertThat(entity.getBasicValue()).isNotSameAs(entity.getSecondBasicValue());
+        }
     }
 
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator

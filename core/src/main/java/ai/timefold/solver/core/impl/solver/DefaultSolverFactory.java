@@ -14,7 +14,6 @@ import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.constructionheuristic.placer.EntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
@@ -27,8 +26,8 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhaseFactory;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.phase.PhaseFactory;
@@ -131,7 +130,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var previewFeaturesEnabled = solverConfig.getEnablePreviewFeatureSet();
 
         var configPolicy = new HeuristicConfigPolicy.Builder<Solution_>()
-                .withPreviewFeatureList(previewFeaturesEnabled)
+                .withPreviewFeatureSet(previewFeaturesEnabled)
                 .withEnvironmentMode(environmentMode)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(solverConfig.getMoveThreadBufferSize())
@@ -222,40 +221,45 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var phaseConfigList = solverConfig.getPhaseConfigList();
         if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
             var genuineEntityDescriptorCollection = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
-            var listVariableDescriptor = configPolicy.getSolutionDescriptor().getListVariableDescriptor();
-            var entityClassToListVariableDescriptorListMap =
-                    listVariableDescriptor == null ? Collections.<Class<?>, List<ListVariableDescriptor<Solution_>>> emptyMap()
-                            : Collections.singletonMap(listVariableDescriptor.getEntityDescriptor().getEntityClass(),
-                                    List.of(listVariableDescriptor));
-
-            phaseConfigList = new ArrayList<>(genuineEntityDescriptorCollection.size() + 1);
-            for (var genuineEntityDescriptor : genuineEntityDescriptorCollection) {
-                var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
-                EntityPlacerConfig<?> entityPlacerConfig;
-
-                if (entityClassToListVariableDescriptorListMap.containsKey(genuineEntityDescriptor.getEntityClass())) {
-                    var listVariableDescriptorList =
-                            entityClassToListVariableDescriptorListMap.get(genuineEntityDescriptor.getEntityClass());
-                    if (listVariableDescriptorList.size() != 1) {
-                        // TODO: Do multiple Construction Heuristics for each list variable descriptor?
-                        throw new IllegalArgumentException(
-                                "Construction Heuristic phase does not support multiple list variables (%s) for planning entity (%s)."
-                                        .formatted(listVariableDescriptorList, genuineEntityDescriptor.getEntityClass()));
-                    }
-                    entityPlacerConfig =
-                            DefaultConstructionHeuristicPhaseFactory.buildListVariableQueuedValuePlacerConfig(configPolicy,
-                                    listVariableDescriptorList.get(0));
+            phaseConfigList = new ArrayList<>(genuineEntityDescriptorCollection.size() + 2);
+            for (var entityDescriptor : genuineEntityDescriptorCollection) {
+                if (entityDescriptor.hasBothGenuineListAndBasicVariables()) {
+                    // We add a separate step for each variable type
+                    phaseConfigList.add(buildConstructionHeuristicPhaseConfigForBasicVariable(configPolicy, entityDescriptor));
+                    phaseConfigList.add(buildConstructionHeuristicPhaseConfigForListVariable(configPolicy, entityDescriptor));
+                } else if (entityDescriptor.hasAnyGenuineListVariables()) {
+                    // There is no need to revalidate the number of list variables,
+                    // as it has already been validated in SolutionDescriptor
+                    // TODO: Do multiple Construction Heuristics for each list variable descriptor?
+                    phaseConfigList.add(buildConstructionHeuristicPhaseConfigForListVariable(configPolicy, entityDescriptor));
                 } else {
-                    entityPlacerConfig = new QueuedEntityPlacerConfig().withEntitySelectorConfig(AbstractFromConfigFactory
-                            .getDefaultEntitySelectorConfigForEntity(configPolicy, genuineEntityDescriptor));
+                    phaseConfigList.add(buildConstructionHeuristicPhaseConfigForBasicVariable(configPolicy, entityDescriptor));
                 }
-
-                constructionHeuristicPhaseConfig.setEntityPlacerConfigList(List.of(entityPlacerConfig));
-                phaseConfigList.add(constructionHeuristicPhaseConfig);
             }
             phaseConfigList.add(new LocalSearchPhaseConfig());
         }
         return PhaseFactory.buildPhases(phaseConfigList, configPolicy, bestSolutionRecaller, termination);
+    }
+
+    private ConstructionHeuristicPhaseConfig
+            buildConstructionHeuristicPhaseConfigForBasicVariable(HeuristicConfigPolicy<Solution_> configPolicy,
+                    EntityDescriptor<Solution_> entityDescriptor) {
+        var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
+        constructionHeuristicPhaseConfig
+                .setEntityPlacerConfig(new QueuedEntityPlacerConfig().withEntitySelectorConfig(AbstractFromConfigFactory
+                        .getDefaultEntitySelectorConfigForEntity(configPolicy, entityDescriptor)));
+        return constructionHeuristicPhaseConfig;
+    }
+
+    private ConstructionHeuristicPhaseConfig
+            buildConstructionHeuristicPhaseConfigForListVariable(HeuristicConfigPolicy<Solution_> configPolicy,
+                    EntityDescriptor<Solution_> entityDescriptor) {
+        var constructionHeuristicPhaseConfig = new ConstructionHeuristicPhaseConfig();
+        var listVariableDescriptor = entityDescriptor.getGenuineListVariableDescriptor();
+        constructionHeuristicPhaseConfig
+                .setEntityPlacerConfig(DefaultConstructionHeuristicPhaseFactory
+                        .buildListVariableQueuedValuePlacerConfig(configPolicy, listVariableDescriptor));
+        return constructionHeuristicPhaseConfig;
     }
 
     public void ensurePreviewFeature(PreviewFeature previewFeature) {

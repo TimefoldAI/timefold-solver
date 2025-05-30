@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedObject;
-import ai.timefold.solver.core.testdomain.multivar.list.singleentity.TestdataListMultiVarValue;
+import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedValue;
 
 @PlanningEntity
 public class TestdataInvalidMultiVarEntity extends TestdataObject implements TestdataChainedObject {
@@ -18,7 +18,7 @@ public class TestdataInvalidMultiVarEntity extends TestdataObject implements Tes
     private TestdataChainedObject chainedValue;
 
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataListMultiVarValue> valueList;
+    private List<TestdataMixedValue> valueList;
 
     public TestdataInvalidMultiVarEntity(String code) {
         super(code);
@@ -32,11 +32,11 @@ public class TestdataInvalidMultiVarEntity extends TestdataObject implements Tes
         this.chainedValue = chainedValue;
     }
 
-    public List<TestdataListMultiVarValue> getValueList() {
+    public List<TestdataMixedValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListMultiVarValue> valueList) {
+    public void setValueList(List<TestdataMixedValue> valueList) {
         this.valueList = valueList;
     }
 }

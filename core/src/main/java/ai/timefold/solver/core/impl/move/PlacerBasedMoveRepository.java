@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
+import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacer;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -78,6 +79,15 @@ public final class PlacerBasedMoveRepository<Solution_>
 
     public boolean hasNext() {
         return Objects.requireNonNull(placementIterator).hasNext();
+    }
+
+    public boolean hasListVariable() {
+        // When the placer depends on a list variable, the CH phase creates a ListChangeMoveSelector.
+        // However, in certain cases, such as ALLOCATE_TO_VALUE_FROM_QUEUE,
+        // a QueuedValuePlacer can be created for a basic planning variable,
+        // and in these cases, the move selector does not rely on a list variable.
+        return placer instanceof QueuedValuePlacer<Solution_> queuedValuePlacer
+                && queuedValuePlacer.hasListChangeMoveSelector();
     }
 
 }

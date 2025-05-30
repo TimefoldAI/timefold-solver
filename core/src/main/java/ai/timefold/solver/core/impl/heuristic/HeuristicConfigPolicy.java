@@ -28,7 +28,7 @@ import ai.timefold.solver.core.impl.solver.thread.DefaultSolverThreadFactory;
 
 public class HeuristicConfigPolicy<Solution_> {
 
-    private final Set<PreviewFeature> previewFeatureList;
+    private final Set<PreviewFeature> previewFeatureSet;
     private final EnvironmentMode environmentMode;
     private final String logIndentation;
     private final Integer moveThreadCount;
@@ -50,7 +50,7 @@ public class HeuristicConfigPolicy<Solution_> {
     private final Map<String, ValueMimicRecorder<Solution_>> valueMimicRecorderMap = new HashMap<>();
 
     private HeuristicConfigPolicy(Builder<Solution_> builder) {
-        this.previewFeatureList = builder.previewFeatureList;
+        this.previewFeatureSet = builder.previewFeatureSet;
         this.environmentMode = builder.environmentMode;
         this.logIndentation = builder.logIndentation;
         this.moveThreadCount = builder.moveThreadCount;
@@ -134,7 +134,7 @@ public class HeuristicConfigPolicy<Solution_> {
 
     public Builder<Solution_> cloneBuilder() {
         return new Builder<Solution_>()
-                .withPreviewFeatureList(previewFeatureList)
+                .withPreviewFeatureSet(previewFeatureSet)
                 .withEnvironmentMode(environmentMode)
                 .withMoveThreadCount(moveThreadCount)
                 .withMoveThreadBufferSize(moveThreadBufferSize)
@@ -229,11 +229,12 @@ public class HeuristicConfigPolicy<Solution_> {
     }
 
     public void ensurePreviewFeature(PreviewFeature previewFeature) {
-        ensurePreviewFeature(previewFeature, previewFeatureList);
+        ensurePreviewFeature(previewFeature, previewFeatureSet);
     }
 
-    public static void ensurePreviewFeature(PreviewFeature previewFeature, Collection<PreviewFeature> previewFeatureList) {
-        if (previewFeatureList == null || !previewFeatureList.contains(previewFeature)) {
+    public static void ensurePreviewFeature(PreviewFeature previewFeature,
+            Collection<PreviewFeature> previewFeatureCollection) {
+        if (previewFeatureCollection == null || !previewFeatureCollection.contains(previewFeature)) {
             throw new IllegalStateException("""
                     The preview feature %s is not enabled.
                     Maybe add %s to <enablePreviewFeature> in your configuration file?"""
@@ -248,7 +249,7 @@ public class HeuristicConfigPolicy<Solution_> {
 
     public static class Builder<Solution_> {
 
-        private Set<PreviewFeature> previewFeatureList;
+        private Set<PreviewFeature> previewFeatureSet;
         private EnvironmentMode environmentMode;
         private Integer moveThreadCount;
         private Integer moveThreadBufferSize;
@@ -269,8 +270,8 @@ public class HeuristicConfigPolicy<Solution_> {
         private Class<? extends NearbyDistanceMeter<?, ?>> nearbyDistanceMeterClass;
         private Random random;
 
-        public Builder<Solution_> withPreviewFeatureList(Set<PreviewFeature> previewFeatureList) {
-            this.previewFeatureList = previewFeatureList;
+        public Builder<Solution_> withPreviewFeatureSet(Set<PreviewFeature> previewFeatureSet) {
+            this.previewFeatureSet = previewFeatureSet;
             return this;
         }
 

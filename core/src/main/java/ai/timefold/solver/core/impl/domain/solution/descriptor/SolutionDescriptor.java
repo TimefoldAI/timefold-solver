@@ -894,8 +894,15 @@ public class SolutionDescriptor<Solution_> {
         return planningSolutionMetaModel;
     }
 
+    public List<BasicVariableDescriptor<Solution_>> getBasicVariableDescriptorList() {
+        return getGenuineEntityDescriptors().stream()
+                .flatMap(entityDescriptor -> entityDescriptor.getGenuineBasicVariableDescriptorList().stream())
+                .map(descriptor -> (BasicVariableDescriptor<Solution_>) descriptor)
+                .toList();
+    }
+
     public boolean hasBasicVariable() {
-        return getGenuineEntityDescriptors().stream().anyMatch(EntityDescriptor::hasAnyGenuineBasicVariables);
+        return !getBasicVariableDescriptorList().isEmpty();
     }
 
     public boolean hasChainedVariable() {

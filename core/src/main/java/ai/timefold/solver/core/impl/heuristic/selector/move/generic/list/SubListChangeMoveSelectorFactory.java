@@ -67,13 +67,18 @@ public class SubListChangeMoveSelectorFactory<Solution_>
         if (onlyEntityDescriptor != null) {
             entityDescriptors = Collections.singletonList(onlyEntityDescriptor);
         } else {
-            entityDescriptors = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
+            // We select a single entity since there is only one descriptor that includes a list variable
+            var onlyEntityDescriptorWithListVariable =
+                    getTheOnlyEntityDescriptorWithListVariable(configPolicy.getSolutionDescriptor());
+            entityDescriptors = new ArrayList<>();
+            if (onlyEntityDescriptorWithListVariable != null) {
+                entityDescriptors.add(onlyEntityDescriptorWithListVariable);
+            }
         }
-        if (entityDescriptors.size() > 1) {
-            throw new IllegalArgumentException("""
-                    The subListChangeMoveSelector (%s) cannot unfold when there are multiple entities (%s).
-                    Please use one subListChangeMoveSelector per each planning list variable."""
-                    .formatted(config, entityDescriptors));
+        if (entityDescriptors.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "The subListChangeMoveSelector (%s) cannot unfold because there are no planning list variables."
+                            .formatted(config));
         }
         var entityDescriptor = entityDescriptors.iterator().next();
 
@@ -116,11 +121,6 @@ public class SubListChangeMoveSelectorFactory<Solution_>
                             .filter(VariableDescriptor::isListVariable)
                             .map(variableDescriptor -> ((ListVariableDescriptor<Solution_>) variableDescriptor))
                             .toList());
-        }
-        if (variableDescriptorList.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The subListChangeMoveSelector (%s) cannot unfold because there are no planning list variables."
-                            .formatted(config));
         }
         if (variableDescriptorList.size() > 1) {
             throw new IllegalArgumentException(
