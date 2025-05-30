@@ -23,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 
 public record RootVariableSource<Entity_, Value_>(
         Class<? extends Entity_> rootEntity,
+        List<MemberAccessor> listMemberAccessors,
         BiConsumer<Object, Consumer<Value_>> valueEntityFunction,
         List<VariableSourceReference> variableSourceReferences) {
 
@@ -44,7 +45,6 @@ public record RootVariableSource<Entity_, Value_>(
             }
             return currentEntity;
         }
-
     }
 
     public static Iterator<PathPart> pathIterator(Class<?> rootEntity, String path) {
@@ -134,6 +134,7 @@ public record RootVariableSource<Entity_, Value_>(
         List<MemberAccessor> chainToVariableEntity = chainToVariable.subList(0, chainToVariable.size() - 1);
         if (!hasListMemberAccessor) {
             valueEntityFunction = getRegularSourceEntityVisitor(chainToVariableEntity);
+            listMemberAccessors.clear();
         } else {
             valueEntityFunction = getCollectionSourceEntityVisitor(listMemberAccessors, chainToVariableEntity);
         }
@@ -142,7 +143,8 @@ public record RootVariableSource<Entity_, Value_>(
         for (var i = 0; i < chainStartingFromSourceVariableList.size(); i++) {
             var chainStartingFromSourceVariable = chainStartingFromSourceVariableList.get(i);
             var newSourceReference =
-                    createVariableSourceReferenceFromChain(solutionMetaModel,
+                    createVariableSourceReferenceFromChain(variablePath, variableSourceReferences, listMemberAccessors,
+                            solutionMetaModel,
                             rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
                             chainToVariable,
                             i == 0,
@@ -167,8 +169,17 @@ public record RootVariableSource<Entity_, Value_>(
         }
 
         return new RootVariableSource<>(rootEntityClass,
+                listMemberAccessors,
                 valueEntityFunction,
                 variableSourceReferences);
+    }
+
+    public @NonNull BiConsumer<Object, Consumer<Object>> getEntityVisitor(List<MemberAccessor> chainToEntity) {
+        if (listMemberAccessors.isEmpty()) {
+            return getRegularSourceEntityVisitor(chainToEntity);
+        } else {
+            return getCollectionSourceEntityVisitor(listMemberAccessors, chainToEntity);
+        }
     }
 
     private static <Value_> @NonNull BiConsumer<Object, Consumer<Value_>> getRegularSourceEntityVisitor(
@@ -197,6 +208,8 @@ public record RootVariableSource<Entity_, Value_>(
     }
 
     private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(
+            String variablePath, List<VariableSourceReference> variableSourceReferences,
+            List<MemberAccessor> listMemberAccessors,
             PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass, String targetVariableName, List<MemberAccessor> afterChain,
             List<MemberAccessor> chainToVariable, boolean isTopLevel, boolean isBottomLevel) {
@@ -213,13 +226,29 @@ public record RootVariableSource<Entity_, Value_>(
                     solutionMetaModel.entity(maybeDownstreamVariable.getDeclaringClass())
                             .variable(maybeDownstreamVariable.getName());
         }
+        var isDeclarative = isDeclarativeShadowVariable(variableMemberAccessor);
+        if (!isDeclarative) {
+            for (var previousVariableSourceReference : variableSourceReferences) {
+                if (!previousVariableSourceReference.isDeclarative()) {
+                    throw new IllegalArgumentException(
+                            """
+                                    The source path (%s) starting from root entity class (%s) \
+                                    accesses a non-declarative shadow variable (%s) \
+                                    after another non-declarative shadow variable (%s)."""
+                                    .formatted(
+                                            variablePath, rootEntityClass.getSimpleName(), variableMemberAccessor.getName(),
+                                            previousVariableSourceReference.variableMetaModel().name()));
+                }
+            }
+        }
 
         return new VariableSourceReference(
                 solutionMetaModel.entity(variableMemberAccessor.getDeclaringClass()).variable(variableMemberAccessor.getName()),
                 sourceVariablePath.memberAccessorsBeforeEntity,
+                isTopLevel && sourceVariablePath.memberAccessorsBeforeEntity.isEmpty() && listMemberAccessors.isEmpty(),
                 isTopLevel,
                 isBottomLevel,
-                isDeclarativeShadowVariable(variableMemberAccessor),
+                isDeclarative,
                 solutionMetaModel.entity(rootEntityClass).variable(targetVariableName),
                 downstreamDeclarativeVariable,
                 sourceVariablePath::findTargetEntity);
@@ -237,12 +266,6 @@ public record RootVariableSource<Entity_, Value_>(
                                     rootEntityClass.getSimpleName(),
                                     variableSourceReference.downstreamDeclarativeVariableMetamodel().name(),
                                     sourceVariableId.name()));
-        }
-        if (!variableSourceReference.isDeclarative() && !variableSourceReference.chainToVariableEntity().isEmpty()) {
-            throw new IllegalArgumentException(
-                    "The source path (%s) starting from root entity class (%s) accesses a non-declarative shadow variable (%s) not from the root entity or collection."
-                            .formatted(variablePath, rootEntityClass.getSimpleName(),
-                                    variableSourceReference.variableMetaModel().name()));
         }
     }
 

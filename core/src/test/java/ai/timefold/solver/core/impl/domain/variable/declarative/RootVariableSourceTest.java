@@ -81,6 +81,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(previousElementMetaModel);
         assertThat(source.isTopLevel()).isTrue();
+        assertThat(source.onRootEntity()).isTrue();
         assertThat(source.isDeclarative()).isFalse();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isNull();
@@ -114,6 +115,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(dependencyMetaModel);
         assertThat(source.isTopLevel()).isTrue();
+        assertThat(source.onRootEntity()).isTrue();
         assertThat(source.isDeclarative()).isTrue();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -146,6 +148,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(dependencyMetaModel);
         assertThat(source.isTopLevel()).isTrue();
+        assertThat(source.onRootEntity()).isFalse();
         assertThat(source.isDeclarative()).isTrue();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -183,6 +186,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(previousElementMetaModel);
         assertThat(source.isTopLevel()).isTrue();
+        assertThat(source.onRootEntity()).isFalse();
         assertThat(source.isDeclarative()).isFalse();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isNull();
@@ -220,6 +224,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(dependencyMetaModel);
         assertThat(source.isTopLevel()).isTrue();
+        assertThat(source.onRootEntity()).isFalse();
         assertThat(source.isDeclarative()).isTrue();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -259,6 +264,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(previousSource);
         assertThat(previousSource.variableMetaModel()).isEqualTo(previousElementMetaModel);
         assertThat(previousSource.isTopLevel()).isTrue();
+        assertThat(previousSource.onRootEntity()).isTrue();
         assertThat(previousSource.isDeclarative()).isFalse();
         assertThat(previousSource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(previousSource.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -286,6 +292,44 @@ class RootVariableSourceTest {
     }
 
     @Test
+    void pathUsingBuiltinShadowAfterFact() {
+        var rootVariableSource = RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "fact.previous",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
+
+        assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
+        assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        var previousSource = rootVariableSource.variableSourceReferences().get(0);
+
+        assertChainToVariableEntity(previousSource, "fact");
+        assertThat(previousSource.variableMetaModel()).isEqualTo(previousElementMetaModel);
+        assertThat(previousSource.onRootEntity()).isFalse();
+        assertThat(previousSource.isTopLevel()).isTrue();
+        assertThat(previousSource.isDeclarative()).isFalse();
+        assertThat(previousSource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(previousSource.downstreamDeclarativeVariableMetamodel()).isNull();
+
+        var previousElement = new TestdataInvalidDeclarativeValue("previous");
+        var factElement = new TestdataInvalidDeclarativeValue("fact");
+        var currentElement = new TestdataInvalidDeclarativeValue("current");
+
+        factElement.setPrevious(previousElement);
+        currentElement.setFact(factElement);
+
+        var result = previousSource.targetEntityFunctionStartingFromVariableEntity().apply(factElement);
+        assertThat(result).isSameAs(factElement);
+
+        var rootVisitor = mock(Consumer.class);
+        rootVariableSource.valueEntityFunction().accept(currentElement, rootVisitor);
+        verify(rootVisitor).accept(factElement);
+        verifyNoMoreInteractions(rootVisitor);
+    }
+
+    @Test
     @SuppressWarnings("unchecked")
     void pathUsingDeclarativeShadowAfterBuiltinShadowAfterGroup() {
         var rootVariableSource = RootVariableSource.from(
@@ -303,6 +347,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(previousSource);
         assertThat(previousSource.variableMetaModel()).isEqualTo(previousElementMetaModel);
         assertThat(previousSource.isTopLevel()).isTrue();
+        assertThat(previousSource.onRootEntity()).isFalse();
         assertThat(previousSource.isDeclarative()).isFalse();
         assertThat(previousSource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(previousSource.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -312,6 +357,7 @@ class RootVariableSourceTest {
         assertChainToVariableEntity(dependencySource, "previous");
         assertThat(dependencySource.variableMetaModel()).isEqualTo(dependencyMetaModel);
         assertThat(dependencySource.isTopLevel()).isFalse();
+        assertThat(dependencySource.onRootEntity()).isFalse();
         assertThat(dependencySource.isDeclarative()).isTrue();
         assertThat(dependencySource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(dependencySource.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -362,23 +408,7 @@ class RootVariableSourceTest {
                 .hasMessageContaining("The source path (previous.previous)" +
                         " starting from root entity class (TestdataInvalidDeclarativeValue)" +
                         " accesses a non-declarative shadow variable (previous)" +
-                        " not from the root entity or collection.");
-    }
-
-    @Test
-    void invalidPathUsingBuiltinShadowAfterFact() {
-        assertThatCode(() -> RootVariableSource.from(
-                planningSolutionMetaModel,
-                TestdataInvalidDeclarativeValue.class,
-                "shadow",
-                "fact.previous",
-                DEFAULT_MEMBER_ACCESSOR_FACTORY,
-                DEFAULT_DESCRIPTOR_POLICY))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The source path (fact.previous)" +
-                        " starting from root entity class (TestdataInvalidDeclarativeValue)" +
-                        " accesses a non-declarative shadow variable (previous)" +
-                        " not from the root entity or collection.");
+                        " after another non-declarative shadow variable (previous).");
     }
 
     @Test

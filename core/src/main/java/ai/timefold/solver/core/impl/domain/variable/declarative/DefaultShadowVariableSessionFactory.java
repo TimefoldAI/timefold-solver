@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +53,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         // Create variable processors for each declarative shadow variable descriptor
         for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
             var fromVariableId = declarativeShadowVariable.getVariableMetaModel();
-            createSourceChangeProcessors(variableReferenceGraphBuilder, declarativeShadowVariable, fromVariableId);
+            createSourceChangeProcessors(entities, variableReferenceGraphBuilder, declarativeShadowVariable, fromVariableId);
             var aliasSet = declarativeShadowVariableToAliasMap.get(fromVariableId);
             if (aliasSet != null) {
                 createAliasToVariableChangeProcessors(variableReferenceGraphBuilder, aliasSet, fromVariableId);
@@ -96,6 +98,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     private static <Solution_> void createSourceChangeProcessors(
+            Object[] entities,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder,
             DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
@@ -108,19 +111,33 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 // non-declarative variables are not in the graph and must have their
                 // own processor
                 if (!sourcePart.isDeclarative()) {
-                    variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
-                        // Exploits the fact the source entity and the target entity must be the same,
-                        // since non-declarative variables can only be accessed from the root entity;
-                        // paths like "otherVisit.previous" or "visitGroup[].otherVisit.previous" are not allowed,
-                        // but paths like "previous" or "visitGroup[].previous" are.
-                        // Without this invariant, an inverse set must be calculated
-                        // and maintained,
-                        // and this code is complicated enough.
-                        var changed = graph.lookupOrNull(fromVariableId, entity);
-                        if (changed != null) {
-                            graph.markChanged(changed);
+                    if (sourcePart.onRootEntity()) {
+                        // No need for inverse set; source and target entity are the same.
+                        variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
+                            var changed = graph.lookupOrNull(fromVariableId, entity);
+                            if (changed != null) {
+                                graph.markChanged(changed);
+                            }
+                        });
+                    } else {
+                        // Need to create an inverse set from source to target
+                        var inverseMap = new IdentityHashMap<Object, List<Object>>();
+                        var visitor = source.getEntityVisitor(sourcePart.chainToVariableEntity());
+                        for (var rootEntity : entities) {
+                            if (declarativeShadowVariable.getEntityDescriptor().getEntityClass().isInstance(rootEntity)) {
+                                visitor.accept(rootEntity, shadowEntity -> inverseMap
+                                        .computeIfAbsent(shadowEntity, ignored -> new ArrayList<>()).add(rootEntity));
+                            }
                         }
-                    });
+                        variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
+                            for (var item : inverseMap.getOrDefault(entity, Collections.emptyList())) {
+                                var changed = graph.lookupOrNull(fromVariableId, item);
+                                if (changed != null) {
+                                    graph.markChanged(changed);
+                                }
+                            }
+                        });
+                    }
                 }
             }
         }

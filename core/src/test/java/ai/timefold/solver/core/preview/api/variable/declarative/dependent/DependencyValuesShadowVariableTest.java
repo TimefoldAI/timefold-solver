@@ -102,7 +102,7 @@ class DependencyValuesShadowVariableTest {
         // and C.startTime/C.endTime remains null and C.isLooped is true.
         // When the move is undone, C.startTime/C.endTime remains null,
         // and C.isLooped is false.
-        moveAsserter.assertMove(schedule, new ListAssignMove<>(
+        moveAsserter.assertMoveAndUndo(schedule, new ListAssignMove<>(
                 (PlanningListVariableMetaModel<TestdataDependencySolution, ? super TestdataDependencyEntity, ? super TestdataDependencyValue>) solutionDescriptor
                         .getListVariableDescriptor().getVariableMetaModel(),
                 valueC, entityA, 0));
