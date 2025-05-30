@@ -122,20 +122,11 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     } else {
                         // Need to create an inverse set from source to target
                         var inverseMap = new IdentityHashMap<Object, List<Object>>();
-                        for (var entity : entities) {
-                            if (declarativeShadowVariable.getEntityDescriptor().getEntityClass().isInstance(entity)) {
-                                var memberAccessorPath = sourcePart.chainToVariableEntity();
-                                var current = entity;
-                                for (var memberAccessor : memberAccessorPath) {
-                                    current = memberAccessor.executeGetter(current);
-                                    if (current == null) {
-                                        break;
-                                    }
-                                }
-                                if (current == null) {
-                                    break;
-                                }
-                                inverseMap.computeIfAbsent(current, ignored -> new ArrayList<>()).add(entity);
+                        var visitor = source.getEntityVisitor(sourcePart.chainToVariableEntity());
+                        for (var rootEntity : entities) {
+                            if (declarativeShadowVariable.getEntityDescriptor().getEntityClass().isInstance(rootEntity)) {
+                                visitor.accept(rootEntity, shadowEntity -> inverseMap
+                                        .computeIfAbsent(shadowEntity, ignored -> new ArrayList<>()).add(rootEntity));
                             }
                         }
                         variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {

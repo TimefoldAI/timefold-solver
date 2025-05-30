@@ -148,7 +148,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(dependencyMetaModel);
         assertThat(source.isTopLevel()).isTrue();
-        assertThat(source.onRootEntity()).isTrue();
+        assertThat(source.onRootEntity()).isFalse();
         assertThat(source.isDeclarative()).isTrue();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -186,7 +186,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(previousElementMetaModel);
         assertThat(source.isTopLevel()).isTrue();
-        assertThat(source.onRootEntity()).isTrue();
+        assertThat(source.onRootEntity()).isFalse();
         assertThat(source.isDeclarative()).isFalse();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isNull();
@@ -224,7 +224,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(source);
         assertThat(source.variableMetaModel()).isEqualTo(dependencyMetaModel);
         assertThat(source.isTopLevel()).isTrue();
-        assertThat(source.onRootEntity()).isTrue();
+        assertThat(source.onRootEntity()).isFalse();
         assertThat(source.isDeclarative()).isTrue();
         assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(source.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
@@ -347,7 +347,7 @@ class RootVariableSourceTest {
         assertEmptyChainToVariableEntity(previousSource);
         assertThat(previousSource.variableMetaModel()).isEqualTo(previousElementMetaModel);
         assertThat(previousSource.isTopLevel()).isTrue();
-        assertThat(previousSource.onRootEntity()).isTrue();
+        assertThat(previousSource.onRootEntity()).isFalse();
         assertThat(previousSource.isDeclarative()).isFalse();
         assertThat(previousSource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
         assertThat(previousSource.downstreamDeclarativeVariableMetamodel()).isEqualTo(dependencyMetaModel);
