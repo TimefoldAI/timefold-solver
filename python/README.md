@@ -11,7 +11,6 @@ _Planning optimization made easy._
 [![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 [![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
-[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ai.timefold:timefold-solver&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ai.timefold:timefold-solver)
 
 
 Timefold Solver is an AI constraint solver you can use to optimize
