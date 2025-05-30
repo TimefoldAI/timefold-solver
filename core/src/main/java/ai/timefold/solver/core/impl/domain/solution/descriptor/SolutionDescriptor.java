@@ -99,6 +99,16 @@ public class SolutionDescriptor<Solution_> {
             PlanningEntityCollectionProperty.class,
             PlanningScore.class };
 
+    @SuppressWarnings("unchecked")
+    public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptorFromSolution(Solution_ solution) {
+        var enabledPreviewFeatures = EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES);
+        var solutionClass = (Class<Solution_>) solution.getClass();
+        var initialSolutionDescriptor = buildSolutionDescriptor(enabledPreviewFeatures, solutionClass);
+        var entityClassSet = new LinkedHashSet<Class<?>>();
+        initialSolutionDescriptor.visitAllEntities(solution, e -> entityClassSet.add(e.getClass()));
+        return buildSolutionDescriptor(enabledPreviewFeatures, solutionClass, entityClassSet.toArray(new Class<?>[0]));
+    }
+
     public static <Solution_> SolutionDescriptor<Solution_> buildSolutionDescriptor(Class<Solution_> solutionClass,
             Class<?>... entityClasses) {
         return buildSolutionDescriptor(solutionClass, Arrays.asList(entityClasses));
