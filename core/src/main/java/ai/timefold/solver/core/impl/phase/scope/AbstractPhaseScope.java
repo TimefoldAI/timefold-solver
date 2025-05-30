@@ -38,7 +38,7 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected int bestSolutionStepIndex;
 
     /**
-     * The solver termination configuration
+     * The phase termination configuration
      */
     private PhaseTermination<Solution_> termination;
 

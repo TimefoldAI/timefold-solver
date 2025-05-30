@@ -100,6 +100,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
 
     private class JustInTimeFilteringMoveIterator extends UpcomingSelectionIterator<Move<Solution_>> {
 
+        private final long TERMINATION_BAIL_OUT_SIZE = 1000L;
         private final Iterator<Move<Solution_>> childMoveIterator;
         private final long bailOutSize;
         private final AbstractPhaseScope<Solution_> phaseScope;
@@ -118,9 +119,8 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
             Move<Solution_> next;
             long attemptsBeforeBailOut = bailOutSize;
             // To reduce the impact of checking for termination on each move,
-            // we only check for termination
-            // after filtering out a total number of moves equal to size(childMoveSelector).
-            long attemptsBeforeCheckTermination = bailOutSize / BAIL_OUT_MULTIPLIER;
+            // we only check for termination after filtering out 1000 moves.
+            long attemptsBeforeCheckTermination = TERMINATION_BAIL_OUT_SIZE;
             do {
                 if (!childMoveIterator.hasNext()) {
                     return noUpcomingSelection();
@@ -133,7 +133,7 @@ public final class FilteringMoveSelector<Solution_> extends AbstractMoveSelector
                         return noUpcomingSelection();
                     } else if (termination != null && attemptsBeforeCheckTermination <= 0L) {
                         // Reset the counter
-                        attemptsBeforeCheckTermination = bailOutSize / BAIL_OUT_MULTIPLIER;
+                        attemptsBeforeCheckTermination = TERMINATION_BAIL_OUT_SIZE;
                         if (termination.isPhaseTerminated(phaseScope)) {
                             logger.trace(
                                     "Bailing out of neverEnding selector ({}) because the termination setting has been triggered.",
