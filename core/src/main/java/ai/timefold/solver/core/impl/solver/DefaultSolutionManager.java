@@ -78,7 +78,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                         Maybe use Constraint Streams instead of Easy or Incremental score calculator?""");
             }
             if (isShadowVariableUpdateEnabled) {
-                scoreDirector.forceTriggerVariableListeners();
+                scoreDirector.forceTriggerVariableListeners(solutionUpdatePolicy.isShadowVariableUpdateForced());
             }
             if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
                 scoreDirector.calculateScore();

@@ -111,8 +111,8 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
     }
 
     /**
-     * Same as {@link #updateShadowVariables(Class, Object...)},
-     * this method accepts a solution rather than a list of entities.
+     * Equivalent to {@link SolutionManager#update(Object, SolutionUpdatePolicy)}
+     * with {@link SolutionUpdatePolicy#RESET_SHADOW_VARIABLES_ONLY}.
      *
      * @param solution the solution
      */

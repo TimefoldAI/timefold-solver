@@ -185,7 +185,7 @@ class CustomVariableListenerTest {
         solution.setEntityList(new ArrayList<>());
         solution.setValueList(List.of(val1));
         scoreDirector.setWorkingSolution(solution);
-        scoreDirector.forceTriggerVariableListeners();
+        scoreDirector.forceTriggerVariableListeners(true);
 
         scoreDirector.beforeEntityAdded(b);
         scoreDirector.getWorkingSolution().getEntityList().add(b);

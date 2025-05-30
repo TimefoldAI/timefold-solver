@@ -52,6 +52,13 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaMo
  */
 public final class ShadowVariableUpdateHelper<Solution_> {
 
+    /**
+     * Deducing the solution descriptors from the solution instance is very expensive.
+     * Cache the solution descriptors to avoid this,
+     * even at the unlikely expense of keeping solution descriptors in memory for solutions which are no longer used.
+     */
+    private static final IdentityHashMap<Class<?>, SolutionDescriptor<?>> SOLUTION_DESCRIPTOR_CACHE = new IdentityHashMap<>();
+
     private static final EnumSet<ShadowVariableType> SUPPORTED_TYPES =
             EnumSet.of(BASIC, CUSTOM_LISTENER, CASCADING_UPDATE, DECLARATIVE);
 
@@ -74,21 +81,12 @@ public final class ShadowVariableUpdateHelper<Solution_> {
 
     @SuppressWarnings("unchecked")
     public void updateShadowVariables(Solution_ solution) {
-        var enabledPreviewFeatures = EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES);
-        var solutionClass = (Class<Solution_>) solution.getClass();
-        var initialSolutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
-                enabledPreviewFeatures, solutionClass);
-        var entityClassArray = initialSolutionDescriptor.getAllEntitiesAndProblemFacts(solution)
-                .stream()
-                .map(Object::getClass)
-                .distinct()
-                .toArray(Class[]::new);
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(enabledPreviewFeatures, solutionClass,
-                entityClassArray);
+        var solutionDescriptor = (SolutionDescriptor<Solution_>) SOLUTION_DESCRIPTOR_CACHE.computeIfAbsent(solution.getClass(),
+                solutionClass -> SolutionDescriptor.buildSolutionDescriptorFromSolution(solution));
         try (var scoreDirector = new InternalScoreDirector<>(solutionDescriptor)) {
             // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
-            scoreDirector.forceTriggerVariableListeners();
+            scoreDirector.forceTriggerVariableListeners(true);
         }
     }
 

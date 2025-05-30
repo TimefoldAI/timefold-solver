@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.test.api.score.stream.MultiConstraintAssertion;
@@ -28,11 +29,11 @@ public final class DefaultShadowVariableAwareMultiConstraintAssertion<Solution_,
     @Override
     public MultiConstraintAssertion settingAllShadowVariables() {
         // Most score directors don't need derived status; CS will override this.
+        SolutionManager.updateShadowVariables(solution);
         try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             scoreDirector.setWorkingSolution(solution);
-            scoreDirector.forceTriggerVariableListeners();
             update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),
                     scoreDirector.getIndictmentMap());
             toggleInitialized();
