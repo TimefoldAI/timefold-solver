@@ -40,11 +40,23 @@ public enum SolutionUpdatePolicy {
     /**
      * Runs variable listeners on all planning entities and problem facts,
      * updates shadow variables.
+     * Assumes an uninitialized solution;
+     * for solutions where some shadow variables are already filled in,
+     * use {@link #RESET_SHADOW_VARIABLES_ONLY} instead.
+     * <p>
      * Does not update score;
      * the solution will keep the current score, even if it is stale or null.
      * To avoid this, use {@link #UPDATE_ALL} instead.
      */
     UPDATE_SHADOW_VARIABLES_ONLY(false, true),
+    /**
+     * A specialized variant of {@link #UPDATE_SHADOW_VARIABLES_ONLY}, which clears the existing shadow variables first.
+     * This is significantly slower than the former,
+     * but it avoids an issue with dependent shadow variables not being recomputed
+     * if their source value did not change.
+     * This is only useful for solutions where some shadow variables are already filled in.
+     */
+    RESET_SHADOW_VARIABLES_ONLY(false, true),
     /**
      * Does not run anything.
      * Improves performance during {@link SolutionManager#analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)}
@@ -75,4 +87,9 @@ public enum SolutionUpdatePolicy {
     public boolean isShadowVariableUpdateEnabled() {
         return shadowVariableUpdateEnabled;
     }
+
+    public boolean isShadowVariableUpdateForced() {
+        return isShadowVariableUpdateEnabled() && this == RESET_SHADOW_VARIABLES_ONLY;
+    }
+
 }
