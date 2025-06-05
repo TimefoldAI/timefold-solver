@@ -217,11 +217,11 @@ repositories {
 }
 
 dependencies {
-    implementation platform("ai.timefold.solver:timefold-solver-bom:${timefoldSolverVersion}")
+    implementation platform("ai.timefold.solver:timefold-solver-bom:$\{timefoldSolverVersion\}")
     implementation "ai.timefold.solver:timefold-solver-core"
     testImplementation "ai.timefold.solver:timefold-solver-test"
 
-    runtimeOnly "ch.qos.logback:logback-classic:${logbackVersion}"
+    runtimeOnly "ch.qos.logback:logback-classic:$\{logbackVersion\}"
 }
 
 java {
@@ -903,13 +903,11 @@ Java::
 +
 --
 include::../shared/java-logback-config.adoc[]
-----
 --
 Kotlin::
 +
 --
 include::../shared/java-logback-config.adoc[]
-----
 --
 
 Python::
