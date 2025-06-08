@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.slf4j.Logger;
@@ -35,6 +36,11 @@ public abstract class AbstractPhaseScope<Solution_> {
     protected long childThreadsScoreCalculationCount = 0L;
 
     protected int bestSolutionStepIndex;
+
+    /**
+     * The phase termination configuration
+     */
+    private PhaseTermination<Solution_> termination;
 
     /**
      * As defined by #AbstractPhaseScope(SolverScope, int, boolean)
@@ -186,6 +192,14 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     public <Score_ extends Score<Score_>> InnerScoreDirector<Solution_, Score_> getScoreDirector() {
         return solverScope.getScoreDirector();
+    }
+
+    public void setTermination(PhaseTermination<Solution_> termination) {
+        this.termination = termination;
+    }
+
+    public PhaseTermination<Solution_> getTermination() {
+        return termination;
     }
 
     public Solution_ getWorkingSolution() {
