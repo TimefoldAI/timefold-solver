@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.statistic;
+package ai.timefold.solver.core.impl.solver.monitoring.statistic;
 
 import java.util.HashMap;
 import java.util.Map;
