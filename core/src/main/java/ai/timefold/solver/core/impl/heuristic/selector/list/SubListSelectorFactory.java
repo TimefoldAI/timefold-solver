@@ -115,6 +115,12 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
         ValueSelectorConfig valueSelectorConfig =
                 Objects.requireNonNullElseGet(config.getValueSelectorConfig(), ValueSelectorConfig::new);
+        // Mixed models require that the variable name be set
+        if (configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()
+                && valueSelectorConfig.getVariableName() == null) {
+            var variableName = entityDescriptor.getGenuineListVariableDescriptor().getVariableName();
+            valueSelectorConfig.setVariableName(variableName);
+        }
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory
                 .<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder);
