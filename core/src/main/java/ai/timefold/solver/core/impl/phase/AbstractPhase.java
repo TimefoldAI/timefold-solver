@@ -203,7 +203,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             Tags tags = solverScope.getMonitoringTags();
             ScoreDefinition<?> scoreDefinition = solverScope.getScoreDefinition();
             Map<Tags, ScoreLevels> tagToScoreLevels = solverScope.getStepScoreMap();
-            SolverMetricUtil.registerScoreMetrics(SolverMetric.STEP_SCORE, tags, scoreDefinition, tagToScoreLevels,
+            SolverMetricUtil.registerScore(SolverMetric.STEP_SCORE, tags, scoreDefinition, tagToScoreLevels,
                     stepScope.getScore());
         }
     }

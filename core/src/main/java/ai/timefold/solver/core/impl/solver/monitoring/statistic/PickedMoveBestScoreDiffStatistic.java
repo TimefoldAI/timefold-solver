@@ -83,7 +83,7 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
                 oldBestScore = newBestScore;
                 Tags tags = stepScope.getPhaseScope().getSolverScope().getMonitoringTags()
                         .and("move.type", moveType);
-                SolverMetricUtil.registerScoreMetrics(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF, tags, scoreDefinition,
+                SolverMetricUtil.registerScore(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF, tags, scoreDefinition,
                         tagsToMoveScoreMap, InnerScore.fullyAssigned(bestScoreDiff));
             }
         }

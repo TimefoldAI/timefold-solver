@@ -35,7 +35,7 @@ public class PickedMoveTypeBestScoreDiffSubSingleStatistic<Solution_>
                 registry.extractScoreFromMeters(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF,
                         runTag.and(Tag.of("move.type", moveType)),
                         score -> pointList.add(new PickedMoveTypeBestScoreDiffStatisticPoint(
-                                timeMillisSpent, moveType, score)));
+                                timeMillisSpent, moveType, score.raw())));
             }
         });
     }

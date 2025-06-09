@@ -42,7 +42,7 @@ public class BestScoreStatistic<Solution_> implements SolverStatistic<Solution_>
         SolverEventListener<Solution_> listener =
                 event -> {
                     var castEvent = (DefaultBestSolutionChangedEvent<Solution_>) event;
-                    SolverMetricUtil.registerScoreMetrics(SolverMetric.BEST_SCORE, tags, scoreDefinition, tagsToBestScoreMap,
+                    SolverMetricUtil.registerScore(SolverMetric.BEST_SCORE, tags, scoreDefinition, tagsToBestScoreMap,
                             InnerScore.withUnassignedCount(event.getNewBestScore(), castEvent.getUnassignedCount()));
                 };
         solverToEventListenerMap.put(defaultSolver, listener);

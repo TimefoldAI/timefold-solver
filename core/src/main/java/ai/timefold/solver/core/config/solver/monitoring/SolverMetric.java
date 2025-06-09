@@ -54,9 +54,6 @@ public enum SolverMetric {
     PICKED_MOVE_TYPE_STEP_SCORE_DIFF("timefold.solver.move.type.step.score.diff", new PickedMoveStepScoreDiffStatistic<>(),
             false);
 
-    // Necessary for benchmarker, but otherwise undocumented and not considered public.
-    public static final String UNASSIGNED_COUNT = "unassigned.count";
-
     private final String meterId;
     @SuppressWarnings("rawtypes")
     private final SolverStatistic registerFunction;
