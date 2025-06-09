@@ -40,7 +40,7 @@ public enum SolutionUpdatePolicy {
     /**
      * Runs variable listeners on all planning entities and problem facts,
      * updates shadow variables.
-     * Assumes an uninitialized solution;
+     * Assumes all shadow variables are unset;
      * for solutions where some shadow variables are already filled in,
      * use {@link #RESET_SHADOW_VARIABLES_ONLY} instead.
      * <p>
