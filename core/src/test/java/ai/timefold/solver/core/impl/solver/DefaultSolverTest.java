@@ -1657,6 +1657,18 @@ class DefaultSolverTest extends AbstractMeterTest {
         return allMoveSelectionConfigList;
     }
 
+    @Test
+    void failMixedModel() {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                        TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES);
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
+                .hasMessageContaining(
+                        "Combining list variable and basic variables is currently not supported");
+    }
+
     @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void solveMixedModel() {
