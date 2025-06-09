@@ -15,6 +15,7 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+// TODO In Solver 2.0, maybe convert this to an interface.
 public class BestSolutionChangedEvent<Solution_> extends EventObject {
 
     private final Solver<Solution_> solver;
