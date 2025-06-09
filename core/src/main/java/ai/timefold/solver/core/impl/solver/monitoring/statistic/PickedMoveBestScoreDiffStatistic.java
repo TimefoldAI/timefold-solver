@@ -1,10 +1,8 @@
-package ai.timefold.solver.core.impl.statistic;
+package ai.timefold.solver.core.impl.solver.monitoring.statistic;
 
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -15,7 +13,10 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
+import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -47,7 +48,7 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
 
         private Score_ oldBestScore = null; // Guaranteed local search; no need for InnerScore.
         private final ScoreDefinition<Score_> scoreDefinition;
-        private final Map<Tags, List<AtomicReference<Number>>> tagsToMoveScoreMap = new ConcurrentHashMap<>();
+        private final Map<Tags, ScoreLevels> tagsToMoveScoreMap = new ConcurrentHashMap<>();
 
         public PickedMoveBestScoreDiffStatisticListener(ScoreDefinition<Score_> scoreDefinition) {
             this.scoreDefinition = scoreDefinition;
@@ -80,12 +81,10 @@ public class PickedMoveBestScoreDiffStatistic<Solution_, Score_ extends Score<Sc
                 var newBestScore = stepScope.<Score_> getScore().raw();
                 var bestScoreDiff = newBestScore.subtract(oldBestScore);
                 oldBestScore = newBestScore;
-                SolverMetric.registerScoreMetrics(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF,
-                        stepScope.getPhaseScope().getSolverScope().getMonitoringTags()
-                                .and("move.type", moveType),
-                        scoreDefinition,
-                        tagsToMoveScoreMap,
-                        bestScoreDiff);
+                var tags = stepScope.getPhaseScope().getSolverScope().getMonitoringTags()
+                        .and("move.type", moveType);
+                SolverMetricUtil.registerScore(SolverMetric.PICKED_MOVE_TYPE_BEST_SCORE_DIFF, tags, scoreDefinition,
+                        tagsToMoveScoreMap, InnerScore.fullyAssigned(bestScoreDiff));
             }
         }
     }

@@ -5,7 +5,6 @@ import static ai.timefold.solver.core.impl.util.MathUtils.getSpeed;
 import java.time.Clock;
 import java.util.Collections;
 import java.util.EnumSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Random;
@@ -27,6 +26,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
+import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -69,7 +69,7 @@ public class SolverScope<Solution_> {
     /**
      * Used for tracking step score
      */
-    private final Map<Tags, List<AtomicReference<Number>>> stepScoreMap = new ConcurrentHashMap<>();
+    private final Map<Tags, ScoreLevels> stepScoreMap = new ConcurrentHashMap<>();
 
     /**
      * Used for tracking move count per move type
@@ -122,7 +122,7 @@ public class SolverScope<Solution_> {
         this.monitoringTags = monitoringTags;
     }
 
-    public Map<Tags, List<AtomicReference<Number>>> getStepScoreMap() {
+    public Map<Tags, ScoreLevels> getStepScoreMap() {
         return stepScoreMap;
     }
 
@@ -290,7 +290,7 @@ public class SolverScope<Solution_> {
     }
 
     public boolean isBestSolutionInitialized() {
-        return getBestScore().fullyAssigned();
+        return getBestScore().isFullyAssigned();
     }
 
     public long calculateTimeMillisSpentUpToNow() {

@@ -1,10 +1,8 @@
-package ai.timefold.solver.core.impl.statistic;
+package ai.timefold.solver.core.impl.solver.monitoring.statistic;
 
-import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -15,7 +13,10 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.DefaultSolver;
+import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -48,7 +49,7 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
 
         private Score_ oldStepScore = null; // Guaranteed local search; no need for InnerScore.
         private final ScoreDefinition<Score_> scoreDefinition;
-        private final Map<Tags, List<AtomicReference<Number>>> tagsToMoveScoreMap = new ConcurrentHashMap<>();
+        private final Map<Tags, ScoreLevels> tagsToMoveScoreMap = new ConcurrentHashMap<>();
 
         public PickedMoveStepScoreDiffStatisticListener(ScoreDefinition<Score_> scoreDefinition) {
             this.scoreDefinition = scoreDefinition;
@@ -82,12 +83,10 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
             var stepScoreDiff = newStepScore.subtract(oldStepScore);
             oldStepScore = newStepScore;
 
-            SolverMetric.registerScoreMetrics(SolverMetric.PICKED_MOVE_TYPE_STEP_SCORE_DIFF,
-                    stepScope.getPhaseScope().getSolverScope().getMonitoringTags()
-                            .and("move.type", moveType),
-                    scoreDefinition,
-                    tagsToMoveScoreMap,
-                    stepScoreDiff);
+            var tags = stepScope.getPhaseScope().getSolverScope().getMonitoringTags()
+                    .and("move.type", moveType);
+            SolverMetricUtil.registerScore(SolverMetric.PICKED_MOVE_TYPE_STEP_SCORE_DIFF, tags, scoreDefinition,
+                    tagsToMoveScoreMap, InnerScore.fullyAssigned(stepScoreDiff));
         }
     }
 }

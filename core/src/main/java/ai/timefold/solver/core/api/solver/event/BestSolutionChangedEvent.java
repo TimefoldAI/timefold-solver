@@ -15,6 +15,7 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+// TODO In Solver 2.0, maybe convert this to an interface.
 public class BestSolutionChangedEvent<Solution_> extends EventObject {
 
     private final Solver<Solution_> solver;
@@ -25,7 +26,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
 
     /**
      * @param timeMillisSpent {@code >= 0L}
-     * @deprecated Use {@link #BestSolutionChangedEvent(Solver, long, Object, Score, boolean)} instead.
+     * @deprecated Users should not manually construct instances of this event.
      */
     @Deprecated(forRemoval = true, since = "1.22.0")
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
@@ -35,7 +36,9 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
 
     /**
      * @param timeMillisSpent {@code >= 0L}
+     * @deprecated Users should not manually construct instances of this event.
      */
+    @Deprecated(forRemoval = true, since = "1.23.0")
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore,
             boolean isNewBestSolutionInitialized) {

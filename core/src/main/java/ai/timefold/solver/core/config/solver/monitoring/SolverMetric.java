@@ -1,35 +1,26 @@
 package ai.timefold.solver.core.config.solver.monitoring;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.ToDoubleFunction;
 
 import jakarta.xml.bind.annotation.XmlEnum;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.BestScoreStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.BestSolutionMutationCountStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.MemoryUseStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.MoveCountPerTypeStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.PickedMoveBestScoreDiffStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.PickedMoveStepScoreDiffStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.SolverScopeStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.SolverStatistic;
+import ai.timefold.solver.core.impl.solver.monitoring.statistic.StatelessSolverStatistic;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-import ai.timefold.solver.core.impl.statistic.BestScoreStatistic;
-import ai.timefold.solver.core.impl.statistic.BestSolutionMutationCountStatistic;
-import ai.timefold.solver.core.impl.statistic.MemoryUseStatistic;
-import ai.timefold.solver.core.impl.statistic.MoveCountPerTypeStatistic;
-import ai.timefold.solver.core.impl.statistic.PickedMoveBestScoreDiffStatistic;
-import ai.timefold.solver.core.impl.statistic.PickedMoveStepScoreDiffStatistic;
-import ai.timefold.solver.core.impl.statistic.SolverScopeStatistic;
-import ai.timefold.solver.core.impl.statistic.SolverStatistic;
-import ai.timefold.solver.core.impl.statistic.StatelessSolverStatistic;
 
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.NullMarked;
-
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
 
 @XmlEnum
 public enum SolverMetric {
+
     SOLVE_DURATION("timefold.solver.solve.duration", false),
     ERROR_COUNT("timefold.solver.errors", false),
     SCORE_CALCULATION_COUNT("timefold.solver.score.calculation.count",
@@ -97,30 +88,6 @@ public enum SolverMetric {
         return meterId;
     }
 
-    @NullMarked
-    public static void registerScoreMetrics(SolverMetric metric, Tags tags, ScoreDefinition<?> scoreDefinition,
-            Map<Tags, List<AtomicReference<Number>>> tagToScoreLevels, Score<?> innerScore) {
-        Number[] levelValues = innerScore.toLevelNumbers();
-        if (tagToScoreLevels.containsKey(tags)) {
-            List<AtomicReference<Number>> scoreLevels = tagToScoreLevels.get(tags);
-            for (int i = 0; i < levelValues.length; i++) {
-                scoreLevels.get(i).set(levelValues[i]);
-            }
-        } else {
-            String[] levelLabels = scoreDefinition.getLevelLabels();
-            for (int i = 0; i < levelLabels.length; i++) {
-                levelLabels[i] = levelLabels[i].replace(' ', '.');
-            }
-            List<AtomicReference<Number>> scoreLevels = new ArrayList<>(levelValues.length);
-            for (int i = 0; i < levelValues.length; i++) {
-                scoreLevels.add(Metrics.gauge(metric.getMeterId() + "." + levelLabels[i],
-                        tags, new AtomicReference<>(levelValues[i]),
-                        ar -> ar.get().doubleValue()));
-            }
-            tagToScoreLevels.put(tags, scoreLevels);
-        }
-    }
-
     public boolean isMetricBestSolutionBased() {
         return isBestSolutionBased;
     }
@@ -130,7 +97,6 @@ public enum SolverMetric {
     }
 
     @SuppressWarnings("unchecked")
-    // TODO: clarify @NonNull ok here
     public void register(@NonNull Solver<?> solver) {
         registerFunction.register(solver);
     }
@@ -139,4 +105,5 @@ public enum SolverMetric {
     public void unregister(@NonNull Solver<?> solver) {
         registerFunction.unregister(solver);
     }
+
 }

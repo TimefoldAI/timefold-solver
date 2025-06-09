@@ -12,13 +12,14 @@ import java.util.function.Function;
 import java.util.function.ObjLongConsumer;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import io.micrometer.core.instrument.Meter;
@@ -88,21 +89,18 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                 .collect(Collectors.toSet());
     }
 
-    public void extractScoreFromMeters(SolverMetric metric, Tags runId, Consumer<Score<?>> scoreConsumer) {
-        var labelNames = scoreDefinition.getLevelLabels();
-        for (var i = 0; i < labelNames.length; i++) {
-            labelNames[i] = labelNames[i].replace(' ', '.');
-        }
-        var levelNumbers = new Number[labelNames.length];
-        for (var i = 0; i < labelNames.length; i++) {
-            var scoreLevelGauge = this.find(metric.getMeterId() + "." + labelNames[i]).tags(runId).gauge();
+    public void extractScoreFromMeters(SolverMetric metric, Tags runId, Consumer<InnerScore<?>> scoreConsumer) {
+        var score = SolverMetricUtil.extractScore(metric, scoreDefinition, id -> {
+            var scoreLevelGauge = this.find(id).tags(runId).gauge();
             if (scoreLevelGauge != null && Double.isFinite(scoreLevelGauge.value())) {
-                levelNumbers[i] = scoreLevelNumberConverter.apply(scoreLevelGauge.value());
+                return scoreLevelNumberConverter.apply(scoreLevelGauge.value());
             } else {
-                return;
+                return null;
             }
+        });
+        if (score != null) {
+            scoreConsumer.accept(score);
         }
-        scoreConsumer.accept(scoreDefinition.fromLevelNumbers(levelNumbers));
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -119,21 +117,15 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                     // Get the score from the corresponding constraint package and constraint name meters
                     extractScoreFromMeters(metric, constraintMatchTotalRunId,
                             // Get the count gauge (add constraint package and constraint name to the run tags)
-                            score -> getGaugeValue(metric.getMeterId() + ".count", constraintMatchTotalRunId,
-                                    count -> constraintMatchTotalConsumer
-                                            .accept(new ConstraintSummary(constraintRef, score, count.intValue()))));
+                            score -> {
+                                var count = SolverMetricUtil.getGaugeValue(this, SolverMetricUtil.getGaugeName(metric, "count"),
+                                        constraintMatchTotalRunId);
+                                if (count != null) {
+                                    constraintMatchTotalConsumer
+                                            .accept(new ConstraintSummary(constraintRef, score.raw(), count.intValue()));
+                                }
+                            });
                 });
-    }
-
-    public void getGaugeValue(SolverMetric metric, Tags runId, Consumer<Number> gaugeConsumer) {
-        getGaugeValue(metric.getMeterId(), runId, gaugeConsumer);
-    }
-
-    public void getGaugeValue(String meterId, Tags runId, Consumer<Number> gaugeConsumer) {
-        var gauge = this.find(meterId).tags(runId).gauge();
-        if (gauge != null && Double.isFinite(gauge.value())) {
-            gaugeConsumer.accept(gauge.value());
-        }
     }
 
     public void extractMoveCountPerType(SolverScope<Solution_> solverScope, ObjLongConsumer<String> gaugeConsumer) {

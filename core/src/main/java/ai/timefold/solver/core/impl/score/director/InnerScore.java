@@ -7,6 +7,8 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Carries information on if the {@link PlanningSolution} of this score was fully initialized when it was calculated.
  * This only works for solutions where:
@@ -19,6 +21,7 @@ import ai.timefold.solver.core.api.score.Score;
  *
  * For solutions which do allow unassigning values, {@link #unassignedCount} is always zero.
  */
+@NullMarked
 public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassignedCount)
         implements
             Comparable<InnerScore<Score_>> {
@@ -39,7 +42,7 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
         }
     }
 
-    public boolean fullyAssigned() {
+    public boolean isFullyAssigned() {
         return unassignedCount == 0;
     }
 
@@ -55,6 +58,6 @@ public record InnerScore<Score_ extends Score<Score_>>(Score_ raw, int unassigne
 
     @Override
     public String toString() {
-        return fullyAssigned() ? raw.toString() : "-%dinit/%s".formatted(unassignedCount, raw);
+        return isFullyAssigned() ? raw.toString() : "-%dinit/%s".formatted(unassignedCount, raw);
     }
 }

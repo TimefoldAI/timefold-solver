@@ -1,12 +1,11 @@
 package ai.timefold.solver.core.impl.localsearch;
 
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
@@ -16,6 +15,9 @@ import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -35,8 +37,8 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
     protected final AtomicLong selectedMoveCountPerStep = new AtomicLong(0);
     protected final Map<Tags, AtomicLong> constraintMatchTotalTagsToStepCount = new ConcurrentHashMap<>();
     protected final Map<Tags, AtomicLong> constraintMatchTotalTagsToBestCount = new ConcurrentHashMap<>();
-    protected final Map<Tags, List<AtomicReference<Number>>> constraintMatchTotalStepScoreMap = new ConcurrentHashMap<>();
-    protected final Map<Tags, List<AtomicReference<Number>>> constraintMatchTotalBestScoreMap = new ConcurrentHashMap<>();
+    protected final Map<Tags, ScoreLevels> constraintMatchTotalStepScoreMap = new ConcurrentHashMap<>();
+    protected final Map<Tags, ScoreLevels> constraintMatchTotalBestScoreMap = new ConcurrentHashMap<>();
 
     private DefaultLocalSearchPhase(Builder<Solution_> builder) {
         super(builder);
@@ -181,9 +183,10 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         }
     }
 
-    private void collectConstraintMatchTotalMetrics(SolverMetric metric, Tags tags, Map<Tags, AtomicLong> countMap,
-            Map<Tags, List<AtomicReference<Number>>> scoreMap, ConstraintMatchTotal<?> constraintMatchTotal,
-            ScoreDefinition<?> scoreDefinition, SolverScope<Solution_> solverScope) {
+    private <Score_ extends Score<Score_>> void collectConstraintMatchTotalMetrics(SolverMetric metric, Tags tags,
+            Map<Tags, AtomicLong> countMap, Map<Tags, ScoreLevels> scoreMap,
+            ConstraintMatchTotal<Score_> constraintMatchTotal, ScoreDefinition<Score_> scoreDefinition,
+            SolverScope<Solution_> solverScope) {
         if (solverScope.isMetricEnabled(metric)) {
             if (countMap.containsKey(tags)) {
                 countMap.get(tags).set(constraintMatchTotal.getConstraintMatchCount());
@@ -193,7 +196,8 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
                 Metrics.gauge(metric.getMeterId() + ".count",
                         tags, count);
             }
-            SolverMetric.registerScoreMetrics(metric, tags, scoreDefinition, scoreMap, constraintMatchTotal.getScore());
+            SolverMetricUtil.registerScore(metric, tags, scoreDefinition, scoreMap,
+                    InnerScore.fullyAssigned(constraintMatchTotal.getScore()));
         }
     }
 

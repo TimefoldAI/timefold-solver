@@ -9,6 +9,7 @@ import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -30,9 +31,12 @@ public class BestSolutionMutationSubSingleStatistic<Solution_>
     @Override
     public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.BEST_SOLUTION_MUTATION,
-                timestamp -> registry.getGaugeValue(SolverMetric.BEST_SOLUTION_MUTATION, runTag,
-                        mutationCount -> pointList
-                                .add(new BestSolutionMutationStatisticPoint(timestamp, mutationCount.intValue()))));
+                timestamp -> {
+                    var mutationCount = SolverMetricUtil.getGaugeValue(registry, SolverMetric.BEST_SOLUTION_MUTATION, runTag);
+                    if (mutationCount != null) {
+                        pointList.add(new BestSolutionMutationStatisticPoint(timestamp, mutationCount.intValue()));
+                    }
+                });
     }
 
     // ************************************************************************

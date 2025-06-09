@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.solver.event;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -27,8 +26,7 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
             // We need to clone the new best solution, or we may share the same instance with user consumers.
             // Reusing the instance can lead to inconsistent states if intermediary consumers change the solution.
             var newBestSolutionCloned = solverScope.getScoreDirector().cloneSolution(newBestSolution);
-            var event = new BestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolutionCloned, bestScore.raw(),
-                    bestScore.fullyAssigned());
+            var event = new DefaultBestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolutionCloned, bestScore);
             do {
                 it.next().bestSolutionChanged(event);
             } while (it.hasNext());

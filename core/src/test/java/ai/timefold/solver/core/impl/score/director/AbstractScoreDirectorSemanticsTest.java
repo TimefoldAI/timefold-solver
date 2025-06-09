@@ -145,7 +145,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.setWorkingSolution(solution);
             var score1 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
-                softly.assertThat(score1.fullyAssigned()).isTrue();
+                softly.assertThat(score1.isFullyAssigned()).isTrue();
                 softly.assertThat(score1.raw().score()).isEqualTo(1);
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
                         .containsOnlyKeys("ai.timefold.solver.core.testdomain.constraintconfiguration/First weight");
@@ -158,7 +158,7 @@ public abstract class AbstractScoreDirectorSemanticsTest {
             scoreDirector.afterVariableChanged(entity, "value");
             var score2 = scoreDirector.calculateScore();
             assertSoftly(softly -> {
-                softly.assertThat(score2.fullyAssigned()).isFalse();
+                softly.assertThat(score2.isFullyAssigned()).isFalse();
                 softly.assertThat(score2.raw().score()).isZero();
                 softly.assertThat(scoreDirector.getConstraintMatchTotalMap())
                         .containsOnlyKeys("ai.timefold.solver.core.testdomain.constraintconfiguration/First weight");

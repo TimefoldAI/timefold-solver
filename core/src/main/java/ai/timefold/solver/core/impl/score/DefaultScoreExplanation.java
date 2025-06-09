@@ -49,7 +49,7 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
         scoreExplanation.append("""
                 Explanation of score (%s)%s:
                     Constraint matches:
-                """.formatted(workingScore, workingScore.fullyAssigned() ? "" : " for an uninitialized solution"));
+                """.formatted(workingScore, workingScore.isFullyAssigned() ? "" : " for an uninitialized solution"));
 
         Comparator<ConstraintMatchTotal<Score_>> constraintMatchTotalComparator = comparing(ConstraintMatchTotal::getScore);
         Comparator<ConstraintMatch<Score_>> constraintMatchComparator = comparing(ConstraintMatch::getScore);
@@ -163,7 +163,7 @@ public final class DefaultScoreExplanation<Solution_, Score_ extends Score<Score
 
     @Override
     public boolean isInitialized() {
-        return innerScore.fullyAssigned();
+        return innerScore.isFullyAssigned();
     }
 
     @Override

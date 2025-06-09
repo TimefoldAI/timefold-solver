@@ -54,7 +54,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         solverScope.setBestSolutionTimeMillis(solverScope.getClock().millis());
         // The original bestSolution might be the final bestSolution and should have an accurate Score
         solverScope.getSolutionDescriptor().setScore(solverScope.getBestSolution(), score);
-        if (innerScore.fullyAssigned()) {
+        if (innerScore.isFullyAssigned()) {
             solverScope.setStartingInitializedScore(innerScore.raw());
         } else {
             solverScope.setStartingInitializedScore(null);
@@ -145,7 +145,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
 
     private void updateBestSolutionWithoutFiring(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
             Solution_ bestSolution) {
-        if (bestScore.fullyAssigned() && !solverScope.isBestSolutionInitialized()) {
+        if (bestScore.isFullyAssigned() && !solverScope.isBestSolutionInitialized()) {
             solverScope.setStartingInitializedScore(bestScore.raw());
         }
 

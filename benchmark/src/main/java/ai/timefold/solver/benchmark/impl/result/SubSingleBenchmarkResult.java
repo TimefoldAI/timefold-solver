@@ -304,6 +304,7 @@ public class SubSingleBenchmarkResult implements BenchmarkResult {
         // Skip oldResult.usedMemoryAfterInputSolution
         newResult.succeeded = oldResult.succeeded;
         newResult.score = oldResult.score;
+        newResult.initialized = oldResult.initialized;
         newResult.timeMillisSpent = oldResult.timeMillisSpent;
         newResult.scoreCalculationCount = oldResult.scoreCalculationCount;
         newResult.moveEvaluationCount = oldResult.moveEvaluationCount;

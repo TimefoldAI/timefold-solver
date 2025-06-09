@@ -35,7 +35,7 @@ public class PickedMoveTypeStepScoreDiffSubSingleStatistic<Solution_>
                 registry.extractScoreFromMeters(SolverMetric.PICKED_MOVE_TYPE_STEP_SCORE_DIFF,
                         runTag.and(Tag.of("move.type", moveType)),
                         score -> pointList.add(new PickedMoveTypeStepScoreDiffStatisticPoint(
-                                timeMillisSpent, moveType, score)));
+                                timeMillisSpent, moveType, score.raw())));
             }
         });
     }
