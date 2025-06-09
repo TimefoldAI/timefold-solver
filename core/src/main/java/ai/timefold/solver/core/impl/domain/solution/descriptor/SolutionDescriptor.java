@@ -166,7 +166,7 @@ public class SolutionDescriptor<Solution_> {
             solutionDescriptor.constraintWeightSupplier.initialize(solutionDescriptor,
                     descriptorPolicy.getMemberAccessorFactory(), descriptorPolicy.getDomainAccessType());
         }
-        // Temporarily disabling the mixed-model feature
+        // Temporally disabling the mixed model
         if (solutionDescriptor.hasBothBasicAndListVariables()) {
             throw new IllegalStateException(
                     "The mixed model is currently unavailable for general use. Please modify the model to utilize either a list variable or only basic variables.");
