@@ -75,7 +75,7 @@ public class TestdataBendableLongScoreSolution extends TestdataObject {
     }
 
     @PlanningScore(bendableHardLevelsSize = 1, bendableSoftLevelsSize = 2)
-    BendableLongScore getScore() {
+    public BendableLongScore getScore() {
         return score;
     }
 

@@ -4,7 +4,9 @@ import java.lang.annotation.Annotation;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.function.IntPredicate;
 
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 
@@ -49,8 +51,16 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
             setterMethod = null;
             setterMethodHandle = null;
         } else {
-            setterMethod = ReflectionHelper.getSetterMethod(declaringClass, getterMethod.getReturnType(), propertyName);
+            setterMethod = ReflectionHelper.getDeclaredSetterMethod(declaringClass, getterMethod.getReturnType(), propertyName);
             if (setterMethod != null) {
+                var getterAccess = AccessModifier.forMethod(getterMethod);
+                var setterAccess = AccessModifier.forMethod(setterMethod);
+                if (getterAccess != setterAccess) {
+                    throw new IllegalArgumentException(
+                            "The getter method (%s) has access modifier (%s) which does not match the setter method's (%s) access modifier (%s) on class (%s)."
+                                    .formatted(getterMethod.getName(), getterAccess, setterMethod.getName(), setterAccess,
+                                            getterMethod.getDeclaringClass().getSimpleName()));
+                }
                 try {
                     setterMethod.setAccessible(true); // Performance hack by avoiding security checks
                     this.setterMethodHandle = lookup.unreflect(setterMethod)
@@ -67,6 +77,41 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
                 setterMethodHandle = null;
             }
         }
+    }
+
+    private enum AccessModifier {
+        PUBLIC("public", Modifier::isPublic),
+        PROTECTED("protected", Modifier::isProtected),
+        PACKAGE_PRIVATE("package-private", modifier -> false),
+        PRIVATE("private", Modifier::isPrivate);
+
+        final String name;
+        final IntPredicate predicate;
+
+        AccessModifier(String name, IntPredicate predicate) {
+            this.name = name;
+            this.predicate = predicate;
+        }
+
+        public static AccessModifier forMethod(Method method) {
+            var modifiers = method.getModifiers();
+            for (var accessModifier : AccessModifier.values()) {
+                if (accessModifier.predicate.test(modifiers)) {
+                    return accessModifier;
+                }
+            }
+            return PACKAGE_PRIVATE;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    private int getAccessLevel(Method method) {
+        int mask = Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE;
+        return method.getModifiers() & mask;
     }
 
     @Override
