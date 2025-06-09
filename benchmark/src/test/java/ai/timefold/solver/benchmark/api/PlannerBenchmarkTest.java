@@ -61,8 +61,8 @@ class PlannerBenchmarkTest {
                 softly.assertThat(lineList)
                         .first()
                         .isEqualTo("""
-                            "timeMillisSpent","score","initialized"
-                            """.trim());
+                                "timeMillisSpent","score","initialized"
+                                """.trim());
                 // Checks that best score was recorded at least once.
                 // Requires LS to have started, as CH does not store best score.
                 // We only check score+initialized, as "timeMillisSpent" can be anything.
@@ -70,8 +70,8 @@ class PlannerBenchmarkTest {
                         .last()
                         .asString()
                         .endsWith("""
-                            "0","true"
-                            """.trim());
+                                "0","true"
+                                """.trim());
             });
         } catch (IOException e) {
             fail(e);

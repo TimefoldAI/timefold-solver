@@ -18,47 +18,56 @@ import io.micrometer.core.instrument.Tags;
 public final class SolverMetricUtil {
 
     // Necessary for benchmarker, but otherwise undocumented and not considered public.
-    private static final String UNASSIGNED_COUNT = "unassigned.count";
+    private static final String UNASSIGNED_COUNT_LABEL = "unassigned.count";
 
     public static <Score_ extends Score<Score_>> void registerScore(SolverMetric metric, Tags tags,
             ScoreDefinition<Score_> scoreDefinition, Map<Tags, ScoreLevels> tagToScoreLevels, InnerScore<Score_> innerScore) {
         var levelValues = innerScore.raw().toLevelNumbers();
         if (tagToScoreLevels.containsKey(tags)) {
+            // Set new score levels for the previously registered gauges to read.
             var scoreLevels = tagToScoreLevels.get(tags);
             scoreLevels.setUnnassignedCount(innerScore.unassignedCount());
             for (var i = 0; i < levelValues.length; i++) {
                 scoreLevels.setLevelValue(i, levelValues[i]);
             }
         } else {
-            var levelLabels = scoreDefinition.getLevelLabels();
-            for (var i = 0; i < levelLabels.length; i++) {
-                levelLabels[i] = levelLabels[i].replace(' ', '.');
-            }
+            var levelLabels = getLevelLabels(scoreDefinition);
             var scoreLevels = new Number[levelLabels.length];
             System.arraycopy(levelValues, 0, scoreLevels, 0, levelValues.length);
             var result = new ScoreLevels(innerScore.unassignedCount(), scoreLevels);
             tagToScoreLevels.put(tags, result);
-            Metrics.gauge(metric.getMeterId() + "." + UNASSIGNED_COUNT, tags, result.unnassignedCount,
+
+            // Register the gauges to read the score levels.
+            Metrics.gauge(getGaugeName(metric, UNASSIGNED_COUNT_LABEL), tags, result.unnassignedCount,
                     AtomicInteger::doubleValue);
             for (var i = 0; i < levelValues.length; i++) {
-                Metrics.gauge(metric.getMeterId() + "." + levelLabels[i], tags, result.levelValues[i],
+                Metrics.gauge(getGaugeName(metric, levelLabels[i]), tags, result.levelValues[i],
                         ref -> ref.get().doubleValue());
             }
         }
     }
 
-    public static <Score_ extends Score<Score_>> InnerScore<Score_> extractScore(SolverMetric metric,
-            ScoreDefinition<Score_> scoreDefinition, Function<String, Number> scoreLevelFunction) {
+    private static String[] getLevelLabels(ScoreDefinition<?> scoreDefinition) {
         var labelNames = scoreDefinition.getLevelLabels();
         for (var i = 0; i < labelNames.length; i++) {
             labelNames[i] = labelNames[i].replace(' ', '.');
         }
-        var levelNumbers = new Number[labelNames.length];
-        for (var i = 0; i < labelNames.length; i++) {
-            levelNumbers[i] = scoreLevelFunction.apply(metric.getMeterId() + "." + labelNames[i]);
+        return labelNames;
+    }
+
+    private static String getGaugeName(SolverMetric metric, String label) {
+        return metric.getMeterId() + "." + label;
+    }
+
+    public static <Score_ extends Score<Score_>> InnerScore<Score_> extractScore(SolverMetric metric,
+            ScoreDefinition<Score_> scoreDefinition, Function<String, Number> scoreLevelFunction) {
+        var levelLabels = getLevelLabels(scoreDefinition);
+        var levelNumbers = new Number[levelLabels.length];
+        for (var i = 0; i < levelLabels.length; i++) {
+            levelNumbers[i] = scoreLevelFunction.apply(getGaugeName(metric, levelLabels[i]));
         }
         var score = scoreDefinition.fromLevelNumbers(levelNumbers);
-        var unassignedCount = scoreLevelFunction.apply(metric.getMeterId() + "." + UNASSIGNED_COUNT);
+        var unassignedCount = scoreLevelFunction.apply(getGaugeName(metric, UNASSIGNED_COUNT_LABEL));
         return InnerScore.withUnassignedCount(score, unassignedCount.intValue());
     }
 
