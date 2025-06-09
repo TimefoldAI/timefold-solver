@@ -168,8 +168,7 @@ public class SolutionDescriptor<Solution_> {
         }
         // Temporally disabling the mixed model
         if (solutionDescriptor.hasBothBasicAndListVariables()) {
-            throw new IllegalStateException(
-                    "The mixed model is currently unavailable for general use. Please modify the model to utilize either a list variable or only basic variables.");
+            throw new IllegalStateException("Combining list variable and basic variables is currently not supported.");
         }
         return solutionDescriptor;
     }
