@@ -16,6 +16,7 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -40,6 +41,7 @@ class SubListSwapMoveSelectorFactoryTest {
         assertThat(selector.isSelectReversingMoveToo()).isTrue();
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void buildMoveSelectorMultiEntity() {
         var config = new SubListSwapMoveSelectorConfig();

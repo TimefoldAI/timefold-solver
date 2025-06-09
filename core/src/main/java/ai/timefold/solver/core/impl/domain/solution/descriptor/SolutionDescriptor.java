@@ -166,6 +166,10 @@ public class SolutionDescriptor<Solution_> {
             solutionDescriptor.constraintWeightSupplier.initialize(solutionDescriptor,
                     descriptorPolicy.getMemberAccessorFactory(), descriptorPolicy.getDomainAccessType());
         }
+        // Temporally disabling the mixed model
+        if (solutionDescriptor.hasBothBasicAndListVariables()) {
+            throw new IllegalStateException("Combining list variable and basic variables is currently not supported.");
+        }
         return solutionDescriptor;
     }
 

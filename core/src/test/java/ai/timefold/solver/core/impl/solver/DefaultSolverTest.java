@@ -146,6 +146,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -1657,6 +1658,19 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
+    void failMixedModel() {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                        TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES);
+
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
+                .hasMessageContaining(
+                        "Combining list variable and basic variables is currently not supported");
+    }
+
+    @Disabled("The mixed model is currently unavailable for general use")
+    @Test
     void solveMixedModel() {
         // Same size for both list and basic variables
         executeSolveMixedModel(2, 2, 2);
@@ -1667,6 +1681,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         executeSolveMixedModel(3, 2, 2);
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void solveMultiEntityMixedModel() {
         // Same size for both list and basic variables
@@ -1749,6 +1764,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         }
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void solveMixedModelCustomMove() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
@@ -1773,6 +1789,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .isEmpty();
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void solveMixedModelCustomPhase() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
@@ -1805,6 +1822,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         return sortMannerList;
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @ParameterizedTest
     @MethodSource("getSortMannerList")
     void solveMixedModelWithSortManner(Pair<EntitySorterManner, ValueSorterManner> sorterManner) {
@@ -1838,6 +1856,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .isEmpty();
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void solvePinnedMixedModel() {
         // We don't enable the LS because we want to ensure the pinned entity remains uninitialized
@@ -1861,6 +1880,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().get(0).getValueList()).isEmpty();
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void solveUnassignedMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
@@ -1887,6 +1907,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .hasSize(2);
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void solvePinnedAndUnassignedMixedModel() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
@@ -1974,6 +1995,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         return allMoveSelectionConfigList;
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @ParameterizedTest
     @MethodSource("generateMovesForMixedModel")
     void solveMoveConfigMixedModel(MoveSelectorConfig moveSelectionConfig) {
@@ -2036,6 +2058,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         return allMoveSelectionConfigList;
     }
 
+    @Disabled("The mixed model is currently unavailable for general use")
     @ParameterizedTest
     @MethodSource("generateMovesForMultiEntityMixedModel")
     void solveMultiEntityMoveConfigMixedModel(MoveSelectorConfig moveSelectionConfig) {
