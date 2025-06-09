@@ -55,7 +55,7 @@ class PlannerBenchmarkTest {
 
         try (var lines = Files.lines(csv)) {
             var lineList = lines.toList();
-            assertThat(lineList).isNotEmpty();
+            assertThat(lineList).hasSizeGreaterThan(1);
             assertSoftly(softly -> {
                 // Proper header.
                 softly.assertThat(lineList)
@@ -70,7 +70,7 @@ class PlannerBenchmarkTest {
                         .last()
                         .asString()
                         .endsWith("""
-                                "0","true"
+                                "-3","true"
                                 """.trim());
             });
         } catch (IOException e) {

@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
@@ -55,19 +56,26 @@ public final class SolverMetricUtil {
         return labelNames;
     }
 
-    private static String getGaugeName(SolverMetric metric, String label) {
+    public static String getGaugeName(SolverMetric metric, String label) {
         return metric.getMeterId() + "." + label;
     }
 
-    public static <Score_ extends Score<Score_>> InnerScore<Score_> extractScore(SolverMetric metric,
-            ScoreDefinition<Score_> scoreDefinition, Function<String, Number> scoreLevelFunction) {
+    public static <Score_ extends Score<Score_>> @Nullable InnerScore<Score_> extractScore(SolverMetric metric,
+            ScoreDefinition<Score_> scoreDefinition, Function<String, @Nullable Number> scoreLevelFunction) {
         var levelLabels = getLevelLabels(scoreDefinition);
         var levelNumbers = new Number[levelLabels.length];
         for (var i = 0; i < levelLabels.length; i++) {
-            levelNumbers[i] = scoreLevelFunction.apply(getGaugeName(metric, levelLabels[i]));
+            var levelNumber = scoreLevelFunction.apply(getGaugeName(metric, levelLabels[i]));
+            if (levelNumber == null) {
+                return null;
+            }
+            levelNumbers[i] = levelNumber;
         }
         var score = scoreDefinition.fromLevelNumbers(levelNumbers);
         var unassignedCount = scoreLevelFunction.apply(getGaugeName(metric, UNASSIGNED_COUNT_LABEL));
+        if (unassignedCount == null) {
+            return null;
+        }
         return InnerScore.withUnassignedCount(score, unassignedCount.intValue());
     }
 

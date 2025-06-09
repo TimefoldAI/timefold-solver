@@ -91,15 +91,16 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
 
     public void extractScoreFromMeters(SolverMetric metric, Tags runId, Consumer<InnerScore<?>> scoreConsumer) {
         var score = SolverMetricUtil.extractScore(metric, scoreDefinition, id -> {
-            var gaugeId = metric.getMeterId() + "." + id;
-            var scoreLevelGauge = this.find(gaugeId).tags(runId).gauge();
+            var scoreLevelGauge = this.find(id).tags(runId).gauge();
             if (scoreLevelGauge != null && Double.isFinite(scoreLevelGauge.value())) {
                 return scoreLevelNumberConverter.apply(scoreLevelGauge.value());
             } else {
-                return scoreLevelNumberConverter.apply(0.0);
+                return null;
             }
         });
-        scoreConsumer.accept(score);
+        if (score != null) {
+            scoreConsumer.accept(score);
+        }
     }
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -116,7 +117,7 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                     // Get the score from the corresponding constraint package and constraint name meters
                     extractScoreFromMeters(metric, constraintMatchTotalRunId,
                             // Get the count gauge (add constraint package and constraint name to the run tags)
-                            score -> getGaugeValue(metric.getMeterId() + ".count", constraintMatchTotalRunId,
+                            score -> getGaugeValue(SolverMetricUtil.getGaugeName(metric, "count"), constraintMatchTotalRunId,
                                     count -> constraintMatchTotalConsumer
                                             .accept(new ConstraintSummary(constraintRef, score.raw(), count.intValue()))));
                 });
