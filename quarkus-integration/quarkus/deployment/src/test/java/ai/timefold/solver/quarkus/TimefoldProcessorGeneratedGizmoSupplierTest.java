@@ -99,6 +99,8 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
         @ShadowVariable(variableListenerClass = DummyVariableListener.class,
                 sourceEntityClass = TestdataEntity.class, sourceVariableName = "value")
         Integer getLength();
+
+        void setLength(Integer length);
     }
 
     @PlanningEntity
@@ -106,6 +108,8 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
         @ShadowVariable(variableListenerClass = DummyVariableListener.class,
                 sourceEntityClass = TestdataEntity.class, sourceVariableName = "value")
         abstract Integer getLength();
+
+        abstract void setLength(Integer length);
     }
 
     public static class DummySolutionPartitioner implements SolutionPartitioner<TestdataSolution> {

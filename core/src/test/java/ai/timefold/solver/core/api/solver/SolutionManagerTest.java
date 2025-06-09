@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.api.solver;
 
+import static ai.timefold.solver.core.api.solver.SolutionUpdatePolicy.RESET_SHADOW_VARIABLES_ONLY;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
@@ -118,6 +119,14 @@ public class SolutionManagerTest {
             softly.assertThat(solution.getScore()).isNotNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNotNull();
         });
+
+        var oldScore = solution.getScore();
+        solutionManager.update(solution, RESET_SHADOW_VARIABLES_ONLY);
+
+        assertSoftly(softly -> {
+            softly.assertThat(solution.getScore()).isSameAs(oldScore);
+            softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNotNull();
+        });
     }
 
     @ParameterizedTest
@@ -152,6 +161,22 @@ public class SolutionManagerTest {
 
         assertSoftly(softly -> {
             softly.assertThat(solution.getScore()).isNotNull();
+            softly.assertThat(a0.getNextEntity()).isEqualTo(a1);
+            softly.assertThat(a1.getAnchor()).isEqualTo(a0);
+            softly.assertThat(a1.getNextEntity()).isNull();
+            softly.assertThat(b0.getNextEntity()).isEqualTo(b1);
+            softly.assertThat(b1.getAnchor()).isEqualTo(b0);
+            softly.assertThat(b1.getNextEntity()).isEqualTo(b2);
+            softly.assertThat(b2.getAnchor()).isEqualTo(b0);
+            softly.assertThat(b2.getNextEntity()).isNull();
+            softly.assertThat(c0.getNextEntity()).isNull();
+        });
+
+        var oldScore = solution.getScore();
+        solutionManager.update(solution, RESET_SHADOW_VARIABLES_ONLY);
+
+        assertSoftly(softly -> {
+            softly.assertThat(solution.getScore()).isSameAs(oldScore);
             softly.assertThat(a0.getNextEntity()).isEqualTo(a1);
             softly.assertThat(a1.getAnchor()).isEqualTo(a0);
             softly.assertThat(a1.getNextEntity()).isNull();
@@ -204,6 +229,20 @@ public class SolutionManagerTest {
             assertShadowedListValue(softly, b2, b, 2, b1, null);
             assertShadowedListValue(softly, c0, c, 0, null, null);
         });
+
+        var oldScore = solution.getScore();
+        solutionManager.update(solution, RESET_SHADOW_VARIABLES_ONLY);
+
+        assertSoftly(softly -> {
+            softly.assertThat(solution.getScore()).isSameAs(oldScore);
+            assertShadowedListValue(softly, a0, a, 0, null, a1);
+            assertShadowedListValue(softly, a1, a, 1, a0, null);
+            assertShadowedListValue(softly, b0, b, 0, null, b1);
+            assertShadowedListValue(softly, b1, b, 1, b0, b2);
+            assertShadowedListValue(softly, b2, b, 2, b1, null);
+            assertShadowedListValue(softly, c0, c, 0, null, null);
+        });
+
     }
 
     private void assertShadowedListValueAllNull(SoftAssertions softly, TestdataListValueWithShadowHistory current) {

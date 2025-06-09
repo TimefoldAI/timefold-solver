@@ -425,7 +425,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         var snapshot =
                 ShadowVariablesAssert.takeSnapshot(scoreDirector.getSolutionDescriptor(), workingSolution);
 
-        forceTriggerAllVariableListeners(workingSolution);
+        forceTriggerAllVariableListeners(workingSolution, false);
         return snapshot.createShadowVariablesViolationMessage(SHADOW_VARIABLE_VIOLATION_DISPLAY_LIMIT);
     }
 
@@ -439,9 +439,11 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
      * triggering listeners at this point must not change any shadow variables either.
      *
      * @param workingSolution working solution
+     * @param resetShadowVariables true to set all shadow variable values to null
      */
-    public void forceTriggerAllVariableListeners(Solution_ workingSolution) {
-        scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution, this::simulateGenuineVariableChange);
+    public void forceTriggerAllVariableListeners(Solution_ workingSolution, boolean resetShadowVariables) {
+        scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution,
+                e -> simulateGenuineVariableChange(e, resetShadowVariables));
         triggerVariableListenersInNotificationQueues();
     }
 
@@ -454,12 +456,13 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         notificationQueuesAreEmpty = true;
     }
 
-    private void simulateGenuineVariableChange(Object entity) {
-        var entityDescriptor = scoreDirector.getSolutionDescriptor()
-                .findEntityDescriptorOrFail(entity.getClass());
-        if (!entityDescriptor.isGenuine()) {
+    private void simulateGenuineVariableChange(Object entity, boolean resetShadowVariables) {
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(entity.getClass());
+        if (!entityDescriptor.isGenuine() && !resetShadowVariables) {
             return;
         }
+
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             if (variableDescriptor.isListVariable()) {
                 var descriptor = (ListVariableDescriptor<Solution_>) variableDescriptor;
@@ -470,6 +473,55 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                 // Triggering before...() is enough, as that will add the after...() call to the queue automatically.
                 beforeVariableChanged(variableDescriptor, entity);
             }
+        }
+
+        if (!resetShadowVariables) {
+            return;
+        }
+
+        var shadowVariableDescriptors = entityDescriptor.getShadowVariableDescriptors();
+        if (shadowVariableDescriptors.isEmpty()) {
+            return;
+        }
+
+        for (var shadowVariableDescriptor : shadowVariableDescriptors) {
+            clearShadowVariable(shadowVariableDescriptor, entity);
+        }
+    }
+
+    private static void clearShadowVariable(ShadowVariableDescriptor<?> shadowVariableDescriptor, Object entity) {
+        var value = shadowVariableDescriptor.getValue(entity);
+        if (value == null) {
+            return;
+        }
+
+        if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor
+                && value instanceof Collection<?> collection) {
+            // Inverse collection must never be null, so just empty it.
+            collection.clear();
+            return;
+        }
+
+        var propertyType = shadowVariableDescriptor.getVariablePropertyType();
+        if (propertyType.isPrimitive()) {
+            if (propertyType == boolean.class) {
+                shadowVariableDescriptor.setValue(entity, false);
+            } else if (propertyType == byte.class) {
+                shadowVariableDescriptor.setValue(entity, (byte) 0);
+            } else if (propertyType == char.class) {
+                shadowVariableDescriptor.setValue(entity, '\u0000');
+            } else if (propertyType == short.class) {
+                shadowVariableDescriptor.setValue(entity, (short) 0);
+            } else if (propertyType == int.class) {
+                shadowVariableDescriptor.setValue(entity, 0);
+            } else if (propertyType == long.class) {
+                shadowVariableDescriptor.setValue(entity, 0L);
+            } else {
+                throw new IllegalStateException(
+                        "Impossible state: unknown primitive type %s".formatted(propertyType));
+            }
+        } else {
+            shadowVariableDescriptor.setValue(entity, null);
         }
     }
 

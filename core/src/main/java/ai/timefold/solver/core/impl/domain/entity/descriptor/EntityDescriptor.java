@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.entity.descriptor;
 
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertNotMixedInheritance;
@@ -46,7 +45,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -323,44 +321,27 @@ public class EntityDescriptor<Solution_> {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void processPlanningVariableAnnotation(MutableInt variableDescriptorCounter, DescriptorPolicy descriptorPolicy,
             Member member) {
-        var variableAnnotationClass = ConfigUtils.extractAnnotationClass(
-                member, VARIABLE_ANNOTATION_CLASSES);
+        var variableAnnotationClass = ConfigUtils.extractAnnotationClass(member, VARIABLE_ANNOTATION_CLASSES);
         if (variableAnnotationClass != null) {
-            MemberAccessorFactory.MemberAccessorType memberAccessorType;
-            if (variableAnnotationClass.equals(ShadowVariable.class)) {
-                // Need to check only the single annotation version,
-                // since supplier variable can only be used with a single
-                // annotation.
-                ShadowVariable annotation;
-                if (member instanceof Field field) {
-                    annotation = field.getAnnotation(ShadowVariable.class);
-                } else if (member instanceof Method method) {
-                    annotation = method.getAnnotation(ShadowVariable.class);
-                } else {
-                    throw new IllegalStateException(
-                            "Member must be a field or a method, but was (%s).".formatted(member.getClass().getSimpleName()));
-                }
-                if (annotation == null) {
-                    throw new IllegalStateException("Impossible state: cannot get %s annotation on a %s annotated member (%s)."
-                            .formatted(ShadowVariable.class.getSimpleName(), ShadowVariable.class.getSimpleName(), member));
-                }
-                if (!annotation.supplierName().isEmpty()) {
-                    memberAccessorType = FIELD_OR_GETTER_METHOD_WITH_SETTER;
-                } else {
-                    memberAccessorType = FIELD_OR_GETTER_METHOD;
-                }
-            } else if (variableAnnotationClass.equals(CustomShadowVariable.class)
-                    || variableAnnotationClass.equals(ShadowVariable.List.class)
-                    || variableAnnotationClass.equals(PiggybackShadowVariable.class)
-                    || variableAnnotationClass.equals(CascadingUpdateShadowVariable.class)) {
-                memberAccessorType = FIELD_OR_GETTER_METHOD;
+            Object annotation;
+            if (member instanceof Field field) {
+                annotation = field.getAnnotation(variableAnnotationClass);
+            } else if (member instanceof Method method) {
+                annotation = method.getAnnotation(variableAnnotationClass);
             } else {
-                memberAccessorType = FIELD_OR_GETTER_METHOD_WITH_SETTER;
+                throw new IllegalStateException("Member must be a field or a method, but was (%s)."
+                        .formatted(member.getClass().getSimpleName()));
             }
-            var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                    memberAccessorType, variableAnnotationClass, descriptorPolicy.getDomainAccessType());
+            if (annotation == null) {
+                throw new IllegalStateException("Impossible state: cannot get annotation on a %s-annotated member (%s)."
+                        .formatted(variableAnnotationClass, member));
+            }
+            var memberAccessor = descriptorPolicy.getMemberAccessorFactory()
+                    .buildAndCacheMemberAccessor(member, FIELD_OR_GETTER_METHOD_WITH_SETTER, variableAnnotationClass,
+                            descriptorPolicy.getDomainAccessType());
             registerVariableAccessor(variableDescriptorCounter.intValue(), variableAnnotationClass, memberAccessor);
             variableDescriptorCounter.increment();
         }
@@ -695,10 +676,6 @@ public class EntityDescriptor<Solution_> {
         return shadowVariableLoopedDescriptor;
     }
 
-    public boolean hasAnyGenuineVariables() {
-        return !effectiveGenuineVariableDescriptorMap.isEmpty();
-    }
-
     public boolean hasBothGenuineListAndBasicVariables() {
         if (!isGenuine()) {
             return false;
@@ -732,7 +709,7 @@ public class EntityDescriptor<Solution_> {
     }
 
     public boolean isGenuine() {
-        return hasAnyGenuineVariables();
+        return !effectiveGenuineVariableDescriptorMap.isEmpty();
     }
 
     public ListVariableDescriptor<Solution_> getGenuineListVariableDescriptor() {

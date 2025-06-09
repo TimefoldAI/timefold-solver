@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.director;
 
 import static java.util.Objects.requireNonNull;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -28,7 +27,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -360,52 +358,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void forceTriggerVariableListeners(boolean resetShadowVariablesFirst) {
+    public void forceTriggerVariableListeners(boolean resetShadowVariables) {
         var solution = getWorkingSolution();
-        if (resetShadowVariablesFirst) {
+        if (resetShadowVariables) {
             var solutionDescriptor = getSolutionDescriptor();
             solutionDescriptor.visitAllEntities(solution, entity -> {
-                var entityDescriptor = solutionDescriptor.findEntityDescriptor(entity.getClass());
-                var shadowVariableDescriptors = entityDescriptor.getShadowVariableDescriptors();
-                if (shadowVariableDescriptors.isEmpty()) {
-                    return;
-                }
-                for (var shadowVariableDescriptor : shadowVariableDescriptors) {
-                    var value = shadowVariableDescriptor.getValue(entity);
-                    if (value == null) {
-                        continue;
-                    }
-                    if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor
-                            && value instanceof Collection<?> collection) {
-                        // Inverse collection must never be null, so just empty it.
-                        collection.clear();
-                        continue;
-                    }
-                    var propertyType = shadowVariableDescriptor.getVariablePropertyType();
-                    if (propertyType.isPrimitive()) {
-                        if (propertyType == boolean.class) {
-                            shadowVariableDescriptor.setValue(entity, false);
-                        } else if (propertyType == byte.class) {
-                            shadowVariableDescriptor.setValue(entity, (byte) 0);
-                        } else if (propertyType == char.class) {
-                            shadowVariableDescriptor.setValue(entity, '\u0000');
-                        } else if (propertyType == short.class) {
-                            shadowVariableDescriptor.setValue(entity, (short) 0);
-                        } else if (propertyType == int.class) {
-                            shadowVariableDescriptor.setValue(entity, 0);
-                        } else if (propertyType == long.class) {
-                            shadowVariableDescriptor.setValue(entity, 0L);
-                        } else {
-                            throw new IllegalStateException(
-                                    "Impossible state: unknown primitive type %s".formatted(propertyType));
-                        }
-                    } else {
-                        shadowVariableDescriptor.setValue(entity, null);
-                    }
-                }
             });
         }
-        variableListenerSupport.forceTriggerAllVariableListeners(solution);
+        variableListenerSupport.forceTriggerAllVariableListeners(solution, resetShadowVariables);
     }
 
     protected void setCalculatedScore(Score_ score) {
@@ -778,13 +738,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             // We cannot set all shadow variables to null, since some variable listeners
             // may expect them to be non-null.
             // Instead, we just simulate a change to all genuine variables.
-            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
+            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution, false);
             solutionTracker.setUndoFromScratchSolution(workingSolution);
 
             // Also calculate from scratch for the before solution, since it might
             // have been corrupted but was only detected now
             solutionTracker.restoreBeforeSolution();
-            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
+            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution, false);
             solutionTracker.setBeforeFromScratchSolution(workingSolution);
 
             corruptionDiagnosis = solutionTracker.buildScoreCorruptionMessage();
@@ -843,13 +803,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             // We cannot set all shadow variables to null, since some variable listeners
             // may expect them to be non-null.
             // Instead, we just simulate a change to all genuine variables.
-            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
+            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution, false);
             solutionTracker.setUndoFromScratchSolution(workingSolution);
 
             // Also calculate from scratch for the before solution, since it might
             // have been corrupted but was only detected now
             solutionTracker.restoreBeforeSolution();
-            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution);
+            variableListenerSupport.forceTriggerAllVariableListeners(workingSolution, false);
             solutionTracker.setBeforeFromScratchSolution(workingSolution);
 
             return solutionTracker.buildSolutionCorruptionResult();
