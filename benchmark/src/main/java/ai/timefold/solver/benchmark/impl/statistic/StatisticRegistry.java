@@ -117,21 +117,15 @@ public class StatisticRegistry<Solution_> extends SimpleMeterRegistry
                     // Get the score from the corresponding constraint package and constraint name meters
                     extractScoreFromMeters(metric, constraintMatchTotalRunId,
                             // Get the count gauge (add constraint package and constraint name to the run tags)
-                            score -> getGaugeValue(SolverMetricUtil.getGaugeName(metric, "count"), constraintMatchTotalRunId,
-                                    count -> constraintMatchTotalConsumer
-                                            .accept(new ConstraintSummary(constraintRef, score.raw(), count.intValue()))));
+                            score -> {
+                                var count = SolverMetricUtil.getGaugeValue(this, SolverMetricUtil.getGaugeName(metric, "count"),
+                                        constraintMatchTotalRunId);
+                                if (count != null) {
+                                    constraintMatchTotalConsumer
+                                            .accept(new ConstraintSummary(constraintRef, score.raw(), count.intValue()));
+                                }
+                            });
                 });
-    }
-
-    public void getGaugeValue(SolverMetric metric, Tags runId, Consumer<Number> gaugeConsumer) {
-        getGaugeValue(metric.getMeterId(), runId, gaugeConsumer);
-    }
-
-    public void getGaugeValue(String meterId, Tags runId, Consumer<Number> gaugeConsumer) {
-        var gauge = this.find(meterId).tags(runId).gauge();
-        if (gauge != null && Double.isFinite(gauge.value())) {
-            gaugeConsumer.accept(gauge.value());
-        }
     }
 
     public void extractMoveCountPerType(SolverScope<Solution_> solverScope, ObjLongConsumer<String> gaugeConsumer) {

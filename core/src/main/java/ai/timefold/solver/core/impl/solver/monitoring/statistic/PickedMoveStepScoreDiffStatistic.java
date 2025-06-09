@@ -83,7 +83,7 @@ public class PickedMoveStepScoreDiffStatistic<Solution_> implements SolverStatis
             var stepScoreDiff = newStepScore.subtract(oldStepScore);
             oldStepScore = newStepScore;
 
-            Tags tags = stepScope.getPhaseScope().getSolverScope().getMonitoringTags()
+            var tags = stepScope.getPhaseScope().getSolverScope().getMonitoringTags()
                     .and("move.type", moveType);
             SolverMetricUtil.registerScore(SolverMetric.PICKED_MOVE_TYPE_STEP_SCORE_DIFF, tags, scoreDefinition,
                     tagsToMoveScoreMap, InnerScore.fullyAssigned(stepScoreDiff));

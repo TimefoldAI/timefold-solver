@@ -32,7 +32,7 @@ public class BestScoreSubSingleStatistic<Solution_>
         registry.addListener(SolverMetric.BEST_SCORE,
                 timestamp -> registry.extractScoreFromMeters(SolverMetric.BEST_SCORE, runTag,
                         score -> pointList
-                                .add(new BestScoreStatisticPoint(timestamp, score.raw(), score.fullyAssigned()))));
+                                .add(new BestScoreStatisticPoint(timestamp, score.raw(), score.isFullyAssigned()))));
     }
 
     // ************************************************************************

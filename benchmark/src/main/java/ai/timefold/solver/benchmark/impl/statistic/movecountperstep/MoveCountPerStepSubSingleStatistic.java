@@ -9,6 +9,7 @@ import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -30,10 +31,18 @@ public class MoveCountPerStepSubSingleStatistic<Solution_>
     @Override
     public void open(StatisticRegistry<Solution_> registry, Tags runTag) {
         registry.addListener(SolverMetric.MOVE_COUNT_PER_STEP,
-                timeMillisSpent -> registry.getGaugeValue(SolverMetric.MOVE_COUNT_PER_STEP.getMeterId() + ".accepted", runTag,
-                        accepted -> registry.getGaugeValue(SolverMetric.MOVE_COUNT_PER_STEP.getMeterId() + ".selected", runTag,
-                                selected -> pointList.add(new MoveCountPerStepStatisticPoint(timeMillisSpent,
-                                        accepted.longValue(), selected.longValue())))));
+                timeMillisSpent -> {
+                    var accepted = SolverMetricUtil.getGaugeValue(registry,
+                            SolverMetric.MOVE_COUNT_PER_STEP.getMeterId() + ".accepted", runTag);
+                    if (accepted != null) {
+                        var selected = SolverMetricUtil.getGaugeValue(registry,
+                                SolverMetric.MOVE_COUNT_PER_STEP.getMeterId() + ".selected", runTag);
+                        if (selected != null) {
+                            pointList.add(new MoveCountPerStepStatisticPoint(timeMillisSpent, accepted.longValue(),
+                                    selected.longValue()));
+                        }
+                    }
+                });
     }
 
     // ************************************************************************

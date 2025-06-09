@@ -289,7 +289,7 @@ class EnvironmentModeTest {
                     (InnerScoreDirector<TestdataSolution, ?>) scoreDirector;
             var score = innerScoreDirector.calculateScore();
 
-            if (!score.fullyAssigned()) {
+            if (!score.isFullyAssigned()) {
                 throw new IllegalStateException("The solution (" + TestdataEntity.class.getSimpleName()
                         + ") was not fully initialized by CustomSolverPhase: ("
                         + this.getClass().getCanonicalName() + ")");

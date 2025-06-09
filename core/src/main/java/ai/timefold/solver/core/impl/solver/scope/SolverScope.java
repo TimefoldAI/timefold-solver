@@ -290,7 +290,7 @@ public class SolverScope<Solution_> {
     }
 
     public boolean isBestSolutionInitialized() {
-        return getBestScore().fullyAssigned();
+        return getBestScore().isFullyAssigned();
     }
 
     public long calculateTimeMillisSpentUpToNow() {

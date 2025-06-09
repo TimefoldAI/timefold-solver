@@ -12,7 +12,7 @@ public final class DefaultBestSolutionChangedEvent<Solution_> extends BestSoluti
 
     public DefaultBestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull InnerScore newBestScore) {
-        super(solver, timeMillisSpent, newBestSolution, newBestScore.raw(), newBestScore.fullyAssigned());
+        super(solver, timeMillisSpent, newBestSolution, newBestScore.raw(), newBestScore.isFullyAssigned());
         this.unassignedCount = newBestScore.unassignedCount();
     }
 

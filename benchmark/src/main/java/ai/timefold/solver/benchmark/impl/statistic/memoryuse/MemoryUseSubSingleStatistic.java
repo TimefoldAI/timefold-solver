@@ -10,6 +10,7 @@ import ai.timefold.solver.benchmark.impl.statistic.StatisticPoint;
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -58,10 +59,11 @@ public class MemoryUseSubSingleStatistic<Solution_>
         @Override
         public void accept(Long timeMillisSpent) {
             if (timeMillisSpent >= nextTimeMillisThreshold) {
-                registry.getGaugeValue(SolverMetric.MEMORY_USE, tags,
-                        memoryUse -> pointList.add(
-                                new MemoryUseStatisticPoint(timeMillisSpent, memoryUse.longValue(),
-                                        (long) registry.find("jvm.memory.max").tags(tags).gauge().value())));
+                var memoryUse = SolverMetricUtil.getGaugeValue(registry, SolverMetric.MEMORY_USE, tags);
+                if (memoryUse != null) {
+                    var max = SolverMetricUtil.getGaugeValue(registry, "jvm.memory.max", tags);
+                    pointList.add(new MemoryUseStatisticPoint(timeMillisSpent, memoryUse.longValue(), max.longValue()));
+                }
 
                 nextTimeMillisThreshold += timeMillisThresholdInterval;
                 if (nextTimeMillisThreshold < timeMillisSpent) {

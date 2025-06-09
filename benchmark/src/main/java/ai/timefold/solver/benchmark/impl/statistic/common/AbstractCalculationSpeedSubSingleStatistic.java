@@ -10,6 +10,7 @@ import ai.timefold.solver.benchmark.impl.statistic.ProblemBasedSubSingleStatisti
 import ai.timefold.solver.benchmark.impl.statistic.StatisticRegistry;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.solver.monitoring.SolverMetricUtil;
 
 import io.micrometer.core.instrument.Tags;
 
@@ -44,7 +45,8 @@ public abstract class AbstractCalculationSpeedSubSingleStatistic<Solution_>
             @Override
             public void accept(Long timeMillisSpent) {
                 if (timeMillisSpent >= nextTimeMillisThreshold) {
-                    registry.getGaugeValue(solverMetric, runTag, countNumber -> {
+                    var countNumber = SolverMetricUtil.getGaugeValue(registry, solverMetric, runTag);
+                    if (countNumber != null) {
                         var moveEvaluationCount = countNumber.longValue();
                         var countInterval = moveEvaluationCount - lastCalculationCount.get();
                         var timeMillisSpentInterval = timeMillisSpent - lastTimeMillisSpent;
@@ -55,7 +57,7 @@ public abstract class AbstractCalculationSpeedSubSingleStatistic<Solution_>
                         var speed = countInterval * 1000L / timeMillisSpentInterval;
                         pointList.add(new LongStatisticPoint(timeMillisSpent, speed));
                         lastCalculationCount.set(moveEvaluationCount);
-                    });
+                    }
                     lastTimeMillisSpent = timeMillisSpent;
                     nextTimeMillisThreshold += timeMillisThresholdInterval;
                     if (nextTimeMillisThreshold < timeMillisSpent) {

@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Metrics;
 import io.micrometer.core.instrument.Tags;
 
@@ -27,7 +28,7 @@ public final class SolverMetricUtil {
         if (tagToScoreLevels.containsKey(tags)) {
             // Set new score levels for the previously registered gauges to read.
             var scoreLevels = tagToScoreLevels.get(tags);
-            scoreLevels.setUnnassignedCount(innerScore.unassignedCount());
+            scoreLevels.setUnassignedCount(innerScore.unassignedCount());
             for (var i = 0; i < levelValues.length; i++) {
                 scoreLevels.setLevelValue(i, levelValues[i]);
             }
@@ -39,7 +40,7 @@ public final class SolverMetricUtil {
             tagToScoreLevels.put(tags, result);
 
             // Register the gauges to read the score levels.
-            Metrics.gauge(getGaugeName(metric, UNASSIGNED_COUNT_LABEL), tags, result.unnassignedCount,
+            Metrics.gauge(getGaugeName(metric, UNASSIGNED_COUNT_LABEL), tags, result.unassignedCount,
                     AtomicInteger::doubleValue);
             for (var i = 0; i < levelValues.length; i++) {
                 Metrics.gauge(getGaugeName(metric, levelLabels[i]), tags, result.levelValues[i],
@@ -58,6 +59,19 @@ public final class SolverMetricUtil {
 
     public static String getGaugeName(SolverMetric metric, String label) {
         return metric.getMeterId() + "." + label;
+    }
+
+    public static @Nullable Double getGaugeValue(MeterRegistry registry, SolverMetric metric, Tags runId) {
+        return getGaugeValue(registry, metric.getMeterId(), runId);
+    }
+
+    public static @Nullable Double getGaugeValue(MeterRegistry registry, String meterId, Tags runId) {
+        var gauge = registry.find(meterId).tags(runId).gauge();
+        if (gauge != null && Double.isFinite(gauge.value())) {
+            return gauge.value();
+        } else {
+            return null;
+        }
     }
 
     public static <Score_ extends Score<Score_>> @Nullable InnerScore<Score_> extractScore(SolverMetric metric,

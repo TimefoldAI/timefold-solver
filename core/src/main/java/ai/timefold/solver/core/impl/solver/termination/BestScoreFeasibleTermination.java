@@ -40,7 +40,7 @@ final class BestScoreFeasibleTermination<Solution_>
     }
 
     private static boolean isTerminated(InnerScore<?> innerScore) {
-        return innerScore.fullyAssigned() && innerScore.raw().isFeasible();
+        return innerScore.isFullyAssigned() && innerScore.raw().isFeasible();
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
@@ -57,7 +57,7 @@ final class BestScoreFeasibleTermination<Solution_>
 
     <Score_ extends Score<Score_>> double calculateFeasibilityTimeGradient(@Nullable InnerScore<Score_> innerStartScore,
             Score_ score) {
-        if (innerStartScore == null || !innerStartScore.fullyAssigned()) {
+        if (innerStartScore == null || !innerStartScore.isFullyAssigned()) {
             return 0.0;
         }
         var startScore = innerStartScore.raw();
