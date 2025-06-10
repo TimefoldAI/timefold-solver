@@ -12,7 +12,7 @@ metadata:
     - "routing"
     - "ai"
   guide: "https://docs.timefold.ai/timefold-solver/latest/quickstart/quarkus/quarkus-quickstart"
-  icon-url: "https://timefold.ai/uploads/images/Brand-Assets/Logomark-Negative.svg"
+  icon-url: "https://timefold.ai/uploads/images/Brand-Assets/Icon.svg"
   categories:
     - "ai"
     - "business-automation"
