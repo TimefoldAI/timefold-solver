@@ -139,6 +139,11 @@ public class KOptListMoveSelectorConfig
     }
 
     @Override
+    public boolean canEnableNearbyInMixedModels() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "()";
     }

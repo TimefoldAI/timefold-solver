@@ -26,6 +26,7 @@ public class UnionMoveSelectorFactory<Solution_>
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         var moveSelectorConfigList = new LinkedList<>(config.getMoveSelectorList());
         if (configPolicy.getNearbyDistanceMeterClass() != null) {
+            var isMixedModel = configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables();
             for (var selectorConfig : config.getMoveSelectorList()) {
                 if (selectorConfig instanceof NearbyAutoConfigurationEnabled nearbySelectorConfig) {
                     if (selectorConfig.hasNearbySelectionConfig()) {
@@ -38,7 +39,12 @@ public class UnionMoveSelectorFactory<Solution_>
                     // We delay the autoconfiguration to the deepest UnionMoveSelectorConfig node in the tree
                     // to avoid duplicating configuration
                     // when there are nested unionMoveSelector configurations
-                    if (selectorConfig instanceof UnionMoveSelectorConfig) {
+                    var isUnionMoveSelectorConfig = selectorConfig instanceof UnionMoveSelectorConfig;
+                    // When using a mixed model, we do not enable nearby for basic variables,
+                    // as it applies only to list or chained variables.
+                    // Chained variables are forbidden in mixed models.
+                    var disableNearby = isMixedModel && !nearbySelectorConfig.canEnableNearbyInMixedModels();
+                    if (isUnionMoveSelectorConfig || disableNearby) {
                         continue;
                     }
                     // Add a new configuration with Nearby Selection enabled
