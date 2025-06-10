@@ -75,7 +75,7 @@ public class TestdataHardMediumSoftLongScoreSolution extends TestdataObject {
     }
 
     @PlanningScore
-    HardMediumSoftLongScore getScore() {
+    public HardMediumSoftLongScore getScore() {
         return score;
     }
 

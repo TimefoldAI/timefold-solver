@@ -75,7 +75,7 @@ public class TestdataBendableBigDecimalScoreSolution extends TestdataObject {
     }
 
     @PlanningScore(bendableHardLevelsSize = 1, bendableSoftLevelsSize = 2)
-    BendableBigDecimalScore getScore() {
+    public BendableBigDecimalScore getScore() {
         return score;
     }
 

@@ -77,7 +77,7 @@ public class TestdataHardMediumSoftBigDecimalScoreSolution extends TestdataObjec
     }
 
     @PlanningScore
-    HardMediumSoftBigDecimalScore getScore() {
+    public HardMediumSoftBigDecimalScore getScore() {
         return score;
     }
 

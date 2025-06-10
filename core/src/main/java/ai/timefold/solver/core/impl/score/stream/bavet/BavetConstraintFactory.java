@@ -135,7 +135,7 @@ public final class BavetConstraintFactory<Solution_>
     public @NonNull <A> UniConstraintStream<A> from(@NonNull Class<A> fromClass) {
         assertValidFromType(fromClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(fromClass);
-        if (entityDescriptor != null && entityDescriptor.hasAnyGenuineVariables()) {
+        if (entityDescriptor != null && entityDescriptor.isGenuine()) {
             var predicate = (Predicate<A>) entityDescriptor.getIsInitializedPredicate();
             return share(new BavetForEachUniConstraintStream<>(this, fromClass, predicate, RetrievalSemantics.LEGACY));
         } else {

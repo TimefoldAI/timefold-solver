@@ -52,7 +52,7 @@ public class TestDataKitchenSinkEntity {
     private boolean isPinned;
 
     @PlanningVariable(valueRangeProviderRefs = { "ints" })
-    private Integer getIntVariable() {
+    public Integer getIntVariable() {
         return intVariable;
     }
 
