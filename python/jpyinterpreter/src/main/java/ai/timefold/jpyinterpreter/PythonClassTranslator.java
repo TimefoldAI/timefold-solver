@@ -1593,7 +1593,13 @@ public class PythonClassTranslator {
             pythonParameterTypes[0] = 'L' + instanceInternalClassName + ';';
         }
 
-        for (int i = 1; i < pythonCompiledFunction.totalArgCount(); i++) {
+        return getInterfaceDeclaration(pythonCompiledFunction, parameterPythonTypeList, pythonParameterTypes);
+    }
+
+    private static PythonClassTranslator.InterfaceDeclaration getInterfaceDeclaration(
+            PythonCompiledFunction pythonCompiledFunction, List<PythonLikeType> parameterPythonTypeList,
+            String[] pythonParameterTypes) {
+        for (int i = 1; i < pythonParameterTypes.length; i++) {
             pythonParameterTypes[i] = 'L' + parameterPythonTypeList.get(i).getJavaTypeInternalName() + ';';
         }
         String returnType = 'L' + pythonCompiledFunction.getReturnType().map(PythonLikeType::getJavaTypeInternalName)
@@ -1611,14 +1617,7 @@ public class PythonClassTranslator {
             pythonParameterTypes[0] = Type.getDescriptor(PythonLikeType.class);
         }
 
-        for (int i = 1; i < pythonCompiledFunction.totalArgCount(); i++) {
-            pythonParameterTypes[i] = 'L' + parameterPythonTypeList.get(i).getJavaTypeInternalName() + ';';
-        }
-        String returnType = 'L' + pythonCompiledFunction.getReturnType().map(PythonLikeType::getJavaTypeInternalName)
-                .orElseGet(() -> getPythonReturnTypeOfFunction(pythonCompiledFunction, true).getJavaTypeInternalName()) + ';';
-        FunctionSignature functionSignature = new FunctionSignature(returnType, pythonParameterTypes);
-        return functionSignatureToInterfaceName.computeIfAbsent(functionSignature,
-                PythonClassTranslator::createInterfaceForFunctionSignature);
+        return getInterfaceDeclaration(pythonCompiledFunction, parameterPythonTypeList, pythonParameterTypes);
     }
 
     public static InterfaceDeclaration createInterfaceForFunctionSignature(FunctionSignature functionSignature) {

@@ -4,6 +4,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
@@ -28,6 +29,9 @@ class PathPartIterator implements Iterator<PathPart> {
 
     @Override
     public PathPart next() {
+        if (!hasNext()) {
+            throw new NoSuchElementException();
+        }
         var index = previous.index() + 1;
         var name = parts[index];
         var isCollection = false;
