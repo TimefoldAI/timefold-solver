@@ -161,7 +161,7 @@ public class HeuristicConfigPolicy<Solution_> {
         return cloneBuilder().build();
     }
 
-    public HeuristicConfigPolicy<Solution_> createConfigWithoutNearbySetting() {
+    public HeuristicConfigPolicy<Solution_> copyConfigPolicyWithoutNearbySetting() {
         return cloneBuilder()
                 .withNearbyDistanceMeterClass(null)
                 .build();

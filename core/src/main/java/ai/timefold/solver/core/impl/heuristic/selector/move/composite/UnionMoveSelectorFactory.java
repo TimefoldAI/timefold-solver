@@ -43,8 +43,8 @@ public class UnionMoveSelectorFactory<Solution_>
                     // When using a mixed model, we do not enable nearby for basic variables,
                     // as it applies only to list or chained variables.
                     // Chained variables are forbidden in mixed models.
-                    var disableNearby = isMixedModel && !nearbySelectorConfig.canEnableNearbyInMixedModels();
-                    if (isUnionMoveSelectorConfig || disableNearby) {
+                    var isNearbyDisabled = isMixedModel && !nearbySelectorConfig.canEnableNearbyInMixedModels();
+                    if (isUnionMoveSelectorConfig || isNearbyDisabled) {
                         continue;
                     }
                     // Add a new configuration with Nearby Selection enabled

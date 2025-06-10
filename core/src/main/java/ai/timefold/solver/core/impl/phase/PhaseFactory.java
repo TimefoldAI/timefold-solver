@@ -76,7 +76,7 @@ public interface PhaseFactory<Solution_> {
                     && LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass());
             PhaseFactory<Solution_> phaseFactory = PhaseFactory.create(phaseConfig);
             var updatedConfigPolicy =
-                    disableNearbySetting ? configPolicy.createConfigWithoutNearbySetting() : configPolicy;
+                    disableNearbySetting ? configPolicy.copyConfigPolicyWithoutNearbySetting() : configPolicy;
             var phase = phaseFactory.buildPhase(phaseIndex,
                     !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch, updatedConfigPolicy,
                     bestSolutionRecaller, termination);
