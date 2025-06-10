@@ -36,14 +36,13 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
         } catch (IllegalAccessException e) {
             throw new IllegalStateException("""
                     Impossible state: method (%s) not accessible.
-                    %s
-                    """
-                    .strip()
+                    %s"""
                     .formatted(getterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
         }
         Class<?> declaringClass = getterMethod.getDeclaringClass();
         if (!ReflectionHelper.isGetterMethod(getterMethod)) {
-            throw new IllegalArgumentException("The getterMethod (" + getterMethod + ") is not a valid getter.");
+            throw new IllegalArgumentException("The getterMethod (%s) is not a valid getter."
+                    .formatted(getterMethod));
         }
         propertyType = getterMethod.getReturnType();
         propertyName = ReflectionHelper.getGetterPropertyName(getterMethod);
@@ -68,9 +67,7 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
                 } catch (IllegalAccessException e) {
                     throw new IllegalStateException("""
                             Impossible state: method (%s) not accessible.
-                            %s
-                            """
-                            .strip()
+                            %s"""
                             .formatted(setterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
                 }
             } else {
@@ -107,11 +104,6 @@ public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAc
         public String toString() {
             return name;
         }
-    }
-
-    private int getAccessLevel(Method method) {
-        int mask = Modifier.PUBLIC | Modifier.PROTECTED | Modifier.PRIVATE;
-        return method.getModifiers() & mask;
     }
 
     @Override
