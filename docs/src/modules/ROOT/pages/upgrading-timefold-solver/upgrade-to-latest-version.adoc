@@ -70,6 +70,45 @@ We have now deprecated the `pinningFilter` field on `@PlanningEntity` annotation
 and we encourage you to use the xref:responding-to-change/responding-to-change.adoc#pinnedPlanningEntities[`@PlanningPin` annotation] instead.
 ====
 
+'''
+
+.icon:info-circle[role=yellow] Stricter variable accessors
+[%collapsible%open]
+====
+In your Java domain classes, the following rules now apply to getters and setters over genuine and shadow planning variables:
+
+- If a getter exists, so must a setter.
+- If a setter exists, so must a getter.
+- Both getter and setter must have the same level of visibility, preferably `public`.
+
+Before in `*.java`:
+
+[source,java]
+----
+    @PlanningVariable
+    private Visit visit;
+
+    Visit getVisit() {
+        return visit;
+    }
+----
+
+After in `*.java`:
+
+[source,java]
+----
+    @PlanningVariable
+    private Visit visit;
+
+    public Visit getVisit() {
+        return visit;
+    }
+
+    public void setVisit(Visit visit) {
+        this.visit = visit;
+    }
+----
+====
 
 === Upgrade from 1.21.0 to 1.22.0
 

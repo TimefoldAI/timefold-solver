@@ -136,7 +136,7 @@ public final class ReflectionHelper {
         var baseClass = containingClass;
         while (baseClass != null) {
             try {
-                return containingClass.getDeclaredMethod(getterName);
+                return baseClass.getDeclaredMethod(getterName);
             } catch (NoSuchMethodException e) {
                 baseClass = baseClass.getSuperclass();
             }
@@ -158,12 +158,12 @@ public final class ReflectionHelper {
      * @param methodName never null
      * @return sometimes null
      */
-    public static Method getDeclaredMethod(Class<?> containingClass, String methodName) {
+    public static Method getDeclaredMethod(Class<?> containingClass, String methodName, Class<?>... parameterTypes) {
         var baseClass = containingClass;
 
         while (baseClass != null) {
             try {
-                return containingClass.getDeclaredMethod(methodName);
+                return baseClass.getDeclaredMethod(methodName, parameterTypes);
             } catch (NoSuchMethodException e) {
                 baseClass = baseClass.getSuperclass();
             }
@@ -231,6 +231,17 @@ public final class ReflectionHelper {
         } catch (NoSuchMethodException e) {
             return null;
         }
+    }
+
+    /**
+     * @param containingClass never null
+     * @param propertyType never null
+     * @param propertyName never null
+     * @return null if it doesn't exist
+     */
+    public static Method getDeclaredSetterMethod(Class<?> containingClass, Class<?> propertyType, String propertyName) {
+        String setterName = PROPERTY_MUTATOR_PREFIX + capitalizePropertyName(propertyName);
+        return getDeclaredMethod(containingClass, setterName, propertyType);
     }
 
     /**
