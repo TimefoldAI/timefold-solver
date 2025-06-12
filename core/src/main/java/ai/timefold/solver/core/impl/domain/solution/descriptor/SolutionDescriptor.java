@@ -587,7 +587,13 @@ public class SolutionDescriptor<Solution_> {
                                         Collection.class.getSimpleName()));
             }
             problemFactCollectionMemberAccessorMap.put(memberAccessor.getName(), memberAccessor);
-            problemFactType = type;
+
+            if (type.isArray()) {
+                problemFactType = type.getComponentType();
+            } else {
+                problemFactType = ConfigUtils.extractGenericTypeParameterOrFail("", memberAccessor.getDeclaringClass(),
+                        type, memberAccessor.getGenericType(), annotationClass, memberAccessor.getName());
+            }
         } else {
             throw new IllegalStateException("Impossible situation with annotationClass (" + annotationClass + ").");
         }

@@ -2,6 +2,8 @@ package ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact;
 
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningEntityProperty;
+import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
@@ -24,8 +26,13 @@ public class TestdataEntityAnnotatedAsProblemFactSolution {
     public TestdataEntityAnnotatedAsProblemFactSolution() {
     }
 
-    @ProblemFactProperty
+    @PlanningEntityProperty
     public TestdataEntity getEntity() {
+        return entity;
+    }
+
+    @ProblemFactProperty
+    public TestdataEntity getEntityAsFact() {
         return entity;
     }
 
@@ -42,6 +49,7 @@ public class TestdataEntityAnnotatedAsProblemFactSolution {
         this.values = values;
     }
 
+    @PlanningScore
     public SimpleScore getScore() {
         return score;
     }
