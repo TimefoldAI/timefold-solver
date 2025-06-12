@@ -120,7 +120,7 @@ public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrd
             for (var edgesPermutation : permutations(renamedEdges)) {
                 var graph = createTopologicalGraph(size);
                 for (var edge : edgesPermutation) {
-                    graph.addEdge(edge.get(0), edge.get(1), changed);
+                    graph.addEdge(edge.get(0), edge.get(1));
                 }
                 graph.commitChanges(changed);
                 asserter.accept(graph, renamedNodes::get, changed);
@@ -154,7 +154,7 @@ public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrd
                 var changed = new BitSet();
                 var graph = createTopologicalGraph(size);
                 for (var edge : edgesPermutation) {
-                    graph.addEdge(edge.get(0), edge.get(1), changed);
+                    graph.addEdge(edge.get(0), edge.get(1));
                 }
                 graph.commitChanges(changed);
                 asserter.accept(graph, renamedNodes::get, changed);
@@ -193,7 +193,7 @@ public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrd
                 List.of()), (graph, mapper, changed) -> {
                     verifyConsistent(graph);
 
-                    graph.removeEdge(mapper.applyAsInt(2), mapper.applyAsInt(3), changed);
+                    graph.removeEdge(mapper.applyAsInt(2), mapper.applyAsInt(3));
                     graph.commitChanges(changed);
 
                     assertTopologicalOrder(graph, List.of(mapper.applyAsInt(0)),
@@ -250,7 +250,7 @@ public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrd
                 List.of(4, 1),
                 List.of()), (graph, mapper, changed) -> {
                     changed.clear();
-                    graph.removeEdge(mapper.applyAsInt(3), mapper.applyAsInt(1), changed);
+                    graph.removeEdge(mapper.applyAsInt(3), mapper.applyAsInt(1));
                     graph.commitChanges(changed);
 
                     verifyConsistent(graph);
@@ -319,7 +319,7 @@ public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrd
                 List.of(5, 2, 3),
                 List.of()), (graph, mapper, changed) -> {
                     changed.clear();
-                    graph.removeEdge(mapper.applyAsInt(4), mapper.applyAsInt(3), changed);
+                    graph.removeEdge(mapper.applyAsInt(4), mapper.applyAsInt(3));
                     graph.commitChanges(changed);
 
                     verifyConsistent(graph);
@@ -375,7 +375,7 @@ public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrd
                 List.of(5, 1),
                 List.of()), (graph, mapper, changed) -> {
                     changed.clear();
-                    graph.removeEdge(mapper.applyAsInt(2), mapper.applyAsInt(4), changed);
+                    graph.removeEdge(mapper.applyAsInt(2), mapper.applyAsInt(4));
                     graph.commitChanges(changed);
 
                     verifyConsistent(graph);

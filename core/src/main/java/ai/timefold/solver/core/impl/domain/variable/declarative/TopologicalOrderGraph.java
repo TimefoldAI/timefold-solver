@@ -28,7 +28,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.
      */
-    void addEdge(int from, int to, BitSet changed);
+    void addEdge(int from, int to);
 
     /**
      * Called when a graph edge is removed.
@@ -37,7 +37,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.
      */
-    void removeEdge(int from, int to, BitSet changed);
+    void removeEdge(int from, int to);
 
     void forEachEdge(EdgeConsumer edgeConsumer);
 

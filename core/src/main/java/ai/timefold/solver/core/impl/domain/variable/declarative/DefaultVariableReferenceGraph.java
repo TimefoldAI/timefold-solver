@@ -94,7 +94,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
 
         var count = edgeCount[fromNodeId].get(toNodeId);
         if (count == 0) {
-            graph.addEdge(fromNodeId, toNodeId, changed);
+            graph.addEdge(fromNodeId, toNodeId);
         }
         edgeCount[fromNodeId].set(toNodeId, count + 1);
         markChanged(to);
@@ -110,7 +110,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
 
         var count = edgeCount[fromNodeId].get(toNodeId);
         if (count == 1) {
-            graph.removeEdge(fromNodeId, toNodeId, changed);
+            graph.removeEdge(fromNodeId, toNodeId);
         }
         edgeCount[fromNodeId].set(toNodeId, count - 1);
         markChanged(to);

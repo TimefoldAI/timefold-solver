@@ -40,13 +40,13 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public void addEdge(int fromNode, int toNode, BitSet changed) {
+    public void addEdge(int fromNode, int toNode) {
         forwardEdges[fromNode].add(toNode);
         backEdges[toNode].add(fromNode);
     }
 
     @Override
-    public void removeEdge(int fromNode, int toNode, BitSet changed) {
+    public void removeEdge(int fromNode, int toNode) {
         forwardEdges[fromNode].remove(toNode);
         backEdges[toNode].remove(fromNode);
     }
