@@ -591,7 +591,8 @@ public class SolutionDescriptor<Solution_> {
             if (type.isArray()) {
                 problemFactType = type.getComponentType();
             } else {
-                problemFactType = ConfigUtils.extractGenericTypeParameterOrFail("", memberAccessor.getDeclaringClass(),
+                problemFactType = ConfigUtils.extractGenericTypeParameterOrFail(PlanningSolution.class.getSimpleName(),
+                        memberAccessor.getDeclaringClass(),
                         type, memberAccessor.getGenericType(), annotationClass, memberAccessor.getName());
             }
         } else {
