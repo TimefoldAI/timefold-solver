@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
@@ -17,6 +18,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     private final Map<Integer, List<Integer>> componentMap;
     private final Set<Integer>[] forwardEdges;
     private final Set<Integer>[] backEdges;
+    private final boolean[] isNodeInLoopedComponent;
 
     @SuppressWarnings({ "unchecked" })
     public DefaultTopologicalOrderGraph(final int size) {
@@ -24,21 +26,27 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         this.componentMap = CollectionUtils.newLinkedHashMap(size);
         this.forwardEdges = new Set[size];
         this.backEdges = new Set[size];
+        this.isNodeInLoopedComponent = new boolean[size];
         for (var i = 0; i < size; i++) {
             forwardEdges[i] = new HashSet<>();
             backEdges[i] = new HashSet<>();
+            isNodeInLoopedComponent[i] = false;
             nodeIdToTopologicalOrderMap[i] = new NodeTopologicalOrder(i, i);
         }
     }
 
+    List<Integer> getComponent(int node) {
+        return componentMap.get(node);
+    }
+
     @Override
-    public void addEdge(int fromNode, int toNode) {
+    public void addEdge(int fromNode, int toNode, BitSet changed) {
         forwardEdges[fromNode].add(toNode);
         backEdges[toNode].add(fromNode);
     }
 
     @Override
-    public void removeEdge(int fromNode, int toNode) {
+    public void removeEdge(int fromNode, int toNode, BitSet changed) {
         forwardEdges[fromNode].remove(toNode);
         backEdges[toNode].remove(fromNode);
     }
@@ -88,7 +96,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public void commitChanges() {
+    public void commitChanges(BitSet changed) {
         var index = new MutableInt(1);
         var stackIndex = new MutableInt(0);
         var size = forwardEdges.length;
@@ -108,12 +116,23 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         var ordIndex = 0;
         for (var i = components.size() - 1; i >= 0; i--) {
             var component = components.get(i);
-            var componentNodes = new ArrayList<Integer>(component.cardinality());
+            var componentSize = component.cardinality();
+            var isComponentLooped = componentSize != 1;
+            var componentNodes = new ArrayList<Integer>(componentSize);
             for (var node = component.nextSetBit(0); node >= 0; node = component.nextSetBit(node + 1)) {
                 nodeIdToTopologicalOrderMap[node] = new NodeTopologicalOrder(node, ordIndex);
                 componentNodes.add(node);
                 componentMap.put(node, componentNodes);
+
+                if (isComponentLooped != isNodeInLoopedComponent[node]) {
+                    // It is enough to only mark nodes whose component
+                    // status changed; the updater will notify descendants
+                    // since a looped status change force updates descendants.
+                    isNodeInLoopedComponent[node] = isComponentLooped;
+                    changed.set(node);
+                }
                 ordIndex++;
+
                 if (node == Integer.MAX_VALUE) {
                     break;
                 }
@@ -159,5 +178,20 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
             } while (node != current);
             components.add(out);
         }
+    }
+
+    @Override
+    public String toString() {
+        var out = new StringBuilder();
+        out.append("DefaultTopologicalOrderGraph{\n");
+        for (var node = 0; node < forwardEdges.length; node++) {
+            out.append("    ").append(node).append("(").append(nodeIdToTopologicalOrderMap[node].order()).append(") -> ")
+                    .append(forwardEdges[node].stream()
+                            .sorted()
+                            .map(Object::toString)
+                            .collect(Collectors.joining(",", "[", "]\n")));
+        }
+        out.append("}");
+        return out.toString();
     }
 }

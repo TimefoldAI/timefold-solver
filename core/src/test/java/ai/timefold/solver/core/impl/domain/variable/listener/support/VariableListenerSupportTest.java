@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -191,15 +192,15 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public void addEdge(int fromNode, int toNode) {
-            super.addEdge(fromNode, toNode);
+        public void addEdge(int fromNode, int toNode, BitSet changed) {
+            super.addEdge(fromNode, toNode, changed);
             addEdge(nodeToVariableMetamodel[fromNode], nodeToEntities[fromNode], nodeToVariableMetamodel[toNode],
                     nodeToEntities[toNode]);
         }
 
         @Override
-        public void removeEdge(int fromNode, int toNode) {
-            super.removeEdge(fromNode, toNode);
+        public void removeEdge(int fromNode, int toNode, BitSet changed) {
+            super.removeEdge(fromNode, toNode, changed);
             removeEdge(nodeToVariableMetamodel[fromNode], nodeToEntities[fromNode], nodeToVariableMetamodel[toNode],
                     nodeToEntities[toNode]);
         }
