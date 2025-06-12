@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact;
 
-import java.util.List;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -13,39 +11,39 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningSolution
-public class TestdataEntityAnnotatedAsProblemFactCollectionSolution {
-    List<TestdataEntity> entities;
-    List<TestdataValue> values;
+public class TestdataEntityAnnotatedAsProblemFactArraySolution {
+    TestdataEntity[] entities;
+    TestdataValue[] values;
     SimpleScore score;
 
-    public static SolutionDescriptor<TestdataEntityAnnotatedAsProblemFactCollectionSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataEntityAnnotatedAsProblemFactCollectionSolution.class,
+    public static SolutionDescriptor<TestdataEntityAnnotatedAsProblemFactArraySolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataEntityAnnotatedAsProblemFactArraySolution.class,
                 TestdataEntity.class);
     }
 
-    public TestdataEntityAnnotatedAsProblemFactCollectionSolution() {
+    public TestdataEntityAnnotatedAsProblemFactArraySolution() {
     }
 
     @ProblemFactCollectionProperty
-    public List<TestdataEntity> getEntitiesAsFacts() {
+    public TestdataEntity[] getEntitiesAsFacts() {
         return entities;
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataEntity> getEntities() {
+    public TestdataEntity[] getEntities() {
         return entities;
     }
 
-    public void setEntities(List<TestdataEntity> entities) {
+    public void setEntities(TestdataEntity[] entities) {
         this.entities = entities;
     }
 
     @ValueRangeProvider(id = "valueRange")
-    public List<TestdataValue> getValues() {
+    public TestdataValue[] getValues() {
         return values;
     }
 
-    public void setValues(List<TestdataValue> values) {
+    public void setValues(TestdataValue[] values) {
         this.values = values;
     }
 
