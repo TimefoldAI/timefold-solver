@@ -18,3 +18,4 @@ Create the `src/main/resource/logback.xml` file:
   </root>
 
 </configuration>
+----

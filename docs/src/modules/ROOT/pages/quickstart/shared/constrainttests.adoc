@@ -14,9 +14,9 @@ package org.acme.schooltimetabling.solver;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-import {wiringannotationfq};
+import \{wiringannotationfq\};
 
-import {testannotationfq};
+import \{testannotationfq\};
 import org.acme.schooltimetabling.domain.Lesson;
 import org.acme.schooltimetabling.domain.Room;
 import org.acme.schooltimetabling.domain.Timetable;
@@ -24,14 +24,14 @@ import org.acme.schooltimetabling.domain.Timeslot;
 import org.junit.jupiter.api.Test;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
-{testannotation}
+\{testannotation\}
 class TimetableConstraintProviderTest {
 
     private static final Room ROOM1 = new Room("Room1");
     private static final Timeslot TIMESLOT1 = new Timeslot(DayOfWeek.MONDAY, LocalTime.of(9,0), LocalTime.NOON);
     private static final Timeslot TIMESLOT2 = new Timeslot(DayOfWeek.TUESDAY, LocalTime.of(9,0), LocalTime.NOON);
 
-    {wiringannotation}
+    \{wiringannotation\}
     ConstraintVerifier<TimetableConstraintProvider, Timetable> constraintVerifier;
 
     @Test
@@ -57,8 +57,8 @@ Create the `src/test/kotlin/org/acme/schooltimetabling/solver/TimetableConstrain
 package org.acme.schooltimetabling.solver
 
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier
-import {testannotationfq}
-import {wiringannotationfq}
+import \{testannotationfq\}
+import \{wiringannotationfq\}
 import org.acme.schooltimetabling.domain.Lesson
 import org.acme.schooltimetabling.domain.Room
 import org.acme.schooltimetabling.domain.Timeslot
@@ -67,14 +67,14 @@ import org.junit.jupiter.api.Test
 import java.time.DayOfWeek
 import java.time.LocalTime
 
-{testannotation}
+\{testannotation\}
 class TimetableConstraintProviderTest {
 
     val ROOM1: Room = Room(1, "Room1")
     private val TIMESLOT1: Timeslot = Timeslot(1, DayOfWeek.MONDAY, LocalTime.NOON)
     private val TIMESLOT2: Timeslot = Timeslot(2, DayOfWeek.TUESDAY, LocalTime.NOON)
 
-    {wiringannotation}
+    \{wiringannotation\}
     lateinit var constraintVerifier: ConstraintVerifier<TimeTableConstraintProvider, Timetable>
 
     @Test
