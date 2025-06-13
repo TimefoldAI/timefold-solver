@@ -12,6 +12,14 @@ import org.jspecify.annotations.NonNull;
 public interface NearbyAutoConfigurationEnabled<Config_ extends MoveSelectorConfig<Config_>> {
 
     /**
+     * Some move configurations cannot enable the nearby setting in mixed models,
+     * such as basic variable move configuration.
+     * 
+     * @return true if it can enable the nearby setting for the given move configuration; otherwise, it returns false.
+     */
+    boolean canEnableNearbyInMixedModels();
+
+    /**
      * @return new instance with the Nearby Selection settings properly configured
      */
     @NonNull

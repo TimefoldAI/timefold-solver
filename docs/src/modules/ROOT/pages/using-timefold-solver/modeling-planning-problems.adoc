@@ -1848,7 +1848,7 @@ if you need any of the following planning techniques:
 - <<planningEntityDifficulty,planning entity difficulty comparison>> or <<planningValueStrength,planning value strength comparison>>,
 - xref:optimization-algorithms/exhaustive-search.adoc#exhaustiveSearch[exhaustive search],
 - xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[partitioned search],
-- coexistence with another list or basic planning variable.
+- coexistence with another list variable.
 ====
 
 For example, the vehicle routing problem can be modeled as follows:

@@ -128,6 +128,11 @@ public class SwapMoveSelectorConfig
     }
 
     @Override
+    public boolean canEnableNearbyInMixedModels() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + entitySelectorConfig
                 + (secondaryEntitySelectorConfig == null ? "" : ", " + secondaryEntitySelectorConfig) + ")";

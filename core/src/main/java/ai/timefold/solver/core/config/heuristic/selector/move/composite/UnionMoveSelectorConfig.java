@@ -207,6 +207,11 @@ public class UnionMoveSelectorConfig
     }
 
     @Override
+    public boolean canEnableNearbyInMixedModels() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + moveSelectorConfigList + ")";
     }

@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.testdomain.mixed.multientity;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-@PlanningEntity
 public class TestdataMixedMultiEntitySecondValue extends TestdataObject {
 
     private int strength;

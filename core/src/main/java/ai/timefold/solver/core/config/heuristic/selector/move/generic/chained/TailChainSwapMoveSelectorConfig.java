@@ -109,6 +109,11 @@ public class TailChainSwapMoveSelectorConfig
     }
 
     @Override
+    public boolean canEnableNearbyInMixedModels() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + entitySelectorConfig + ", " + valueSelectorConfig + ")";
     }
