@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.BitSet;
 import java.util.List;
 
 public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
@@ -9,7 +10,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
      * After this method returns, {@link #getTopologicalOrder(int)}
      * must be accurate for every node in the graph.
      */
-    void commitChanges();
+    void commitChanges(BitSet changed);
 
     /**
      * Called on graph creation to supply metadata about the graph nodes.
@@ -22,7 +23,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
 
     /**
      * Called when a graph edge is added.
-     * The operation is added to a batch and only executed when {@link #commitChanges()} is called.
+     * The operation is added to a batch and only executed when {@link #commitChanges(BitSet)} is called.
      * <p>
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.
@@ -31,7 +32,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
 
     /**
      * Called when a graph edge is removed.
-     * The operation is added to a batch and only executed when {@link #commitChanges()} is called.
+     * The operation is added to a batch and only executed when {@link #commitChanges(BitSet)} is called.
      * <p>
      * {@link #getTopologicalOrder(int)} is allowed to be invalid
      * when this method returns.

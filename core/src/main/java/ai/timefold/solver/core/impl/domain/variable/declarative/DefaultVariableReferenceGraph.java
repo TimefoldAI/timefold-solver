@@ -126,7 +126,7 @@ final class DefaultVariableReferenceGraph<Solution_> implements VariableReferenc
         if (changed.isEmpty()) {
             return;
         }
-        graph.commitChanges();
+        graph.commitChanges(changed);
         affectedEntitiesUpdater.accept(changed);
     }
 
