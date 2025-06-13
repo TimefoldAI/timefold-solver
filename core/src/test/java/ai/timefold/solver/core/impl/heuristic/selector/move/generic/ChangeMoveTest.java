@@ -9,6 +9,8 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -168,4 +170,9 @@ class ChangeMoveTest {
         assertThat(new ChangeMove<>(variableDescriptor, c, v3)).hasToString("c {v4 -> v3}");
     }
 
+    @Test
+    void testEnableNearbyMixedModel() {
+        var moveSelectorConfig = new ChangeMoveSelectorConfig();
+        assertThat(moveSelectorConfig.canEnableNearbyInMixedModels()).isFalse();
+    }
 }

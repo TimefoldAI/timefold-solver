@@ -114,7 +114,8 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
             HeuristicConfigPolicy<Solution_> configPolicy, EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
         ValueSelectorConfig valueSelectorConfig =
-                Objects.requireNonNullElseGet(config.getValueSelectorConfig(), ValueSelectorConfig::new);
+                config != null && config.getValueSelectorConfig() != null ? config.getValueSelectorConfig()
+                        : new ValueSelectorConfig();
         // Mixed models require that the variable name be set
         if (configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables()
                 && valueSelectorConfig.getVariableName() == null) {

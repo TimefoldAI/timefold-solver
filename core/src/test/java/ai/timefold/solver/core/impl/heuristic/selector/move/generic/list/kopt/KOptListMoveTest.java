@@ -11,6 +11,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.function.Function;
 
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -546,6 +547,12 @@ class KOptListMoveTest {
                         v5, v1));
         // this move create 2 cycles (v2...v3->t2...) and (v4...v5->v7...v6->v1...v8->v4...)
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isFalse();
+    }
+
+    @Test
+    void testEnableNearbyMixedModel() {
+        var moveSelectorConfig = new KOptListMoveSelectorConfig();
+        assertThat(moveSelectorConfig.canEnableNearbyInMixedModels()).isTrue();
     }
 
     /**

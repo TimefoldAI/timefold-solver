@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.TestdataObject;
@@ -187,5 +188,11 @@ class ListChangeMoveTest {
 
         assertThat(new ListChangeMove<>(variableDescriptor, e1, 1, e1, 0)).hasToString("2 {e1[1] -> e1[0]}");
         assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e2, 1)).hasToString("1 {e1[0] -> e2[1]}");
+    }
+
+    @Test
+    void testEnableNearbyMixedModel() {
+        var moveSelectorConfig = new ListChangeMoveSelectorConfig();
+        assertThat(moveSelectorConfig.canEnableNearbyInMixedModels()).isTrue();
     }
 }
