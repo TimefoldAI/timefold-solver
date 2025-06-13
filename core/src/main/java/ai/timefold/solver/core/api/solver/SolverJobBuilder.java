@@ -60,9 +60,9 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     /**
      * Sets the best solution consumer, which may be called multiple times during the solving process.
      * <p>
-     * We strongly recommend not applying any changes to the solution instance while the solver runs.
-     * It is essential to understand that the solution instance is not cloned when the event is triggered,
-     * and any modifications may lead to inconsistencies due to its internal reuse.
+     * Don't apply any changes to the solution instance while the solver runs.
+     * The solver's best solution instance is the same as the one in the event,
+     * and any modifications may lead to solver corruption due to its internal reuse.
      *
      * @param bestSolutionConsumer called multiple times for each new best solution on a consumer thread
      * @return this
