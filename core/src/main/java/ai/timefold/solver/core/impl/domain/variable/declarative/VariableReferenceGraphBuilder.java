@@ -21,6 +21,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final List<EntityVariablePair<Solution_>> instanceList;
     final Map<EntityVariablePair<Solution_>, List<EntityVariablePair<Solution_>>> fixedEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
+    boolean isGraphFixed;
 
     public VariableReferenceGraphBuilder(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.changedVariableNotifier = changedVariableNotifier;
@@ -29,6 +30,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         variableReferenceToBeforeProcessor = new HashMap<>();
         variableReferenceToAfterProcessor = new HashMap<>();
         fixedEdges = new HashMap<>();
+        isGraphFixed = true;
     }
 
     public <Entity_> void addVariableReferenceEntity(Entity_ entity, VariableUpdaterInfo<Solution_> variableReference) {
@@ -54,14 +56,16 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         fixedEdges.computeIfAbsent(from, k -> new ArrayList<>()).add(to);
     }
 
-    public void addBeforeProcessor(VariableMetaModel<?, ?, ?> variableId,
+    public void addBeforeProcessor(GraphChangeType graphChangeType, VariableMetaModel<?, ?, ?> variableId,
             BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
+        isGraphFixed &= !graphChangeType.affectsGraph();
         variableReferenceToBeforeProcessor.computeIfAbsent(variableId, k -> new ArrayList<>())
                 .add(consumer);
     }
 
-    public void addAfterProcessor(VariableMetaModel<?, ?, ?> variableId,
+    public void addAfterProcessor(GraphChangeType graphChangeType, VariableMetaModel<?, ?, ?> variableId,
             BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
+        isGraphFixed &= !graphChangeType.affectsGraph();
         variableReferenceToAfterProcessor.computeIfAbsent(variableId, k -> new ArrayList<>())
                 .add(consumer);
     }
@@ -72,8 +76,13 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         //  In that case, TimeWindowedCustomer does not exist
         //  and therefore Customer has no shadow variable.
         //  Surely there has to be an earlier way to catch this?
-        return instanceList.isEmpty() ? EmptyVariableReferenceGraph.INSTANCE
-                : new DefaultVariableReferenceGraph<>(this, graphCreator);
+        if (instanceList.isEmpty()) {
+            return EmptyVariableReferenceGraph.INSTANCE;
+        }
+        if (isGraphFixed) {
+            return new FixedVariableReferenceGraph<>(this, graphCreator);
+        }
+        return new DefaultVariableReferenceGraph<>(this, graphCreator);
     }
 
     public @NonNull EntityVariablePair<Solution_> lookupOrError(VariableMetaModel<?, ?, ?> variableId, Object entity) {

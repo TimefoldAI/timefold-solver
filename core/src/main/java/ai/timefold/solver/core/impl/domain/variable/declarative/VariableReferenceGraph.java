@@ -6,7 +6,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public sealed interface VariableReferenceGraph<Solution_>
-        permits DefaultVariableReferenceGraph, EmptyVariableReferenceGraph {
+        permits AbstractVariableReferenceGraph, DefaultVariableReferenceGraph, EmptyVariableReferenceGraph,
+        FixedVariableReferenceGraph {
 
     @Nullable
     EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity);

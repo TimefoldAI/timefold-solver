@@ -113,12 +113,13 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 if (!sourcePart.isDeclarative()) {
                     if (sourcePart.onRootEntity()) {
                         // No need for inverse set; source and target entity are the same.
-                        variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
-                            var changed = graph.lookupOrNull(fromVariableId, entity);
-                            if (changed != null) {
-                                graph.markChanged(changed);
-                            }
-                        });
+                        variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
+                                (graph, entity) -> {
+                                    var changed = graph.lookupOrNull(fromVariableId, entity);
+                                    if (changed != null) {
+                                        graph.markChanged(changed);
+                                    }
+                                });
                     } else {
                         // Need to create an inverse set from source to target
                         var inverseMap = new IdentityHashMap<Object, List<Object>>();
@@ -129,14 +130,15 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                         .computeIfAbsent(shadowEntity, ignored -> new ArrayList<>()).add(rootEntity));
                             }
                         }
-                        variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
-                            for (var item : inverseMap.getOrDefault(entity, Collections.emptyList())) {
-                                var changed = graph.lookupOrNull(fromVariableId, item);
-                                if (changed != null) {
-                                    graph.markChanged(changed);
-                                }
-                            }
-                        });
+                        variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
+                                (graph, entity) -> {
+                                    for (var item : inverseMap.getOrDefault(entity, Collections.emptyList())) {
+                                        var changed = graph.lookupOrNull(fromVariableId, item);
+                                        if (changed != null) {
+                                            graph.markChanged(changed);
+                                        }
+                                    }
+                                });
                     }
                 }
             }
@@ -152,7 +154,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
             if (!alias.isDeclarative() && alias.affectGraphEdges()) {
                 // Exploit the same fact as above
-                variableReferenceGraphBuilder.addBeforeProcessor(sourceVariableId,
+                variableReferenceGraphBuilder.addBeforeProcessor(GraphChangeType.REMOVE_EDGE, sourceVariableId,
                         (graph, toEntity) -> {
                             // from/to can be null in extended models
                             // ex: previous is used as a source, but only an extended class
@@ -172,7 +174,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             }
                             graph.removeEdge(from, to);
                         });
-                variableReferenceGraphBuilder.addAfterProcessor(sourceVariableId,
+                variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.ADD_EDGE, sourceVariableId,
                         (graph, toEntity) -> {
                             var to = graph.lookupOrNull(toVariableId, toEntity);
                             if (to == null) {
