@@ -224,10 +224,6 @@ public class SolverScope<Solution_> {
         return bestSolution.get();
     }
 
-    public Solution_ cloneBestSolution() {
-        return scoreDirector.cloneSolution(bestSolution.get());
-    }
-
     /**
      * The {@link PlanningSolution best solution} must never be the same instance
      * as the {@link PlanningSolution working solution}, it should be a (un)changed clone.
@@ -336,7 +332,7 @@ public class SolverScope<Solution_> {
 
     public void setWorkingSolutionFromBestSolution() {
         // The workingSolution must never be the same instance as the bestSolution.
-        scoreDirector.setWorkingSolution(cloneBestSolution());
+        scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {

@@ -23,10 +23,7 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
         var timeMillisSpent = solverScope.getBestSolutionTimeMillisSpent();
         var bestScore = solverScope.getBestScore();
         if (it.hasNext()) {
-            // We need to clone the new best solution, or we may share the same instance with user consumers.
-            // Reusing the instance can lead to inconsistent states if intermediary consumers change the solution.
-            var newBestSolutionCloned = solverScope.getScoreDirector().cloneSolution(newBestSolution);
-            var event = new DefaultBestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolutionCloned, bestScore);
+            var event = new DefaultBestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolution, bestScore);
             do {
                 it.next().bestSolutionChanged(event);
             } while (it.hasNext());
