@@ -762,6 +762,7 @@ Advanced configuration for a single entity class with a list variable and a sing
   <!-- List Variable -->
   <constructionHeuristic>
     <queuedValuePlacer>
+      <!-- The variableName property identifies the related list variable -->
       <valueSelector variableName="variableName">
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
