@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
@@ -56,15 +57,28 @@ public interface PhaseFactory<Solution_> {
                             + "without a configured termination (" + previousPhaseConfig + ").");
                 }
             }
+            var isConstructionPhase = ConstructionHeuristicPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
+            // We currently do not support nearby functionality for CH.
+            // Additionally, mixed models must not include any nearby settings for basic variables,
+            // as this may cause failures in certain cases,
+            // such as when defining multiple variables with a Cartesian product.
+            var entityPlacerConfig =
+                    isConstructionPhase ? ((ConstructionHeuristicPhaseConfig) phaseConfig).getEntityPlacerConfig() : null;
+            var disableNearbySetting =
+                    configPolicy.getNearbyDistanceMeterClass() != null && entityPlacerConfig != null
+                            && QueuedEntityPlacerConfig.class.isAssignableFrom(entityPlacerConfig.getClass())
+                            && configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables();
+            var updatedConfigPolicy =
+                    disableNearbySetting ? configPolicy.copyConfigPolicyWithoutNearbySetting() : configPolicy;
             // The initialization phase can only be applied to construction heuristics or custom phases
-            var isConstructionOrCustomPhase = ConstructionHeuristicPhaseConfig.class.isAssignableFrom(phaseConfig.getClass())
-                    || CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
+            var isConstructionOrCustomPhase =
+                    isConstructionPhase || CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
             // The next phase must be a local search
             var isNextPhaseLocalSearch = phaseIndex + 1 < phaseConfigList.size()
                     && LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass());
             PhaseFactory<Solution_> phaseFactory = PhaseFactory.create(phaseConfig);
             var phase = phaseFactory.buildPhase(phaseIndex,
-                    !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch, configPolicy,
+                    !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch, updatedConfigPolicy,
                     bestSolutionRecaller, termination);
             // Ensure only one initialization phase is set
             if (!isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch) {

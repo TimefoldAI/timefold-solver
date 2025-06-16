@@ -10,6 +10,7 @@ import java.util.Collections;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -259,4 +260,9 @@ class SwapMoveTest {
         assertThat(new SwapMove<>(variableDescriptorList, c, b)).hasToString("c {v2, v4, w2} <-> b {v1, v3, w1}");
     }
 
+    @Test
+    void testEnableNearbyMixedModel() {
+        var moveSelectorConfig = new SwapMoveSelectorConfig();
+        assertThat(moveSelectorConfig.canEnableNearbyInMixedModels()).isFalse();
+    }
 }

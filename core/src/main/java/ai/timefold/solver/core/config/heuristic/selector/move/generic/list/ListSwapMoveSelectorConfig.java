@@ -105,6 +105,11 @@ public class ListSwapMoveSelectorConfig
     }
 
     @Override
+    public boolean canEnableNearbyInMixedModels() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return getClass().getSimpleName() + "(" + valueSelectorConfig
                 + (secondaryValueSelectorConfig == null ? "" : ", " + secondaryValueSelectorConfig) + ")";

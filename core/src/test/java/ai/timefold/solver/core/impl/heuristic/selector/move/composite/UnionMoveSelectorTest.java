@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.composite;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -211,4 +213,9 @@ class UnionMoveSelectorTest {
         verifyPhaseLifecycle(childMoveSelectorList.get(1), 1, 1, 1);
     }
 
+    @Test
+    void testEnableNearbyMixedModel() {
+        var moveSelectorConfig = new UnionMoveSelectorConfig();
+        assertThat(moveSelectorConfig.canEnableNearbyInMixedModels()).isFalse();
+    }
 }

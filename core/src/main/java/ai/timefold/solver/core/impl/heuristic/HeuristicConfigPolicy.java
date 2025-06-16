@@ -161,6 +161,12 @@ public class HeuristicConfigPolicy<Solution_> {
         return cloneBuilder().build();
     }
 
+    public HeuristicConfigPolicy<Solution_> copyConfigPolicyWithoutNearbySetting() {
+        return cloneBuilder()
+                .withNearbyDistanceMeterClass(null)
+                .build();
+    }
+
     public HeuristicConfigPolicy<Solution_> createChildThreadConfigPolicy(ChildThreadType childThreadType) {
         return cloneBuilder()
                 .withLogIndentation(logIndentation + "        ")

@@ -47,7 +47,6 @@ import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassigned
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.Metrics;
@@ -348,7 +347,6 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                 .filter(e -> e.getValue() == null)).isEmpty();
     }
 
-    @Disabled("The mixed model is currently unavailable for general use")
     @Test
     void failMixedModelDefaultConfiguration() {
         var solverConfig = PlannerTestUtils

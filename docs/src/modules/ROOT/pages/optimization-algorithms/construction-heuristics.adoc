@@ -702,6 +702,79 @@ is supported too.
 For scaling out, see <<scalingConstructionHeuristics,scaling construction heuristics>>.
 
 
+[#mixedModelConstructionHeuristics]
+== Mixed modeling and construction heuristics
+
+The default behavior of the construction heuristic for xref:using-timefold-solver/modeling-planning-problems.adoc#mixedModels[mixed models] is
+to use strategies based on the allocation of xref:optimization-algorithms/construction-heuristics.adoc#allocateEntityFromQueue[entities] and xref:optimization-algorithms/construction-heuristics.adoc#allocateToValueFromQueue[values]
+for solving all related variables.
+
+=== Algorithm description
+
+The allocations work like this:
+
+. Put all entities in a queue.
+. Assign the first entity (from that queue) to the best value.
+. Repeat until all entities are assigned.
+. Put all values in a round-robin queue.
+. Assign the best entity to the first value (from that queue).
+. Repeat until all entities are assigned.
+
+[#mixedModelConfiguration]
+=== Configuration
+
+Simple configuration:
+
+[source,xml,options="nowrap"]
+----
+    <!-- Basic Variable -->
+    <constructionHeuristic>
+        <queuedEntityPlacer/>
+    </constructionHeuristic>
+    <!-- List Variable -->
+    <constructionHeuristic>
+        <queuedValuePlacer>
+            <!-- The variableName property identifies the related list variable -->
+            <valueSelector variableName="variableName"/>
+        </queuedValuePlacer>
+    </constructionHeuristic>
+----
+
+Advanced configuration for a single entity class with a list variable and a single basic variable:
+
+[source,xml,options="nowrap"]
+----
+  <!-- Basic Variable -->
+  <constructionHeuristic>
+    <queuedEntityPlacer>
+      <entitySelector id="placerEntitySelector">
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+      </entitySelector>
+      <changeMoveSelector>
+        <entitySelector mimicSelectorRef="placerEntitySelector"/>
+        <valueSelector>
+          <cacheType>PHASE</cacheType>
+          <selectionOrder>SORTED</selectionOrder>
+          <sorterManner>INCREASING_STRENGTH</sorterManner>
+        </valueSelector>
+      </changeMoveSelector>
+    </queuedEntityPlacer>
+  </constructionHeuristic>
+  <!-- List Variable -->
+  <constructionHeuristic>
+    <queuedValuePlacer>
+      <!-- The variableName property identifies the related list variable -->
+      <valueSelector variableName="variableName">
+        <cacheType>PHASE</cacheType>
+        <selectionOrder>SORTED</selectionOrder>
+        <sorterManner>INCREASING_STRENGTH</sorterManner>
+      </valueSelector>
+    </queuedValuePlacer>
+  </constructionHeuristic>
+----
+
 [#scalingConstructionHeuristics]
 == Scaling construction heuristics
 
