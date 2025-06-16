@@ -794,8 +794,41 @@ class SolverManager(Generic[Solution_, ProblemId_]):
 ----
 ====
 
+=== Required settings
 
-A `SolverJobBuilder` includes various settings, as shown in the following code snippet:
+The `SolverJobBuilder` contract includes many optional methods, but only two are required: `withProblemId(...)` and `withProblem(...)`.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+solverManager.solveBuilder()
+        .withProblemId(problemId)
+        .withProblem(problem)
+...
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+solver_manager.solve_builder()
+        .with_problem_id(problemId)
+        .with_problem(problem)
+...
+----
+====
+
+The job's unique ID is specified using `withProblemId(problemId)`.
+The provided ID allows for the identification of a specific problem,
+enabling actions such as checking the solving status or terminating its execution.
+In addition to the unique ID, we must specify the problem to solve using `withProblem(problem)`.
+
+=== Optional settings
+
+Additional optional methods are also included in the `SolverJobBuilder` contract:
 
 [tabs]
 ====
@@ -830,12 +863,6 @@ solver_manager.solve_builder()
 ----
 ====
 
-The job's unique ID is specified using `withProblemId(problemId)`.
-The provided ID allows for the identification of a specific problem,
-enabling actions such as checking the solving status or terminating its execution.
-In addition to the unique ID, we must specify the problem to solve using `withProblem(problem)`.
-Typically, the problem involves uninitialized planning variables that the solver will optimize.
-
 A consumer for the first initialized solution can be configured with `withFirstInitializedSolutionConsumer(...)`.
 The solution is returned by the last phase that immediately precedes the first local search phase.
 
@@ -845,7 +872,12 @@ The final best solution consumer,
 which is called at the end of the solving process,
 can be set using `withFinalBestSolutionConsumer(...)`.
 Additionally,
-an improved solution consumer capable of throttling events is available in the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[enterprise product].
+an improved solution consumer capable of throttling events is available in the xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[Enterprise Edition].
+
+[WARNING]
+====
+Do not modify the solutions returned by the events in `withFirstInitializedSolutionConsumer(...)` and `withBestSolutionConsumer(...)`. These instances are still utilized during the solving process, and any modifications may lead to solver corruption.
+====
 
 To handle errors that may arise during the solving process,
 set up the  handling logic by defining `withExceptionHandler(...)`.
@@ -858,17 +890,7 @@ such as the termination configuration, you can use the `withConfigOverride(...)`
 
 [NOTE]
 ====
-The `SolverJobBuilder` contract includes many settings, but only two are required: `withProblemId(...)` and `withProblem(...)`.
-====
-
-[NOTE]
-====
 The solver also permits the configuration of multiple solver managers with distinct settings in xref:integration/integration.adoc#integrationWithQuarkusMultipleResources[Quarkus] or xref:integration/integration.adoc#integrationWithSpringBootMultipleResources[Spring Boot].
-====
-
-[WARNING]
-====
-Do not modify the solutions returned by the events in `withFirstInitializedSolutionConsumer(...)` and `withBestSolutionConsumer(...)`. These instances are still utilized during the solving process, and any modifications may lead to solver corruption.
 ====
 
 [#solverManagerSolveBatch]
