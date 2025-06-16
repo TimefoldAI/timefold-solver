@@ -2,6 +2,8 @@ package ai.timefold.solver.core.impl.domain.solution.cloner;
 
 import java.lang.reflect.Field;
 
+import ai.timefold.solver.core.impl.domain.common.accessor.FieldHandle;
+
 final class FieldCloningUtils {
 
     static void copyBoolean(Field field, Object original, Object clone) {
@@ -172,33 +174,29 @@ final class FieldCloningUtils {
         }
     }
 
-    static void copyObject(Field field, Object original, Object clone) {
-        Object originalValue = FieldCloningUtils.getObjectFieldValue(original, field);
-        FieldCloningUtils.setObjectFieldValue(clone, field, originalValue);
+    static void copyObject(FieldHandle handles, Object original, Object clone) {
+        Object originalValue = FieldCloningUtils.getObjectFieldValue(original, handles);
+        FieldCloningUtils.setObjectFieldValue(clone, handles, originalValue);
     }
 
-    static Object getObjectFieldValue(Object bean, Field field) {
-        try {
-            return field.get(bean);
-        } catch (IllegalAccessException e) {
-            throw createExceptionOnRead(bean, field, e);
-        }
+    static Object getObjectFieldValue(Object bean, FieldHandle handle) {
+        return handle.get(bean);
     }
 
-    private static RuntimeException createExceptionOnRead(Object bean, Field field, Exception rootCause) {
+    private static RuntimeException createExceptionOnRead(Object bean, Field field, Throwable rootCause) {
         return new IllegalStateException("The class (" + bean.getClass() + ") has a field (" + field
                 + ") which cannot be read to create a planning clone.", rootCause);
     }
 
-    static void setObjectFieldValue(Object bean, Field field, Object value) {
+    static void setObjectFieldValue(Object bean, FieldHandle handle, Object value) {
         try {
-            field.set(bean, value);
-        } catch (IllegalAccessException e) {
-            throw createExceptionOnWrite(bean, field, value, e);
+            handle.set(bean, value);
+        } catch (Throwable e) {
+            throw createExceptionOnWrite(bean, handle.field(), value, e);
         }
     }
 
-    private static RuntimeException createExceptionOnWrite(Object bean, Field field, Object value, Exception rootCause) {
+    private static RuntimeException createExceptionOnWrite(Object bean, Field field, Object value, Throwable rootCause) {
         return new IllegalStateException("The class (" + bean.getClass() + ") has a field (" + field
                 + ") which cannot be written with the value (" + value + ") to create a planning clone.", rootCause);
     }
