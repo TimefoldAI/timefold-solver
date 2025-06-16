@@ -2501,6 +2501,94 @@ Two value range providers are usually combined:
 Since ``Domicile`` and ``Visit`` both implement ``Standstill``, an <<anonymousValueRangeProviders,anonymous value range>> on ``Standstill`` will combine both value ranges.
 ====
 
+[#mixedModels]
+== Mixed models
+
+If both xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic] and xref:using-timefold-solver/modeling-planning-problems#planningListVariable[list] variables are included in the model,
+it is referred to as a *mixed model*.
+This model eliminates the need for xref:using-timefold-solver/modeling-planning-problems#chainedPlanningVariable[chained]  variables
+when mixed variable types are required.
+
+The following planning entity defines two genuine variables:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Line {
+    @PlanningVariable
+    private Operator operator;
+
+    @PlanningListVariable
+    private List<Job> jobs;
+
+    ...
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_entity
+@dataclass
+class Line:
+    operator: Annotated[Operator | None, PlanningVariable]
+    jobs: Annotated[list[Job], PlanningListVariable] = field(default_factory=list)
+    ...
+----
+====
+
+The mixed models also allow for the creation of multiple planning entities, each defining its own variables:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Line {
+    @PlanningListVariable
+    private List<Job> jobs;
+
+    ...
+}
+
+@PlanningEntity
+public class LineOperation {
+    @PlanningVariable
+    private Operator operator;
+
+    ...
+}
+----
+
+Python::
++
+[source,python,options="nowrap"]
+----
+@planning_entity
+@dataclass
+class Line:
+    jobs: Annotated[list[Job], PlanningListVariable] = field(default_factory=list)
+    ...
+
+@planning_entity
+@dataclass
+class LineOperation:
+    operator: Annotated[Operator | None, PlanningVariable]
+    ...
+----
+====
+
+[WARNING]
+====
+Creating mixed models with chained and list variables is prohibited, and only one list variable can be defined.
+====
 
 [#planningProblemAndPlanningSolution]
 == Planning problem and planning solution

@@ -57,10 +57,7 @@ public interface PhaseFactory<Solution_> {
                             + "without a configured termination (" + previousPhaseConfig + ").");
                 }
             }
-            // The initialization phase can only be applied to construction heuristics or custom phases
             var isConstructionPhase = ConstructionHeuristicPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
-            var isConstructionOrCustomPhase =
-                    isConstructionPhase || CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
             // We currently do not support nearby functionality for CH.
             // Additionally, mixed models must not include any nearby settings for basic variables,
             // as this may cause failures in certain cases,
@@ -71,12 +68,15 @@ public interface PhaseFactory<Solution_> {
                     configPolicy.getNearbyDistanceMeterClass() != null && entityPlacerConfig != null
                             && QueuedEntityPlacerConfig.class.isAssignableFrom(entityPlacerConfig.getClass())
                             && configPolicy.getSolutionDescriptor().hasBothBasicAndListVariables();
+            var updatedConfigPolicy =
+                    disableNearbySetting ? configPolicy.copyConfigPolicyWithoutNearbySetting() : configPolicy;
+            // The initialization phase can only be applied to construction heuristics or custom phases
+            var isConstructionOrCustomPhase =
+                    isConstructionPhase || CustomPhaseConfig.class.isAssignableFrom(phaseConfig.getClass());
             // The next phase must be a local search
             var isNextPhaseLocalSearch = phaseIndex + 1 < phaseConfigList.size()
                     && LocalSearchPhaseConfig.class.isAssignableFrom(phaseConfigList.get(phaseIndex + 1).getClass());
             PhaseFactory<Solution_> phaseFactory = PhaseFactory.create(phaseConfig);
-            var updatedConfigPolicy =
-                    disableNearbySetting ? configPolicy.copyConfigPolicyWithoutNearbySetting() : configPolicy;
             var phase = phaseFactory.buildPhase(phaseIndex,
                     !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch, updatedConfigPolicy,
                     bestSolutionRecaller, termination);
