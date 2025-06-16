@@ -1956,6 +1956,8 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Pilar swap - basic
         allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
                 new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // R&R - basic
+        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig().withVariableName("basicValue"));
         // Change - list
         allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
         // Swap - list
@@ -2019,6 +2021,11 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Pilar swap - basic
         allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
                 new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        // R&R - basic
+        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig()
+                .withEntitySelectorConfig(
+                        new EntitySelectorConfig().withEntityClass(TestdataMixedMultiEntitySecondEntity.class))
+                .withVariableName("basicValue"));
         // Change - list
         allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
         // Swap - list
@@ -2072,6 +2079,60 @@ class DefaultSolverTest extends AbstractMeterTest {
             // and LS will find no improvement
             assertThat(entity.getBasicValue()).isNotSameAs(entity.getSecondBasicValue());
         }
+    }
+
+    @Test
+    void failRuinRecreateWithMultiVar() {
+        // Solver config
+        var localSearchConfig = new LocalSearchPhaseConfig().withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig());
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(localSearchConfig)
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("The entity class")
+                .hasMessageContaining("TestdataMixedEntity")
+                .hasMessageContaining("contains several variables")
+                .hasMessageContaining("it cannot be deduced automatically.")
+                .hasMessageContaining("Maybe set the property variableName");
+    }
+
+    @Test
+    void failRuinRecreateWithBadVar() {
+        // Solver config
+        var moveSelectionConfig = new RuinRecreateMoveSelectorConfig()
+                .withVariableName("badVariable");
+        var localSearchConfig = new LocalSearchPhaseConfig().withMoveSelectorConfig(moveSelectionConfig);
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
+                TestdataMixedOtherValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(localSearchConfig)
+                .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
+        var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("The entity class")
+                .hasMessageContaining("TestdataMixedEntity")
+                .hasMessageContaining("has no variable named as badVariable");
+    }
+
+    @Test
+    void failRuinRecreateWithMultiEntityMultiVar() {
+        // Solver config
+        var localSearchConfig = new LocalSearchPhaseConfig().withMoveSelectorConfig(new RuinRecreateMoveSelectorConfig());
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataMixedMultiEntitySolution.class, TestdataMixedMultiEntityFirstEntity.class,
+                        TestdataMixedMultiEntitySecondEntity.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withPhases(localSearchConfig)
+                .withEasyScoreCalculatorClass(TestdataMixedEntityEasyScoreCalculator.class);
+        var problem = TestdataMixedMultiEntitySolution.generateUninitializedSolution(2, 2, 2);
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
+                .hasMessageContaining("has no entityClass configured and because there are multiple in the entityClassSet")
+                .hasMessageContaining("it cannot be deduced automatically");
     }
 
     public static final class MinimizeUnusedEntitiesEasyScoreCalculator

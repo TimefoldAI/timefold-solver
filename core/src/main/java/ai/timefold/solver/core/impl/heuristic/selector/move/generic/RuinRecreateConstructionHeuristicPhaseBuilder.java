@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase.DefaultConstructionHeuristicPhaseBuilder;
@@ -19,8 +21,11 @@ public final class RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
         extends DefaultConstructionHeuristicPhaseBuilder<Solution_> {
 
     public static <Solution_> RuinRecreateConstructionHeuristicPhaseBuilder<Solution_>
-            create(HeuristicConfigPolicy<Solution_> solverConfigPolicy) {
-        var constructionHeuristicConfig = new ConstructionHeuristicPhaseConfig();
+            create(HeuristicConfigPolicy<Solution_> solverConfigPolicy, EntitySelectorConfig entitySelectorConfig) {
+        var queuedEntityPlacerConfig = new QueuedEntityPlacerConfig()
+                .withEntitySelectorConfig(entitySelectorConfig);
+        var constructionHeuristicConfig = new ConstructionHeuristicPhaseConfig()
+                .withEntityPlacerConfig(queuedEntityPlacerConfig);
         return create(solverConfigPolicy, constructionHeuristicConfig);
     }
 
