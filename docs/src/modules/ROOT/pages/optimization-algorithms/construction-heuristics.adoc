@@ -727,9 +727,11 @@ Simple configuration:
 
 [source,xml,options="nowrap"]
 ----
+    <!-- Basic Variable -->
     <constructionHeuristic>
         <queuedEntityPlacer/>
     </constructionHeuristic>
+    <!-- List Variable -->
     <constructionHeuristic>
         <queuedValuePlacer>
             <!-- The variableName property identifies the related list variable -->
