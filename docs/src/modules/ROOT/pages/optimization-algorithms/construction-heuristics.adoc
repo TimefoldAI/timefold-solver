@@ -732,6 +732,7 @@ Simple configuration:
     </constructionHeuristic>
     <constructionHeuristic>
         <queuedValuePlacer>
+            <!-- The variableName property identifies the related list variable -->
             <valueSelector variableName="variableName"/>
         </queuedValuePlacer>
     </constructionHeuristic>
