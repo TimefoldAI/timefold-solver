@@ -9,49 +9,40 @@ import java.lang.reflect.Type;
  */
 public final class ReflectionFieldMemberAccessor extends AbstractMemberAccessor {
 
-    private final Field field;
+    private final FieldHandle fieldHandle;
 
     public ReflectionFieldMemberAccessor(Field field) {
-        this.field = field;
-        // Performance hack by avoiding security checks
-        field.setAccessible(true);
+        this.fieldHandle = FieldHandle.of(field); // Use MethodHandles to access the field.
     }
 
     @Override
     public Class<?> getDeclaringClass() {
-        return field.getDeclaringClass();
+        return fieldHandle.field().getDeclaringClass();
     }
 
     @Override
     public String getName() {
-        return field.getName();
+        return fieldHandle.field().getName();
     }
 
     @Override
     public Class<?> getType() {
-        return field.getType();
+        return fieldHandle.field().getType();
     }
 
     @Override
     public Type getGenericType() {
-        return field.getGenericType();
+        return fieldHandle.field().getGenericType();
     }
 
     @Override
     public Object executeGetter(Object bean) {
+        var field = fieldHandle.field();
         if (bean == null) {
             throw new IllegalArgumentException("Requested field (%s) on a null bean."
                     .formatted(field));
         }
-        try {
-            return field.get(bean);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("""
-                    Cannot get the field (%s) on bean of class (%s).
-                    %s"""
-                    .formatted(field.getName(), bean.getClass(), MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE),
-                    e);
-        }
+        return fieldHandle.get(bean);
     }
 
     @Override
@@ -61,19 +52,12 @@ public final class ReflectionFieldMemberAccessor extends AbstractMemberAccessor 
 
     @Override
     public void executeSetter(Object bean, Object value) {
+        var field = fieldHandle.field();
         if (bean == null) {
             throw new IllegalArgumentException("Requested field (%s) on a null bean."
                     .formatted(field));
         }
-        try {
-            field.set(bean, value);
-        } catch (IllegalAccessException e) {
-            throw new IllegalStateException("""
-                    Cannot set the field (%s) on bean of class (%s).
-                    %s"""
-                    .formatted(field.getName(), bean.getClass(), MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE),
-                    e);
-        }
+        fieldHandle.set(bean, value);
     }
 
     @Override
@@ -83,17 +67,17 @@ public final class ReflectionFieldMemberAccessor extends AbstractMemberAccessor 
 
     @Override
     public <T extends Annotation> T getAnnotation(Class<T> annotationClass) {
-        return field.getAnnotation(annotationClass);
+        return fieldHandle.field().getAnnotation(annotationClass);
     }
 
     @Override
     public <T extends Annotation> T[] getDeclaredAnnotationsByType(Class<T> annotationClass) {
-        return field.getDeclaredAnnotationsByType(annotationClass);
+        return fieldHandle.field().getDeclaredAnnotationsByType(annotationClass);
     }
 
     @Override
     public String toString() {
-        return "field " + field;
+        return "field " + fieldHandle.field();
     }
 
 }

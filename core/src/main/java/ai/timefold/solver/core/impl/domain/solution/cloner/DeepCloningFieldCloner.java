@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import ai.timefold.solver.core.impl.domain.common.accessor.FieldHandle;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 /**
@@ -14,14 +15,14 @@ final class DeepCloningFieldCloner {
 
     private final AtomicReference<Metadata> valueDeepCloneDecision = new AtomicReference<>();
     private final AtomicInteger fieldDeepCloneDecision = new AtomicInteger(-1);
-    private final Field field;
+    private final FieldHandle fieldHandle;
 
     public DeepCloningFieldCloner(Field field) {
-        this.field = Objects.requireNonNull(field);
+        this.fieldHandle = FieldHandle.of(Objects.requireNonNull(field));
     }
 
-    public Field getField() {
-        return field;
+    public FieldHandle getFieldHandles() {
+        return fieldHandle;
     }
 
     /**
@@ -33,11 +34,11 @@ final class DeepCloningFieldCloner {
      * @param <C>
      */
     public <C> Object clone(SolutionDescriptor<?> solutionDescriptor, C original, C clone) {
-        Object originalValue = FieldCloningUtils.getObjectFieldValue(original, field);
+        Object originalValue = FieldCloningUtils.getObjectFieldValue(original, fieldHandle);
         if (deepClone(solutionDescriptor, original.getClass(), originalValue)) { // Defer filling in the field.
             return originalValue;
         } else { // Shallow copy.
-            FieldCloningUtils.setObjectFieldValue(clone, field, originalValue);
+            FieldCloningUtils.setObjectFieldValue(clone, fieldHandle, originalValue);
             return null;
         }
     }
@@ -77,7 +78,8 @@ final class DeepCloningFieldCloner {
          * The fieldTypeClass is guaranteed to not change for the particular field.
          */
         if (fieldDeepCloneDecision.get() < 0) {
-            fieldDeepCloneDecision.set(DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, fieldTypeClass) ? 1 : 0);
+            fieldDeepCloneDecision.set(
+                    DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, getFieldHandles().field(), fieldTypeClass) ? 1 : 0);
         }
         return fieldDeepCloneDecision.get() == 1;
     }

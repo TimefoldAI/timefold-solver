@@ -101,7 +101,7 @@ public final class CollectionUtils {
 
     private static int calculateCapacityForDefaultLoadFactor(int numElements) {
         // This guarantees the set/map will never need to grow.
-        return (int) Math.ceil(numElements / 0.75f);
+        return (int) Math.min(Math.ceil(numElements / 0.75d), Integer.MAX_VALUE);
     }
 
     public static <T> Set<T> newLinkedHashSet(int size) {
