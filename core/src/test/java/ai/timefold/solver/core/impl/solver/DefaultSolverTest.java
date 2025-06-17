@@ -2116,7 +2116,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, problem))
                 .hasMessageContaining("The entity class")
                 .hasMessageContaining("TestdataMixedEntity")
-                .hasMessageContaining("has no variable named as badVariable");
+                .hasMessageContaining("has no variable named badVariable");
     }
 
     @Test

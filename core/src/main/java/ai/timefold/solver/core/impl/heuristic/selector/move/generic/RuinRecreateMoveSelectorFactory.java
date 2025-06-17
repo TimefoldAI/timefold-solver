@@ -51,7 +51,7 @@ public final class RuinRecreateMoveSelectorFactory<Solution_>
                     .filter(v -> v.getVariableName().equals(config.getVariableName())).findFirst().orElse(null);
         }
         if (variableDescriptor == null) {
-            throw new UnsupportedOperationException("The entity class %s has no variable named as %s."
+            throw new UnsupportedOperationException("The entity class %s has no variable named %s."
                     .formatted(ruinRecreateEntitySelector.getEntityDescriptor().getEntityClass(), config.getVariableName()));
         }
         var nestedEntitySelectorConfig =
