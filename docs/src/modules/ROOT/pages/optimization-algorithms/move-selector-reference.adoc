@@ -373,13 +373,25 @@ Advanced configuration:
 ----
     <ruinRecreateMoveSelector>
       <minimumRuinedCount>5</minimumRuinedCount>
-      <maximumRuinedCount>40</maximumRuinedCount>
+      <maximumRuinedCount>20</maximumRuinedCount>
+      <entitySelector>
+        <entityClass>...Lecture</entityClass>
+        ...
+      </entitySelector>
+      <variableName>room</variableName>
     </ruinRecreateMoveSelector>
 ----
 
 The `minimumRuinedCount` and `maximumRuinedCount` properties limit the number of entities that are unassigned.
 The default values are `5` and `20` respectively, but for large datasets,
 it may prove beneficial to increase these values.
+
+The `entitySelector` property specifies which entity should be selected, allowing its values to be ruined and recreated.
+In a model with multiple entities, this property is required,
+or the solver will fail because it cannot automatically deduce the entity.
+
+When there are multiple basic variables defined in the model, the solver cannot automatically select one of them.
+The property `variableName` allows you to specify which variable will be used by the move generator.
 
 [NOTE]
 ====

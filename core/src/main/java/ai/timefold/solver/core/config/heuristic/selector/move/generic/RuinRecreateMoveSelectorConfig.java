@@ -2,8 +2,10 @@ package ai.timefold.solver.core.config.heuristic.selector.move.generic;
 
 import java.util.function.Consumer;
 
+import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
@@ -14,7 +16,9 @@ import org.jspecify.annotations.Nullable;
         "minimumRuinedCount",
         "maximumRuinedCount",
         "minimumRuinedPercentage",
-        "maximumRuinedPercentage"
+        "maximumRuinedPercentage",
+        "entitySelectorConfig",
+        "variableName"
 })
 public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecreateMoveSelectorConfig> {
 
@@ -29,6 +33,10 @@ public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecre
 
     protected Double minimumRuinedPercentage = null;
     protected Double maximumRuinedPercentage = null;
+
+    @XmlElement(name = "entitySelector")
+    protected EntitySelectorConfig entitySelectorConfig = null;
+    protected String variableName = null;
 
     // **************************
     // Getters/Setters
@@ -81,8 +89,35 @@ public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecre
         this.maximumRuinedPercentage = maximumRuinedPercentage;
     }
 
+    public EntitySelectorConfig getEntitySelectorConfig() {
+        return entitySelectorConfig;
+    }
+
+    public void setEntitySelectorConfig(EntitySelectorConfig entitySelectorConfig) {
+        this.entitySelectorConfig = entitySelectorConfig;
+    }
+
+    public String getVariableName() {
+        return variableName;
+    }
+
+    public void setVariableName(String variableName) {
+        this.variableName = variableName;
+    }
+
     public @NonNull RuinRecreateMoveSelectorConfig withMaximumRuinedPercentage(@NonNull Double maximumRuinedPercentage) {
         this.maximumRuinedPercentage = maximumRuinedPercentage;
+        return this;
+    }
+
+    public @NonNull RuinRecreateMoveSelectorConfig
+            withEntitySelectorConfig(@NonNull EntitySelectorConfig entitySelectorConfig) {
+        this.setEntitySelectorConfig(entitySelectorConfig);
+        return this;
+    }
+
+    public @NonNull RuinRecreateMoveSelectorConfig withVariableName(@NonNull String variableName) {
+        this.setVariableName(variableName);
         return this;
     }
 
@@ -102,7 +137,9 @@ public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecre
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        // No referenced classes.
+        if (entitySelectorConfig != null) {
+            entitySelectorConfig.visitReferencedClasses(classVisitor);
+        }
     }
 
     @Override
@@ -116,6 +153,9 @@ public class RuinRecreateMoveSelectorConfig extends MoveSelectorConfig<RuinRecre
                 ConfigUtils.inheritOverwritableProperty(minimumRuinedPercentage, inheritedConfig.getMinimumRuinedPercentage());
         maximumRuinedPercentage =
                 ConfigUtils.inheritOverwritableProperty(maximumRuinedPercentage, inheritedConfig.getMaximumRuinedPercentage());
+        entitySelectorConfig = ConfigUtils.inheritConfig(entitySelectorConfig, inheritedConfig.getEntitySelectorConfig());
+        variableName =
+                ConfigUtils.inheritOverwritableProperty(variableName, inheritedConfig.getVariableName());
         return this;
     }
 
