@@ -9,7 +9,6 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -49,11 +48,6 @@ public final class DataStreamFactory<Solution_> {
                         Joiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
         return share((AbstractUniDataStream<Solution_, A>) stream);
 
-    }
-
-    public <A> UniDataStream<Solution_, A>
-            forEachFromSolution(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
-        return share(new ForEachFromSolutionDataStream<>(this, valueCollectingFunction));
     }
 
     public <A> void assertValidForEachType(Class<A> fromType) {
