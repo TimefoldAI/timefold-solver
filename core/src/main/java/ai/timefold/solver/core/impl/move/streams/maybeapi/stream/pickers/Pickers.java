@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.stream.pickers;
 
+import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
@@ -184,6 +185,25 @@ public final class Pickers {
     public static <A, B, Property_ extends Comparable<Property_>> BiPicker<A, B>
             greaterThanOrEqual(Function<A, Property_> leftMapping, Function<B, Property_> rightMapping) {
         return new DefaultBiPicker<>(leftMapping, PickerType.GREATER_THAN_OR_EQUAL, rightMapping);
+    }
+
+    /**
+     * Applies a filter to the picked tuple,
+     * the tuple returning false will be ignored.
+     * <p>
+     * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
+     * with filter being {@code age == 20},
+     * this picker will produce pairs {@code (Ann, Ann), (Ann, Eric), (Eric, Ann), (Eric, Eric)}.
+     * <p>
+     * If you wish to access the working solution state,
+     * use {@link #filtering(FilteringBiPickerPredicate)} instead.
+     *
+     * @param filter filter to apply
+     * @param <A> type of the first fact in the tuple
+     * @param <B> type of the second fact in the tuple
+     */
+    public static <A, B> BiPicker<A, B> filtering(BiPredicate<A, B> filter) {
+        return FilteringBiPicker.of(filter);
     }
 
     /**
