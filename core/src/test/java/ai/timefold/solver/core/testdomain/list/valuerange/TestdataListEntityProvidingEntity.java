@@ -6,29 +6,29 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity
 public class TestdataListEntityProvidingEntity extends TestdataObject {
 
     @ValueRangeProvider(id = "valueRange")
-    private final List<TestdataListValue> valueRange;
+    private final List<TestdataValue> valueRange;
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataListValue> valueList;
+    private List<TestdataValue> valueList;
 
-    public TestdataListEntityProvidingEntity(List<TestdataListValue> valueRange) {
+    public TestdataListEntityProvidingEntity(List<TestdataValue> valueRange) {
         this.valueRange = valueRange;
     }
 
-    public List<TestdataListValue> getValueRange() {
+    public List<TestdataValue> getValueRange() {
         return valueRange;
     }
 
-    public List<TestdataListValue> getValueList() {
+    public List<TestdataValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListValue> valueList) {
+    public void setValueList(List<TestdataValue> valueList) {
         this.valueList = valueList;
     }
 }

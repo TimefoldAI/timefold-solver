@@ -42,6 +42,8 @@ import ai.timefold.solver.core.testdomain.invalid.nosolution.TestdataNoSolution;
 import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataNoProblemFactPropertySolution;
@@ -463,7 +465,7 @@ class SolutionDescriptorTest {
     }
 
     @Test
-    void problemScaleEntityProvidingValueRange() {
+    void basicVariableProblemScaleEntityProvidingValueRange() {
         var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataEntityProvidingSolution("Solution");
         var v1 = new TestdataValue("1");
@@ -473,6 +475,27 @@ class SolutionDescriptorTest {
                         List.of(v1, v2)),
                 new TestdataEntityProvidingEntity("B",
                         List.of(v1, v2, new TestdataValue("3")))));
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
+
+            // Add 1 to the value range sizes, since the value range allows unassigned
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(4L);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(3L + 4L);
+            softly.assertThat(solutionDescriptor.getProblemScale(solution))
+                    .isCloseTo(Math.log10(3 * 4), Percentage.withPercentage(1.0));
+        });
+    }
+
+    @Test
+    void listVariableProblemScaleEntityProvidingValueRange() {
+        var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
+        var solution = new TestdataListEntityProvidingSolution();
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        solution.setEntityList(List.of(
+                new TestdataListEntityProvidingEntity(List.of(v1, v2)),
+                new TestdataListEntityProvidingEntity(List.of(v1, v2, new TestdataValue("3")))));
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);

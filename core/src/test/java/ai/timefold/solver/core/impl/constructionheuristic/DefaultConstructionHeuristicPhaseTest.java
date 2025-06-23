@@ -33,6 +33,9 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
@@ -44,6 +47,9 @@ import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAll
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
@@ -329,6 +335,50 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                     .containsExactly(firstValue, secondValue);
         });
 
+    }
+
+    @Test
+    void solveWithEntityValueRangeBasicVariable() {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataEntityProvidingSolution.class, TestdataEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEntityProvidingScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var entity1 = new TestdataEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataEntityProvidingEntity("e2", Collections.emptyList());
+
+        var solution = new TestdataEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
+        // Only one entity should provide the value list and assign the values.
+        assertThat(bestSolution.getEntityList().get(0).getValue()).isNotNull();
+        assertThat(bestSolution.getEntityList().get(1).getValue()).isNull();
+    }
+
+    @Test
+    void solveWithEntityValueRangeListVariable() {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataListEntityProvidingSolution.class, TestdataListEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataListEntityProvidingScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var entity1 = new TestdataListEntityProvidingEntity(List.of(value1, value2));
+        var entity2 = new TestdataListEntityProvidingEntity(Collections.emptyList());
+
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, false);
+        assertThat(bestSolution).isNotNull();
+        // Only one entity should provide the value list and assign the values.
+        assertThat(entity1.getValueList()).isNotEmpty();
+        assertThat(entity2.getValueList()).isEmpty();
     }
 
     @Test
