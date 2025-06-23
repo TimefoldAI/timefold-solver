@@ -1,12 +1,12 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.stream.pickers;
 
-import java.util.function.BiPredicate;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
 import ai.timefold.solver.core.impl.move.streams.pickers.DefaultBiPicker;
 import ai.timefold.solver.core.impl.move.streams.pickers.FilteringBiPicker;
+import ai.timefold.solver.core.impl.move.streams.pickers.FilteringBiPicker.FilteringBiPickerPredicate;
 import ai.timefold.solver.core.impl.move.streams.pickers.PickerType;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
@@ -17,7 +17,7 @@ import org.jspecify.annotations.NullMarked;
  * for use in {@link UniMoveStream#pick(UniDataStream, BiPicker[])}, ...
  * 
  * TODO needs a better name, this suggests that this actually picks something;
- *  joiner is also a bad name, as it could be confused with joiners in CS, which are different.
+ * joiner is also a bad name, as it could be confused with joiners in CS, which are different.
  */
 @NullMarked
 public final class Pickers {
@@ -193,12 +193,15 @@ public final class Pickers {
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with filter being {@code age == 20},
      * this picker will produce pairs {@code (Ann, Ann), (Ann, Eric), (Eric, Ann), (Eric, Eric)}.
+     * <p>
+     * The first argument to the predicate allows the filter to access the working solution state.
      *
      * @param filter filter to apply
+     * @param <Solution_> the solution type
      * @param <A> type of the first fact in the tuple
      * @param <B> type of the second fact in the tuple
      */
-    public static <A, B> BiPicker<A, B> filtering(BiPredicate<A, B> filter) {
+    public static <Solution_, A, B> BiPicker<A, B> filtering(FilteringBiPickerPredicate<Solution_, A, B> filter) {
         return new FilteringBiPicker<>(filter);
     }
 
