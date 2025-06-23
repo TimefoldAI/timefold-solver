@@ -15,12 +15,15 @@ import org.jspecify.annotations.NullMarked;
 /**
  * Creates a {@link BiPicker}, ... instance
  * for use in {@link UniMoveStream#pick(UniDataStream, BiPicker[])}, ...
+ * 
+ * TODO needs a better name, this suggests that this actually picks something;
+ *  joiner is also a bad name, as it could be confused with joiners in CS, which are different.
  */
 @NullMarked
 public final class Pickers {
 
     // ************************************************************************
-    // BiJoiner
+    // BiPicker
     // ************************************************************************
 
     /**
@@ -48,7 +51,7 @@ public final class Pickers {
      * These are exactly the pairs where {@code leftMapping.apply(A).equals(rightMapping.apply(B))}.
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with both leftMapping and rightMapping being {@code Person::getAge},
-     * this joiner will produce pairs {@code (Ann, Ann), (Ann, Eric), (Beth, Beth), (Eric, Ann), (Eric, Eric)}.
+     * this picker will produce pairs {@code (Ann, Ann), (Ann, Eric), (Beth, Beth), (Eric, Ann), (Eric, Eric)}.
      *
      * @param <B> the type of object on the right
      * @param <Property_> the type of the property to compare
@@ -77,7 +80,7 @@ public final class Pickers {
      * <p>
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with both leftMapping and rightMapping being {@code Person::getAge},
-     * this joiner will produce pairs {@code (Ann, Beth), (Eric, Beth)}.
+     * this picker will produce pairs {@code (Ann, Beth), (Eric, Beth)}.
      *
      * @param leftMapping mapping function to apply to A
      * @param rightMapping mapping function to apply to B
@@ -107,7 +110,7 @@ public final class Pickers {
      * <p>
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with both leftMapping and rightMapping being {@code Person::getAge},
-     * this joiner will produce pairs
+     * this picker will produce pairs
      * {@code (Ann, Ann), (Ann, Beth), (Ann, Eric), (Beth, Beth), (Eric, Ann), (Eric, Beth), (Eric, Eric)}.
      *
      * @param leftMapping mapping function to apply to A
@@ -138,7 +141,7 @@ public final class Pickers {
      * <p>
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with both leftMapping and rightMapping being {@code Person::getAge},
-     * this joiner will produce pairs {@code (Beth, Ann), (Beth, Eric)}.
+     * this picker will produce pairs {@code (Beth, Ann), (Beth, Eric)}.
      *
      * @param leftMapping mapping function to apply to A
      * @param rightMapping mapping function to apply to B
@@ -169,7 +172,7 @@ public final class Pickers {
      * <p>
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with both leftMapping and rightMapping being {@code Person::getAge},
-     * this joiner will produce pairs
+     * this picker will produce pairs
      * {@code (Ann, Ann), (Ann, Eric), (Beth, Ann), (Beth, Beth), (Beth, Eric), (Eric, Ann), (Eric, Eric)}.
      *
      * @param leftMapping mapping function to apply to A
@@ -184,12 +187,12 @@ public final class Pickers {
     }
 
     /**
-     * Applies a filter to the joined tuple,
+     * Applies a filter to the picked tuple,
      * the tuple returning false will be ignored.
      * <p>
      * For example, on a cartesian product of list {@code [Ann(age = 20), Beth(age = 25), Eric(age = 20)]}
      * with filter being {@code age == 20},
-     * this joiner will produce pairs {@code (Ann, Ann), (Ann, Eric), (Eric, Ann), (Eric, Eric)}.
+     * this picker will produce pairs {@code (Ann, Ann), (Ann, Eric), (Eric, Ann), (Eric, Eric)}.
      *
      * @param filter filter to apply
      * @param <A> type of the first fact in the tuple
@@ -206,7 +209,7 @@ public final class Pickers {
      * For example, on a cartesian product of list
      * {@code [Ann(start=08:00, end=14:00), Beth(start=12:00, end=18:00), Eric(start=16:00, end=22:00)]}
      * with startMapping being {@code Person::getStart} and endMapping being {@code Person::getEnd},
-     * this joiner will produce pairs
+     * this picker will produce pairs
      * {@code (Ann, Ann), (Ann, Beth), (Beth, Ann), (Beth, Beth), (Beth, Eric), (Eric, Beth), (Eric, Eric)}.
      *
      * @param startMapping maps the argument to the start point of its interval (inclusive)
