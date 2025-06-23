@@ -2,14 +2,12 @@ package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 
 import java.util.List;
 
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
-import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityWithArrayValueRange;
 
 import org.junit.jupiter.api.Test;
@@ -35,12 +33,5 @@ class ListVariableDescriptorTest {
     void buildDescriptorWithArrayValueRange() {
         assertThatCode(TestdataListEntityWithArrayValueRange::buildVariableDescriptorForValueList)
                 .doesNotThrowAnyException();
-    }
-
-    @Test
-    void requiresEntityIndependentValueRange() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(TestdataListEntityProvidingSolution::buildSolutionDescriptor)
-                .withMessageContaining("is not supported with a list variable");
     }
 }
