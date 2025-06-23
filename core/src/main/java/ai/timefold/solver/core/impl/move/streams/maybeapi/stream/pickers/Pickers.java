@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.move.streams.maybeapi.stream.pickers;
 import java.util.function.BiPredicate;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.move.streams.generic.common.pickers.DefaultBiPicker;
-import ai.timefold.solver.core.impl.move.streams.generic.common.pickers.FilteringBiPicker;
-import ai.timefold.solver.core.impl.move.streams.generic.common.pickers.PickerType;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
+import ai.timefold.solver.core.impl.move.streams.pickers.DefaultBiPicker;
+import ai.timefold.solver.core.impl.move.streams.pickers.FilteringBiPicker;
+import ai.timefold.solver.core.impl.move.streams.pickers.PickerType;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 import org.jspecify.annotations.NullMarked;

@@ -1,17 +1,17 @@
-package ai.timefold.solver.core.impl.move.streams.generic.provider;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
 
 import java.util.Objects;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.generic.common.pickers.FilteringBiPicker;
-import ai.timefold.solver.core.impl.move.streams.generic.common.pickers.SolutionBasedFilteringBiPicker;
-import ai.timefold.solver.core.impl.move.streams.generic.move.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.pickers.BiPicker;
+import ai.timefold.solver.core.impl.move.streams.pickers.FilteringBiPicker;
+import ai.timefold.solver.core.impl.move.streams.pickers.SolutionBasedFilteringBiPicker;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
