@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -185,8 +187,45 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
+    public <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @Nullable Entity_ entity, @Nullable Value_ value) {
+        if (value == null) {
+            if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariableMetaModel) {
+                return basicVariableMetaModel.allowsUnassigned();
+            } else if (variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel) {
+                return listVariableMetaModel.allowsUnassignedValues();
+            } else {
+                throw new IllegalStateException("Impossible state: The variable metamodel (%s) is neither %s nor %s."
+                        .formatted(variableMetaModel, PlanningVariableMetaModel.class.getSimpleName(),
+                                PlanningListVariableMetaModel.class.getSimpleName()));
+            }
+        }
+        var valueRangeDescriptor = extractValueRangeDescriptor(variableMetaModel);
+        if (entity == null && valueRangeDescriptor.isEntityIndependent()) {
+            throw new IllegalArgumentException("The entity must be provided when the value range (%s) is defined on an entity."
+                    .formatted(valueRangeDescriptor));
+        }
+        // TODO Optimize this by caching the lookup on a potentially very long list.
+        var valueRange = valueRangeDescriptor.extractValueRange(backingScoreDirector.getWorkingSolution(), entity);
+        return valueRange.contains(value);
+    }
+
+    @Override
     public final <T> @Nullable T rebase(@Nullable T problemFactOrPlanningEntity) {
         return externalScoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
+    }
+
+    private static <Solution_, Entity_, Value_> ValueRangeDescriptor<Solution_>
+            extractValueRangeDescriptor(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel_) {
+            return extractVariableDescriptor(variableMetaModel_).getValueRangeDescriptor();
+        } else if (variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel) {
+            return extractVariableDescriptor(listVariableMetaModel).getValueRangeDescriptor();
+        } else {
+            throw new IllegalStateException("Impossible state: The variable metamodel (%s) is neither %s nor %s."
+                    .formatted(variableMetaModel, PlanningVariableMetaModel.class.getSimpleName(),
+                            PlanningListVariableMetaModel.class.getSimpleName()));
+        }
     }
 
     private static <Solution_, Entity_, Value_> BasicVariableDescriptor<Solution_>
