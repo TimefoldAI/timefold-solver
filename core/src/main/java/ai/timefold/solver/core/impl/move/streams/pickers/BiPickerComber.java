@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.generic.common.pickers;
+package ai.timefold.solver.core.impl.move.streams.pickers;
 
 import java.util.ArrayList;
 import java.util.List;
