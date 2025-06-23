@@ -22,9 +22,13 @@ public class TestdataEntityProvidingEntity extends TestdataObject {
         return buildEntityDescriptor().getGenuineVariableDescriptor("value");
     }
 
-    private final List<TestdataValue> valueRange;
+    private List<TestdataValue> valueRange;
 
     private TestdataValue value;
+
+    public TestdataEntityProvidingEntity() {
+        // Required for cloning
+    }
 
     public TestdataEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
         this(code, valueRange, null);
@@ -45,13 +49,12 @@ public class TestdataEntityProvidingEntity extends TestdataObject {
         this.value = value;
     }
 
-    // ************************************************************************
-    // Complex methods
-    // ************************************************************************
-
     @ValueRangeProvider(id = "valueRange")
     public List<TestdataValue> getValueRange() {
         return valueRange;
     }
 
+    public void setValueRange(List<TestdataValue> valueRange) {
+        this.valueRange = valueRange;
+    }
 }
