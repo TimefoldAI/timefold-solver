@@ -28,6 +28,11 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
     }
 
     @Override
+    public boolean hasValueRangeOnEntity() {
+        return !variableDescriptor.isValueRangeEntityIndependent();
+    }
+
+    @Override
     public boolean allowsUnassigned() {
         return variableDescriptor.allowsUnassigned();
     }
@@ -58,4 +63,5 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
         return "Genuine Variable '%s %s.%s' (allowsUnassigned: %b, isChained: %b)"
                 .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassigned(), isChained());
     }
+
 }

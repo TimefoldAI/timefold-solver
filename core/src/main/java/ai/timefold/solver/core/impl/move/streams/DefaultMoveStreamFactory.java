@@ -1,9 +1,6 @@
 package ai.timefold.solver.core.impl.move.streams;
 
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
@@ -11,8 +8,6 @@ import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
-import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -61,35 +56,6 @@ public final class DefaultMoveStreamFactory<Solution_>
     @Override
     public <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass) {
         return dataStreamFactory.forEachNonDiscriminating(sourceClass);
-    }
-
-    @Override
-    public <Entity_, A> UniDataStream<Solution_, A>
-            enumeratePossibleValues(PlanningVariableMetaModel<Solution_, Entity_, A> variableMetaModel) {
-        if (variableMetaModel.isChained()) { // Shouldn't have got this far.
-            throw new IllegalArgumentException("Impossible state: chained variable (%s)."
-                    .formatted(variableMetaModel));
-        }
-        var variableDescriptor = getVariableDescriptor(variableMetaModel);
-        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-        if (variableDescriptor.isValueRangeEntityIndependent()) {
-            return dataStreamFactory.forEachFromSolution(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
-        } else {
-            throw new UnsupportedOperationException("Value range on entity is not yet supported.");
-        }
-    }
-
-    private static <Solution_> GenuineVariableDescriptor<Solution_>
-            getVariableDescriptor(GenuineVariableMetaModel<Solution_, ?, ?> variableMetaModel) {
-        if (variableMetaModel instanceof DefaultPlanningVariableMetaModel<Solution_, ?, ?> planningVariableMetaModel) {
-            return planningVariableMetaModel.variableDescriptor();
-        } else if (variableMetaModel instanceof DefaultPlanningListVariableMetaModel<Solution_, ?, ?> planningListVariableMetaModel) {
-            return planningListVariableMetaModel.variableDescriptor();
-        } else {
-            throw new IllegalStateException(
-                    "Impossible state: variable metamodel (%s) represents neither basic not list variable."
-                            .formatted(variableMetaModel.getClass().getSimpleName()));
-        }
     }
 
     @Override

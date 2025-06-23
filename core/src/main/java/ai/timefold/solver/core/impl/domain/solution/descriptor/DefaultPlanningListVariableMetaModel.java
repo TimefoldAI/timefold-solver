@@ -28,6 +28,11 @@ public record DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>(
     }
 
     @Override
+    public boolean hasValueRangeOnEntity() {
+        return !variableDescriptor.isValueRangeEntityIndependent();
+    }
+
+    @Override
     public boolean allowsUnassignedValues() {
         return false;
     }

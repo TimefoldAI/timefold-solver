@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.pickers.BiPicker;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -25,6 +26,11 @@ public final class DefaultUniMoveStream<Solution_, A> implements InnerUniMoveStr
     @Override
     public <B> BiMoveStream<Solution_, A, B> pick(UniDataStream<Solution_, B> uniDataStream, BiPredicate<A, B> filter) {
         return new DefaultBiMoveStream<>(this, ((AbstractUniDataStream<Solution_, B>) uniDataStream).createDataset(), filter);
+    }
+
+    @Override
+    public <B> BiMoveStream<Solution_, A, B> pick(UniDataStream<Solution_, B> uniDataStream, BiPicker<A, B>... pickers) {
+        return null;
     }
 
     @Override
