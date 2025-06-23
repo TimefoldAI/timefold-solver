@@ -8,8 +8,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -49,23 +47,6 @@ public interface MoveStreamFactory<Solution_> {
      * Otherwise as defined by {@link #enumerate(Class)}.
      */
     <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass);
-
-    /**
-     * Enumerate possible values for a given basic variable.
-     * If the variable allows unassigned values, the resulting stream will include a null value.
-     *
-     * @throws UnsupportedOperationException If the variable in question is a list variable,
-     *         or if the basic variable is chained.
-     * @return data stream with all possible values of a given variable
-     * @see #enumeratePossiblePositions(PlanningListVariableMetaModel) For list variables, use a specialized method.
-     */
-    <Entity_, A> UniDataStream<Solution_, A>
-            enumeratePossibleValues(PlanningVariableMetaModel<Solution_, Entity_, A> variableMetaModel);
-
-    default <Entity_, A> UniDataStream<Solution_, A>
-            enumeratePossiblePositions(PlanningListVariableMetaModel<Solution_, Entity_, A> variableMetaModel) {
-        throw new UnsupportedOperationException(); // TODO
-    }
 
     default <A> UniMoveStream<Solution_, A> pick(Class<A> clz) {
         return pick(enumerate(clz));
