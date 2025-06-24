@@ -189,43 +189,12 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     @Override
     public <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @Nullable Entity_ entity, @Nullable Value_ value) {
-        if (value == null) {
-            if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariableMetaModel) {
-                return basicVariableMetaModel.allowsUnassigned();
-            } else if (variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel) {
-                return listVariableMetaModel.allowsUnassignedValues();
-            } else {
-                throw new IllegalStateException("Impossible state: The variable metamodel (%s) is neither %s nor %s."
-                        .formatted(variableMetaModel, PlanningVariableMetaModel.class.getSimpleName(),
-                                PlanningListVariableMetaModel.class.getSimpleName()));
-            }
-        }
-        var valueRangeDescriptor = extractValueRangeDescriptor(variableMetaModel);
-        if (entity == null && valueRangeDescriptor.isEntityIndependent()) {
-            throw new IllegalArgumentException("The entity must be provided when the value range (%s) is defined on an entity."
-                    .formatted(valueRangeDescriptor));
-        }
-        // TODO Optimize this by caching the lookup on a potentially very long list.
-        var valueRange = valueRangeDescriptor.extractValueRange(backingScoreDirector.getWorkingSolution(), entity);
-        return valueRange.contains(value);
+        return backingScoreDirector.isValueInValueRange(variableMetaModel, entity, value);
     }
 
     @Override
     public final <T> @Nullable T rebase(@Nullable T problemFactOrPlanningEntity) {
         return externalScoreDirector.lookUpWorkingObject(problemFactOrPlanningEntity);
-    }
-
-    private static <Solution_, Entity_, Value_> ValueRangeDescriptor<Solution_>
-            extractValueRangeDescriptor(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel_) {
-            return extractVariableDescriptor(variableMetaModel_).getValueRangeDescriptor();
-        } else if (variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel) {
-            return extractVariableDescriptor(listVariableMetaModel).getValueRangeDescriptor();
-        } else {
-            throw new IllegalStateException("Impossible state: The variable metamodel (%s) is neither %s nor %s."
-                    .formatted(variableMetaModel, PlanningVariableMetaModel.class.getSimpleName(),
-                            PlanningListVariableMetaModel.class.getSimpleName()));
-        }
     }
 
     private static <Solution_, Entity_, Value_> BasicVariableDescriptor<Solution_>

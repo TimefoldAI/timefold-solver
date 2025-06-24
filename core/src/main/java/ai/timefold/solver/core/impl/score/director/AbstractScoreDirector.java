@@ -23,7 +23,10 @@ import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -41,6 +44,9 @@ import ai.timefold.solver.core.impl.solver.exception.ScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.UndoScoreCorruptionException;
 import ai.timefold.solver.core.impl.solver.exception.VariableCorruptionException;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NonNull;
@@ -311,6 +317,43 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected void setWorkingEntityListDirty() {
         workingEntityListRevision++;
+    }
+
+    @Override
+    public <Entity_, Value_> boolean isValueInValueRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @Nullable Entity_ entity, @Nullable Value_ value) {
+        if (value == null) {
+            if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariableMetaModel) {
+                return basicVariableMetaModel.allowsUnassigned();
+            } else if (variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel) {
+                return listVariableMetaModel.allowsUnassignedValues();
+            } else {
+                throw new IllegalStateException("Impossible state: The variable metamodel (%s) is neither %s nor %s."
+                        .formatted(variableMetaModel, PlanningVariableMetaModel.class.getSimpleName(),
+                                PlanningListVariableMetaModel.class.getSimpleName()));
+            }
+        }
+        var valueRangeDescriptor = extractValueRangeDescriptor(variableMetaModel);
+        if (entity == null && valueRangeDescriptor.isEntityIndependent()) {
+            throw new IllegalArgumentException("The entity must be provided when the value range (%s) is defined on an entity."
+                    .formatted(valueRangeDescriptor));
+        }
+        // TODO Optimize this by caching the lookup on a potentially very long list.
+        var valueRange = valueRangeDescriptor.extractValueRange(getWorkingSolution(), entity);
+        return valueRange.contains(value);
+    }
+
+    private static <Solution_, Entity_, Value_> ValueRangeDescriptor<Solution_>
+            extractValueRangeDescriptor(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        if (variableMetaModel instanceof DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariableMetaModel) {
+            return basicVariableMetaModel.variableDescriptor().getValueRangeDescriptor();
+        } else if (variableMetaModel instanceof DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel) {
+            return listVariableMetaModel.variableDescriptor().getValueRangeDescriptor();
+        } else {
+            throw new IllegalStateException("Impossible state: The variable metamodel (%s) is neither %s nor %s."
+                    .formatted(variableMetaModel, PlanningVariableMetaModel.class.getSimpleName(),
+                            PlanningListVariableMetaModel.class.getSimpleName()));
+        }
     }
 
     @Override

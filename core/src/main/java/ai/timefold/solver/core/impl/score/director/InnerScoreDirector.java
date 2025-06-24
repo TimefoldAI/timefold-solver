@@ -36,6 +36,7 @@ import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.Nullable;
@@ -182,6 +183,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision);
 
     boolean isWorkingSolutionInitialized();
+
+    <Entity_, Value_> boolean isValueInValueRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableDescriptor, @Nullable Entity_ entity, @Nullable Value_ value);
 
     /**
      * Some score directors keep a set of changes
