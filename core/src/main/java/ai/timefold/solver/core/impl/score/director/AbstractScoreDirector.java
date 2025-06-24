@@ -87,11 +87,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private int workingInitScore = 0;
 
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
+
+    private final ValueRangeState<Solution_> valueRangeState = new ValueRangeState<>();
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
-
-    // Null when no list variable
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
 
     protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
             ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
@@ -223,6 +223,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      */
     protected void setWorkingSolution(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
         this.workingSolution = requireNonNull(workingSolution);
+        this.valueRangeState.resetWorkingSolution(workingSolution);
         var solutionDescriptor = getSolutionDescriptor();
 
         /*
@@ -320,27 +321,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public <Entity_, Value_> boolean isValueInValueRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    public <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @Nullable Entity_ entity, @Nullable Value_ value) {
-        if (value == null) {
-            if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> basicVariableMetaModel) {
-                return basicVariableMetaModel.allowsUnassigned();
-            } else if (variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableMetaModel) {
-                return listVariableMetaModel.allowsUnassignedValues();
-            } else {
-                throw new IllegalStateException("Impossible state: The variable metamodel (%s) is neither %s nor %s."
-                        .formatted(variableMetaModel, PlanningVariableMetaModel.class.getSimpleName(),
-                                PlanningListVariableMetaModel.class.getSimpleName()));
-            }
-        }
         var valueRangeDescriptor = extractValueRangeDescriptor(variableMetaModel);
         if (entity == null && valueRangeDescriptor.isEntityIndependent()) {
             throw new IllegalArgumentException("The entity must be provided when the value range (%s) is defined on an entity."
                     .formatted(valueRangeDescriptor));
         }
-        // TODO Optimize this by caching the lookup on a potentially very long list.
-        var valueRange = valueRangeDescriptor.extractValueRange(getWorkingSolution(), entity);
-        return valueRange.contains(value);
+        return valueRangeState.isInRange(valueRangeDescriptor, entity, value);
     }
 
     private static <Solution_, Entity_, Value_> ValueRangeDescriptor<Solution_>
@@ -497,6 +485,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
             moveStreamsBasedMoveRepository.update(entity);
         }
+        valueRangeState.resetEntityValueRange(entity);
         variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
     }
 
@@ -550,6 +539,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
+        valueRangeState.resetEntityValueRange(entity);
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
             moveStreamsBasedMoveRepository.update(entity);
@@ -569,6 +559,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(entity);
         }
+        valueRangeState.resetEntityValueRange(entity);
         if (!allChangesWillBeUndoneBeforeStepEnds) {
             if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
                 moveStreamsBasedMoveRepository.retract(entity);
