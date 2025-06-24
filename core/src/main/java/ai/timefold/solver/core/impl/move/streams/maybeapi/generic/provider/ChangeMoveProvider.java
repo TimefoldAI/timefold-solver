@@ -25,14 +25,9 @@ public final class ChangeMoveProvider<Solution_, Entity_, Value_>
         this.entityValueFilter = (solutionView, entity, value) -> {
             Value_ oldValue = solutionView.getValue(variableMetaModel, entity);
             if (Objects.equals(oldValue, value)) {
-                System.out.println("Skipping ChangeMove for entity " + entity + " with value " + value
-                        + " because it is the same as the current value " + oldValue);
                 return false;
             }
-            var isInRange = solutionView.isValueInRange(variableMetaModel, entity, value);
-            System.out.println("ChangeMove for entity " + entity + " with value " + value
-                    + " isInRange: " + isInRange);
-            return isInRange;
+            return solutionView.isValueInRange(variableMetaModel, entity, value);
         };
     }
 
@@ -40,6 +35,9 @@ public final class ChangeMoveProvider<Solution_, Entity_, Value_>
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
         var defaultMoveStreamFactory = (DefaultMoveStreamFactory<Solution_>) moveStreamFactory;
         var entityStream = defaultMoveStreamFactory.enumerate(variableMetaModel.entity().type());
+        // Together with the entityValueFilter, will iterate over all values
+        // and only include those that are valid for the entity based on its value range,
+        // regardless of whether the value range is on solution or on entity.
         var valueStream = defaultMoveStreamFactory.enumerate(variableMetaModel.type(), true);
         return moveStreamFactory.pick(entityStream)
                 .pick(valueStream, entityValueFilter)

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.testdomain.valuerange.entityproviding;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,41 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
     public static SolutionDescriptor<TestdataEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataEntityProvidingSolution.class,
                 TestdataEntityProvidingEntity.class);
+    }
+
+    public static TestdataEntityProvidingSolution generateSolution() {
+        return generateSolution(5, 5);
+    }
+
+    public static TestdataEntityProvidingSolution generateSolution(int valueListSize, int entityListSize) {
+        return generateSolution(valueListSize, entityListSize, true);
+    }
+
+    public static TestdataEntityProvidingSolution generateUninitializedSolution(int valueListSize, int entityListSize) {
+        return generateSolution(valueListSize, entityListSize, false);
+    }
+
+    private static TestdataEntityProvidingSolution generateSolution(int valueListSize, int entityListSize,
+            boolean initialized) {
+        var solution = new TestdataEntityProvidingSolution("Generated Solution 0");
+        var valueList = new ArrayList<TestdataValue>(valueListSize);
+        for (var i = 0; i < valueListSize; i++) {
+            var value = new TestdataValue("Generated Value " + i);
+            valueList.add(value);
+        }
+        var entityList = new ArrayList<TestdataEntityProvidingEntity>(entityListSize);
+        for (var i = 0; i < entityListSize; i++) {
+            var expectedCount = Math.max(1, valueListSize / entityListSize);
+            var valueRange = new ArrayList<TestdataValue>();
+            for (var j = 0; j < expectedCount; j++) {
+                valueRange.add(valueList.get((i * j) % valueListSize));
+            }
+            var entity = new TestdataEntityProvidingEntity("Generated Entity " + i, valueRange);
+            entity.setValue(initialized ? valueList.get(i % valueListSize) : null);
+            entityList.add(entity);
+        }
+        solution.setEntityList(entityList);
+        return solution;
     }
 
     private List<TestdataEntityProvidingEntity> entityList;
@@ -58,7 +94,7 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
     @ProblemFactCollectionProperty
     public Collection<TestdataValue> getProblemFacts() {
         Set<TestdataValue> valueSet = new HashSet<>();
-        for (TestdataEntityProvidingEntity entity : entityList) {
+        for (var entity : entityList) {
             valueSet.addAll(entity.getValueRange());
         }
         return valueSet;
