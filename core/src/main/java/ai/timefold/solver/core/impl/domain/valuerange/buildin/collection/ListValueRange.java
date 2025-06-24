@@ -9,13 +9,16 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
     private static final int LIST_SIZE_LOOKUP_LIMIT = 10;
 
     private final List<T> list;
-    private Set<T> lookupSet;
+    private @Nullable Set<T> lookupSet; // Initialized lazily for large lists.
 
     public ListValueRange(List<T> list) {
         this.list = list;
@@ -35,9 +38,9 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     }
 
     @Override
-    public boolean contains(T value) {
+    public boolean contains(@Nullable T value) {
         if (list.size() > LIST_SIZE_LOOKUP_LIMIT) {
-            if (lookupSet == null) { // Lazy initialization of the lookup set for performance
+            if (lookupSet == null) {
                 lookupSet = Set.copyOf(list);
             }
             return lookupSet.contains(value);
