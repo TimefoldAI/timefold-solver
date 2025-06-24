@@ -1,23 +1,35 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.ToIntFunction;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @NullMarked
 public class DefaultShadowVariableSessionFactory<Solution_> {
+    private final static Logger LOGGER = LoggerFactory.getLogger(DefaultShadowVariableSessionFactory.class);
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final IntFunction<TopologicalOrderGraph> graphCreator;
@@ -36,10 +48,112 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {
-        var declarativeShadowVariableDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
-        if (declarativeShadowVariableDescriptors.isEmpty()) {
-            return EmptyVariableReferenceGraph.INSTANCE;
+        var graphStructure = GraphStructure.determineGraphStructure(solutionDescriptor);
+        LOGGER.debug("Graph structure: {}", graphStructure);
+        return switch (graphStructure) {
+            case EMPTY -> EmptyVariableReferenceGraph.INSTANCE;
+            case SINGLE_DIRECTIONAL_PARENT -> {
+                var listVariableStateSupply = variableReferenceGraphBuilder.changedVariableNotifier.listVariableStateSupply();
+                if (listVariableStateSupply == null) {
+                    yield buildArbitraryGraph(solutionDescriptor, variableReferenceGraphBuilder, entities, graphCreator);
+                }
+                yield buildSingleDirectionalParentGraph(solutionDescriptor,
+                        variableReferenceGraphBuilder.changedVariableNotifier, listVariableStateSupply,
+                        entities);
+            }
+            case NO_DYNAMIC_EDGES, ARBITRARY ->
+                buildArbitraryGraph(solutionDescriptor, variableReferenceGraphBuilder, entities, graphCreator);
+        };
+    }
+
+    private static <Solution_> VariableReferenceGraph<Solution_> buildSingleDirectionalParentGraph(
+            SolutionDescriptor<Solution_> solutionDescriptor,
+            ChangedVariableNotifier<Solution_> changedVariableNotifier,
+            ListVariableStateSupply<Solution_> listVariableStateSupply,
+            Object[] entities) {
+        var declarativeShadowVariables = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
+        Map<String, Integer> nameToIndex = new LinkedHashMap<>();
+        for (var declarativeShadowVariable : declarativeShadowVariables) {
+            nameToIndex.put(declarativeShadowVariable.getVariableName(), nameToIndex.size());
         }
+        var graph = new DefaultTopologicalOrderGraph(nameToIndex.size());
+        ParentVariableType parentVariableType = null;
+        for (var declarativeShadowVariable : declarativeShadowVariables) {
+            var toIndex = nameToIndex.get(declarativeShadowVariable.getVariableName());
+            var visited = new HashSet<Integer>();
+            for (var source : declarativeShadowVariable.getSources()) {
+                switch (source.parentVariableType()) {
+                    case PREVIOUS, NEXT -> {
+                        parentVariableType = source.parentVariableType();
+                    }
+                    default -> {
+                    }
+                }
+                var variableReferences = source.variableSourceReferences();
+                if (variableReferences.size() != 1) {
+                    // variableReferences is from directional variable
+                    continue;
+                }
+                var variableReference = variableReferences.get(0);
+                var sourceDeclarativeVariable = variableReference.downstreamDeclarativeVariableMetamodel();
+                if (sourceDeclarativeVariable != null) {
+                    var fromIndex = nameToIndex.get(sourceDeclarativeVariable.name());
+                    if (visited.add(fromIndex)) {
+                        graph.addEdge(fromIndex, toIndex);
+                    }
+                }
+            }
+        }
+        graph.commitChanges(new BitSet());
+        var sortedDeclarativeVariables = new ArrayList<>(declarativeShadowVariables);
+        sortedDeclarativeVariables.sort(Comparator.<DeclarativeShadowVariableDescriptor<Solution_>> comparingInt(
+                variable -> graph.getTopologicalOrder(nameToIndex.get(variable.getVariableName())).order())
+                .thenComparing(VariableDescriptor::getVariableName));
+
+        assert parentVariableType != null;
+        Function<Object, Object> successorFunction;
+        Comparator<Object> comparator;
+        // Needed since otherwise values with the same index on different entities
+        // would be considered the same value.
+        Map<Object, Integer> entityToIndexMap = CollectionUtils.newIdentityHashMap(entities.length);
+        ToIntFunction<Object> indexFunction = value -> {
+            var out = listVariableStateSupply.getIndex(value);
+            if (out == null) {
+                return 0;
+            }
+            return out;
+        };
+
+        for (var entity : entities) {
+            entityToIndexMap.put(entity, entityToIndexMap.size());
+        }
+
+        switch (parentVariableType) {
+            case PREVIOUS -> {
+                successorFunction = listVariableStateSupply::getNextElement;
+                comparator = Comparator.comparingInt(indexFunction)
+                        .thenComparing(entityToIndexMap::get);
+            }
+            case NEXT -> {
+                successorFunction = listVariableStateSupply::getPreviousElement;
+                comparator = Comparator.comparingInt(indexFunction)
+                        .thenComparing(entityToIndexMap::get).reversed();
+            }
+            default -> {
+                throw new IllegalStateException(
+                        "Impossible state: expected parentVariableType to be previous or next but was %s."
+                                .formatted(parentVariableType));
+            }
+        }
+        return new SingleDirectionalParentVariableReferenceGraph<>(sortedDeclarativeVariables, successorFunction, comparator,
+                changedVariableNotifier, entities);
+    }
+
+    private static <Solution_> VariableReferenceGraph<Solution_> buildArbitraryGraph(
+            SolutionDescriptor<Solution_> solutionDescriptor,
+            VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
+            IntFunction<TopologicalOrderGraph> graphCreator) {
+        var declarativeShadowVariableDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         var variableIdToUpdater = new HashMap<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo<Solution_>>();
 
         // Create graph node for each entity/declarative shadow variable pair.

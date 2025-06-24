@@ -8,6 +8,11 @@ import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
+import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -25,7 +30,9 @@ public record RootVariableSource<Entity_, Value_>(
         Class<? extends Entity_> rootEntity,
         List<MemberAccessor> listMemberAccessors,
         BiConsumer<Object, Consumer<Value_>> valueEntityFunction,
-        List<VariableSourceReference> variableSourceReferences) {
+        List<VariableSourceReference> variableSourceReferences,
+        String variablePath,
+        ParentVariableType parentVariableType) {
 
     public static final String COLLECTION_REFERENCE_SUFFIX = "[]";
     public static final String MEMBER_SEPERATOR_REGEX = "\\.";
@@ -66,6 +73,7 @@ public record RootVariableSource<Entity_, Value_>(
         boolean isAfterVariable = false;
         Class<?> currentEntity = rootEntityClass;
         var factCountSinceLastVariable = 0;
+        ParentVariableType parentVariableType = null;
 
         for (var iterator = pathIterator(rootEntityClass, variablePath); iterator.hasNext();) {
             var pathPart = iterator.next();
@@ -94,6 +102,7 @@ public record RootVariableSource<Entity_, Value_>(
                         memberAccessor.getType(), memberAccessor.getGenericType(), ShadowSources.class,
                         memberAccessor.getName());
 
+                parentVariableType = ParentVariableType.GROUP;
                 hasListMemberAccessor = true;
             } else {
                 var memberAccessor = getMemberAccessor(pathPart.member(),
@@ -116,6 +125,10 @@ public record RootVariableSource<Entity_, Value_>(
 
                     isAfterVariable = true;
                     factCountSinceLastVariable = 0;
+
+                    if (parentVariableType == null) {
+                        parentVariableType = determineParentVariableType(chainToVariable, memberAccessor);
+                    }
                 } else {
                     factCountSinceLastVariable++;
                     if (factCountSinceLastVariable == 2) {
@@ -171,7 +184,9 @@ public record RootVariableSource<Entity_, Value_>(
         return new RootVariableSource<>(rootEntityClass,
                 listMemberAccessors,
                 valueEntityFunction,
-                variableSourceReferences);
+                variableSourceReferences,
+                variablePath,
+                parentVariableType);
     }
 
     public @NonNull BiConsumer<Object, Consumer<Object>> getEntityVisitor(List<MemberAccessor> chainToEntity) {
@@ -314,16 +329,61 @@ public record RootVariableSource<Entity_, Value_>(
         return metaModel.entity(declaringClass).hasVariable(memberName);
     }
 
+    private static ParentVariableType determineParentVariableType(List<MemberAccessor> chain, MemberAccessor memberAccessor) {
+        var isIndirect = chain.size() > 1;
+        var declaringClass = memberAccessor.getDeclaringClass();
+        var memberName = memberAccessor.getName();
+        if (getAnnotation(declaringClass, memberName, PreviousElementShadowVariable.class) != null) {
+            if (isIndirect) {
+                return ParentVariableType.INDIRECT_DIRECTIONAL;
+            }
+            return ParentVariableType.PREVIOUS;
+        }
+        if (getAnnotation(declaringClass, memberName, NextElementShadowVariable.class) != null) {
+            if (isIndirect) {
+                return ParentVariableType.INDIRECT_DIRECTIONAL;
+            }
+            return ParentVariableType.NEXT;
+        }
+        if (getAnnotation(declaringClass, memberName, InverseRelationShadowVariable.class) != null) {
+            // inverse can be both directional and undirectional;
+            // it is directional in chained models, undirectional otherwise
+            var inverseVariable = getAnnotation(declaringClass, memberName, InverseRelationShadowVariable.class);
+            var sourceClass = memberAccessor.getType();
+            var variableName = inverseVariable.sourceVariableName();
+            PlanningVariable sourcePlanningVariable = getAnnotation(sourceClass, variableName, PlanningVariable.class);
+            if (sourcePlanningVariable == null) {
+                return ParentVariableType.UNDIRECTIONAL;
+            }
+            if (sourcePlanningVariable.graphType() == PlanningVariableGraphType.CHAINED) {
+                if (isIndirect) {
+                    return ParentVariableType.INDIRECT_DIRECTIONAL;
+                }
+                return ParentVariableType.CHAINED_INVERSE;
+            }
+            return ParentVariableType.UNDIRECTIONAL;
+        }
+        return ParentVariableType.UNDIRECTIONAL;
+    }
+
     private static <T extends Annotation> T getAnnotation(Class<?> declaringClass, String memberName,
             Class<? extends T> annotationClass) {
-        var field = ReflectionHelper.getDeclaredField(declaringClass, memberName);
-        var getterMethod = ReflectionHelper.getDeclaredGetterMethod(declaringClass, memberName);
+        var currentClass = declaringClass;
 
-        if (field != null && field.getAnnotation(annotationClass) != null) {
-            return field.getAnnotation(annotationClass);
-        }
-        if (getterMethod != null && getterMethod.getAnnotation(annotationClass) != null) {
-            return getterMethod.getAnnotation(annotationClass);
+        while (currentClass != null) {
+            var field = ReflectionHelper.getDeclaredField(currentClass, memberName);
+            var getterMethod = ReflectionHelper.getDeclaredGetterMethod(currentClass, memberName);
+
+            if (field != null && field.getAnnotation(annotationClass) != null) {
+                return field.getAnnotation(annotationClass);
+            }
+            if (getterMethod != null && getterMethod.getAnnotation(annotationClass) != null) {
+                return getterMethod.getAnnotation(annotationClass);
+            }
+
+            // Need to also check superclass to support extended models;
+            // the subclass might have overridden an annotated method.
+            currentClass = currentClass.getSuperclass();
         }
         return null;
     }
@@ -335,6 +395,11 @@ public record RootVariableSource<Entity_, Value_>(
             return false;
         }
         return !shadowVariable.supplierName().isEmpty();
+    }
+
+    @Override
+    public @NonNull String toString() {
+        return variablePath;
     }
 
 }
