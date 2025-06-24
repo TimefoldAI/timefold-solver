@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.move.streams;
 
 import java.util.Objects;
-import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataset;
@@ -9,6 +8,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstruct
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionViewTriPredicate;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -17,11 +17,11 @@ public final class DefaultBiMoveStream<Solution_, A, B> implements BiMoveStream<
 
     private final InnerUniMoveStream<Solution_, A> leftMoveStream;
     private final AbstractDataset<Solution_, UniTuple<B>> rightDataset;
-    private final BiPredicate<A, B> filter;
+    private final SolutionViewTriPredicate<Solution_, A, B> filter;
 
     public DefaultBiMoveStream(InnerUniMoveStream<Solution_, A> leftMoveStream,
             AbstractDataset<Solution_, UniTuple<B>> rightDataset,
-            BiPredicate<A, B> filter) {
+            SolutionViewTriPredicate<Solution_, A, B> filter) {
         this.leftMoveStream = Objects.requireNonNull(leftMoveStream);
         this.rightDataset = Objects.requireNonNull(rightDataset);
         this.filter = Objects.requireNonNull(filter);

@@ -7,8 +7,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.pickers.BiPicker;
-import ai.timefold.solver.core.impl.move.streams.pickers.FilteringBiPicker;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionViewTriPredicate;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -19,26 +18,31 @@ public final class ChangeMoveProvider<Solution_, Entity_, Value_>
         implements MoveProvider<Solution_> {
 
     private final PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    private final BiPicker<Entity_, @Nullable Value_> picker;
+    private final SolutionViewTriPredicate<Solution_, Entity_, @Nullable Value_> entityValueFilter;
 
     public ChangeMoveProvider(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.picker = new FilteringBiPicker<Solution_, Entity_, @Nullable Value_>((solutionView, entity, value) -> {
+        this.entityValueFilter = (solutionView, entity, value) -> {
             Value_ oldValue = solutionView.getValue(variableMetaModel, entity);
             if (Objects.equals(oldValue, value)) {
+                System.out.println("Skipping ChangeMove for entity " + entity + " with value " + value
+                        + " because it is the same as the current value " + oldValue);
                 return false;
             }
-            return solutionView.isValueInRange(variableMetaModel, entity, value);
-        });
+            var isInRange = solutionView.isValueInRange(variableMetaModel, entity, value);
+            System.out.println("ChangeMove for entity " + entity + " with value " + value
+                    + " isInRange: " + isInRange);
+            return isInRange;
+        };
     }
 
     @Override
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
         var defaultMoveStreamFactory = (DefaultMoveStreamFactory<Solution_>) moveStreamFactory;
         var entityStream = defaultMoveStreamFactory.enumerate(variableMetaModel.entity().type());
-        var valueStream = defaultMoveStreamFactory.enumerate(variableMetaModel.type());
+        var valueStream = defaultMoveStreamFactory.enumerate(variableMetaModel.type(), true);
         return moveStreamFactory.pick(entityStream)
-                .pick(valueStream, picker)
+                .pick(valueStream, entityValueFilter)
                 .asMove((solution, entity, value) -> new ChangeMove<>(variableMetaModel, entity, value));
     }
 

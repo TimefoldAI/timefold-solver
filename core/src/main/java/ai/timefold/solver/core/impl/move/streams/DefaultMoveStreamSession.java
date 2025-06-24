@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataset;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSession;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -15,11 +16,11 @@ public final class DefaultMoveStreamSession<Solution_>
         implements MoveStreamSession<Solution_>, AutoCloseable {
 
     private final DatasetSession<Solution_> datasetSession;
-    private final Solution_ workingSolution;
+    private final SolutionView<Solution_> workingSolutionView;
 
-    public DefaultMoveStreamSession(DatasetSession<Solution_> datasetSession, Solution_ workingSolution) {
+    public DefaultMoveStreamSession(DatasetSession<Solution_> datasetSession, SolutionView<Solution_> workingSolutionView) {
         this.datasetSession = Objects.requireNonNull(datasetSession);
-        this.workingSolution = Objects.requireNonNull(workingSolution);
+        this.workingSolutionView = Objects.requireNonNull(workingSolutionView);
     }
 
     public <Out_ extends AbstractTuple> DatasetInstance<Solution_, Out_>
@@ -43,8 +44,8 @@ public final class DefaultMoveStreamSession<Solution_>
         datasetSession.settle();
     }
 
-    public Solution_ getWorkingSolution() {
-        return workingSolution;
+    public SolutionView<Solution_> getWorkingSolutionView() {
+        return workingSolutionView;
     }
 
     @Override

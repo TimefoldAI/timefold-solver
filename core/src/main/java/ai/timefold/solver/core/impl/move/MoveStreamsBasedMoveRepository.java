@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamSession;
 import ai.timefold.solver.core.impl.move.streams.MoveIterable;
@@ -43,11 +44,12 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
+    public void initialize(MoveDirector<Solution_, ?> workingMoveDirector, SupplyManager supplyManager) {
         if (moveStreamSession != null) {
             throw new IllegalStateException("Impossible state: move repository initialized twice.");
         }
-        moveStreamSession = moveStreamFactory.createSession(workingSolution, supplyManager);
+        var workingSolution = workingMoveDirector.getScoreDirector().getWorkingSolution();
+        moveStreamSession = moveStreamFactory.createSession(workingSolution, workingMoveDirector, supplyManager);
         moveStreamFactory.getSolutionDescriptor().visitAll(workingSolution, moveStreamSession::insert);
         moveStreamSession.settle();
         moveIterable = moveProducer.getMoveIterable(moveStreamSession);

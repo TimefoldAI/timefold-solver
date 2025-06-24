@@ -2,19 +2,23 @@ package ai.timefold.solver.core.impl.move.streams.maybeapi.provider;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
-import static org.mockito.Mockito.mock;
 
 import java.util.stream.StreamSupport;
 
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
+import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedConstraintProvider;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 
@@ -40,8 +44,8 @@ class ChangeMoveProviderTest {
         secondEntity.setValue(null);
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
-        var moveStreamSession = createSession(moveStreamFactory, solutionDescriptor, solution,
-                mock(SupplyManager.class));
+        var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataConstraintProvider(), solution);
+        var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
         assertThat(moveIterable).hasSize(4);
@@ -100,8 +104,8 @@ class ChangeMoveProviderTest {
         var secondEntity = solution.getEntityList().get(1); // Assigned to secondValue.
         var firstValue = solution.getValueList().get(0); // Not assigned to any entity.
         var secondValue = solution.getValueList().get(1);
-        var moveStreamSession = createSession(moveStreamFactory, solutionDescriptor, solution,
-                mock(SupplyManager.class));
+        var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataAllowsUnassignedConstraintProvider(), solution);
+        var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         // Filters out moves that would change the value to the value the entity already has.
         // Therefore this will have 4 moves (2 entities * 2 values) as opposed to 6 (2 entities * 3 values).
@@ -148,10 +152,22 @@ class ChangeMoveProviderTest {
         });
     }
 
+    private <Solution_> InnerScoreDirector<Solution_, ?> createScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor,
+            ConstraintProvider constraintProvider, Solution_ solution) {
+        var scoreDirectorFactory =
+                new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
+                        EnvironmentMode.TRACKED_FULL_ASSERT);
+        var scoreDirector = scoreDirectorFactory.buildScoreDirector();
+        scoreDirector.setWorkingSolution(solution);
+        return scoreDirector;
+    }
+
     private <Solution_> MoveStreamSession<Solution_> createSession(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            SolutionDescriptor<Solution_> solutionDescriptor, Solution_ solution, SupplyManager supplyManager) {
-        var moveStreamSession = moveStreamFactory.createSession(solution, supplyManager);
-        solutionDescriptor.visitAll(solution, moveStreamSession::insert);
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
+        var solution = scoreDirector.getWorkingSolution();
+        var moveStreamSession =
+                moveStreamFactory.createSession(solution, scoreDirector.getMoveDirector(), scoreDirector.getSupplyManager());
+        scoreDirector.getSolutionDescriptor().visitAll(solution, moveStreamSession::insert);
         moveStreamSession.settle();
         return moveStreamSession;
     }

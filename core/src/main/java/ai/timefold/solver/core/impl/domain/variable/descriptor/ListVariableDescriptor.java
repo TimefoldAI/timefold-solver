@@ -28,6 +28,9 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return list.contains(element);
     };
     private final BiPredicate<Object, Object> entityContainsPinnedValuePredicate = (value, entity) -> {
+        if (value == null) {
+            return false; // Null is never pinned.
+        }
         // Find an entity that has this value at a pinned position.
         var parentEntityDescriptor = getEntityDescriptor();
         // The null here is safe, because PinningFilter is not supported with move streams

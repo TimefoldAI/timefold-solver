@@ -5,7 +5,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
-import java.util.function.BiPredicate;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -13,7 +12,9 @@ import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataset;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.SolutionViewTriPredicate;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -24,10 +25,10 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
     private final AbstractDataset<Solution_, UniTuple<A>> aDataset;
     private final AbstractDataset<Solution_, UniTuple<B>> bDataset;
     private final BiMoveConstructor<Solution_, A, B> moveConstructor;
-    private final BiPredicate<A, B> filter;
+    private final SolutionViewTriPredicate<Solution_, A, B> filter;
 
     public BiMoveProducer(AbstractDataset<Solution_, UniTuple<A>> aDataset, AbstractDataset<Solution_, UniTuple<B>> bDataset,
-            BiPredicate<A, B> filter, BiMoveConstructor<Solution_, A, B> moveConstructor) {
+            SolutionViewTriPredicate<Solution_, A, B> filter, BiMoveConstructor<Solution_, A, B> moveConstructor) {
         this.aDataset = Objects.requireNonNull(aDataset);
         this.bDataset = Objects.requireNonNull(bDataset);
         this.filter = Objects.requireNonNull(filter);
@@ -49,7 +50,7 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
 
         private final IteratorSupplier<A> aIteratorSupplier;
         private final IteratorSupplier<B> bIteratorSupplier;
-        private final Solution_ solution;
+        private final SolutionView<Solution_> solutionView;
 
         // Fields required for iteration.
         private @Nullable Move<Solution_> nextMove;
@@ -62,7 +63,7 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
             this.aIteratorSupplier = aInstance::iterator;
             var bInstance = moveStreamSession.getDatasetInstance(bDataset);
             this.bIteratorSupplier = bInstance::iterator;
-            this.solution = moveStreamSession.getWorkingSolution();
+            this.solutionView = moveStreamSession.getWorkingSolutionView();
         }
 
         public BiMoveIterator(DefaultMoveStreamSession<Solution_> moveStreamSession, Random random) {
@@ -70,7 +71,7 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
             this.aIteratorSupplier = () -> aInstance.iterator(random);
             var bInstance = moveStreamSession.getDatasetInstance(bDataset);
             this.bIteratorSupplier = () -> bInstance.iterator(random);
-            this.solution = moveStreamSession.getWorkingSolution();
+            this.solutionView = moveStreamSession.getWorkingSolutionView();
         }
 
         @Override
@@ -99,9 +100,9 @@ public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<
                     var currentB = bTuple.factA;
 
                     // Check if this pair passes the filter...
-                    if (filter.test(currentA, currentB)) {
+                    if (filter.test(solutionView, currentA, currentB)) {
                         // ... and create the next move.
-                        nextMove = moveConstructor.apply(solution, currentA, currentB);
+                        nextMove = moveConstructor.apply(solutionView, currentA, currentB);
                         return true;
                     }
                 }

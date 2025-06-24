@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -23,39 +24,40 @@ public final class DefaultMoveStreamFactory<Solution_>
         this.datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
     }
 
-    public DefaultMoveStreamSession<Solution_> createSession(Solution_ workingSolution, SupplyManager supplyManager) {
+    public DefaultMoveStreamSession<Solution_> createSession(Solution_ workingSolution,
+            SolutionView<Solution_> workingSolutionView, SupplyManager supplyManager) {
         var session = datasetSessionFactory.buildSession();
         session.initialize(workingSolution, supplyManager);
-        return new DefaultMoveStreamSession<>(session, workingSolution);
+        return new DefaultMoveStreamSession<>(session, workingSolutionView);
     }
 
     @Override
-    public <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass, boolean includeNull) {
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) { // Not an entity, can't be pinned.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         if (entityDescriptor.isGenuine()) { // Genuine entity can be pinned.
-            return dataStreamFactory.forEachExcludingPinned(sourceClass);
+            return dataStreamFactory.forEachExcludingPinned(sourceClass, includeNull);
         }
         // From now on, we are testing a shadow entity.
         var listVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (listVariableDescriptor == null) { // Can't be pinned when there are only basic variables.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         if (!listVariableDescriptor.supportsPinning()) { // The genuine entity does not support pinning.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         if (!listVariableDescriptor.acceptsValueType(sourceClass)) { // Can't be used as an element.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         // Finally a valid pin-supporting type.
-        return dataStreamFactory.forEachExcludingPinned(sourceClass);
+        return dataStreamFactory.forEachExcludingPinned(sourceClass, includeNull);
     }
 
     @Override
-    public <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass) {
-        return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+    public <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass, boolean includeNull) {
+        return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
     }
 
     @Override
