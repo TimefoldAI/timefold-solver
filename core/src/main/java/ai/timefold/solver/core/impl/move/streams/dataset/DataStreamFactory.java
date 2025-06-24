@@ -23,19 +23,19 @@ public final class DataStreamFactory<Solution_> {
         this.solutionDescriptor = solutionDescriptor;
     }
 
-    public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
-        return share(new ForEachIncludingPinnedDataStream<>(this, sourceClass));
+        return share(new ForEachIncludingPinnedDataStream<>(this, sourceClass, includeNull));
     }
 
-    public <A> UniDataStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         // We have a basic variable, or the sourceClass is not a valid type for a list variable value.
         // In that case, we use the standard exclusion logic.
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
-            return share(new ForEachExcludingPinnedDataStream<>(this,
-                    solutionDescriptor.getMetaModel().entity(sourceClass)));
+            return share(new ForEachExcludingPinnedDataStream<>(this, solutionDescriptor.getMetaModel().entity(sourceClass),
+                    includeNull));
         }
         // The sourceClass is a list variable value, therefore we need to specialize the exclusion logic.
         var parentEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
@@ -43,7 +43,7 @@ public final class DataStreamFactory<Solution_> {
             throw new UnsupportedOperationException("Impossible state: the list variable (%s) does not support pinning."
                     .formatted(listVariableDescriptor.getVariableName()));
         }
-        var stream = forEachNonDiscriminating(sourceClass)
+        var stream = forEachNonDiscriminating(sourceClass, includeNull)
                 .ifNotExists(parentEntityDescriptor.getEntityClass(),
                         Joiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
         return share((AbstractUniDataStream<Solution_, A>) stream);
