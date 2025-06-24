@@ -10,6 +10,8 @@ public interface UniMoveStream<Solution_, A> extends MoveStream<Solution_> {
         return pick(uniDataStream, SolutionViewTriPredicate.TRUE);
     }
 
+    // TODO Bring an API that works incrementally;
+    //  The current implementation will scan the entire B stream for each A.
     <B> BiMoveStream<Solution_, A, B> pick(UniDataStream<Solution_, B> uniDataStream,
             SolutionViewTriPredicate<Solution_, A, B> filter);
 
