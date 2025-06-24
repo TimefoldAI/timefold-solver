@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -8,6 +9,10 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -25,19 +30,26 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * Call {@link #resetWorkingSolution(Object)} every time the working solution changes through a problem fact,
  * so that all caches can be invalidated.
- * Call {@link #resetEntityValueRange(Object)} every time an entity is changed,
+ *
+ * <p>
+ * Call {@link #markEntityDependentValueRangesAsInvalid(Object)} every time an entity is changed,
  * so that the cached value range can be invalidated.
+ * The actual invalidation happens at {@link #stepEnded(AbstractStepScope)}, called by the solver.
+ * Otherwise every undone move would be invalidating the value ranges.
+ * Value ranges should only be invalidated when a move has been selected at the end of a step.
  */
 @NullMarked
-final class ValueRangeState<Solution_> {
+public final class ValueRangeState<Solution_>
+        implements PhaseLifecycleListener<Solution_> {
 
+    private final HashSet<Object> entitiesWithInvalidValueRangesSet = new HashSet<>();
     private final Map<ValueRangeDescriptor<Solution_>, ValueRange<Object>> fromSolutionValueRangeMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, ValueRange<Object>>> fromEntityValueRangeMap =
             new IdentityHashMap<>();
 
     private @Nullable Solution_ workingSolution;
 
-    public void resetWorkingSolution(Solution_ workingSolution) {
+    void resetWorkingSolution(Solution_ workingSolution) {
         this.workingSolution = workingSolution;
         fromSolutionValueRangeMap.clear();
         fromEntityValueRangeMap.clear();
@@ -81,8 +93,40 @@ final class ValueRangeState<Solution_> {
         }
     }
 
-    public void resetEntityValueRange(Object entity) {
-        fromEntityValueRangeMap.remove(entity);
+    void markEntityDependentValueRangesAsInvalid(Object entity) {
+        entitiesWithInvalidValueRangesSet.add(entity);
     }
 
+    @Override
+    public void solvingStarted(SolverScope<Solution_> solverScope) {
+        // No need to do anything here.
+    }
+
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        // No need to do anything here.
+    }
+
+    @Override
+    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        // No need to do anything here.
+    }
+
+    @Override
+    public void stepEnded(AbstractStepScope<Solution_> stepScope) {
+        entitiesWithInvalidValueRangesSet.forEach(fromEntityValueRangeMap::remove);
+        entitiesWithInvalidValueRangesSet.clear();
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        // No need to do anything here.
+    }
+
+    @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        this.workingSolution = null;
+        fromSolutionValueRangeMap.clear();
+        fromEntityValueRangeMap.clear();
+    }
 }
