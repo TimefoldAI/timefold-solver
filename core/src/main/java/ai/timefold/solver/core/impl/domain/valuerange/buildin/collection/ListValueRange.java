@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
@@ -11,7 +12,10 @@ import org.jspecify.annotations.NonNull;
 
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
+    private static final int LIST_SIZE_LOOKUP_LIMIT = 10;
+
     private final List<T> list;
+    private Set<T> lookupSet;
 
     public ListValueRange(List<T> list) {
         this.list = list;
@@ -32,7 +36,14 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public boolean contains(T value) {
-        return list.contains(value);
+        if (list.size() > LIST_SIZE_LOOKUP_LIMIT) {
+            if (lookupSet == null) { // Lazy initialization of the lookup set for performance
+                lookupSet = Set.copyOf(list);
+            }
+            return lookupSet.contains(value);
+        } else { // For small lists, sequential scanning is not a performance issue.
+            return list.contains(value);
+        }
     }
 
     @Override

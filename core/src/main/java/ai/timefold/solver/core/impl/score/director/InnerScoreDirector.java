@@ -184,7 +184,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     boolean isWorkingSolutionInitialized();
 
-    <Entity_, Value_> boolean isValueInValueRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableDescriptor, @Nullable Entity_ entity, @Nullable Value_ value);
+    <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableDescriptor,
+            @Nullable Entity_ entity, @Nullable Value_ value);
 
     /**
      * Some score directors keep a set of changes
