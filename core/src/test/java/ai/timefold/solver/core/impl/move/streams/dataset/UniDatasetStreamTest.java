@@ -560,7 +560,6 @@ class UniDatasetStreamTest {
         var partiallyPinnedEntity = solution.getEntityList().get(1);
         partiallyPinnedEntity.setPlanningPinToIndex(1);
         partiallyPinnedEntity.setValueList(List.of(value1, value2));
-        // 1 value, not pinned.
         var unpinnedEntity = solution.getEntityList().get(2);
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
