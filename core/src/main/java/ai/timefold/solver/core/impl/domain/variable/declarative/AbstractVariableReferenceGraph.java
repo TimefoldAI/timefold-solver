@@ -132,6 +132,11 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
     }
 
     @Override
+    public boolean shouldQueueAfterEvents() {
+        return false;
+    }
+
+    @Override
     public String toString() {
         var edgeList = new LinkedHashMap<EntityVariablePair<Solution_>, List<EntityVariablePair<Solution_>>>();
         graph.forEachEdge((from, to) -> edgeList.computeIfAbsent(instanceList.get(from), k -> new ArrayList<>())

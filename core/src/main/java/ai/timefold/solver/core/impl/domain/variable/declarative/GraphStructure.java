@@ -3,7 +3,10 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.util.MutableInt;
+import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,13 +17,20 @@ public enum GraphStructure {
     EMPTY,
 
     /**
-     * A graph structure without dynamic edges.
+     * A graph structure without dynamic edges. The topological order
+     * of such a graph is fixed, since edges are neither added nor removed.
      */
     NO_DYNAMIC_EDGES,
 
     /**
      * A graph structure where there is at most
-     * one directional parent for each graph node.
+     * one directional parent for each graph node, and
+     * no indirect parents.
+     * For example, when the only input variable from
+     * a different entity is previous. This allows us
+     * to use a successor function to find affected entities.
+     * Since there is at most a single parent node, such a graph
+     * cannot be looped.
      */
     SINGLE_DIRECTIONAL_PARENT,
 
@@ -31,57 +41,68 @@ public enum GraphStructure {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(GraphStructure.class);
 
-    public static <Solution_> GraphStructure determineGraphStructure(SolutionDescriptor<Solution_> solutionDescriptor) {
+    public record GraphStructureAndDirection(GraphStructure structure,
+            @Nullable VariableMetaModel<?, ?, ?> parentMetaModel,
+            @Nullable ParentVariableType direction) {
+    }
+
+    public static <Solution_> GraphStructureAndDirection determineGraphStructure(
+            SolutionDescriptor<Solution_> solutionDescriptor,
+            Object... entities) {
         var declarativeShadowVariableDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         if (declarativeShadowVariableDescriptors.isEmpty()) {
-            return EMPTY;
+            return new GraphStructureAndDirection(EMPTY, null, null);
         }
         var multipleDeclarativeEntityClasses = declarativeShadowVariableDescriptors.stream()
                 .map(variable -> variable.getEntityDescriptor().getEntityClass())
                 .distinct().count() > 1;
 
-        if (multipleDeclarativeEntityClasses) {
-            // Inverse might become directional if it has
-            // declarative variables; ARBITRARY does optimize
-            // the graph to NO_DYNAMIC_EDGES if there are no variable listeners that
-            // add/remove edges.
-            return ARBITRARY;
-        }
-
         var rootVariableSources = declarativeShadowVariableDescriptors.stream()
                 .flatMap(descriptor -> Arrays.stream(descriptor.getSources()))
                 .toList();
         ParentVariableType directionalType = null;
+        VariableMetaModel<?, ?, ?> parentMetaModel = null;
         for (var variableSource : rootVariableSources) {
             var parentVariableType = variableSource.parentVariableType();
-            LOGGER.debug("{} has parentVariableType {}", variableSource, parentVariableType);
+            LOGGER.trace("{} has parentVariableType {}", variableSource, parentVariableType);
             switch (parentVariableType) {
-                case GROUP, INDIRECT_DIRECTIONAL, CHAINED_INVERSE -> {
-                    // CHAINED_INVERSE is arbitrary, since we don't have
-                    // the concept of "index" to help us identify topological
-                    // order without creating a graph.
-                    return GraphStructure.ARBITRARY;
+                case GROUP -> {
+                    var groupMemberCount = new MutableInt(0);
+                    for (var entity : entities) {
+                        if (variableSource.rootEntity().isInstance(entity)) {
+                            variableSource.valueEntityFunction().accept(entity, fromEntity -> {
+                                groupMemberCount.increment();
+                            });
+                        }
+                    }
+                    if (groupMemberCount.intValue() != 0) {
+                        return new GraphStructureAndDirection(ARBITRARY, null, null);
+                    }
+                    // The group variable is unused/always empty
                 }
-                case NEXT, PREVIOUS -> {
-                    if (directionalType == null) {
+                case INDIRECT, INVERSE -> {
+                    return new GraphStructureAndDirection(ARBITRARY, null, null);
+                }
+                case NEXT, PREVIOUS, CHAINED_NEXT, CHAINED_PREVIOUS -> {
+                    if (parentMetaModel == null) {
+                        parentMetaModel = variableSource.variableSourceReferences().get(0).variableMetaModel();
                         directionalType = parentVariableType;
-                    } else if (directionalType != parentVariableType) {
-                        return GraphStructure.ARBITRARY;
+                    } else if (!parentMetaModel.equals(variableSource.variableSourceReferences().get(0).variableMetaModel())) {
+                        return new GraphStructureAndDirection(ARBITRARY, null, null);
                     }
                 }
-                case UNDIRECTIONAL -> {
+                case NO_PARENT -> {
                     // Do nothing
-                }
-                default -> {
-                    throw new IllegalStateException("Unhandled case %s".formatted(variableSource.parentVariableType()));
                 }
             }
         }
 
         if (directionalType == null) {
-            return NO_DYNAMIC_EDGES;
+            return new GraphStructureAndDirection(NO_DYNAMIC_EDGES, null, null);
         } else {
-            return SINGLE_DIRECTIONAL_PARENT;
+            // Cannot use a single successor function if there are multiple entity classes
+            return multipleDeclarativeEntityClasses ? new GraphStructureAndDirection(ARBITRARY, null, null)
+                    : new GraphStructureAndDirection(SINGLE_DIRECTIONAL_PARENT, parentMetaModel, directionalType);
         }
     }
 }

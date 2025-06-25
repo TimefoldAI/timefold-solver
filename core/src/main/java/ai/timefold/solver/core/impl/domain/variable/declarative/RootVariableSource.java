@@ -5,6 +5,7 @@ import java.lang.reflect.Member;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -181,6 +182,18 @@ public record RootVariableSource<Entity_, Value_>(
             assertIsValidVariableReference(rootEntityClass, variablePath, variableSourceReference);
         }
 
+        if (parentVariableType != ParentVariableType.GROUP && variableSourceReferences.size() == 1) {
+            // No variables are accessed from the parent, so there no
+            // parent variable.
+            parentVariableType = ParentVariableType.NO_PARENT;
+        }
+
+        if (!parentVariableType.isIndirect() && chainToVariable.size() > 2) {
+            // Child variable is accessed from a fact from the parent,
+            // so it is an indirect variable.
+            parentVariableType = ParentVariableType.INDIRECT;
+        }
+
         return new RootVariableSource<>(rootEntityClass,
                 listMemberAccessors,
                 valueEntityFunction,
@@ -333,37 +346,41 @@ public record RootVariableSource<Entity_, Value_>(
         var isIndirect = chain.size() > 1;
         var declaringClass = memberAccessor.getDeclaringClass();
         var memberName = memberAccessor.getName();
+        if (isIndirect) {
+            return ParentVariableType.INDIRECT;
+        }
         if (getAnnotation(declaringClass, memberName, PreviousElementShadowVariable.class) != null) {
-            if (isIndirect) {
-                return ParentVariableType.INDIRECT_DIRECTIONAL;
-            }
             return ParentVariableType.PREVIOUS;
         }
         if (getAnnotation(declaringClass, memberName, NextElementShadowVariable.class) != null) {
-            if (isIndirect) {
-                return ParentVariableType.INDIRECT_DIRECTIONAL;
-            }
             return ParentVariableType.NEXT;
         }
         if (getAnnotation(declaringClass, memberName, InverseRelationShadowVariable.class) != null) {
             // inverse can be both directional and undirectional;
             // it is directional in chained models, undirectional otherwise
-            var inverseVariable = getAnnotation(declaringClass, memberName, InverseRelationShadowVariable.class);
+            var inverseVariable =
+                    Objects.requireNonNull(getAnnotation(declaringClass, memberName, InverseRelationShadowVariable.class));
             var sourceClass = memberAccessor.getType();
             var variableName = inverseVariable.sourceVariableName();
             PlanningVariable sourcePlanningVariable = getAnnotation(sourceClass, variableName, PlanningVariable.class);
             if (sourcePlanningVariable == null) {
-                return ParentVariableType.UNDIRECTIONAL;
+                // Must have a PlanningListVariable instead
+                return ParentVariableType.INVERSE;
             }
             if (sourcePlanningVariable.graphType() == PlanningVariableGraphType.CHAINED) {
-                if (isIndirect) {
-                    return ParentVariableType.INDIRECT_DIRECTIONAL;
-                }
-                return ParentVariableType.CHAINED_INVERSE;
+                return ParentVariableType.CHAINED_NEXT;
+            } else {
+                return ParentVariableType.INVERSE;
             }
-            return ParentVariableType.UNDIRECTIONAL;
         }
-        return ParentVariableType.UNDIRECTIONAL;
+        if (getAnnotation(declaringClass, memberName, PlanningVariable.class) != null) {
+            PlanningVariable planningVariable =
+                    Objects.requireNonNull(getAnnotation(declaringClass, memberName, PlanningVariable.class));
+            if (planningVariable.graphType() == PlanningVariableGraphType.CHAINED) {
+                return ParentVariableType.CHAINED_PREVIOUS;
+            }
+        }
+        return ParentVariableType.NO_PARENT;
     }
 
     private static <T extends Annotation> T getAnnotation(Class<?> declaringClass, String memberName,

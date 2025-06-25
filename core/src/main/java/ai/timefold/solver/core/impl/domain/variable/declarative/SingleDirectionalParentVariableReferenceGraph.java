@@ -1,138 +1,118 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.Arrays;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph<Solution_> {
-    private final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
-    private final List<VariableUpdaterInfo<Solution_>> sortedVariableUpdaterInfoList;
-    private final Set<Object> changedSet;
+    private final VariableUpdaterInfo<Solution_>[] sortedVariableUpdaterInfos;
     private final Function<Object, Object> successorFunction;
-    private final Comparator<Object> comparator;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
-    private final ShadowVariableLoopedVariableDescriptor<Solution_> loopedDescriptor;
 
     public SingleDirectionalParentVariableReferenceGraph(
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
-            Function<Object, Object> successorFunction, Comparator<Object> comparator,
+            Function<Object, Object> successorFunction,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             Object[] entities) {
-        variableReferenceToInstanceMap = CollectionUtils.newHashMap(sortedDeclarativeShadowVariableDescriptors.size());
-        sortedVariableUpdaterInfoList = new ArrayList<>(sortedDeclarativeShadowVariableDescriptors.size());
+        var entityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
+        // noinspection unchecked
+        sortedVariableUpdaterInfos = new VariableUpdaterInfo[sortedDeclarativeShadowVariableDescriptors.size()];
         monitoredSourceVariableSet = new HashSet<>();
-        changedSet = Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(entities.length));
 
         this.successorFunction = successorFunction;
-        this.comparator = comparator;
         this.changedVariableNotifier = changedVariableNotifier;
-        this.loopedDescriptor =
+        var shadowEntities = Arrays.stream(entities).filter(entityClass::isInstance).toArray();
+        var loopedDescriptor =
                 sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getShadowVariableLoopedDescriptor();
 
+        var updaterIndex = 0;
         for (var variableDescriptor : sortedDeclarativeShadowVariableDescriptors) {
             var variableMetaModel = variableDescriptor.getVariableMetaModel();
-            var objectMap = CollectionUtils.newIdentityHashMap(entities.length);
             var variableUpdaterInfo = new VariableUpdaterInfo<>(
                     variableMetaModel,
                     variableDescriptor,
                     loopedDescriptor,
                     variableDescriptor.getMemberAccessor(),
                     variableDescriptor.getCalculator()::executeGetter);
-            sortedVariableUpdaterInfoList.add(variableUpdaterInfo);
-            variableReferenceToInstanceMap.put(variableMetaModel, CollectionUtils.newIdentityHashMap(entities.length));
+            sortedVariableUpdaterInfos[updaterIndex++] = variableUpdaterInfo;
 
             for (var source : variableDescriptor.getSources()) {
                 for (var sourceReference : source.variableSourceReferences()) {
                     monitoredSourceVariableSet.add(sourceReference.variableMetaModel());
                 }
             }
+        }
 
-            for (var entity : entities) {
-                // No graph, so no graph id
-                if (variableDescriptor.getEntityDescriptor().getEntityClass().isInstance(entity)) {
-                    objectMap.put(entity, new EntityVariablePair<>(entity, variableUpdaterInfo, -1));
-                    changedSet.add(entity);
-                }
+        for (var shadowEntity : shadowEntities) {
+            updateChanged(shadowEntity);
+        }
+        if (loopedDescriptor != null) {
+            for (var shadowEntity : shadowEntities) {
+                changedVariableNotifier.beforeVariableChanged().accept(loopedDescriptor, shadowEntity);
+                loopedDescriptor.setValue(shadowEntity, false);
+                changedVariableNotifier.afterVariableChanged().accept(loopedDescriptor, shadowEntity);
             }
         }
     }
 
     @Override
     public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        return variableReferenceToInstanceMap.get(variableId).get(entity);
+        throw new IllegalStateException("Impossible state: cannot lookup in a %s graph."
+                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
     }
 
     @Override
     public void addEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        markChanged(to);
+        throw new IllegalStateException("Impossible state: cannot modify an %s graph."
+                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
     }
 
     @Override
     public void removeEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        markChanged(to);
+        throw new IllegalStateException("Impossible state: cannot modify an %s graph."
+                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
     }
 
     @Override
     public void markChanged(@NonNull EntityVariablePair<Solution_> node) {
-        changedSet.add(node.entity());
+        throw new IllegalStateException("Impossible state: cannot mark changed an %s graph."
+                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
     }
 
     @Override
     public void updateChanged() {
-        var changedSorted = new TreeSet<>(comparator);
-        var visited = Collections.newSetFromMap(new IdentityHashMap<>());
-        changedSorted.addAll(changedSet);
-        for (var changed : changedSorted) {
-            if (visited.contains(changed)) {
-                continue;
-            }
+        // Do nothing; afterVariableChanged do the update
+    }
 
-            var current = changed;
-            while (current != null) {
-                visited.add(current);
-                var anyChanged = false;
-                if (loopedDescriptor != null) {
-                    var oldValue = loopedDescriptor.getValue(current);
-                    if (!Objects.equals(oldValue, false)) {
-                        anyChanged = true;
-                        changedVariableNotifier.beforeVariableChanged().accept(loopedDescriptor, current);
-                        loopedDescriptor.setValue(current, false);
-                        changedVariableNotifier.afterVariableChanged().accept(loopedDescriptor, current);
-                    }
+    private void updateChanged(Object entity) {
+        var current = entity;
+        while (current != null) {
+            var anyChanged = false;
+            for (var updater : sortedVariableUpdaterInfos) {
+                var oldValue = updater.memberAccessor().executeGetter(current);
+                var newValue = updater.calculator().apply(current);
+                if (!Objects.equals(oldValue, newValue)) {
+                    anyChanged = true;
+                    changedVariableNotifier.beforeVariableChanged().accept(updater.variableDescriptor(), current);
+                    updater.memberAccessor().executeSetter(current, newValue);
+                    changedVariableNotifier.afterVariableChanged().accept(updater.variableDescriptor(), current);
                 }
-                for (var updater : sortedVariableUpdaterInfoList) {
-                    var oldValue = updater.memberAccessor().executeGetter(current);
-                    var newValue = updater.calculator().apply(current);
-                    if (!Objects.equals(oldValue, newValue)) {
-                        anyChanged = true;
-                        changedVariableNotifier.beforeVariableChanged().accept(updater.variableDescriptor(), current);
-                        updater.memberAccessor().executeSetter(current, newValue);
-                        changedVariableNotifier.afterVariableChanged().accept(updater.variableDescriptor(), current);
-                    }
-                }
-                if (anyChanged) {
-                    current = successorFunction.apply(current);
-                } else {
-                    current = null;
-                }
+            }
+            if (anyChanged) {
+                current = successorFunction.apply(current);
+            } else {
+                current = null;
             }
         }
-        changedSet.clear();
     }
 
     @Override
@@ -143,7 +123,12 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     @Override
     public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
         if (monitoredSourceVariableSet.contains(variableReference)) {
-            changedSet.add(entity);
+            updateChanged(entity);
         }
+    }
+
+    @Override
+    public boolean shouldQueueAfterEvents() {
+        return true;
     }
 }

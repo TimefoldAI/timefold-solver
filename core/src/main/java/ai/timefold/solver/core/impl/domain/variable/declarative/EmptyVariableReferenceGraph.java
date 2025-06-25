@@ -46,6 +46,12 @@ final class EmptyVariableReferenceGraph<Solution_> implements VariableReferenceG
     }
 
     @Override
+    public boolean shouldQueueAfterEvents() {
+        // Queuing involves more work, so don't
+        return false;
+    }
+
+    @Override
     public String toString() {
         return "{}";
     }
