@@ -23,6 +23,12 @@ import org.jspecify.annotations.NonNull;
  * A {@link Collection} is implicitly converted to a {@link ValueRange}.
  *
  * <p>
+ * If two values in a value range are equal according to {@link Object#equals(Object)},
+ * then they are considered the same value
+ * and will only be present once in the value range,
+ * regardless of how many times they are present originally.
+ *
+ * <p>
  * Value ranges are not allowed to change during solving.
  * This is especially important for value ranges defined on {@link PlanningEntity}-annotated classes;
  * these must never depend on any of that entity's variables, or on any other entity's variables.

@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.LinkedList;
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -12,7 +12,6 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
@@ -105,8 +104,8 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         }
         ValueRange<Value_> valueRange;
         if (collectionWrapping || arrayWrapping) {
-            List<Value_> list = collectionWrapping ? transformCollectionToList((Collection<Value_>) valueRangeObject)
-                    : ReflectionHelper.transformArrayToList(valueRangeObject);
+            List<Value_> list = collectionWrapping ? transformCollectionToUniqueList((Collection<Value_>) valueRangeObject)
+                    : transformArrayToUniqueList(valueRangeObject);
             // Don't check the entire list for performance reasons, but do check common pitfalls
             if (!list.isEmpty() && (list.get(0) == null || list.get(list.size() - 1) == null)) {
                 throw new IllegalStateException(
@@ -163,18 +162,27 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         }
     }
 
-    private <T> List<T> transformCollectionToList(Collection<T> collection) {
-        if (collection instanceof List<T> list) {
-            if (collection instanceof LinkedList<T> linkedList) {
-                // ValueRange.createRandomIterator(Random) and ValueRange.get(int) wouldn't be efficient.
-                return new ArrayList<>(linkedList);
-            } else {
-                return list;
-            }
-        } else {
-            // TODO If only ValueRange.createOriginalIterator() is used, cloning a Set to a List is a waste of time.
-            return new ArrayList<>(collection);
+    private <T> List<T> transformCollectionToUniqueList(Collection<T> collection) {
+        if (collection.isEmpty()) {
+            return Collections.emptyList();
         }
+        return collection.stream()
+                .distinct()
+                .toList();
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <Value_> List<Value_> transformArrayToUniqueList(Object arrayObject) {
+        if (arrayObject == null) {
+            return Collections.emptyList();
+        }
+        var array = (Value_[]) arrayObject;
+        if (array.length == 0) {
+            return Collections.emptyList();
+        }
+        return Arrays.stream(array)
+                .distinct()
+                .toList();
     }
 
 }
