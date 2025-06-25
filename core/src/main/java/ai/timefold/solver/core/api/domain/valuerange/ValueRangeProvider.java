@@ -8,8 +8,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Collection;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
 
 import org.jspecify.annotations.NonNull;
 
@@ -19,6 +21,17 @@ import org.jspecify.annotations.NonNull;
  * This is specified on a getter of a java bean property (or directly on a field)
  * which returns a {@link Collection} or {@link ValueRange}.
  * A {@link Collection} is implicitly converted to a {@link ValueRange}.
+ *
+ * <p>
+ * Value ranges are not allowed to change during solving.
+ * This is especially important for value ranges defined on {@link PlanningEntity}-annotated classes;
+ * these must never depend on any of that entity's variables, or on any other entity's variables.
+ *
+ * <p>
+ * If you need to change a value range defined on an entity,
+ * trigger a {@link ProblemChange} for that entity or restart the solver with an updated planning solution.
+ * If you need to change a value range defined on a planning solution,
+ * restart the solver with a new planning solution.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
