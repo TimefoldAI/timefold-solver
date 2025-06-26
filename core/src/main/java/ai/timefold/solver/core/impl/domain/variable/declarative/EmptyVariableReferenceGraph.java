@@ -2,10 +2,9 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
-final class EmptyVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
+final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
 
-    @SuppressWarnings("rawtypes")
-    public static final EmptyVariableReferenceGraph INSTANCE = new EmptyVariableReferenceGraph<>();
+    public static final EmptyVariableReferenceGraph INSTANCE = new EmptyVariableReferenceGraph();
 
     @Override
     public void updateChanged() {
