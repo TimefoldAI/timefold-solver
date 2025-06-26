@@ -32,8 +32,7 @@ class GraphStructureTest {
     void simpleChainedStructure() {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataChainedSimpleVarSolution.buildSolutionDescriptor()))
-                .hasFieldOrPropertyWithValue("structure", SINGLE_DIRECTIONAL_PARENT)
-                .hasFieldOrPropertyWithValue("direction", ParentVariableType.CHAINED_NEXT);
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY);
     }
 
     @Test

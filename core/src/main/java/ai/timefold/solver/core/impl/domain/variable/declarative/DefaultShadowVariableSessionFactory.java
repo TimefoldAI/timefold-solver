@@ -14,17 +14,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntFunction;
-import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,7 +65,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         };
     }
 
-    private static <Solution_> VariableReferenceGraph buildSingleDirectionalParentGraph(
+    static <Solution_> VariableReferenceGraph buildSingleDirectionalParentGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             GraphStructure.GraphStructureAndDirection graphStructureAndDirection,
@@ -76,13 +73,14 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var declarativeShadowVariables = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         var sortedDeclarativeVariables = topologicallySortedDeclarativeShadowVariables(declarativeShadowVariables);
 
-        var successorFunction =
-                getSuccessorFunction(solutionDescriptor, Objects.requireNonNull(changedVariableNotifier.innerScoreDirector()),
+        var topologicalSorter =
+                getTopologicalSorter(solutionDescriptor,
+                        Objects.requireNonNull(changedVariableNotifier.innerScoreDirector()),
                         Objects.requireNonNull(graphStructureAndDirection.parentMetaModel()),
                         Objects.requireNonNull(graphStructureAndDirection.direction()));
 
-        return new SingleDirectionalParentVariableReferenceGraph<>(sortedDeclarativeVariables, successorFunction,
-                changedVariableNotifier, entities);
+        return new SingleDirectionalParentVariableReferenceGraph<>(sortedDeclarativeVariables,
+                topologicalSorter, changedVariableNotifier, entities);
     }
 
     private static <Solution_> @NonNull List<DeclarativeShadowVariableDescriptor<Solution_>>
@@ -120,21 +118,22 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         return sortedDeclarativeVariables;
     }
 
-    private static <Solution_> @NonNull UnaryOperator<@Nullable Object> getSuccessorFunction(
+    private static <Solution_> TopologicalSorter getTopologicalSorter(
             SolutionDescriptor<Solution_> solutionDescriptor, InnerScoreDirector<Solution_, ?> scoreDirector,
             VariableMetaModel<?, ?, ?> parentMetaModel, ParentVariableType parentVariableType) {
         return switch (parentVariableType) {
-            case PREVIOUS ->
-                scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor())::getNextElement;
-            case NEXT ->
-                scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor())::getPreviousElement;
-            case CHAINED_NEXT -> {
-                var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(parentMetaModel.entity().type());
-                var inverseVariable = (InverseRelationShadowVariableDescriptor<?>) entityDescriptor
-                        .getShadowVariableDescriptor(parentMetaModel.name());
-                var sourceVariable = inverseVariable.getSourceVariableDescriptorList().get(0);
-                var entityType = sourceVariable.getEntityDescriptor().getEntityClass();
-                yield old -> entityType.isInstance(old) ? sourceVariable.getValue(old) : null;
+            case PREVIOUS -> {
+                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
+                yield new TopologicalSorter(listStateSupply::getNextElement,
+                        Comparator.comparingInt(entity -> Objects.requireNonNullElse(listStateSupply.getIndex(entity), 0)),
+                        listStateSupply::getInverseSingleton);
+            }
+            case NEXT -> {
+                var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
+                yield new TopologicalSorter(listStateSupply::getPreviousElement,
+                        Comparator.comparingInt(entity -> Objects.requireNonNullElse(listStateSupply.getIndex(entity), 0))
+                                .reversed(),
+                        listStateSupply::getInverseSingleton);
             }
             default -> throw new IllegalStateException(
                     "Impossible state: expected parentVariableType to be previous or next but was %s."

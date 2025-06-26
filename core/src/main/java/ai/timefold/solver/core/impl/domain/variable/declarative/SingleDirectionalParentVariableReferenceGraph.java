@@ -2,8 +2,11 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
@@ -14,6 +17,8 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final VariableUpdaterInfo<Solution_>[] sortedVariableUpdaterInfos;
     private final UnaryOperator<Object> successorFunction;
+    private final Comparator<Object> topologicalOrderComparator;
+    private final UnaryOperator<Object> keyFunction;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
     private final List<Object> changedEntities;
     private final Class<?> monitoredEntityClass;
@@ -22,7 +27,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     @SuppressWarnings("unchecked")
     public SingleDirectionalParentVariableReferenceGraph(
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
-            UnaryOperator<Object> successorFunction,
+            TopologicalSorter topologicalSorter,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             Object[] entities) {
         monitoredEntityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
@@ -31,9 +36,12 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         changedEntities = new ArrayList<>();
         isUpdating = false;
 
-        this.successorFunction = successorFunction;
+        this.successorFunction = topologicalSorter.successor();
+        this.topologicalOrderComparator = topologicalSorter.comparator();
+        this.keyFunction = topologicalSorter.key();
         this.changedVariableNotifier = changedVariableNotifier;
-        var shadowEntities = Arrays.stream(entities).filter(monitoredEntityClass::isInstance).toArray();
+        var shadowEntities = Arrays.stream(entities).filter(monitoredEntityClass::isInstance)
+                .sorted(topologicalOrderComparator).toArray();
         var loopedDescriptor =
                 sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getShadowVariableLoopedDescriptor();
 
@@ -55,9 +63,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
             }
         }
 
-        for (var shadowEntity : shadowEntities) {
-            updateChanged(shadowEntity);
-        }
+        changedEntities.addAll(List.of(shadowEntities));
+        updateChanged();
+
         if (loopedDescriptor != null) {
             for (var shadowEntity : shadowEntities) {
                 changedVariableNotifier.beforeVariableChanged().accept(loopedDescriptor, shadowEntity);
@@ -70,15 +78,29 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     @Override
     public void updateChanged() {
         isUpdating = true;
+        changedEntities.sort(topologicalOrderComparator);
+        Map<Object, Object> processed = new IdentityHashMap<>();
         for (var changedEntity : changedEntities) {
-            updateChanged(changedEntity);
+            var key = keyFunction.apply(changedEntity);
+            var lastProcessed = processed.get(key);
+            if (lastProcessed == null || topologicalOrderComparator.compare(lastProcessed, changedEntity) < 0) {
+                lastProcessed = updateChanged(changedEntity);
+                processed.put(key, lastProcessed);
+            }
         }
         isUpdating = false;
         changedEntities.clear();
     }
 
-    private void updateChanged(Object entity) {
+    /**
+     * Update entities and its successor until one of them does not change.
+     *
+     * @param entity The first entity to process.
+     * @return The last processed entity (i.e. the first entity that did not change).
+     */
+    private Object updateChanged(Object entity) {
         var current = entity;
+        var previous = current;
         while (current != null) {
             var anyChanged = false;
             for (var updater : sortedVariableUpdaterInfos) {
@@ -92,11 +114,13 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
                 }
             }
             if (anyChanged) {
+                previous = current;
                 current = successorFunction.apply(current);
             } else {
-                current = null;
+                return current;
             }
         }
+        return previous;
     }
 
     @Override
