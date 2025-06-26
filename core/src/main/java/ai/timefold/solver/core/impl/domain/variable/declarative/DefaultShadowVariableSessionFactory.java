@@ -50,7 +50,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor, entities);
-        LOGGER.trace("Graph structure: {}", graphStructureAndDirection);
+        LOGGER.trace("Shadow variable graph structure: {}", graphStructureAndDirection);
         return switch (graphStructureAndDirection.structure()) {
             case EMPTY -> EmptyVariableReferenceGraph.INSTANCE;
             case SINGLE_DIRECTIONAL_PARENT -> {
