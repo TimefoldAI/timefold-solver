@@ -2,33 +2,9 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
 
-final class EmptyVariableReferenceGraph<Solution_> implements VariableReferenceGraph<Solution_> {
-
-    @SuppressWarnings("rawtypes")
-    public static final EmptyVariableReferenceGraph INSTANCE = new EmptyVariableReferenceGraph<>();
-
-    @Override
-    public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        return null;
-    }
-
-    @Override
-    public void addEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        throw new IllegalStateException("Impossible state: cannot modify an empty graph.");
-    }
-
-    @Override
-    public void removeEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        throw new IllegalStateException("Impossible state: cannot modify an empty graph.");
-    }
-
-    @Override
-    public void markChanged(@NonNull EntityVariablePair<Solution_> node) {
-        throw new IllegalStateException("Impossible state: cannot modify an empty graph.");
-    }
+    public static final EmptyVariableReferenceGraph INSTANCE = new EmptyVariableReferenceGraph();
 
     @Override
     public void updateChanged() {

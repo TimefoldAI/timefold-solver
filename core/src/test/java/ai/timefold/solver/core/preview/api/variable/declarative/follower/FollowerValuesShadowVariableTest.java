@@ -65,7 +65,7 @@ class FollowerValuesShadowVariableTest {
                         followerB1, followerB2),
                 List.of(value1, value2));
 
-        var solutionDescriptor = TestdataFollowerSolution.getSolutionDescriptor();
+        var solutionDescriptor = TestdataFollowerSolution.buildSolutionDescriptor();
         var variableMetamodel = solutionDescriptor.getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
 

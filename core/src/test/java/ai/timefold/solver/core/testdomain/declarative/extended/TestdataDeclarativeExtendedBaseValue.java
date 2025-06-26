@@ -6,7 +6,6 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
 public class TestdataDeclarativeExtendedBaseValue extends TestdataObject {
-    @PreviousElementShadowVariable(sourceVariableName = "values")
     TestdataDeclarativeExtendedBaseValue previous;
 
     public TestdataDeclarativeExtendedBaseValue() {
@@ -17,6 +16,7 @@ public class TestdataDeclarativeExtendedBaseValue extends TestdataObject {
         super(code);
     }
 
+    @PreviousElementShadowVariable(sourceVariableName = "values")
     public TestdataDeclarativeExtendedBaseValue getPrevious() {
         return previous;
     }

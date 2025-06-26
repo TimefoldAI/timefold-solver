@@ -1,23 +1,36 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.IntFunction;
+import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @NullMarked
 public class DefaultShadowVariableSessionFactory<Solution_> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultShadowVariableSessionFactory.class);
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final IntFunction<TopologicalOrderGraph> graphCreator;
@@ -32,14 +45,108 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <Solution_> VariableReferenceGraph<Solution_> buildGraph(
+    public static <Solution_> VariableReferenceGraph buildGraph(
+            SolutionDescriptor<Solution_> solutionDescriptor,
+            VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
+            IntFunction<TopologicalOrderGraph> graphCreator) {
+        var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor, entities);
+        LOGGER.trace("Shadow variable graph structure: {}", graphStructureAndDirection);
+        return switch (graphStructureAndDirection.structure()) {
+            case EMPTY -> EmptyVariableReferenceGraph.INSTANCE;
+            case SINGLE_DIRECTIONAL_PARENT -> {
+                var scoreDirector = variableReferenceGraphBuilder.changedVariableNotifier.innerScoreDirector();
+                if (scoreDirector == null) {
+                    yield buildArbitraryGraph(solutionDescriptor, variableReferenceGraphBuilder, entities, graphCreator);
+                }
+                yield buildSingleDirectionalParentGraph(solutionDescriptor,
+                        variableReferenceGraphBuilder.changedVariableNotifier,
+                        graphStructureAndDirection,
+                        entities);
+            }
+            case NO_DYNAMIC_EDGES, ARBITRARY ->
+                buildArbitraryGraph(solutionDescriptor, variableReferenceGraphBuilder, entities, graphCreator);
+        };
+    }
+
+    private static <Solution_> VariableReferenceGraph buildSingleDirectionalParentGraph(
+            SolutionDescriptor<Solution_> solutionDescriptor,
+            ChangedVariableNotifier<Solution_> changedVariableNotifier,
+            GraphStructure.GraphStructureAndDirection graphStructureAndDirection,
+            Object[] entities) {
+        var declarativeShadowVariables = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
+        var sortedDeclarativeVariables = topologicallySortedDeclarativeShadowVariables(declarativeShadowVariables);
+
+        var successorFunction =
+                getSuccessorFunction(solutionDescriptor, Objects.requireNonNull(changedVariableNotifier.innerScoreDirector()),
+                        Objects.requireNonNull(graphStructureAndDirection.parentMetaModel()),
+                        Objects.requireNonNull(graphStructureAndDirection.direction()));
+
+        return new SingleDirectionalParentVariableReferenceGraph<>(sortedDeclarativeVariables, successorFunction,
+                changedVariableNotifier, entities);
+    }
+
+    private static <Solution_> @NonNull List<DeclarativeShadowVariableDescriptor<Solution_>>
+            topologicallySortedDeclarativeShadowVariables(
+                    List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariables) {
+        Map<String, Integer> nameToIndex = new LinkedHashMap<>();
+        for (var declarativeShadowVariable : declarativeShadowVariables) {
+            nameToIndex.put(declarativeShadowVariable.getVariableName(), nameToIndex.size());
+        }
+        var graph = new DefaultTopologicalOrderGraph(nameToIndex.size());
+        for (var declarativeShadowVariable : declarativeShadowVariables) {
+            var toIndex = nameToIndex.get(declarativeShadowVariable.getVariableName());
+            var visited = new HashSet<Integer>();
+            for (var source : declarativeShadowVariable.getSources()) {
+                var variableReferences = source.variableSourceReferences();
+                if (variableReferences.size() != 1) {
+                    // variableReferences is from directional variable
+                    continue;
+                }
+                var variableReference = variableReferences.get(0);
+                var sourceDeclarativeVariable = variableReference.downstreamDeclarativeVariableMetamodel();
+                if (sourceDeclarativeVariable != null) {
+                    var fromIndex = nameToIndex.get(sourceDeclarativeVariable.name());
+                    if (visited.add(fromIndex)) {
+                        graph.addEdge(fromIndex, toIndex);
+                    }
+                }
+            }
+        }
+        graph.commitChanges(new BitSet());
+        var sortedDeclarativeVariables = new ArrayList<>(declarativeShadowVariables);
+        sortedDeclarativeVariables.sort(Comparator.<DeclarativeShadowVariableDescriptor<Solution_>> comparingInt(
+                variable -> graph.getTopologicalOrder(nameToIndex.get(variable.getVariableName())).order())
+                .thenComparing(VariableDescriptor::getVariableName));
+        return sortedDeclarativeVariables;
+    }
+
+    private static <Solution_> @NonNull UnaryOperator<@Nullable Object> getSuccessorFunction(
+            SolutionDescriptor<Solution_> solutionDescriptor, InnerScoreDirector<Solution_, ?> scoreDirector,
+            VariableMetaModel<?, ?, ?> parentMetaModel, ParentVariableType parentVariableType) {
+        return switch (parentVariableType) {
+            case PREVIOUS ->
+                scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor())::getNextElement;
+            case NEXT ->
+                scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor())::getPreviousElement;
+            case CHAINED_NEXT -> {
+                var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(parentMetaModel.entity().type());
+                var inverseVariable = (InverseRelationShadowVariableDescriptor<?>) entityDescriptor
+                        .getShadowVariableDescriptor(parentMetaModel.name());
+                var sourceVariable = inverseVariable.getSourceVariableDescriptorList().get(0);
+                var entityType = sourceVariable.getEntityDescriptor().getEntityClass();
+                yield old -> entityType.isInstance(old) ? sourceVariable.getValue(old) : null;
+            }
+            default -> throw new IllegalStateException(
+                    "Impossible state: expected parentVariableType to be previous or next but was %s."
+                            .formatted(parentVariableType));
+        };
+    }
+
+    private static <Solution_> VariableReferenceGraph buildArbitraryGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         var declarativeShadowVariableDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
-        if (declarativeShadowVariableDescriptors.isEmpty()) {
-            return EmptyVariableReferenceGraph.INSTANCE;
-        }
         var variableIdToUpdater = new HashMap<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo<Solution_>>();
 
         // Create graph node for each entity/declarative shadow variable pair.
@@ -113,12 +220,13 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 if (!sourcePart.isDeclarative()) {
                     if (sourcePart.onRootEntity()) {
                         // No need for inverse set; source and target entity are the same.
-                        variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
-                            var changed = graph.lookupOrNull(fromVariableId, entity);
-                            if (changed != null) {
-                                graph.markChanged(changed);
-                            }
-                        });
+                        variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
+                                (graph, entity) -> {
+                                    var changed = graph.lookupOrNull(fromVariableId, entity);
+                                    if (changed != null) {
+                                        graph.markChanged(changed);
+                                    }
+                                });
                     } else {
                         // Need to create an inverse set from source to target
                         var inverseMap = new IdentityHashMap<Object, List<Object>>();
@@ -129,14 +237,15 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                         .computeIfAbsent(shadowEntity, ignored -> new ArrayList<>()).add(rootEntity));
                             }
                         }
-                        variableReferenceGraphBuilder.addAfterProcessor(toVariableId, (graph, entity) -> {
-                            for (var item : inverseMap.getOrDefault(entity, Collections.emptyList())) {
-                                var changed = graph.lookupOrNull(fromVariableId, item);
-                                if (changed != null) {
-                                    graph.markChanged(changed);
-                                }
-                            }
-                        });
+                        variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
+                                (graph, entity) -> {
+                                    for (var item : inverseMap.getOrDefault(entity, Collections.emptyList())) {
+                                        var changed = graph.lookupOrNull(fromVariableId, item);
+                                        if (changed != null) {
+                                            graph.markChanged(changed);
+                                        }
+                                    }
+                                });
                     }
                 }
             }
@@ -152,7 +261,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
             if (!alias.isDeclarative() && alias.affectGraphEdges()) {
                 // Exploit the same fact as above
-                variableReferenceGraphBuilder.addBeforeProcessor(sourceVariableId,
+                variableReferenceGraphBuilder.addBeforeProcessor(GraphChangeType.REMOVE_EDGE, sourceVariableId,
                         (graph, toEntity) -> {
                             // from/to can be null in extended models
                             // ex: previous is used as a source, but only an extended class
@@ -172,7 +281,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                             }
                             graph.removeEdge(from, to);
                         });
-                variableReferenceGraphBuilder.addAfterProcessor(sourceVariableId,
+                variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.ADD_EDGE, sourceVariableId,
                         (graph, toEntity) -> {
                             var to = graph.lookupOrNull(toVariableId, toEntity);
                             if (to == null) {

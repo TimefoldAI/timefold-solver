@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -1287,7 +1288,7 @@ public class SolutionDescriptor<Solution_> {
     }
 
     public List<DeclarativeShadowVariableDescriptor<Solution_>> getDeclarativeShadowVariableDescriptors() {
-        var out = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
+        var out = new HashSet<DeclarativeShadowVariableDescriptor<Solution_>>();
         for (var entityDescriptor : entityDescriptorMap.values()) {
             entityDescriptor.getShadowVariableDescriptors();
             for (var shadowVariableDescriptor : entityDescriptor.getShadowVariableDescriptors()) {
@@ -1296,7 +1297,7 @@ public class SolutionDescriptor<Solution_> {
                 }
             }
         }
-        return out;
+        return new ArrayList<>(out);
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution) {

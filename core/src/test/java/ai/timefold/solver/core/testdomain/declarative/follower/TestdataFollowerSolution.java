@@ -17,7 +17,7 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningSolution
 public class TestdataFollowerSolution extends TestdataObject {
-    public static SolutionDescriptor<TestdataFollowerSolution> getSolutionDescriptor() {
+    public static SolutionDescriptor<TestdataFollowerSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
                 TestdataFollowerSolution.class, TestdataLeaderEntity.class, TestdataFollowerEntity.class);
     }
