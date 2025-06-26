@@ -10,7 +10,7 @@ import java.util.function.IntFunction;
 import org.jspecify.annotations.NonNull;
 
 final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableReferenceGraph<Solution_, BitSet>
-        implements VariableReferenceGraph<Solution_> {
+        implements VariableReferenceGraph {
     // These structures are mutable.
     private final Consumer<BitSet> affectedEntitiesUpdater;
 

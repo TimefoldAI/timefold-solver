@@ -17,9 +17,9 @@ import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclar
 
 import org.junit.jupiter.api.Test;
 
-public class SimpleListTest {
+class SimpleListTest {
     @Test
-    public void simpleList() {
+    void simpleList() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataDeclarativeSimpleListSolution.class)
                 .withEntityClasses(TestdataDeclarativeSimpleListEntity.class, TestdataDeclarativeSimpleListValue.class)

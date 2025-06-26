@@ -133,7 +133,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
     }
 
     private record InternalShadowVariableSession<Solution_>(SolutionDescriptor<Solution_> solutionDescriptor,
-            VariableReferenceGraph<Solution_> graph) {
+            VariableReferenceGraph graph) {
 
         public static <Solution_> InternalShadowVariableSession<Solution_> build(
                 SolutionDescriptor<Solution_> solutionDescriptor, VariableReferenceGraphBuilder<Solution_> graph,

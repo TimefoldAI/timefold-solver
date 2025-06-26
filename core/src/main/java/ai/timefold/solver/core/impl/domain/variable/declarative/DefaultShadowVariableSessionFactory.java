@@ -13,8 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
 
 @NullMarked
 public class DefaultShadowVariableSessionFactory<Solution_> {
-    private final static Logger LOGGER = LoggerFactory.getLogger(DefaultShadowVariableSessionFactory.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DefaultShadowVariableSessionFactory.class);
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final IntFunction<TopologicalOrderGraph> graphCreator;
@@ -45,7 +45,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    public static <Solution_> VariableReferenceGraph<Solution_> buildGraph(
+    public static <Solution_> VariableReferenceGraph buildGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {
@@ -68,7 +68,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         };
     }
 
-    private static <Solution_> VariableReferenceGraph<Solution_> buildSingleDirectionalParentGraph(
+    private static <Solution_> VariableReferenceGraph buildSingleDirectionalParentGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             GraphStructure.GraphStructureAndDirection graphStructureAndDirection,
@@ -76,7 +76,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var declarativeShadowVariables = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         var sortedDeclarativeVariables = topologicallySortedDeclarativeShadowVariables(declarativeShadowVariables);
 
-        Function<Object, Object> successorFunction =
+        var successorFunction =
                 getSuccessorFunction(solutionDescriptor, Objects.requireNonNull(changedVariableNotifier.innerScoreDirector()),
                         Objects.requireNonNull(graphStructureAndDirection.parentMetaModel()),
                         Objects.requireNonNull(graphStructureAndDirection.direction()));
@@ -120,7 +120,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         return sortedDeclarativeVariables;
     }
 
-    private static <Solution_> @NonNull Function<Object, @Nullable Object> getSuccessorFunction(
+    private static <Solution_> @NonNull UnaryOperator<@Nullable Object> getSuccessorFunction(
             SolutionDescriptor<Solution_> solutionDescriptor, InnerScoreDirector<Solution_, ?> scoreDirector,
             VariableMetaModel<?, ?, ?> parentMetaModel, ParentVariableType parentVariableType) {
         return switch (parentVariableType) {
@@ -136,15 +136,13 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 var entityType = sourceVariable.getEntityDescriptor().getEntityClass();
                 yield old -> entityType.isInstance(old) ? sourceVariable.getValue(old) : null;
             }
-            default -> {
-                throw new IllegalStateException(
-                        "Impossible state: expected parentVariableType to be previous or next but was %s."
-                                .formatted(parentVariableType));
-            }
+            default -> throw new IllegalStateException(
+                    "Impossible state: expected parentVariableType to be previous or next but was %s."
+                            .formatted(parentVariableType));
         };
     }
 
-    private static <Solution_> VariableReferenceGraph<Solution_> buildArbitraryGraph(
+    private static <Solution_> VariableReferenceGraph buildArbitraryGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
             IntFunction<TopologicalOrderGraph> graphCreator) {

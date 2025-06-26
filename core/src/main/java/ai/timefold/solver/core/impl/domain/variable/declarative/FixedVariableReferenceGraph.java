@@ -9,7 +9,7 @@ import org.jspecify.annotations.NonNull;
 
 public final class FixedVariableReferenceGraph<Solution_>
         extends AbstractVariableReferenceGraph<Solution_, PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder>>
-        implements VariableReferenceGraph<Solution_> {
+        implements VariableReferenceGraph {
     // These are immutable
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 

@@ -19,9 +19,9 @@ import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclar
 
 import org.junit.jupiter.api.Test;
 
-public class GraphStructureTest {
+class GraphStructureTest {
     @Test
-    public void simpleListStructure() {
+    void simpleListStructure() {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataDeclarativeSimpleListSolution.buildSolutionDescriptor()))
                 .hasFieldOrPropertyWithValue("structure", SINGLE_DIRECTIONAL_PARENT)
@@ -29,7 +29,7 @@ public class GraphStructureTest {
     }
 
     @Test
-    public void simpleChainedStructure() {
+    void simpleChainedStructure() {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataChainedSimpleVarSolution.buildSolutionDescriptor()))
                 .hasFieldOrPropertyWithValue("structure", SINGLE_DIRECTIONAL_PARENT)
@@ -37,7 +37,7 @@ public class GraphStructureTest {
     }
 
     @Test
-    public void extendedSimpleListStructure() {
+    void extendedSimpleListStructure() {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataDeclarativeExtendedSolution.buildSolutionDescriptor()))
                 .hasFieldOrPropertyWithValue("structure", SINGLE_DIRECTIONAL_PARENT)
@@ -45,7 +45,7 @@ public class GraphStructureTest {
     }
 
     @Test
-    public void concurrentValuesStructureWithoutGroups() {
+    void concurrentValuesStructureWithoutGroups() {
         var value1 = new TestdataConcurrentValue("v1");
         var value2 = new TestdataConcurrentValue("v2");
         value2.setConcurrentValueGroup(Collections.emptyList());
@@ -57,7 +57,7 @@ public class GraphStructureTest {
     }
 
     @Test
-    public void concurrentValuesStructureWithGroups() {
+    void concurrentValuesStructureWithGroups() {
         var value1 = new TestdataConcurrentValue("v1");
         var value2 = new TestdataConcurrentValue("v2");
         var group = List.of(value1, value2);
@@ -69,14 +69,14 @@ public class GraphStructureTest {
     }
 
     @Test
-    public void followerStructure() {
+    void followerStructure() {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataFollowerSolution.buildSolutionDescriptor()))
                 .hasFieldOrPropertyWithValue("structure", NO_DYNAMIC_EDGES);
     }
 
     @Test
-    public void emptyStructure() {
+    void emptyStructure() {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataSolution.buildSolutionDescriptor()))
                 .hasFieldOrPropertyWithValue("structure", EMPTY);

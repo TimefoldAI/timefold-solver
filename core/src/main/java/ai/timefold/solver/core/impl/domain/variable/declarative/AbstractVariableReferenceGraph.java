@@ -16,7 +16,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet_> implements VariableReferenceGraph<Solution_>
+public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet_> implements VariableReferenceGraph
         permits DefaultVariableReferenceGraph, FixedVariableReferenceGraph {
     // These structures are immutable.
     protected final List<EntityVariablePair<Solution_>> instanceList;
@@ -29,7 +29,7 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
     protected final ChangeSet_ changeSet;
     protected final TopologicalOrderGraph graph;
 
-    public AbstractVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
+    AbstractVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
         instanceList = List.copyOf(outerGraph.instanceList);
         var instanceCount = instanceList.size();
@@ -61,7 +61,7 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
         }
     }
 
-    abstract protected ChangeSet_ createChangeSet(int instanceCount);
+    protected abstract ChangeSet_ createChangeSet(int instanceCount);
 
     public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
         var map = variableReferenceToInstanceMap.get(variableId);
@@ -110,12 +110,12 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
         }
     }
 
+    @SuppressWarnings("ForLoopReplaceableByForEach")
     private void processEntity(List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> processorList,
             Object entity) {
         var processorCount = processorList.size();
         // Avoid creation of iterators on the hot path.
         // The short-lived instances were observed to cause considerable GC pressure.
-        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < processorCount; i++) {
             processorList.get(i).accept(this, entity);
         }

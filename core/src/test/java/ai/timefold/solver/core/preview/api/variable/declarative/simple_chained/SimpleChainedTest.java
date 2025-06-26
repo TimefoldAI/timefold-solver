@@ -17,9 +17,9 @@ import ai.timefold.solver.core.testdomain.declarative.simple_chained.TestdataCha
 
 import org.junit.jupiter.api.Test;
 
-public class SimpleChainedTest {
+class SimpleChainedTest {
     @Test
-    public void simpleChained() {
+    void simpleChained() {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataChainedSimpleVarSolution.class)
                 .withEntityClasses(TestdataChainedSimpleVarEntity.class, TestdataChainedSimpleVarValue.class)

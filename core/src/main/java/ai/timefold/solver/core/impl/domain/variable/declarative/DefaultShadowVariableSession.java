@@ -8,9 +8,9 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class DefaultShadowVariableSession<Solution_> implements Supply {
-    final VariableReferenceGraph<Solution_> graph;
+    final VariableReferenceGraph graph;
 
-    public DefaultShadowVariableSession(VariableReferenceGraph<Solution_> graph) {
+    public DefaultShadowVariableSession(VariableReferenceGraph graph) {
         this.graph = graph;
     }
 

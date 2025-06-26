@@ -6,26 +6,26 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.Function;
+import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
-public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph<Solution_> {
+public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final VariableUpdaterInfo<Solution_>[] sortedVariableUpdaterInfos;
-    private final Function<Object, Object> successorFunction;
+    private final UnaryOperator<Object> successorFunction;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
     private final List<Object> changedEntities;
     private final Class<?> monitoredEntityClass;
     private boolean isUpdating;
 
+    @SuppressWarnings("unchecked")
     public SingleDirectionalParentVariableReferenceGraph(
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
-            Function<Object, Object> successorFunction,
+            UnaryOperator<Object> successorFunction,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             Object[] entities) {
         monitoredEntityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
-        // noinspection unchecked
         sortedVariableUpdaterInfos = new VariableUpdaterInfo[sortedDeclarativeShadowVariableDescriptors.size()];
         monitoredSourceVariableSet = new HashSet<>();
         changedEntities = new ArrayList<>();
