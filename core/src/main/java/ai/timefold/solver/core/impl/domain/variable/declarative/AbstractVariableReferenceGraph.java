@@ -21,8 +21,8 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
     // These structures are immutable.
     protected final List<EntityVariablePair<Solution_>> instanceList;
     protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
-    protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
-    protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
+    protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
+    protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
 
     // These structures are mutable.
     protected final DynamicIntArray[] edgeCount;
@@ -63,7 +63,6 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
 
     abstract protected ChangeSet_ createChangeSet(int instanceCount);
 
-    @Override
     public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
         var map = variableReferenceToInstanceMap.get(variableId);
         if (map == null) {
@@ -72,7 +71,6 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
         return map.get(entity);
     }
 
-    @Override
     public void addEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
         var fromNodeId = from.graphNodeId();
         var toNodeId = to.graphNodeId();
@@ -88,7 +86,6 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
         markChanged(to);
     }
 
-    @Override
     public void removeEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
         var fromNodeId = from.graphNodeId();
         var toNodeId = to.graphNodeId();
@@ -104,6 +101,8 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
         markChanged(to);
     }
 
+    abstract void markChanged(EntityVariablePair<Solution_> changed);
+
     @Override
     public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
         if (variableReference.entity().type().isInstance(entity)) {
@@ -111,10 +110,12 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
         }
     }
 
-    private void processEntity(List<BiConsumer<VariableReferenceGraph<Solution_>, Object>> processorList, Object entity) {
+    private void processEntity(List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>> processorList,
+            Object entity) {
         var processorCount = processorList.size();
         // Avoid creation of iterators on the hot path.
         // The short-lived instances were observed to cause considerable GC pressure.
+        //noinspection ForLoopReplaceableByForEach
         for (int i = 0; i < processorCount; i++) {
             processorList.get(i).accept(this, entity);
         }
@@ -129,11 +130,6 @@ public sealed abstract class AbstractVariableReferenceGraph<Solution_, ChangeSet
             }
             processEntity(variableReferenceToAfterProcessor.getOrDefault(variableReference, Collections.emptyList()), entity);
         }
-    }
-
-    @Override
-    public boolean shouldQueueAfterEvents() {
-        return false;
     }
 
     @Override

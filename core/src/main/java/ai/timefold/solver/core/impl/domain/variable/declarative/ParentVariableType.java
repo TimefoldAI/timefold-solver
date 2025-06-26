@@ -7,30 +7,36 @@ public enum ParentVariableType {
     NO_PARENT(false, false),
 
     /**
-     * A variable accessed from the inverse.
+     * A variable accessed from another variable.
+     */
+    VARIABLE(false, false),
+
+    /**
+     * Variable on the inverse accessed from the root object.
      */
     INVERSE(false, false),
 
     /**
-     * Next element variable accessed from the root object.
+     * Variable on a next element variable accessed from the root object.
      */
     NEXT(true, false),
 
     /**
-     * Previous element variable accessed from the root object.
+     * Variable on a previous element variable accessed from the root object.
      */
     PREVIOUS(true, false),
 
-    /**
-     * PREVIOUS element variable accessed from the root object in a chained model.
-     * Note: it might be impossible, since a chained model uses separate classes
-     * for the anchor and values, and the anchor does not have a planning
-     * variable on it.
+    /*
+     * Previous element variable accessed from the root object in a chained model
+     * (i.e. PlanningVariable(graphType = PlanningVariableGraphType.CHAINED))
+     * is not included, since it would require a source path to accept properties
+     * that are only included on subclasses of the property's type (since the
+     * value of a chained value is either an entity (which has the property) or
+     * an anchor (which does not have the property)).
      */
-    CHAINED_PREVIOUS(true, false),
 
     /**
-     * Next element variable accessed from the root object in a chained model.
+     * Variable on a next element variable accessed from the root object in a chained model.
      */
     CHAINED_NEXT(true, false),
 

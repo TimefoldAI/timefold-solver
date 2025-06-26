@@ -374,11 +374,7 @@ public record RootVariableSource<Entity_, Value_>(
             }
         }
         if (getAnnotation(declaringClass, memberName, PlanningVariable.class) != null) {
-            PlanningVariable planningVariable =
-                    Objects.requireNonNull(getAnnotation(declaringClass, memberName, PlanningVariable.class));
-            if (planningVariable.graphType() == PlanningVariableGraphType.CHAINED) {
-                return ParentVariableType.CHAINED_PREVIOUS;
-            }
+            return ParentVariableType.VARIABLE;
         }
         return ParentVariableType.NO_PARENT;
     }

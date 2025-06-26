@@ -19,7 +19,6 @@ import java.util.function.IntFunction;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
@@ -129,13 +128,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor())::getNextElement;
             case NEXT ->
                 scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor())::getPreviousElement;
-            case CHAINED_PREVIOUS -> {
-                var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(parentMetaModel.entity().type());
-                var variableDescriptor = entityDescriptor.getVariableDescriptor(parentMetaModel.name());
-                var inverseSupply =
-                        scoreDirector.getSupplyManager().demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-                yield inverseSupply::getInverseSingleton;
-            }
             case CHAINED_NEXT -> {
                 var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(parentMetaModel.entity().type());
                 var inverseVariable = (InverseRelationShadowVariableDescriptor<?>) entityDescriptor

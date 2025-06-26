@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
@@ -9,28 +10,30 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph<Solution_> {
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final VariableUpdaterInfo<Solution_>[] sortedVariableUpdaterInfos;
     private final Function<Object, Object> successorFunction;
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
+    private final List<Object> changedEntities;
+    private final Class<?> monitoredEntityClass;
+    private boolean isUpdating;
 
     public SingleDirectionalParentVariableReferenceGraph(
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
             Function<Object, Object> successorFunction,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
             Object[] entities) {
-        var entityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
+        monitoredEntityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
         // noinspection unchecked
         sortedVariableUpdaterInfos = new VariableUpdaterInfo[sortedDeclarativeShadowVariableDescriptors.size()];
         monitoredSourceVariableSet = new HashSet<>();
+        changedEntities = new ArrayList<>();
+        isUpdating = false;
 
         this.successorFunction = successorFunction;
         this.changedVariableNotifier = changedVariableNotifier;
-        var shadowEntities = Arrays.stream(entities).filter(entityClass::isInstance).toArray();
+        var shadowEntities = Arrays.stream(entities).filter(monitoredEntityClass::isInstance).toArray();
         var loopedDescriptor =
                 sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getShadowVariableLoopedDescriptor();
 
@@ -65,32 +68,13 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     }
 
     @Override
-    public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        throw new IllegalStateException("Impossible state: cannot lookup in a %s graph."
-                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
-    }
-
-    @Override
-    public void addEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        throw new IllegalStateException("Impossible state: cannot modify an %s graph."
-                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
-    }
-
-    @Override
-    public void removeEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
-        throw new IllegalStateException("Impossible state: cannot modify an %s graph."
-                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
-    }
-
-    @Override
-    public void markChanged(@NonNull EntityVariablePair<Solution_> node) {
-        throw new IllegalStateException("Impossible state: cannot mark changed an %s graph."
-                .formatted(SingleDirectionalParentVariableReferenceGraph.class.getSimpleName()));
-    }
-
-    @Override
     public void updateChanged() {
-        // Do nothing; afterVariableChanged do the update
+        isUpdating = true;
+        for (var changedEntity : changedEntities) {
+            updateChanged(changedEntity);
+        }
+        isUpdating = false;
+        changedEntities.clear();
     }
 
     private void updateChanged(Object entity) {
@@ -122,13 +106,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
 
     @Override
     public void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
-        if (monitoredSourceVariableSet.contains(variableReference)) {
-            updateChanged(entity);
+        if (!isUpdating && monitoredSourceVariableSet.contains(variableReference) && monitoredEntityClass.isInstance(entity)) {
+            changedEntities.add(entity);
         }
     }
 
-    @Override
-    public boolean shouldQueueAfterEvents() {
-        return true;
-    }
 }

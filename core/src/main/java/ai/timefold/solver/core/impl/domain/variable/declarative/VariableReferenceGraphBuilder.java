@@ -16,8 +16,8 @@ import org.jspecify.annotations.NonNull;
 public final class VariableReferenceGraphBuilder<Solution_> {
 
     final ChangedVariableNotifier<Solution_> changedVariableNotifier;
-    final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToBeforeProcessor;
-    final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<VariableReferenceGraph<Solution_>, Object>>> variableReferenceToAfterProcessor;
+    final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
+    final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
     final List<EntityVariablePair<Solution_>> instanceList;
     final Map<EntityVariablePair<Solution_>, List<EntityVariablePair<Solution_>>> fixedEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
@@ -57,14 +57,14 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     public void addBeforeProcessor(GraphChangeType graphChangeType, VariableMetaModel<?, ?, ?> variableId,
-            BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
+            BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object> consumer) {
         isGraphFixed &= !graphChangeType.affectsGraph();
         variableReferenceToBeforeProcessor.computeIfAbsent(variableId, k -> new ArrayList<>())
                 .add(consumer);
     }
 
     public void addAfterProcessor(GraphChangeType graphChangeType, VariableMetaModel<?, ?, ?> variableId,
-            BiConsumer<VariableReferenceGraph<Solution_>, Object> consumer) {
+            BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object> consumer) {
         isGraphFixed &= !graphChangeType.affectsGraph();
         variableReferenceToAfterProcessor.computeIfAbsent(variableId, k -> new ArrayList<>())
                 .add(consumer);

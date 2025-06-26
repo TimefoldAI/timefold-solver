@@ -6,10 +6,12 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+@NullMarked
 public enum GraphStructure {
     /**
      * A graph structure that only accepts the empty graph.
@@ -70,9 +72,7 @@ public enum GraphStructure {
                     var groupMemberCount = new MutableInt(0);
                     for (var entity : entities) {
                         if (variableSource.rootEntity().isInstance(entity)) {
-                            variableSource.valueEntityFunction().accept(entity, fromEntity -> {
-                                groupMemberCount.increment();
-                            });
+                            variableSource.valueEntityFunction().accept(entity, fromEntity -> groupMemberCount.increment());
                         }
                     }
                     if (groupMemberCount.intValue() != 0) {
@@ -80,10 +80,10 @@ public enum GraphStructure {
                     }
                     // The group variable is unused/always empty
                 }
-                case INDIRECT, INVERSE -> {
+                case INDIRECT, INVERSE, VARIABLE -> {
                     return new GraphStructureAndDirection(ARBITRARY, null, null);
                 }
-                case NEXT, PREVIOUS, CHAINED_NEXT, CHAINED_PREVIOUS -> {
+                case NEXT, PREVIOUS, CHAINED_NEXT -> {
                     if (parentMetaModel == null) {
                         parentMetaModel = variableSource.variableSourceReferences().get(0).variableMetaModel();
                         directionalType = parentVariableType;
