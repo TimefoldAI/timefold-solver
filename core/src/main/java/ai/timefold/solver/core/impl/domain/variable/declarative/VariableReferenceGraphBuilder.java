@@ -70,12 +70,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 .add(consumer);
     }
 
-    @SuppressWarnings("unchecked")
     public VariableReferenceGraph build(IntFunction<TopologicalOrderGraph> graphCreator) {
-        // TODO empty shows up in VRP example when using it as CVRP, not CVRPTW
-        //  In that case, TimeWindowedCustomer does not exist
-        //  and therefore Customer has no shadow variable.
-        //  Surely there has to be an earlier way to catch this?
         if (instanceList.isEmpty()) {
             return EmptyVariableReferenceGraph.INSTANCE;
         }

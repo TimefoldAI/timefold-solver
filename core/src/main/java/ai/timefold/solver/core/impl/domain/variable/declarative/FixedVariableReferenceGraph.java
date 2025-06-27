@@ -8,8 +8,7 @@ import java.util.function.IntFunction;
 import org.jspecify.annotations.NonNull;
 
 public final class FixedVariableReferenceGraph<Solution_>
-        extends AbstractVariableReferenceGraph<Solution_, PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder>>
-        implements VariableReferenceGraph {
+        extends AbstractVariableReferenceGraph<Solution_, PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder>> {
     // These are immutable
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 

@@ -15,8 +15,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class SingleDirectionalParentVariableReferenceGraphTest {
+
     @Test
-    public void supplierMethodsAreOnlyCalledOnce() {
+    void supplierMethodsAreOnlyCalledOnce() {
         var solutionDescriptor = TestdataCountingSolution.buildSolutionDescriptor();
         var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor);
 
@@ -123,4 +124,5 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         assertThat(value4.getCount()).isEqualTo(3);
         assertThat(value5.getCount()).isZero();
     }
+
 }

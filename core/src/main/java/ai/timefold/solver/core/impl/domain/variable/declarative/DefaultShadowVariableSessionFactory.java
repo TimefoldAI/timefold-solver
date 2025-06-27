@@ -41,7 +41,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         this.graphCreator = graphCreator;
     }
 
-    @SuppressWarnings("unchecked")
     public static <Solution_> VariableReferenceGraph buildGraph(
             SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder, Object[] entities,
@@ -76,7 +75,6 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var topologicalSorter =
                 getTopologicalSorter(solutionDescriptor,
                         Objects.requireNonNull(changedVariableNotifier.innerScoreDirector()),
-                        Objects.requireNonNull(graphStructureAndDirection.parentMetaModel()),
                         Objects.requireNonNull(graphStructureAndDirection.direction()));
 
         return new SingleDirectionalParentVariableReferenceGraph<>(sortedDeclarativeVariables,
@@ -118,9 +116,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         return sortedDeclarativeVariables;
     }
 
-    private static <Solution_> TopologicalSorter getTopologicalSorter(
-            SolutionDescriptor<Solution_> solutionDescriptor, InnerScoreDirector<Solution_, ?> scoreDirector,
-            VariableMetaModel<?, ?, ?> parentMetaModel, ParentVariableType parentVariableType) {
+    private static <Solution_> TopologicalSorter getTopologicalSorter(SolutionDescriptor<Solution_> solutionDescriptor,
+            InnerScoreDirector<Solution_, ?> scoreDirector, ParentVariableType parentVariableType) {
         return switch (parentVariableType) {
             case PREVIOUS -> {
                 var listStateSupply = scoreDirector.getListVariableStateSupply(solutionDescriptor.getListVariableDescriptor());
@@ -149,7 +146,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var variableIdToUpdater = new HashMap<VariableMetaModel<?, ?, ?>, VariableUpdaterInfo<Solution_>>();
 
         // Create graph node for each entity/declarative shadow variable pair.
-        // Maps a variable id to it source aliases;
+        // Maps a variable id to its source aliases;
         // For instance, "previousVisit.startTime" is a source alias of "startTime"
         // One way to view this concept is "previousVisit.startTime" is a pointer
         // to "startTime" of some visit, and thus alias it.

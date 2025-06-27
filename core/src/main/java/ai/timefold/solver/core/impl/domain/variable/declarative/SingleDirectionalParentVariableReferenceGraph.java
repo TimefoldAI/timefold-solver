@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
@@ -14,6 +13,7 @@ import java.util.function.UnaryOperator;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
+
     private final Set<VariableMetaModel<?, ?, ?>> monitoredSourceVariableSet;
     private final VariableUpdaterInfo<Solution_>[] sortedVariableUpdaterInfos;
     private final UnaryOperator<Object> successorFunction;
@@ -79,7 +79,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     public void updateChanged() {
         isUpdating = true;
         changedEntities.sort(topologicalOrderComparator);
-        Map<Object, Object> processed = new IdentityHashMap<>();
+        var processed = new IdentityHashMap<>();
         for (var changedEntity : changedEntities) {
             var key = keyFunction.apply(changedEntity);
             var lastProcessed = processed.get(key);
