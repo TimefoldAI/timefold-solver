@@ -80,10 +80,12 @@ public enum GraphStructure {
                     }
                     // The group variable is unused/always empty
                 }
-                case INDIRECT, INVERSE, VARIABLE -> {
+                case INDIRECT, INVERSE, VARIABLE, CHAINED_NEXT -> {
+                    // CHAINED_NEXT has a complex comparator function;
+                    // so use ARBITRARY despite the fact it can be represented using SINGLE_DIRECTIONAL_PARENT
                     return new GraphStructureAndDirection(ARBITRARY, null, null);
                 }
-                case NEXT, PREVIOUS, CHAINED_NEXT -> {
+                case NEXT, PREVIOUS -> {
                     if (parentMetaModel == null) {
                         parentMetaModel = variableSource.variableSourceReferences().get(0).variableMetaModel();
                         directionalType = parentVariableType;

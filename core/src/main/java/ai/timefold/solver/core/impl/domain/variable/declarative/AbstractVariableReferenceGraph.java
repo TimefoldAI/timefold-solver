@@ -18,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 
 public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet_> implements VariableReferenceGraph
         permits DefaultVariableReferenceGraph, FixedVariableReferenceGraph {
+
     // These structures are immutable.
     protected final List<EntityVariablePair<Solution_>> instanceList;
     protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
