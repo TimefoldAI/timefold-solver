@@ -494,17 +494,14 @@ class SolutionDescriptorTest {
         var v1 = new TestdataValue("1");
         var v2 = new TestdataValue("2");
         solution.setEntityList(List.of(
-                new TestdataListEntityProvidingEntity(List.of(v1, v2)),
-                new TestdataListEntityProvidingEntity(List.of(v1, v2, new TestdataValue("3")))));
+                new TestdataListEntityProvidingEntity("e1", List.of(v1, v2)),
+                new TestdataListEntityProvidingEntity("e2", List.of(v1, v2, new TestdataValue("3")))));
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
 
-            // Add 1 to the value range sizes, since the value range allows unassigned
-            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(4L);
-            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(3L + 4L);
-            softly.assertThat(solutionDescriptor.getProblemScale(solution))
-                    .isCloseTo(Math.log10(3 * 4), Percentage.withPercentage(1.0));
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution)).isEqualTo(3L);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution)).isEqualTo(2L + 3L);
         });
     }
 

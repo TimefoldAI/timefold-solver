@@ -26,12 +26,6 @@ public class MimicReplayingValueSelector<Solution_>
         this.valueMimicRecorder = valueMimicRecorder;
         // No PhaseLifecycleSupport because the MimicRecordingValueSelector is hooked up elsewhere too
         valueMimicRecorder.addMimicReplayingValueSelector(this);
-        // Precondition for iterator(Object)'s current implementation
-        if (!valueMimicRecorder.getVariableDescriptor().isValueRangeEntityIndependent()) {
-            throw new IllegalArgumentException(
-                    "The current implementation support only an entityIndependent variable ("
-                            + valueMimicRecorder.getVariableDescriptor() + ").");
-        }
     }
 
     // ************************************************************************

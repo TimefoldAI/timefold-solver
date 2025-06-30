@@ -14,6 +14,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -30,6 +31,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingVa
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityDependentSortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FromListVarEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.InitializedValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ReinitializeVariableValueSelector;
@@ -107,9 +109,12 @@ public class ValueSelectorFactory<Solution_>
         validateSelectedLimit(minimumCacheType);
 
         // baseValueSelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
+        var randomSelection = determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder);
         var valueSelector =
                 buildBaseValueSelector(variableDescriptor, SelectionCacheType.max(minimumCacheType, resolvedCacheType),
-                        determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder));
+                        randomSelection);
+
+        valueSelector = applyListEntityValueRange(variableDescriptor.getValueRangeDescriptor(), valueSelector, randomSelection);
 
         if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
@@ -485,6 +490,15 @@ public class ValueSelectorFactory<Solution_>
             valueSelector = listValueFilteringType == ListValueFilteringType.ACCEPT_ASSIGNED
                     ? new AssignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
                     : new UnassignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
+        }
+        return valueSelector;
+    }
+
+    private ValueSelector<Solution_> applyListEntityValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            ValueSelector<Solution_> valueSelector, boolean randomSelection) {
+        if (valueSelector instanceof FromEntityPropertyValueSelector<Solution_> entitySelector
+                && valueRangeDescriptor.getVariableDescriptor().isListVariable()) {
+            return new FromListVarEntityPropertyValueSelector<>(entitySelector, randomSelection);
         }
         return valueSelector;
     }

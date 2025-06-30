@@ -18,12 +18,15 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
     private final Iterator<ElementPosition> destinationIterator;
+    private final boolean filterValuePerEntityRange;
 
     public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector,
+            boolean filterValuePerEntityRange) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
         this.destinationIterator = destinationSelector.iterator();
+        this.filterValuePerEntityRange = filterValuePerEntityRange;
     }
 
     @Override
@@ -33,7 +36,7 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
         }
         var upcomingValue = valueIterator.next();
         var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, upcomingValue,
-                destinationIterator);
+                destinationIterator, filterValuePerEntityRange);
         if (move == null) {
             return noUpcomingSelection();
         } else {

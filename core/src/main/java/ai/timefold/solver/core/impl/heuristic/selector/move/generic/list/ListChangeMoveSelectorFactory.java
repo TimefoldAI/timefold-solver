@@ -60,7 +60,13 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 .<Solution_> create(destinationSelectorConfig)
                 .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection);
 
-        return new ListChangeMoveSelector<>(castSourceValueSelector, destinationSelector, randomSelection);
+        // If the value selector is entity-dependent and the source is a list variable,
+        // we need to filter and select only the values included in the value range of the entity
+        var filterValuePerEntityRange = sourceValueSelector.getVariableDescriptor().isListVariable()
+                && !sourceValueSelector.getVariableDescriptor().getValueRangeDescriptor().isEntityIndependent();
+
+        return new ListChangeMoveSelector<>(castSourceValueSelector, destinationSelector, randomSelection,
+                filterValuePerEntityRange);
     }
 
     @Override

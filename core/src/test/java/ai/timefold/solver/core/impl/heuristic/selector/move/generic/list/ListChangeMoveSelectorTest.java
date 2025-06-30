@@ -57,7 +57,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(c, 1),
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1)),
-                false);
+                false, false);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -117,7 +117,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(c, 1),
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1)),
-                false);
+                false, false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -171,7 +171,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1),
                         ElementPosition.unassigned()),
-                false);
+                false, false);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -233,7 +233,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 0),
                         ElementPosition.of(a, 1),
                         ElementPosition.of(a, 2)),
-                true);
+                true, false);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -279,7 +279,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1),
                         ElementPosition.of(c, 0)),
-                true);
+                true, false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -326,7 +326,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 1),
                         ElementPosition.of(a, 2),
                         ElementPosition.unassigned()),
-                true);
+                true, false);
 
         solvingStarted(moveSelector, scoreDirector);
 

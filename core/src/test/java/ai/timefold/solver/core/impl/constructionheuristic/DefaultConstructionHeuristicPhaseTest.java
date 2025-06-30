@@ -368,17 +368,18 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
 
         var value1 = new TestdataValue("v1");
         var value2 = new TestdataValue("v2");
-        var entity1 = new TestdataListEntityProvidingEntity(List.of(value1, value2));
-        var entity2 = new TestdataListEntityProvidingEntity(Collections.emptyList());
+        var value3 = new TestdataValue("v3");
+        var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value2, value3));
 
         var solution = new TestdataListEntityProvidingSolution();
         solution.setEntityList(List.of(entity1, entity2));
 
-        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, false);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution).isNotNull();
         // Only one entity should provide the value list and assign the values.
-        assertThat(entity1.getValueList()).isNotEmpty();
-        assertThat(entity2.getValueList()).isEmpty();
+        assertThat(bestSolution.getEntityList().get(0).getValueList()).hasSameElementsAs(List.of(value1, value2));
+        assertThat(bestSolution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(value3));
     }
 
     @Test

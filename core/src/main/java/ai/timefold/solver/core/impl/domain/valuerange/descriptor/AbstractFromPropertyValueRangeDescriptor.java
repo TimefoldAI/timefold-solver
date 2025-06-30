@@ -1,10 +1,13 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
+import static ai.timefold.solver.core.config.util.ConfigUtils.findPlanningIdMemberAccessor;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
@@ -28,6 +31,9 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     protected boolean collectionWrapping;
     protected boolean arrayWrapping;
     protected boolean countable;
+    // Fields related to the generic type of the value range, e.g., List<String> -> String
+    private final boolean isGenericTypeImmutable;
+    private final MemberAccessor planningIdMemberAccessor;
 
     public AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             boolean addNullInValueRange,
@@ -39,6 +45,9 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
             throw new IllegalStateException("The member (%s) must have a valueRangeProviderAnnotation (%s)."
                     .formatted(memberAccessor, valueRangeProviderAnnotation));
         }
+        var type = memberAccessor.getType();
+        collectionWrapping = Collection.class.isAssignableFrom(type);
+        arrayWrapping = type.isArray();
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
         if (addNullInValueRange && !countable) {
             throw new IllegalStateException("""
@@ -46,13 +55,33 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     Maybe the member (%s) should return %s."""
                     .formatted(this, countable, memberAccessor, CountableValueRange.class.getSimpleName()));
         }
+        if (collectionWrapping) {
+            var genericType = ConfigUtils.extractGenericTypeParameterOrFail("solutionClass or entityClass",
+                    memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),
+                    ValueRangeProvider.class, memberAccessor.getName());
+            this.isGenericTypeImmutable = ConfigUtils.isGenericTypeImmutable(genericType);
+            if (isGenericTypeImmutable) {
+                this.planningIdMemberAccessor = null;
+            } else {
+                var solutionDescriptor = variableDescriptor.getEntityDescriptor().getSolutionDescriptor();
+                var accessor = findPlanningIdMemberAccessor(genericType, solutionDescriptor.getMemberAccessorFactory(),
+                        solutionDescriptor.getDomainAccessType());
+                if (accessor != null && ConfigUtils.isIntegerType(accessor)) {
+                    // We only accept planning ids of type integer, as BitSetValueRangeCache works only with integers
+                    this.planningIdMemberAccessor = accessor;
+                } else {
+                    this.planningIdMemberAccessor = null;
+                }
+            }
+        } else {
+            this.planningIdMemberAccessor = null;
+            this.isGenericTypeImmutable = true;
+        }
     }
 
     private void processValueRangeProviderAnnotation(ValueRangeProvider valueRangeProviderAnnotation) {
         EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
         Class<?> type = memberAccessor.getType();
-        collectionWrapping = Collection.class.isAssignableFrom(type);
-        arrayWrapping = type.isArray();
         if (!collectionWrapping && !arrayWrapping && !ValueRange.class.isAssignableFrom(type)) {
             throw new IllegalArgumentException("""
                     The entityClass (%s) has a @%s-annotated property (%s) that refers to a @%s-annotated member \
@@ -120,7 +149,11 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                                         list,
                                         PlanningVariable.class.getSimpleName()));
             }
-            valueRange = new ListValueRange<>(list);
+            Function<Value_, Integer> extractIdFunction = null;
+            if (!isGenericTypeImmutable && planningIdMemberAccessor != null) {
+                extractIdFunction = v -> (Integer) planningIdMemberAccessor.executeGetter(v);
+            }
+            valueRange = new ListValueRange<>(list, isGenericTypeImmutable, extractIdFunction);
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }
