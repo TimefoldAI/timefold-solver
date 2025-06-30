@@ -486,7 +486,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
             moveStreamsBasedMoveRepository.update(entity);
         }
-        valueRangeState.markEntityDependentValueRangesAsInvalid(entity);
         variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
     }
 
@@ -540,7 +539,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
-        valueRangeState.markEntityDependentValueRangesAsInvalid(entity);
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
         if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
             moveStreamsBasedMoveRepository.update(entity);
@@ -560,7 +558,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (lookUpEnabled) {
             lookUpManager.removeWorkingObject(entity);
         }
-        valueRangeState.markEntityDependentValueRangesAsInvalid(entity);
         if (!allChangesWillBeUndoneBeforeStepEnds) {
             if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
                 moveStreamsBasedMoveRepository.retract(entity);
