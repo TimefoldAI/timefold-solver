@@ -7,6 +7,7 @@ import java.util.function.BiFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
@@ -185,10 +186,11 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
                 .getElementPosition(value);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @Nullable Entity_ entity, @Nullable Value_ value) {
-        return backingScoreDirector.isValueInRange(variableMetaModel, entity, value);
+        return backingScoreDirector.isValueInRange((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel, entity, value);
     }
 
     @Override

@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
@@ -27,6 +28,9 @@ import org.jspecify.annotations.Nullable;
  * Outside a {@link ProblemChange}, value ranges are not allowed to change.
  * Call {@link #resetWorkingSolution(Object)} every time the working solution changes through a problem fact,
  * so that all caches can be invalidated.
+ *
+ * @see ValueRange
+ * @see ValueRangeProvider
  */
 @NullMarked
 public final class ValueRangeState<Solution_> {

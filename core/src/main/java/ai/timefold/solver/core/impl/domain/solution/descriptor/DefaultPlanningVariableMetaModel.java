@@ -14,7 +14,7 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
         BasicVariableDescriptor<Solution_> variableDescriptor)
         implements
             PlanningVariableMetaModel<Solution_, Entity_, Value_>,
-            InnerVariableMetaModel<Solution_> {
+            InnerGenuineVariableMetaModel<Solution_> {
 
     @SuppressWarnings("unchecked")
     @Override
