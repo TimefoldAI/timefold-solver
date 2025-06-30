@@ -7,10 +7,10 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -18,7 +18,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Caches value ranges for the current working solution,
  * allowing to quickly check if a value is in range.
- * Used by {@link AbstractScoreDirector#isValueInRange(GenuineVariableMetaModel, Object, Object)}.
+ * Used by {@link AbstractScoreDirector#isValueInRange(InnerGenuineVariableMetaModel, Object, Object)}.
  *
  * <p>
  * The state is built on-demand as {@link #isInRange(ValueRangeDescriptor, Object, Object)} is called.
