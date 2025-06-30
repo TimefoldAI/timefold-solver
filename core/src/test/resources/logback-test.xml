@@ -9,9 +9,9 @@
   </appender>
 
   <!-- To override the info log level from the command line, use the VM option "-Dlogback.level.ai.timefold.solver=trace" -->
-  <logger name="ai.timefold.solver" level="${logback.level.ai.timefold.solver:-warn}"/>
+  <logger name="ai.timefold.solver" level="${logback.level.ai.timefold.solver:-off}"/>
   <!-- Don't pollute the test log with a stacktrace -->
-  <logger name="ai.timefold.solver.benchmark.impl.DefaultPlannerBenchmark.singleBenchmarkRunnerException" level="error"/>
+  <logger name="ai.timefold.solver.benchmark.impl.DefaultPlannerBenchmark.singleBenchmarkRunnerException" level="off"/>
 
   <root level="warn">
     <appender-ref ref="consoleAppender" />
