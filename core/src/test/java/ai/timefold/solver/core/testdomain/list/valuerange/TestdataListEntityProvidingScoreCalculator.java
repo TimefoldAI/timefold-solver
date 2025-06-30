@@ -12,7 +12,7 @@ public class TestdataListEntityProvidingScoreCalculator
     public @NonNull SimpleScore calculateScore(@NonNull TestdataListEntityProvidingSolution solution) {
         int score = 0;
         for (var entity : solution.getEntityList()) {
-            if (entity.getValueList().size() == 1) {
+            if (entity.getValueList().size() == 2) {
                 score += 2;
             } else {
                 score += 1;

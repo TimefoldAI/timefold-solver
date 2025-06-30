@@ -1,0 +1,121 @@
+package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
+
+import java.util.Iterator;
+
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromListVarEntityPropertyValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+
+/**
+ * The value range for list variables requires the selector to be entity-independent,
+ * as it needs to fetch the entire list of values.
+ * Fetching the list of values is not a problem when the value range is located within the solution class,
+ * serving as a single source of truth.
+ * In cases where it is entity-dependent,
+ * the list of entities must be read to generate the corresponding list of values.
+ * <p>
+ * This selector adapts {@link FromEntityPropertyValueSelector} to behave like an entity-independent selector
+ * and meets the requirement to retrieve the complete list of values.
+ * 
+ * @param <Solution_> the solution type
+ */
+public final class FromListVarEntityPropertyValueSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
+        implements EntityIndependentValueSelector<Solution_> {
+
+    private final FromEntityPropertyValueSelector<Solution_> childValueSelector;
+    private final boolean randomSelection;
+    private final FromListVarEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private CountableValueRange<Object> cachedValueRange = null;
+
+    public FromListVarEntityPropertyValueSelector(FromEntityPropertyValueSelector<Solution_> childValueSelector,
+            boolean randomSelection) {
+        if (!(childValueSelector.getVariableDescriptor()
+                .getValueRangeDescriptor() instanceof FromListVarEntityPropertyValueRangeDescriptor<Solution_> descriptor)) {
+            throw new IllegalArgumentException(
+                    "The value range descriptor must be instance of %s."
+                            .formatted(FromListVarEntityPropertyValueRangeDescriptor.class.getSimpleName()));
+        }
+        this.childValueSelector = childValueSelector;
+        this.randomSelection = randomSelection;
+        this.valueRangeDescriptor = descriptor;
+    }
+
+    // ************************************************************************
+    // Life-cycle methods
+    // ************************************************************************
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        this.childValueSelector.phaseStarted(phaseScope);
+        var scoreDirector = phaseScope.getScoreDirector();
+        cachedValueRange = valueRangeDescriptor.extractValueRange(scoreDirector.getWorkingSolution(), null);
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        childValueSelector.phaseEnded(phaseScope);
+        this.cachedValueRange = null;
+    }
+
+    // ************************************************************************
+    // Worker methods
+    // ************************************************************************
+    @Override
+    public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
+        return childValueSelector.getVariableDescriptor();
+    }
+
+    @Override
+    public long getSize(Object entity) {
+        return childValueSelector.getSize(entity);
+    }
+
+    @Override
+    public Iterator<Object> iterator(Object entity) {
+        return childValueSelector.iterator(entity);
+    }
+
+    @Override
+    public Iterator<Object> endingIterator(Object entity) {
+        return childValueSelector.endingIterator(entity);
+    }
+
+    @Override
+    public boolean isCountable() {
+        return valueRangeDescriptor.isCountable();
+    }
+
+    @Override
+    public boolean isNeverEnding() {
+        return randomSelection || !isCountable();
+    }
+
+    @Override
+    public long getSize() {
+        return cachedValueRange.getSize();
+    }
+
+    @Override
+    public Iterator<Object> iterator() {
+        if (randomSelection) {
+            return cachedValueRange.createRandomIterator(workingRandom);
+        } else {
+            return cachedValueRange.createOriginalIterator();
+        }
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return childValueSelector.equals(other);
+    }
+
+    @Override
+    public int hashCode() {
+        return childValueSelector.hashCode();
+    }
+}
