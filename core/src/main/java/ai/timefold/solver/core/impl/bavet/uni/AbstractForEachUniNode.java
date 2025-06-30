@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Filtering nodes are expensive.
@@ -38,7 +39,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
-    public void insert(A a) {
+    public void insert(@Nullable A a) {
         var tuple = new UniTuple<>(a, outputStoreSize);
         var old = tupleMap.put(a, tuple);
         if (old != null) {

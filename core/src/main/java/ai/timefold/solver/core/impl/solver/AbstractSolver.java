@@ -57,6 +57,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
 
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         solverScope.setWorkingSolutionFromBestSolution();
+        solverScope.getValueRangeState().solvingStarted(solverScope);
         bestSolutionRecaller.solvingStarted(solverScope);
         globalTermination.solvingStarted(solverScope);
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
@@ -92,6 +93,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         bestSolutionRecaller.solvingEnded(solverScope);
         globalTermination.solvingEnded(solverScope);
         phaseLifecycleSupport.fireSolvingEnded(solverScope);
+        solverScope.getValueRangeState().solvingEnded(solverScope);
     }
 
     public void solvingError(SolverScope<Solution_> solverScope, Exception exception) {
@@ -102,6 +104,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
     }
 
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        phaseScope.getSolverScope().getValueRangeState().phaseStarted(phaseScope);
         bestSolutionRecaller.phaseStarted(phaseScope);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
         globalTermination.phaseStarted(phaseScope);
@@ -112,10 +115,12 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         bestSolutionRecaller.phaseEnded(phaseScope);
         phaseLifecycleSupport.firePhaseEnded(phaseScope);
         globalTermination.phaseEnded(phaseScope);
+        phaseScope.getSolverScope().getValueRangeState().phaseEnded(phaseScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        stepScope.getPhaseScope().getSolverScope().getValueRangeState().stepStarted(stepScope);
         bestSolutionRecaller.stepStarted(stepScope);
         phaseLifecycleSupport.fireStepStarted(stepScope);
         globalTermination.stepStarted(stepScope);
@@ -126,6 +131,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         bestSolutionRecaller.stepEnded(stepScope);
         phaseLifecycleSupport.fireStepEnded(stepScope);
         globalTermination.stepEnded(stepScope);
+        stepScope.getPhaseScope().getSolverScope().getValueRangeState().stepEnded(stepScope);
         // Do not propagate to phases; the active phase does that for itself and they should not propagate further.
     }
 

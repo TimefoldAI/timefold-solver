@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.move;
 
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -30,6 +31,6 @@ public sealed interface MoveRepository<Solution_>
 
     boolean isNeverEnding();
 
-    void initialize(Solution_ workingSolution, SupplyManager supplyManager);
+    void initialize(MoveDirector<Solution_, ?> workingMoveDirector, SupplyManager supplyManager);
 
 }
