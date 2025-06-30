@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
@@ -23,15 +24,18 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
     private Iterator<ElementPosition> destinationIterator;
+    private final boolean filterValuePerEntityRange;
 
     private Object upcomingValue;
 
     public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector,
+            boolean filterValuePerEntityRange) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
         this.destinationSelector = destinationSelector;
         this.destinationIterator = Collections.emptyIterator();
+        this.filterValuePerEntityRange = filterValuePerEntityRange;
     }
 
     @Override
@@ -43,7 +47,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             upcomingValue = valueIterator.next();
             destinationIterator = destinationSelector.iterator();
         }
-        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator);
+        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator, filterValuePerEntityRange);
         if (move == null) {
             return noUpcomingSelection();
         } else {
@@ -52,9 +56,15 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     }
 
     static <Solution_> Move<Solution_> buildChangeMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator) {
+            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator, boolean filterValuePerEntityRange) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
-        var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
+        ElementPosition upcomingDestination = null;
+        if (filterValuePerEntityRange) {
+            upcomingDestination =
+                    findUnpinnedAndValidDestination(upcomingLeftValue, destinationIterator, listVariableDescriptor);
+        } else {
+            upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
+        }
         if (upcomingDestination == null) {
             return null;
         }
@@ -75,6 +85,30 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
                 return NoChangeMove.getInstance();
             }
         }
+    }
+
+    /**
+     * This method looks for an element where the value matches the entity value range.
+     * Filtering is necessary when using the entity value range for list variables.
+     *
+     * @param upcomingLeftValue never null
+     * @param destinationIterator never null
+     * @param listVariableDescriptor never null
+     * @return null if no valid destination was found, at which point the iterator is exhausted.
+     */
+    private static ElementPosition findUnpinnedAndValidDestination(Object upcomingLeftValue,
+            Iterator<ElementPosition> destinationIterator, ListVariableDescriptor listVariableDescriptor) {
+        while (destinationIterator.hasNext()) {
+            var destination = destinationIterator.next();
+            if (isUnpinned(destination, listVariableDescriptor) && destination instanceof PositionInList destinationElement) {
+                var valueRange = listVariableDescriptor.getValueRangeDescriptor().extractValueRange(null,
+                        destinationElement.entity());
+                if (valueRange.contains(upcomingLeftValue)) {
+                    return destination;
+                }
+            }
+        }
+        return null;
     }
 
 }
