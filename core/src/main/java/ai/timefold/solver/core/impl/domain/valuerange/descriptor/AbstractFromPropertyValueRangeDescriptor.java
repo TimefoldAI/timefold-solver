@@ -4,17 +4,22 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.SetValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
@@ -103,23 +108,35 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
         ValueRange<Value_> valueRange;
-        if (collectionWrapping || arrayWrapping) {
-            List<Value_> list = collectionWrapping ? transformCollectionToUniqueList((Collection<Value_>) valueRangeObject)
-                    : transformArrayToUniqueList(valueRangeObject);
-            // Don't check the entire list for performance reasons, but do check common pitfalls
-            if (!list.isEmpty() && (list.get(0) == null || list.get(list.size() - 1) == null)) {
-                throw new IllegalStateException(
-                        """
-                                The @%s-annotated member (%s) called on bean (%s) must not return a %s (%s) with an element that is null.
-                                Maybe remove that null element from the dataset.
-                                Maybe use @%s(allowsUnassigned = true) instead."""
-                                .formatted(ValueRangeProvider.class.getSimpleName(),
-                                        memberAccessor, bean,
-                                        collectionWrapping ? Collection.class.getSimpleName() : "array",
-                                        list,
-                                        PlanningVariable.class.getSimpleName()));
-            }
+        if (arrayWrapping) {
+            List<Value_> list = transformArrayToList(valueRangeObject);
+            assertNullNotPresent(list, bean);
             valueRange = new ListValueRange<>(list);
+        } else if (collectionWrapping) {
+            var collection = (Collection<Value_>) valueRangeObject;
+            if (collection instanceof Set<Value_> set) {
+                if (set.contains(null)) {
+                    throw new IllegalStateException("""
+                            The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with a null element.
+                            Maybe remove that null element from the dataset.
+                            Maybe use @%s(allowsUnassigned = true) or @%s(allowsUnassignedValues = true) instead."""
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set,
+                                    PlanningVariable.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
+                }
+                if (collection instanceof SortedSet<Value_> || collection instanceof LinkedHashSet<Value_>) {
+                    valueRange = new SetValueRange<>(set);
+                } else {
+                    throw new IllegalStateException("""
+                            The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with undefined iteration order.
+                            Maybe use SortedSet or LinkedHashSet to ensure solver reproducibility.
+                            """
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set.getClass()));
+                }
+            } else {
+                List<Value_> list = transformCollectionToList(collection);
+                assertNullNotPresent(list, bean);
+                valueRange = new ListValueRange<>(list);
+            }
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }
@@ -131,6 +148,20 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
         return valueRange;
+    }
+
+    private void assertNullNotPresent(List<?> list, Object bean) {
+        // Don't check the entire list for performance reasons, but do check common pitfalls
+        if (!list.isEmpty() && (list.get(0) == null || list.get(list.size() - 1) == null)) {
+            throw new IllegalStateException("""
+                    The @%s-annotated member (%s) called on bean (%s) must not return a %s (%s) with an element that is null.
+                    Maybe remove that null element from the dataset.
+                            Maybe remove that null element from the dataset.
+                            Maybe use @%s(allowsUnassigned = true) or @%s(allowsUnassignedValues = true) instead."""
+                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean,
+                            collectionWrapping ? Collection.class.getSimpleName() : "array", list,
+                            PlanningVariable.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -162,17 +193,18 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         }
     }
 
-    private <T> List<T> transformCollectionToUniqueList(Collection<T> collection) {
+    private <T> List<T> transformCollectionToList(Collection<T> collection) {
         if (collection.isEmpty()) {
             return Collections.emptyList();
+        } else if (collection instanceof List<T> list) {
+            return list;
+        } else {
+            return List.copyOf(collection);
         }
-        return collection.stream()
-                .distinct()
-                .toList();
     }
 
     @SuppressWarnings("unchecked")
-    public static <Value_> List<Value_> transformArrayToUniqueList(Object arrayObject) {
+    public static <Value_> List<Value_> transformArrayToList(Object arrayObject) {
         if (arrayObject == null) {
             return Collections.emptyList();
         }
@@ -180,9 +212,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         if (array.length == 0) {
             return Collections.emptyList();
         }
-        return Arrays.stream(array)
-                .distinct()
-                .toList();
+        return Arrays.asList(array);
     }
 
 }

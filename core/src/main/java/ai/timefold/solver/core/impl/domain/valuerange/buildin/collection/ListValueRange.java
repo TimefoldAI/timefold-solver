@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.collection;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -7,6 +8,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -15,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
-    private static final int LIST_SIZE_LOOKUP_LIMIT = 10;
+    private static final int LIST_SIZE_LOOKUP_LIMIT = 10; // Selected arbitrarily.
 
     private final List<T> list;
     private @Nullable Set<T> lookupSet; // Initialized lazily for large lists.
@@ -32,7 +34,8 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     @Override
     public T get(long index) {
         if (index > Integer.MAX_VALUE) {
-            throw new IndexOutOfBoundsException("The index (" + index + ") must fit in an int.");
+            throw new IndexOutOfBoundsException("The index (%d) must fit in an int."
+                    .formatted(index));
         }
         return list.get((int) index);
     }
@@ -41,7 +44,11 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     public boolean contains(@Nullable T value) {
         if (list.size() > LIST_SIZE_LOOKUP_LIMIT) {
             if (lookupSet == null) {
-                lookupSet = Set.copyOf(list);
+                lookupSet = Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(list.size()));
+                lookupSet.addAll(list);
+                if (lookupSet.size() != list.size()) {
+                    throw new IllegalStateException("The value range contains duplicate values: " + list);
+                }
             }
             return lookupSet.contains(value);
         } else { // For small lists, sequential scanning is not a performance issue.
@@ -60,9 +67,8 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     }
 
     @Override
-    public String toString() {
-        // Formatting: interval (mathematics) ISO 31-11
-        return list.isEmpty() ? "[]" : "[" + list.get(0) + "-" + list.get(list.size() - 1) + "]";
+    public String toString() { // Formatting: interval (mathematics) ISO 31-11
+        return list.isEmpty() ? "[]" : "[%s-%s]".formatted(list.get(0), list.get(list.size() - 1));
     }
 
 }

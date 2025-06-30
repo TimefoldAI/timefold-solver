@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.testutil;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.times;
@@ -12,7 +11,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.NoSuchElementException;
 
 import ai.timefold.solver.core.impl.constructionheuristic.event.ConstructionHeuristicPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
@@ -176,15 +174,9 @@ public final class PlannerAssert {
 
     @SafeVarargs
     public static <O> void assertAllElementsOfIterator(Iterator<O> iterator, O... elements) {
-        assertElementsOfIterator(iterator, elements);
-        assertThat(iterator).isExhausted();
-        try {
-            iterator.next();
-            fail("The iterator with hasNext() (" + false + ") is expected to throw a "
-                    + NoSuchElementException.class.getSimpleName() + " when calling next().");
-        } catch (NoSuchElementException e) {
-            // Do nothing
-        }
+        assertThat(iterator)
+                .toIterable()
+                .containsExactly(elements);
     }
 
     // ************************************************************************
