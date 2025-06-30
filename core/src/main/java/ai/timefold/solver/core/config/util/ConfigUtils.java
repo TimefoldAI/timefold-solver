@@ -13,6 +13,11 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.math.BigDecimal;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +30,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -43,6 +49,24 @@ import org.jspecify.annotations.Nullable;
 public class ConfigUtils {
 
     private static final AlphabeticMemberComparator alphabeticMemberComparator = new AlphabeticMemberComparator();
+
+    private static final List<Class<?>> BULT_IN_IMMUTABLE_CLASSES = List.of(
+            String.class,
+            Integer.class,
+            Long.class,
+            Byte.class,
+            Short.class,
+            Boolean.class,
+            Character.class,
+            Float.class,
+            Double.class,
+            LocalDate.class,
+            LocalTime.class,
+            LocalDateTime.class,
+            ZonedDateTime.class,
+            Instant.class,
+            BigDecimal.class,
+            UUID.class);
 
     /**
      * Create a new instance of clazz from a config's property.
@@ -447,6 +471,26 @@ public class ConfigUtils {
                                 annotationClass == null ? "auto discovered"
                                         : "@" + annotationClass.getSimpleName() + " annotated",
                                 memberName, type, memberName, type.getSimpleName())));
+    }
+
+    /**
+     * @param type the class type
+     * @return true if it is immutable; otherwise false
+     */
+    public static boolean isGenericTypeImmutable(Class<?> type) {
+        if (type == null) {
+            return false;
+        }
+        return BULT_IN_IMMUTABLE_CLASSES.contains(type);
+    }
+
+    /**
+     * @param memberAccessor never null
+     * @return true if the field is integer; otherwise false
+     */
+    public static boolean isIntegerType(MemberAccessor memberAccessor) {
+        var field = (Class<?>) memberAccessor.getGenericType();
+        return field.isAssignableFrom(Integer.class) || field.isAssignableFrom(int.class);
     }
 
     public static Optional<Class<?>> extractGenericTypeParameter(@NonNull String parentClassConcept,
