@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
+import java.util.IdentityHashMap;
+import java.util.Map;
+
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.entity.FromEntityListValueRange;
@@ -11,9 +14,10 @@ public class FromListVarEntityPropertyValueRangeDescriptor<Solution_>
         extends FromEntityPropertyValueRangeDescriptor<Solution_> {
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
-    // We store the most recent cached solution to analyze if the statistics must be refreshed
+    // We cache the last working solution and the related value range
     private Solution_ lastCachedSolution;
-    private long cachedRangeSize;
+    private FromEntityListValueRange<?> cachedValueRange;
+    private Map<Object, CacheableValueRange<?>> entityCacheValueRange;
 
     public FromListVarEntityPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             boolean addNullInValueRange, MemberAccessor memberAccessor) {
@@ -36,8 +40,8 @@ public class FromListVarEntityPropertyValueRangeDescriptor<Solution_>
     }
 
     private long readValueRangeSizeFromSolution(Solution_ solution) {
-        computeSize(solution);
-        return cachedRangeSize;
+        computeRange(solution);
+        return cachedValueRange.getSize();
     }
 
     @Override
@@ -45,48 +49,48 @@ public class FromListVarEntityPropertyValueRangeDescriptor<Solution_>
         if (entity == null) {
             return readValueRangeFromSolution(solution);
         } else {
-            ValueRange<Value_> range = readValueRange(entity);
-            if (!(range instanceof CacheableValueRange<Value_> cacheableValueRange)) {
-                throw new IllegalArgumentException(
-                        "The value range must be based on %s".formatted(CacheableValueRange.class.getSimpleName()));
+            // TODO - Evaluate if a real-time change can return a stale entity value range
+            var range = (ValueRange<Value_>) entityCacheValueRange.get(entity);
+            if (range == null) {
+                range = readValueRange(entity);
+                if (!(range instanceof CacheableValueRange<Value_> cacheableValueRange)) {
+                    throw new IllegalArgumentException(
+                            "The value range must be based on %s".formatted(CacheableValueRange.class.getSimpleName()));
+                }
+                entityCacheValueRange.put(entity, cacheableValueRange);
             }
-            return cacheableValueRange;
+            return (CacheableValueRange<Value_>) range;
         }
     }
 
     private <Value_> CacheableValueRange<Value_> readValueRangeFromSolution(Solution_ solution) {
-        computeSize(solution);
-        return new FromEntityListValueRange<>(listVariableDescriptor.getEntityDescriptor().extractEntities(solution),
-                (int) cachedRangeSize, this);
+        computeRange(solution);
+        return (CacheableValueRange<Value_>) cachedValueRange;
     }
 
     /**
-     * The statistics are calculated
-     * to determine the total size of the value range and the maximum size of entity value ranges.
-     * The ranges are not stored to avoid consuming memory for large datasets.
+     * This method generates and stores the value range for the last working solution
+     * to prevent recomputing the unique value list.
+     * <p>
+     * Loading the values in advance is necessary
+     * because the ListVariableState needs
+     * to know the exact number of values to calculate the count of unassigned values accurately.
+     * <p>
+     * The calculation occurs only once when the solver starts
+     * and whenever the solution is altered due to real-time events.
+     * The real-time changing event is identified
+     * when {@link #extractValueRange(Object, Object)} is called with a different solution than the last working solution.
      * 
      * @param solution the working solution
      */
-    private void computeSize(Solution_ solution) {
+    private void computeRange(Solution_ solution) {
         // We verify whether the solution has changed by any real-time events
         if (lastCachedSolution != null && lastCachedSolution == solution) {
             return;
         }
-        var entityList = listVariableDescriptor.getEntityDescriptor().extractEntities(solution);
-        if (entityList.isEmpty()) {
-            throw new IllegalArgumentException("Impossible state: the entity list (%s) cannot be empty."
-                    .formatted(listVariableDescriptor.getEntityDescriptor().getEntityClass().getSimpleName()));
-        }
-        var cacheStrategy = extractValueRange(null, entityList.get(0)).generateCache();
-        var maxEntitySize = cacheStrategy.getSize();
-        for (var i = 1; i < entityList.size(); i++) {
-            var otherCacheStrategy = extractValueRange(null, entityList.get(i)).generateCache();
-            if (otherCacheStrategy.getSize() > maxEntitySize) {
-                maxEntitySize = otherCacheStrategy.getSize();
-            }
-            cacheStrategy.merge(otherCacheStrategy);
-        }
         this.lastCachedSolution = solution;
-        this.cachedRangeSize = cacheStrategy.getSize();
+        var entityList = listVariableDescriptor.getEntityDescriptor().extractEntities(solution);
+        this.entityCacheValueRange = new IdentityHashMap<>(entityList.size());
+        this.cachedValueRange = new FromEntityListValueRange<>(entityList, this);
     }
 }

@@ -57,4 +57,9 @@ public class BitSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Va
     public long getSize() {
         return values.size();
     }
+
+    @Override
+    public List<Value_> getAll() {
+        return values;
+    }
 }
