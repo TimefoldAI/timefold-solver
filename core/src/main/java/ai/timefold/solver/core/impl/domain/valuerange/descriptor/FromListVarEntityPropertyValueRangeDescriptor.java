@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.entity.EntityDependentValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.entity.FromEntityListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.cache.CacheableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -56,7 +56,7 @@ public class FromListVarEntityPropertyValueRangeDescriptor<Solution_>
 
     private <Value_> CacheableValueRange<Value_> readValueRangeFromSolution(Solution_ solution) {
         computeSize(solution);
-        return new EntityDependentValueRange<>(listVariableDescriptor.getEntityDescriptor().extractEntities(solution),
+        return new FromEntityListValueRange<>(listVariableDescriptor.getEntityDescriptor().extractEntities(solution),
                 (int) cachedRangeSize, this);
     }
 

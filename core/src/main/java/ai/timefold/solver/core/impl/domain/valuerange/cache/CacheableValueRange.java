@@ -12,6 +12,7 @@ public interface CacheableValueRange<Value_> extends CountableValueRange<Value_>
 
     /**
      * Generates a cache strategy compatible with the value range.
+     * The method always recomputes the cache for the value range and returns a new instance.
      */
     @NonNull
     ValueRangeCacheStrategy<Value_> generateCache();

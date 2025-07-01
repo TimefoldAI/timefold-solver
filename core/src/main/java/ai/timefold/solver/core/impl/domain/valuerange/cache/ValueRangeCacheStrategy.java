@@ -10,8 +10,6 @@ public interface ValueRangeCacheStrategy<Value_> {
 
     long getSize();
 
-    ValueRangeCacheStrategy<Value_> copy();
-
     default ValueRangeCacheStrategy<Value_> merge(ValueRangeCacheStrategy<Value_> other) {
         for (var i = 0; i < other.getSize(); i++) {
             add(other.get(i));
