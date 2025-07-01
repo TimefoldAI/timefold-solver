@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * The value range for list variables requires the selector to be entity-independent,
@@ -47,18 +47,19 @@ public final class FromListVarEntityPropertyValueSelector<Solution_> extends Abs
     // ************************************************************************
     // Life-cycle methods
     // ************************************************************************
+
     @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseStarted(phaseScope);
-        this.childValueSelector.phaseStarted(phaseScope);
-        var scoreDirector = phaseScope.getScoreDirector();
+    public void solvingStarted(SolverScope<Solution_> solverScope) {
+        super.solvingStarted(solverScope);
+        this.childValueSelector.solvingStarted(solverScope);
+        var scoreDirector = solverScope.getScoreDirector();
         cachedValueRange = valueRangeDescriptor.extractValueRange(scoreDirector.getWorkingSolution(), null);
     }
 
     @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseEnded(phaseScope);
-        childValueSelector.phaseEnded(phaseScope);
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        super.solvingEnded(solverScope);
+        childValueSelector.solvingEnded(solverScope);
         this.cachedValueRange = null;
     }
 

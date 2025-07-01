@@ -17,7 +17,6 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDeci
  */
 public class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
-    private final int maxSize;
     // The value and its index
     private final Map<Value_, Integer> cache;
     private final List<Value_> values;
@@ -28,15 +27,8 @@ public class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<
     }
 
     public IdentityValueRangeCache(int size) {
-        this.maxSize = size;
         cache = new IdentityHashMap<>(size);
         values = new ArrayList<>(size);
-    }
-
-    private IdentityValueRangeCache(int maxSize, Map<Value_, Integer> cache, List<Value_> values) {
-        this.maxSize = maxSize;
-        this.cache = cache;
-        this.values = values;
     }
 
     @Override
@@ -63,14 +55,5 @@ public class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<
     @Override
     public long getSize() {
         return values.size();
-    }
-
-    @Override
-    public ValueRangeCacheStrategy<Value_> copy() {
-        var cacheCopy = new IdentityHashMap<Value_, Integer>(maxSize);
-        cacheCopy.putAll(cache);
-        var valuesCopy = new ArrayList<Value_>(maxSize);
-        valuesCopy.addAll(values);
-        return new IdentityValueRangeCache<>(maxSize, cacheCopy, valuesCopy);
     }
 }

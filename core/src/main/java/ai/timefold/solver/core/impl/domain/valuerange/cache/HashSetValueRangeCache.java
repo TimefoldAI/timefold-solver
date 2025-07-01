@@ -14,7 +14,6 @@ import java.util.Set;
  */
 public class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
-    private final int maxSize;
     private final Set<Value_> cache;
     private final List<Value_> values;
 
@@ -24,15 +23,8 @@ public class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<V
     }
 
     public HashSetValueRangeCache(int size) {
-        this.maxSize = size;
         cache = new HashSet<>(size);
         values = new ArrayList<>(size);
-    }
-
-    private HashSetValueRangeCache(int maxSize, Set<Value_> cache, List<Value_> values) {
-        this.maxSize = maxSize;
-        this.cache = cache;
-        this.values = values;
     }
 
     @Override
@@ -59,14 +51,5 @@ public class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<V
     @Override
     public long getSize() {
         return values.size();
-    }
-
-    @Override
-    public ValueRangeCacheStrategy<Value_> copy() {
-        var cacheCopy = new HashSet<Value_>(maxSize);
-        cacheCopy.addAll(cache);
-        var valuesCopy = new ArrayList<Value_>(maxSize);
-        valuesCopy.addAll(values);
-        return new HashSetValueRangeCache<>(maxSize, cacheCopy, valuesCopy);
     }
 }

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.config.util;
 
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
+import static ai.timefold.solver.core.impl.domain.solution.cloner.DeepCloningUtils.IMMUTABLE_CLASSES;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -13,11 +14,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.math.BigDecimal;
-import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,7 +26,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -49,24 +44,6 @@ import org.jspecify.annotations.Nullable;
 public class ConfigUtils {
 
     private static final AlphabeticMemberComparator alphabeticMemberComparator = new AlphabeticMemberComparator();
-
-    private static final List<Class<?>> BULT_IN_IMMUTABLE_CLASSES = List.of(
-            String.class,
-            Integer.class,
-            Long.class,
-            Byte.class,
-            Short.class,
-            Boolean.class,
-            Character.class,
-            Float.class,
-            Double.class,
-            LocalDate.class,
-            LocalTime.class,
-            LocalDateTime.class,
-            ZonedDateTime.class,
-            Instant.class,
-            BigDecimal.class,
-            UUID.class);
 
     /**
      * Create a new instance of clazz from a config's property.
@@ -481,7 +458,7 @@ public class ConfigUtils {
         if (type == null) {
             return false;
         }
-        return BULT_IN_IMMUTABLE_CLASSES.contains(type);
+        return IMMUTABLE_CLASSES.contains(type) || type.isRecord();
     }
 
     /**
