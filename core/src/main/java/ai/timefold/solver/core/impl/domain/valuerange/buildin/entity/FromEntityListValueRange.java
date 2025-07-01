@@ -21,12 +21,12 @@ import org.jspecify.annotations.NonNull;
  * 
  * @param <Value_> the value type
  */
-public final class EntityDependentValueRange<Value_> extends AbstractCountableValueRange<Value_> {
+public final class FromEntityListValueRange<Value_> extends AbstractCountableValueRange<Value_> {
 
     private final List<Value_> valueList;
 
-    public <Solution_> EntityDependentValueRange(List<?> entityList, int size,
-            FromListVarEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+    public <Solution_> FromEntityListValueRange(List<?> entityList, int size,
+                                                FromListVarEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor) {
         this.valueList = new OnDemandValueEntityList<>(entityList, size, valueRangeDescriptor);
     }
 
@@ -67,6 +67,7 @@ public final class EntityDependentValueRange<Value_> extends AbstractCountableVa
         private final ValueRangeCacheStrategy<Value_> cacheStrategy;
         private final int size;
         private int currentEntityIndex = 0;
+        private boolean fullyLoaded = false;
 
         public <Solution_> OnDemandValueEntityList(List<?> entityList, int size,
                 FromListVarEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor) {
@@ -80,7 +81,7 @@ public final class EntityDependentValueRange<Value_> extends AbstractCountableVa
                                 .getSimpleName()));
             }
             var firstValueRange = valueRangeDescriptor.<Value_> extractValueRange(null, entityList.get(0));
-            this.cacheStrategy = firstValueRange.generateCache().copy();
+            this.cacheStrategy = firstValueRange.generateCache();
         }
 
         @Override
@@ -88,7 +89,9 @@ public final class EntityDependentValueRange<Value_> extends AbstractCountableVa
             if (index < 0 || index >= size) {
                 throw new IndexOutOfBoundsException(index);
             }
-            ensureLoadedAtIndex(index);
+            if (!fullyLoaded) {
+                ensureLoadedAtIndex(index);
+            }
             return cacheStrategy.get(index);
         }
 
@@ -97,6 +100,7 @@ public final class EntityDependentValueRange<Value_> extends AbstractCountableVa
                 var entity = entityList.get(currentEntityIndex++);
                 readEntity(entity);
             }
+            this.fullyLoaded = currentEntityIndex == entityList.size();
         }
 
         private void readEntity(Object entity) {

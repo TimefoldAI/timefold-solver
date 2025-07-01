@@ -16,7 +16,6 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.primint.IntValueRa
  */
 public class BitSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
-    private final int maxSize;
     private final BitSet cache;
     private final List<Value_> values;
     private final Function<Value_, Integer> extractIdFunction;
@@ -27,17 +26,9 @@ public class BitSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Va
     }
 
     public BitSetValueRangeCache(int size, Function<Value_, Integer> extractIdFunction) {
-        this.maxSize = size;
         this.extractIdFunction = extractIdFunction;
         cache = new BitSet(size);
         values = new ArrayList<>(size);
-    }
-
-    private BitSetValueRangeCache(int maxSize, Function<Value_, Integer> extractIdFunction, BitSet cache, List<Value_> values) {
-        this.maxSize = maxSize;
-        this.extractIdFunction = extractIdFunction;
-        this.cache = cache;
-        this.values = values;
     }
 
     @Override
@@ -65,13 +56,5 @@ public class BitSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Va
     @Override
     public long getSize() {
         return values.size();
-    }
-
-    @Override
-    public ValueRangeCacheStrategy<Value_> copy() {
-        var cacheCopy = (BitSet) cache.clone();
-        var valuesCopy = new ArrayList<Value_>(maxSize);
-        valuesCopy.addAll(values);
-        return new BitSetValueRangeCache<>(maxSize, extractIdFunction, cacheCopy, valuesCopy);
     }
 }
