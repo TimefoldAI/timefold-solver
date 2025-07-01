@@ -461,15 +461,6 @@ public class ConfigUtils {
         return IMMUTABLE_CLASSES.contains(type) || type.isRecord();
     }
 
-    /**
-     * @param memberAccessor never null
-     * @return true if the field is integer; otherwise false
-     */
-    public static boolean isIntegerType(MemberAccessor memberAccessor) {
-        var field = (Class<?>) memberAccessor.getGenericType();
-        return field.isAssignableFrom(Integer.class) || field.isAssignableFrom(int.class);
-    }
-
     public static Optional<Class<?>> extractGenericTypeParameter(@NonNull String parentClassConcept,
             @NonNull Class<?> parentClass, @NonNull Class<?> type, @NonNull Type genericType,
             @Nullable Class<? extends Annotation> annotationClass, @NonNull String memberName) {
