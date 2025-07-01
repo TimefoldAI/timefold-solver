@@ -100,7 +100,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             Iterator<ElementPosition> destinationIterator, ListVariableDescriptor listVariableDescriptor) {
         while (destinationIterator.hasNext()) {
             var destination = destinationIterator.next();
-            if (isPinned(destination, listVariableDescriptor) && destination instanceof PositionInList destinationElement) {
+            if (!isPinned(destination, listVariableDescriptor) && destination instanceof PositionInList destinationElement) {
                 var valueRange = listVariableDescriptor.getValueRangeDescriptor().extractValueRange(null,
                         destinationElement.entity());
                 if (valueRange.contains(upcomingLeftValue)) {
