@@ -1,13 +1,10 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
-import static ai.timefold.solver.core.config.util.ConfigUtils.findPlanningIdMemberAccessor;
-
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
@@ -31,9 +28,8 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     protected boolean collectionWrapping;
     protected boolean arrayWrapping;
     protected boolean countable;
-    // Fields related to the generic type of the value range, e.g., List<String> -> String
+    // Field related to the generic type of the value range, e.g., List<String> -> String
     private final boolean isGenericTypeImmutable;
-    private final MemberAccessor planningIdMemberAccessor;
 
     public AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             boolean addNullInValueRange,
@@ -60,21 +56,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),
                     ValueRangeProvider.class, memberAccessor.getName());
             this.isGenericTypeImmutable = ConfigUtils.isGenericTypeImmutable(genericType);
-            if (isGenericTypeImmutable) {
-                this.planningIdMemberAccessor = null;
-            } else {
-                var solutionDescriptor = variableDescriptor.getEntityDescriptor().getSolutionDescriptor();
-                var accessor = findPlanningIdMemberAccessor(genericType, solutionDescriptor.getMemberAccessorFactory(),
-                        solutionDescriptor.getDomainAccessType());
-                if (accessor != null && ConfigUtils.isIntegerType(accessor)) {
-                    // We only accept planning ids of type integer, as BitSetValueRangeCache works only with integers
-                    this.planningIdMemberAccessor = accessor;
-                } else {
-                    this.planningIdMemberAccessor = null;
-                }
-            }
         } else {
-            this.planningIdMemberAccessor = null;
             this.isGenericTypeImmutable = true;
         }
     }
@@ -149,11 +131,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                                         list,
                                         PlanningVariable.class.getSimpleName()));
             }
-            Function<Value_, Integer> extractIdFunction = null;
-            if (!isGenericTypeImmutable && planningIdMemberAccessor != null) {
-                extractIdFunction = v -> (Integer) planningIdMemberAccessor.executeGetter(v);
-            }
-            valueRange = new ListValueRange<>(list, isGenericTypeImmutable, extractIdFunction);
+            valueRange = new ListValueRange<>(list, isGenericTypeImmutable);
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }

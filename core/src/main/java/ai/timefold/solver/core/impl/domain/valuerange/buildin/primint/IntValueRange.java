@@ -5,8 +5,6 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.BitSetValueRangeCache;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
@@ -78,13 +76,6 @@ public final class IntValueRange extends AbstractCountableValueRange<Integer> {
     @Override
     public @NonNull Iterator<Integer> createOriginalIterator() {
         return new OriginalIntValueRangeIterator();
-    }
-
-    @Override
-    public @NonNull ValueRangeCacheStrategy<Integer> generateCache() {
-        var cacheStrategy = new BitSetValueRangeCache<Integer>((int) getSize(), v -> v);
-        createOriginalIterator().forEachRemaining(cacheStrategy::add);
-        return cacheStrategy;
     }
 
     private class OriginalIntValueRangeIterator extends ValueRangeIterator<Integer> {
