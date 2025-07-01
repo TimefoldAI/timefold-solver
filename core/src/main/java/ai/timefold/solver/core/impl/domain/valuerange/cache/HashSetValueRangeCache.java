@@ -52,4 +52,9 @@ public class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<V
     public long getSize() {
         return values.size();
     }
+
+    @Override
+    public List<Value_> getAll() {
+        return values;
+    }
 }

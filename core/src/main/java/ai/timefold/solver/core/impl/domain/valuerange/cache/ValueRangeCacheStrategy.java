@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.cache;
 
+import java.util.List;
+
 public interface ValueRangeCacheStrategy<Value_> {
 
     void add(Value_ value);
@@ -10,10 +12,6 @@ public interface ValueRangeCacheStrategy<Value_> {
 
     long getSize();
 
-    default ValueRangeCacheStrategy<Value_> merge(ValueRangeCacheStrategy<Value_> other) {
-        for (var i = 0; i < other.getSize(); i++) {
-            add(other.get(i));
-        }
-        return this;
-    }
+    List<Value_> getAll();
+
 }
