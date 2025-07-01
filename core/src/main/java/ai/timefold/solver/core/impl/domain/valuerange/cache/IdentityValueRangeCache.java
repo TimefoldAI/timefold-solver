@@ -56,4 +56,9 @@ public class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<
     public long getSize() {
         return values.size();
     }
+
+    @Override
+    public List<Value_> getAll() {
+        return values;
+    }
 }
