@@ -68,7 +68,6 @@ import ai.timefold.solver.core.impl.domain.solution.OverridesBasedConstraintWeig
 import ai.timefold.solver.core.impl.domain.solution.cloner.FieldAccessingSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerFactory;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
@@ -76,6 +75,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
@@ -189,7 +189,7 @@ public class SolutionDescriptor<Solution_> {
      * If a class declares any annotated member, it must be annotated as a solution,
      * even if a supertype already has the annotation.
      */
-    public static void assertValidAnnotatedMembers(Class<?> clazz) {
+    private static void assertValidAnnotatedMembers(Class<?> clazz) {
         // We first check the entity class
         if (clazz.getAnnotation(PlanningSolution.class) == null && hasAnyAnnotatedMembers(clazz)) {
             var annotatedMembers = extractAnnotatedMembers(clazz).stream()
@@ -218,7 +218,7 @@ public class SolutionDescriptor<Solution_> {
         }
     }
 
-    public static void assertSingleInheritance(Class<?> solutionClass) {
+    private static void assertSingleInheritance(Class<?> solutionClass) {
         var inheritedClassList =
                 ConfigUtils.getAllAnnotatedLineageClasses(solutionClass.getSuperclass(), PlanningSolution.class);
         if (inheritedClassList.size() > 1) {
@@ -1214,7 +1214,7 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return {@code >= 0}
      */
-    public long getApproximateValueCount(Solution_ solution) {
+    public long getApproximateValueCount(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
         var genuineVariableDescriptorSet =
                 Collections.newSetFromMap(new IdentityHashMap<GenuineVariableDescriptor<Solution_>, Boolean>());
         visitAllEntities(solution, entity -> {
@@ -1227,14 +1227,12 @@ public class SolutionDescriptor<Solution_> {
         for (var variableDescriptor : genuineVariableDescriptorSet) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             if (valueRangeDescriptor.isEntityIndependent()) {
-                var entityIndependentVariableDescriptor =
-                        (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
-                out.add(entityIndependentVariableDescriptor.extractValueRangeSize(solution));
+                out.add(valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, solution, null));
             } else {
                 visitEntitiesByEntityClass(solution,
                         variableDescriptor.getEntityDescriptor().getEntityClass(),
                         entity -> {
-                            out.add(valueRangeDescriptor.extractValueRangeSize(solution, entity));
+                            out.add(valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, solution, entity));
                             return false;
                         });
             }
@@ -1242,11 +1240,13 @@ public class SolutionDescriptor<Solution_> {
         return out.longValue();
     }
 
-    public long getMaximumValueRangeSize(Solution_ solution) {
+    public long getMaximumValueRangeSize(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
         return extractAllEntitiesStream(solution)
                 .mapToLong(entity -> {
                     var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
-                    return entityDescriptor.isGenuine() ? entityDescriptor.getMaximumValueCount(solution, entity) : 0L;
+                    return entityDescriptor.isGenuine()
+                            ? entityDescriptor.getMaximumValueCount(solution, entity, valueRangeResolver)
+                            : 0L;
                 })
                 .max()
                 .orElse(0L);
@@ -1259,13 +1259,13 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return {@code >= 0}
      */
-    public double getProblemScale(Solution_ solution) {
-        var logBase = Math.max(2, getMaximumValueRangeSize(solution));
+    public double getProblemScale(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
+        var logBase = Math.max(2, getMaximumValueRangeSize(solution, valueRangeResolver));
         var problemScaleTracker = new ProblemScaleTracker(logBase);
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
-                entityDescriptor.processProblemScale(solution, entity, problemScaleTracker);
+                entityDescriptor.processProblemScale(solution, entity, problemScaleTracker, valueRangeResolver);
             }
         });
         var result = problemScaleTracker.getBasicProblemScaleLog();
@@ -1311,19 +1311,22 @@ public class SolutionDescriptor<Solution_> {
         return new ArrayList<>(out);
     }
 
-    public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution) {
+    public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution,
+            ValueRangeResolver<Solution_> valueRangeResolver) {
         return new ProblemSizeStatistics(
                 getGenuineEntityCount(solution),
                 getGenuineVariableCount(solution),
-                getApproximateValueCount(solution),
-                getProblemScale(solution));
+                getApproximateValueCount(solution, valueRangeResolver),
+                getProblemScale(solution, valueRangeResolver));
     }
 
-    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution) {
-        return computeInitializationStatistics(solution, null);
+    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution,
+            ValueRangeResolver<Solution_> valueRangeResolver) {
+        return computeInitializationStatistics(solution, null, valueRangeResolver);
     }
 
-    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution, Consumer<Object> finisher) {
+    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution, Consumer<Object> finisher,
+            ValueRangeResolver<Solution_> valueRangeResolver) {
         /*
          * The score director requires all of these data points,
          * so we calculate them all in a single pass over the entities.
@@ -1341,7 +1344,8 @@ public class SolutionDescriptor<Solution_> {
             }
             // We count every possibly unassigned element in every list variable.
             // And later we subtract the assigned elements.
-            unassignedValueCount.add((int) listVariableDescriptor.getValueRangeSize(solution, null));
+            unassignedValueCount.add((int) valueRangeResolver
+                    .extractValueRangeSize(listVariableDescriptor.getValueRangeDescriptor(), solution, null));
         }
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());

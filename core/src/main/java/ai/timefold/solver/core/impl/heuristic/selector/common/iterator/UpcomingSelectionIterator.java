@@ -87,7 +87,7 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
         if (destination instanceof PositionInList positionInList) {
             return listVariableDescriptor.isElementPinned(null, positionInList.entity(), positionInList.index());
         } else { // Unassigned element cannot be pinned.
-            return true;
+            return false;
         }
     }
 

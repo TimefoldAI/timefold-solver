@@ -8,6 +8,7 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -99,6 +100,10 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();
+
+    public ValueRangeResolver<Solution_> getValueRangeResolver() {
+        return solverScope.getValueRangeResolver();
+    }
 
     // ************************************************************************
     // Calculated methods

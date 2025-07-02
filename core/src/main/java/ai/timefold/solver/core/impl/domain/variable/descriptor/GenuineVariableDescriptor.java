@@ -253,10 +253,6 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         return decreasingStrengthSorter;
     }
 
-    public long getValueRangeSize(Solution_ solution, Object entity) {
-        return valueRangeDescriptor.extractValueRangeSize(solution, entity);
-    }
-
     @Override
     public String toString() {
         return getSimpleEntityAndVariableName() + " variable";
