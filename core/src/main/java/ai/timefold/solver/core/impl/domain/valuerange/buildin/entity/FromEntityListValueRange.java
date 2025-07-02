@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.cache.CacheableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromListVarEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
@@ -31,11 +32,12 @@ public final class FromEntityListValueRange<Value_> extends AbstractCountableVal
         // such as the iterators and the list variable state,
         // expect the value list to have the correct size.
         // Therefore, we create a unique values list in advance to return consistent information to the outer tiers.
-        var firstValueRange = valueRangeDescriptor.<Value_> extractValueRange(null, entityList.get(0));
+        var firstValueRange =
+                (CacheableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(null, entityList.get(0));
         this.cacheStrategy = firstValueRange.generateCache();
         for (var i = 1; i < entityList.size(); ++i) {
             var entity = entityList.get(i);
-            var otherValueRange = valueRangeDescriptor.<Value_> extractValueRange(null, entity);
+            var otherValueRange = (CacheableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(null, entity);
             otherValueRange.createOriginalIterator().forEachRemaining(cacheStrategy::add);
         }
     }

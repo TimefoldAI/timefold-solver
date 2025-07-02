@@ -254,7 +254,8 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             return problemSizeStatistics;
         }
         // Solving has not started yet
-        return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId));
+        return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId),
+                solver.getSolverScope().getValueRangeResolver());
     }
 
     public SolverTermination<Solution_> getSolverTermination() {

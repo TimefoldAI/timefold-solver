@@ -53,7 +53,8 @@ public final class FromListVarEntityPropertyValueSelector<Solution_> extends Abs
         super.solvingStarted(solverScope);
         this.childValueSelector.solvingStarted(solverScope);
         var scoreDirector = solverScope.getScoreDirector();
-        cachedValueRange = valueRangeDescriptor.extractValueRange(scoreDirector.getWorkingSolution(), null);
+        cachedValueRange = (CountableValueRange<Object>) solverScope.getValueRangeResolver()
+                .extractValueRange(valueRangeDescriptor, scoreDirector.getWorkingSolution(), null);
     }
 
     @Override
