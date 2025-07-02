@@ -67,6 +67,7 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShad
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
@@ -859,18 +860,21 @@ public class EntityDescriptor<Solution_> {
         return effectivePlanningPinToIndexReader;
     }
 
-    public long getMaximumValueCount(Solution_ solution, Object entity) {
+    public long getMaximumValueCount(Solution_ solution, Object entity, ValueRangeResolver<Solution_> valueRangeResolver) {
         var maximumValueCount = 0L;
         for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            maximumValueCount = Math.max(maximumValueCount, variableDescriptor.getValueRangeSize(solution, entity));
+            maximumValueCount = Math.max(maximumValueCount,
+                    valueRangeResolver.extractValueRangeSize(variableDescriptor.getValueRangeDescriptor(), solution, entity));
         }
         return maximumValueCount;
 
     }
 
-    public void processProblemScale(Solution_ solution, Object entity, ProblemScaleTracker tracker) {
+    public void processProblemScale(Solution_ solution, Object entity, ProblemScaleTracker tracker,
+            ValueRangeResolver<Solution_> valueRangeResolver) {
         for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            var valueCount = variableDescriptor.getValueRangeSize(solution, entity);
+            var valueCount =
+                    valueRangeResolver.extractValueRangeSize(variableDescriptor.getValueRangeDescriptor(), solution, entity);
             // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
             if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
                 if (basicVariableDescriptor.isChained()) {
@@ -907,7 +911,8 @@ public class EntityDescriptor<Solution_> {
                     }
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                tracker.setListTotalValueCount((int) listVariableDescriptor.getValueRangeSize(solution, entity));
+                tracker.setListTotalValueCount((int) valueRangeResolver
+                        .extractValueRangeSize(listVariableDescriptor.getValueRangeDescriptor(), solution, entity));
                 if (isMovable(solution, entity)) {
                     tracker.incrementListEntityCount(true);
                     tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));

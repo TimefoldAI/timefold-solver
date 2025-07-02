@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
@@ -86,8 +87,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
                 variableMemberAccessor.getName());
     }
 
-    public int countUnassigned(Solution_ solution) {
-        var valueCount = new MutableLong(getValueRangeSize(solution, null));
+    public int countUnassigned(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
+        var valueCount = new MutableLong(valueRangeResolver.extractValueRangeSize(getValueRangeDescriptor(), solution, null));
         var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
         solutionDescriptor.visitEntitiesByEntityClass(solution,
                 entityDescriptor.getEntityClass(), entity -> {

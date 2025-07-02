@@ -47,6 +47,8 @@ import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Utility class for updating shadow variables at entity level.
  */
@@ -85,7 +87,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 .toArray(Class[]::new);
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(enabledPreviewFeatures, solutionClass,
                 entityClassArray);
-        try (var scoreDirector = new InternalScoreDirector<>(solutionDescriptor)) {
+        try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
             // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
             scoreDirector.forceTriggerVariableListeners();
@@ -108,7 +110,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
             throw new IllegalArgumentException(
                     "Custom shadow variable descriptors are not supported (%s)".formatted(customShadowVariableDescriptorList));
         }
-        var variableListenerSupport = VariableListenerSupport.create(new InternalScoreDirector<>(solutionDescriptor));
+        var variableListenerSupport =
+                VariableListenerSupport.create(new InternalScoreDirector.Builder<>(solutionDescriptor).build());
         var missingShadowVariableTypeList = variableListenerSupport.getSupportedShadowVariableTypes().stream()
                 .filter(type -> !supportedShadowVariableTypes.contains(type))
                 .toList();
@@ -258,7 +261,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                     var cascadingVariableDescriptor =
                             findShadowVariableDescriptor(entity.getClass(), CascadingUpdateShadowVariableDescriptor.class);
                     if (cascadingVariableDescriptor != null) {
-                        cascadingVariableDescriptor.update(new InternalScoreDirector<>(solutionDescriptor), entity);
+                        cascadingVariableDescriptor.update(new InternalScoreDirector.Builder<>(solutionDescriptor).build(),
+                                entity);
                     }
                 }
             }
@@ -354,8 +358,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
     private static class InternalScoreDirector<Solution_, Score_ extends Score<Score_>>
             extends AbstractScoreDirector<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>> {
 
-        public InternalScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor) {
-            super(new InternalScoreDirectorFactory<>(solutionDescriptor), false, DISABLED, false);
+        private InternalScoreDirector(Builder<Solution_, Score_> builder) {
+            super(builder);
         }
 
         @Override
@@ -382,6 +386,25 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         @Override
         public boolean requiresFlushing() {
             throw new UnsupportedOperationException();
+        }
+
+        @NullMarked
+        public static final class Builder<Solution_, Score_ extends Score<Score_>>
+                extends
+                AbstractScoreDirectorBuilder<Solution_, Score_, InternalScoreDirectorFactory<Solution_, Score_>, InternalScoreDirector.Builder<Solution_, Score_>> {
+
+            public Builder(SolutionDescriptor<Solution_> solutionDescriptor) {
+                super(new InternalScoreDirectorFactory<>(solutionDescriptor));
+                withConstraintMatchPolicy(DISABLED);
+                withLookUpEnabled(false);
+                withExpectShadowVariablesInCorrectState(false);
+            }
+
+            @Override
+            public InternalScoreDirector<Solution_, Score_> build() {
+                return new InternalScoreDirector<>(this);
+            }
+
         }
     }
 
