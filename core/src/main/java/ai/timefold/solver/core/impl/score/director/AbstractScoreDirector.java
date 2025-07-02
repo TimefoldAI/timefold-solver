@@ -81,21 +81,21 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private int workingInitScore = 0;
 
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
+
+    private final ValueRangeState<Solution_> valueRangeState;
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
 
-    // Null when no list variable
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
-
-    protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
+    protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
+        var scoreDirectorFactory = builder.scoreDirectorFactory;
         var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
-        this.lookUpEnabled = lookUpEnabled;
+        this.lookUpEnabled = builder.lookUpEnabled;
         this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver())
                 : null;
-        this.constraintMatchPolicy = constraintMatchPolicy;
-        this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
+        this.constraintMatchPolicy = builder.constraintMatchPolicy;
+        this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.scoreDirectorFactory = scoreDirectorFactory;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
@@ -103,6 +103,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.solutionTracker = scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
+        this.valueRangeState = Objects.requireNonNull(builder.valueRangeState);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -198,6 +199,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public ValueRangeResolver<Solution_> getValueRangeResolver() {
+        return valueRangeState;
+    }
+
+    @Override
     public MoveDirector<Solution_, Score_> getMoveDirector() {
         return moveDirector;
     }
@@ -217,6 +223,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      */
     protected void setWorkingSolution(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
         this.workingSolution = requireNonNull(workingSolution);
+        this.valueRangeState.reset();
         var solutionDescriptor = getSolutionDescriptor();
 
         /*
@@ -242,7 +249,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
         // This visits all the entities.
         var initializationStatistics =
-                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor);
+                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeState);
         setWorkingEntityListDirty();
 
         workingInitScore =
@@ -975,12 +982,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         protected final Factory_ scoreDirectorFactory;
 
+        // May be replaced by a shared state coming from the solver.
+        protected ValueRangeState<Solution_> valueRangeState = new ValueRangeState<>();
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
+        }
+
+        @SuppressWarnings("unchecked")
+        public Builder_ withValueRangeState(ValueRangeState<Solution_> valueRangeState) {
+            this.valueRangeState = Objects.requireNonNull(valueRangeState);
+            return (Builder_) this;
         }
 
         @SuppressWarnings("unchecked")
