@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
@@ -23,7 +23,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     private final boolean filterValuePerEntityRange;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
-    private ValueRangeResolver<Solution_> valueRangeResolver;
+    private InnerScoreDirector<Solution_, ?> innerScoreDirector;
 
     public ListChangeMoveSelector(
             EntityIndependentValueSelector<Solution_> sourceValueSelector,
@@ -49,7 +49,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
-        this.valueRangeResolver = solverScope.getValueRangeResolver();
+        this.innerScoreDirector = solverScope.getScoreDirector();
     }
 
     public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
@@ -91,14 +91,14 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         if (randomSelection) {
             return new RandomListChangeIterator<>(
                     listVariableStateSupply,
-                    valueRangeResolver,
+                    innerScoreDirector.getValueRangeResolver(),
                     sourceValueSelector,
                     destinationSelector,
                     filterValuePerEntityRange);
         } else {
             return new OriginalListChangeIterator<>(
                     listVariableStateSupply,
-                    valueRangeResolver,
+                    innerScoreDirector.getValueRangeResolver(),
                     sourceValueSelector,
                     destinationSelector,
                     filterValuePerEntityRange);

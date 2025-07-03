@@ -29,6 +29,11 @@ public class FromListVarEntityPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
+    public boolean isAdaptedToEntityIndependent() {
+        return true;
+    }
+
+    @Override
     public long extractValueRangeSize(Solution_ solution, Object entity) {
         if (entity == null) {
             return readValueRangeSizeFromSolution(solution);
@@ -47,7 +52,7 @@ public class FromListVarEntityPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
-    public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
+    public <T> ValueRange<T> extractValueRange(Solution_ solution, Object entity) {
         if (entity == null) {
             var entityList = listVariableDescriptor.getEntityDescriptor().extractEntities(solution);
             return new FromEntityListValueRange<>(entityList, this);

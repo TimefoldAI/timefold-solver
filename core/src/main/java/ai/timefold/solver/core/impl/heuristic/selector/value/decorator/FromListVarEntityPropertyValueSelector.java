@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
@@ -29,7 +30,7 @@ public final class FromListVarEntityPropertyValueSelector<Solution_> extends Abs
     private final FromEntityPropertyValueSelector<Solution_> childValueSelector;
     private final boolean randomSelection;
     private final FromListVarEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor;
-    private CountableValueRange<Object> cachedValueRange = null;
+    private InnerScoreDirector<Solution_, ?> innerScoreDirector = null;
 
     public FromListVarEntityPropertyValueSelector(FromEntityPropertyValueSelector<Solution_> childValueSelector,
             boolean randomSelection) {
@@ -52,16 +53,14 @@ public final class FromListVarEntityPropertyValueSelector<Solution_> extends Abs
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
         this.childValueSelector.solvingStarted(solverScope);
-        var scoreDirector = solverScope.getScoreDirector();
-        cachedValueRange = (CountableValueRange<Object>) solverScope.getValueRangeResolver()
-                .extractValueRange(valueRangeDescriptor, scoreDirector.getWorkingSolution(), null);
+        this.innerScoreDirector = solverScope.getScoreDirector();
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
         childValueSelector.solvingEnded(solverScope);
-        this.cachedValueRange = null;
+        this.innerScoreDirector = null;
     }
 
     // ************************************************************************
@@ -99,15 +98,18 @@ public final class FromListVarEntityPropertyValueSelector<Solution_> extends Abs
 
     @Override
     public long getSize() {
-        return cachedValueRange.getSize();
+        return innerScoreDirector.getValueRangeResolver().extractValueRangeSize(valueRangeDescriptor,
+                innerScoreDirector.getWorkingSolution(), null);
     }
 
     @Override
     public Iterator<Object> iterator() {
+        var valueRange = (CountableValueRange<Object>) innerScoreDirector.getValueRangeResolver()
+                .extractValueRange(valueRangeDescriptor, innerScoreDirector.getWorkingSolution(), null);
         if (randomSelection) {
-            return cachedValueRange.createRandomIterator(workingRandom);
+            return valueRange.createRandomIterator(workingRandom);
         } else {
-            return cachedValueRange.createOriginalIterator();
+            return valueRange.createOriginalIterator();
         }
     }
 
