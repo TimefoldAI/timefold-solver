@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 /**
@@ -16,14 +17,16 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ValueRangeResolver<Solution_> valueRangeResolver;
     private final Iterator<Object> valueIterator;
     private final Iterator<ElementPosition> destinationIterator;
     private final boolean filterValuePerEntityRange;
 
     public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector,
-            boolean filterValuePerEntityRange) {
+            ValueRangeResolver<Solution_> valueRangeResolver, EntityIndependentValueSelector<Solution_> valueSelector,
+            DestinationSelector<Solution_> destinationSelector, boolean filterValuePerEntityRange) {
         this.listVariableStateSupply = listVariableStateSupply;
+        this.valueRangeResolver = valueRangeResolver;
         this.valueIterator = valueSelector.iterator();
         this.destinationIterator = destinationSelector.iterator();
         this.filterValuePerEntityRange = filterValuePerEntityRange;
@@ -35,7 +38,7 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
             return noUpcomingSelection();
         }
         var upcomingValue = valueIterator.next();
-        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, upcomingValue,
+        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, valueRangeResolver, upcomingValue,
                 destinationIterator, filterValuePerEntityRange);
         if (move == null) {
             return noUpcomingSelection();
