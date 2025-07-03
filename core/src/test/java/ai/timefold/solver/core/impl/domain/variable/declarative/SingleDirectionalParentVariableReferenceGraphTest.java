@@ -19,8 +19,6 @@ class SingleDirectionalParentVariableReferenceGraphTest {
     @Test
     void supplierMethodsAreOnlyCalledOnce() {
         var solutionDescriptor = TestdataCountingSolution.buildSolutionDescriptor();
-        var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor);
-
         var entity1 = new TestdataCountingEntity("e1");
         var entity2 = new TestdataCountingEntity("e2");
 
@@ -29,6 +27,10 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         var value3 = new TestdataCountingValue("v3");
         var value4 = new TestdataCountingValue("v4");
         var value5 = new TestdataCountingValue("v5");
+
+        var graphStructureAndDirection = GraphStructure.determineGraphStructure(solutionDescriptor,
+                entity1, entity2, value1, value2, value3, value4, value5);
+        assertThat(graphStructureAndDirection.structure()).isEqualTo(GraphStructure.SINGLE_DIRECTIONAL_PARENT);
 
         var scoreDirector = Mockito.mock(InnerScoreDirector.class);
         var listStateSupply = Mockito.mock(ListVariableStateSupply.class);

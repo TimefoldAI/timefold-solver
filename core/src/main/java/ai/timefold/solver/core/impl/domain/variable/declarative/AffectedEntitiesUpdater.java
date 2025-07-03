@@ -96,7 +96,7 @@ final class AffectedEntitiesUpdater<Solution_>
         for (var node : entityVariablePairFunction.apply(affectedEntity)) {
             // All variables come from the same entity,
             // therefore all have the same looped marker.
-            shadowVariableLoopedDescriptor = node.variableReference().shadowVariableLoopedDescriptor();
+            shadowVariableLoopedDescriptor = node.variableReferences()[0].shadowVariableLoopedDescriptor();
             if (graph.isLooped(loopedTracker, node.graphNodeId())) {
                 isEntityLooped = true;
                 break;
@@ -116,9 +116,9 @@ final class AffectedEntitiesUpdater<Solution_>
 
     private boolean updateShadowVariable(EntityVariablePair<Solution_> entityVariable, boolean isLooped) {
         var entity = entityVariable.entity();
-        var shadowVariableReference = entityVariable.variableReference();
-        var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
-        var loopDescriptor = shadowVariableReference.shadowVariableLoopedDescriptor();
+        var shadowVariableReferences = entityVariable.variableReferences();
+        var loopDescriptor = shadowVariableReferences[0].shadowVariableLoopedDescriptor();
+
         if (loopDescriptor != null) {
             var oldLooped = (boolean) loopDescriptor.getValue(entity);
             if (oldLooped != isLooped) {
@@ -127,21 +127,26 @@ final class AffectedEntitiesUpdater<Solution_>
             }
         }
 
-        if (isLooped) {
-            if (oldValue != null) {
-                affectedEntities.add(entityVariable);
-                changeShadowVariableAndNotify(shadowVariableReference, entity, null);
-            }
-            return true;
-        } else {
-            var newValue = shadowVariableReference.calculator().apply(entity);
-            if (!Objects.equals(oldValue, newValue)) {
-                affectedEntities.add(entityVariable);
-                changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
-                return true;
+        var anyChanged = false;
+        for (var shadowVariableReference : shadowVariableReferences) {
+            var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
+            if (isLooped) {
+                if (oldValue != null) {
+                    affectedEntities.add(entityVariable);
+                    changeShadowVariableAndNotify(shadowVariableReference, entity, null);
+                }
+                anyChanged = true;
+            } else {
+                var newValue = shadowVariableReference.calculator().apply(entity);
+                if (!Objects.equals(oldValue, newValue)) {
+                    affectedEntities.add(entityVariable);
+                    changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
+                    anyChanged = true;
+                }
             }
         }
-        return false;
+
+        return anyChanged;
     }
 
     private void changeShadowVariableAndNotify(VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity,
@@ -168,7 +173,7 @@ final class AffectedEntitiesUpdater<Solution_>
         }
 
         public void add(EntityVariablePair<Solution_> shadowVariable) {
-            var shadowVariableLoopedDescriptor = shadowVariable.variableReference().shadowVariableLoopedDescriptor();
+            var shadowVariableLoopedDescriptor = shadowVariable.variableReferences()[0].shadowVariableLoopedDescriptor();
             if (shadowVariableLoopedDescriptor == null) {
                 return;
             }

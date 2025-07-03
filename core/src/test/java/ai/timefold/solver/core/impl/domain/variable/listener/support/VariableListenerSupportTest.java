@@ -10,6 +10,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -20,6 +21,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.EntityVariablePair;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
+import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
@@ -164,20 +166,21 @@ class VariableListenerSupportTest {
 
     private static class MockTopologicalOrderGraph extends DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         Object[] nodeToEntities;
-        VariableMetaModel<?, ?, ?>[] nodeToVariableMetamodel;
+        VariableMetaModel<?, ?, ?>[][] nodeToVariableMetamodel;
 
         public MockTopologicalOrderGraph(int size) {
             super(size);
             nodeToEntities = new Object[size];
-            nodeToVariableMetamodel = new VariableMetaModel[size];
+            nodeToVariableMetamodel = new VariableMetaModel[size][];
         }
 
         @Override
         public <Solution_> void withNodeData(List<EntityVariablePair<Solution_>> nodes) {
             nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
             nodeToVariableMetamodel = nodes.stream()
-                    .map(e -> e.variableReference().id())
-                    .toArray(VariableMetaModel[]::new);
+                    .map(e -> Arrays.stream(e.variableReferences()).map(VariableUpdaterInfo::id)
+                            .toArray(VariableMetaModel[]::new))
+                    .toArray(VariableMetaModel[][]::new);
         }
 
         public void addEdge(VariableMetaModel<?, ?, ?> fromId, Object fromEntity, VariableMetaModel<?, ?, ?> toId,
@@ -193,14 +196,16 @@ class VariableListenerSupportTest {
         @Override
         public void addEdge(int fromNode, int toNode) {
             super.addEdge(fromNode, toNode);
-            addEdge(nodeToVariableMetamodel[fromNode], nodeToEntities[fromNode], nodeToVariableMetamodel[toNode],
+            addEdge(nodeToVariableMetamodel[fromNode][nodeToVariableMetamodel[fromNode].length - 1], nodeToEntities[fromNode],
+                    nodeToVariableMetamodel[toNode][0],
                     nodeToEntities[toNode]);
         }
 
         @Override
         public void removeEdge(int fromNode, int toNode) {
             super.removeEdge(fromNode, toNode);
-            removeEdge(nodeToVariableMetamodel[fromNode], nodeToEntities[fromNode], nodeToVariableMetamodel[toNode],
+            removeEdge(nodeToVariableMetamodel[fromNode][nodeToVariableMetamodel[fromNode].length - 1],
+                    nodeToEntities[fromNode], nodeToVariableMetamodel[toNode][0],
                     nodeToEntities[toNode]);
         }
     }
@@ -285,7 +290,7 @@ class VariableListenerSupportTest {
 
         for (var visit : solution.getValues()) {
             verifyAddEdge.accept(serviceReadyTime, visit, serviceStartTime, visit);
-            verifyAddEdge.accept(serviceStartTime, visit, serviceFinishTime, visit);
+            // serviceStartTime and serviceFinishTime are in the same group, so no edge between them!
 
             if (visit.getPreviousValue() != null) {
                 verifyAddEdge.accept(serviceFinishTime, visit.getPreviousValue(), serviceReadyTime, visit);

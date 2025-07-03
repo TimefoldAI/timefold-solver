@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Arrays;
+import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.util.MutableInt;
@@ -37,6 +38,13 @@ public enum GraphStructure {
     SINGLE_DIRECTIONAL_PARENT,
 
     /**
+     * A graph structure that accepts all graphs that only have a single
+     * entity that uses declarative shadow variables with all directional
+     * parents being the same type.
+     */
+    ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE,
+
+    /**
      * A graph structure that accepts all graphs.
      */
     ARBITRARY;
@@ -55,15 +63,25 @@ public enum GraphStructure {
         if (declarativeShadowVariableDescriptors.isEmpty()) {
             return new GraphStructureAndDirection(EMPTY, null, null);
         }
+
+        if (!doesEntitiesUseDeclarativeShadowVariables(entities, declarativeShadowVariableDescriptors)) {
+            return new GraphStructureAndDirection(EMPTY, null, null);
+        }
+
         var multipleDeclarativeEntityClasses = declarativeShadowVariableDescriptors.stream()
                 .map(variable -> variable.getEntityDescriptor().getEntityClass())
                 .distinct().count() > 1;
+
+        final var arbitraryGraphStructure = new GraphStructureAndDirection(
+                multipleDeclarativeEntityClasses ? ARBITRARY : ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE,
+                null, null);
 
         var rootVariableSources = declarativeShadowVariableDescriptors.stream()
                 .flatMap(descriptor -> Arrays.stream(descriptor.getSources()))
                 .toList();
         ParentVariableType directionalType = null;
         VariableMetaModel<?, ?, ?> parentMetaModel = null;
+        var isArbitrary = multipleDeclarativeEntityClasses;
         for (var variableSource : rootVariableSources) {
             var parentVariableType = variableSource.parentVariableType();
             LOGGER.trace("{} has parentVariableType {}", variableSource, parentVariableType);
@@ -76,21 +94,32 @@ public enum GraphStructure {
                         }
                     }
                     if (groupMemberCount.intValue() != 0) {
-                        return new GraphStructureAndDirection(ARBITRARY, null, null);
+                        isArbitrary = true;
+                        var groupParentVariableType = variableSource.groupParentVariableType();
+                        if (groupParentVariableType != null && groupParentVariableType.isDirectional()) {
+                            var groupParentVariableMetamodel =
+                                    variableSource.variableSourceReferences().get(0).variableMetaModel();
+                            if (parentMetaModel == null) {
+                                parentMetaModel = groupParentVariableMetamodel;
+                            } else if (!parentMetaModel
+                                    .equals(variableSource.variableSourceReferences().get(0).variableMetaModel())) {
+                                return new GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null);
+                            }
+                        }
                     }
                     // The group variable is unused/always empty
                 }
                 case INDIRECT, INVERSE, VARIABLE, CHAINED_NEXT -> {
                     // CHAINED_NEXT has a complex comparator function;
                     // so use ARBITRARY despite the fact it can be represented using SINGLE_DIRECTIONAL_PARENT
-                    return new GraphStructureAndDirection(ARBITRARY, null, null);
+                    isArbitrary = true;
                 }
                 case NEXT, PREVIOUS -> {
                     if (parentMetaModel == null) {
                         parentMetaModel = variableSource.variableSourceReferences().get(0).variableMetaModel();
                         directionalType = parentVariableType;
                     } else if (!parentMetaModel.equals(variableSource.variableSourceReferences().get(0).variableMetaModel())) {
-                        return new GraphStructureAndDirection(ARBITRARY, null, null);
+                        return new GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null);
                     }
                 }
                 case NO_PARENT -> {
@@ -99,12 +128,33 @@ public enum GraphStructure {
             }
         }
 
+        if (isArbitrary) {
+            return arbitraryGraphStructure;
+        }
+
         if (directionalType == null) {
             return new GraphStructureAndDirection(NO_DYNAMIC_EDGES, null, null);
         } else {
             // Cannot use a single successor function if there are multiple entity classes
-            return multipleDeclarativeEntityClasses ? new GraphStructureAndDirection(ARBITRARY, null, null)
-                    : new GraphStructureAndDirection(SINGLE_DIRECTIONAL_PARENT, parentMetaModel, directionalType);
+            return new GraphStructureAndDirection(SINGLE_DIRECTIONAL_PARENT, parentMetaModel, directionalType);
         }
+    }
+
+    private static <Solution_> boolean doesEntitiesUseDeclarativeShadowVariables(Object[] entities,
+            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
+        boolean anyDeclarativeEntities = false;
+        for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
+            var entityClass = declarativeShadowVariable.getEntityDescriptor().getEntityClass();
+            for (var entity : entities) {
+                if (entityClass.isInstance(entity)) {
+                    anyDeclarativeEntities = true;
+                    break;
+                }
+                if (anyDeclarativeEntities) {
+                    break;
+                }
+            }
+        }
+        return anyDeclarativeEntities;
     }
 }
