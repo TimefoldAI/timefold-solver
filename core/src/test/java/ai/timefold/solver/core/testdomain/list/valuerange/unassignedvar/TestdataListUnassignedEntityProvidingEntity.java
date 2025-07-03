@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.list.valuerange;
+package ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,20 +10,20 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity
-public class TestdataListEntityProvidingEntity extends TestdataObject {
+public class TestdataListUnassignedEntityProvidingEntity extends TestdataObject {
 
     @ValueRangeProvider(id = "valueRange")
     private final List<TestdataValue> valueRange;
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange")
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange", allowsUnassignedValues = true)
     private List<TestdataValue> valueList;
 
-    public TestdataListEntityProvidingEntity() {
+    public TestdataListUnassignedEntityProvidingEntity() {
         // Required for cloning
         valueRange = new ArrayList<>();
         valueList = new ArrayList<>();
     }
 
-    public TestdataListEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
+    public TestdataListUnassignedEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
         super(code);
         this.valueRange = valueRange;
         valueList = new ArrayList<>();
@@ -40,4 +40,5 @@ public class TestdataListEntityProvidingEntity extends TestdataObject {
     public void setValueList(List<TestdataValue> valueList) {
         this.valueList = valueList;
     }
+
 }

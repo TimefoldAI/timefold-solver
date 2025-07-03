@@ -38,8 +38,8 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
             return noUpcomingSelection();
         }
         var upcomingValue = valueIterator.next();
-        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, valueRangeResolver, upcomingValue,
-                destinationIterator, filterValuePerEntityRange);
+        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, valueRangeResolver,
+                upcomingValue, destinationIterator, filterValuePerEntityRange);
         if (move == null) {
             return noUpcomingSelection();
         } else {

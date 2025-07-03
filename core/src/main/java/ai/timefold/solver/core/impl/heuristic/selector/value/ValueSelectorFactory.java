@@ -14,7 +14,6 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -113,8 +112,6 @@ public class ValueSelectorFactory<Solution_>
         var valueSelector =
                 buildBaseValueSelector(variableDescriptor, SelectionCacheType.max(minimumCacheType, resolvedCacheType),
                         randomSelection);
-
-        valueSelector = applyListEntityValueRange(variableDescriptor.getValueRangeDescriptor(), valueSelector, randomSelection);
 
         if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
@@ -217,9 +214,14 @@ public class ValueSelectorFactory<Solution_>
                     + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
         }
         if (valueRangeDescriptor.isEntityIndependent()) {
-            return new FromSolutionPropertyValueSelector<>(
-                    (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor, minimumCacheType,
-                    randomSelection);
+            if (valueRangeDescriptor.isAdaptedToEntityIndependent()) {
+                var fromEntityPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
+                return new FromListVarEntityPropertyValueSelector<>(fromEntityPropertySelector, randomSelection);
+            } else {
+                return new FromSolutionPropertyValueSelector<>(
+                        (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor, minimumCacheType,
+                        randomSelection);
+            }
         } else {
             // TODO Do not allow PHASE cache on FromEntityPropertyValueSelector, except if the moveSelector is PHASE cached too.
             return new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
@@ -490,15 +492,6 @@ public class ValueSelectorFactory<Solution_>
             valueSelector = listValueFilteringType == ListValueFilteringType.ACCEPT_ASSIGNED
                     ? new AssignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
                     : new UnassignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
-        }
-        return valueSelector;
-    }
-
-    private ValueSelector<Solution_> applyListEntityValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            ValueSelector<Solution_> valueSelector, boolean randomSelection) {
-        if (valueSelector instanceof FromEntityPropertyValueSelector<Solution_> entitySelector
-                && valueRangeDescriptor.getVariableDescriptor().isListVariable()) {
-            return new FromListVarEntityPropertyValueSelector<>(entitySelector, randomSelection);
         }
         return valueSelector;
     }

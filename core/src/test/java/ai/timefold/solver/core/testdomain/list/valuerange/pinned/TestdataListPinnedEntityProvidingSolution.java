@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.list.valuerange;
+package ai.timefold.solver.core.testdomain.list.valuerange.pinned;
 
 import java.util.List;
 
@@ -9,23 +9,23 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
-public class TestdataListEntityProvidingSolution {
+public class TestdataListPinnedEntityProvidingSolution {
 
-    public static SolutionDescriptor<TestdataListEntityProvidingSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataListEntityProvidingSolution.class,
-                TestdataListEntityProvidingEntity.class);
+    public static SolutionDescriptor<TestdataListPinnedEntityProvidingSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataListPinnedEntityProvidingSolution.class,
+                TestdataListPinnedEntityProvidingEntity.class);
     }
 
-    private List<TestdataListEntityProvidingEntity> entityList;
+    private List<TestdataListPinnedEntityProvidingEntity> entityList;
 
     private SimpleScore score;
 
     @PlanningEntityCollectionProperty
-    public List<TestdataListEntityProvidingEntity> getEntityList() {
+    public List<TestdataListPinnedEntityProvidingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataListEntityProvidingEntity> entityList) {
+    public void setEntityList(List<TestdataListPinnedEntityProvidingEntity> entityList) {
         this.entityList = entityList;
     }
 

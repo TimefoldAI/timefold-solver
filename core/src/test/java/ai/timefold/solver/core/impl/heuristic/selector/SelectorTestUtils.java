@@ -244,6 +244,9 @@ public class SelectorTestUtils {
             PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector, Random random) {
         SolverScope<Solution_> solverScope = new SolverScope<>();
         solverScope.setScoreDirector(scoreDirector);
+        if (scoreDirector != null) {
+            solverScope.setValueRangeResolver(scoreDirector.getValueRangeResolver());
+        }
         solverScope.setWorkingRandom(random);
         listener.solvingStarted(solverScope);
         return solverScope;
