@@ -43,19 +43,27 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
 
     @Override
     protected Move<Solution_> createUpcomingSelection() {
-        while (!destinationIterator.hasNext()) {
-            if (!valueIterator.hasNext()) {
-                return noUpcomingSelection();
+        while (true) {
+            while (!destinationIterator.hasNext()) {
+                if (!valueIterator.hasNext()) {
+                    return noUpcomingSelection();
+                }
+                upcomingValue = valueIterator.next();
+                destinationIterator = destinationSelector.iterator();
             }
-            upcomingValue = valueIterator.next();
-            destinationIterator = destinationSelector.iterator();
-        }
-        var move = buildChangeMove(listVariableStateSupply, valueRangeResolver, upcomingValue, destinationIterator,
-                filterValuePerEntityRange);
-        if (move == null) {
-            return noUpcomingSelection();
-        } else {
-            return move;
+            var move = buildChangeMove(listVariableStateSupply, valueRangeResolver, upcomingValue, destinationIterator,
+                    filterValuePerEntityRange);
+            if (move == null) {
+                // When filtering values by to the entity range is enabled,
+                // the destination may run out before the next move is generated,
+                // resulting in an early loop interruption.
+                if (filterValuePerEntityRange && valueIterator.hasNext()) {
+                    continue;
+                }
+                return noUpcomingSelection();
+            } else {
+                return move;
+            }
         }
     }
 
@@ -66,8 +74,8 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         ElementPosition upcomingDestination = null;
         if (filterValuePerEntityRange) {
-            upcomingDestination = findUnpinnedAndValidDestination(valueRangeResolver, upcomingLeftValue, destinationIterator,
-                    listVariableDescriptor);
+            upcomingDestination = findUnpinnedAndValidDestination(valueRangeResolver, upcomingLeftValue,
+                    destinationIterator, listVariableDescriptor);
         } else {
             upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         }
@@ -107,10 +115,16 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             Iterator<ElementPosition> destinationIterator, ListVariableDescriptor<Solution_> listVariableDescriptor) {
         while (destinationIterator.hasNext()) {
             var destination = destinationIterator.next();
-            if (!isPinned(destination, listVariableDescriptor) && destination instanceof PositionInList destinationElement) {
-                var valueRange = valueRangeResolver.extractValueRange(listVariableDescriptor.getValueRangeDescriptor(), null,
-                        destinationElement.entity());
-                if (valueRange.contains(upcomingLeftValue)) {
+            if (!isPinned(destination, listVariableDescriptor)) {
+                if (destination instanceof PositionInList destinationElement) {
+                    var valueRange =
+                            valueRangeResolver.extractValueRange(listVariableDescriptor.getValueRangeDescriptor(), null,
+                                    destinationElement.entity());
+                    if (valueRange.contains(upcomingLeftValue)) {
+                        return destination;
+                    }
+                } else {
+                    // Unassigned destinations are also valid
                     return destination;
                 }
             }
