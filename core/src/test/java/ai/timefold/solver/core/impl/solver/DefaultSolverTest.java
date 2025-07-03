@@ -115,6 +115,9 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
@@ -2079,6 +2082,57 @@ class DefaultSolverTest extends AbstractMeterTest {
             // and LS will find no improvement
             assertThat(entity.getBasicValue()).isNotSameAs(entity.getSecondBasicValue());
         }
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForListVarEntityRangeModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - list
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - list
+        // allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Sublist change - list
+        // allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Sublist swap - list
+        // allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
+        // KOpt - list
+        // allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // R&R - list
+        // allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForListVarEntityRangeModel")
+    void solveListVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectionConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataListUnassignedEntityProvidingSolution.class,
+                        TestdataListUnassignedEntityProvidingEntity.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withEasyScoreCalculatorClass(TestdataListUnassignedEntityProvidingScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig);
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var value3 = new TestdataValue("v3");
+        var entity1 = new TestdataListUnassignedEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataListUnassignedEntityProvidingEntity("e2", List.of(value2, value3));
+
+        var solution = new TestdataListUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
+        // Only one entity should provide the value list and assign the values.
+        assertThat(bestSolution.getEntityList().get(0).getValueList()).hasSameElementsAs(List.of(value1, value2));
+        assertThat(bestSolution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(value3));
     }
 
     @Test

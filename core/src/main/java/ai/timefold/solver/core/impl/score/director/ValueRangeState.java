@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -32,28 +33,47 @@ public final class ValueRangeState<Solution_> implements ValueRangeResolver<Solu
 
     @Override
     @SuppressWarnings("unchecked")
-    public <Value_> ValueRange<Value_> extractValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+    public <T> ValueRange<T> extractValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             @Nullable Solution_ solution, @Nullable Object entity) {
-        if (valueRangeDescriptor.isEntityIndependent()) {
-            var valueRange = fromSolutionValueRangeMap.get(valueRangeDescriptor);
-            if (valueRange == null) {
-                valueRange = valueRangeDescriptor.extractValueRange(Objects.requireNonNull(solution), null);
-                fromSolutionValueRangeMap.put(valueRangeDescriptor, valueRange);
+        if (valueRangeDescriptor.isAdaptedToEntityIndependent()) {
+            if (solution != null) {
+                return fetchEntityIndependentValueRange(solution, valueRangeDescriptor);
+            } else if (entity != null) {
+                return fetchEntityDependentValueRange(solution, entity, valueRangeDescriptor);
             }
-            return (ValueRange<Value_>) valueRange;
-        } else {
-            var valueRangeMap = fromEntityValueRangeMap.get(Objects.requireNonNull(entity));
-            if (valueRangeMap == null) {
-                valueRangeMap = new IdentityHashMap<>();
-                fromEntityValueRangeMap.put(entity, valueRangeMap);
-            }
-            var valueRange = (ValueRange<Value_>) valueRangeMap.get(valueRangeDescriptor);
-            if (valueRange == null) {
-                valueRange = valueRangeDescriptor.extractValueRange(solution, entity);
-                valueRangeMap.put(valueRangeDescriptor, valueRange);
-            }
-            return valueRange;
+        } else if (valueRangeDescriptor.isEntityIndependent() && solution != null) {
+            return fetchEntityIndependentValueRange(solution, valueRangeDescriptor);
+        } else if (!valueRangeDescriptor.isEntityIndependent() && entity != null) {
+            return fetchEntityDependentValueRange(solution, entity, valueRangeDescriptor);
         }
+        throw new IllegalStateException("Value range is entity-%s, but the %s is null.".formatted(
+                valueRangeDescriptor.isEntityIndependent() ? "independent" : "dependent",
+                valueRangeDescriptor.isEntityIndependent() ? "solution" : "entity"));
+    }
+
+    private <T> ValueRange<T> fetchEntityIndependentValueRange(Solution_ solution,
+            ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        var valueRange = fromSolutionValueRangeMap.get(valueRangeDescriptor);
+        if (valueRange == null) {
+            valueRange = valueRangeDescriptor.extractValueRange(Objects.requireNonNull(solution), null);
+            fromSolutionValueRangeMap.put(valueRangeDescriptor, valueRange);
+        }
+        return (ValueRange<T>) valueRange;
+    }
+
+    private <T> ValueRange<T> fetchEntityDependentValueRange(@Nullable Solution_ solution, @NonNull Object entity,
+            ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        var valueRangeMap = fromEntityValueRangeMap.get(Objects.requireNonNull(entity));
+        if (valueRangeMap == null) {
+            valueRangeMap = new IdentityHashMap<>();
+            fromEntityValueRangeMap.put(entity, valueRangeMap);
+        }
+        var valueRange = (ValueRange<T>) valueRangeMap.get(valueRangeDescriptor);
+        if (valueRange == null) {
+            valueRange = valueRangeDescriptor.extractValueRange(solution, entity);
+            valueRangeMap.put(valueRangeDescriptor, valueRange);
+        }
+        return valueRange;
     }
 
     @Override

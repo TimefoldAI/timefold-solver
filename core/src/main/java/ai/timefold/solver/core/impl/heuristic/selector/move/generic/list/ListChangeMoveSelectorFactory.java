@@ -63,7 +63,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
         // If the value selector is entity-dependent and the source is a list variable,
         // we need to filter and select only the values included in the value range of the entity
         var filterValuePerEntityRange = sourceValueSelector.getVariableDescriptor().isListVariable()
-                && !sourceValueSelector.getVariableDescriptor().getValueRangeDescriptor().isEntityIndependent();
+                && sourceValueSelector.getVariableDescriptor().getValueRangeDescriptor().isAdaptedToEntityIndependent();
 
         return new ListChangeMoveSelector<>(castSourceValueSelector, destinationSelector, randomSelection,
                 filterValuePerEntityRange);
