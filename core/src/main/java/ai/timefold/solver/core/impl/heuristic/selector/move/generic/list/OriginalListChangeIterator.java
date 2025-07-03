@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
@@ -21,21 +22,23 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ValueRangeResolver<Solution_> valueRangeResolver;
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
-    private Iterator<ElementPosition> destinationIterator;
     private final boolean filterValuePerEntityRange;
+    private Iterator<ElementPosition> destinationIterator;
 
     private Object upcomingValue;
 
     public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector,
-            boolean filterValuePerEntityRange) {
+            ValueRangeResolver<Solution_> valueRangeResolver, EntityIndependentValueSelector<Solution_> valueSelector,
+            DestinationSelector<Solution_> destinationSelector, boolean filterValuePerEntityRange) {
         this.listVariableStateSupply = listVariableStateSupply;
+        this.valueRangeResolver = valueRangeResolver;
         this.valueIterator = valueSelector.iterator();
         this.destinationSelector = destinationSelector;
-        this.destinationIterator = Collections.emptyIterator();
         this.filterValuePerEntityRange = filterValuePerEntityRange;
+        this.destinationIterator = Collections.emptyIterator();
     }
 
     @Override
@@ -47,7 +50,8 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             upcomingValue = valueIterator.next();
             destinationIterator = destinationSelector.iterator();
         }
-        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator, filterValuePerEntityRange);
+        var move = buildChangeMove(listVariableStateSupply, valueRangeResolver, upcomingValue, destinationIterator,
+                filterValuePerEntityRange);
         if (move == null) {
             return noUpcomingSelection();
         } else {
@@ -56,12 +60,14 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     }
 
     static <Solution_> Move<Solution_> buildChangeMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator, boolean filterValuePerEntityRange) {
+            ValueRangeResolver<Solution_> valueRangeResolver, Object upcomingLeftValue,
+            Iterator<ElementPosition> destinationIterator,
+            boolean filterValuePerEntityRange) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         ElementPosition upcomingDestination = null;
         if (filterValuePerEntityRange) {
-            upcomingDestination =
-                    findUnpinnedAndValidDestination(upcomingLeftValue, destinationIterator, listVariableDescriptor);
+            upcomingDestination = findUnpinnedAndValidDestination(valueRangeResolver, upcomingLeftValue, destinationIterator,
+                    listVariableDescriptor);
         } else {
             upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         }
@@ -96,12 +102,13 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
      * @param listVariableDescriptor never null
      * @return null if no valid destination was found, at which point the iterator is exhausted.
      */
-    private static ElementPosition findUnpinnedAndValidDestination(Object upcomingLeftValue,
-            Iterator<ElementPosition> destinationIterator, ListVariableDescriptor listVariableDescriptor) {
+    private static <Solution_> ElementPosition findUnpinnedAndValidDestination(ValueRangeResolver<Solution_> valueRangeResolver,
+            Object upcomingLeftValue,
+            Iterator<ElementPosition> destinationIterator, ListVariableDescriptor<Solution_> listVariableDescriptor) {
         while (destinationIterator.hasNext()) {
             var destination = destinationIterator.next();
             if (!isPinned(destination, listVariableDescriptor) && destination instanceof PositionInList destinationElement) {
-                var valueRange = listVariableDescriptor.getValueRangeDescriptor().extractValueRange(null,
+                var valueRange = valueRangeResolver.extractValueRange(listVariableDescriptor.getValueRangeDescriptor(), null,
                         destinationElement.entity());
                 if (valueRange.contains(upcomingLeftValue)) {
                     return destination;
