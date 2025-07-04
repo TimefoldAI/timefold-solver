@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChainSelector;
@@ -39,14 +39,14 @@ public class SubChainChangeMoveSelectorFactory<Solution_>
                         .buildSubChainSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+        if (!(valueSelector instanceof IterableValueSelector)) {
             throw new IllegalArgumentException("The moveSelectorConfig (" + config
                     + ") needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                     + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
         }
         return new SubChainChangeMoveSelector<>(subChainSelector,
-                (EntityIndependentValueSelector<Solution_>) valueSelector, randomSelection,
+                (IterableValueSelector<Solution_>) valueSelector, randomSelection,
                 Objects.requireNonNullElse(config.getSelectReversingMoveToo(), true));
     }
 }

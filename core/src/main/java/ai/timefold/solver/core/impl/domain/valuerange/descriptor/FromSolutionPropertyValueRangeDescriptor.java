@@ -10,17 +10,12 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
  */
 public class FromSolutionPropertyValueRangeDescriptor<Solution_>
         extends AbstractFromPropertyValueRangeDescriptor<Solution_>
-        implements EntityIndependentValueRangeDescriptor<Solution_> {
+        implements IterableValueRangeDescriptor<Solution_> {
 
     public FromSolutionPropertyValueRangeDescriptor(
             GenuineVariableDescriptor<Solution_> variableDescriptor, boolean addNullInValueRange,
             MemberAccessor memberAccessor) {
         super(variableDescriptor, addNullInValueRange, memberAccessor);
-    }
-
-    @Override
-    public boolean isEntityIndependent() {
-        return true;
     }
 
     @Override
@@ -41,6 +36,11 @@ public class FromSolutionPropertyValueRangeDescriptor<Solution_>
     @Override
     public long extractValueRangeSize(Solution_ solution) {
         return readValueRangeSize(solution);
+    }
+
+    @Override
+    public boolean canExtractValueRangeFromSolution() {
+        return true;
     }
 
 }

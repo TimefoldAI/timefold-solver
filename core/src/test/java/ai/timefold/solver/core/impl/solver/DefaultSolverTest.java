@@ -140,6 +140,9 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
@@ -2082,6 +2085,65 @@ class DefaultSolverTest extends AbstractMeterTest {
             // and LS will find no improvement
             assertThat(entity.getBasicValue()).isNotSameAs(entity.getSecondBasicValue());
         }
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForBasicVarEntityRangeModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
+        // Swap - basic
+        //        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        //        // Pillar change - basic
+        //        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        //        var pillarChangeEntitySelectorConfig =
+        //                new EntitySelectorConfig().withEntityClass(TestdataMixedMultiEntitySecondEntity.class);
+        //        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
+        //        pillarChangeMoveSelectorConfig
+        //                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
+        //                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        //        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        //        // Pilar swap - basic
+        //        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+        //                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
+        //        // R&R - basic
+        //        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig()
+        //                .withEntitySelectorConfig(
+        //                        new EntitySelectorConfig().withEntityClass(TestdataMixedMultiEntitySecondEntity.class))
+        //                .withVariableName("basicValue"));
+        // Union of all moves
+        //        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForBasicVarEntityRangeModel")
+    void solveBasicVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectionConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataEntityProvidingSolution.class, TestdataEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataEntityProvidingScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig);
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var value3 = new TestdataValue("v3");
+        var value4 = new TestdataValue("v4");
+        var value5 = new TestdataValue("v5");
+        var entity1 = new TestdataEntityProvidingEntity("e1", List.of(value1, value2, value3));
+        var entity2 = new TestdataEntityProvidingEntity("e2", List.of(value1, value2, value5));
+        var entity3 = new TestdataEntityProvidingEntity("e3", List.of(value4, value5));
+
+        var solution = new TestdataEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2, entity3));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
     }
 
     private static List<MoveSelectorConfig> generateMovesForListVarEntityRangeModel() {

@@ -72,7 +72,7 @@ public final class DefaultMoveStreamFactory<Solution_>
         }
         var variableDescriptor = getVariableDescriptor(variableMetaModel);
         var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-        if (variableDescriptor.isValueRangeEntityIndependent()) {
+        if (variableDescriptor.canExtractValueRangeFromSolution()) {
             return dataStreamFactory.forEachFromSolution(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
         } else {
             throw new UnsupportedOperationException("Value range on entity is not yet supported.");

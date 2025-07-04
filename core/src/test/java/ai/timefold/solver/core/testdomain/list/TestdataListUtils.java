@@ -8,11 +8,14 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -66,12 +69,12 @@ public final class TestdataListUtils {
                 (Object[]) entities);
     }
 
-    public static <Solution_> EntityIndependentValueSelector<Solution_> mockEntityIndependentValueSelector(
+    public static <Solution_> IterableValueSelector<Solution_> mockEntityIndependentValueSelector(
             ListVariableDescriptor<Solution_> listVariableDescriptor, Object... values) {
         return SelectorTestUtils.mockEntityIndependentValueSelector(listVariableDescriptor, values);
     }
 
-    public static EntityIndependentValueSelector<TestdataListSolution> mockNeverEndingEntityIndependentValueSelector(
+    public static IterableValueSelector<TestdataListSolution> mockNeverEndingEntityIndependentValueSelector(
             ListVariableDescriptor<TestdataListSolution> listVariableDescriptor, TestdataListValue... values) {
         var valueSelector = mockEntityIndependentValueSelector(
                 listVariableDescriptor, (Object[]) values);
@@ -80,7 +83,7 @@ public final class TestdataListUtils {
         return valueSelector;
     }
 
-    public static EntityIndependentValueSelector<TestdataListEntityProvidingSolution>
+    public static IterableValueSelector<TestdataListEntityProvidingSolution>
             mockEntityRangeNeverEndingEntityIndependentValueSelector(
                     ListVariableDescriptor<TestdataListEntityProvidingSolution> listVariableDescriptor,
                     TestdataValue... values) {
@@ -91,7 +94,7 @@ public final class TestdataListUtils {
         return valueSelector;
     }
 
-    public static EntityIndependentValueSelector<TestdataPinnedWithIndexListSolution>
+    public static IterableValueSelector<TestdataPinnedWithIndexListSolution>
             mockNeverEndingEntityIndependentValueSelector(
                     ListVariableDescriptor<TestdataPinnedWithIndexListSolution> listVariableDescriptor,
                     TestdataPinnedWithIndexListValue... values) {
@@ -101,7 +104,7 @@ public final class TestdataListUtils {
         return valueSelector;
     }
 
-    public static EntityIndependentValueSelector<TestdataListPinnedEntityProvidingSolution>
+    public static IterableValueSelector<TestdataListPinnedEntityProvidingSolution>
             mockPinnedEntityRangeNeverEndingEntityIndependentValueSelector(
                     ListVariableDescriptor<TestdataListPinnedEntityProvidingSolution> listVariableDescriptor,
                     TestdataValue... values) {
@@ -111,7 +114,7 @@ public final class TestdataListUtils {
         return valueSelector;
     }
 
-    public static EntityIndependentValueSelector<TestdataAllowsUnassignedValuesListSolution>
+    public static IterableValueSelector<TestdataAllowsUnassignedValuesListSolution>
             mockNeverEndingEntityIndependentValueSelector(
                     ListVariableDescriptor<TestdataAllowsUnassignedValuesListSolution> listVariableDescriptor,
                     TestdataAllowsUnassignedValuesListValue... values) {
@@ -122,7 +125,7 @@ public final class TestdataListUtils {
         return valueSelector;
     }
 
-    public static EntityIndependentValueSelector<TestdataListUnassignedEntityProvidingSolution>
+    public static IterableValueSelector<TestdataListUnassignedEntityProvidingSolution>
             mockAllowsUnassignedEntityRangeNeverEndingEntityIndependentValueSelector(
                     ListVariableDescriptor<TestdataListUnassignedEntityProvidingSolution> listVariableDescriptor,
                     TestdataValue... values) {
@@ -133,7 +136,7 @@ public final class TestdataListUtils {
         return valueSelector;
     }
 
-    public static EntityIndependentValueSelector<TestdataPinnedUnassignedValuesListSolution>
+    public static IterableValueSelector<TestdataPinnedUnassignedValuesListSolution>
             mockNeverEndingEntityIndependentValueSelector(
                     ListVariableDescriptor<TestdataPinnedUnassignedValuesListSolution> listVariableDescriptor,
                     TestdataPinnedUnassignedValuesListValue... values) {
@@ -254,6 +257,13 @@ public final class TestdataListUtils {
                 .getSolutionDescriptor()
                 .getEntityDescriptorStrict(TestdataPinnedUnassignedValuesListEntity.class)
                 .getGenuineVariableDescriptor("valueList");
+    }
+
+    public static <T> IterableFromEntityPropertyValueSelector<T>
+            getIterableFromEntityPropertyValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor, boolean randomSelection) {
+        var fromPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
+        var iterablePropertySelector = new IterableFromEntityPropertyValueSelector<>(fromPropertySelector, randomSelection);
+        return iterablePropertySelector;
     }
 
     private static <T> Iterator<T> cyclicIterator(List<T> elements) {

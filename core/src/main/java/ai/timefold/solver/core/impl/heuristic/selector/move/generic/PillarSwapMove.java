@@ -60,7 +60,7 @@ public class PillarSwapMove<Solution_> extends AbstractMove<Solution_> {
             var rightValue = variableDescriptor.getValue(rightPillar.get(0));
             if (!Objects.equals(leftValue, rightValue)) {
                 movable = true;
-                if (!variableDescriptor.isValueRangeEntityIndependent()) {
+                if (!variableDescriptor.canExtractValueRangeFromSolution()) {
                     var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
                     var workingSolution = scoreDirector.getWorkingSolution();
                     for (var rightEntity : rightPillar) {

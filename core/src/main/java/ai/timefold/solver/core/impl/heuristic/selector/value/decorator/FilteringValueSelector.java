@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
@@ -21,15 +21,15 @@ public class FilteringValueSelector<Solution_>
 
     public static <Solution_> ValueSelector<Solution_> of(ValueSelector<Solution_> valueSelector,
             SelectionFilter<Solution_, Object> filter) {
-        if (valueSelector instanceof EntityIndependentFilteringValueSelector<Solution_> filteringValueSelector) {
-            return new EntityIndependentFilteringValueSelector<>(
-                    (EntityIndependentValueSelector<Solution_>) filteringValueSelector.childValueSelector,
+        if (valueSelector instanceof IterableFilteringValueSelector<Solution_> filteringValueSelector) {
+            return new IterableFilteringValueSelector<>(
+                    (IterableValueSelector<Solution_>) filteringValueSelector.childValueSelector,
                     SelectionFilter.compose(filteringValueSelector.selectionFilter, filter));
         } else if (valueSelector instanceof FilteringValueSelector<Solution_> filteringValueSelector) {
             return new FilteringValueSelector<>(filteringValueSelector.childValueSelector,
                     SelectionFilter.compose(filteringValueSelector.selectionFilter, filter));
-        } else if (valueSelector instanceof EntityIndependentValueSelector<Solution_> entityIndependentValueSelector) {
-            return new EntityIndependentFilteringValueSelector<>(entityIndependentValueSelector, filter);
+        } else if (valueSelector instanceof IterableValueSelector<Solution_> iterableValueSelector) {
+            return new IterableFilteringValueSelector<>(iterableValueSelector, filter);
         } else {
             return new FilteringValueSelector<>(valueSelector, filter);
         }
@@ -51,10 +51,10 @@ public class FilteringValueSelector<Solution_>
         });
     }
 
-    public static <Solution_> EntityIndependentValueSelector<Solution_> ofAssigned(
-            EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
+    public static <Solution_> IterableValueSelector<Solution_> ofAssigned(
+            IterableValueSelector<Solution_> iterableValueSelector,
             Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
-        return (EntityIndependentValueSelector<Solution_>) ofAssigned((ValueSelector<Solution_>) entityIndependentValueSelector,
+        return (IterableValueSelector<Solution_>) ofAssigned((ValueSelector<Solution_>) iterableValueSelector,
                 listVariableStateSupplier);
     }
 

@@ -5,16 +5,16 @@ import java.util.Iterator;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 
 public class ManualValueMimicRecorder<Solution_> implements ValueMimicRecorder<Solution_> {
 
-    protected final EntityIndependentValueSelector<Solution_> sourceValueSelector;
+    protected final IterableValueSelector<Solution_> sourceValueSelector;
     protected final List<MimicReplayingValueSelector<Solution_>> replayingValueSelectorList;
 
     protected Object recordedValue;
 
-    public ManualValueMimicRecorder(EntityIndependentValueSelector<Solution_> sourceValueSelector) {
+    public ManualValueMimicRecorder(IterableValueSelector<Solution_> sourceValueSelector) {
         this.sourceValueSelector = sourceValueSelector;
         replayingValueSelectorList = new ArrayList<>();
     }

@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleBridge;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleListener;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -18,12 +18,12 @@ public abstract class AbstractCachingValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
         implements SelectionCacheLifecycleListener<Solution_>, ValueSelector<Solution_> {
 
-    protected final EntityIndependentValueSelector<Solution_> childValueSelector;
+    protected final IterableValueSelector<Solution_> childValueSelector;
     protected final SelectionCacheType cacheType;
 
     protected List<Object> cachedValueList = null;
 
-    public AbstractCachingValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector,
+    protected AbstractCachingValueSelector(IterableValueSelector<Solution_> childValueSelector,
             SelectionCacheType cacheType) {
         this.childValueSelector = childValueSelector;
         this.cacheType = cacheType;

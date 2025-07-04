@@ -19,7 +19,6 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.CompositeValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromListVarEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
@@ -156,11 +155,9 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
             MemberAccessor valueRangeProviderMemberAccessor, boolean addNullInValueRange) {
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
             return new FromSolutionPropertyValueRangeDescriptor<>(this, addNullInValueRange, valueRangeProviderMemberAccessor);
-        } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor) && isListVariable()) {
-            return new FromListVarEntityPropertyValueRangeDescriptor<>(this, addNullInValueRange,
-                    valueRangeProviderMemberAccessor);
         } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            return new FromEntityPropertyValueRangeDescriptor<>(this, addNullInValueRange, valueRangeProviderMemberAccessor);
+            return new FromEntityPropertyValueRangeDescriptor<>(this, addNullInValueRange,
+                    valueRangeProviderMemberAccessor);
         } else {
             throw new IllegalStateException("Impossible state: member accessor (" + valueRangeProviderMemberAccessor
                     + ") is not a value range provider.");
@@ -216,8 +213,13 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         return valueRangeDescriptor;
     }
 
-    public boolean isValueRangeEntityIndependent() {
-        return valueRangeDescriptor.isEntityIndependent();
+    /**
+     * Returns true if the value range can be directly extracted from the solution.
+     *
+     * @see FromSolutionPropertyValueRangeDescriptor
+     */
+    public boolean canExtractValueRangeFromSolution() {
+        return valueRangeDescriptor.canExtractValueRangeFromSolution();
     }
 
     // ************************************************************************

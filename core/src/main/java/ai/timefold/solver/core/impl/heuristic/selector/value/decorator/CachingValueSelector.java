@@ -7,7 +7,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.CachingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.CachingMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
 /**
@@ -17,11 +17,11 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
  */
 public final class CachingValueSelector<Solution_>
         extends AbstractCachingValueSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+        implements IterableValueSelector<Solution_> {
 
     protected final boolean randomSelection;
 
-    public CachingValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector,
+    public CachingValueSelector(IterableValueSelector<Solution_> childValueSelector,
             SelectionCacheType cacheType, boolean randomSelection) {
         super(childValueSelector, cacheType);
         this.randomSelection = randomSelection;

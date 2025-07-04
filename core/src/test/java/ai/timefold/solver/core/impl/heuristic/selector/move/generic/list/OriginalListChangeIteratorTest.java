@@ -13,9 +13,8 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeState;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -38,17 +37,15 @@ class OriginalListChangeIteratorTest {
         InnerScoreDirector<TestdataListSolution, SimpleScore> scoreDirector =
                 mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor = getListVariableDescriptor(scoreDirector);
-        EntityIndependentValueSelector<TestdataListSolution> valueSelector =
+        IterableValueSelector<TestdataListSolution> valueSelector =
                 mockEntityIndependentValueSelector(listVariableDescriptor, values.toArray());
         OriginalListChangeIterator<TestdataListSolution> listChangeIterator = new OriginalListChangeIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
-                new ValueRangeState<>(),
                 valueSelector,
                 new ElementDestinationSelector<>(
                         mockEntitySelector(entities.toArray(TestdataListEntity[]::new)),
                         valueSelector,
-                        false),
-                false);
+                        false));
 
         assertThat(listChangeIterator).isExhausted();
     }
