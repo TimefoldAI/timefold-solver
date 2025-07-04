@@ -7,7 +7,7 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.cache.CacheableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromListVarEntityPropertyValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
 import org.jspecify.annotations.NonNull;
@@ -22,7 +22,7 @@ public final class FromEntityListValueRange<Value_> extends AbstractCountableVal
     private final ValueRangeCacheStrategy<Value_> cacheStrategy;
 
     public <Solution_> FromEntityListValueRange(List<?> entityList,
-            FromListVarEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+            FromEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor) {
         if (entityList.isEmpty()) {
             throw new IllegalArgumentException("Impossible state: the entity list (%s) cannot be empty."
                     .formatted(valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getEntityClass()

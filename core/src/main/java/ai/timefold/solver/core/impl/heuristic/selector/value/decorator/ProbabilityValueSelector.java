@@ -12,22 +12,22 @@ import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSele
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleBridge;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleListener;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class ProbabilityValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_>, SelectionCacheLifecycleListener<Solution_> {
+        implements IterableValueSelector<Solution_>, SelectionCacheLifecycleListener<Solution_> {
 
-    private final EntityIndependentValueSelector<Solution_> childValueSelector;
+    private final IterableValueSelector<Solution_> childValueSelector;
     private final SelectionCacheType cacheType;
     private final SelectionProbabilityWeightFactory<Solution_, Object> probabilityWeightFactory;
 
     private NavigableMap<Double, Object> cachedEntityMap = null;
     private double probabilityWeightTotal = -1.0;
 
-    public ProbabilityValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector,
+    public ProbabilityValueSelector(IterableValueSelector<Solution_> childValueSelector,
             SelectionCacheType cacheType,
             SelectionProbabilityWeightFactory<Solution_, Object> probabilityWeightFactory) {
         this.childValueSelector = childValueSelector;

@@ -5,16 +5,16 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public final class SortingValueSelector<Solution_>
         extends AbstractCachingValueSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+        implements IterableValueSelector<Solution_> {
 
     protected final SelectionSorter<Solution_, Object> sorter;
 
-    public SortingValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector, SelectionCacheType cacheType,
+    public SortingValueSelector(IterableValueSelector<Solution_> childValueSelector, SelectionCacheType cacheType,
             SelectionSorter<Solution_, Object> sorter) {
         super(childValueSelector, cacheType);
         this.sorter = sorter;

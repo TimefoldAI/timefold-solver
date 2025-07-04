@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -20,8 +20,8 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
 
-    private final EntityIndependentValueSelector<Solution_> originSelector;
-    private final EntityIndependentValueSelector<Solution_> valueSelector;
+    private final IterableValueSelector<Solution_> originSelector;
+    private final IterableValueSelector<Solution_> valueSelector;
     private final int minK;
     private final int maxK;
 
@@ -30,7 +30,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     public KOptListMoveSelector(ListVariableDescriptor<Solution_> listVariableDescriptor,
-            EntityIndependentValueSelector<Solution_> originSelector, EntityIndependentValueSelector<Solution_> valueSelector,
+            IterableValueSelector<Solution_> originSelector, IterableValueSelector<Solution_> valueSelector,
             int minK, int maxK, int[] pickedKDistribution) {
         this.listVariableDescriptor = listVariableDescriptor;
         this.originSelector = createEffectiveValueSelector(originSelector, this::getListVariableStateSupply);
@@ -43,11 +43,11 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
         phaseLifecycleSupport.addEventListener(this.valueSelector);
     }
 
-    private EntityIndependentValueSelector<Solution_> createEffectiveValueSelector(
-            EntityIndependentValueSelector<Solution_> entityIndependentValueSelector,
+    private IterableValueSelector<Solution_> createEffectiveValueSelector(
+            IterableValueSelector<Solution_> iterableValueSelector,
             Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
         var filteredValueSelector =
-                filterPinnedListPlanningVariableValuesWithIndex(entityIndependentValueSelector, listVariableStateSupplier);
+                filterPinnedListPlanningVariableValuesWithIndex(iterableValueSelector, listVariableStateSupplier);
         return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupplier);
     }
 

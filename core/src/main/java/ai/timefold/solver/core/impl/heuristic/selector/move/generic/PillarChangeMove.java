@@ -53,7 +53,7 @@ public class PillarChangeMove<Solution_> extends AbstractMove<Solution_> {
         if (Objects.equals(oldValue, toPlanningValue)) {
             return false;
         }
-        if (!variableDescriptor.isValueRangeEntityIndependent()) {
+        if (!variableDescriptor.canExtractValueRangeFromSolution()) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             var workingSolution = scoreDirector.getWorkingSolution();
             for (Object entity : pillar) {

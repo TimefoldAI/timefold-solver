@@ -7,6 +7,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
@@ -48,7 +49,16 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
+        var firstPass = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
+        var secondPass = true;
+        // When the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming value.
+        if (!variableDescriptor.canExtractValueRangeFromSolution()) {
+            secondPass = ((InnerScoreDirector<Solution_, ?>) scoreDirector).getValueRangeResolver()
+                    .extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, destinationEntity)
+                    .contains(planningValue);
+        }
+        return firstPass && secondPass;
     }
 
     @Override

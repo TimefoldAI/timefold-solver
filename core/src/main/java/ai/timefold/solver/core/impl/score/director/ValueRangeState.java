@@ -27,50 +27,42 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ValueRangeState<Solution_> implements ValueRangeResolver<Solution_> {
 
-    private final Map<ValueRangeDescriptor<Solution_>, ValueRange<?>> fromSolutionValueRangeMap = new IdentityHashMap<>();
-    private final Map<Object, Map<ValueRangeDescriptor<Solution_>, ValueRange<?>>> fromEntityValueRangeMap =
-            new IdentityHashMap<>();
+    private final Map<ValueRangeDescriptor<Solution_>, ValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
+    private final Map<Object, Map<ValueRangeDescriptor<Solution_>, ValueRange<?>>> fromEntityMap = new IdentityHashMap<>();
 
     @Override
     @SuppressWarnings("unchecked")
     public <T> ValueRange<T> extractValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             @Nullable Solution_ solution, @Nullable Object entity) {
-        if (valueRangeDescriptor.isAdaptedToEntityIndependent()) {
-            if (solution != null) {
-                return fetchEntityIndependentValueRange(solution, valueRangeDescriptor);
-            } else if (entity != null) {
-                return fetchEntityDependentValueRange(solution, entity, valueRangeDescriptor);
-            }
-        } else if (valueRangeDescriptor.isEntityIndependent() && solution != null) {
-            return fetchEntityIndependentValueRange(solution, valueRangeDescriptor);
-        } else if (!valueRangeDescriptor.isEntityIndependent() && entity != null) {
-            return fetchEntityDependentValueRange(solution, entity, valueRangeDescriptor);
+        if (solution != null) {
+            return fetchValueRangeForSolution(solution, valueRangeDescriptor);
+        } else if (entity != null) {
+            return fetchValueRangeForEntity(entity, valueRangeDescriptor);
         }
-        throw new IllegalStateException("Value range is entity-%s, but the %s is null.".formatted(
-                valueRangeDescriptor.isEntityIndependent() ? "independent" : "dependent",
-                valueRangeDescriptor.isEntityIndependent() ? "solution" : "entity"));
+        throw new IllegalStateException(
+                "The value range cannot be retrieved because both the solution and entity instances are null");
     }
 
-    private <T> ValueRange<T> fetchEntityIndependentValueRange(Solution_ solution,
+    private <T> ValueRange<T> fetchValueRangeForSolution(@NonNull Solution_ solution,
             ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        var valueRange = fromSolutionValueRangeMap.get(valueRangeDescriptor);
+        var valueRange = fromSolutionMap.get(valueRangeDescriptor);
         if (valueRange == null) {
             valueRange = valueRangeDescriptor.extractValueRange(Objects.requireNonNull(solution), null);
-            fromSolutionValueRangeMap.put(valueRangeDescriptor, valueRange);
+            fromSolutionMap.put(valueRangeDescriptor, valueRange);
         }
         return (ValueRange<T>) valueRange;
     }
 
-    private <T> ValueRange<T> fetchEntityDependentValueRange(@Nullable Solution_ solution, @NonNull Object entity,
+    private <T> ValueRange<T> fetchValueRangeForEntity(@NonNull Object entity,
             ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        var valueRangeMap = fromEntityValueRangeMap.get(Objects.requireNonNull(entity));
+        var valueRangeMap = fromEntityMap.get(Objects.requireNonNull(entity));
         if (valueRangeMap == null) {
             valueRangeMap = new IdentityHashMap<>();
-            fromEntityValueRangeMap.put(entity, valueRangeMap);
+            fromEntityMap.put(entity, valueRangeMap);
         }
         var valueRange = (ValueRange<T>) valueRangeMap.get(valueRangeDescriptor);
         if (valueRange == null) {
-            valueRange = valueRangeDescriptor.extractValueRange(solution, entity);
+            valueRange = valueRangeDescriptor.extractValueRange(null, entity);
             valueRangeMap.put(valueRangeDescriptor, valueRange);
         }
         return valueRange;
@@ -79,26 +71,28 @@ public final class ValueRangeState<Solution_> implements ValueRangeResolver<Solu
     @Override
     public long extractValueRangeSize(ValueRangeDescriptor<Solution_> valueRangeDescriptor, @Nullable Solution_ solution,
             @Nullable Object entity) {
-        if (valueRangeDescriptor.isEntityIndependent()) {
-            var valueRange = fromSolutionValueRangeMap.get(valueRangeDescriptor);
+        if (solution != null) {
+            var valueRange = fromSolutionMap.get(valueRangeDescriptor);
             if (valueRange instanceof CountableValueRange<?> countableValueRange) {
                 return countableValueRange.getSize();
             }
-            return valueRangeDescriptor.extractValueRangeSize(solution, entity);
-        } else {
-            var valueRangeMap = fromEntityValueRangeMap.get(Objects.requireNonNull(entity));
+            return valueRangeDescriptor.extractValueRangeSize(solution, null);
+        } else if (entity != null) {
+            var valueRangeMap = fromEntityMap.get(Objects.requireNonNull(entity));
             if (valueRangeMap != null) {
                 var valueRange = valueRangeMap.get(entity);
                 if (valueRange instanceof CountableValueRange<?> countableValueRange) {
                     return countableValueRange.getSize();
                 }
             }
-            return valueRangeDescriptor.extractValueRangeSize(solution, entity);
+            return valueRangeDescriptor.extractValueRangeSize(null, entity);
         }
+        throw new IllegalStateException(
+                "The value range cannot be retrieved because both the solution and entity instances are null");
     }
 
     public void reset() {
-        fromSolutionValueRangeMap.clear();
-        fromEntityValueRangeMap.clear();
+        fromSolutionMap.clear();
+        fromEntityMap.clear();
     }
 }

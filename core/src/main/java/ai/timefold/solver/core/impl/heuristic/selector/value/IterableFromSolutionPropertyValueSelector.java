@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.IterableValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -16,11 +16,11 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 /**
  * This is the common {@link ValueSelector} implementation.
  */
-public final class FromSolutionPropertyValueSelector<Solution_>
+public final class IterableFromSolutionPropertyValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+        implements IterableValueSelector<Solution_> {
 
-    private final EntityIndependentValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private final IterableValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final SelectionCacheType minimumCacheType;
     private final boolean randomSelection;
     private final boolean valueRangeMightContainEntity;
@@ -29,7 +29,7 @@ public final class FromSolutionPropertyValueSelector<Solution_>
     private Long cachedEntityListRevision = null;
     private boolean cachedEntityListIsDirty = false;
 
-    public FromSolutionPropertyValueSelector(EntityIndependentValueRangeDescriptor<Solution_> valueRangeDescriptor,
+    public IterableFromSolutionPropertyValueSelector(IterableValueRangeDescriptor<Solution_> valueRangeDescriptor,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
         this.minimumCacheType = minimumCacheType;
@@ -156,7 +156,7 @@ public final class FromSolutionPropertyValueSelector<Solution_>
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        var that = (FromSolutionPropertyValueSelector<?>) other;
+        var that = (IterableFromSolutionPropertyValueSelector<?>) other;
         return randomSelection == that.randomSelection &&
                 Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor) && minimumCacheType == that.minimumCacheType;
     }

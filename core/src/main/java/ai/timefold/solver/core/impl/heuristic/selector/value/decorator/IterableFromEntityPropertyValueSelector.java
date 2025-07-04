@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromListVarEntityPropertyValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -24,25 +24,20 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * 
  * @param <Solution_> the solution type
  */
-public final class FromListVarEntityPropertyValueSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+public final class IterableFromEntityPropertyValueSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
+        implements IterableValueSelector<Solution_> {
 
     private final FromEntityPropertyValueSelector<Solution_> childValueSelector;
     private final boolean randomSelection;
-    private final FromListVarEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private final FromEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private InnerScoreDirector<Solution_, ?> innerScoreDirector = null;
 
-    public FromListVarEntityPropertyValueSelector(FromEntityPropertyValueSelector<Solution_> childValueSelector,
+    public IterableFromEntityPropertyValueSelector(FromEntityPropertyValueSelector<Solution_> childValueSelector,
             boolean randomSelection) {
-        if (!(childValueSelector.getVariableDescriptor()
-                .getValueRangeDescriptor() instanceof FromListVarEntityPropertyValueRangeDescriptor<Solution_> descriptor)) {
-            throw new IllegalArgumentException(
-                    "The value range descriptor must be instance of %s."
-                            .formatted(FromListVarEntityPropertyValueRangeDescriptor.class.getSimpleName()));
-        }
         this.childValueSelector = childValueSelector;
         this.randomSelection = randomSelection;
-        this.valueRangeDescriptor = descriptor;
+        this.valueRangeDescriptor = (FromEntityPropertyValueRangeDescriptor<Solution_>) childValueSelector
+                .getVariableDescriptor().getValueRangeDescriptor();
     }
 
     // ************************************************************************

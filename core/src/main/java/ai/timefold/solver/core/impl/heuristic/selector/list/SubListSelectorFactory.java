@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicRecordingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicReplayingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.SubListMimicRecorder;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
@@ -110,7 +110,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, subListSelector);
     }
 
-    private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildEntityIndependentValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy, EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
         ValueSelectorConfig valueSelectorConfig = config != null ? config.getValueSelectorConfig() : null;
@@ -133,13 +133,13 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                     + " Check your @" + PlanningEntity.class.getSimpleName()
                     + " and make sure it has a @" + PlanningListVariable.class.getSimpleName() + ".");
         }
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+        if (!(valueSelector instanceof IterableValueSelector)) {
             throw new IllegalArgumentException("The subListSelector (" + config
                     + ") for a list variable needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                     + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
 
         }
-        return (EntityIndependentValueSelector<Solution_>) valueSelector;
+        return (IterableValueSelector<Solution_>) valueSelector;
     }
 }

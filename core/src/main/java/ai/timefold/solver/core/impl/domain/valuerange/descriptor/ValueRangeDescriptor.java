@@ -3,7 +3,9 @@ package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FromListVarEntityPropertyValueSelector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -22,28 +24,10 @@ public interface ValueRangeDescriptor<Solution_> {
     boolean isCountable();
 
     /**
-     * If this method return true, this instance is safe to cast to {@link EntityIndependentValueRangeDescriptor},
-     * otherwise it requires an entity to determine the {@link ValueRange}.
-     *
-     * @return true if the {@link ValueRange} is the same for all entities of the same solution
+     * Returns true if the value range is defined at the solution level and can be directly extracted from the solution;
+     * otherwise, it returns false, as the value range can only be extracted or computed from the entities.
      */
-    boolean isEntityIndependent();
-
-    /**
-     * If this method returns true, it indicates that the value range is entity-dependent,
-     * but it is adapted to function like it is entity-independent.
-     * There is a specific case when it returns true,
-     * specifically when using an entity-dependent value range for a list variable.
-     *
-     * @return true if the {@link ValueRange} is adapted to behave like an entity-independent value range; otherwise, returns
-     *         false.
-     *
-     * @see FromListVarEntityPropertyValueRangeDescriptor
-     * @see FromListVarEntityPropertyValueSelector
-     */
-    default boolean isAdaptedToEntityIndependent() {
-        return false;
-    }
+    boolean canExtractValueRangeFromSolution();
 
     /**
      * @return true if the {@link ValueRange} might contain a planning entity instance
@@ -52,20 +36,43 @@ public interface ValueRangeDescriptor<Solution_> {
     boolean mightContainEntity();
 
     /**
-     * @param solution never null
-     * @param entity never null. To avoid this parameter,
-     *        use {@link EntityIndependentValueRangeDescriptor#extractValueRange} instead.
+     * The method allows extracting the value range from a solution or an entity,
+     * and it is compatible with problem facts defined in the solution or entity classes.
+     * The method should not be invoked directly by selectors or other components of the solver.
+     * The {@link ValueRangeResolver#extractValueRange(ValueRangeDescriptor, Object, Object)}
+     * serves as the single source of truth for managing value ranges and should be used by outer components.
+     * <p>
+     * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
+     * 
+     * @param solution can be null
+     * @param entity can be null. To avoid this parameter,
+     *        use {@link IterableValueRangeDescriptor#extractValueRange} instead.
+     * 
      * @return never null
+     * 
+     * @see ValueRangeResolver
      */
-    <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity);
+    <Value_> ValueRange<Value_> extractValueRange(@Nullable Solution_ solution, @Nullable Object entity);
 
     /**
+     * The method allows extracting the value range size from a solution or an entity,
+     * and it is compatible with problem facts defined in the solution or entity classes.
+     * The method should not be invoked directly by selectors or other components of the solver.
+     * The {@link ValueRangeResolver#extractValueRangeSize(ValueRangeDescriptor, Object, Object)}
+     * serves as the single source of truth for managing value ranges and should be used by outer components.
+     * <p>
+     * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
+     * 
      * @param solution never null
      * @param entity never null. To avoid this parameter,
-     *        use {@link EntityIndependentValueRangeDescriptor#extractValueRangeSize} instead.
+     *        use {@link IterableValueRangeDescriptor#extractValueRangeSize} instead.
+     * 
      * @return never null
+     * 
      * @throws UnsupportedOperationException if {@link #isCountable()} returns false
+     * 
+     * @see ValueRangeResolver
      */
-    long extractValueRangeSize(Solution_ solution, Object entity);
+    long extractValueRangeSize(@Nullable Solution_ solution, @Nullable Object entity);
 
 }
