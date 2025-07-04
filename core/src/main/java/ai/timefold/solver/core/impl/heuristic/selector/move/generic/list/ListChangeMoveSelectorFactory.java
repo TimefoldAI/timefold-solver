@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFact
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
 public class ListChangeMoveSelectorFactory<Solution_>
@@ -49,24 +49,18 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 .<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
 
-        if (!(sourceValueSelector instanceof EntityIndependentValueSelector<Solution_> castSourceValueSelector)) {
+        if (!(sourceValueSelector instanceof IterableValueSelector<Solution_> castSourceValueSelector)) {
             throw new IllegalArgumentException("""
                     The listChangeMoveSelector (%s) for a list variable needs to be based on an %s (%s).
                     Check your valueSelectorConfig."""
-                    .formatted(config, EntityIndependentValueSelector.class.getSimpleName(), sourceValueSelector));
+                    .formatted(config, IterableValueSelector.class.getSimpleName(), sourceValueSelector));
         }
 
         var destinationSelector = DestinationSelectorFactory
                 .<Solution_> create(destinationSelectorConfig)
                 .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection);
 
-        // If the value selector is entity-dependent and the source is a list variable,
-        // we need to filter and select only the values included in the value range of the entity
-        var filterValuePerEntityRange = sourceValueSelector.getVariableDescriptor().isListVariable()
-                && sourceValueSelector.getVariableDescriptor().getValueRangeDescriptor().isAdaptedToEntityIndependent();
-
-        return new ListChangeMoveSelector<>(castSourceValueSelector, destinationSelector, randomSelection,
-                filterValuePerEntityRange);
+        return new ListChangeMoveSelector<>(castSourceValueSelector, destinationSelector, randomSelection);
     }
 
     @Override

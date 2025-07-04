@@ -4,13 +4,13 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 
 public final class ShufflingValueSelector<Solution_>
         extends AbstractCachingValueSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+        implements IterableValueSelector<Solution_> {
 
-    public ShufflingValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector,
+    public ShufflingValueSelector(IterableValueSelector<Solution_> childValueSelector,
             SelectionCacheType cacheType) {
         super(childValueSelector, cacheType);
     }

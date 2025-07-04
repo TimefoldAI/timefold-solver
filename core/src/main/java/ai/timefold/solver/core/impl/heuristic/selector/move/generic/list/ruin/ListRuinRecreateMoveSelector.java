@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -17,7 +17,7 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 
 final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
-    private final EntityIndependentValueSelector<Solution_> valueSelector;
+    private final IterableValueSelector<Solution_> valueSelector;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final CountSupplier minimumSelectedCountSupplier;
@@ -26,7 +26,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     private SolverScope<Solution_> solverScope;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
-    public ListRuinRecreateMoveSelector(EntityIndependentValueSelector<Solution_> valueSelector,
+    public ListRuinRecreateMoveSelector(IterableValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             CountSupplier minimumSelectedCountSupplier, CountSupplier maximumSelectedCountSupplier) {

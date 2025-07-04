@@ -13,37 +13,38 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRangeDescriptor<Solution_>
-        implements EntityIndependentValueRangeDescriptor<Solution_> {
+        implements IterableValueRangeDescriptor<Solution_> {
 
+    private final boolean canExtractValueRangeFromSolution;
     protected final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
-    protected boolean entityIndependent;
 
     public CompositeValueRangeDescriptor(
             GenuineVariableDescriptor<Solution_> variableDescriptor, boolean addNullInValueRange,
             List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
         super(variableDescriptor, addNullInValueRange);
         this.childValueRangeDescriptorList = childValueRangeDescriptorList;
-        entityIndependent = true;
+        var canExtractFromSolution = true;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             if (!valueRangeDescriptor.isCountable()) {
                 throw new IllegalStateException(
                         "The valueRangeDescriptor (%s) has a childValueRangeDescriptor (%s) with countable (%s)."
                                 .formatted(this, valueRangeDescriptor, valueRangeDescriptor.isCountable()));
             }
-            if (!valueRangeDescriptor.isEntityIndependent()) {
-                entityIndependent = false;
+            if (!valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+                canExtractFromSolution = false;
             }
         }
+        this.canExtractValueRangeFromSolution = canExtractFromSolution;
+    }
+
+    @Override
+    public boolean canExtractValueRangeFromSolution() {
+        return canExtractValueRangeFromSolution;
     }
 
     @Override
     public boolean isCountable() {
         return true;
-    }
-
-    @Override
-    public boolean isEntityIndependent() {
-        return entityIndependent;
     }
 
     @Override
@@ -67,9 +68,9 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     private <T> ValueRange<T> innerExtractValueRange(Solution_ solution) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            var entityIndependentValueRangeDescriptor = (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
+            var iterableValueRangeDescriptor = (IterableValueRangeDescriptor<Solution_>) valueRangeDescriptor;
             childValueRangeList
-                    .add((CountableValueRange<T>) entityIndependentValueRangeDescriptor.<T> extractValueRange(solution));
+                    .add((CountableValueRange<T>) iterableValueRangeDescriptor.<T> extractValueRange(solution));
         }
         return doNullInValueRangeWrapping(new CompositeCountableValueRange<>(childValueRangeList));
     }
@@ -87,8 +88,8 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     public long extractValueRangeSize(Solution_ solution) {
         var size = addNullInValueRange ? 1L : 0L;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            var entityIndependentValueRangeDescriptor = (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor;
-            size += ((CountableValueRange<Object>) entityIndependentValueRangeDescriptor.extractValueRange(solution)).getSize();
+            var iterableValueRangeDescriptor = (IterableValueRangeDescriptor<Solution_>) valueRangeDescriptor;
+            size += ((CountableValueRange<Object>) iterableValueRangeDescriptor.extractValueRange(solution)).getSize();
         }
         return size;
     }

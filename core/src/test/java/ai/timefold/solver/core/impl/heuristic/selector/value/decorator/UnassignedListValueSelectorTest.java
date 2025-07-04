@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -66,7 +66,7 @@ class UnassignedListValueSelectorTest {
 
     @Test
     void requireEndingChildValueSelector() {
-        EntityIndependentValueSelector<TestdataListSolution> childValueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector<TestdataListSolution> childValueSelector = mock(IterableValueSelector.class);
 
         when(childValueSelector.isNeverEnding()).thenReturn(true);
 

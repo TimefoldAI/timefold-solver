@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
 public class ListSwapMoveSelectorFactory<Solution_>
@@ -56,7 +56,7 @@ public class ListSwapMoveSelectorFactory<Solution_>
                 randomSelection);
     }
 
-    private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildEntityIndependentValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor,
             ValueSelectorConfig valueSelectorConfig,
@@ -64,13 +64,13 @@ public class ListSwapMoveSelectorFactory<Solution_>
             SelectionOrder inheritedSelectionOrder) {
         var valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder);
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+        if (!(valueSelector instanceof IterableValueSelector)) {
             throw new IllegalArgumentException(
                     "The listSwapMoveSelector (%s) for a list variable needs to be based on an %s (%s). Check your valueSelectorConfig."
-                            .formatted(config, EntityIndependentValueSelector.class.getSimpleName(), valueSelector));
+                            .formatted(config, IterableValueSelector.class.getSimpleName(), valueSelector));
 
         }
-        return (EntityIndependentValueSelector<Solution_>) valueSelector;
+        return (IterableValueSelector<Solution_>) valueSelector;
     }
 
     @Override

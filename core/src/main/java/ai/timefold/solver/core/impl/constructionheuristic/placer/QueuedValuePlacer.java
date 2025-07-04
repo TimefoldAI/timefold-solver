@@ -9,17 +9,17 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingS
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityIndependentFilteringValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFilteringValueSelector;
 
 public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_> implements EntityPlacer<Solution_> {
 
-    protected final EntityIndependentValueSelector<Solution_> valueSelector;
+    protected final IterableValueSelector<Solution_> valueSelector;
     protected final MoveSelector<Solution_> moveSelector;
 
     public QueuedValuePlacer(EntityPlacerFactory<Solution_> factory, HeuristicConfigPolicy<Solution_> configPolicy,
-            EntityIndependentValueSelector<Solution_> valueSelector, MoveSelector<Solution_> moveSelector) {
+            IterableValueSelector<Solution_> valueSelector, MoveSelector<Solution_> moveSelector) {
         super(factory, configPolicy);
         this.valueSelector = valueSelector;
         this.moveSelector = moveSelector;
@@ -67,7 +67,7 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
     @Override
     public EntityPlacer<Solution_> rebuildWithFilter(SelectionFilter<Solution_, Object> filter) {
         return new QueuedValuePlacer<>(factory, configPolicy,
-                (EntityIndependentFilteringValueSelector<Solution_>) FilteringValueSelector.of(valueSelector, filter),
+                (IterableFilteringValueSelector<Solution_>) FilteringValueSelector.of(valueSelector, filter),
                 moveSelector);
     }
 

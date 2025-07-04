@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleBridge;
 import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleListener;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -28,7 +28,7 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
 
     protected static final SelectionCacheType CACHE_TYPE = SelectionCacheType.STEP;
 
-    protected final EntityIndependentValueSelector<Solution_> valueSelector;
+    protected final IterableValueSelector<Solution_> valueSelector;
     protected final boolean randomSelection;
 
     protected SingletonInverseVariableSupply inverseVariableSupply;
@@ -39,7 +39,7 @@ public class DefaultSubChainSelector<Solution_> extends AbstractSelector<Solutio
 
     protected List<SubChain> anchorTrailingChainList = null;
 
-    public DefaultSubChainSelector(EntityIndependentValueSelector<Solution_> valueSelector, boolean randomSelection,
+    public DefaultSubChainSelector(IterableValueSelector<Solution_> valueSelector, boolean randomSelection,
             int minimumSubChainSize, int maximumSubChainSize) {
         this.valueSelector = valueSelector;
         this.randomSelection = randomSelection;

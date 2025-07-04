@@ -10,7 +10,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
@@ -57,13 +57,13 @@ public class SubChainSelectorFactory<Solution_> {
         // ValueSelector uses SelectionOrder.ORIGINAL because a SubChainSelector STEP caches the values
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, SelectionOrder.ORIGINAL);
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+        if (!(valueSelector instanceof IterableValueSelector)) {
             throw new IllegalArgumentException("The subChainSelectorConfig (" + config
                     + ") needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                     + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
         }
-        return new DefaultSubChainSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector,
+        return new DefaultSubChainSelector<>((IterableValueSelector<Solution_>) valueSelector,
                 inheritedSelectionOrder.toRandomSelectionBoolean(),
                 Objects.requireNonNullElse(config.getMinimumSubChainSize(), DEFAULT_MINIMUM_SUB_CHAIN_SIZE),
                 Objects.requireNonNullElse(config.getMaximumSubChainSize(), DEFAULT_MAXIMUM_SUB_CHAIN_SIZE));

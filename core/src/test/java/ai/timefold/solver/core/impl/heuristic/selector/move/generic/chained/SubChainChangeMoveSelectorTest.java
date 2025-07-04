@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.DefaultSubChainSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChainSelector;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -20,7 +20,7 @@ class SubChainChangeMoveSelectorTest {
         SubChainSelector subChainSelector = mock(DefaultSubChainSelector.class);
         GenuineVariableDescriptor descriptor = TestdataEntity.buildVariableDescriptorForValue();
         when(subChainSelector.getVariableDescriptor()).thenReturn(descriptor);
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector valueSelector = mock(IterableValueSelector.class);
         GenuineVariableDescriptor otherDescriptor = TestdataEntity.buildVariableDescriptorForValue();
         when(valueSelector.getVariableDescriptor()).thenReturn(otherDescriptor);
         assertThatIllegalStateException().isThrownBy(
@@ -33,7 +33,7 @@ class SubChainChangeMoveSelectorTest {
         when(subChainSelector.isNeverEnding()).thenReturn(true);
         GenuineVariableDescriptor descriptor = TestdataEntity.buildVariableDescriptorForValue();
         when(subChainSelector.getVariableDescriptor()).thenReturn(descriptor);
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector valueSelector = mock(IterableValueSelector.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(descriptor);
         assertThatIllegalStateException().isThrownBy(
                 () -> new SubChainChangeMoveSelector(subChainSelector, valueSelector, false, true));
@@ -44,7 +44,7 @@ class SubChainChangeMoveSelectorTest {
         SubChainSelector subChainSelector = mock(DefaultSubChainSelector.class);
         GenuineVariableDescriptor descriptor = TestdataEntity.buildVariableDescriptorForValue();
         when(subChainSelector.getVariableDescriptor()).thenReturn(descriptor);
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector valueSelector = mock(IterableValueSelector.class);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.getVariableDescriptor()).thenReturn(descriptor);
         assertThatIllegalStateException().isThrownBy(
@@ -56,7 +56,7 @@ class SubChainChangeMoveSelectorTest {
         SubChainSelector subChainSelector = mock(DefaultSubChainSelector.class);
         GenuineVariableDescriptor descriptor = TestdataEntity.buildVariableDescriptorForValue();
         when(subChainSelector.getVariableDescriptor()).thenReturn(descriptor);
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector valueSelector = mock(IterableValueSelector.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(descriptor);
         SubChainChangeMoveSelector testedSelector = new SubChainChangeMoveSelector(subChainSelector, valueSelector, true, true);
 
@@ -82,7 +82,7 @@ class SubChainChangeMoveSelectorTest {
         SubChainSelector subChainSelector = mock(DefaultSubChainSelector.class);
         GenuineVariableDescriptor descriptor = TestdataEntity.buildVariableDescriptorForValue();
         when(subChainSelector.getVariableDescriptor()).thenReturn(descriptor);
-        EntityIndependentValueSelector valueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector valueSelector = mock(IterableValueSelector.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(descriptor);
         SubChainChangeMoveSelector testedSelector = new SubChainChangeMoveSelector(subChainSelector, valueSelector, true, true);
 

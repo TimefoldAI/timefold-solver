@@ -21,7 +21,7 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 import org.junit.jupiter.api.Test;
@@ -40,8 +40,8 @@ public class KOptListMoveIteratorTest {
         ListVariableDescriptor<Object> listVariableDescriptor;
         EntityDescriptor<Object> entityDescriptor;
         ListVariableStateSupply<Object> listVariableStateSupply;
-        EntityIndependentValueSelector<Object> originSelector;
-        EntityIndependentValueSelector<Object> valueSelector;
+        IterableValueSelector<Object> originSelector;
+        IterableValueSelector<Object> valueSelector;
     }
 
     @SuppressWarnings("unchecked")
@@ -58,8 +58,8 @@ public class KOptListMoveIteratorTest {
         result.listVariableDescriptor = mock(ListVariableDescriptor.class);
         result.entityDescriptor = mock(EntityDescriptor.class);
         result.listVariableStateSupply = mock(ListVariableStateSupply.class);
-        result.originSelector = mock(EntityIndependentValueSelector.class);
-        result.valueSelector = mock(EntityIndependentValueSelector.class);
+        result.originSelector = mock(IterableValueSelector.class);
+        result.valueSelector = mock(IterableValueSelector.class);
         result.kOptListMoveIterator = new KOptListMoveIterator<>(
                 result.workingRandom,
                 result.listVariableDescriptor,

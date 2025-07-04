@@ -9,19 +9,19 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
-    private final EntityIndependentValueSelector<Solution_> leftValueSelector;
-    private final EntityIndependentValueSelector<Solution_> rightValueSelector;
+    private final IterableValueSelector<Solution_> leftValueSelector;
+    private final IterableValueSelector<Solution_> rightValueSelector;
     private final boolean randomSelection;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
-    public ListSwapMoveSelector(EntityIndependentValueSelector<Solution_> leftValueSelector,
-            EntityIndependentValueSelector<Solution_> rightValueSelector, boolean randomSelection) {
+    public ListSwapMoveSelector(IterableValueSelector<Solution_> leftValueSelector,
+            IterableValueSelector<Solution_> rightValueSelector, boolean randomSelection) {
         this.leftValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, this::getListVariableStateSupply);
         this.rightValueSelector =

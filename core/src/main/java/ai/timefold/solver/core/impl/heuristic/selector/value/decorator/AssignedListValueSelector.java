@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 /**
@@ -11,7 +11,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
  */
 public final class AssignedListValueSelector<Solution_> extends AbstractInverseEntityFilteringValueSelector<Solution_> {
 
-    public AssignedListValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector) {
+    public AssignedListValueSelector(IterableValueSelector<Solution_> childValueSelector) {
         super(childValueSelector);
     }
 

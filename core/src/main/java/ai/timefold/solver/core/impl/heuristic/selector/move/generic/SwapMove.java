@@ -48,7 +48,7 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
             var rightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(leftValue, rightValue)) {
                 movable = true;
-                if (!variableDescriptor.isValueRangeEntityIndependent()) {
+                if (!variableDescriptor.canExtractValueRangeFromSolution()) {
                     var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
                     var workingSolution = scoreDirector.getWorkingSolution();
                     var rightValueRange = extractValueRange(scoreDirector, valueRangeDescriptor, workingSolution, rightEntity);

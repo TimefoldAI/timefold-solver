@@ -8,12 +8,12 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
 public final class SelectedCountLimitValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+        implements IterableValueSelector<Solution_> {
 
     private final ValueSelector<Solution_> childValueSelector;
     private final long selectedCountLimit;
@@ -22,7 +22,7 @@ public final class SelectedCountLimitValueSelector<Solution_>
      * Unlike most of the other {@link ValueSelector} decorations,
      * this one works for an entity dependent {@link ValueSelector} too.
      *
-     * @param childValueSelector never null, if any of the {@link EntityIndependentValueSelector} specific methods
+     * @param childValueSelector never null, if any of the {@link IterableValueSelector} specific methods
      *        are going to be used, this parameter must also implement that interface
      * @param selectedCountLimit at least 0
      */
@@ -63,13 +63,13 @@ public final class SelectedCountLimitValueSelector<Solution_>
 
     @Override
     public long getSize() {
-        if (!(childValueSelector instanceof EntityIndependentValueSelector)) {
+        if (!(childValueSelector instanceof IterableValueSelector)) {
             throw new IllegalArgumentException("To use the method getSize(), the moveSelector (" + this
                     + ") needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + childValueSelector + ")."
+                    + IterableValueSelector.class.getSimpleName() + " (" + childValueSelector + ")."
                     + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
         }
-        long childSize = ((EntityIndependentValueSelector<Solution_>) childValueSelector).getSize();
+        long childSize = ((IterableValueSelector<Solution_>) childValueSelector).getSize();
         return Math.min(selectedCountLimit, childSize);
     }
 
@@ -80,7 +80,7 @@ public final class SelectedCountLimitValueSelector<Solution_>
 
     @Override
     public Iterator<Object> iterator() {
-        return new SelectedCountLimitValueIterator(((EntityIndependentValueSelector<Solution_>) childValueSelector).iterator());
+        return new SelectedCountLimitValueIterator(((IterableValueSelector<Solution_>) childValueSelector).iterator());
     }
 
     @Override

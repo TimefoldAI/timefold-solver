@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
 /**
@@ -23,8 +23,8 @@ public class InitializedValueSelector<Solution_>
         implements ValueSelector<Solution_> {
 
     public static <Solution_> ValueSelector<Solution_> create(ValueSelector<Solution_> valueSelector) {
-        if (valueSelector instanceof EntityIndependentValueSelector) {
-            return new EntityIndependentInitializedValueSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector);
+        if (valueSelector instanceof IterableValueSelector) {
+            return new IterableInitializedValueSelector<>((IterableValueSelector<Solution_>) valueSelector);
         } else {
             return new InitializedValueSelector<>(valueSelector);
         }

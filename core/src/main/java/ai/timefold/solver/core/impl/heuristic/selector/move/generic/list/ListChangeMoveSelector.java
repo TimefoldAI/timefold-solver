@@ -9,31 +9,25 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
 public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
-    private final EntityIndependentValueSelector<Solution_> sourceValueSelector;
+    private final IterableValueSelector<Solution_> sourceValueSelector;
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
-    private final boolean filterValuePerEntityRange;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
-    private InnerScoreDirector<Solution_, ?> innerScoreDirector;
 
-    public ListChangeMoveSelector(
-            EntityIndependentValueSelector<Solution_> sourceValueSelector,
-            DestinationSelector<Solution_> destinationSelector,
-            boolean randomSelection, boolean filterValuePerEntityRange) {
+    public ListChangeMoveSelector(IterableValueSelector<Solution_> sourceValueSelector,
+            DestinationSelector<Solution_> destinationSelector, boolean randomSelection) {
         this.sourceValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, this::getListVariableStateSupply);
         this.destinationSelector = destinationSelector;
         this.randomSelection = randomSelection;
-        this.filterValuePerEntityRange = filterValuePerEntityRange;
         phaseLifecycleSupport.addEventListener(this.sourceValueSelector);
         phaseLifecycleSupport.addEventListener(this.destinationSelector);
     }
@@ -49,11 +43,10 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
-        this.innerScoreDirector = solverScope.getScoreDirector();
     }
 
-    public static <Solution_> EntityIndependentValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
-            EntityIndependentValueSelector<Solution_> sourceValueSelector,
+    public static <Solution_> IterableValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
+            IterableValueSelector<Solution_> sourceValueSelector,
             Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supportsPinning = listVariableDescriptor.supportsPinning();
@@ -61,7 +54,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
             // Don't incur the overhead of filtering values if there is no pinning support.
             return sourceValueSelector;
         }
-        return (EntityIndependentValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
+        return (IterableValueSelector<Solution_>) FilteringValueSelector.of(sourceValueSelector,
                 (scoreDirector, selection) -> {
                     var listVariableStateSupply = listVariableStateSupplier.get();
                     var elementPosition = listVariableStateSupply.getElementPosition(selection);
@@ -91,17 +84,13 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         if (randomSelection) {
             return new RandomListChangeIterator<>(
                     listVariableStateSupply,
-                    innerScoreDirector.getValueRangeResolver(),
                     sourceValueSelector,
-                    destinationSelector,
-                    filterValuePerEntityRange);
+                    destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
                     listVariableStateSupply,
-                    innerScoreDirector.getValueRangeResolver(),
                     sourceValueSelector,
-                    destinationSelector,
-                    filterValuePerEntityRange);
+                    destinationSelector);
         }
     }
 

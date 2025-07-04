@@ -176,7 +176,8 @@ public class DefaultExhaustiveSearchPhaseFactory<Solution_>
                         .withVariableName(variableDescriptor.getVariableName());
                 if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
                     changeValueSelectorConfig = changeValueSelectorConfig
-                            .withCacheType(variableDescriptor.isValueRangeEntityIndependent() ? SelectionCacheType.PHASE : STEP)
+                            .withCacheType(
+                                    variableDescriptor.canExtractValueRangeFromSolution() ? SelectionCacheType.PHASE : STEP)
                             .withSelectionOrder(SelectionOrder.SORTED)
                             .withSorterManner(configPolicy.getValueSorterManner());
                 }

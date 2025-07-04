@@ -28,7 +28,7 @@ abstract class AbstractEntityPlacerFactory<Solution_, EntityPlacerConfig_ extend
                 .withVariableName(variableDescriptor.getVariableName());
         if (ValueSelectorConfig.hasSorter(configPolicy.getValueSorterManner(), variableDescriptor)) {
             changeValueSelectorConfig = changeValueSelectorConfig
-                    .withCacheType(variableDescriptor.isValueRangeEntityIndependent() ? PHASE : STEP)
+                    .withCacheType(variableDescriptor.canExtractValueRangeFromSolution() ? PHASE : STEP)
                     .withSelectionOrder(SelectionOrder.SORTED)
                     .withSorterManner(configPolicy.getValueSorterManner());
         }

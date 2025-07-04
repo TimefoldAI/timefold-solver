@@ -13,7 +13,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
-public final class EntityDependentSortingValueSelector<Solution_>
+public final class FromEntitySortingValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
         implements ValueSelector<Solution_> {
 
@@ -23,7 +23,7 @@ public final class EntityDependentSortingValueSelector<Solution_>
 
     protected ScoreDirector<Solution_> scoreDirector = null;
 
-    public EntityDependentSortingValueSelector(ValueSelector<Solution_> childValueSelector,
+    public FromEntitySortingValueSelector(ValueSelector<Solution_> childValueSelector,
             SelectionCacheType cacheType, SelectionSorter<Solution_, Object> sorter) {
         this.childValueSelector = childValueSelector;
         this.cacheType = cacheType;
@@ -115,7 +115,7 @@ public final class EntityDependentSortingValueSelector<Solution_>
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        EntityDependentSortingValueSelector<?> that = (EntityDependentSortingValueSelector<?>) other;
+        FromEntitySortingValueSelector<?> that = (FromEntitySortingValueSelector<?>) other;
         return Objects.equals(childValueSelector, that.childValueSelector) && cacheType == that.cacheType
                 && Objects.equals(sorter, that.sorter);
     }

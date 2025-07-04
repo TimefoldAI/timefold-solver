@@ -10,7 +10,6 @@ import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirecto
 import java.util.List;
 
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeState;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -48,9 +47,8 @@ class RandomListChangeIteratorTest {
         solvingStarted(destinationSelector, scoreDirector, random);
         var randomListChangeIterator = new RandomListChangeIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
-                new ValueRangeState<>(),
                 sourceValueSelector,
-                destinationSelector, false);
+                destinationSelector);
 
         // <3 => entity selector; >=3 => value selector
         final var destinationRange = entitySelector.getSize() + destinationValueSelector.getSize();

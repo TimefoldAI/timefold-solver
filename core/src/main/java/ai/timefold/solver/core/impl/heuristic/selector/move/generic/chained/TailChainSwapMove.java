@@ -169,7 +169,7 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
                 return false;
             }
         }
-        if (!variableDescriptor.isValueRangeEntityIndependent()) {
+        if (!variableDescriptor.canExtractValueRangeFromSolution()) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             var workingSolution = scoreDirector.getWorkingSolution();
             if (rightEntity != null) {

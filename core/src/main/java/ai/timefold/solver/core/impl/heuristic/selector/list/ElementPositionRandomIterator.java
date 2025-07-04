@@ -6,7 +6,7 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
@@ -15,7 +15,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
-    private final EntityIndependentValueSelector<Solution_> valueSelector;
+    private final IterableValueSelector<Solution_> valueSelector;
     private final Iterator<Object> entityIterator;
     private final Random workingRandom;
     private final long totalSize;
@@ -23,7 +23,7 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
     private Iterator<Object> valueIterator;
 
     public ElementPositionRandomIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            EntitySelector<Solution_> entitySelector, EntityIndependentValueSelector<Solution_> valueSelector,
+            EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
             Random workingRandom, long totalSize, boolean allowsUnassignedValues) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();

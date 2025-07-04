@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -36,11 +36,11 @@ class CachingValueSelectorTest {
     }
 
     public void runOriginalSelection(SelectionCacheType cacheType, int timesCalled) {
-        EntityIndependentValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
                 TestdataEntity.class, "value",
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"));
 
-        EntityIndependentValueSelector valueSelector = new CachingValueSelector(childValueSelector, cacheType, false);
+        IterableValueSelector valueSelector = new CachingValueSelector(childValueSelector, cacheType, false);
         verify(childValueSelector, times(1)).isNeverEnding();
 
         SolverScope solverScope = mock(SolverScope.class);
