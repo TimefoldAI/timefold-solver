@@ -109,9 +109,9 @@ class ListChangeMoveSelectorTest {
 
     @Test
     void originalWithEntityValueRange() {
-        var v1 = new TestdataValue("1");
-        var v2 = new TestdataValue("2");
-        var v3 = new TestdataValue("3");
+        var v1 = new TestdataListValue("1");
+        var v2 = new TestdataListValue("2");
+        var v3 = new TestdataListValue("3");
         var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2));
         a.setValueList(List.of(v2, v1));
         var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3));
@@ -435,9 +435,9 @@ class ListChangeMoveSelectorTest {
 
     @Test
     void randomWithEntityValueRange() {
-        var v1 = new TestdataValue("1");
-        var v2 = new TestdataValue("2");
-        var v3 = new TestdataValue("3");
+        var v1 = new TestdataListValue("1");
+        var v2 = new TestdataListValue("2");
+        var v3 = new TestdataListValue("3");
         var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2));
         a.setValueList(List.of(v2, v1));
         var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3));

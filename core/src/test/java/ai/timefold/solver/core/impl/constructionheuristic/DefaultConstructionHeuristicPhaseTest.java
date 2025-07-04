@@ -366,9 +366,9 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                 .withEasyScoreCalculatorClass(TestdataListEntityProvidingScoreCalculator.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
-        var value1 = new TestdataValue("v1");
-        var value2 = new TestdataValue("v2");
-        var value3 = new TestdataValue("v3");
+        var value1 = new TestdataListValue("v1");
+        var value2 = new TestdataListValue("v2");
+        var value3 = new TestdataListValue("v3");
         var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2));
         var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value2, value3));
 
