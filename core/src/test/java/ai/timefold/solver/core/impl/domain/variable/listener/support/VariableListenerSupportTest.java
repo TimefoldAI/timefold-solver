@@ -289,8 +289,12 @@ class VariableListenerSupportTest {
                 };
 
         for (var visit : solution.getValues()) {
-            verifyAddEdge.accept(serviceReadyTime, visit, serviceStartTime, visit);
-            // serviceStartTime and serviceFinishTime are in the same group, so no edge between them!
+
+            // If a visit does not have a concurrent group, all variables of that visit share the same node.
+            if (visit.getConcurrentValueGroup() != null) {
+                // serviceStartTime and serviceFinishTime are in the same group, so no edge between them!
+                verifyAddEdge.accept(serviceReadyTime, visit, serviceStartTime, visit);
+            }
 
             if (visit.getPreviousValue() != null) {
                 verifyAddEdge.accept(serviceFinishTime, visit.getPreviousValue(), serviceReadyTime, visit);

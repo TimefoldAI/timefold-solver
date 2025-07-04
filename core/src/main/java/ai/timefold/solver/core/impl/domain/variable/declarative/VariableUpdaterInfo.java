@@ -16,4 +16,9 @@ public record VariableUpdaterInfo<Solution_>(
         @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator) {
+
+    public VariableUpdaterInfo<Solution_> withGroupId(int groupId) {
+        return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor,
+                calculator);
+    }
 }

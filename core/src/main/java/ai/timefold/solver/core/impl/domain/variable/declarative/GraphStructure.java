@@ -64,7 +64,7 @@ public enum GraphStructure {
             return new GraphStructureAndDirection(EMPTY, null, null);
         }
 
-        if (!doesEntitiesUseDeclarativeShadowVariables(entities, declarativeShadowVariableDescriptors)) {
+        if (!doEntitiesUseDeclarativeShadowVariables(declarativeShadowVariableDescriptors, entities)) {
             return new GraphStructureAndDirection(EMPTY, null, null);
         }
 
@@ -109,11 +109,9 @@ public enum GraphStructure {
                     }
                     // The group variable is unused/always empty
                 }
-                case INDIRECT, INVERSE, VARIABLE, CHAINED_NEXT -> {
-                    // CHAINED_NEXT has a complex comparator function;
-                    // so use ARBITRARY despite the fact it can be represented using SINGLE_DIRECTIONAL_PARENT
-                    isArbitrary = true;
-                }
+                // CHAINED_NEXT has a complex comparator function;
+                // so use ARBITRARY despite the fact it can be represented using SINGLE_DIRECTIONAL_PARENT
+                case INDIRECT, INVERSE, VARIABLE, CHAINED_NEXT -> isArbitrary = true;
                 case NEXT, PREVIOUS -> {
                     if (parentMetaModel == null) {
                         parentMetaModel = variableSource.variableSourceReferences().get(0).variableMetaModel();
@@ -140,8 +138,8 @@ public enum GraphStructure {
         }
     }
 
-    private static <Solution_> boolean doesEntitiesUseDeclarativeShadowVariables(Object[] entities,
-            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors) {
+    private static <Solution_> boolean doEntitiesUseDeclarativeShadowVariables(
+            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariableDescriptors, Object... entities) {
         boolean anyDeclarativeEntities = false;
         for (var declarativeShadowVariable : declarativeShadowVariableDescriptors) {
             var entityClass = declarativeShadowVariable.getEntityDescriptor().getEntityClass();

@@ -51,7 +51,7 @@ final class AffectedEntitiesUpdater<Solution_>
             }
             visited.set(nextNode);
             var shadowVariable = instanceList.get(nextNode);
-            var isChanged = updateShadowVariable(shadowVariable, graph.isLooped(loopedTracker, nextNode));
+            var isChanged = updateEntityShadowVariables(shadowVariable, graph.isLooped(loopedTracker, nextNode));
 
             if (isChanged) {
                 var iterator = graph.nodeForwardEdges(nextNode);
@@ -114,39 +114,46 @@ final class AffectedEntitiesUpdater<Solution_>
 
     }
 
-    private boolean updateShadowVariable(EntityVariablePair<Solution_> entityVariable, boolean isLooped) {
+    private boolean updateEntityShadowVariables(EntityVariablePair<Solution_> entityVariable, boolean isLooped) {
         var entity = entityVariable.entity();
         var shadowVariableReferences = entityVariable.variableReferences();
         var loopDescriptor = shadowVariableReferences[0].shadowVariableLoopedDescriptor();
+        var anyChanged = false;
 
         if (loopDescriptor != null) {
             var oldLooped = (boolean) loopDescriptor.getValue(entity);
             if (oldLooped != isLooped) {
                 // Loop status change; add to affected entities
                 affectedEntities.add(entityVariable);
+                anyChanged = true;
             }
         }
 
-        var anyChanged = false;
         for (var shadowVariableReference : shadowVariableReferences) {
-            var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
-            if (isLooped) {
-                if (oldValue != null) {
-                    affectedEntities.add(entityVariable);
-                    changeShadowVariableAndNotify(shadowVariableReference, entity, null);
-                }
-                anyChanged = true;
-            } else {
-                var newValue = shadowVariableReference.calculator().apply(entity);
-                if (!Objects.equals(oldValue, newValue)) {
-                    affectedEntities.add(entityVariable);
-                    changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
-                    anyChanged = true;
-                }
-            }
+            anyChanged |= updateShadowVariable(entityVariable, isLooped, shadowVariableReference, entity, anyChanged);
         }
 
         return anyChanged;
+    }
+
+    private boolean updateShadowVariable(EntityVariablePair<Solution_> entityVariable, boolean isLooped,
+            VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity, boolean anyChanged) {
+        var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
+        if (isLooped) {
+            if (oldValue != null) {
+                affectedEntities.add(entityVariable);
+                changeShadowVariableAndNotify(shadowVariableReference, entity, null);
+            }
+            return true;
+        } else {
+            var newValue = shadowVariableReference.calculator().apply(entity);
+            if (!Objects.equals(oldValue, newValue)) {
+                affectedEntities.add(entityVariable);
+                changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
+                return true;
+            }
+        }
+        return false;
     }
 
     private void changeShadowVariableAndNotify(VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity,

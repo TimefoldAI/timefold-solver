@@ -47,13 +47,13 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             variableGroupIdToInstanceMap.put(groupId, instanceMap);
         }
 
-        for (var variable : variableReferences) {
-            if (!variableReferenceToInstanceMap.containsKey(variable.id())) {
-                variableReferenceToInstanceMap.put(variable.id(), instanceMap);
-            }
-        }
         var node = new EntityVariablePair<>(entity, variableReferences, instanceList.size());
         instanceMap.put(entity, node);
+        for (var variable : variableReferences) {
+            var variableInstanceMap =
+                    variableReferenceToInstanceMap.computeIfAbsent(variable.id(), ignored -> new IdentityHashMap<>());
+            variableInstanceMap.put(entity, node);
+        }
         instanceList.add(node);
     }
 
