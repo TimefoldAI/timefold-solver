@@ -11,12 +11,17 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeState;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 class ListAssignMoveTest {
 
@@ -24,11 +29,16 @@ class ListAssignMoveTest {
     private final MoveDirector<TestdataListSolution, ?> moveDirector = new MoveDirector<>(innerScoreDirector);
     private final ListVariableDescriptor<TestdataListSolution> variableDescriptor =
             TestdataListEntity.buildVariableDescriptorForValueList();
+    private final InnerScoreDirector<TestdataListEntityProvidingSolution, ?> otherInnerScoreDirector =
+            mock(InnerScoreDirector.class);
+    private final ListVariableDescriptor<TestdataListEntityProvidingSolution> otherVariableDescriptor =
+            TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
 
     @BeforeEach
     void setUp() {
         when(innerScoreDirector.getSolutionDescriptor())
                 .thenReturn(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
     }
 
     @Test
@@ -56,6 +66,23 @@ class ListAssignMoveTest {
         // v1 -> e1[0]
         moveDirector.execute(new ListAssignMove<>(variableDescriptor, v1, e1, 0));
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3);
+    }
+
+    @Test
+    void isMoveDoableValueRangeProviderOnEntity() {
+        var v1 = new TestdataListValue("1");
+        var v2 = new TestdataListValue("2");
+        var v3 = new TestdataListValue("3");
+        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2));
+        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3));
+        // different entity => valid value
+        assertThat(new ListAssignMove<>(otherVariableDescriptor, v1, e1, 0).isMoveDoable(otherInnerScoreDirector))
+                .isTrue();
+        assertThat(new ListAssignMove<>(otherVariableDescriptor, v1, e2, 0).isMoveDoable(otherInnerScoreDirector))
+                .isTrue();
+        // different entity => invalid value
+        assertThat(new ListAssignMove<>(otherVariableDescriptor, v3, e1, 0).isMoveDoable(otherInnerScoreDirector))
+                .isFalse();
     }
 
     @Test
