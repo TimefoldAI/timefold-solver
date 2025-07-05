@@ -2093,26 +2093,15 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Change - basic
         allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
         // Swap - basic
-        //        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
-        //        // Pillar change - basic
-        //        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
-        //        var pillarChangeEntitySelectorConfig =
-        //                new EntitySelectorConfig().withEntityClass(TestdataMixedMultiEntitySecondEntity.class);
-        //        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("basicValue");
-        //        pillarChangeMoveSelectorConfig
-        //                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig))
-        //                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
-        //        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
-        //        // Pilar swap - basic
-        //        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
-        //                new PillarSelectorConfig().withEntitySelectorConfig(pillarChangeEntitySelectorConfig)));
-        //        // R&R - basic
-        //        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig()
-        //                .withEntitySelectorConfig(
-        //                        new EntitySelectorConfig().withEntityClass(TestdataMixedMultiEntitySecondEntity.class))
-        //                .withVariableName("basicValue"));
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Pillar change - basic
+        allMoveSelectionConfigList.add(new PillarChangeMoveSelectorConfig());
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig());
+        // R&R - basic
+        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig());
         // Union of all moves
-        //        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
         return allMoveSelectionConfigList;
     }
 
@@ -2122,7 +2111,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Local search
         var localSearchConfig = new LocalSearchPhaseConfig()
                 .withMoveSelectorConfig(moveSelectionConfig)
-                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
 
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataEntityProvidingSolution.class, TestdataEntityProvidingEntity.class)
@@ -2144,6 +2133,13 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution).isNotNull();
+
+        var bestEntity1 = bestSolution.getEntityList().get(0);
+        assertThat(bestEntity1.getValue()).isNotIn(value4, value5);
+        var bestEntity2 = bestSolution.getEntityList().get(1);
+        assertThat(bestEntity2.getValue()).isNotIn(value3, value4);
+        var bestEntity3 = bestSolution.getEntityList().get(2);
+        assertThat(bestEntity3.getValue()).isNotIn(value1, value2, value3);
     }
 
     private static List<MoveSelectorConfig> generateMovesForListVarEntityRangeModel() {
@@ -2152,13 +2148,13 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Change - list
         allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
         // Swap - list
-        // allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
         // Sublist change - list
-        // allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
         // Sublist swap - list
-        // allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
         // KOpt - list
-        // allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
         // R&R - list
         // allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
         // Union of all moves
@@ -2172,7 +2168,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Local search
         var localSearchConfig = new LocalSearchPhaseConfig()
                 .withMoveSelectorConfig(moveSelectionConfig)
-                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(40L));
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
 
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataListUnassignedEntityProvidingSolution.class,
@@ -2184,17 +2180,27 @@ class DefaultSolverTest extends AbstractMeterTest {
         var value1 = new TestdataValue("v1");
         var value2 = new TestdataValue("v2");
         var value3 = new TestdataValue("v3");
+        var value4 = new TestdataValue("v4");
+        var value5 = new TestdataValue("v5");
         var entity1 = new TestdataListUnassignedEntityProvidingEntity("e1", List.of(value1, value2));
         var entity2 = new TestdataListUnassignedEntityProvidingEntity("e2", List.of(value2, value3));
+        var entity3 = new TestdataListUnassignedEntityProvidingEntity("e3", List.of(value4, value5));
 
         var solution = new TestdataListUnassignedEntityProvidingSolution();
-        solution.setEntityList(List.of(entity1, entity2));
+        solution.setEntityList(List.of(entity1, entity2, entity3));
 
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution).isNotNull();
-        // Only one entity should provide the value list and assign the values.
-        assertThat(bestSolution.getEntityList().get(0).getValueList()).hasSameElementsAs(List.of(value1, value2));
-        assertThat(bestSolution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(value3));
+
+        var bestEntity1 = bestSolution.getEntityList().get(0);
+        assertThat(bestEntity1.getValueList().size()).isGreaterThan(0);
+        assertThat(bestEntity1.getValueList()).doesNotContain(value3, value4, value5);
+        var bestEntity2 = bestSolution.getEntityList().get(1);
+        assertThat(bestEntity2.getValueList().size()).isGreaterThan(0);
+        assertThat(bestEntity2.getValueList()).doesNotContain(value1, value4, value5);
+        var bestEntity3 = bestSolution.getEntityList().get(2);
+        assertThat(bestEntity3.getValueList().size()).isGreaterThan(0);
+        assertThat(bestEntity3.getValueList()).doesNotContain(value1, value2, value3);
     }
 
     @Test

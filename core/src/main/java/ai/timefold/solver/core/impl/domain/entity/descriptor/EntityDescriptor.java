@@ -884,7 +884,8 @@ public class EntityDescriptor<Solution_> {
                         tracker.addPinnedListValueCount(1);
                     }
                     // Anchors are entities
-                    var valueRange = variableDescriptor.getValueRangeDescriptor().extractValueRange(solution, entity);
+                    var valueRange = valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(),
+                            solution, entity);
                     if (valueRange instanceof CountableValueRange<?> countableValueRange) {
                         var valueIterator = countableValueRange.createOriginalIterator();
                         while (valueIterator.hasNext()) {

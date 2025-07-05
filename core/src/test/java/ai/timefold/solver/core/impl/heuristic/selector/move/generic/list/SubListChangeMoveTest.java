@@ -5,14 +5,21 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
+
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeState;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 class SubListChangeMoveTest {
@@ -27,6 +34,15 @@ class SubListChangeMoveTest {
     private final InnerScoreDirector<TestdataListSolution, ?> scoreDirector = mock(InnerScoreDirector.class);
     private final ListVariableDescriptor<TestdataListSolution> variableDescriptor =
             TestdataListEntity.buildVariableDescriptorForValueList();
+    private final InnerScoreDirector<TestdataListEntityProvidingSolution, ?> otherInnerScoreDirector =
+            mock(InnerScoreDirector.class);
+    private final ListVariableDescriptor<TestdataListEntityProvidingSolution> otherVariableDescriptor =
+            TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
+
+    @BeforeEach
+    void setUp() {
+        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
+    }
 
     @Test
     void isMoveDoable() {
@@ -43,6 +59,34 @@ class SubListChangeMoveTest {
         assertThat(new SubListChangeMove<>(variableDescriptor, e1, 0, 3, e1, 2, false).isMoveDoable(scoreDirector)).isFalse();
         // different entity => doable
         assertThat(new SubListChangeMove<>(variableDescriptor, e1, 1, 2, e2, 0, false).isMoveDoable(scoreDirector)).isTrue();
+    }
+
+    @Test
+    void isMoveDoableValueRangeProviderOnEntity() {
+        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v4));
+        e1.setValueList(List.of(v1, v4, v2));
+        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4));
+        e2.setValueList(List.of(v3));
+        // different entity => valid sublist
+        assertThat(
+                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 2, e2, 0, false).isMoveDoable(otherInnerScoreDirector))
+                .isTrue();
+        assertThat(
+                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 2, e2, 0, true).isMoveDoable(otherInnerScoreDirector))
+                .isTrue();
+        // different entity => invalid sublist
+        assertThat(
+                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 3, e2, 0, false).isMoveDoable(otherInnerScoreDirector))
+                .isFalse();
+        assertThat(
+                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 3, e2, 0, true).isMoveDoable(otherInnerScoreDirector))
+                .isFalse();
+        assertThat(
+                new SubListChangeMove<>(otherVariableDescriptor, e1, 1, 2, e2, 0, false).isMoveDoable(otherInnerScoreDirector))
+                .isFalse();
+        assertThat(
+                new SubListChangeMove<>(otherVariableDescriptor, e1, 1, 2, e2, 0, true).isMoveDoable(otherInnerScoreDirector))
+                .isFalse();
     }
 
     @Test

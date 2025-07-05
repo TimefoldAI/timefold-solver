@@ -17,11 +17,6 @@ public class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<V
     private final Set<Value_> cache;
     private final List<Value_> values;
 
-    public HashSetValueRangeCache() {
-        // Initial value of 1K items
-        this(1_000);
-    }
-
     public HashSetValueRangeCache(int size) {
         cache = new HashSet<>(size);
         values = new ArrayList<>(size);

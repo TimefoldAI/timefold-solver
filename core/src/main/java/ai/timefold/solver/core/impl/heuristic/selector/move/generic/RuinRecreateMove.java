@@ -54,6 +54,7 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
 
         var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
         nestedSolverScope.setSolver(solverScope.getSolver());
+        nestedSolverScope.setValueRangeResolver(solverScope.getValueRangeResolver());
         nestedSolverScope.setScoreDirector(recordingScoreDirector.getBacking());
         constructionHeuristicPhase.solvingStarted(nestedSolverScope);
         constructionHeuristicPhase.solve(nestedSolverScope);
