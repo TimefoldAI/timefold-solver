@@ -35,8 +35,8 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         isGraphFixed = true;
     }
 
-    public <Entity_> void addVariableReferenceEntity(Entity_ entity, VariableUpdaterInfo<Solution_>[] variableReferences) {
-        var groupId = variableReferences[0].groupId();
+    public <Entity_> void addVariableReferenceEntity(Entity_ entity, List<VariableUpdaterInfo<Solution_>> variableReferences) {
+        var groupId = variableReferences.get(0).groupId();
         var instanceMap = variableGroupIdToInstanceMap.get(groupId);
         var instance = instanceMap == null ? null : instanceMap.get(entity);
         if (instance != null) {

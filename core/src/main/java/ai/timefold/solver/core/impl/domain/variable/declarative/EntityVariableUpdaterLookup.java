@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -15,15 +16,17 @@ public class EntityVariableUpdaterLookup<Solution_> {
     private final Supplier<Lookup<Solution_>> entityLookupSupplier;
     private int nextId = 0;
 
-    private record Lookup<Solution_>(Function<Object, VariableUpdaterInfo<Solution_>[]> getter,
-            BiConsumer<Object, Supplier<VariableUpdaterInfo<Solution_>[]>> setter) {
-        VariableUpdaterInfo<Solution_>[] getUpdaters(Object entity) {
+    private record Lookup<Solution_>(Function<Object, List<VariableUpdaterInfo<Solution_>>> getter,
+            BiConsumer<Object, Supplier<List<VariableUpdaterInfo<Solution_>>>> setter) {
+
+        List<VariableUpdaterInfo<Solution_>> getUpdaters(Object entity) {
             return getter.apply(entity);
         }
 
-        void setUpdaters(Object entity, Supplier<VariableUpdaterInfo<Solution_>[]> updatersSupplier) {
+        void setUpdaters(Object entity, Supplier<List<VariableUpdaterInfo<Solution_>>> updatersSupplier) {
             setter.accept(entity, updatersSupplier);
         }
+
     }
 
     private EntityVariableUpdaterLookup(Supplier<Lookup<Solution_>> entityLookupSupplier) {
@@ -33,7 +36,7 @@ public class EntityVariableUpdaterLookup<Solution_> {
 
     public static <Solution_> EntityVariableUpdaterLookup<Solution_> entityIndependentLookup() {
         Supplier<Lookup<Solution_>> lookupSupplier = () -> {
-            var sharedValue = new MutableReference<VariableUpdaterInfo<Solution_>[]>(null);
+            var sharedValue = new MutableReference<List<VariableUpdaterInfo<Solution_>>>(null);
             return new Lookup<>(ignored -> sharedValue.getValue(),
                     (ignored, valueSupplier) -> {
                         if (sharedValue.getValue() == null) {
@@ -46,22 +49,15 @@ public class EntityVariableUpdaterLookup<Solution_> {
 
     public static <Solution_> EntityVariableUpdaterLookup<Solution_> entityDependentLookup() {
         Supplier<Lookup<Solution_>> lookupSupplier = () -> {
-            var valueMap = new IdentityHashMap<Object, VariableUpdaterInfo<Solution_>[]>();
+            var valueMap = new IdentityHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
             return new Lookup<>(valueMap::get,
                     (entity, valueSupplier) -> valueMap.computeIfAbsent(entity, ignored -> valueSupplier.get()));
         };
         return new EntityVariableUpdaterLookup<>(lookupSupplier);
     }
 
-    public VariableUpdaterInfo<Solution_>[] getUpdatersForVariableOnEntity(VariableMetaModel<?, ?, ?> variableMetaModel,
-            Object entity) {
-        var entityLookup = variableToEntityLookup.get(variableMetaModel);
-        return entityLookup.getUpdaters(entity);
-    }
-
-    public VariableUpdaterInfo<Solution_>[] computeUpdatersForVariableOnEntity(VariableMetaModel<?, ?, ?> variableMetaModel,
-            Object entity,
-            Supplier<VariableUpdaterInfo<Solution_>[]> updatersSupplier) {
+    public List<VariableUpdaterInfo<Solution_>> computeUpdatersForVariableOnEntity(VariableMetaModel<?, ?, ?> variableMetaModel,
+            Object entity, Supplier<List<VariableUpdaterInfo<Solution_>>> updatersSupplier) {
         var entityLookup = variableToEntityLookup.computeIfAbsent(variableMetaModel, ignored -> entityLookupSupplier.get());
         entityLookup.setUpdaters(entity, updatersSupplier);
         return entityLookup.getUpdaters(entity);

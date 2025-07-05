@@ -10,7 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -178,7 +177,8 @@ class VariableListenerSupportTest {
         public <Solution_> void withNodeData(List<EntityVariablePair<Solution_>> nodes) {
             nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
             nodeToVariableMetamodel = nodes.stream()
-                    .map(e -> Arrays.stream(e.variableReferences()).map(VariableUpdaterInfo::id)
+                    .map(e -> e.variableReferences().stream()
+                            .map(VariableUpdaterInfo::id)
                             .toArray(VariableMetaModel[]::new))
                     .toArray(VariableMetaModel[][]::new);
         }
