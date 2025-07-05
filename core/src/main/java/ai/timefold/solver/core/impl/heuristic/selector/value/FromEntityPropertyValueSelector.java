@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * This is the common {@link ValueSelector} implementation.
@@ -23,6 +25,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final boolean randomSelection;
 
+    private ValueRangeResolver<Solution_> valueRangeResolver;
     private Solution_ workingSolution;
 
     public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean randomSelection) {
@@ -33,6 +36,12 @@ public final class FromEntityPropertyValueSelector<Solution_>
     @Override
     public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
         return valueRangeDescriptor.getVariableDescriptor();
+    }
+
+    @Override
+    public void solvingStarted(SolverScope<Solution_> solverScope) {
+        super.solvingStarted(solverScope);
+        this.valueRangeResolver = solverScope.getValueRangeResolver();
     }
 
     @Override
@@ -65,7 +74,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public Iterator<Object> iterator(Object entity) {
-        ValueRange<Object> valueRange = valueRangeDescriptor.extractValueRange(workingSolution, entity);
+        ValueRange<Object> valueRange = valueRangeResolver.extractValueRange(valueRangeDescriptor, workingSolution, entity);
         if (!randomSelection) {
             return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
         } else {
@@ -75,7 +84,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
-        ValueRange<Object> valueRange = valueRangeDescriptor.extractValueRange(workingSolution, entity);
+        ValueRange<Object> valueRange = valueRangeResolver.extractValueRange(valueRangeDescriptor, workingSolution, entity);
         return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
     }
 

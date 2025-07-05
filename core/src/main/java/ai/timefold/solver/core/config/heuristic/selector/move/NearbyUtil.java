@@ -162,7 +162,7 @@ public final class NearbyUtil {
                 .withValueSelectorConfig(valueConfig);
     }
 
-    private static String addRandomSuffix(String name, Random random) {
+    public static String addRandomSuffix(String name, Random random) {
         var value = new StringBuilder(name);
         value.append("-");
         random.ints(97, 122) // ['a', 'z']

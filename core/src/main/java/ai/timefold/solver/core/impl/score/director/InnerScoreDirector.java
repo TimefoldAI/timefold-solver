@@ -259,6 +259,8 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     MoveDirector<Solution_, Score_> getMoveDirector();
 
+    ValueRangeResolver<Solution_> getValueRangeResolver();
+
     ListVariableStateSupply<Solution_> getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);

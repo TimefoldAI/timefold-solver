@@ -33,10 +33,10 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     private final EasyScoreCalculator<Solution_, Score_> easyScoreCalculator;
 
-    private EasyScoreDirector(EasyScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
-            boolean expectShadowVariablesInCorrectState, EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, ConstraintMatchPolicy.DISABLED, expectShadowVariablesInCorrectState);
-        this.easyScoreCalculator = Objects.requireNonNull(easyScoreCalculator);
+    private EasyScoreDirector(Builder<Solution_, Score_> builder) {
+        super(builder);
+        this.easyScoreCalculator = Objects.requireNonNull(builder.easyScoreCalculator,
+                "The easyScoreCalculator must not be null.");
     }
 
     public EasyScoreCalculator<Solution_, Score_> getEasyScoreCalculator() {
@@ -96,6 +96,12 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
             super(scoreDirectorFactory);
         }
 
+        @Override
+        public Builder<Solution_, Score_> withConstraintMatchPolicy(ConstraintMatchPolicy constraintMatchPolicy) {
+            // Override; easy can never support constraint matches.
+            return super.withConstraintMatchPolicy(ConstraintMatchPolicy.DISABLED);
+        }
+
         public Builder<Solution_, Score_> withEasyScoreCalculator(EasyScoreCalculator<Solution_, Score_> easyScoreCalculator) {
             this.easyScoreCalculator = easyScoreCalculator;
             return this;
@@ -103,8 +109,7 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
 
         @Override
         public EasyScoreDirector<Solution_, Score_> build() {
-            return new EasyScoreDirector<>(scoreDirectorFactory, lookUpEnabled, expectShadowVariablesInCorrectState,
-                    easyScoreCalculator);
+            return new EasyScoreDirector<>(this);
         }
 
     }

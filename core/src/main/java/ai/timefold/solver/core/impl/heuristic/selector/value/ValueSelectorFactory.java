@@ -30,6 +30,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingVa
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityDependentSortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FromListVarEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.InitializedValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ReinitializeVariableValueSelector;
@@ -107,9 +108,10 @@ public class ValueSelectorFactory<Solution_>
         validateSelectedLimit(minimumCacheType);
 
         // baseValueSelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
+        var randomSelection = determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder);
         var valueSelector =
                 buildBaseValueSelector(variableDescriptor, SelectionCacheType.max(minimumCacheType, resolvedCacheType),
-                        determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder));
+                        randomSelection);
 
         if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
@@ -212,9 +214,14 @@ public class ValueSelectorFactory<Solution_>
                     + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
         }
         if (valueRangeDescriptor.isEntityIndependent()) {
-            return new FromSolutionPropertyValueSelector<>(
-                    (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor, minimumCacheType,
-                    randomSelection);
+            if (valueRangeDescriptor.isAdaptedToEntityIndependent()) {
+                var fromEntityPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
+                return new FromListVarEntityPropertyValueSelector<>(fromEntityPropertySelector, randomSelection);
+            } else {
+                return new FromSolutionPropertyValueSelector<>(
+                        (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor, minimumCacheType,
+                        randomSelection);
+            }
         } else {
             // TODO Do not allow PHASE cache on FromEntityPropertyValueSelector, except if the moveSelector is PHASE cached too.
             return new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
