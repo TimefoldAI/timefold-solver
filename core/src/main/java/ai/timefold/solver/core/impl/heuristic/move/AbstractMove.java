@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * Abstract superclass for {@link Move}, requiring implementation of undo moves.
@@ -53,8 +53,9 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
     protected <Value_> ValueRange<Value_> extractValueRange(ScoreDirector<Solution_> scoreDirector,
             ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ workingSolution, Object entity) {
-        if (scoreDirector instanceof InnerScoreDirector<Solution_, ?> innerScoreDirector) {
-            return innerScoreDirector.getValueRangeResolver().extractValueRange(valueRangeDescriptor, workingSolution, entity);
+        if (scoreDirector instanceof VariableDescriptorAwareScoreDirector<Solution_> variableDescriptorAwareScoreDirector) {
+            return variableDescriptorAwareScoreDirector.getValueRangeResolver().extractValueRange(valueRangeDescriptor,
+                    workingSolution, entity);
         } else {
             return valueRangeDescriptor.extractValueRange(workingSolution, entity);
         }

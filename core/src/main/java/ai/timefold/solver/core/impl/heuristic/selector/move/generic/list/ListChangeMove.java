@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -137,10 +137,12 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
         var secondPass = true;
         // When the source and destination are different,
         // and the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming value.
-        if (distinctEntity && !variableDescriptor.canExtractValueRangeFromSolution()) {
+        // we need to check if the destination's value range accepts the upcoming value
+        if (firstPass && distinctEntity && !variableDescriptor.canExtractValueRangeFromSolution()) {
             var value = variableDescriptor.getElement(sourceEntity, sourceIndex);
-            secondPass = ((InnerScoreDirector<Solution_, ?>) scoreDirector).getValueRangeResolver()
+            ValueRangeResolver<Solution_> valueRangeResolver =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
+            secondPass = valueRangeResolver
                     .extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, destinationEntity).contains(value);
         }
         return firstPass && secondPass;

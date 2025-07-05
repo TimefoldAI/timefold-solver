@@ -46,7 +46,6 @@ class ListChangeMoveTest {
     private final ListVariableDescriptor<TestdataListEntityProvidingSolution> otherVariableDescriptor =
             TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
 
-
     @BeforeEach
     void setUp() {
         when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
