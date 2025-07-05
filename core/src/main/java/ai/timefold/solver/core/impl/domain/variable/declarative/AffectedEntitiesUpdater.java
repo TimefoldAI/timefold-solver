@@ -51,7 +51,7 @@ final class AffectedEntitiesUpdater<Solution_>
             }
             visited.set(nextNode);
             var shadowVariable = instanceList.get(nextNode);
-            var isChanged = updateShadowVariable(shadowVariable, graph.isLooped(loopedTracker, nextNode));
+            var isChanged = updateEntityShadowVariables(shadowVariable, graph.isLooped(loopedTracker, nextNode));
 
             if (isChanged) {
                 var iterator = graph.nodeForwardEdges(nextNode);
@@ -96,7 +96,7 @@ final class AffectedEntitiesUpdater<Solution_>
         for (var node : entityVariablePairFunction.apply(affectedEntity)) {
             // All variables come from the same entity,
             // therefore all have the same looped marker.
-            shadowVariableLoopedDescriptor = node.variableReference().shadowVariableLoopedDescriptor();
+            shadowVariableLoopedDescriptor = node.variableReferences().get(0).shadowVariableLoopedDescriptor();
             if (graph.isLooped(loopedTracker, node.graphNodeId())) {
                 isEntityLooped = true;
                 break;
@@ -114,19 +114,31 @@ final class AffectedEntitiesUpdater<Solution_>
 
     }
 
-    private boolean updateShadowVariable(EntityVariablePair<Solution_> entityVariable, boolean isLooped) {
+    private boolean updateEntityShadowVariables(EntityVariablePair<Solution_> entityVariable, boolean isLooped) {
         var entity = entityVariable.entity();
-        var shadowVariableReference = entityVariable.variableReference();
-        var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
-        var loopDescriptor = shadowVariableReference.shadowVariableLoopedDescriptor();
+        var shadowVariableReferences = entityVariable.variableReferences();
+        var loopDescriptor = shadowVariableReferences.get(0).shadowVariableLoopedDescriptor();
+        var anyChanged = false;
+
         if (loopDescriptor != null) {
-            var oldLooped = (boolean) loopDescriptor.getValue(entity);
-            if (oldLooped != isLooped) {
+            var oldLooped = loopDescriptor.getValue(entity);
+            if (!Objects.equals(oldLooped, isLooped)) {
                 // Loop status change; add to affected entities
                 affectedEntities.add(entityVariable);
+                anyChanged = true;
             }
         }
 
+        for (var shadowVariableReference : shadowVariableReferences) {
+            anyChanged |= updateShadowVariable(entityVariable, isLooped, shadowVariableReference, entity);
+        }
+
+        return anyChanged;
+    }
+
+    private boolean updateShadowVariable(EntityVariablePair<Solution_> entityVariable, boolean isLooped,
+            VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity) {
+        var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
         if (isLooped) {
             if (oldValue != null) {
                 affectedEntities.add(entityVariable);
@@ -168,7 +180,7 @@ final class AffectedEntitiesUpdater<Solution_>
         }
 
         public void add(EntityVariablePair<Solution_> shadowVariable) {
-            var shadowVariableLoopedDescriptor = shadowVariable.variableReference().shadowVariableLoopedDescriptor();
+            var shadowVariableLoopedDescriptor = shadowVariable.variableReferences().get(0).shadowVariableLoopedDescriptor();
             if (shadowVariableLoopedDescriptor == null) {
                 return;
             }

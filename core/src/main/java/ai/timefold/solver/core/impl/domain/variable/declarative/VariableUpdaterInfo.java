@@ -11,8 +11,14 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public record VariableUpdaterInfo<Solution_>(
         VariableMetaModel<Solution_, ?, ?> id,
+        int groupId,
         DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
         @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator) {
+
+    public VariableUpdaterInfo<Solution_> withGroupId(int groupId) {
+        return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor,
+                calculator);
+    }
 }

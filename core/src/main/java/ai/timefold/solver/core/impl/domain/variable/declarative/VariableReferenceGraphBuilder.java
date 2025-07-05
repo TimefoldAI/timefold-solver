@@ -21,31 +21,39 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final List<EntityVariablePair<Solution_>> instanceList;
     final Map<EntityVariablePair<Solution_>, List<EntityVariablePair<Solution_>>> fixedEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
+    final Map<Integer, Map<Object, EntityVariablePair<Solution_>>> variableGroupIdToInstanceMap;
     boolean isGraphFixed;
 
     public VariableReferenceGraphBuilder(ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.changedVariableNotifier = changedVariableNotifier;
         instanceList = new ArrayList<>();
         variableReferenceToInstanceMap = new HashMap<>();
+        variableGroupIdToInstanceMap = new HashMap<>();
         variableReferenceToBeforeProcessor = new HashMap<>();
         variableReferenceToAfterProcessor = new HashMap<>();
         fixedEdges = new HashMap<>();
         isGraphFixed = true;
     }
 
-    public <Entity_> void addVariableReferenceEntity(Entity_ entity, VariableUpdaterInfo<Solution_> variableReference) {
-        var variableId = variableReference.id();
-        var instanceMap = variableReferenceToInstanceMap.get(variableId);
+    public <Entity_> void addVariableReferenceEntity(Entity_ entity, List<VariableUpdaterInfo<Solution_>> variableReferences) {
+        var groupId = variableReferences.get(0).groupId();
+        var instanceMap = variableGroupIdToInstanceMap.get(groupId);
         var instance = instanceMap == null ? null : instanceMap.get(entity);
         if (instance != null) {
             return;
         }
         if (instanceMap == null) {
             instanceMap = new IdentityHashMap<>();
-            variableReferenceToInstanceMap.put(variableId, instanceMap);
+            variableGroupIdToInstanceMap.put(groupId, instanceMap);
         }
-        var node = new EntityVariablePair<>(entity, variableReference, instanceList.size());
+
+        var node = new EntityVariablePair<>(entity, variableReferences, instanceList.size());
         instanceMap.put(entity, node);
+        for (var variable : variableReferences) {
+            var variableInstanceMap =
+                    variableReferenceToInstanceMap.computeIfAbsent(variable.id(), ignored -> new IdentityHashMap<>());
+            variableInstanceMap.put(entity, node);
+        }
         instanceList.add(node);
     }
 

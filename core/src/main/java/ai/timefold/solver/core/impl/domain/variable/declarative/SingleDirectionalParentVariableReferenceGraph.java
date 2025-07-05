@@ -50,6 +50,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
             var variableMetaModel = variableDescriptor.getVariableMetaModel();
             var variableUpdaterInfo = new VariableUpdaterInfo<>(
                     variableMetaModel,
+                    updaterIndex,
                     variableDescriptor,
                     loopedDescriptor,
                     variableDescriptor.getMemberAccessor(),

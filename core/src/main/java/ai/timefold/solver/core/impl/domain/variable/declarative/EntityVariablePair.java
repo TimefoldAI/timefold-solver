@@ -1,9 +1,12 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.List;
+
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public record EntityVariablePair<Solution_>(Object entity, VariableUpdaterInfo<Solution_> variableReference, int graphNodeId) {
+public record EntityVariablePair<Solution_>(Object entity, List<VariableUpdaterInfo<Solution_>> variableReferences,
+        int graphNodeId) {
     @Override
     public boolean equals(Object object) {
         if (!(object instanceof EntityVariablePair<?> that))
@@ -18,6 +21,6 @@ public record EntityVariablePair<Solution_>(Object entity, VariableUpdaterInfo<S
 
     @Override
     public String toString() {
-        return entity + ":" + variableReference.id();
+        return entity + ":" + variableReferences.stream().map(VariableUpdaterInfo::id).toList();
     }
 }

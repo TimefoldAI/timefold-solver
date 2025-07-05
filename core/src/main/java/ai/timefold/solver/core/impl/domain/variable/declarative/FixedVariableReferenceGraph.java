@@ -60,23 +60,25 @@ public final class FixedVariableReferenceGraph<Solution_>
             var changedNode = changeSet.poll();
             var entityVariable = instanceList.get(changedNode.nodeId());
             var entity = entityVariable.entity();
-            var shadowVariableReference = entityVariable.variableReference();
-            var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
-            var newValue = shadowVariableReference.calculator().apply(entity);
-            var isVariableChanged = !Objects.equals(oldValue, newValue);
-            if (isVariableChanged) {
-                var variableDescriptor = shadowVariableReference.variableDescriptor();
-                changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, entity);
-                variableDescriptor.setValue(entity, newValue);
-                changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
+            var shadowVariableReferences = entityVariable.variableReferences();
+            for (var shadowVariableReference : shadowVariableReferences) {
+                var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
+                var newValue = shadowVariableReference.calculator().apply(entity);
+                var isVariableChanged = !Objects.equals(oldValue, newValue);
+                if (isVariableChanged) {
+                    var variableDescriptor = shadowVariableReference.variableDescriptor();
+                    changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, entity);
+                    variableDescriptor.setValue(entity, newValue);
+                    changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
 
-                for (var iterator = graph.nodeForwardEdges(changedNode.nodeId()); iterator.hasNext();) {
-                    var nextNode = iterator.next();
-                    if (visited.get(nextNode)) {
-                        continue;
+                    for (var iterator = graph.nodeForwardEdges(changedNode.nodeId()); iterator.hasNext();) {
+                        var nextNode = iterator.next();
+                        if (visited.get(nextNode)) {
+                            continue;
+                        }
+                        visited.set(nextNode);
+                        changeSet.add(graph.getTopologicalOrder(nextNode));
                     }
-                    visited.set(nextNode);
-                    changeSet.add(graph.getTopologicalOrder(nextNode));
                 }
             }
         }

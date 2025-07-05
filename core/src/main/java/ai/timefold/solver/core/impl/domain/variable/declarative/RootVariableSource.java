@@ -25,15 +25,18 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public record RootVariableSource<Entity_, Value_>(
         Class<? extends Entity_> rootEntity,
         List<MemberAccessor> listMemberAccessors,
         BiConsumer<Object, Consumer<Value_>> valueEntityFunction,
         List<VariableSourceReference> variableSourceReferences,
         String variablePath,
-        ParentVariableType parentVariableType) {
+        ParentVariableType parentVariableType,
+        @Nullable ParentVariableType groupParentVariableType) {
 
     public static final String COLLECTION_REFERENCE_SUFFIX = "[]";
     public static final String MEMBER_SEPERATOR_REGEX = "\\.";
@@ -75,6 +78,7 @@ public record RootVariableSource<Entity_, Value_>(
         Class<?> currentEntity = rootEntityClass;
         var factCountSinceLastVariable = 0;
         ParentVariableType parentVariableType = null;
+        ParentVariableType groupParentVariableType = null;
 
         for (var iterator = pathIterator(rootEntityClass, variablePath); iterator.hasNext();) {
             var pathPart = iterator.next();
@@ -129,6 +133,9 @@ public record RootVariableSource<Entity_, Value_>(
 
                     if (parentVariableType == null) {
                         parentVariableType = determineParentVariableType(chainToVariable, memberAccessor);
+                    }
+                    if (hasListMemberAccessor && groupParentVariableType == null) {
+                        groupParentVariableType = determineParentVariableType(chainToVariable, memberAccessor);
                     }
                 } else {
                     factCountSinceLastVariable++;
@@ -199,7 +206,8 @@ public record RootVariableSource<Entity_, Value_>(
                 valueEntityFunction,
                 variableSourceReferences,
                 variablePath,
-                parentVariableType);
+                parentVariableType,
+                groupParentVariableType);
     }
 
     public @NonNull BiConsumer<Object, Consumer<Object>> getEntityVisitor(List<MemberAccessor> chainToEntity) {
@@ -379,6 +387,7 @@ public record RootVariableSource<Entity_, Value_>(
         return ParentVariableType.NO_PARENT;
     }
 
+    @Nullable
     private static <T extends Annotation> T getAnnotation(Class<?> declaringClass, String memberName,
             Class<? extends T> annotationClass) {
         var currentClass = declaringClass;
