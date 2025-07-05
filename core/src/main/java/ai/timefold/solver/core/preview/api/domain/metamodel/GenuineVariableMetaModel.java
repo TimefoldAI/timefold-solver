@@ -34,6 +34,8 @@ public sealed interface GenuineVariableMetaModel<Solution_, Entity_, Value_>
         return true;
     }
 
+    boolean hasValueRangeOnEntity();
+
     default PlanningVariableMetaModel<Solution_, Entity_, Value_> ensurePlanningVariable() {
         if (this instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariableMetaModel) {
             return planningVariableMetaModel;

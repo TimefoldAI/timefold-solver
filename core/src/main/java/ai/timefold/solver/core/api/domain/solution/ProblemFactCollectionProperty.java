@@ -7,6 +7,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.SortedSet;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
@@ -21,6 +24,9 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
  * <p>
  * Do not annotate {@link PlanningEntity planning entities} as problem facts:
  * they are automatically available as facts for {@link ConstraintFactory#forEach(Class)}.
+ * <p>
+ * For solver reproducibility, the collection must have a deterministic, stable iteration order.
+ * It is recommended to use a {@link List}, {@link LinkedHashSet} or {@link SortedSet}.
  *
  * @see ProblemFactProperty
  */

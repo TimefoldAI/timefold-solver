@@ -24,6 +24,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeState;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
@@ -50,6 +51,7 @@ public class SolverScope<Solution_> {
     private Tags monitoringTags;
     private int startingSolverCount;
     private Random workingRandom;
+    private ValueRangeState<Solution_> valueRangeState;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
@@ -96,6 +98,14 @@ public class SolverScope<Solution_> {
 
     public Clock getClock() {
         return clock;
+    }
+
+    public ValueRangeState<Solution_> getValueRangeState() {
+        return valueRangeState;
+    }
+
+    public void setValueRangeState(ValueRangeState<Solution_> valueRangeState) {
+        this.valueRangeState = valueRangeState;
     }
 
     public AbstractSolver<Solution_> getSolver() {

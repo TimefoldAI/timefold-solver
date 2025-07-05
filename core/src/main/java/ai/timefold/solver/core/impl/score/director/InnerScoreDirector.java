@@ -26,6 +26,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -182,6 +183,9 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     boolean isWorkingEntityListDirty(long expectedWorkingEntityListRevision);
 
     boolean isWorkingSolutionInitialized();
+
+    <Entity_, Value_> boolean isValueInRange(InnerGenuineVariableMetaModel<Solution_> variableDescriptor,
+            @Nullable Entity_ entity, @Nullable Value_ value);
 
     /**
      * Some score directors keep a set of changes
