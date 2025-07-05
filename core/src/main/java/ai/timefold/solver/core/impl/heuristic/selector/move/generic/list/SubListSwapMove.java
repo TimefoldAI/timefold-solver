@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -72,7 +73,26 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
         // If both subLists are on the same entity, then they must not overlap.
-        return leftSubList.entity() != rightSubList.entity() || rightFromIndex >= leftToIndex;
+        var firstPass = leftSubList.entity() != rightSubList.entity() || rightFromIndex >= leftToIndex;
+        var secondPass = true;
+        // When the left and right elements are different,
+        // and the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming values
+        if (firstPass && !variableDescriptor.canExtractValueRangeFromSolution()) {
+            ValueRangeResolver<Solution_> valueRangeResolver =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
+            var leftEntity = leftSubList.entity();
+            var leftList = subList(leftSubList);
+            var leftValueRange =
+                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, leftEntity);
+            var rightEntity = rightSubList.entity();
+            var rightList = subList(rightSubList);
+            var rightValueRange =
+                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, rightEntity);
+            secondPass = leftList.stream().allMatch(rightValueRange::contains)
+                    && rightList.stream().allMatch(leftValueRange::contains);
+        }
+        return firstPass && secondPass;
     }
 
     @Override

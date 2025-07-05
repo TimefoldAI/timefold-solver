@@ -21,11 +21,6 @@ public class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<
     private final Map<Value_, Integer> cache;
     private final List<Value_> values;
 
-    public IdentityValueRangeCache() {
-        // Initial value of 1K items
-        this(1_000);
-    }
-
     public IdentityValueRangeCache(int size) {
         cache = new IdentityHashMap<>(size);
         values = new ArrayList<>(size);

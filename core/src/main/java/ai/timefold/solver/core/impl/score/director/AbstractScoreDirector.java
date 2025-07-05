@@ -223,7 +223,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      */
     protected void setWorkingSolution(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
         this.workingSolution = requireNonNull(workingSolution);
-        this.valueRangeState.reset();
         var solutionDescriptor = getSolutionDescriptor();
 
         /*
@@ -318,6 +317,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected void setWorkingEntityListDirty() {
         workingEntityListRevision++;
+        // Some selectors depend on this revision value to detect changes in entity value ranges.
+        // Therefore, we need to reset the value range state to ensure consistent ranges.
+        valueRangeState.reset();
     }
 
     @Override

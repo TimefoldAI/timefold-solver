@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -116,7 +117,24 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
         // Do not use Object#equals on user-provided domain objects. Relying on user's implementation of Object#equals
         // opens the opportunity to shoot themselves in the foot if different entities can be equal.
-        return !(rightEntity == leftEntity && leftIndex == rightIndex);
+        var sameEntity = leftEntity == rightEntity;
+        var firstPass = !(sameEntity && leftIndex == rightIndex);
+        var secondPass = true;
+        // When the left and right are different,
+        // and the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming values
+        if (firstPass && !sameEntity && !variableDescriptor.canExtractValueRangeFromSolution()) {
+            ValueRangeResolver<Solution_> valueRangeResolver =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
+            var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
+            var leftElementValueRange =
+                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, leftEntity);
+            var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
+            var rightElementValueRange =
+                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, rightEntity);
+            secondPass = leftElementValueRange.contains(rightElement) && rightElementValueRange.contains(leftElement);
+        }
+        return firstPass && secondPass;
     }
 
     @Override
