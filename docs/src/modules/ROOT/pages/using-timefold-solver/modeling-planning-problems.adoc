@@ -1221,6 +1221,13 @@ Python::
 ----
 ====
 
+[IMPORTANT]
+====
+Do not use a @ShadowVariableLooped property in a method annotated with @ShadowSources.
+@ShadowVariableLooped properties can be updated after the @ShadowSources marked method is called, causing score corruption.
+@ShadowSources marked methods do not need to check @ShadowVariableLooped properties, since they are only called if all their dependencies are not looped.
+====
+
 === Shadow variable cloning
 
 A shadow variable's value (just like a genuine variable's value)

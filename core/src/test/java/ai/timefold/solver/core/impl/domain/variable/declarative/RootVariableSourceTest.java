@@ -19,6 +19,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -573,6 +575,23 @@ class RootVariableSourceTest {
                         "references a member (value)",
                         "on class (TestClass)",
                         "that does not exist.");
+    }
+
+    @Test
+    void errorIfShadowVariableLoopedReferenced() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "isLooped",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("The source path (isLooped)",
+                        "starting from root class (" + TestdataInvalidDeclarativeValue.class.getCanonicalName() + ")",
+                        "accesses a @" + ShadowVariableLooped.class.getSimpleName() + " property",
+                        "(isLooped)",
+                        "Maybe remove the source path (isLooped) from the @" + ShadowSources.class.getSimpleName());
     }
 
     @Test
