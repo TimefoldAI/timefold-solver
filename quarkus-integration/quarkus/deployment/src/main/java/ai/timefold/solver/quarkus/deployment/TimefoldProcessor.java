@@ -1044,10 +1044,10 @@ class TimefoldProcessor {
                     var methodInfo = classInfo.method(targetMethodName);
                     if (methodInfo == null) {
                         throw new IllegalArgumentException("""
-                                @%s (%s) has a supplierMethod (%s) that does not exist inside its declaring class (%s).
+                                @%s (%s) defines a supplierMethod (%s) that does not exist inside its declaring class (%s).
                                 Maybe you misspelled the supplierMethod name?"""
                                 .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
-                                        classInfo.simpleName()));
+                                        classInfo.name().toString()));
                     }
                     buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer,
                             classOutput,

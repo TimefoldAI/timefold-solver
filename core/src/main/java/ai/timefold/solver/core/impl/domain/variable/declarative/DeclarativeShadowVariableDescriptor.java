@@ -52,10 +52,10 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
         if (method == null) {
             throw new IllegalArgumentException("""
-                    @%s (%s) has a supplierMethod (%s) that does not exist inside its declaring class (%s).
+                    @%s (%s) defines a supplierMethod (%s) that does not exist inside its declaring class (%s).
                     Maybe you misspelled the supplierMethod name?"""
                     .formatted(ShadowVariable.class.getSimpleName(), variableName, methodName,
-                            variableMemberAccessor.getDeclaringClass().getSimpleName()));
+                            variableMemberAccessor.getDeclaringClass().getCanonicalName()));
         }
 
         var shadowVariableUpdater = method.getAnnotation(ShadowSources.class);
