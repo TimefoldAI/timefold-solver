@@ -984,8 +984,9 @@ class TimefoldSolverAutoConfigurationTest {
                         "timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
                     context.getBean(SolverFactory.class);
-                })).hasMessageContainingAll("Could not find method named value1AndValue2Supplier",
-                        "on the class TestdataSpringMissingSupplierVariableEntity.",
-                        "Maybe you misspelled it?");
+                })).hasMessageContainingAll("@ShadowVariable (value1AndValue2)",
+                        "supplierMethod (value1AndValue2Supplier) that does not exist",
+                        "inside its declaring class (TestdataSpringMissingSupplierVariableEntity).",
+                        "Maybe you misspelled the supplierMethod name?");
     }
 }

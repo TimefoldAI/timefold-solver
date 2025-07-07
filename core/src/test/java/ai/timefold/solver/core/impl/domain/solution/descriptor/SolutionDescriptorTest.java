@@ -676,9 +676,9 @@ class SolutionDescriptorTest {
     @Test
     void missingDeclarativeSupplierMethod() {
         assertThatCode(TestdataDeclarativeMissingSupplierSolution::buildSolutionDescriptor)
-                .hasMessageContaining("Could not find method named")
-                .hasMessageContaining("calculateEndTime")
-                .hasMessageContaining("on the class TestdataDeclarativeMissingSupplierValue")
-                .hasMessageContaining("Maybe you misspelled it");
+                .hasMessageContainingAll("@ShadowVariable (endTime)",
+                        "supplierMethod (calculateEndTime) that does not exist",
+                        "inside its declaring class (TestdataDeclarativeMissingSupplierValue).",
+                        "Maybe you misspelled the supplierMethod name?");
     }
 }

@@ -51,8 +51,11 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         var method = ReflectionHelper.getDeclaredMethod(variableMemberAccessor.getDeclaringClass(), methodName);
 
         if (method == null) {
-            throw new IllegalArgumentException("Could not find method named %s on the class %s. Maybe you misspelled it?"
-                    .formatted(methodName, variableMemberAccessor.getDeclaringClass().getSimpleName()));
+            throw new IllegalArgumentException("""
+                    @%s (%s) has a supplierMethod (%s) that does not exist inside its declaring class (%s).
+                    Maybe you misspelled the supplierMethod name?"""
+                    .formatted(ShadowVariable.class.getSimpleName(), variableName, methodName,
+                            variableMemberAccessor.getDeclaringClass().getSimpleName()));
         }
 
         var shadowVariableUpdater = method.getAnnotation(ShadowSources.class);

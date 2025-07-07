@@ -29,9 +29,10 @@ class TimefoldProcessorMissingSupplierForDeclarativeVariableTest {
             .assertException(t -> assertThat(t)
                     .isInstanceOf(IllegalArgumentException.class)
                     .hasMessageContainingAll(
-                            "Could not find method named calculateEndTime",
-                            "on the class TestdataQuarkusDeclarativeMissingSupplierValue",
-                            "Maybe you misspelled it"));
+                            "@ShadowVariable (endTime)",
+                            "supplierMethod (calculateEndTime) that does not exist",
+                            "inside its declaring class (TestdataQuarkusDeclarativeMissingSupplierValue).",
+                            "Maybe you misspelled the supplierMethod name?"));
 
     @Test
     void test() {

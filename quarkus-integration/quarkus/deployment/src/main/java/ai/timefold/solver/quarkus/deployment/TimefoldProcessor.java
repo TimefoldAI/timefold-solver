@@ -30,6 +30,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.api.score.calculator.IncrementalScoreCalculator;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
@@ -1007,16 +1008,19 @@ class TimefoldProcessor {
 
             for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
                 ClassInfo classInfo = null;
+                String memberName = null;
                 switch (annotatedMember.target().kind()) {
                     case FIELD -> {
                         var fieldInfo = annotatedMember.target().asField();
                         classInfo = fieldInfo.declaringClass();
+                        memberName = fieldInfo.name();
                         buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, fieldInfo, transformers);
                     }
                     case METHOD -> {
                         var methodInfo = annotatedMember.target().asMethod();
                         classInfo = methodInfo.declaringClass();
+                        memberName = methodInfo.name();
                         buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, methodInfo, true, transformers);
                     }
@@ -1039,9 +1043,11 @@ class TimefoldProcessor {
                             .asString();
                     var methodInfo = classInfo.method(targetMethodName);
                     if (methodInfo == null) {
-                        throw new IllegalArgumentException(
-                                "Could not find method named %s on the class %s. Maybe you misspelled it?"
-                                        .formatted(targetMethodName, classInfo.simpleName()));
+                        throw new IllegalArgumentException("""
+                                @%s (%s) has a supplierMethod (%s) that does not exist inside its declaring class (%s).
+                                Maybe you misspelled the supplierMethod name?"""
+                                .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
+                                        classInfo.simpleName()));
                     }
                     buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer,
                             classOutput,
