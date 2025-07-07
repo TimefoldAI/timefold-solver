@@ -42,10 +42,10 @@ import ai.timefold.solver.core.testdomain.invalid.multivar.TestdataInvalidMultiV
 import ai.timefold.solver.core.testdomain.invalid.nosolution.TestdataNoSolution;
 import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigurationSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataNoProblemFactPropertySolution;
@@ -501,11 +501,11 @@ class SolutionDescriptorTest {
         var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataListEntityProvidingSolution();
         var valueRangeResolver = new ValueRangeState<TestdataListEntityProvidingSolution>();
-        var v1 = new TestdataListValue("1");
-        var v2 = new TestdataListValue("2");
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
         solution.setEntityList(List.of(
                 new TestdataListEntityProvidingEntity("e1", List.of(v1, v2)),
-                new TestdataListEntityProvidingEntity("e2", List.of(v1, v2, new TestdataListValue("3")))));
+                new TestdataListEntityProvidingEntity("e2", List.of(v1, v2, new TestdataListEntityProvidingValue("3")))));
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);

@@ -36,6 +36,7 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
@@ -366,9 +367,9 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                 .withEasyScoreCalculatorClass(TestdataListEntityProvidingScoreCalculator.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
-        var value1 = new TestdataListValue("v1");
-        var value2 = new TestdataListValue("v2");
-        var value3 = new TestdataListValue("v3");
+        var value1 = new TestdataListEntityProvidingValue("v1");
+        var value2 = new TestdataListEntityProvidingValue("v2");
+        var value3 = new TestdataListEntityProvidingValue("v3");
         var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2));
         var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value2, value3));
 

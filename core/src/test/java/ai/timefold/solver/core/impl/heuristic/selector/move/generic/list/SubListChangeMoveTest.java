@@ -18,6 +18,7 @@ import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -63,10 +64,12 @@ class SubListChangeMoveTest {
 
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
-        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v4));
-        e1.setValueList(List.of(v1, v4, v2));
-        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4));
-        e2.setValueList(List.of(v3));
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        var v3 = new TestdataListEntityProvidingValue("3");
+        var v4 = new TestdataListEntityProvidingValue("4");
+        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v4), List.of(v1, v4, v2));
+        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4), List.of(v3));
         // different entity => valid sublist
         assertThat(
                 new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 2, e2, 0, false).isMoveDoable(otherInnerScoreDirector))

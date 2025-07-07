@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -113,7 +114,28 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return !equivalent2Opts.isEmpty();
+        var firstPass = !equivalent2Opts.isEmpty();
+        var secondPass = true;
+        // When the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming values
+        if (firstPass && !listVariableDescriptor.canExtractValueRangeFromSolution()) {
+            // The changes will be applied to a single entity. No need to check the value ranges.
+            secondPass = originalEntities.length == 1;
+            if (!secondPass) {
+                ValueRangeResolver<Solution_> valueRangeResolver =
+                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
+                // We need to compute the combined list of values to check the source and destination
+                var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
+                // All moves are applied, but the entity remains unchanged,
+                // only the combined list of elements is updated.
+                equivalent2Opts.forEach(move -> move.doMoveOnGenuineVariables(combinedList));
+                // The sublist for each delegate is recalculated.
+                combinedList.moveElementsOfDelegates(newEndIndices);
+                // At this point, we can check if the new arrangement of elements meets the entity value ranges.
+                secondPass = combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeResolver);
+            }
+        }
+        return firstPass && secondPass;
     }
 
     @Override

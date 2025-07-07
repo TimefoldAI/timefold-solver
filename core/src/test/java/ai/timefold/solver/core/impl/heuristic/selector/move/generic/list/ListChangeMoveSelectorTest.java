@@ -39,6 +39,7 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPinnedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
@@ -109,13 +110,11 @@ class ListChangeMoveSelectorTest {
 
     @Test
     void originalWithEntityValueRange() {
-        var v1 = new TestdataListValue("1");
-        var v2 = new TestdataListValue("2");
-        var v3 = new TestdataListValue("3");
-        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2));
-        a.setValueList(List.of(v2, v1));
-        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3));
-        b.setValueList(List.of(v3));
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        var v3 = new TestdataListEntityProvidingValue("3");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v2, v1));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
         var solution = new TestdataListEntityProvidingSolution();
         solution.setEntityList(List.of(a, b));
 
@@ -435,13 +434,11 @@ class ListChangeMoveSelectorTest {
 
     @Test
     void randomWithEntityValueRange() {
-        var v1 = new TestdataListValue("1");
-        var v2 = new TestdataListValue("2");
-        var v3 = new TestdataListValue("3");
-        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2));
-        a.setValueList(List.of(v2, v1));
-        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3));
-        b.setValueList(List.of(v3));
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        var v3 = new TestdataListEntityProvidingValue("3");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v2, v1));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
         var solution = new TestdataListEntityProvidingSolution();
         solution.setEntityList(List.of(a, b));
 
