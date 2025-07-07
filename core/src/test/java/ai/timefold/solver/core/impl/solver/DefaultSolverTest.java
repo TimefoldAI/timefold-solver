@@ -2156,7 +2156,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         // KOpt - list
         allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
         // R&R - list
-        // allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
         // Union of all moves
         allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
         return allMoveSelectionConfigList;
