@@ -396,7 +396,7 @@ public class SolutionDescriptor<Solution_> {
     }
 
     private void processSolutionAnnotations(DescriptorPolicy descriptorPolicy) {
-        var annotation = extractTopMostPlanningSolutionAnnotation();
+        var annotation = extractMostRelevantPlanningSolutionAnnotation();
         autoDiscoverMemberType = annotation.autoDiscoverMemberType();
         var solutionClonerClass = annotation.solutionCloner();
         if (solutionClonerClass != PlanningSolution.NullSolutionCloner.class) {
@@ -407,7 +407,7 @@ public class SolutionDescriptor<Solution_> {
                 new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
     }
 
-    private @NonNull PlanningSolution extractTopMostPlanningSolutionAnnotation() {
+    private @NonNull PlanningSolution extractMostRelevantPlanningSolutionAnnotation() {
         var solutionAnnotation = solutionClass.getAnnotation(PlanningSolution.class);
         if (solutionAnnotation != null) {
             return solutionAnnotation;
