@@ -126,7 +126,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         if (randomSelection) {
             return cachedValueRange.createRandomIterator(workingRandom);
         }
-        if (cachedValueRange instanceof CountableValueRange range) {
+        if (cachedValueRange instanceof CountableValueRange<Object> range) {
             return range.createOriginalIterator();
         }
         throw new IllegalStateException("Value range's class (" + cachedValueRange.getClass().getCanonicalName() + ") " +

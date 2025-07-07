@@ -46,15 +46,6 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
                 "The incrementalScoreCalculator must not be null.");
     }
 
-    private static ConstraintMatchPolicy determineCorrectPolicy(ConstraintMatchPolicy constraintMatchPolicy,
-            IncrementalScoreCalculator<?, ?> incrementalScoreCalculator) {
-        if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator<?, ?>) {
-            return constraintMatchPolicy;
-        } else {
-            return ConstraintMatchPolicy.DISABLED;
-        }
-    }
-
     public IncrementalScoreCalculator<Solution_, Score_> getIncrementalScoreCalculator() {
         return incrementalScoreCalculator;
     }
@@ -278,6 +269,14 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
             return new IncrementalScoreDirector<>(this);
         }
 
+        private static ConstraintMatchPolicy determineCorrectPolicy(ConstraintMatchPolicy constraintMatchPolicy,
+                IncrementalScoreCalculator<?, ?> incrementalScoreCalculator) {
+            if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator<?, ?>) {
+                return constraintMatchPolicy;
+            } else {
+                return ConstraintMatchPolicy.DISABLED;
+            }
+        }
     }
 
 }

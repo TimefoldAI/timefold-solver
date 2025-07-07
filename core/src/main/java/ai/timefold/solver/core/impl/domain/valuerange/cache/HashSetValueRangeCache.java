@@ -12,7 +12,7 @@ import java.util.Set;
  *
  * @param <Value_> the value type
  */
-public class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
+public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
     private final Set<Value_> cache;
     private final List<Value_> values;

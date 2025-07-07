@@ -88,19 +88,18 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
 
     protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
-        var scoreDirectorFactory = builder.scoreDirectorFactory;
-        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
+        this.scoreDirectorFactory = builder.scoreDirectorFactory;
+        var solutionDescriptor = this.scoreDirectorFactory.getSolutionDescriptor();
         this.lookUpEnabled = builder.lookUpEnabled;
         this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver())
                 : null;
         this.constraintMatchPolicy = builder.constraintMatchPolicy;
         this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
-        this.scoreDirectorFactory = scoreDirectorFactory;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
-        this.solutionTracker = scoreDirectorFactory.isTrackingWorkingSolution()
+        this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
         this.valueRangeState = Objects.requireNonNull(builder.valueRangeState);

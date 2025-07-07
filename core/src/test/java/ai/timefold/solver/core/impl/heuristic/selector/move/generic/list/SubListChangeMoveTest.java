@@ -64,31 +64,38 @@ class SubListChangeMoveTest {
 
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
-        var v1 = new TestdataListEntityProvidingValue("1");
-        var v2 = new TestdataListEntityProvidingValue("2");
-        var v3 = new TestdataListEntityProvidingValue("3");
-        var v4 = new TestdataListEntityProvidingValue("4");
-        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v4), List.of(v1, v4, v2));
-        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4), List.of(v3));
+        var value1 = new TestdataListEntityProvidingValue("1");
+        var value2 = new TestdataListEntityProvidingValue("2");
+        var value3 = new TestdataListEntityProvidingValue("3");
+        var value4 = new TestdataListEntityProvidingValue("4");
+        var entity1 =
+                new TestdataListEntityProvidingEntity("e1", List.of(value1, value2, value4), List.of(value1, value4, value2));
+        var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value1, value3, value4), List.of(value3));
         // different entity => valid sublist
         assertThat(
-                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 2, e2, 0, false).isMoveDoable(otherInnerScoreDirector))
+                new SubListChangeMove<>(otherVariableDescriptor, entity1, 0, 2, entity2, 0, false)
+                        .isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
         assertThat(
-                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 2, e2, 0, true).isMoveDoable(otherInnerScoreDirector))
+                new SubListChangeMove<>(otherVariableDescriptor, entity1, 0, 2, entity2, 0, true)
+                        .isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
         // different entity => invalid sublist
         assertThat(
-                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 3, e2, 0, false).isMoveDoable(otherInnerScoreDirector))
+                new SubListChangeMove<>(otherVariableDescriptor, entity1, 0, 3, entity2, 0, false)
+                        .isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
         assertThat(
-                new SubListChangeMove<>(otherVariableDescriptor, e1, 0, 3, e2, 0, true).isMoveDoable(otherInnerScoreDirector))
+                new SubListChangeMove<>(otherVariableDescriptor, entity1, 0, 3, entity2, 0, true)
+                        .isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
         assertThat(
-                new SubListChangeMove<>(otherVariableDescriptor, e1, 1, 2, e2, 0, false).isMoveDoable(otherInnerScoreDirector))
+                new SubListChangeMove<>(otherVariableDescriptor, entity1, 1, 2, entity2, 0, false)
+                        .isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
         assertThat(
-                new SubListChangeMove<>(otherVariableDescriptor, e1, 1, 2, e2, 0, true).isMoveDoable(otherInnerScoreDirector))
+                new SubListChangeMove<>(otherVariableDescriptor, entity1, 1, 2, entity2, 0, true)
+                        .isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
     }
 
