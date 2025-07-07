@@ -24,6 +24,7 @@ import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedSolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedSolution;
+import ai.timefold.solver.core.testdomain.declarative.missing.TestdataDeclarativeMissingSupplierSolution;
 import ai.timefold.solver.core.testdomain.immutable.enumeration.TestdataEnumSolution;
 import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordSolution;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
@@ -670,5 +671,14 @@ class SolutionDescriptorTest {
                 .hasMessageContaining("with list variables")
                 .hasMessageContaining("on a single planning entity")
                 .hasMessageContaining("is not supported");
+    }
+
+    @Test
+    void missingDeclarativeSupplierMethod() {
+        assertThatCode(TestdataDeclarativeMissingSupplierSolution::buildSolutionDescriptor)
+                .hasMessageContaining("Could not find method named")
+                .hasMessageContaining("calculateEndTime")
+                .hasMessageContaining("on the class TestdataDeclarativeMissingSupplierValue")
+                .hasMessageContaining("Maybe you misspelled it");
     }
 }

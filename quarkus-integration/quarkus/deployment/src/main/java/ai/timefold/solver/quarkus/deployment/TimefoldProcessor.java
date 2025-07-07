@@ -1006,33 +1006,17 @@ class TimefoldProcessor {
             });
 
             for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
+                ClassInfo classInfo = null;
                 switch (annotatedMember.target().kind()) {
                     case FIELD -> {
                         var fieldInfo = annotatedMember.target().asField();
-                        var classInfo = fieldInfo.declaringClass();
+                        classInfo = fieldInfo.declaringClass();
                         buildFieldAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, fieldInfo, transformers);
-                        if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
-                            // The source method name also must be included
-                            // targetMethodName is a required field and is always present
-                            var targetMethodName = annotatedMember.value("targetMethodName").asString();
-                            var methodInfo = classInfo.method(targetMethodName);
-                            buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                                    classInfo, methodInfo, false, transformers);
-                        } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
-                                && annotatedMember.value("supplierName") != null) {
-                            // The source method name also must be included
-                            var targetMethodName = annotatedMember.value("supplierName")
-                                    .asString();
-                            var methodInfo = classInfo.method(targetMethodName);
-                            buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer,
-                                    classOutput,
-                                    classInfo, methodInfo, true, transformers);
-                        }
                     }
                     case METHOD -> {
                         var methodInfo = annotatedMember.target().asMethod();
-                        var classInfo = methodInfo.declaringClass();
+                        classInfo = methodInfo.declaringClass();
                         buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, methodInfo, true, transformers);
                     }
@@ -1040,6 +1024,28 @@ class TimefoldProcessor {
                         throw new IllegalStateException(
                                 "The member (%s) is not on a field or method.".formatted(annotatedMember));
                     }
+                }
+                if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
+                    // The source method name also must be included
+                    // targetMethodName is a required field and is always present
+                    var targetMethodName = annotatedMember.value("targetMethodName").asString();
+                    var methodInfo = classInfo.method(targetMethodName);
+                    buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                            classInfo, methodInfo, false, transformers);
+                } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
+                        && annotatedMember.value("supplierName") != null) {
+                    // The source method name also must be included
+                    var targetMethodName = annotatedMember.value("supplierName")
+                            .asString();
+                    var methodInfo = classInfo.method(targetMethodName);
+                    if (methodInfo == null) {
+                        throw new IllegalArgumentException(
+                                "Could not find method named %s on the class %s. Maybe you misspelled it?"
+                                        .formatted(targetMethodName, classInfo.simpleName()));
+                    }
+                    buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer,
+                            classOutput,
+                            classInfo, methodInfo, true, transformers);
                 }
             }
             // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor

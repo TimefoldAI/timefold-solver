@@ -56,6 +56,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.gizmo.GizmoSpringTestConfigu
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.missingsuppliervariable.MissingSupplierVariableSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multimodule.MultiModuleSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.multiple.MultipleConstraintSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.EmptySpringTestConfiguration;
@@ -92,6 +93,7 @@ class TimefoldSolverAutoConfigurationTest {
     private final ApplicationContextRunner noUserConfigurationContextRunner;
     private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner supplierVariableContextRunner;
+    private final ApplicationContextRunner missingSupplierVariableContextRunner;
     private final ApplicationContextRunner gizmoContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
     private final ApplicationContextRunner multiConstraintProviderRunner;
@@ -138,6 +140,10 @@ class TimefoldSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(SupplierVariableSpringTestConfiguration.class);
+        missingSupplierVariableContextRunner = new ApplicationContextRunner()
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
+                .withUserConfiguration(MissingSupplierVariableSpringTestConfiguration.class);
         multimoduleRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -967,5 +973,19 @@ class TimefoldSolverAutoConfigurationTest {
                     assertThat(solution).isNotNull();
                     assertThat(solution.getScore().score()).isNotNegative();
                 });
+    }
+
+    @Test
+    void missingSupplierVariables() {
+        assertThatCode(() -> missingSupplierVariableContextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues(
+                        "timefold.solver.enabled-preview-features=DECLARATIVE_SHADOW_VARIABLES",
+                        "timefold.solver.termination.best-score-limit=0")
+                .run(context -> {
+                    context.getBean(SolverFactory.class);
+                })).hasMessageContainingAll("Could not find method named value1AndValue2Supplier",
+                        "on the class TestdataSpringMissingSupplierVariableEntity.",
+                        "Maybe you misspelled it?");
     }
 }
