@@ -32,6 +32,14 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
  * Should be used in a filter for a hard {@link Constraint} to penalize
  * looped entities, since {@link PlanningSolution} with looped entities are
  * typically not valid.
+ * <p>
+ * Important:
+ * Do not use a {@link ShadowVariableLooped} property in a method annotated
+ * with {@link ShadowSources}. {@link ShadowVariableLooped} properties can
+ * be updated after the {@link ShadowSources} marked method is called, causing
+ * score corruption. {@link ShadowSources} marked methods do not need to check
+ * {@link ShadowVariableLooped} properties, since they are only called if all
+ * their dependencies are not looped.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)

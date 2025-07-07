@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
@@ -22,6 +23,9 @@ public class TestdataInvalidDeclarativeValue extends TestdataObject {
 
     @ShadowVariable(supplierName = "shadowSupplier")
     TestdataInvalidDeclarativeValue shadow;
+
+    @ShadowVariableLooped
+    boolean isLooped;
 
     public TestdataInvalidDeclarativeValue() {
     }
@@ -68,6 +72,14 @@ public class TestdataInvalidDeclarativeValue extends TestdataObject {
 
     public void setShadow(TestdataInvalidDeclarativeValue shadow) {
         this.shadow = shadow;
+    }
+
+    public boolean isLooped() {
+        return isLooped;
+    }
+
+    public void setLooped(boolean looped) {
+        isLooped = looped;
     }
 
     @ShadowSources("previous")

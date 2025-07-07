@@ -23,6 +23,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -132,10 +133,12 @@ public record RootVariableSource<Entity_, Value_>(
                     factCountSinceLastVariable = 0;
 
                     if (parentVariableType == null) {
-                        parentVariableType = determineParentVariableType(chainToVariable, memberAccessor);
+                        parentVariableType =
+                                determineParentVariableType(rootEntityClass, variablePath, chainToVariable, memberAccessor);
                     }
                     if (hasListMemberAccessor && groupParentVariableType == null) {
-                        groupParentVariableType = determineParentVariableType(chainToVariable, memberAccessor);
+                        groupParentVariableType =
+                                determineParentVariableType(rootEntityClass, variablePath, chainToVariable, memberAccessor);
                     }
                 } else {
                     factCountSinceLastVariable++;
@@ -350,7 +353,8 @@ public record RootVariableSource<Entity_, Value_>(
         return metaModel.entity(declaringClass).hasVariable(memberName);
     }
 
-    private static ParentVariableType determineParentVariableType(List<MemberAccessor> chain, MemberAccessor memberAccessor) {
+    private static ParentVariableType determineParentVariableType(Class<?> rootClass, String variablePath,
+            List<MemberAccessor> chain, MemberAccessor memberAccessor) {
         var isIndirect = chain.size() > 1;
         var declaringClass = memberAccessor.getDeclaringClass();
         var memberName = memberAccessor.getName();
@@ -383,6 +387,18 @@ public record RootVariableSource<Entity_, Value_>(
         }
         if (getAnnotation(declaringClass, memberName, PlanningVariable.class) != null) {
             return ParentVariableType.VARIABLE;
+        }
+        if (getAnnotation(declaringClass, memberName, ShadowVariableLooped.class) != null) {
+            throw new IllegalArgumentException("""
+                    The source path (%s) starting from root class (%s) accesses a @%s property (%s).
+                    @%s properties cannot be used as a source, since they are not guaranteed to
+                    be updated when the supplier is called. Supplier methods are only called when
+                    none of their dependencies are looped, so reading @%s properties are not needed.
+                    Maybe remove the source path (%s) from the @%s?
+                    """.formatted(
+                    variablePath, rootClass.getCanonicalName(), ShadowVariableLooped.class.getSimpleName(),
+                    memberName, ShadowVariableLooped.class.getSimpleName(), ShadowVariableLooped.class.getSimpleName(),
+                    variablePath, ShadowSources.class.getSimpleName()));
         }
         return ParentVariableType.NO_PARENT;
     }
