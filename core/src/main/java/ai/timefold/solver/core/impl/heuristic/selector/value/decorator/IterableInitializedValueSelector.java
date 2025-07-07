@@ -23,7 +23,7 @@ public final class IterableInitializedValueSelector<Solution_>
                 ((IterableValueSelector<Solution_>) childValueSelector).iterator(), determineBailOutSize());
     }
 
-    protected long determineBailOutSize() {
+    private long determineBailOutSize() {
         if (!bailOutEnabled) {
             return -1L;
         }

@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDeci
  * 
  * @param <Value_> the value type
  */
-public class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
+public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
     // The value and its index
     private final Map<Value_, Integer> cache;

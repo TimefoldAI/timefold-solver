@@ -565,33 +565,39 @@ class KOptListMoveTest {
 
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
-        var v1 = new TestdataListEntityProvidingValue("1");
-        var v2 = new TestdataListEntityProvidingValue("2");
-        var v3 = new TestdataListEntityProvidingValue("3");
-        var v4 = new TestdataListEntityProvidingValue("4");
-        var v5 = new TestdataListEntityProvidingValue("5");
-        var v6 = new TestdataListEntityProvidingValue("6");
-        var v7 = new TestdataListEntityProvidingValue("7");
-        var v8 = new TestdataListEntityProvidingValue("8");
-        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v3, v5, v6, v7), List.of(v5, v2, v3, v1));
-        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4, v5, v6, v7, v8), List.of(v6, v7, v4, v8));
+        var value1 = new TestdataListEntityProvidingValue("1");
+        var value2 = new TestdataListEntityProvidingValue("2");
+        var value3 = new TestdataListEntityProvidingValue("3");
+        var value4 = new TestdataListEntityProvidingValue("4");
+        var value5 = new TestdataListEntityProvidingValue("5");
+        var value6 = new TestdataListEntityProvidingValue("6");
+        var value7 = new TestdataListEntityProvidingValue("7");
+        var value8 = new TestdataListEntityProvidingValue("8");
+        var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2, value3, value5, value6, value7),
+                List.of(value5, value2, value3, value1));
+        var entity2 =
+                new TestdataListEntityProvidingEntity("e2", List.of(value1, value3, value4, value5, value6, value7, value8),
+                        List.of(value6, value7, value4, value8));
         var solution = new TestdataListEntityProvidingSolution();
-        solution.setEntityList(List.of(e1, e2));
+        solution.setEntityList(List.of(entity1, entity2));
         otherInnerScoreDirector.setWorkingSolution(solution);
 
         // same entity => always valid
-        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor, List.of(v2, v5, v3, v1),
-                List.of(v1, v2, v3, v5))
+        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor,
+                List.of(value2, value5, value3, value1),
+                List.of(value1, value2, value3, value5))
                 .isMoveDoable(otherInnerScoreDirector)).isTrue();
 
         // different entity => valid source and destination
-        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor, List.of(v2, v3, v6, v7),
-                List.of(v2, v6, v7, v3))
+        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor,
+                List.of(value2, value3, value6, value7),
+                List.of(value2, value6, value7, value3))
                 .isMoveDoable(otherInnerScoreDirector)).isTrue();
 
         // different entity => invalid source and destination
-        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor, List.of(v5, v2, v4, v8),
-                List.of(v8, v2, v4, v5))
+        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor,
+                List.of(value5, value2, value4, value8),
+                List.of(value8, value2, value4, value5))
                 .isMoveDoable(otherInnerScoreDirector)).isFalse();
     }
 

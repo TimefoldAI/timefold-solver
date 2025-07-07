@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.cache;
 
 import java.util.List;
 
-public interface ValueRangeCacheStrategy<Value_> {
+public sealed interface ValueRangeCacheStrategy<Value_> permits HashSetValueRangeCache, IdentityValueRangeCache {
 
     void add(Value_ value);
 
