@@ -83,6 +83,7 @@ import ai.timefold.solver.core.impl.util.MutablePair;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
+import org.jspecify.annotations.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -395,26 +396,38 @@ public class SolutionDescriptor<Solution_> {
     }
 
     private void processSolutionAnnotations(DescriptorPolicy descriptorPolicy) {
-        var solutionAnnotation = solutionClass.getAnnotation(PlanningSolution.class);
-        var parentSolutionAnnotation =
-                solutionClass.getSuperclass() != null ? solutionClass.getSuperclass().getAnnotation(PlanningSolution.class)
-                        : null;
-        if (solutionAnnotation == null && parentSolutionAnnotation == null) {
-            throw new IllegalStateException(
-                    "The solutionClass (%s) has been specified as a solution in the configuration, but does not have a @%s annotation."
-                            .formatted(solutionClass, PlanningSolution.class.getSimpleName()));
-        }
-        var annotation = solutionAnnotation != null ? solutionAnnotation : parentSolutionAnnotation;
+        var annotation = extractMostRelevantPlanningSolutionAnnotation();
         autoDiscoverMemberType = annotation.autoDiscoverMemberType();
-        // We accept only the child class cloner
-        var solutionClonerClass =
-                solutionAnnotation != null ? solutionAnnotation.solutionCloner() : PlanningSolution.NullSolutionCloner.class;
+        var solutionClonerClass = annotation.solutionCloner();
         if (solutionClonerClass != PlanningSolution.NullSolutionCloner.class) {
             solutionCloner = ConfigUtils.newInstance(this::toString, "solutionClonerClass", solutionClonerClass);
         }
         var lookUpStrategyType = annotation.lookUpStrategyType();
         lookUpStrategyResolver =
                 new LookUpStrategyResolver(descriptorPolicy, lookUpStrategyType);
+    }
+
+    private @NonNull PlanningSolution extractMostRelevantPlanningSolutionAnnotation() {
+        var solutionAnnotation = solutionClass.getAnnotation(PlanningSolution.class);
+        if (solutionAnnotation != null) {
+            return solutionAnnotation;
+        }
+        var solutionSuperclass = solutionClass.getSuperclass(); // Null if interface.
+        if (solutionSuperclass == null) {
+            throw new IllegalStateException("""
+                    The solutionClass (%s) has been specified as a solution in the configuration, \
+                    but does not have a @%s annotation."""
+                    .formatted(solutionClass.getCanonicalName(), PlanningSolution.class.getSimpleName()));
+        }
+        var parentSolutionAnnotation = solutionSuperclass.getAnnotation(PlanningSolution.class);
+        if (parentSolutionAnnotation == null) {
+            throw new IllegalStateException("""
+                    The solutionClass (%s) has been specified as a solution in the configuration, \
+                    but neither it nor its superclass (%s) have a @%s annotation."""
+                    .formatted(solutionClass.getCanonicalName(), solutionSuperclass.getCanonicalName(),
+                            PlanningSolution.class.getSimpleName()));
+        }
+        return parentSolutionAnnotation;
     }
 
     private void processValueRangeProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
@@ -579,7 +592,7 @@ public class SolutionDescriptor<Solution_> {
             var type = memberAccessor.getType();
             if (!(Collection.class.isAssignableFrom(type) || type.isArray())) {
                 throw new IllegalStateException(
-                        "The solutionClass (%s) has a @%s annotated member (%s) that does not return a %s or an array."
+                        "The solutionClass (%s) has a @%s-annotated member (%s) that does not return a %s or an array."
                                 .formatted(solutionClass, ProblemFactCollectionProperty.class.getSimpleName(), member,
                                         Collection.class.getSimpleName()));
             }
@@ -596,16 +609,14 @@ public class SolutionDescriptor<Solution_> {
             throw new IllegalStateException("Impossible situation with annotationClass (" + annotationClass + ").");
         }
         if (problemFactType.isAnnotationPresent(PlanningEntity.class)) {
-            throw new IllegalStateException(
-                    "The solutionClass (%s) has a @%s annotated member (%s) that returns a @%s. Maybe use @%s instead?"
-                            .formatted(
-                                    solutionClass,
-                                    annotationClass,
-                                    memberAccessor.getName(),
-                                    PlanningEntity.class.getSimpleName(),
-                                    ((annotationClass == ProblemFactProperty.class)
-                                            ? PlanningEntityProperty.class.getSimpleName()
-                                            : PlanningEntityCollectionProperty.class.getSimpleName())));
+            throw new IllegalStateException("""
+                    The solutionClass (%s) has a @%s-annotated member (%s) that returns a @%s.
+                    Maybe use @%s instead?"""
+                    .formatted(solutionClass, annotationClass.getSimpleName(), memberAccessor.getName(),
+                            PlanningEntity.class.getSimpleName(),
+                            ((annotationClass == ProblemFactProperty.class)
+                                    ? PlanningEntityProperty.class.getSimpleName()
+                                    : PlanningEntityCollectionProperty.class.getSimpleName())));
         }
     }
 
