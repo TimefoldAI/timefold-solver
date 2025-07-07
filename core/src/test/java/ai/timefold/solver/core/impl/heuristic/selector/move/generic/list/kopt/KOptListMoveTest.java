@@ -18,11 +18,16 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeState;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -30,9 +35,13 @@ class KOptListMoveTest {
 
     private final ListVariableDescriptor<TestdataListSolution> variableDescriptor =
             TestdataListEntity.buildVariableDescriptorForValueList();
-
     private final InnerScoreDirector<TestdataListSolution, ?> scoreDirector =
             PlannerTestUtils.mockScoreDirector(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+
+    private final ListVariableDescriptor<TestdataListEntityProvidingSolution> otherVariableDescriptor =
+            TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
+    private final InnerScoreDirector<TestdataListEntityProvidingSolution, ?> otherInnerScoreDirector =
+            PlannerTestUtils.mockScoreDirector(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor());
 
     private final TestdataListValue v1 = new TestdataListValue("1");
     private final TestdataListValue v2 = new TestdataListValue("2");
@@ -53,6 +62,11 @@ class KOptListMoveTest {
     private final TestdataListValue destinationV4 = new TestdataListValue("4");
     private final TestdataListValue destinationV5 = new TestdataListValue("5");
     private final TestdataListValue destinationV6 = new TestdataListValue("6");
+
+    @BeforeEach
+    void setUp() {
+        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
+    }
 
     // TODO: It appears the multi-entity approach does not like kopt-affected-elements;
     // (in particular, I found index variable corruption causing a NPE due to incorrect after
@@ -550,6 +564,38 @@ class KOptListMoveTest {
     }
 
     @Test
+    void isMoveDoableValueRangeProviderOnEntity() {
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        var v3 = new TestdataListEntityProvidingValue("3");
+        var v4 = new TestdataListEntityProvidingValue("4");
+        var v5 = new TestdataListEntityProvidingValue("5");
+        var v6 = new TestdataListEntityProvidingValue("6");
+        var v7 = new TestdataListEntityProvidingValue("7");
+        var v8 = new TestdataListEntityProvidingValue("8");
+        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v3, v5, v6, v7), List.of(v5, v2, v3, v1));
+        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4, v5, v6, v7, v8), List.of(v6, v7, v4, v8));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(e1, e2));
+        otherInnerScoreDirector.setWorkingSolution(solution);
+
+        // same entity => always valid
+        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor, List.of(v2, v5, v3, v1),
+                List.of(v1, v2, v3, v5))
+                .isMoveDoable(otherInnerScoreDirector)).isTrue();
+
+        // different entity => valid source and destination
+        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor, List.of(v2, v3, v6, v7),
+                List.of(v2, v6, v7, v3))
+                .isMoveDoable(otherInnerScoreDirector)).isTrue();
+
+        // different entity => invalid source and destination
+        assertThat(fromRemovedAndAddedEdges(otherInnerScoreDirector, otherVariableDescriptor, List.of(v5, v2, v4, v8),
+                List.of(v8, v2, v4, v5))
+                .isMoveDoable(otherInnerScoreDirector)).isFalse();
+    }
+
+    @Test
     void testEnableNearbyMixedModel() {
         var moveSelectorConfig = new KOptListMoveSelectorConfig();
         assertThat(moveSelectorConfig.canEnableNearbyInMixedModels()).isTrue();
@@ -568,21 +614,21 @@ class KOptListMoveTest {
      * @param addedEdgeList The edges to add. Must contain only endpoints specified in the removedEdgeList.
      * @return A new sequential or non-sequential k-opt move with the specified undirected edges removed and added.
      */
-    private static <Solution_> KOptListMove<Solution_> fromRemovedAndAddedEdges(
+    private static <Solution_, Value_> KOptListMove<Solution_> fromRemovedAndAddedEdges(
             InnerScoreDirector<Solution_, ?> scoreDirector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
-            List<TestdataListValue> removedEdgeList,
-            List<TestdataListValue> addedEdgeList) {
+            List<Value_> removedEdgeList,
+            List<Value_> addedEdgeList) {
         return fromRemovedAndAddedEdges(scoreDirector, listVariableDescriptor, listVariableDescriptor, removedEdgeList,
                 addedEdgeList);
     }
 
-    private static <Solution_> KOptListMove<Solution_> fromRemovedAndAddedEdges(
+    private static <Solution_, Value_> KOptListMove<Solution_> fromRemovedAndAddedEdges(
             InnerScoreDirector<Solution_, ?> scoreDirector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
             ListVariableDescriptor<Solution_> listVariableDescriptorSpy,
-            List<TestdataListValue> removedEdgeList,
-            List<TestdataListValue> addedEdgeList) {
+            List<Value_> removedEdgeList,
+            List<Value_> addedEdgeList) {
 
         if (addedEdgeList.size() != removedEdgeList.size()) {
             throw new IllegalArgumentException(
@@ -599,13 +645,13 @@ class KOptListMoveTest {
                     + "that are not included in the removedEdgeList (" + removedEdgeList + ").");
         }
 
-        var pickedValues = removedEdgeList.toArray(TestdataListValue[]::new);
+        var pickedValues = removedEdgeList.toArray(Object[]::new);
 
         var listVariableDataSupply = scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand());
         listVariableDataSupply = spy(listVariableDataSupply);
         when(listVariableDataSupply.getSourceVariableDescriptor()).thenReturn(listVariableDescriptorSpy);
 
-        Function<TestdataListValue, TestdataListValue> successorFunction =
+        Function<Value_, Value_> successorFunction =
                 getSuccessorFunction(listVariableDescriptorSpy, listVariableDataSupply);
 
         for (var i = 0; i < removedEdgeList.size(); i += 2) {
@@ -616,7 +662,7 @@ class KOptListMoveTest {
             }
         }
 
-        var tourArray = new TestdataListValue[removedEdgeList.size() + 1];
+        var tourArray = new Object[removedEdgeList.size() + 1];
         var incl = new int[removedEdgeList.size() + 1];
         for (var i = 0; i < removedEdgeList.size(); i += 2) {
             tourArray[i + 1] = removedEdgeList.get(i);
@@ -658,7 +704,7 @@ class KOptListMoveTest {
         };
     }
 
-    private static int identityIndexOf(List<TestdataListValue> sourceList, TestdataListValue query) {
+    private static <Value_> int identityIndexOf(List<Value_> sourceList, Value_ query) {
         for (var i = 0; i < sourceList.size(); i++) {
             if (sourceList.get(i) == query) {
                 return i;

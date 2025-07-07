@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 
 @PlanningEntity
 public class TestdataListEntityProvidingEntity extends TestdataObject {
@@ -25,9 +24,9 @@ public class TestdataListEntityProvidingEntity extends TestdataObject {
     }
 
     @ValueRangeProvider(id = "valueRange")
-    private final List<TestdataListValue> valueRange;
+    private final List<TestdataListEntityProvidingValue> valueRange;
     @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    private List<TestdataListValue> valueList;
+    private List<TestdataListEntityProvidingValue> valueList;
 
     public TestdataListEntityProvidingEntity() {
         // Required for cloning
@@ -35,21 +34,33 @@ public class TestdataListEntityProvidingEntity extends TestdataObject {
         valueList = new ArrayList<>();
     }
 
-    public TestdataListEntityProvidingEntity(String code, List<TestdataListValue> valueRange) {
+    public TestdataListEntityProvidingEntity(String code, List<TestdataListEntityProvidingValue> valueRange) {
         super(code);
         this.valueRange = valueRange;
         valueList = new ArrayList<>();
     }
 
-    public List<TestdataListValue> getValueRange() {
+    public TestdataListEntityProvidingEntity(String code, List<TestdataListEntityProvidingValue> valueRange,
+            List<TestdataListEntityProvidingValue> valueList) {
+        super(code);
+        this.valueRange = valueRange;
+        this.valueList = valueList;
+        for (var i = 0; i < valueList.size(); i++) {
+            var value = valueList.get(i);
+            value.setEntity(this);
+            value.setIndex(i);
+        }
+    }
+
+    public List<TestdataListEntityProvidingValue> getValueRange() {
         return valueRange;
     }
 
-    public List<TestdataListValue> getValueList() {
+    public List<TestdataListEntityProvidingValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListValue> valueList) {
+    public void setValueList(List<TestdataListEntityProvidingValue> valueList) {
         this.valueList = valueList;
     }
 }
