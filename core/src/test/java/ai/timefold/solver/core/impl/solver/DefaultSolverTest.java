@@ -2087,26 +2087,8 @@ class DefaultSolverTest extends AbstractMeterTest {
         }
     }
 
-    private static List<MoveSelectorConfig> generateMovesForBasicVarEntityRangeModel() {
-        // Local Search
-        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
-        // Change - basic
-        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
-        // Swap - basic
-        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
-        // Pillar change - basic
-        allMoveSelectionConfigList.add(new PillarChangeMoveSelectorConfig());
-        // Pilar swap - basic
-        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig());
-        // R&R - basic
-        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig());
-        // Union of all moves
-        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
-        return allMoveSelectionConfigList;
-    }
-
     @ParameterizedTest
-    @MethodSource("generateMovesForBasicVarEntityRangeModel")
+    @MethodSource("generateMovesForSingleVar")
     void solveBasicVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
         // Local search
         var localSearchConfig = new LocalSearchPhaseConfig()
@@ -2193,13 +2175,13 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(bestSolution).isNotNull();
 
         var bestEntity1 = bestSolution.getEntityList().get(0);
-        assertThat(bestEntity1.getValueList().size()).isGreaterThan(0);
+        assertThat(bestEntity1.getValueList()).hasSizeGreaterThan(0);
         assertThat(bestEntity1.getValueList()).doesNotContain(value3, value4, value5);
         var bestEntity2 = bestSolution.getEntityList().get(1);
-        assertThat(bestEntity2.getValueList().size()).isGreaterThan(0);
+        assertThat(bestEntity2.getValueList()).hasSizeGreaterThan(0);
         assertThat(bestEntity2.getValueList()).doesNotContain(value1, value4, value5);
         var bestEntity3 = bestSolution.getEntityList().get(2);
-        assertThat(bestEntity3.getValueList().size()).isGreaterThan(0);
+        assertThat(bestEntity3.getValueList()).hasSizeGreaterThan(0);
         assertThat(bestEntity3.getValueList()).doesNotContain(value1, value2, value3);
     }
 

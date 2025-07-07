@@ -30,7 +30,6 @@ class ListSwapMoveTest {
     private final TestdataListValue v1 = new TestdataListValue("1");
     private final TestdataListValue v2 = new TestdataListValue("2");
     private final TestdataListValue v3 = new TestdataListValue("3");
-    private final TestdataListValue v4 = new TestdataListValue("4");
 
     private final InnerScoreDirector<TestdataListSolution, ?> innerScoreDirector = mock(InnerScoreDirector.class);
     private final ListVariableDescriptor<TestdataListSolution> variableDescriptor =
@@ -60,20 +59,20 @@ class ListSwapMoveTest {
 
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
-        var v1 = new TestdataListEntityProvidingValue("1");
-        var v2 = new TestdataListEntityProvidingValue("2");
-        var v3 = new TestdataListEntityProvidingValue("3");
-        var v4 = new TestdataListEntityProvidingValue("4");
-        var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v3), List.of(v1, v2));
-        var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4), List.of(v3, v4));
+        var value1 = new TestdataListEntityProvidingValue("1");
+        var value2 = new TestdataListEntityProvidingValue("2");
+        var value3 = new TestdataListEntityProvidingValue("3");
+        var value4 = new TestdataListEntityProvidingValue("4");
+        var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2, value3), List.of(value1, value2));
+        var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value1, value3, value4), List.of(value3, value4));
         // different entity => valid left and right
-        assertThat(new ListSwapMove<>(otherVariableDescriptor, e1, 0, e2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListSwapMove<>(otherVariableDescriptor, entity1, 0, entity2, 0).isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
         // different entity => invalid left
-        assertThat(new ListSwapMove<>(otherVariableDescriptor, e1, 1, e2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListSwapMove<>(otherVariableDescriptor, entity1, 1, entity2, 0).isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
         // different entity => invalid right
-        assertThat(new ListSwapMove<>(otherVariableDescriptor, e1, 0, e2, 1).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListSwapMove<>(otherVariableDescriptor, entity1, 0, entity2, 1).isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
     }
 

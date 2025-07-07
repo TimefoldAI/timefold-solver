@@ -21,7 +21,7 @@ public final class FromEntitySortingValueSelector<Solution_>
     private final SelectionCacheType cacheType;
     private final SelectionSorter<Solution_, Object> sorter;
 
-    protected ScoreDirector<Solution_> scoreDirector = null;
+    private ScoreDirector<Solution_> scoreDirector = null;
 
     public FromEntitySortingValueSelector(ValueSelector<Solution_> childValueSelector,
             SelectionCacheType cacheType, SelectionSorter<Solution_, Object> sorter) {

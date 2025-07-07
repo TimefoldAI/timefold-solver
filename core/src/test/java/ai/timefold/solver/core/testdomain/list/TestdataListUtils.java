@@ -262,8 +262,7 @@ public final class TestdataListUtils {
     public static <T> IterableFromEntityPropertyValueSelector<T>
             getIterableFromEntityPropertyValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor, boolean randomSelection) {
         var fromPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
-        var iterablePropertySelector = new IterableFromEntityPropertyValueSelector<>(fromPropertySelector, randomSelection);
-        return iterablePropertySelector;
+        return new IterableFromEntityPropertyValueSelector<>(fromPropertySelector, randomSelection);
     }
 
     private static <T> Iterator<T> cyclicIterator(List<T> elements) {
