@@ -592,7 +592,7 @@ public class SolutionDescriptor<Solution_> {
             var type = memberAccessor.getType();
             if (!(Collection.class.isAssignableFrom(type) || type.isArray())) {
                 throw new IllegalStateException(
-                        "The solutionClass (%s) has a @%s annotated member (%s) that does not return a %s or an array."
+                        "The solutionClass (%s) has a @%s-annotated member (%s) that does not return a %s or an array."
                                 .formatted(solutionClass, ProblemFactCollectionProperty.class.getSimpleName(), member,
                                         Collection.class.getSimpleName()));
             }
@@ -609,16 +609,14 @@ public class SolutionDescriptor<Solution_> {
             throw new IllegalStateException("Impossible situation with annotationClass (" + annotationClass + ").");
         }
         if (problemFactType.isAnnotationPresent(PlanningEntity.class)) {
-            throw new IllegalStateException(
-                    "The solutionClass (%s) has a @%s annotated member (%s) that returns a @%s. Maybe use @%s instead?"
-                            .formatted(
-                                    solutionClass,
-                                    annotationClass,
-                                    memberAccessor.getName(),
-                                    PlanningEntity.class.getSimpleName(),
-                                    ((annotationClass == ProblemFactProperty.class)
-                                            ? PlanningEntityProperty.class.getSimpleName()
-                                            : PlanningEntityCollectionProperty.class.getSimpleName())));
+            throw new IllegalStateException("""
+                    The solutionClass (%s) has a @%s-annotated member (%s) that returns a @%s.
+                    Maybe use @%s instead?"""
+                    .formatted(solutionClass, annotationClass.getSimpleName(), memberAccessor.getName(),
+                            PlanningEntity.class.getSimpleName(),
+                            ((annotationClass == ProblemFactProperty.class)
+                                    ? PlanningEntityProperty.class.getSimpleName()
+                                    : PlanningEntityCollectionProperty.class.getSimpleName())));
         }
     }
 
