@@ -23,8 +23,9 @@ public class QueuedValuePlacerFactory<Solution_>
         extends AbstractEntityPlacerFactory<Solution_, QueuedValuePlacerConfig> {
 
     public static QueuedValuePlacerConfig unfoldNew(MoveSelectorConfig templateMoveSelectorConfig) {
-        throw new UnsupportedOperationException("The <constructionHeuristic> contains a moveSelector ("
-                + templateMoveSelectorConfig + ") and the <queuedValuePlacer> does not support unfolding those yet.");
+        throw new UnsupportedOperationException(
+                "The <constructionHeuristic> contains a moveSelector (%s) and the <queuedValuePlacer> does not support unfolding those yet."
+                        .formatted(templateMoveSelectorConfig));
     }
 
     public QueuedValuePlacerFactory(QueuedValuePlacerConfig placerConfig) {
@@ -48,15 +49,14 @@ public class QueuedValuePlacerFactory<Solution_>
 
         MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig_)
                 .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
-        if (!(valueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException("The queuedValuePlacer (" + this
-                    + ") needs to be based on an "
-                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
+        if (!(valueSelector instanceof IterableValueSelector<Solution_> iterableValueSelector)) {
+            throw new IllegalArgumentException(
+                    "The queuedValuePlacer (%s) needs to be based on an %s (%s). Check your @%s annotations.".formatted(this,
+                            IterableValueSelector.class.getSimpleName(), valueSelector,
+                            ValueRangeProvider.class.getSimpleName()));
 
         }
-        return new QueuedValuePlacer<>(this, configPolicy, (IterableValueSelector<Solution_>) valueSelector,
-                moveSelector);
+        return new QueuedValuePlacer<>(this, configPolicy, iterableValueSelector, moveSelector);
     }
 
     private ValueSelectorConfig buildValueSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,

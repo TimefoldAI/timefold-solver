@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.cache.CacheableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
@@ -37,8 +38,8 @@ public final class FromEntityListValueRange<Value_> extends AbstractCountableVal
         this.cacheStrategy = firstValueRange.generateCache();
         for (var i = 1; i < entityList.size(); ++i) {
             var entity = entityList.get(i);
-            var otherValueRange = (CacheableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(null, entity);
-            otherValueRange.createOriginalIterator().forEachRemaining(cacheStrategy::add);
+            var otherValueRange = (CountableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(null, entity);
+            this.cacheStrategy.merge(otherValueRange);
         }
     }
 

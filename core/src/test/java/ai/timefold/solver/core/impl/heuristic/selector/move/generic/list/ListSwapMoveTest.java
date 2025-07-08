@@ -14,7 +14,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListS
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeState;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -41,7 +41,7 @@ class ListSwapMoveTest {
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
+        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeResolver<>());
     }
 
     @Test

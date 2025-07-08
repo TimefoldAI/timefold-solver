@@ -7,6 +7,8 @@ import java.util.Map;
 
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This caching strategy employs an {@link IdentityHashMap} to keep track of the values that have been added so far.
  * It is important to understand that this strategy should not be applied to special built-in value ranges,
@@ -27,7 +29,7 @@ public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStr
     }
 
     @Override
-    public void add(Value_ value) {
+    public void add(@NonNull Value_ value) {
         if (!cache.containsKey(value)) {
             values.add(value);
             cache.put(value, values.size() - 1);
@@ -37,13 +39,13 @@ public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStr
     @Override
     public Value_ get(int index) {
         if (index < 0 || index >= values.size()) {
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + values.size());
+            throw new IndexOutOfBoundsException("Index: %d, Size: %d".formatted(index, values.size()));
         }
         return values.get(index);
     }
 
     @Override
-    public boolean contains(Value_ value) {
+    public boolean contains(@NonNull Value_ value) {
         return cache.containsKey(value);
     }
 
@@ -53,7 +55,7 @@ public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStr
     }
 
     @Override
-    public List<Value_> getAll() {
+    public @NonNull List<Value_> getAll() {
         return values;
     }
 }
