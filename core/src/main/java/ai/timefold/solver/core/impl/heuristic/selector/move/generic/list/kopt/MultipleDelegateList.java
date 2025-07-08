@@ -129,10 +129,9 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
             var entity = delegateEntities[i];
             var valueRange =
                     valueRangeResolver.extractValueRange(listVariableDescriptor.getValueRangeDescriptor(), null, entity);
-            for (var value : delegates[i]) {
-                if (!valueRange.contains(value)) {
-                    return false;
-                }
+            var containsAll = delegates[i].stream().allMatch(valueRange::contains);
+            if (!containsAll) {
+                return false;
             }
         }
         return true;
