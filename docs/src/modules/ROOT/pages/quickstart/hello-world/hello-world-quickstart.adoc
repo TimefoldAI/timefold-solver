@@ -72,10 +72,7 @@ $ git clone {quickstarts-clone-url}
 +
 [tabs]
 ====
-Java::
-{hello-world-java-quickstart-url}[the `java` directory].
-
-Kotlin::
+Java/Kotlin::
 {hello-world-java-quickstart-url}[the `java` directory].
 
 Python::
@@ -90,17 +87,12 @@ To complete this guide, you need:
 
 [tabs]
 ====
-Java::
+Java/Kotlin::
 +
 --
 include::../shared/java-prerequisites.adoc[]
 --
 
-Kotlin::
-+
---
-include::../shared/java-prerequisites.adoc[]
---
 
 Python::
 +
@@ -899,17 +891,10 @@ To see any output in the console, logging must be configured properly.
 
 [tabs]
 ====
-Java::
+Java/Kotlin::
 +
 --
 include::../shared/java-logback-config.adoc[]
-----
---
-Kotlin::
-+
---
-include::../shared/java-logback-config.adoc[]
-----
 --
 
 Python::
@@ -956,23 +941,9 @@ format=%(asctime)s - %(name)s - %(levelname)s - %(message)s
 
 [tabs]
 ====
-Java::
-+
---
-Run the `TimetableApp` class as the main class of a normal Java application:
---
+Java/Kotlin:: Run the `TimetableApp` class as the main class:
 
-Kotlin::
-+
---
-Run the `TimetableApp` class as the main class of a normal Java application:
---
-
-Python::
-+
---
-Run `src/hello_world/main.py`:
---
+Python:: Run `src/hello_world/main.py`:
 ====
 
 ----
@@ -1165,18 +1136,7 @@ To understand how Timefold Solver is solving your problem internally:
 
 [tabs]
 ====
-Java::
-+
---
-Change the logging in the `logback.xml` file:
-
-[source,xml]
-----
-  <logger name="ai.timefold.solver" level="debug"/>
-----
---
-
-Kotlin::
+Java/Kotlin::
 +
 --
 Change the logging in the `logback.xml` file:
