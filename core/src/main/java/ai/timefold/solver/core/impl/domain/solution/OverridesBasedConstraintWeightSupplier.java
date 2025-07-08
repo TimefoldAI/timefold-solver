@@ -29,7 +29,6 @@ public final class OverridesBasedConstraintWeightSupplier<Score_ extends Score<S
         Member member;
 
         // Prefer method to field
-        // (In Python, the field doesn't implement the interface).
         if (method == null) {
             member = field;
             overridesClass = (Class<? extends ConstraintWeightOverrides<Score_>>) field.getType();

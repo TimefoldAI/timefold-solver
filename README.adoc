@@ -17,8 +17,7 @@ image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-
 {sonarBadge}&metric=sqale_rating["Maintainability Rating", {sonarLink}]
 {sonarBadge}&metric=coverage["Coverage", {sonarLink}]
 
-Timefold Solver is an AI constraint solver for Java,
-https://github.com/TimefoldAI/timefold-solver/tree/main/python#readme[Python] and Kotlin.
+Timefold Solver is an AI constraint solver for Java and Kotlin.
 You can use Timefold Solver to optimize the Vehicle Routing Problem, Employee Rostering,
 Maintenance Scheduling, Task Assignment, School Timetabling, Cloud Optimization,
 Conference Scheduling, Job Shop Scheduling and many more planning problems.

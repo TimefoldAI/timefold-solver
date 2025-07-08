@@ -11,8 +11,6 @@ include::../../_attributes.adoc[]
 :testannotation: @QuarkusTest
 :testannotationfq: io.quarkus.test.junit.QuarkusTest
 :framework-quickstart-url: {quarkus-quickstart-url}
-// disable python code examples for quarkus
-:python-disabled:
 
 // Keep this in sync with the quarkus repo's copy
 // https://github.com/quarkusio/quarkus/blob/main/docs/src/main/asciidoc/timefold.adoc

@@ -12,8 +12,6 @@ include::../../_attributes.adoc[]
 :testannotation: @SpringTest
 :testannotationfq: org.springframework.boot.test.context.SpringBootTest
 :framework-quickstart-url: {spring-boot-quickstart-url}
-// disable python code examples for quarkus
-:python-disabled:
 
 This guide walks you through the process of creating a Spring Boot application
 with https://timefold.ai[Timefold]'s constraint solving Artificial Intelligence (AI).

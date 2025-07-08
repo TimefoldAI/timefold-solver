@@ -27,8 +27,6 @@ jobs:
         include:
         - language: java-kotlin
           build-mode: autobuild
-        - language: python
-          build-mode: none
         - language: javascript-typescript # Need to add this even though we don't want this; otherwise Github complains.
           build-mode: none
     steps:

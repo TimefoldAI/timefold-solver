@@ -25,9 +25,9 @@ Example usecases include:
 image::introduction/useCaseOverview.png[align="center"]
 
 Timefold Solver is 100% pure Java^TM^ and runs on Java {java-version} or higher.
-It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^, Python, and other technologies.
+It xref:integration/integration.adoc#integration[integrates very easily] with other Java^TM^, and other technologies.
 Timefold Solver works on any Java Virtual Machine and is compatible with the major JVM languages and all major platforms.
-It also supports Kotlin and Python.
+It also supports Kotlin.
 
 :!sectnums:
 == Next

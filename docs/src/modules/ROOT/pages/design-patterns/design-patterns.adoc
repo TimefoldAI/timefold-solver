@@ -90,7 +90,7 @@ image::design-patterns/employeeShiftRosteringModelingGuideB.png[align="center"]
 
 Dealing with time and dates in planning problems may be problematic because it is dependent on the needs of your use case.
 
-There are several representations of timestamps, dates, durations and periods in Java, Kotlin and Python.
+There are several representations of timestamps, dates, durations and periods in Java and Kotlin.
 Choose the right representation type for your use case:
 
 * ``DayOfWeek`` with or without ``LocalTime`` if no date is involved.
