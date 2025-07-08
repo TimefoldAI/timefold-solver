@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-        xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  <solutionClass>tests.test_solver_config.test_reload_from_solver_config_file.&lt;locals&gt;.RedefinedSolution</solutionClass>
-</solver>

@@ -1,4 +1,0 @@
-graft .mvn
-graft src/main/java
-graft src/main/resources
-include mvnw mvnw.cmd pom.xml

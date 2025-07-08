@@ -1,6 +1,0 @@
-* xref:jpyinterpreter-introduction/jpyinterpreter-introduction.adoc[leveloffset=+1]
-* xref:stack-machines/stack-machines.adoc[leveloffset=+1]
-* xref:python-function-structure/python-function-structure.adoc[leveloffset=+1]
-* xref:opcodes/opcodes.adoc[leveloffset=+1]
-* xref:java-bytecode/java-bytecode.adoc[leveloffset=+1]
-* xref:jpyinterpreter-architecture/jpyinterpreter-architecture.adoc[leveloffset=+1]
