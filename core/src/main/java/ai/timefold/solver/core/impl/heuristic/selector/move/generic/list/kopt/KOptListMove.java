@@ -172,7 +172,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         return out;
     }
 
-    private void flipSublists(List<FlipSublistAction> actions, MultipleDelegateList combinedList, int shiftAmount) {
+    private <T> void flipSublists(List<FlipSublistAction> actions, MultipleDelegateList<T> combinedList, int shiftAmount) {
         // Apply all flip actions
         for (var move : actions) {
             move.execute(combinedList);
