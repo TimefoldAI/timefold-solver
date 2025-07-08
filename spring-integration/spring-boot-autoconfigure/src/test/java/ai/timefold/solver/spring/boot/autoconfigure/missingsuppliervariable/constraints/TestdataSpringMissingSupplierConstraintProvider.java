@@ -9,7 +9,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.missingsuppliervariable.doma
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataSpringMissingSupplierVariableConstraintProvider implements ConstraintProvider {
+public class TestdataSpringMissingSupplierConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
