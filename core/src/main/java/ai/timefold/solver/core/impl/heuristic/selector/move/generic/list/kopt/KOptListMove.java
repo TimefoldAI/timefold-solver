@@ -96,13 +96,8 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         // subLists will get corrupted by ConcurrentModifications, so do the operations
         // on a clone
         var combinedListCopy = combinedList.copy();
-        for (var move : equivalent2Opts) {
-            move.doMoveOnGenuineVariables(combinedListCopy);
-        }
-
-        combinedListCopy.moveElementsOfDelegates(newEndIndices);
-
-        Collections.rotate(combinedListCopy, postShiftAmount);
+        flipSublists(equivalent2Opts, combinedListCopy, postShiftAmount);
+        // At this point, all related genuine variables are actually updated
         combinedList.applyChangesFromCopy(combinedListCopy);
 
         combinedList.actOnAffectedElements(listVariableDescriptor,
@@ -126,12 +121,8 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
                         ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
                 // We need to compute the combined list of values to check the source and destination
                 var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
-                // All moves are applied, but the entity remains unchanged,
-                // only the combined list of elements is updated.
-                equivalent2Opts.forEach(move -> move.doMoveOnGenuineVariables(combinedList));
-                // The sublist for each delegate is recalculated.
-                combinedList.moveElementsOfDelegates(newEndIndices);
-                // At this point, we can check if the new arrangement of elements meets the entity value ranges.
+                flipSublists(equivalent2Opts, combinedList, postShiftAmount);
+                // We now check if the new arrangement of elements meets the entity value ranges
                 secondPass = combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeResolver);
             }
         }
@@ -179,6 +170,16 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
 
         return out;
+    }
+
+    private void flipSublists(List<FlipSublistAction> actions, MultipleDelegateList combinedList, int shiftAmount) {
+        // Apply all flip actions
+        for (var move : actions) {
+            move.execute(combinedList);
+        }
+        // Update the delegate sublists of the combined list
+        combinedList.moveElementsOfDelegates(newEndIndices);
+        Collections.rotate(combinedList, shiftAmount);
     }
 
     public String toString() {
