@@ -14,7 +14,7 @@ import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
-import ai.timefold.solver.core.impl.score.director.ValueRangeState;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
@@ -367,7 +367,7 @@ class SolutionDescriptorTest {
         var entityCount = 3;
         var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        var valueRangeResolver = new ValueRangeState<TestdataListSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataListSolution>();
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution, valueRangeResolver);
         assertThat(initializationStats.genuineEntityCount()).isEqualTo(entityCount);
         assertThat(initializationStats.shadowEntityCount()).isEqualTo(valueCount);
@@ -380,7 +380,7 @@ class SolutionDescriptorTest {
         var solution = TestdataSolution.generateSolution(valueCount, entityCount);
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
 
-        var valueRangeResolver = new ValueRangeState<TestdataSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataSolution>();
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution, valueRangeResolver);
         assertThat(initializationStats.uninitializedVariableCount()).isZero();
 
@@ -398,7 +398,7 @@ class SolutionDescriptorTest {
         var valueCount = 10;
         var entityCount = 3;
         var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataListSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataListSolution>();
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
 
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution, valueRangeResolver);
@@ -423,7 +423,7 @@ class SolutionDescriptorTest {
         var entityCount = 20;
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solution = TestdataSolution.generateSolution(valueCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataSolution>();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -440,7 +440,7 @@ class SolutionDescriptorTest {
         var entityCount = 27;
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solution = TestdataSolution.generateSolution(valueCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataSolution>();
         solution.getValueList().clear();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
@@ -456,7 +456,7 @@ class SolutionDescriptorTest {
     void problemScaleMultipleValueRanges() {
         var solutionDescriptor = TestdataValueRangeSolution.buildSolutionDescriptor();
         var solution = new TestdataValueRangeSolution("Solution");
-        var valueRangeResolver = new ValueRangeState<TestdataValueRangeSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataValueRangeSolution>();
         solution.setEntityList(List.of(new TestdataValueRangeEntity("A")));
         final var entityCount = 1L;
         final var valueCount = 3L;
@@ -483,7 +483,7 @@ class SolutionDescriptorTest {
                         List.of(v1, v2)),
                 new TestdataEntityProvidingEntity("B",
                         List.of(v1, v2, new TestdataValue("3")))));
-        var valueRangeResolver = new ValueRangeState<TestdataEntityProvidingSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataEntityProvidingSolution>();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
@@ -500,7 +500,7 @@ class SolutionDescriptorTest {
     void listVariableProblemScaleEntityProvidingValueRange() {
         var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataListEntityProvidingSolution();
-        var valueRangeResolver = new ValueRangeState<TestdataListEntityProvidingSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataListEntityProvidingSolution>();
         var v1 = new TestdataListEntityProvidingValue("1");
         var v2 = new TestdataListEntityProvidingValue("2");
         solution.setEntityList(List.of(
@@ -519,7 +519,7 @@ class SolutionDescriptorTest {
     void problemScaleSingleEntityProvidingSingleValueRange() {
         var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataEntityProvidingSolution("Solution");
-        var valueRangeResolver = new ValueRangeState<TestdataEntityProvidingSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataEntityProvidingSolution>();
         var v1 = new TestdataValue("1");
         solution.setEntityList(List.of(
                 new TestdataEntityProvidingEntity("A",
@@ -542,7 +542,7 @@ class SolutionDescriptorTest {
         var entityCount = 500;
         var solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
         var solution = generateChainedSolution(anchorCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataChainedSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataChainedSolution>();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
@@ -577,7 +577,7 @@ class SolutionDescriptorTest {
         var entityCount = 20;
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataListSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataListSolution>();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -595,7 +595,7 @@ class SolutionDescriptorTest {
         var entityCount = 1;
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataListSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataListSolution>();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -611,7 +611,7 @@ class SolutionDescriptorTest {
         var entityCount = 1;
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataAllowsUnassignedValuesListSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataAllowsUnassignedValuesListSolution>();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -628,11 +628,11 @@ class SolutionDescriptorTest {
         var entityCount = 20;
         var solutionDescriptorList = TestdataListSolution.buildSolutionDescriptor();
         var listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeResolver = new ValueRangeState<TestdataListSolution>();
+        var valueRangeResolver = new ValueRangeResolver<TestdataListSolution>();
         var listPowerExponent = solutionDescriptorList.getProblemScale(listSolution, valueRangeResolver);
         var solutionDescriptorChained = TestdataChainedSolution.buildSolutionDescriptor();
         var solutionChained = generateChainedSolution(entityCount, valueCount);
-        var valueRangeResolverChained = new ValueRangeState<TestdataChainedSolution>();
+        var valueRangeResolverChained = new ValueRangeResolver<TestdataChainedSolution>();
         var chainedPowerExponent = solutionDescriptorChained.getProblemScale(solutionChained, valueRangeResolverChained);
         // Since they are using different bases in calculation, some difference is expected,
         // but the numbers should be relatively (i.e. ~1%) close.
