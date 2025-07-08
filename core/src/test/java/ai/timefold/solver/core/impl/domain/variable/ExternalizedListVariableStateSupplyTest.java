@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeState;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
@@ -23,7 +23,7 @@ class ExternalizedListVariableStateSupplyTest {
     void initializeRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
+        when(scoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeResolver<>());
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
@@ -52,7 +52,7 @@ class ExternalizedListVariableStateSupplyTest {
     void assignRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
+        when(scoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeResolver<>());
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");

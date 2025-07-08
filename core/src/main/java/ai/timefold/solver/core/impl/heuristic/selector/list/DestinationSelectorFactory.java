@@ -62,10 +62,10 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                          */
                         ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED);
         if (!(valueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException("The destinationSelector (" + config
-                    + ") for a list variable needs to be based on an "
-                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
+            throw new IllegalArgumentException(
+                    "The destinationSelector (%s) for a list variable needs to be based on an %s (%s). Check your @%s annotations."
+                            .formatted(config, IterableValueSelector.class.getSimpleName(), valueSelector,
+                                    ValueRangeProvider.class.getSimpleName()));
 
         }
         return (IterableValueSelector<Solution_>) valueSelector;

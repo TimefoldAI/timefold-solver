@@ -12,7 +12,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeState;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -38,7 +38,7 @@ class TwoOptListMoveTest {
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeState<>());
+        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeResolver<>());
     }
 
     @Test

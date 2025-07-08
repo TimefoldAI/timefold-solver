@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
@@ -39,12 +38,6 @@ public class SubChainChangeMoveSelectorFactory<Solution_>
                         .buildSubChainSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
-        if (!(valueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                    + ") needs to be based on an "
-                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-        }
         return new SubChainChangeMoveSelector<>(subChainSelector,
                 (IterableValueSelector<Solution_>) valueSelector, randomSelection,
                 Objects.requireNonNullElse(config.getSelectReversingMoveToo(), true));

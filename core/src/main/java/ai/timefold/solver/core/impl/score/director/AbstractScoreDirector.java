@@ -82,7 +82,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
 
-    private final ValueRangeState<Solution_> valueRangeState;
+    private final ValueRangeResolver<Solution_> valueRangeResolver;
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
@@ -102,7 +102,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
-        this.valueRangeState = Objects.requireNonNull(builder.valueRangeState);
+        this.valueRangeResolver = Objects.requireNonNull(builder.valueRangeResolver);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -199,7 +199,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public ValueRangeResolver<Solution_> getValueRangeResolver() {
-        return valueRangeState;
+        return valueRangeResolver;
     }
 
     @Override
@@ -247,7 +247,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
         // This visits all the entities.
         var initializationStatistics =
-                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeState);
+                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeResolver);
         setWorkingEntityListDirty();
 
         workingInitScore =
@@ -318,7 +318,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         workingEntityListRevision++;
         // Some selectors depend on this revision value to detect changes in entity value ranges.
         // Therefore, we need to reset the value range state to ensure consistent ranges.
-        valueRangeState.reset();
+        valueRangeResolver.reset();
     }
 
     @Override
@@ -984,7 +984,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         protected final Factory_ scoreDirectorFactory;
 
         // May be replaced by a shared state coming from the solver.
-        protected ValueRangeState<Solution_> valueRangeState = new ValueRangeState<>();
+        protected ValueRangeResolver<Solution_> valueRangeResolver = new ValueRangeResolver<>();
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
@@ -994,8 +994,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
 
         @SuppressWarnings("unchecked")
-        public Builder_ withValueRangeState(ValueRangeState<Solution_> valueRangeState) {
-            this.valueRangeState = Objects.requireNonNull(valueRangeState);
+        public Builder_ withValueRangeState(ValueRangeResolver<Solution_> valueRangeResolver) {
+            this.valueRangeResolver = Objects.requireNonNull(valueRangeResolver);
             return (Builder_) this;
         }
 

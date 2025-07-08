@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.jspecify.annotations.NonNull;
+
 /**
  * This caching strategy employs a {@link HashSet} to track the values that have been added so far.
  * This approach is more general,
@@ -23,23 +25,22 @@ public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStra
     }
 
     @Override
-    public void add(Value_ value) {
-        if (!cache.contains(value)) {
+    public void add(@NonNull Value_ value) {
+        if (cache.add(value)) {
             values.add(value);
-            cache.add(value);
         }
     }
 
     @Override
     public Value_ get(int index) {
         if (index < 0 || index >= values.size()) {
-            throw new IndexOutOfBoundsException("Index: " + index + ", Size: " + values.size());
+            throw new IndexOutOfBoundsException("Index: %d, Size: %d".formatted(index, values.size()));
         }
         return values.get(index);
     }
 
     @Override
-    public boolean contains(Value_ value) {
+    public boolean contains(@NonNull Value_ value) {
         return cache.contains(value);
     }
 
@@ -49,7 +50,7 @@ public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStra
     }
 
     @Override
-    public List<Value_> getAll() {
+    public @NonNull List<Value_> getAll() {
         return values;
     }
 }
