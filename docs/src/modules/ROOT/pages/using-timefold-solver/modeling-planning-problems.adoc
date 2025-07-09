@@ -106,7 +106,7 @@ public class Course {
 ====
 
 A problem fact class does _not_ require any Timefold Solver specific code.
-For example, you can reuse your domain classes, which might have JPA or Pydantic annotations.
+For example, you can reuse your domain classes, which might have JPA or Jackson annotations.
 
 [NOTE]
 ====
