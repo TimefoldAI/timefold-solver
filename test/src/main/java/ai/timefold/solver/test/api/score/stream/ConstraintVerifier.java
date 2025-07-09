@@ -61,7 +61,9 @@ public interface ConstraintVerifier<ConstraintProvider_ extends ConstraintProvid
         var nonNullSolverConfig = requireNonNull(solverConfig);
         var entityClassList = Objects.requireNonNull(nonNullSolverConfig.getEntityClassList());
         var solutionDescriptor =
-                SolutionDescriptor.buildSolutionDescriptor(requireNonNull(nonNullSolverConfig.getSolutionClass()),
+                SolutionDescriptor.buildSolutionDescriptor(
+                        nonNullSolverConfig.getEnablePreviewFeatureSet(),
+                        requireNonNull(nonNullSolverConfig.getSolutionClass()),
                         entityClassList.toArray(new Class<?>[] {}));
         var scoreDirectorFactoryConfig = requireNonNull(nonNullSolverConfig.getScoreDirectorFactoryConfig());
         var constraintProviderClass = requireNonNull(scoreDirectorFactoryConfig.getConstraintProviderClass());
