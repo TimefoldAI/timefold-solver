@@ -50,7 +50,6 @@ Preview features often live in the `preview.api` package, and they are:
 - xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
 in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package,
 and in the `SolutionManager`
-- _Timefold Solver for Python_, which is currently in beta
 
 We encourage you to try these preview features and give us feedback on your experience with them.
 Please direct your feedback to

@@ -21,14 +21,6 @@ Java::
                 .sum();
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def do_not_assign_ann() -> int:
-    return sum(-1 for shift in schedule.shifts if shift.employee == 'Ann');
-----
 ====
 
 However, that scales poorly because it doesn't do an xref:constraints-and-score/performance.adoc#incrementalScoreCalculationPerformance[incremental calculation]:
@@ -61,17 +53,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def do_not_assign_ann(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Shift)
-                .filter(lambda shift: shift.employee == 'Ann')
-                .penalize(HardSoftScore.ONE_SOFT)
-                .as_constraint("Don't assign Ann")
-    )
-----
+
 ====
 
 This constraint stream iterates over all instances of class `Shift` in the xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem facts] and
@@ -124,24 +106,6 @@ Java::
 
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@constraint_provider
-def my_constraint_provider(factory: ConstraintFactory) -> list[Constraint]:
-    return [
-        penalize_every_shift(factory)
-    ]
-
-
-def penalize_every_shift(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Shift)
-                .penalize(HardSoftScore.ONE_SOFT)
-                .as_constraint("Penalize a shift")
-    )
-----
 ====
 
 [NOTE]
@@ -183,16 +147,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def do_not_assign_ann(factory: ConstraintFactory) -> Constraint:
-    return (
-        factory.for_each(Shift)  # Returns UniStream[Shift].
-            ...
-    )
-----
+
 ====
 
 Some constraint stream <<constraintStreamsBuildingBlocks,building blocks>> can increase stream cardinality, such as
@@ -212,19 +167,6 @@ Java::
                 ...
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def do_not_assign_ann(factory: ConstraintFactory) -> Constraint:
-        return (factory.for_each(Shift)  # Returns Uni[Shift].
-                .join(Employee)        # Returns Bi[Shift, Employee].
-                .join(DayOff)          # Returns Tri[Shift, Employee, DayOff].
-                .join(Country)         # Returns Quad[Shift, Employee, DayOff, Country].
-                ...
-    )
-----
 ====
 
 The latter can also decrease stream cardinality:
@@ -243,17 +185,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def do_not_assign_ann(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Shift)                          # Returns UniStream[Shift].
-                .join(Employee)                              # Returns BiStream[Shift, Employee].
-                .group_by(lambda shift, employee: employee)  # Returns UniStream[Employee].
-                ...
-    )
-----
+
 
 ====
 
@@ -290,21 +222,6 @@ Java::
                 ...                         // This BiConstraintStream carries 5 Shift elements.
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def penta_stream_example(factory: ConstraintFactory ) -> Constraint
-    return (factory.for_each(Shift)                # UniConstraintStream[Shift]
-            .join(Shift)                           # BiConstraintStream[Shift, Shift]
-            .join(Shift)                           # TriConstraintStream[Shift, Shift, Shift]
-            .join(Shift)                           # QuadConstraintStream[Shift, Shift, Shift, Shift]
-            .map(lambda a, b, c, d: (a, b, c, d))  # UniConstraintStream[tuple[Shift, Shift, Shift, Shift]]
-            .join(Shift)                           # BiConstraintStream[tuple[Shift, Shift, Shift, Shift], Shift]
-            ...                                    # This BiConstraintStream carries 5 Shift elements.
-    )
-----
 ====
 
 [NOTE]
@@ -334,16 +251,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def penalize_initialized_shifts(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Shift)
-                   .penalize(HardSoftScore.ONE_SOFT)
-                   .as_constraint("Initialized shift")
-    )
-----
+
 ====
 
 This constraint stream penalizes each known and initialized instance of `Shift`.
@@ -373,17 +281,6 @@ Java::
                 .penalize(HardSoftScore.ONE_SOFT)
                 .asConstraint("A shift");
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def penalize_all_shifts(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each_including_unassigned(Shift)
-                   .penalize(HardSoftScore.ONE_SOFT)
-                   .as_constraint("A shift")
-    )
 ----
 ====
 
@@ -482,20 +379,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def vehicle_capacity(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Customer)
-                   .filter(lambda customer: customer.vehicle is not None)
-                   .group_by(lambda customer: customer.vehicle, ConstraintCollectors.sum(lambda customer: customer.demand))
-                   .filter(lambda vehicle, demand: -> demand > vehicle.capacity)
-                   .penalize(HardSoftScore.ONE_HARD,
-                             lambda vehicle, demand: demand - vehicle.capacity)
-                   .as_constraint("vehicle_capacity")
-    )
-----
+
 ====
 
 For the purposes of creating a xref:constraints-and-score/understanding-the-score.adoc#indictmentHeatMap[heat map], the `Vehicle` is very important, but the naked `Integer` carries no semantics.
@@ -517,22 +401,6 @@ Java::
                 .indictWith((vehicle, demand) -> List.of(vehicle))
                 .asConstraint("vehicleCapacity");
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def vehicle_capacity(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Customer)
-                   .filter(lambda customer: customer.vehicle is not None)
-                   .group_by(lambda customer: customer.vehicle, ConstraintCollectors.sum(lambda customer: customer.demand))
-                   .filter(lambda vehicle, demand: -> demand > vehicle.capacity)
-                   .penalize(HardSoftScore.ONE_HARD,
-                             lambda vehicle, demand: demand - vehicle.capacity)
-                   .indict_with((vehicle, demand) -> [vehicle])
-                   .as_constraint("vehicle_capacity")
-)
 ----
 ====
 
@@ -560,22 +428,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def vehicle_capacity(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Customer)
-                   .filter(lambda customer: customer.vehicle is not None)
-                   .group_by(lambda customer: customer.vehicle, ConstraintCollectors.sum(lambda customer: customer.demand))
-                   .filter(lambda vehicle, demand: -> demand > vehicle.capacity)
-                   .penalize(HardSoftScore.ONE_HARD,
-                             lambda vehicle, demand: demand - vehicle.capacity)
-                   .justify_with(lambda vehicle, demand, score: VehicleDemandOveruse(vehicle, demand, score))
-                   .indict_with(lambda vehicle, demand: -> [vehicle])
-                   .as_constraint("vehicle_capacity");
-    }
-----
+
 ====
 
 `VehicleDemandOveruse` is a custom type you have to implement.
@@ -606,18 +459,6 @@ Java::
                 .asConstraint("Ann's shift");
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def penalize_ann_shifts(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Shift)
-                   .filter(shift -> shift.employee.name == "Ann")
-                   .penalize(SimpleScore.ONE)
-                   .as_constraint("Ann's shift")
-    )
-----
 ====
 
 The following example retrieves a list of shifts where an employee has asked for a day off from a bi-constraint match
@@ -638,18 +479,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def penalize_shifts_on_off_days(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Shift)
-                   .join(DayOff)
-                   .filter(lambda shift, day_off: shift.date == day_off.date and shift.employee == day_off.employee)
-                   .penalize(SimpleScore.ONE)
-                   .as_constraint("Shift on an off-day");
-    )
-----
+
 ====
 
 The following figure illustrates both these examples:
@@ -713,24 +543,6 @@ Java::
                 .asConstraint("Shift on an off-day");
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-from timefold.solver.score import Joiners;
-
-...
-
-def shift_on_day_off(factory: ConstraintFactory) -> Constraint {
-    return (factory.for_each(Shift)
-                   .join(DayOff,
-                         Joiners.equal(lambda shift: shift.date, lambda day_off: day_off.date),
-                         Joiners.equal(lambda shift: shift.employee, lambda day_off: day_off.employee))
-                   .penalize(HardSoftScore.ONE_HARD)
-                   .as_constraint("Shift on an off-day");
-    )
-----
 ====
 
 Through the `Joiners` class, the following `Joiner` conditions are supported to join two streams,
@@ -772,18 +584,7 @@ Java::
             ))
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-factory.for_each(VehicleShift)
-       .join(Visit,
-             Joiners.equal(lambda vehicle_shift: vehicle_shift, lambda visit: visit.vehicle_shift), # Visit's VehicleShift is not None...
-             Joiners.less_than(
-                 lambda vehicle_shift: vehicle_shift.max_travel_time,
-                 lambda visit: visit.vehicle_shift.max_travel_time # ... yet NPE may be thrown here.
-        ))
-----
+
 ====
 
 When indexing joiners (such as `equal()` and `lessThan()`) check their indexes,
@@ -823,17 +624,6 @@ Java::
             Joiners.filtering((vehicleShift, visit) ->
                 vehicleShift.getMaxTravelTime() < visit.getVehicleShift().getMaxTravelTime()
         ))
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-factory.for_each(VehicleShift)
-       .join(Visit,
-             Joiners.equal(lambda vehicle_shift: vehicle_shift, lambda visit: visit.vehicle_shift), # Visit's VehicleShift is not None...
-             Joiners.filtering(
-                 lambda vehicle_shift, visit: vehicle_shift.max_travel_time < visit.vehicle_shift.max_travel_time))
 ----
 ====
 
@@ -880,23 +670,7 @@ private Constraint tooManyVisits(ConstraintFactory constraintFactory) {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-from timefold.solver.score import ConstraintCollectors
 
-...
-
-def too_many_visits(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)
-                   .group_by(lambda visit: visit.vehicle, ConstraintCollectors.count())
-                   .filter(lambda vehicle, visit_count:  visit_count > 10)
-                   .penalize(HardSoftScore.ONE_HARD,
-                             lambda vehicle, visit_count:  visit_count - 10)
-                   .as_constraint("too_many_visits");
-    )
-----
 ====
 
 [NOTE]
@@ -933,19 +707,6 @@ private Constraint speakerAvailability(ConstraintFactory factory) {
             .asConstraint("speakerAvailability");
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def speaker_availability(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Talk)
-                   .group_by(lambda talk: talk.has_any_unavailable_speaker(), ConstraintCollectors.count())
-                   .penalize(HardSoftScore.ONE_HARD,
-                             lambda has_unavailable_speaker, count: ...)
-                   .as_constraint("speaker_availability")
-    )
-----
 ====
 
 The count is collected in an `int`. Variants of this collector:
@@ -977,18 +738,7 @@ private Constraint roomCount(ConstraintFactory factory) {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def room_count(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Talk)
-                   .group_by(lambda talk: talk.room, ConstraintCollectors.count_distinct())
-                   .penalize(HardSoftScore.ONE_SOFT,
-                             lambda room, count:  ...)
-                   .as_constraint("roomCount")
-    )
-----
+
 ====
 
 The distinct count is collected in an `int`. Variants of this collector:
@@ -1017,19 +767,6 @@ private Constraint totalServiceDuration(ConstraintFactory constraintFactory) {
                     (vehicle, totalServiceDuration) -> totalServiceDuration)
             .asConstraint("totalServiceDuration");
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def total_service_duration(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)
-                   .group_by(lambda visit: visit.vehicle, ConstraintCollector.sum(lambda visit.service_duration))
-                   .penalize(HardSoftScore.ONE_SOFT,
-                             lambda vehicle, total_service_duration: total_service_duration)
-                   .as_constraint("total_service_duration")
-    )
 ----
 ====
 
@@ -1066,18 +803,7 @@ private Constraint averageServiceDuration(ConstraintFactory constraintFactory) {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def average_service_duration(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)
-                   .group_by(lambda visit: visit.vehicle, ConstraintCollectors.average(lambda visit: visit.service_duration))
-                   .penalize(HardSoftScore.ONE_SOFT,
-                             lambda vehicle, average_service_duration: round(average_service_duration))
-                   .as_constraint("average_service_duration")
-    )
-----
+
 ====
 
 The average is collected as a `double`, and the average of no elements is `null`.
@@ -1115,19 +841,6 @@ private Constraint maxServiceDuration(ConstraintFactory constraintFactory) {
             .asConstraint("maxServiceDuration");
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def max_service_duration(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)
-                   .group_by(lambda visit: visit.vehicle, ConstraintCollectors.max(lambda visit: visit.service_duration))
-                   .penalize(HardSoftScore.ONE_SOFT,
-                             lambda vehicle, max_service_duration: max_service_duration)
-                   .as_constraint("max_service_duration")
-    )
-----
 ====
 
 [NOTE]
@@ -1160,18 +873,7 @@ private Constraint vehicleAndItsVisits(ConstraintFactory constraintFactory) {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def vehicle_and_its_visits(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)
-                   .group_by(lambda visit: visit.vehicle, ConstraintCollectors.to_list())
-                   .penalize(HardSoftScore.ONE_HARD,
-                             (vehicle, visitList) -> ...)
-                   .as_constraint("vehicle_and_its_visits")
-    )
-----
+
 ====
 
 Variants of this collector:
@@ -1222,21 +924,6 @@ Constraint multipleConsecutiveHomeMatches(ConstraintFactory constraintFactory) {
                 .asConstraint("4 or more consecutive home matches");
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def multiple_consecutive_home_matches(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Match)
-                   .group_by(lambda match,
-                             ConstraintCollectors.to_consecutive_sequences(lambda match: match.home_team, lambda match: match.round_id))
-                   .flatten_last(lambda chain: chain.getConsecutiveSequences())
-                   .filter(lambda team, matches: matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
-                   .penalize(HardSoftScore.ONE_HARD, lambda team, matches: matches.getCount())
-                   .as_constraint("4 or more consecutive home matches")
-    )
-----
 ====
 
 image::constraints-and-score/score-calculation/constraintStreamConsecutiveSequences.png[align="center"]
@@ -1255,15 +942,7 @@ Java::
 .filter((team, matches) -> matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-.group_by(lambda match,
-         ConstraintCollectors.to_consecutive_sequences(lambda match: match.home_team, lambda match: match.round_id))
-.flatten_last(lambda chain: chain.getConsecutiveSequences())
-.filter(lambda team, matches: matches.getCount() >= MAX_CONSECUTIVE_MATCHES)
-----
+
 ====
 
 The `groupBy()` building block groups all matches by team,
@@ -1311,24 +990,6 @@ Constraint doNotOverAssignEquipment(ConstraintFactory constraintFactory) {
         .asConstraint("Concurrent equipment usage over capacity");
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def do_not_over_assign_equipment(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Job)
-                   .group_by(lambda job: job.equipment,
-                            ConstraintCollectors.to_connected_temporal_ranges(
-                                lambda job: job.start_time,
-                                lambda job: job.end_time)
-                            )
-                   .flatten_last(lambda chain: chain.getConnectedRanges())
-                   .filter(lambda equipment, connected_range: connected_range.getMaximumOverlap() > equipment.capacity)
-                   .penalize(HardSoftScore.ONE_HARD, lambda equipment, connected_range: connected_range.getMaximumOverlap() - equipment.capacity)
-                   .as_constraint("Concurrent equipment usage over capacity")
-    )
-----
 ====
 
 image::constraints-and-score/score-calculation/constraintStreamConnectedRanges.png[align="center"]
@@ -1351,19 +1012,7 @@ Java::
 .filter((equipment, connectedRange) -> connectedRange.getMaximumOverlap() > equipment.getCapacity())
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-.group_by(lambda job: job.equipment,
-        ConstraintCollectors.to_connected_temporal_ranges(
-              lambda job: job.start_time,
-              lambda job: job.end_time
-        )
-)
-.flatten_last(lambda chain: chain.getConnectedRanges())
-.filter(lambda equipment, connected_range: connected_range.getMaximumOverlap() > equipment.capacity)
-----
+
 ====
 
 The `groupBy()` building block groups all jobs by required equipment, and for every such pair it creates a `ConnectedRangeChain` instance.
@@ -1391,17 +1040,6 @@ Java::
                           Job::getEnd,
                           (a, b) -> b - a // difference calculator
     )
-)
-----
-Python::
-+
-[source,python,options="nowrap"]
-----
-.group_by(lambda job: job.equipment,
-          ConstraintCollectors.to_connected_ranges(
-                lambda job: job.start,
-                lambda job: job.end,
-                lambda a, b: b - a)  # Difference calculator
 )
 ----
 ====
@@ -1443,21 +1081,7 @@ private Constraint visitWithEveningDelivery(ConstraintFactory constraintFactory)
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def visit_with_evening_delivery(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)
-                   .group_by(lambda visit: visitt.vehicle,
-                             ConstraintCollectors.conditionally(lambda visit: visit.is_evening_delivery,
-                                                                ConstraintCollectors.count()
-                   ))
-                   .penalize(HardSoftScore.ONE_HARD,
-                             lambda vehicle, evening_delivery_count: ...)
-                   .as_constraint("visit_with_evening_delivery")
-    )
-----
+
 ====
 
 This is useful in situations where multiple collectors are used and only some of them need to be restricted.
@@ -1493,27 +1117,6 @@ Java::
         });
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-from timefold.solver.score import ConstraintCollectors
-from typing import Callable, TypeVar
-
-A = TypeVar('A')
-
-def average(group_value_mapping: Callable[[A], int]):
-    return ConstraintCollectors.compose(
-               ConstraintCollectors.count(),
-               ConstraintCollectors.sum(group_value_mapping),
-               lambda count, total_sum: (
-                   total_sum / count
-                   if count > 0
-                   else None
-               )
-    )
-----
 ====
 
 Similarly, the `compose()` collector enables you to work around the limitation of <<constraintStreamsCardinality,Constraint Stream cardinality>>
@@ -1532,18 +1135,7 @@ UniConstraintCollector<A, ?, Triple<Integer, Integer, Integer>> collector =
             (count, min, max) -> Triple.of(count, min, max));
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-from timefold.solver.score import ConstraintCollectors
 
-collector = ConstraintCollectors.compose(
-                ConstraintCollectors.count(),
-                ConstraintCollectors.min(),
-                ConstraintCollectors.max(),
-                lambda count, min_value, max_value: (count, min_value, max_value))
-----
 ====
 
 Such a composite collector returns a `Triple` instance which allows you to access
@@ -1580,15 +1172,6 @@ ConstraintCollectors.collectAndThen(
     ConstraintCollectors.average(...),
     doubleValue -> (int) Math.round(doubleValue))
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-ConstraintCollectors.collect_and_then(
-    ConstraintCollectors.average(...),
-    lambda float_value: round(float_value))
-----
 ====
 
 
@@ -1617,18 +1200,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def deployed_vehicle(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Vehicle)
-                   .if_exists(Visit, Joiners.equal(lambda vehicle: vehicle, lambda visit: visit.vehicle))
-                   .penalize(HardSoftScore.ONE_SOFT,
-                             lambda vehicle: ...)
-                   .as_constraint("deployed_vehicle")
-    )
-----
+
 ====
 
 Note the use of the `ifExists()` building block.
@@ -1651,19 +1223,6 @@ Java::
                         vehicle -> ...)
                 .asConstraint("idleVehicle");
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def idle_vehicle(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Vehicle)
-                   .if_not_exists(Visit, Joiners.equal(lambda vehicle: vehicle, lambda visit: visit.vehicle))
-                   .penalize(HardSoftScore.ONE_SOFT,
-                             lambda vehicle: ...)
-                   .as_constraint("idle_vehicle")
-    )
 ----
 ====
 
@@ -1703,16 +1262,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def visits(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)                # UniConstraintStream[Visit]
-                   .map(lambda visit: visit.name)  # UniConstraintStream[str]
-                   ...
-    )
-----
+
 ====
 
 [NOTE]
@@ -1737,17 +1287,6 @@ Java::
                 .map((visit1, visit2) -> Pair.of(visit1.getName(), visit2.getName()))  // UniConstraintStream<Pair<String, String>>
                 ...
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def visits(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each_unique_pair(Visit)                             # BiConstraintStream[Visit, Visit]
-                   .map(lambda visit1, visit2: (visit1.name, visit2.name))  # UniConstraintStream[Tuple[str, str]]
-                   ...
-    )
 ----
 ====
 
@@ -1793,17 +1332,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def visits(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Visit)                # UniConstraintStream[Visit]
-                   .map(lambda visit: visit.name)  # UniConstraintStream[str]
-                   .distinct()                     # The same, each name just once.
-                   ...
-    )
-----
+
 ====
 
 [NOTE]
@@ -1841,18 +1370,6 @@ Java::
                 .asConstraint(SPEAKER_UNDESIRED_TIMESLOT_TAGS);
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def speaker_undesired_timeslot_tags(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Talk)
-                   .filter(lambda talk: talk.prevailing_speaker_undesired_timeslot_tag_count() > 0)
-                   .penalize(HardSoftScore.ONE_SOFT, lambda talk: talk.prevailing_speaker_undesired_timeslot_tag_count() * talk.duration_in_minutes)
-                   .as_constraint(SPEAKER_UNDESIRED_TIMESLOT_TAGS)
-    )
-----
 ====
 
 We can improve this by using tuple expansion to cache the result of the expensive computation,
@@ -1873,18 +1390,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def speaker_undesired_timeslot_tags(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Talk)
-                   .expand(lambda talk: talk.prevailing_speaker_undesired_timeslot_tag_count())
-                   .filter(lambda talk, undesired_tag_count: -> undesired_tag_count > 0)
-                   .penalize(HardSoftScore.ONE_SOFT, lambda talk, undesired_tag_count: undesired_tag_count * talk.duration_in_minutes)
-                   .as_constraint(SPEAKER_UNDESIRED_TIMESLOT_TAGS)
-    )
-----
+
 ====
 
 Once the tuple for a `Talk` has been created and passed through the filter,
@@ -1899,9 +1405,9 @@ Always check your solver's move evaluation speed to see if the cost is offset by
 [#constraintStreamsFlattening]
 === Flattening
 
-Flattening enables you to transform any Java or Python `Iterable` (such as `List` or `Set`)
+Flattening enables you to transform any Java `Iterable` (such as `List` or `Set`)
 into a set of tuples, which are sent downstream.
-(Similar to Java Stream's `flatMap(...)` or Python's `itertools.chain(...)`.)
+(Similar to Java Stream's `flatMap(...)`)
 This is done by applying a mapping function to the final element in the source tuple.
 
 [tabs]
@@ -1918,20 +1424,6 @@ Java::
                 .filter((person, requiredRole) -> ...)
                 ...
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def required_job_roles(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Person)                                                      # UniConstraintStream[Person]
-                   .join(Job,
-                         Joiners.equal(lambda person: person, lambda job: job.assignee))  # BiConstraintStream[Person, Job]
-                   .flatten_last(lambda job: job.required_roles)                          # BiConstraintStream[Person, Role]
-                   .filter(lambda person, required_role: ...)
-                   ...
-    )
 ----
 ====
 
@@ -1984,26 +1476,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def ensure_each_employee_has_at_least_two_shifts(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Employee)
-                   .join(Shift, Joiners.equal(lambda employee: employee, lambda shift: shift.employee))
-                   .concat(
-                           factory.for_each(Employee)
-                                  .if_not_exists(Shift, Joiners.equal(lambda employee: employee, lambda shift: shift.employee))
-                   )
-                   .group_by(lambda employee, shift: employee,
-                           ConstraintCollectors.conditionally(lambda employee, shift: shift is not None,
-                                                              ConstraintCollectors.count_bi())
-                   )
-                   .filter(lambda employee, shift_count:  shift_count < employee.minimum_assigned_shifts)
-                   .penalize(HardSoftScore.ONE_SOFT, lambda employee, shift_count: employee.minimum_assigned_shifts - shift_count)
-                   .as_constraint("Minimum number of assigned shifts")
-    )
-----
+
 ====
 
 This correctly counts the number of shifts each Employee has, *even when the Employee has no shifts*.
@@ -2032,22 +1505,6 @@ Java::
          .asConstraint("Minimum number of assigned shifts (incorrect)");
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def incorrect_ensure_each_employee_has_at_least_two_shifts(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Employee)
-                   .join(Shift, Joiners.equal(lambda employee: employee, lambda shift: shift.employee))
-                   .group_by(lambda employee, shift: employee,
-                             ConstraintCollectors.count_bi()
-                   )
-                   .filter(lambda employee, shift_count:  shift_count < employee.minimum_assigned_shifts)
-                   .penalize(HardSoftScore.ONE_SOFT, lambda employee, shift_count: employee.minimum_assigned_shifts - shift_count)
-                   .as_constraint("Minimum number of assigned shifts (incorrect)")
-    )
-----
 ====
 
 An employee with no assigned shifts _wouldn't have been penalized_
@@ -2072,18 +1529,7 @@ BiConstraintStream<Employee, Integer> biStream = constraintFactory.forEach(Emplo
     .groupBy((employee, shift) -> employee, countBi());
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# All employees.
-uni_stream = constraint_factory.for_each(Employee)
-# Employees with a count of their shifts; some employees may have no shifts, therefore are not included.
-bi_stream = (constraint_factory.for_each(Employee)
-                               .join(Shift, Joiners.equal(lambda employee: employee, lambda shift: shift.employee))
-                               .group_by(lambda employee, shift: employee, ConstraintCollectors.count_bi())
-)
-----
+
 ====
 
 By default, when concatenating these streams,
@@ -2097,14 +1543,6 @@ Java::
 ----
 // Employees from uniStream will have null as their shift count.
 BiConstraintStream<Employee, Integer> concatStream = uniStream.concat(biStream);
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Employees from uni_stream will have None as their shift count.
-concat_stream = uni_stream.concat(bi_stream)
 ----
 ====
 
@@ -2121,13 +1559,7 @@ Java::
 BiConstraintStream<Employee, Integer> concatStream = uniStream.concat(biStream, employee -> 0);
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Employees from uni_stream will have a zero as their shift count.
-concat_stream = uni_stream.concat(bi_stream, lambda employee: 0)
-----
+
 ====
 
 [#constraintStreamsComplement]
@@ -2155,17 +1587,6 @@ Java::
         .complement(Employee.class, employee -> 0)
         .groupBy(loadBalance(...))
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-(factory.for_each(Shift)
-        .group_by(lambda shift: shift.employee, ConstraintCollectors.count())
-        .complement(Employee, lambda employee: 0)
-        .group_by(ConstraintCollectors.load_balance(...))
-)
-----
 ====
 
 After the <<constraintStreamsGroupingAndCollectors,`groupBy` building block>>,
@@ -2192,11 +1613,6 @@ We recommend that you test your constraints to ensure that they behave as expect
 Constraint streams include the Constraint Verifier unit testing harness.
 To use it, first add a test scoped dependency to the `timefold-solver-test` JAR.
 
-[NOTE]
-====
-In Python, `timefold-solver-test` JAR is automatically included.
-====
-
 
 [#constraintStreamsTestingIsolatedConstraints]
 === Testing constraints in isolation
@@ -2218,18 +1634,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def vehicle_capacity(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Vehicle)
-                   .filter(lambda vehicle: vehicle.total_demand > vehicle.capacity)
-                   .penalize(HardSoftScore.ONE_HARD,
-                             lambda vehicle: vehicle.total_demand - vehicle.capacity)
-                   .as_constraint(VEHICLE_CAPACITY)
-    )
-----
+
 ====
 
 The following example uses the Constraint Verifier API to create a simple unit test for the preceding constraint stream:
@@ -2259,34 +1664,6 @@ Java::
                 .penalizesBy(20);
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-from timefold.solver.test import ConstraintVerifier
-from datetime import datetime, date, time, timedelta
-from .constraints import vehicle_routing_constraints, vehicle_capacity
-
-constraint_verifier = ConstraintVerifier.build(vehicle_routing_constraints, VehicleRoutePlan, Vehicle, Visit)
-
-TOMORROW = date.today() + timedelta(days=1)
-
-def test_vehicle_capacity():
-    tomorrow_07_00 = datetime.combine(TOMORROW, time(7, 0))
-    tomorrow_08_00 = datetime.combine(TOMORROW, time(8, 0))
-    tomorrow_10_00 = datetime.combine(TOMORROW, time(10, 0))
-
-    vehicleA = Vehicle("1", 100, LOCATION_1, tomorrow_07_00)
-    visit1 = Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, timedelta(minutes=30))
-    vehicleA.visits.append(visit1)
-    visit2 = Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, timedelta(minutes=30))
-    vehicleA.visits.append(visit2)
-
-    (constraint_verifier.verify_that(vehicle_capacity)
-                        .given(vehicleA, visit1, visit2)
-                        .penalizes_by(20))
-----
 ====
 
 This test ensures that, if a vehicle capacity is exceeded, that the constraint penalizes accordingly.
@@ -2303,16 +1680,11 @@ Java::
             = ConstraintVerifier.build(new VehicleRoutingConstraintProvider(), VehicleRoutePlan.class, Vehicle.class, Visit.class);
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-constraint_verifier = ConstraintVerifier.build(vehicle_routing_constraints, VehicleRoutePlan, Vehicle, Visit)
-----
+
 ====
 
 The `@Test` annotation indicates that the method is a unit test in a testing framework of your choice.
-Constraint Verifier works with testing frameworks popular in your ecosystem, including JUnit and PyTest.
+Constraint Verifier works with testing frameworks popular in your ecosystem, including JUnit.
 
 The first part of the test prepares the test data.
 In this case, the test data includes a vehicle and a visit:
@@ -2329,17 +1701,6 @@ Java::
         Visit visit2 = new Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, Duration.ofMinutes(30L));
         vehicleA.getVisits().add(visit2);
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-    vehicleA = Vehicle("1", 100, LOCATION_1, tomorrow_07_00)
-    visit1 = Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, timedelta(minutes=30))
-    vehicleA.visits.append(visit1)
-    visit2 = Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, timedelta(minutes=30))
-    vehicleA.visits.append(visit2)
-----
 ====
 
 Further down, the following code tests the constraint:
@@ -2355,14 +1716,7 @@ Java::
                 .penalizesBy(20);
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-    (constraint_verifier.verify_that(vehicle_capacity)
-                        .given(vehicleA, visit1, visit2)
-                        .penalizes_by(20))
-----
+
 ====
 
 The `verifyThat(...)` call is used to specify a method on the `VehicleRoutingConstraintProvider` class which is under test.
@@ -2441,26 +1795,6 @@ Java::
                 .given(vehicleA, visit1, visit2)
                 .scores(HardSoftScore.ofSoft(20));
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def test_given_facts_multiple_constraints():
-    tomorrow_07_00 = datetime.combine(TOMORROW, time(7, 0))
-    tomorrow_08_00 = datetime.combine(TOMORROW, time(8, 0))
-    tomorrow_10_00 = datetime.combine(TOMORROW, time(10, 0))
-
-    vehicleA = Vehicle("1", 100, LOCATION_1, tomorrow_07_00)
-    visit1 = Visit("2", "John", LOCATION_2, 80, tomorrow_08_00, tomorrow_10_00, timedelta(minutes=30))
-    vehicleA.visits.append(visit1)
-    visit2 = Visit("3", "Paul", LOCATION_3, 40, tomorrow_08_00, tomorrow_10_00, timedelta(minutes=30))
-    vehicleA.visits.append(visit2)
-
-    (constraint_verifier.verify_that()
-            .given(vehicleA, visit1, visit2)
-            .scores(HardSoftScore.of_soft(20)))
 ----
 ====
 
@@ -2566,16 +1900,7 @@ public interface EasyScoreCalculator<Solution_, Score_ extends Score<Score_>> {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-from timefold.solver.score import easy_score_calculator, HardSoftScore
 
-@easy_score_calculator
-def my_easy_score_calculator(solution: Solution) -> HardSoftScore:
-    ...
-----
 ====
 
 Configure it in the solver configuration:
@@ -2646,44 +1971,6 @@ public interface IncrementalScoreCalculator<Solution_, Score_ extends Score<Scor
 
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-class IncrementalScoreCalculator(ABC):
-    @abstractmethod
-    def after_entity_added(self, entity) -> None:
-        ...
-
-    @abstractmethod
-    def after_entity_removed(self, entity) -> None:
-        ...
-
-    @abstractmethod
-    def after_variable_changed(self, entity, variable_name: str) -> None:
-        ...
-
-    @abstractmethod
-    def before_entity_added(self, entity) -> None:
-        ...
-
-    @abstractmethod
-    def before_entity_removed(self, entity) -> None:
-        ...
-
-    @abstractmethod
-    def before_variable_changed(self, entity, variable_name: str) -> None:
-        ...
-
-    @abstractmethod
-    def calculate_score(self):
-        ...
-
-    @abstractmethod
-    def reset_working_solution(self, solution) -> None:
-        ...
-----
 ====
 
 image::constraints-and-score/score-calculation/incrementalScoreCalculatorSequenceDiagram.png[align="center"]
@@ -2736,11 +2023,6 @@ public interface ConstraintMatchAwareIncrementalScoreCalculator<Solution_, Score
     Map<Object, Indictment<Score_>> getIndictmentMap();
 }
 ----
-
-[NOTE]
-====
-`ConstraintMatchAwareIncrementalScoreCalculator` is currently not supported in Python.
-====
 
 Typically it means creating one `ConstraintMatchTotal` per constraint type
 and calling `addConstraintMatch()` for each constraint match.

@@ -57,7 +57,7 @@ Every upgrade note indicates how likely your code will be affected by that chang
 - icon:eye[] *Recommended*: Does not affect backwards compatibility, but you probably want to be aware.
 
 The upgrade recipe often lists the changes as they apply to Java code.
-We kindly ask Kotlin and Python users to translate the changes accordingly.
+We kindly ask Kotlin users to translate the changes accordingly.
 
 === Upgrade from 1.22.0 to 1.23.0
 

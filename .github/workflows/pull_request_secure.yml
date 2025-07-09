@@ -187,77 +187,6 @@ jobs:
         working-directory: ./timefold-solver-enterprise
         shell: bash
         run: mvn -B clean verify
-  enterprise-python:
-    needs: approval_required
-    name: Enterprise Edition (Python)
-    concurrency:
-      group: downstream-enterprise-python-${{ github.event_name }}-${{ github.head_ref }}
-      cancel-in-progress: true
-    timeout-minutes: 120
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          path: './timefold-solver'
-          ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
-
-      # Clone timefold-solver-enterprise
-      # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
-      - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
-        id: checkout-solver-enterprise
-        uses: actions/checkout@v4
-        continue-on-error: true
-        with:
-          repository: TimefoldAI/timefold-solver-enterprise
-          ref: ${{ github.head_ref }}
-          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
-          path: ./timefold-solver-enterprise
-          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-
-      - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
-        if: steps.checkout-solver-enterprise.outcome != 'success'
-        uses: actions/checkout@v4
-        with:
-          repository: TimefoldAI/timefold-solver-enterprise
-          ref: main
-          token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
-          path: ./timefold-solver-enterprise
-          fetch-depth: 0 # Otherwise merge will fail on account of not having history.
-
-      # Build and test
-      - name: Set up the JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: 'temurin'
-          cache: 'maven'
-
-      # Need to install all Python versions in the same run for tox
-      - name: Python 3.10, Python 3.11, Python 3.12 Setup
-        uses: actions/setup-python@v5
-        with:
-          python-version: |
-            3.10
-            3.11
-            3.12
-          cache: 'pip'
-          cache-dependency-path: |
-            **/setup.py
-
-      - name: Install tox
-        run:
-          pip install tox build
-
-      - name: Build Timefold Solver for Python
-        working-directory: ./timefold-solver
-        run: python -m build
-
-      - name: Run tox on Timefold Solver Enterprise for Python test suite
-        working-directory: ./timefold-solver-enterprise
-        env:
-          PIP_FIND_LINKS: ${{ github.workspace }}/timefold-solver/dist
-        run: tox
 
   build_documentation:
     runs-on: ubuntu-latest
@@ -350,19 +279,6 @@ jobs:
           java-version: 17
           distribution: 'temurin'
           cache: 'maven'
-      - name: Python 3.10, Python 3.11, Python 3.12 Setup
-        uses: actions/setup-python@v5
-        with:
-          python-version: |
-            3.10
-            3.11
-            3.12
-          cache: 'pip'
-          cache-dependency-path: |
-            **/setup.py
-      - name: Install tox
-        run:
-          pip install tox coverage pytest pytest-cov
       - name: Cache SonarCloud packages
         uses: actions/cache@v4
         with:
@@ -371,24 +287,6 @@ jobs:
           restore-keys: ${{ runner.os }}-sonar
       - name: Build with Maven to measure code coverage # The ENV variables are limited to the scope of the current step. Avoid adding sensitive ENV variables here as the tests could leak them.
         run: mvn -B clean install -Prun-code-coverage
-
-      - name: Get JaCoCo Agent
-        run: mvn org.apache.maven.plugins:maven-dependency-plugin:3.8.1:copy -Dartifact=org.jacoco:org.jacoco.agent:0.8.13:jar:runtime -DoutputDirectory=target/jacocoagent.jar
-
-      - name: Run tox to measure timefold solver python code coverage from Python tests
-        # Sometimes crashes at the very end when using JaCoCo.
-        # This crash happens after everything is processed and stored, and therefore can be safely ignored.
-        # Ignore the crash to not ruin the long-running build.
-        continue-on-error: true
-        run: python -m tox -- --cov=timefold --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=./target/jacocoagent.jar
-
-      - name: Run tox to measure jpyinterpreter code coverage from Python tests
-        working-directory: ./python/jpyinterpreter
-        # Sometimes crashes at the very end when using JaCoCo.
-        # This crash happens after everything is processed and stored, and therefore can be safely ignored.
-        # Ignore the crash to not ruin the long-running build.
-        continue-on-error: true
-        run: python -m tox -- --cov=jpyinterpreter --cov-report=xml:target/coverage.xml --cov-config=tox.ini --cov-branch --cov-append --jacoco-agent=../../target/jacocoagent.jar --jacoco-output=../../target/jacoco.exec
 
       - name: Run analysis
         env:

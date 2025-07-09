@@ -70,42 +70,6 @@ public class VehicleRoutingConstraintProvider implements ConstraintProvider {
     }
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def vehicle_routing_constraints(factory: ConstraintFactory) -> list[Constraint]:
-    return [
-        vehicle_capacity(factory),
-        service_finished_after_max_end_time(factory),
-        minimize_travel_time(factory)
-    ]
-
-
-def vehicle_capacity(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Vehicle)
-                   ...
-                   .penalize(HardSoftScore.ONE_HARD, ...)
-                   .as_constraint("Vehicle capacity")
-    )
-
-
-def service_finished_after_max_end_time(factory: ConstraintFactory) -> Constraint:
-    return (factory.forEach(Visit)
-                   ...
-                   .penalize(HardSoftScore.ONE_HARD, ...)
-                   .as_constraint("Service finished after max end time")
-    )
-
-
-def minimize_travel_time(factory: ConstraintFactory) -> Constraint:
-    return (factory.forEach(Vehicle)
-                   ...
-                   .penalize(HardSoftScore.ONE_SOFT, ...)
-                   .as_constraint("Minimize travel time")
-    )
-----
 ====
 
 Without anything else, the constraint weights are fixed to the values we've given them in our `ConstraintProvider`.
@@ -136,18 +100,6 @@ public class VehicleRoutePlan {
     ...
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-@dataclass
-class VehicleRoutePlan:
-    ...
-    weight_overrides: ConstraintWeightOverrides
-}
-----
 ====
 
 We've just introduced a new field of type `ConstraintWeightOverrides`,
@@ -173,24 +125,6 @@ var constraintWeightOverrides = ConstraintWeightOverrides.of(
 
 var solution = new VehicleRoutePlan();
 solution.setConstraintWeightOverrides(constraintWeightOverrides);
-
-...
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-...
-
-constraint_weight_overrides = ConstraintWeightOverrides(
-    {
-        "Vehicle capacity": HardSoftScore.of_hard(2),
-        "Service finished after max end time", HardSoftScore.ZERO
-    }
-)
-
-solution = VehicleRoutePlan(weight_overrides=constraint_weight_overrides)
 
 ...
 ----
@@ -251,15 +185,6 @@ Java::
 public record ConstraintParameters(int minimumPauseInMinutes) {
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@dataclass
-class ConstraintParameters:
-    minimum_pause_in_minutes: int
-----
 ====
 
 Then, add a field of type `ConstraintParameters` to your planning solution
@@ -282,18 +207,6 @@ public class MyPlanningSolution {
     ...
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-@dataclass
-class MyPlanningSolution:
-    ...
-    constraint_parameters: Annotated[ConstraintParameters, ProblemFactProperty]
-    ...
 ----
 ====
 
@@ -325,18 +238,6 @@ public class MyConstraintProvider implements ConstraintProvider {
     ...
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def minimum_pause_between_shifts(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Shift)
-                   .join(ConstraintParameters)
-                   .penalize(HardSoftScore.ONE_HARD, lambda shift, parameters: max(0, shift.pause_in_minutes - parameters.pause_in_minutes))
-                   .as_constraint("Minimum pause between shifts")
-    )
 ----
 ====
 

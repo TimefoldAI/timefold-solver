@@ -62,18 +62,6 @@ public class Timeslot {
     ...
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@dataclass
-class Timeslot:
-    day_of_week: str
-    start_time: time
-    end_time: time
-    ...
-----
 ====
 
 [tabs]
@@ -90,15 +78,7 @@ public class Room {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@dataclass
-class Room:
-    name: str
-    ...
-----
+
 ====
 
 A problem fact can reference other problem facts:
@@ -123,27 +103,10 @@ public class Course {
     // ... getters
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@dataclass
-class Course:
-    code: str
-
-    teacher: Teacher  # Other problem fact
-    lecture_size: int
-    min_working_day_size: int
-
-    curriculum_list: list[Curriculum]  # Other problem facts
-    student_size: int
-    # ... methods
-----
 ====
 
 A problem fact class does _not_ require any Timefold Solver specific code.
-For example, you can reuse your domain classes, which might have JPA or Pydantic annotations.
+For example, you can reuse your domain classes, which might have JPA or Jackson annotations.
 
 [NOTE]
 ====
@@ -181,14 +144,7 @@ public class Visit {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-class Visit:
-    username: Annotated[str, PlanningId]
-    ...
-----
+
 ====
 
 A `@PlanningId` property must be:
@@ -243,23 +199,6 @@ public class Lesson {
     // ... getters and setters
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Lesson:
-    subject: str
-    teacher: str
-    student_group: str
-
-    # Planning variables: changes during planning, between score calculations.
-    timeslot: Annotated[Timeslot | None, PlanningVariable] = field(default=None)
-    room: Annotated[Room | None, PlanningVariable] = field(default=None)
-}
-----
 ====
 
 The solver configuration needs to declare each planning entity class:
@@ -305,11 +244,6 @@ whereas planning entities will.
 
 [#planningEntityDifficulty]
 === Planning entity difficulty
-
-[NOTE]
-====
-This feature is currently unsupported in Timefold Solver for Python.
-====
 
 Some optimization algorithms work more efficiently if they have an estimation of which planning entities are more difficult to plan.
 For example: in bin packing bigger items are harder to fit.
@@ -420,11 +354,6 @@ public class Lesson {
 }
 ----
 
-[NOTE]
-====
-Timefold Solver for Python does not currently support annotating method pairs for variables.
-====
-
 The optional `valueRangeProviderRefs` property defines what are the possible planning values for this planning variable.
 It references one or more ``@ValueRangeProvider`` ``id``'s.
 If none are provided, Timefold Solver will attempt to auto-detect matching ``@ValueRangeProvider``s.
@@ -455,15 +384,7 @@ public class Lesson {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Lesson:
-    timeslot: Annotated[Timeslot | None, PlanningVariable]
-    ...
-----
+
 ====
 
 [NOTE]
@@ -494,13 +415,6 @@ Java::
     public Worker getWorker() {
         return worker;
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-worker: Annotated[Worker, PlanningVariable(allows_unassigned=True)]
 ----
 ====
 
@@ -614,15 +528,7 @@ public class Lesson {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Lesson:
-    timeslot: Annotated['Timeslot', PlanningVariable]
-    ...
-----
+
 ====
 
 And then annotate the other side (which is the shadow side)
@@ -643,16 +549,6 @@ public class Timeslot {
     ...
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Timeslot:
-    lesson_list: Annotated[list[Lesson], InverseRelationShadowVariable(source_variable_name ="timeslot")]
-    ...
 ----
 ====
 
@@ -690,15 +586,7 @@ public class Customer ... {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Customer(Standstill):
-    previous_standstill: Annotated[Standstill, PlanningVariable(graph_type=PlanningVariableGraphType.CHAINED, ...)]
-    ...
-----
+
 ====
 
 And the shadow side looks like this:
@@ -719,16 +607,6 @@ public class Standstill {
     public void setNextCustomer(Customer nextCustomer) {...}
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Standstill:
-    next_customer: Annotated['Customer', InverseRelationShadowVariable(source_variable_name='previous_standstill')]
-    ...
 ----
 ====
 
@@ -766,14 +644,7 @@ public class Customer {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Customer:
-    vehicle: Annotated[Vehicle, AnchorShadowVariable(source_variable_name="previous_standstill")]
-----
+
 ====
 
 <<shadowVariable,This class should already be registered as a planning entity.>>
@@ -803,16 +674,6 @@ Java::
     public Vehicle getVehicle() {
         return vehicle;
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-previous_standstill: Annotated[Standstill, PlanningVariable(...)]
-vehicle: Annotated[Vehicle,
-                   ShadowVariable(variable_listener_class=VehicleUpdatingVariableListener,
-                                  source_variable_name = "previous_standstill")]
 ----
 ====
 
@@ -859,29 +720,7 @@ public class VehicleUpdatingVariableListener implements VariableListener<Vehicle
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-class VehicleUpdatingVariableListener(VariableListener):
-    def after_entity_added(self, score_director: ScoreDirector, customer):
-        self.update_vehicle(score_director, customer)
 
-    def after_variable_changed(self, score_director: ScoreDirector, customer):
-        self.update_vehicle(score_director, customer)
-
-    ...
-
-    def update_vehicle(self, score_director: ScoreDirector, source_customer):
-        previous_standstill = source_customer.previous_standstill
-        vehicle = previous_standstill.vehicle if previous_standstill is not None else None
-        shadow_customer = source_customer
-        while shadow_customer is not None and shadow_customer.vehicle is not vehicle:
-            score_director.before_variable_changed(shadow_customer, "vehicle")
-            shadow_customer.vehicle = vehicle
-            score_director.after_variable_changed(shadow_customer, "vehicle")
-            shadow_customer = shadow_customer.next_customer
-----
 ====
 
 [WARNING]
@@ -925,18 +764,6 @@ Java::
         return predecessorsDoneDate;
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-execution_mode: Annotated[ExecutionMode, PlanningVariable(...)]
-delay: Annotated[int, PlanningVariable(...)]
-predecessors_done_date: Annotated[int,
-                                  ShadowVariable(variable_listener_class=PredecessorsDoneDateUpdatingVariableListener, source_variable_name="execution_mode"),
-                                  ShadowVariable(variable_listener_class=PredecessorsDoneDateUpdatingVariableListener, source_variable_name="delay")
-                                 ]
-----
 ====
 
 ==== Piggyback shadow variable
@@ -968,16 +795,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-previous_standstill: Annotated[Standstill, PlanningVariable(...)]
-transport_time: Annotated[int,
-                          ShadowVariable(variable_listener_class=TransportTimeAndCapacityUpdatingVariableListener,
-                                         source_variable_name="previous_standstill")]
-capacity: Annotated[int, PiggybackShadowVariable(shadow_variable_name="transport_time")]
-----
+
 ====
 
 [#declarativeShadowVariable]
@@ -990,10 +808,6 @@ This approach allows access to all the fields and methods of the declaring class
 ====
 This feature is currently available as a xref:/upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature].
 It may be subject to change and must be enabled in the solver configuration by setting: `<enablePreviewFeature>DECLARATIVE_SHADOW_VARIABLES</enablePreviewFeature>`
-====
-[NOTE]
-====
-Declarative Shadow Variables are currently not supported in Python.
 ====
 
 To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specify the name of a supplier method.
@@ -1027,13 +841,6 @@ public class Job {
         }
     }
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
 ----
 ====
 
@@ -1127,12 +934,7 @@ public class Job {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
+
 ====
 
 [cols="1,1,2", options="header"]
@@ -1186,13 +988,6 @@ public class Job {
     }
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
 ====
 
 This property (`looped` in the example above) is typically used in a constraint filter to penalize looped entities via a hard constraint,
@@ -1213,12 +1008,7 @@ Constraint penalizeLoopedJobs(ConstraintFactory factory) {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
+
 ====
 
 [IMPORTANT]
@@ -1246,13 +1036,6 @@ Java::
     @DeepPlanningClone
     @ShadowVariable(...)
     private Map<LocalDateTime, Integer> usedManHoursPerDayMap;
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-used_man_hours_per_day_map: Annotated[dict[datetime, int], DeepPlanningClone, ShadowVariable(...)]
 ----
 ====
 
@@ -1299,16 +1082,7 @@ public class StartTimeUpdatingVariableListener implements VariableListener<TaskA
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-class StartTimeUpdatingVariableListener(VariableListener):
-    def requires_unique_entity_events(self):
-        return True
 
-    ...
-----
 ====
 
 [#planningValueAndPlanningValueRange]
@@ -1325,7 +1099,6 @@ It can even be another planning entity or even an interface implemented by both 
 [NOTE]
 ====
 Primitive types (such as ``int``) are not allowed.
-This does not apply to Timefold Solver for Python, since Python does not have primitive types.
 ====
 
 A planning value range is the set of possible planning values for a planning variable.
@@ -1395,22 +1168,6 @@ public class Timetable {
 
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-timeslot: Annotated[Timeslot, PlanningVariable]
-----
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-class Timetable:
-    ...
-    def get_timeslots(self) -> Annotated[list[Timeslot], ValueRangeProvider]:
-        ...
-----
 ====
 
 [IMPORTANT]
@@ -1437,14 +1194,7 @@ public class Timetable {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-class Timetable:
-    timeslots: Annotated[list[Timeslot], ValueRangeProvider]
-----
+
 ====
 
 
@@ -1469,16 +1219,6 @@ Java::
     public List<Room> getPossibleRoomList() {
         return getCourse().getTeacher().getDepartment().getRoomList();
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-room: Annotated[Room, PlanningVariable]
-
-def get_possible_room_list(self) -> Annotated[list[Room], ValueRangeProvider]:
-    return self.course.teacher.department.room_list
 ----
 ====
 
@@ -1557,18 +1297,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-car: Annotated[Car, PlanningVariable]
 
-def get_company_car_list(self) -> Annotated[list[Car], ValueRangeProvider]:
-    return self.company_car_list
-
-def get_personal_car_list(self) -> Annotated[list[Car], ValueRangeProvider(id="personal_car_range")]:
-    return self.personal_car_list
-----
 ====
 
 Automatic matching also accounts for polymorphism.
@@ -1604,22 +1333,6 @@ Java::
         return airplaneList;
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-car: Annotated[Car, PlanningVariable]
-
-def get_company_car_list(self) -> Annotated[list[CompanyCar], ValueRangeProvider]:
-    return self.company_car_list
-
-def get_personal_car_list(self) -> Annotated[list[PersonalCar], ValueRangeProvider]:
-    return self.personal_car_list
-
-def get_airplanes(self) -> Annotated[list[Airplane], ValueRangeProvider]:
-    return self.airplane_list
-----
 ====
 
 [#explicitlyReferencingValueRangeProviders]
@@ -1653,18 +1366,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-car: Annotated[Car, PlanningVariable(value_range_provider_refs = ["company_car_range"])]
 
-def get_company_car_list(self) -> Annotated[list[CompanyCar], ValueRangeProvider(id = "company_car_range")]:
-    return self.company_car_list
-
-def get_personal_car_list(self) -> Annotated[list[PersonalCar], ValueRangeProvider(id = "personal_car_range")]:
-    return self.personal_car_list
-----
 ====
 
 Explicitly referenced value range providers can also be combined, for example:
@@ -1690,19 +1392,6 @@ Java::
         return personalCarList;
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-car: Annotated[Car, PlanningVariable(value_range_provider_refs = ["company_car_range", "personal_car_range"])]
-
-def get_company_car_list(self) -> Annotated[list[CompanyCar], ValueRangeProvider(id = "company_car_range")]:
-    return self.company_car_list
-
-def get_personal_car_list(self) -> Annotated[list[PersonalCar], ValueRangeProvider(id = "personal_car_range")]:
-    return self.personal_car_list
-----
 ====
 
 
@@ -1723,13 +1412,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def get_delay_range(self) -> Annotated[CountableValueRange, ValueRangeProvider]:
-    return ValueRangeFactory.create_int_value_range(0, 5000)
-----
+
 ====
 A `CountableValueRange` uses far less memory, because it only holds the bounds.
 In the example above, a `Collection` would need to hold all `5000` ints, instead of just the two bounds.
@@ -1748,15 +1431,6 @@ Java::
         return ValueRangeFactory.createIntValueRange(0, 10000000, 200);
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def get_stock_amount_range(self) -> Annotated[CountableValueRange, ValueRangeProvider]:
-    # Range: 0, 200, 400, 600, ..., 9999600, 9999800, 10000000
-    return ValueRangeFactory.create_int_value_range(0, 10000000, 200)
-----
 ====
 
 The `ValueRangeFactory` has creation methods for several value class types:
@@ -1771,11 +1445,6 @@ The `ValueRangeFactory` has creation methods for several value class types:
 
 [#planningValueStrength]
 === Planning value strength
-
-[NOTE]
-====
-This feature is currently unsupported in Timefold Solver for Python.
-====
 
 Some optimization algorithms work a bit more efficiently if they have an estimation of which planning values are stronger, which means they are more likely to satisfy a planning entity.
 For example: in bin packing bigger containers are more likely to fit an item.
@@ -1883,17 +1552,7 @@ class Vehicle {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Vehicle:
-    capacity: int
-    depot: Depot
-    customers: Annotated[list[Customer], PlanningListVariable] = field(default_factory=list)
-----
+
 ====
 
 Planning list variable can be used if the domain meets the following criteria:
@@ -1927,13 +1586,6 @@ Java::
 public List<Customer> getCustomers() {
     return customers;
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-customers: Annotated[list[Customer], PlanningListVariable(allows_unassigned_values=True)] = field(default_factory=list)
 ----
 ====
 
@@ -2012,15 +1664,7 @@ public class Vehicle {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Vehicle:
-    customers: Annotated[list[Customer], PlanningListVariable] = field(default_factory=list)
-----
+
 ====
 
 On the element side:
@@ -2046,15 +1690,6 @@ public class Customer {
 
     public void setVehicle(Vehicle vehicle) {...}
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Customer:
-    vehicle: Annotated['Vehicle', InverseRelationShadowVariable(source_variable_name="customers")]
 ----
 ====
 
@@ -2085,15 +1720,7 @@ public class Vehicle {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Vehicle:
-    customers: Annotated[list[Customer], PlanningListVariable] = field(default_factory=list)
-----
+
 ====
 
 On the element side:
@@ -2120,15 +1747,6 @@ public class Customer {
     }
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Customer:
-    index_in_vehicle: Annotated[int, IndexShadowVariable(source_variable_name="customers")]
 ----
 ====
 
@@ -2159,15 +1777,7 @@ public class Vehicle {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Vehicle:
-    customers: Annotated[list[Customer], PlanningListVariable] = field(default_factory=list)
-----
+
 ====
 
 On the element side:
@@ -2194,16 +1804,6 @@ public class Customer {
     }
 
     public void setNextCustomer(Customer nextCustomer) {...}
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Customer:
-    previous_customer: Annotated['Customer', PreviousElementShadowVariable(source_variable_name="customers")]
-    next_customer: Annotated['Customer', NextElementShadowVariable(source_variable_name="customers")]
 ----
 ====
 
@@ -2237,15 +1837,7 @@ public class Vehicle {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Vehicle:
-    customers: Annotated[list[Customer], PlanningListVariable] = field(default_factory=list)
-----
+
 ====
 
 On the element side:
@@ -2269,20 +1861,6 @@ public class Customer {
     ...
 
     public void updateArrivalTime() {...}
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Customer:
-    vehicle: Annotated['Vehicle', InverseRelationShadowVariable(source_variable_name="customers")]
-    previous_customer: Annotated['Customer', PreviousElementShadowVariable(source_variable_name="customers")]
-    arrival_time: Annotated[datetime, CascadingUpdateShadowVariable(target_method_name = "update_arrival_time")]
-
-    def update_arrival_time(self) -> None:
-        ...
 ----
 ====
 
@@ -2335,20 +1913,7 @@ public class Customer {
     public void updateWeightAndArrivalTime() {...}
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Customer:
-    previous_customer: Annotated['Customer', PreviousElementShadowVariable(source_variable_name="customers")]
-    next_customer: Annotated['Customer', NextElementShadowVariable(source_variable_name="customers")]
-    arrival_time: Annotated[datetime, CascadingUpdateShadowVariable(target_method_name = "update_weight_and_arrival_time")]
-    weight_at_visit: Annotated[int, CascadingUpdateShadowVariable(target_method_name = "update_weight_and_arrival_time")]
 
-    def update_weight_and_arrival_time(self) -> None:
-        ...
-----
 ====
 
 Timefold Solver triggers a single listener to run the user-defined logic at the end of the event lifecycle.
@@ -2419,15 +1984,6 @@ public class Domicile ... implements Standstill {
 
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-class Domicile(Standstill):
-    def get_city(self) -> City:
-        ...
-----
 ====
 
 The anchor (which is a problem fact) and the planning entity implement a common interface, for example TSP's ``Standstill``:
@@ -2445,15 +2001,7 @@ public interface Standstill {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-class Standstill(ABC):
-    @abstractmethod
-    def get_city(self) -> City:
-        ...
-----
+
 ====
 
 That interface is the return type of the planning variable.
@@ -2482,19 +2030,6 @@ public class Visit ... implements Standstill {
     }
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Visit(Standstill):
-    previous_standstill: Annotated[Standstill, PlanningVariable(graph_type=PlanningVariableGraphType.CHAINED)]
-    ...
-
-    def get_city(self) -> City:
-        ...
 ----
 ====
 
@@ -2536,17 +2071,7 @@ public class Line {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Line:
-    operator: Annotated[Operator | None, PlanningVariable]
-    jobs: Annotated[list[Job], PlanningListVariable] = field(default_factory=list)
-    ...
-----
+
 ====
 
 The mixed models also allow for the creation of multiple planning entities, each defining its own variables:
@@ -2572,23 +2097,6 @@ public class LineOperation {
 
     ...
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Line:
-    jobs: Annotated[list[Job], PlanningListVariable] = field(default_factory=list)
-    ...
-
-@planning_entity
-@dataclass
-class LineOperation:
-    operator: Annotated[Operator | None, PlanningVariable]
-    ...
 ----
 ====
 
@@ -2649,24 +2157,7 @@ public class Timetable {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-class Timetable:
-    name: str
 
-    # Problem facts
-    timeslots: Annotated[list[Timeslot], ProblemFactCollectionProperty]
-    rooms: Annotated[list[Room], ProblemFactCollectionProperty]
-
-    # Planning entities
-    lessons: Annotated[list[Lesson], PlanningEntityCollectionProperty]
-
-    score: Annotated[HardSoftScore | None, PlanningScore]
-    ...
-----
 ====
 
 The solver configuration needs to declare the planning solution class:
@@ -2713,17 +2204,6 @@ public class Timetable {
     }
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-class Timetable:
-    ...
-    lessons: Annotated[list[Lesson], PlanningEntityCollectionProperty]
-    ...
 ----
 ====
 
@@ -2778,16 +2258,7 @@ public class Timetable {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-class Timetable:
-    ...
-    score: Annotated[HardSoftScore | None, PlanningScore]
-    ...
-----
+
 ====
 
 Some use cases use xref:constraints-and-score/overview.adoc#scoreType[other score types].
@@ -2826,18 +2297,6 @@ public class Timetable {
     ...
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-class Timetable:
-    ...
-    timeslots: Annotated[list[Timeslot], ProblemFactCollectionProperty]
-    rooms: Annotated[list[Room], ProblemFactCollectionProperty]
-    ...
 ----
 ====
 
@@ -2902,24 +2361,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-    def calculate_topic_conflict_list(self) -> Annotated[list[TopicConflict], ProblemFactCollectionProperty]:
-        return [
-            TopicConflict(left_topic, right_topic, student_size)
-            for left_topic in self.topics
-            for right_topic in self.topics
-            if left_topic.id < right_topic.id
-            and (student_size := len({
-                student
-                for student in left_topic.students
-                if student in right_topic.students
-            })) > 0
-        ]
 
-----
 ====
 
 Where a score constraint needs to check that no two exams with a topic that shares a student are scheduled close together
@@ -3015,16 +2457,6 @@ public class SeatDesignationDependency {
     ...
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@deep_planning_clone
-class SeatDesignationDependency:
-    leftSeatDesignation: SeatDesignation # planning entity
-    rightSeatDesignation: SeatDesignation # planning entity
-----
 ====
 
 In the example above, because `SeatDesignationDependency` references the planning entity `SeatDesignation`
@@ -3044,12 +2476,7 @@ Java::
     private SeatDesignationDependency seatDesignationDependency;
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-seat_designation_dependency: Annotated[SeatDesignationDependency, DeepPlanningClone]
-----
+
 ====
 
 [NOTE]
@@ -3060,11 +2487,6 @@ They are immutable by design and shouldn't be used to store mutable state, such 
 
 [#customCloning]
 ==== Custom cloning with a `SolutionCloner`
-
-[NOTE]
-====
-This feature is not supported in Timefold Solver for Python.
-====
 
 To use a custom cloner, configure it on the planning solution:
 
@@ -3137,39 +2559,6 @@ Java::
         return new Timetable(demoData.name(), timeslots, rooms, lessons);
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def id_generator():
-    current = 0
-    while True:
-        yield str(current)
-        current += 1
-
-def generate_demo_data(demo_data: DemoData) -> Timetable:
-    timeslot_ids = id_generator()
-    room_ids = id_generator()
-    lesson_ids = id_generator()
-
-    timeslots = [
-        Timeslot(next(timeslot_ids), day, start, start.replace(hour=start.hour + 1))
-        for day in ('MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY')
-        for start in (time(8, 30), time(9, 30), time(10, 30), time(13, 30), time(14, 30))
-    ]
-    rooms = [Room(next(room_ids), f'Room {name}') for name in ('A', 'B', 'C')]
-
-    lessons = []
-    lessons.append(Lesson(next(lesson_ids), "Math", "A. Turing", "9th grade"))
-    lessons.append(Lesson(next(lesson_ids), "Math", "A. Turing", "9th grade"))
-    lessons.append(Lesson(next(lesson_ids), "Physics", "M. Curie", "9th grade"))
-    lessons.append(Lesson(next(lesson_ids), "Chemistry", "M. Curie", "9th grade"))
-    lessons.append(Lesson(next(lesson_ids), "Biology", "C. Darwin", "9th grade"))
-    ...
-
-    return Timetable(demo_data.name, timeslots, rooms, lessons)
-----
 ====
 
 Usually, most of this data comes from your data layer,
@@ -3198,12 +2587,7 @@ public class Schedule {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
+
 ====
 
 Next, let's reuse the following model from previous section.
@@ -3238,13 +2622,6 @@ public class Job {
     }
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
 ====
 
 Finally, let's create a unit test that will validate the defined shadow variable `endDate`.
@@ -3265,12 +2642,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
+
 ====
 
 It is also possible to pass a solution instance rather than the solution class along with the related planning entities.
@@ -3289,13 +2661,6 @@ Java::
         SolutionManager.updateShadowVariables(solution);
         assertThat(job.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
 ----
 ====
 
@@ -3322,12 +2687,7 @@ public class VehicleRoutePlan {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
+
 ====
 
 The planning entity:
@@ -3345,13 +2705,6 @@ public class Vehicle {
     List<Customer> customers;
     ...
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
 ----
 ====
 
@@ -3376,12 +2729,7 @@ public class Customer {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
-----
+
 ====
 
 The test is defined as follows:
@@ -3404,13 +2752,6 @@ Java::
         assertThat(customer2.previousCustomer).isSameAs(customer1);
         assertThat(customer2.nextCustomer).isNull();
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-# Currently not supported in Python.
 ----
 ====
 

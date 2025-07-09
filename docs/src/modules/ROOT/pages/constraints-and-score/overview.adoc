@@ -227,15 +227,6 @@ public interface Score<...> extends Comparable<...> {
     ...
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@dataclass(order=True)
-class Score:
-    ...
-----
 ====
 
 The `Score` implementation to use depends on your use case.
@@ -263,16 +254,6 @@ public class VehicleRoutePlan {
 
 }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_solution
-class VehicleRoutePlan:
-    ...
-    score: Annotated[HardSoftScore, PlanningScore]
-----
 ====
 
 [#avoidFloatingPointNumbersInScoreCalculation]
@@ -298,13 +279,6 @@ Java::
 ----
 System.out.println( ((0.01 + 0.02) + 0.03) == (0.01 + (0.02 + 0.03)) ); // returns false
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-print(((0.01 + 0.02) + 0.03) == (0.01 + (0.02 + 0.03)) )  # returns false
-----
 ====
 
 This leads to __score corruption__.
@@ -329,11 +303,6 @@ To properly write a `Score` to a database (with JPA/Hibernate) or to XML/JSON (w
 see xref:integration/integration.adoc#integration[the integration chapter].
 ====
 
-[NOTE]
-====
-In Python, only the normal variant and BigDecimal variants are available for each score type (with the normal variant using longs and the BigDecimal variant using Python's `Decimal`).
-====
-
 
 [#simpleScore]
 === `SimpleScore`
@@ -349,14 +318,6 @@ Java::
 ----
     @PlanningScore
     private SimpleScore score;
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-
-score: Annotated[SimpleScore, PlanningScore]
 ----
 ====
 
@@ -380,14 +341,6 @@ Java::
 ----
     @PlanningScore
     private HardSoftScore score;
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-
-score: Annotated[HardSoftScore, PlanningScore]
 ----
 ====
 
@@ -415,14 +368,6 @@ Java::
 ----
     @PlanningScore
     private HardMediumSoftScore score;
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-
-score: Annotated[HardMediumSoftScore, PlanningScore]
 ----
 ====
 
@@ -452,13 +397,6 @@ Java::
 ----
     @PlanningScore(bendableHardLevelsSize = 2, bendableSoftLevelsSize = 3)
     private BendableScore score;
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-score: Annotated[BendableScore, PlanningScore(bendable_hard_levels_size=2, bendable_soft_levels_size=3)]
 ----
 ====
 
@@ -503,7 +441,7 @@ Does not scale.
 Does not support xref:constraints-and-score/understanding-the-score.adoc[score explanations].
 
 Every score calculation type can work with any Score definition (such as ``HardSoftScore`` or ``HardMediumSoftScore``).
-All score calculation types are object-oriented and can reuse existing Java or Python code.
+All score calculation types are object-oriented and can reuse existing Java code.
 
 [IMPORTANT]
 ====

@@ -146,24 +146,6 @@ Java::
 
     }
 ----
-
-Python::
-+
-[source, python, options="nowrap"]
-----
-@planning_entity
-@dataclass
-class Lesson:
-    teacher: Teacher
-    ...
-
-    def overlaps(self, another_lesson: Lesson) -> bool:
-        ...
-
-    @property
-    def is_cancelled() -> bool:
-        ...
-----
 ====
 
 The simplest possible Constraint Stream we could write to penalize all overlapping lessons would then look like:
@@ -184,21 +166,6 @@ Java::
             && leftLesson.overlaps(rightLesson))
         .penalize(HardSoftScore.ONE_HARD)
         .asConstraint("Teacher lesson overlap")
-----
-
-Python::
-+
-[source, python, options="nowrap"]
-----
-(constraint_factory.for_each(Lesson)
-                   .join(Lesson)
-                   .filter(lambda left_lesson, right_lesson:
-                               not left_lesson.is_cancelled
-                               and not right_lesson.is_cancelled
-                               and left_lesson.teacher == right_lesson.teacher
-                               and left_lesson.overlaps(right_lesson))
-    .penalize(HardSoftScore.ONE_HARD)
-    .asConstraint("Teacher lesson overlap"))
 ----
 ====
 
@@ -247,21 +214,6 @@ Java::
             && leftLesson.overlaps(rightLesson))
         ...
 ----
-
-Python::
-+
-[source, python, options="nowrap"]
-----
-(constraint_factory.for_each(Lesson)
-    .filter(lambda lesson: not lesson.is_cancelled)
-    .join(Lesson)
-    .filter(lambda left_lesson, right_lesson:
-                not right_lesson.is_cancelled
-                and left_lesson.teacher == right_lesson.teacher
-                and left_lesson.overlaps(right_lesson))
-    ...
-)
-----
 ====
 
 The canceled lessons are no longer coming in from the left, which reduces the cross-product.
@@ -284,22 +236,6 @@ Java::
             && leftLesson.overlaps(rightLesson))
         ...
 ----
-
-Python::
-+
-[source, python, options="nowrap"]
-----
-(constraint_factory.for_each(Lesson)
-                   .filter(lambda lesson: not lesson.is_cancelled)
-                   .join(
-                         constraint_factory.for_each(Lesson)
-                                           .filter(lambda lesson: not lesson.is_cancelled))
-                   .filter(lambda left_lesson, right_lesson:
-                               left_lesson.teacher == right_lesson.teacher
-                               and left_lesson.overlaps(right_lesson))
-    ...
-)
-----
 ====
 
 We've created a new Constraint Stream from `Lesson`, filtering before it entered our join.
@@ -320,20 +256,6 @@ Let's move the `Teacher` equality check from the final filter above to a `Joiner
 Java::
 +
 [source, java, options="nowrap"]
-----
-    constraintFactory.forEach(Lesson.class)
-        .filter(lesson -> !lesson.isCancelled())
-        .join(
-            constraintFactory.forEach(Lesson.class)
-                .filter(lesson -> !lesson.isCancelled()),
-	        Joiners.equal(Lesson::getTeacher))
-        .filter(Lesson::overlaps)
-        ...
-----
-
-Python::
-+
-[source, python, options="nowrap"]
 ----
     constraintFactory.forEach(Lesson.class)
         .filter(lesson -> !lesson.isCancelled())
@@ -375,18 +297,6 @@ Java::
             Joiners.equal(Lesson::getTeacher),
             Joiners.equal(Lesson::getRoom))
     ...
-----
-
-Python::
-+
-[source, python, options="nowrap"]
-----
-(constraint_factory.for_each(Lesson)
-                   .join(Lesson,
-                         Joiners.equal(lambda lesson: lesson.teacher),
-                         Joiners.equal(lambda lesson: lesson.room))
-...
-)
 ----
 ====
 

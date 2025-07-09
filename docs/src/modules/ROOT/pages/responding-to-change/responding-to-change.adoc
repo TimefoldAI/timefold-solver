@@ -108,18 +108,6 @@ Java::
                 .asConstraint("Unassigned Visit");
     }
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def penalize_unassigned_visits(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each_including_unassigned(Visit)
-                   .filter(lambda visit: visit.vehicle is None)
-                   .penalize(HardMediumSoftScore.ONE_MEDIUM)
-                   .as_constraint("Unassigned Visit")
-    )
-----
 ====
 
 [#overconstrainedPlanningWithVirtualValues]
@@ -251,14 +239,7 @@ public class Lecture {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Lecture:
-    pinned: Annotated[bool, PlanningPin]
-----
+
 ====
 
 In the example above, if `pinned` is `true`,
@@ -297,18 +278,6 @@ public class Vehicle {
     ...
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Vehicle:
-    ...
-    customers: Annotated[list[Customer], PlanningListVariable] = ...  # Includes some customers.
-    first_unpinned_index: Annotated[int, PlanningPinToIndex] = 1
-    ...
 ----
 ====
 
@@ -401,17 +370,7 @@ public class Talk {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-@planning_entity
-class Talk:
-    ...
-    timeslot: Annotated[Timeslot | None, PlanningVariable]
-    published_timeslot: Timeslot | None
-    ...
-----
+
 ====
 
 During planning, the planning variable `timeslot` changes.
@@ -430,19 +389,6 @@ Java::
                 .penalize(HardSoftScore.ofSoft(1000))
                 .asConstraint("Published timeslot");
     }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-def published_timeslot(factory: ConstraintFactory) -> Constraint:
-    return (factory.for_each(Talk)
-                   .filter(lambda talk: talk.published_timeslot is not None
-                           and talk.timeslot != talk.published_timeslot)
-                   .penalize(HardSoftScore.of_soft(1000))
-                   .as_constraint("Published timeslot")
-    )
 ----
 ====
 
@@ -503,18 +449,7 @@ public interface Solver<Solution_> {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-class Solver(Generic[Solution_]):
-    ...
-    def add_problem_change(self, problem_change: ProblemChange[Solution_]) -> None:
-        ...
 
-    def is_every_problem_change_processed(self) -> bool:
-        ...
-----
 ====
 
 Similarly, you can pass the `ProblemChange` to the `SolverManager`:
@@ -534,16 +469,6 @@ public interface SolverManager<Solution_, ProblemId_> {
     ...
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-class SolverManager(Generic[Solution_, ProblemId_]):
-    ...
-    def add_problem_change(self, problem_id: ProblemId_, problem_change: ProblemChange[Solution_]) -> Awaitable[None]:
-        ...
 ----
 ====
 
@@ -566,15 +491,7 @@ public interface SolverJob<Solution_, ProblemId_> {
 }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-class SolverJob(Generic[Solution_, ProblemId_]):
-    ...
-    def add_problem_change(self, problem_change: ProblemChange[Solution_]) -> Awaitable[None]:
-        ...
-----
+
 ====
 
 Notice the method returns `CompletableFuture<Void>`, which is completed when a user-defined `Consumer` accepts
@@ -591,16 +508,6 @@ public interface ProblemChange<Solution_> {
     void doChange(Solution_ workingSolution, ProblemChangeDirector problemChangeDirector);
 
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-class ProblemChange(Generic[Solution_], ABC):
-    @abstractmethod
-    def do_change(self, working_solution: Solution_, problem_change_director: ProblemChangeDirector) -> None:
-        ...
 ----
 ====
 
@@ -722,16 +629,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-def on_best_solution_changed(event: BestSolutionChangedEvent[VehicleRoutePlan]) -> None:
-    if (event.is_every_problem_change_processed
-            # Ignore infeasible (including uninitialized) solutions
-            and event.new_best_score.is_feasible):
-        ...
-----
+
 ====
 
 . Use the event's `isNewBestSolutionInitialized()` method instead of `Score.isFeasible()` to only ignore uninitialized solutions,
@@ -741,11 +639,6 @@ but do accept infeasible solutions too.
 [#recommendedFitAPI]
 [#assignmentRecommendationAPI]
 == Responding to adhoc changes
-
-[NOTE]
-====
-This feature is currently not supported in Timefold Solver for Python.
-====
 
 With <<realTimePlanning,real-time planning>>, we can respond to a continuous stream of external changes.
 However, it is often necessary to respond to adhoc changes too,

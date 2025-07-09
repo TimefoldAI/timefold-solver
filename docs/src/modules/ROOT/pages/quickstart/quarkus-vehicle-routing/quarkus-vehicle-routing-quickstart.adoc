@@ -5,8 +5,6 @@
 :sectnums:
 :icons: font
 include::../../_attributes.adoc[]
-// disable python code examples for quarkus
-:python-disabled:
 
 // Keep this in sync with the quarkus repo's copy
 // https://github.com/quarkusio/quarkus/blob/main/docs/src/main/asciidoc/timefold.adoc

@@ -20,15 +20,6 @@ Java::
                "org/acme/schooltimetabling/solverConfig.xml");
        Solver<Timetable> solver = solverFactory.buildSolver();
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-solver_factory = SolverFactory.create(SolverConfig.create_from_xml_resource(
-         Path(...) / "solver_config.xml"))
-solver = solver_factory.build_solver()
-----
 ====
 
 In a typical project (following the Maven directory structure), that solverConfig XML file would be located at ``$PROJECT_DIR/src/main/resources/org/acme/schooltimetabling/solverConfig.xml``.
@@ -67,12 +58,6 @@ A solver configuration XML file looks like this:
 </solver>
 ----
 
-[NOTE]
-====
-In Timefold Solver for Python, use https://docs.python.org/3/glossary.html#term-qualified-name[qualified names]
-when referencing functions and classes.
-====
-
 Notice the three parts in it:
 
 * Define the model.
@@ -102,22 +87,6 @@ Java::
 
         SolverFactory<Timetable> solverFactory = SolverFactory.create(solverConfig);
         Solver<Timetable> solver = solverFactory.buildSolver();
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-solver_config = SolverConfig.create_from_xml_resource(
-         Path(...) / "solver_config.xml")
-
-termination_config = TerminationConfig(
-    spent_limit=Duration(minutes=user_input)
-)
-solver_config.termination_config = termination_config
-
-solver_factory = SolverFactory.create(solver_config)
-solver = solver_factory.build_solver()
 ----
 ====
 
@@ -156,28 +125,7 @@ Java::
     }
 ----
 
-Python::
-+
-[source,python,options="nowrap"]
-----
-import dataclasses
 
-template = SolverConfig.create_from_xml_resource(
-         Path(...) / "solver_config.xml")
-
-termination_config = TerminationConfig()
-template.termination_config = termination_config
-
-# Called concurrently from different threads
-def user_request(..., user_input: int):
-    solver_config = dataclasses.replace(template,
-      termination_config=TerminationConfig(
-        spent_limit=Duration(minutes=user_input)
-    ))
-    solver_factory = SolverFactory.create(solver_config)
-    solver = solver_factory.build_solver()
-    ...
-----
 ======
 ====
 
@@ -196,10 +144,6 @@ The property annotations must be on the getter method, not on the setter method.
 Such a getter does not need to be public.
 * Add class annotations and field annotations on the domain model.
 Such a field does not need to be public.
-
-Python::
-* Add class decorators and annotations on attributes in the domain model (recommended).
-* Add class decorators and annotations on the return type of methods in the domain model.
 ====
 
 This manual focuses on the first manner, but every feature supports both, even if it's not explicitly mentioned.
@@ -233,11 +177,6 @@ Solver Configuration:
 
 [#customPropertiesConfiguration]
 == Custom properties configuration
-
-[NOTE]
-====
-This feature is not supported in Timefold Solver for Python.
-====
 
 Solver configuration elements, that instantiate classes and explicitly mention it, support custom properties.
 Custom properties are useful to tweak dynamic values through the xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker].

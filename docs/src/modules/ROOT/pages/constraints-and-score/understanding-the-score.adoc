@@ -19,14 +19,6 @@ Java::
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
 System.out.println(solutionManager.explain(vehicleRoutePlan));
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-solution_manager = SolutionManager.create(solver_factory)
-print(solution_manager.explain(vehicle_route_plan))
-----
 ====
 
 For example, in vehicle routing, this prints that vehicle `vehicle '1'` matched the soft constraint `minimizeTravelTime`:
@@ -82,14 +74,6 @@ Java::
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
 ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-solution_manager = SolutionManager.create(solver_factory)
-score_analysis = solution_manager.analyze(vehicle_route_plan)
-----
 ====
 
 `ScoreAnalysis` is a JSON-friendly representation of the score, breaking down the score into individual constraints.
@@ -116,15 +100,6 @@ Java::
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
 ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
 System.out.println(scoreAnalysis.summarize());
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-solution_manager = SolutionManager.create(solver_factory)
-score_analysis = solution_manager.analyze(vehicle_route_plan)
-print(score_analysis.summary)
 ----
 ====
 
@@ -162,16 +137,6 @@ scoreAnalysis.constraintMap().forEach((constraintRef, constraintAnalysis) -> {
    ...
 });
 ----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-for constraint_ref, constraint_analysis in score_analysis.constraint_map.items():
-   constraint_id = constraint_ref.constraint_id
-   score_per_constraint = constraint_analysis.score
-   ...
-----
 ====
 
 If you wish to go further and find out which planning entities and problem facts are responsible for breaking the constraint, you can further explore the `ConstraintAnalysis` instance you received from `ScoreAnalysis.constraintMap()`:
@@ -188,18 +153,6 @@ constraintAnalysis.matches().forEach(matchAnalysis -> {
     Object justification = matchAnalysis.justification();
     ...
 });
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-match_count = constraint_analysis.match_count
-
-for match_analysis in constraint_analysis.matches:
-    score_per_match = match_analysis.score
-    justification = match_analysis.justification
-    ...
 ----
 ====
 
@@ -234,26 +187,6 @@ diff.constraintMap().forEach((constraintRef, constraintAnalysis) -> {
        ...
    });
 });
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-first_analysis = solution_manager.analyze(firstSolution)
-second_analysis = solution_manager.analyze(second_solution)
-diff = first_analysis - second_analysis
-
-# Score difference only carries the constraints whose matches changed from first to second solution.
-for constraint_ref, constraint_analysis in diff.constraint_map.items():
-    constraint_id = constraint_ref.constraint_id
-    score_diff = constraint_analysis.score
-    # Matches only include constraint matches that:
-    #   - the second solution either added to or removed from the first solution.
-    #   - had their score changed.
-    # Two matches are considered equal if their justification objects are equal.
-    for match_analysis in constraint_analysis.matches:
-        ...
 ----
 ====
 
@@ -298,11 +231,6 @@ In that case, use `ScoreAnalysisFetchPolicy.FETCH_MATCH_COUNT` instead of the de
 ====
 The solution diff is available as a xref:upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature].
 It may be subject to change and must be enabled in the solver configuration by setting: `<enablePreviewFeature>PLANNING_SOLUTION_DIFF</enablePreviewFeature>`
-====
-
-[NOTE]
-====
-This feature is not yet supported in Timefold Solver for Python.
 ====
 
 Using the `SolutionManager` API, you can compare two solutions provided by the solver, and find out what changed between them:
@@ -361,27 +289,6 @@ for (Visit visit : vehicleRoutePlan.getVisits()) {
         ...
     }
 }
-----
-
-Python::
-+
-[source,python,options="nowrap"]
-----
-solution_manager = SolutionManager.create(solver_factory)
-score_explanation = solution_manager.explain(vehicle_route_plan)
-indictment_map = score_explanation.indictment_map
-for visit in vehicle_route_plan.visits:
-    indictment = indictment_map.get(visit)
-    if indictment is None:
-        continue
-    # The score impact of that planning entity
-    total_score = indictment.score
-
-    for constraint_match in indictment.constraint_match_set:
-        constraint_name = constraint_match.constraint_name
-        score = constraint_match.score
-        ...
-
 ----
 ====
 
