@@ -192,7 +192,7 @@ public record RootVariableSource<Entity_, Value_>(
             assertIsValidVariableReference(rootEntityClass, variablePath, variableSourceReference);
         }
 
-        if (parentVariableType != ParentVariableType.GROUP && variableSourceReferences.size() == 1) {
+        if (!parentVariableType.isIndirect() && variableSourceReferences.size() == 1) {
             // No variables are accessed from the parent, so there no
             // parent variable.
             parentVariableType = ParentVariableType.NO_PARENT;

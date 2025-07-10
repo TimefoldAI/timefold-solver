@@ -78,6 +78,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.NO_PARENT);
         var source = rootVariableSource.variableSourceReferences().get(0);
 
         assertEmptyChainToVariableEntity(source);
@@ -112,6 +113,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.NO_PARENT);
         var source = rootVariableSource.variableSourceReferences().get(0);
 
         assertEmptyChainToVariableEntity(source);
@@ -145,6 +147,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.GROUP);
         var source = rootVariableSource.variableSourceReferences().get(0);
 
         assertEmptyChainToVariableEntity(source);
@@ -183,6 +186,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.GROUP);
         var source = rootVariableSource.variableSourceReferences().get(0);
 
         assertEmptyChainToVariableEntity(source);
@@ -221,6 +225,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.GROUP);
         var source = rootVariableSource.variableSourceReferences().get(0);
 
         assertEmptyChainToVariableEntity(source);
@@ -261,6 +266,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(2);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.PREVIOUS);
         var previousSource = rootVariableSource.variableSourceReferences().get(0);
 
         assertEmptyChainToVariableEntity(previousSource);
@@ -305,6 +311,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.INDIRECT);
         var previousSource = rootVariableSource.variableSourceReferences().get(0);
 
         assertChainToVariableEntity(previousSource, "fact");
@@ -344,6 +351,7 @@ class RootVariableSourceTest {
 
         assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
         assertThat(rootVariableSource.variableSourceReferences()).hasSize(2);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.GROUP);
         var previousSource = rootVariableSource.variableSourceReferences().get(0);
 
         assertEmptyChainToVariableEntity(previousSource);
