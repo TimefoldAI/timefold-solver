@@ -356,7 +356,7 @@ public class SolverScope<Solution_> {
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
         childThreadSolverScope.workingRandom = new Random(workingRandom.nextLong());
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
-        childThreadSolverScope.setValueRangeResolver(scoreDirector.getValueRangeResolver());
+        childThreadSolverScope.setValueRangeResolver(new ValueRangeResolver<>());
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
         childThreadSolverScope.startingInitializedScore = null;
