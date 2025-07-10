@@ -61,7 +61,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         graphStructureAndDirection,
                         entities);
             }
-            case ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE ->
+            case ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE ->
                 buildArbitrarySingleEntityGraph(solutionDescriptor, variableReferenceGraphBuilder, entities, graphCreator);
             case NO_DYNAMIC_EDGES, ARBITRARY ->
                 buildArbitraryGraph(solutionDescriptor, variableReferenceGraphBuilder, entities, graphCreator);

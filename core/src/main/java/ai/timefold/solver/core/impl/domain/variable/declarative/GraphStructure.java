@@ -42,7 +42,7 @@ public enum GraphStructure {
      * entity that uses declarative shadow variables with all directional
      * parents being the same type.
      */
-    ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE,
+    ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE,
 
     /**
      * A graph structure that accepts all graphs.
@@ -73,7 +73,7 @@ public enum GraphStructure {
                 .distinct().count() > 1;
 
         final var arbitraryGraphStructure = new GraphStructureAndDirection(
-                multipleDeclarativeEntityClasses ? ARBITRARY : ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE,
+                multipleDeclarativeEntityClasses ? ARBITRARY : ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE,
                 null, null);
 
         var rootVariableSources = declarativeShadowVariableDescriptors.stream()

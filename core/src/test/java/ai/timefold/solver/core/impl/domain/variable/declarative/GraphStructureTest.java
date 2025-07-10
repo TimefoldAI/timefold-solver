@@ -1,9 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.ARBITRARY;
-import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE;
+import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.EMPTY;
-import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.NO_DYNAMIC_EDGES;
 import static ai.timefold.solver.core.impl.domain.variable.declarative.GraphStructure.SINGLE_DIRECTIONAL_PARENT;
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -53,7 +52,7 @@ class GraphStructureTest {
         var entity = new TestdataChainedSimpleVarValue();
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataChainedSimpleVarSolution.buildSolutionDescriptor(), entity))
-                .hasFieldOrPropertyWithValue("structure", ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE);
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE);
     }
 
     @Test
@@ -94,7 +93,7 @@ class GraphStructureTest {
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataConcurrentSolution.buildSolutionDescriptor(),
                 value1, value2))
-                .hasFieldOrPropertyWithValue("structure", ARBITRARY_SINGLE_ENTITY_SINGLE_DIRECTIONAL_PARENT_TYPE);
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE);
     }
 
     @Test
@@ -102,7 +101,7 @@ class GraphStructureTest {
         var entity = new TestdataFollowerEntity();
         assertThat(GraphStructure.determineGraphStructure(
                 TestdataFollowerSolution.buildSolutionDescriptor(), entity))
-                .hasFieldOrPropertyWithValue("structure", NO_DYNAMIC_EDGES);
+                .hasFieldOrPropertyWithValue("structure", ARBITRARY_SINGLE_ENTITY_AT_MOST_ONE_DIRECTIONAL_PARENT_TYPE);
     }
 
     @Test
