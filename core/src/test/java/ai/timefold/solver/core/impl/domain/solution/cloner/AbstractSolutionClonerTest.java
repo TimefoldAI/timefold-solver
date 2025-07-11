@@ -55,9 +55,9 @@ import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.chi
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.thirdparty.TestdataExtendedThirdPartyEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.thirdparty.TestdataExtendedThirdPartySolution;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.thirdparty.TestdataThirdPartyEntityPojo;
-import ai.timefold.solver.core.testdomain.list.externalized.TestdataListEntityExternalized;
-import ai.timefold.solver.core.testdomain.list.externalized.TestdataListSolutionExternalized;
-import ai.timefold.solver.core.testdomain.list.externalized.TestdataListValueExternalized;
+import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
+import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.reflect.accessmodifier.TestdataAccessModifierSolution;
 import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedEntity;
 import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedSolution;
@@ -118,19 +118,18 @@ public abstract class AbstractSolutionClonerTest {
 
     @Test
     void cloneListVariableSolution() {
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
-                TestdataListSolutionExternalized.class,
-                TestdataListEntityExternalized.class);
+        var solutionDescriptor =
+                SolutionDescriptor.buildSolutionDescriptor(TestdataListSolution.class, TestdataListEntity.class);
 
         var cloner = createSolutionCloner(solutionDescriptor);
 
-        var val1 = new TestdataListValueExternalized("1");
-        var val2 = new TestdataListValueExternalized("2");
-        var val3 = new TestdataListValueExternalized("3");
-        var a = new TestdataListEntityExternalized("a", new ArrayList<>(List.of(val1, val3)));
-        var b = new TestdataListEntityExternalized("b", new ArrayList<>(List.of(val2)));
+        var val1 = new TestdataListValue("1");
+        var val2 = new TestdataListValue("2");
+        var val3 = new TestdataListValue("3");
+        var a = new TestdataListEntity("a", new ArrayList<>(List.of(val1, val3)));
+        var b = new TestdataListEntity("b", new ArrayList<>(List.of(val2)));
 
-        var original = new TestdataListSolutionExternalized();
+        var original = new TestdataListSolution();
         var valueList = Arrays.asList(val1, val2, val3);
         original.setValueList(valueList);
         var originalEntityList = List.of(a, b);
@@ -140,7 +139,7 @@ public abstract class AbstractSolutionClonerTest {
         var clone = cloner.cloneSolution(original);
 
         assertThat(clone).isNotSameAs(original);
-        assertThat(clone.getValueList()).isSameAs(valueList);
+        assertThat(clone.getValueList()).isEqualTo(valueList);
         assertThat(clone.getScore()).isEqualTo(original.getScore());
 
         var cloneEntityList = clone.getEntityList();
@@ -410,8 +409,8 @@ public abstract class AbstractSolutionClonerTest {
         assertCode(valueCode, cloneEntity.getValue());
     }
 
-    private void assertEntityListClone(TestdataListEntityExternalized originalEntity,
-            TestdataListEntityExternalized cloneEntity, String entityCode, List<String> valueCodeList) {
+    private void assertEntityListClone(TestdataListEntity originalEntity, TestdataListEntity cloneEntity, String entityCode,
+            List<String> valueCodeList) {
         assertThat(cloneEntity).isNotSameAs(originalEntity);
         assertThat(cloneEntity.getValueList()).isNotSameAs(originalEntity.getValueList());
         assertCode(entityCode, cloneEntity);

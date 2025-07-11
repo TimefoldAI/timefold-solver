@@ -31,7 +31,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     @SafeVarargs
     @Override
     public final <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        return ifExists(dataStreamFactory.forEachNonDiscriminating(otherClass), joiners);
+        return ifExists(dataStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
     @SafeVarargs
@@ -43,7 +43,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     @SafeVarargs
     @Override
     public final <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        return ifExistsOrNot(false, dataStreamFactory.forEachNonDiscriminating(otherClass), joiners);
+        return ifExistsOrNot(false, dataStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
     @SafeVarargs

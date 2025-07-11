@@ -15,8 +15,9 @@ public final class ForEachIncludingPinnedDataStream<Solution_, A>
         extends AbstractForEachDataStream<Solution_, A>
         implements TupleSource {
 
-    public ForEachIncludingPinnedDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass) {
-        super(dataStreamFactory, forEachClass);
+    public ForEachIncludingPinnedDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
+            boolean includeNull) {
+        super(dataStreamFactory, forEachClass, includeNull);
     }
 
     @Override

@@ -44,7 +44,7 @@ public abstract class AbstractValueRangeDescriptor<Solution_> implements ValueRa
 
     protected <T> ValueRange<T> doNullInValueRangeWrapping(ValueRange<T> valueRange) {
         if (addNullInValueRange) {
-            valueRange = new NullAllowingCountableValueRange<>((CountableValueRange) valueRange);
+            valueRange = new NullAllowingCountableValueRange<>((CountableValueRange<T>) valueRange);
         }
         return valueRange;
     }
