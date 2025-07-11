@@ -40,21 +40,10 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
 
     private final IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator;
 
-    private IncrementalScoreDirector(IncrementalScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled, ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState,
-            IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator) {
-        super(scoreDirectorFactory, lookUpEnabled, determineCorrectPolicy(constraintMatchPolicy, incrementalScoreCalculator),
-                expectShadowVariablesInCorrectState);
-        this.incrementalScoreCalculator = Objects.requireNonNull(incrementalScoreCalculator);
-    }
-
-    private static ConstraintMatchPolicy determineCorrectPolicy(ConstraintMatchPolicy constraintMatchPolicy,
-            IncrementalScoreCalculator<?, ?> incrementalScoreCalculator) {
-        if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator<?, ?>) {
-            return constraintMatchPolicy;
-        } else {
-            return ConstraintMatchPolicy.DISABLED;
-        }
+    private IncrementalScoreDirector(Builder<Solution_, Score_> builder) {
+        super(builder);
+        this.incrementalScoreCalculator = Objects.requireNonNull(builder.incrementalScoreCalculator,
+                "The incrementalScoreCalculator must not be null.");
     }
 
     public IncrementalScoreCalculator<Solution_, Score_> getIncrementalScoreCalculator() {
@@ -267,15 +256,27 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
         public Builder<Solution_, Score_>
                 withIncrementalScoreCalculator(IncrementalScoreCalculator<Solution_, Score_> incrementalScoreCalculator) {
             this.incrementalScoreCalculator = incrementalScoreCalculator;
-            return this;
+            return withConstraintMatchPolicy(constraintMatchPolicy); // Ensure the policy is correct for the calculator.
+        }
+
+        @Override
+        public Builder<Solution_, Score_> withConstraintMatchPolicy(ConstraintMatchPolicy constraintMatchPolicy) {
+            return super.withConstraintMatchPolicy(determineCorrectPolicy(constraintMatchPolicy, incrementalScoreCalculator));
         }
 
         @Override
         public IncrementalScoreDirector<Solution_, Score_> build() {
-            return new IncrementalScoreDirector<>(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
-                    expectShadowVariablesInCorrectState, incrementalScoreCalculator);
+            return new IncrementalScoreDirector<>(this);
         }
 
+        private static ConstraintMatchPolicy determineCorrectPolicy(ConstraintMatchPolicy constraintMatchPolicy,
+                IncrementalScoreCalculator<?, ?> incrementalScoreCalculator) {
+            if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator<?, ?>) {
+                return constraintMatchPolicy;
+            } else {
+                return ConstraintMatchPolicy.DISABLED;
+            }
+        }
     }
 
 }

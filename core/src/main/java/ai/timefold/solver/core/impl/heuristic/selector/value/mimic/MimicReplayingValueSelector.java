@@ -7,12 +7,12 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 public class MimicReplayingValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+        implements IterableValueSelector<Solution_> {
 
     protected final ValueMimicRecorder<Solution_> valueMimicRecorder;
 
@@ -26,12 +26,6 @@ public class MimicReplayingValueSelector<Solution_>
         this.valueMimicRecorder = valueMimicRecorder;
         // No PhaseLifecycleSupport because the MimicRecordingValueSelector is hooked up elsewhere too
         valueMimicRecorder.addMimicReplayingValueSelector(this);
-        // Precondition for iterator(Object)'s current implementation
-        if (!valueMimicRecorder.getVariableDescriptor().isValueRangeEntityIndependent()) {
-            throw new IllegalArgumentException(
-                    "The current implementation support only an entityIndependent variable ("
-                            + valueMimicRecorder.getVariableDescriptor() + ").");
-        }
     }
 
     // ************************************************************************

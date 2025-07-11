@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicRecordingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicReplayingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.SubListMimicRecorder;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
@@ -43,9 +43,9 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
             return buildMimicReplaying(configPolicy);
         }
         if (inheritedSelectionOrder != SelectionOrder.RANDOM) {
-            throw new IllegalArgumentException("The subListSelector (" + config
-                    + ") has an inheritedSelectionOrder(" + inheritedSelectionOrder
-                    + ") which is not supported. SubListSelector only supports random selection order.");
+            throw new IllegalArgumentException(
+                    "The subListSelector (%s) has an inheritedSelectionOrder(%s) which is not supported. SubListSelector only supports random selection order."
+                            .formatted(config, inheritedSelectionOrder));
         }
 
         var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
@@ -70,16 +70,16 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                 || config.getMaximumSubListSize() != null
                 || config.getValueSelectorConfig() != null
                 || config.getNearbySelectionConfig() != null) {
-            throw new IllegalArgumentException("The subListSelectorConfig (" + config
-                    + ") with mimicSelectorRef (" + config.getMimicSelectorRef()
-                    + ") has another property that is not null.");
+            throw new IllegalArgumentException(
+                    "The subListSelectorConfig (%s) with mimicSelectorRef (%s) has another property that is not null."
+                            .formatted(config, config.getMimicSelectorRef()));
         }
         SubListMimicRecorder<Solution_> subListMimicRecorder =
                 configPolicy.getSubListMimicRecorder(config.getMimicSelectorRef());
         if (subListMimicRecorder == null) {
-            throw new IllegalArgumentException("The subListSelectorConfig (" + config
-                    + ") has a mimicSelectorRef (" + config.getMimicSelectorRef()
-                    + ") for which no subListSelector with that id exists (in its solver phase).");
+            throw new IllegalArgumentException(
+                    "The subListSelectorConfig (%s) has a mimicSelectorRef (%s) for which no subListSelector with that id exists (in its solver phase)."
+                            .formatted(config, config.getMimicSelectorRef()));
         }
         return new MimicReplayingSubListSelector<>(subListMimicRecorder);
     }
@@ -110,7 +110,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, subListSelector);
     }
 
-    private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildEntityIndependentValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy, EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
         ValueSelectorConfig valueSelectorConfig = config != null ? config.getValueSelectorConfig() : null;
@@ -128,18 +128,18 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder);
         GenuineVariableDescriptor<Solution_> solutionGenuineVariableDescriptor = valueSelector.getVariableDescriptor();
         if (!solutionGenuineVariableDescriptor.isListVariable()) {
-            throw new IllegalArgumentException("The subListSelector (" + config
-                    + ") can only be used when the domain model has a list variable."
-                    + " Check your @" + PlanningEntity.class.getSimpleName()
-                    + " and make sure it has a @" + PlanningListVariable.class.getSimpleName() + ".");
+            throw new IllegalArgumentException(
+                    "The subListSelector (%s) can only be used when the domain model has a list variable. Check your @%s and make sure it has a @%s."
+                            .formatted(config, PlanningEntity.class.getSimpleName(),
+                                    PlanningListVariable.class.getSimpleName()));
         }
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
-            throw new IllegalArgumentException("The subListSelector (" + config
-                    + ") for a list variable needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
+        if (!(valueSelector instanceof IterableValueSelector)) {
+            throw new IllegalArgumentException(
+                    "The subListSelector (%s) for a list variable needs to be based on an %s (%s). Check your @%s annotations."
+                            .formatted(config, IterableValueSelector.class.getSimpleName(), valueSelector,
+                                    ValueRangeProvider.class.getSimpleName()));
 
         }
-        return (EntityIndependentValueSelector<Solution_>) valueSelector;
+        return (IterableValueSelector<Solution_>) valueSelector;
     }
 }

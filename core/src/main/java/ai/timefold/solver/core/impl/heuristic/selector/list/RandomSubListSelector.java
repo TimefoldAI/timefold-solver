@@ -10,13 +10,13 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_> implements SubListSelector<Solution_> {
 
     private final EntitySelector<Solution_> entitySelector;
-    private final EntityIndependentValueSelector<Solution_> valueSelector;
+    private final IterableValueSelector<Solution_> valueSelector;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final int minimumSubListSize;
     private final int maximumSubListSize;
@@ -26,7 +26,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
 
     public RandomSubListSelector(
             EntitySelector<Solution_> entitySelector,
-            EntityIndependentValueSelector<Solution_> valueSelector,
+            IterableValueSelector<Solution_> valueSelector,
             int minimumSubListSize, int maximumSubListSize) {
         this.entitySelector = entitySelector;
         this.valueSelector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);

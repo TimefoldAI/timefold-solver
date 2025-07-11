@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -23,12 +23,12 @@ class EntityIndependentFilteringValueSelectorTest {
 
     @Test
     void filterEntityIndependent() {
-        EntityIndependentValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
                 TestdataEntity.class, "value",
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"), new TestdataValue("v4"));
 
         SelectionFilter<TestdataSolution, TestdataValue> filter = (scoreDirector, value) -> !value.getCode().equals("v3");
-        EntityIndependentValueSelector valueSelector = new EntityIndependentFilteringValueSelector(childValueSelector, filter);
+        IterableValueSelector valueSelector = new IterableFilteringValueSelector(childValueSelector, filter);
 
         SolverScope solverScope = mock(SolverScope.class);
         valueSelector.solvingStarted(solverScope);

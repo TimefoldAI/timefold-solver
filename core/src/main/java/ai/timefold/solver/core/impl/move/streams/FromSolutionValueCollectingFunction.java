@@ -12,6 +12,7 @@ public record FromSolutionValueCollectingFunction<Solution_, A>(ValueRangeDescri
 
     @Override
     public CountableValueRange<A> apply(Solution_ solution) {
+        // TODO - Use ValueRangeResolver in move streams
         return ensureCountable(valueRangeDescriptor.extractValueRange(solution, null));
     }
 

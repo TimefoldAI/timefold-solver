@@ -156,7 +156,8 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
             return new FromSolutionPropertyValueRangeDescriptor<>(this, addNullInValueRange, valueRangeProviderMemberAccessor);
         } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            return new FromEntityPropertyValueRangeDescriptor<>(this, addNullInValueRange, valueRangeProviderMemberAccessor);
+            return new FromEntityPropertyValueRangeDescriptor<>(this, addNullInValueRange,
+                    valueRangeProviderMemberAccessor);
         } else {
             throw new IllegalStateException("Impossible state: member accessor (" + valueRangeProviderMemberAccessor
                     + ") is not a value range provider.");
@@ -212,8 +213,13 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         return valueRangeDescriptor;
     }
 
-    public boolean isValueRangeEntityIndependent() {
-        return valueRangeDescriptor.isEntityIndependent();
+    /**
+     * Returns true if the value range can be directly extracted from the solution.
+     *
+     * @see FromSolutionPropertyValueRangeDescriptor
+     */
+    public boolean canExtractValueRangeFromSolution() {
+        return valueRangeDescriptor.canExtractValueRangeFromSolution();
     }
 
     // ************************************************************************
@@ -247,10 +253,6 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     public SelectionSorter<Solution_, Object> getDecreasingStrengthSorter() {
         return decreasingStrengthSorter;
-    }
-
-    public long getValueRangeSize(Solution_ solution, Object entity) {
-        return valueRangeDescriptor.extractValueRangeSize(solution, entity);
     }
 
     @Override

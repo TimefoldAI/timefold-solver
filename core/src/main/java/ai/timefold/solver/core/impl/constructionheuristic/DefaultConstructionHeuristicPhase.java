@@ -64,7 +64,8 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             // (When it exhausts all values, it will start over from the beginning.)
             // To prevent that, we need to limit the number of steps to the number of unassigned values.
             var workingSolution = phaseScope.getWorkingSolution();
-            maxStepCount = solutionDescriptor.getListVariableDescriptor().countUnassigned(workingSolution);
+            maxStepCount = solutionDescriptor.getListVariableDescriptor().countUnassigned(workingSolution,
+                    solverScope.getValueRangeResolver());
         }
 
         TerminationStatus earlyTerminationStatus = null;

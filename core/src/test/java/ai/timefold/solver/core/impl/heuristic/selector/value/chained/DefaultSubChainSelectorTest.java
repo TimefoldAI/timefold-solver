@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -35,7 +35,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void notChainedVariableDescriptor() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(false);
@@ -47,7 +47,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void neverEndingValueSelector() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
@@ -60,7 +60,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void minimumSubChainSizeIsZero() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
@@ -72,7 +72,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void minimumSubChainSizeIsGreaterThanMaximumSubChainSize() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);

@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -20,16 +20,16 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     private final Random workingRandom;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
-    private final EntityIndependentValueSelector<Node_> originSelector;
-    private final EntityIndependentValueSelector<Node_> valueSelector;
+    private final IterableValueSelector<Node_> originSelector;
+    private final IterableValueSelector<Node_> valueSelector;
     private final int minK;
     private final int[] pickedKDistribution;
     private final int pickedKDistributionSum;
     private final int maxCyclesPatchedInInfeasibleMove;
 
     public KOptListMoveIterator(Random workingRandom, ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableStateSupply<Solution_> listVariableStateSupply, EntityIndependentValueSelector<Node_> originSelector,
-            EntityIndependentValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {
+            ListVariableStateSupply<Solution_> listVariableStateSupply, IterableValueSelector<Node_> originSelector,
+            IterableValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {
         this.workingRandom = workingRandom;
         this.listVariableDescriptor = listVariableDescriptor;
         this.listVariableStateSupply = listVariableStateSupply;

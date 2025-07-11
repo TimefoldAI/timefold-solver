@@ -6,7 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
 /**
@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
  * <p>
  * Returns no values for an entity's variable if the variable is not reinitializable.
  * <p>
- * Does not implement {@link EntityIndependentValueSelector} because if used like that,
+ * Does not implement {@link IterableValueSelector} because if used like that,
  * it shouldn't be added during configuration in the first place.
  */
 public final class ReinitializeVariableValueSelector<Solution_>

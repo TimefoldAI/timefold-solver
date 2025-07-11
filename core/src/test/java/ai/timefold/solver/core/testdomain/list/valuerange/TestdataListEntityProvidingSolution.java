@@ -7,7 +7,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 
 @PlanningSolution
 public class TestdataListEntityProvidingSolution {
@@ -17,16 +16,16 @@ public class TestdataListEntityProvidingSolution {
                 TestdataListEntityProvidingEntity.class);
     }
 
-    private List<TestdataEntityProvidingEntity> entityList;
+    private List<TestdataListEntityProvidingEntity> entityList;
 
     private SimpleScore score;
 
     @PlanningEntityCollectionProperty
-    public List<TestdataEntityProvidingEntity> getEntityList() {
+    public List<TestdataListEntityProvidingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataEntityProvidingEntity> entityList) {
+    public void setEntityList(List<TestdataListEntityProvidingEntity> entityList) {
         this.entityList = entityList;
     }
 

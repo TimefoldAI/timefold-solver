@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChain;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChainSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -17,14 +17,14 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 public class SubChainChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
 
     protected final SubChainSelector<Solution_> subChainSelector;
-    protected final EntityIndependentValueSelector<Solution_> valueSelector;
+    protected final IterableValueSelector<Solution_> valueSelector;
     protected final boolean randomSelection;
     protected final boolean selectReversingMoveToo;
 
     protected SingletonInverseVariableSupply inverseVariableSupply = null;
 
     public SubChainChangeMoveSelector(SubChainSelector<Solution_> subChainSelector,
-            EntityIndependentValueSelector<Solution_> valueSelector, boolean randomSelection,
+            IterableValueSelector<Solution_> valueSelector, boolean randomSelection,
             boolean selectReversingMoveToo) {
         this.subChainSelector = subChainSelector;
         this.valueSelector = valueSelector;

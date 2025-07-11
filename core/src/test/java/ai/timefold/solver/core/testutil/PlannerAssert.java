@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.IterableSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.chained.SubChainSelector;
 import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleListener;
@@ -372,11 +372,11 @@ public final class PlannerAssert {
 
     // ---- Value
 
-    public static void assertAllCodesOfValueSelector(EntityIndependentValueSelector<?> valueSelector, String... codes) {
+    public static void assertAllCodesOfValueSelector(IterableValueSelector<?> valueSelector, String... codes) {
         assertAllCodesOfIterableSelector(valueSelector, codes.length, codes);
     }
 
-    public static void assertAllCodesOfValueSelector(EntityIndependentValueSelector<?> valueSelector, long size,
+    public static void assertAllCodesOfValueSelector(IterableValueSelector<?> valueSelector, long size,
             String... codes) {
         assertAllCodesOfIterableSelector(valueSelector, size, codes);
     }

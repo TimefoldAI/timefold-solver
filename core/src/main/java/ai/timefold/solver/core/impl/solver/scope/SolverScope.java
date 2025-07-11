@@ -24,6 +24,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
@@ -50,6 +51,7 @@ public class SolverScope<Solution_> {
     private Tags monitoringTags;
     private int startingSolverCount;
     private Random workingRandom;
+    private ValueRangeResolver<Solution_> valueRangeResolver;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
@@ -96,6 +98,14 @@ public class SolverScope<Solution_> {
 
     public Clock getClock() {
         return clock;
+    }
+
+    public ValueRangeResolver<Solution_> getValueRangeResolver() {
+        return valueRangeResolver;
+    }
+
+    public void setValueRangeResolver(ValueRangeResolver<Solution_> valueRangeResolver) {
+        this.valueRangeResolver = valueRangeResolver;
     }
 
     public AbstractSolver<Solution_> getSolver() {
@@ -346,6 +356,7 @@ public class SolverScope<Solution_> {
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
         childThreadSolverScope.workingRandom = new Random(workingRandom.nextLong());
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
+        childThreadSolverScope.setValueRangeResolver(new ValueRangeResolver<>());
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
         childThreadSolverScope.startingInitializedScore = null;
