@@ -78,6 +78,11 @@ public class SolverProperties {
      */
     private Boolean constraintStreamAutomaticNodeSharing;
 
+    /**
+     * Configuration of the random seed.
+     */
+    private Long randomSeed;
+
     @NestedConfigurationProperty
     private TerminationProperties termination;
 
@@ -163,6 +168,14 @@ public class SolverProperties {
 
     public void setConstraintStreamAutomaticNodeSharing(Boolean constraintStreamAutomaticNodeSharing) {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
+    }
+
+    public Long getRandomSeed() {
+        return randomSeed;
+    }
+
+    public void setRandomSeed(Long randomSeed) {
+        this.randomSeed = randomSeed;
     }
 
     public TerminationProperties getTermination() {
