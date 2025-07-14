@@ -30,18 +30,3 @@ updates:
           - "*"
         update-types:
           - "patch"
-  - package-ecosystem: pip
-    directory: "/"
-    schedule:
-      interval: weekly
-      time: '01:00'
-    open-pull-requests-limit: 10
-    commit-message:
-      prefix: "deps: "
-    labels: ["dependencies"] # Don't use any other labels.
-    groups:
-      patch-updates: # Patch updates are grouped together.
-        patterns:
-          - "*"
-        update-types:
-          - "patch"
