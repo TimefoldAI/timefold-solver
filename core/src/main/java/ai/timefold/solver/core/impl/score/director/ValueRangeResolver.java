@@ -28,6 +28,7 @@ import org.jspecify.annotations.Nullable;
 public final class ValueRangeResolver<Solution_> {
 
     private final Map<ValueRangeDescriptor<Solution_>, ValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
+    private final Map<ValueRangeDescriptor<Solution_>, Long> fromSolutionSizeMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, ValueRange<?>>> fromEntityMap = new IdentityHashMap<>();
 
     @SuppressWarnings("unchecked")
@@ -70,11 +71,15 @@ public final class ValueRangeResolver<Solution_> {
     public long extractValueRangeSize(ValueRangeDescriptor<Solution_> valueRangeDescriptor, @Nullable Solution_ solution,
             @Nullable Object entity) {
         if (solution != null) {
-            var valueRange = fromSolutionMap.get(valueRangeDescriptor);
-            if (valueRange instanceof CountableValueRange<?> countableValueRange) {
-                return countableValueRange.getSize();
+            var size = fromSolutionSizeMap.get(valueRangeDescriptor);
+            if (size != null) {
+                return size;
             }
-            return valueRangeDescriptor.extractValueRangeSize(solution, null);
+            size = valueRangeDescriptor.extractValueRangeSize(solution, null);
+            // We cache the size because calculating it can be resource-intensive
+            // when generating the list of unique elements is necessary
+            fromSolutionSizeMap.put(valueRangeDescriptor, size);
+            return size;
         } else if (entity != null) {
             var valueRangeMap = fromEntityMap.get(Objects.requireNonNull(entity));
             if (valueRangeMap != null) {
@@ -83,6 +88,7 @@ public final class ValueRangeResolver<Solution_> {
                     return countableValueRange.getSize();
                 }
             }
+            // There is no need to cache as getting the size requires no complex calculation
             return valueRangeDescriptor.extractValueRangeSize(null, entity);
         }
         throw new IllegalStateException(
@@ -91,6 +97,7 @@ public final class ValueRangeResolver<Solution_> {
 
     public void reset() {
         fromSolutionMap.clear();
+        fromSolutionSizeMap.clear();
         fromEntityMap.clear();
     }
 }
