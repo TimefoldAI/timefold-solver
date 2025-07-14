@@ -167,6 +167,9 @@ public class SolverScope<Solution_> {
 
     public void setScoreDirector(InnerScoreDirector<Solution_, ?> scoreDirector) {
         this.scoreDirector = scoreDirector;
+        if (valueRangeResolver == null && scoreDirector != null) {
+            valueRangeResolver = scoreDirector.getValueRangeResolver();
+        }
     }
 
     public void setRunnableThreadSemaphore(Semaphore runnableThreadSemaphore) {
