@@ -119,7 +119,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
         var valueRangeState = new ValueRangeResolver<Solution_>();
         solverScope.setValueRangeResolver(valueRangeState);
         var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withValueRangeState(valueRangeState)
+                .withValueRangeResolver(valueRangeState)
                 .withLookUpEnabled(true)
                 .withConstraintMatchPolicy(
                         constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)

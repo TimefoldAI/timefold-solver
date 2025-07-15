@@ -246,10 +246,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
         // This visits all the entities.
+        valueRangeResolver.reset(workingSolution);
         var initializationStatistics =
                 solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeResolver);
         setWorkingEntityListDirty();
-
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
         assertInitScoreZeroOrLess();
@@ -316,9 +316,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     protected void setWorkingEntityListDirty() {
         workingEntityListRevision++;
-        // Some selectors depend on this revision value to detect changes in entity value ranges.
-        // Therefore, we need to reset the value range state to ensure consistent ranges.
-        valueRangeResolver.reset();
     }
 
     @Override
@@ -442,6 +439,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 moveStreamsBasedMoveRepository.insert(entity);
             }
             setWorkingEntityListDirty();
+            // Some selectors depend on this revision value to detect changes in entity value ranges.
+            // Therefore, we need to reset the value range state, but the working solution does not change.
+            valueRangeResolver.reset(null);
         }
     }
 
@@ -539,6 +539,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 moveStreamsBasedMoveRepository.retract(entity);
             }
             setWorkingEntityListDirty();
+            // Some selectors depend on this revision value to detect changes in entity value ranges.
+            // Therefore, we need to reset the value range state, but the working solution does not change.
+            valueRangeResolver.reset(null);
         }
     }
 
@@ -699,6 +702,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .withValueRangeResolver(valueRangeResolver)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
@@ -994,7 +998,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
 
         @SuppressWarnings("unchecked")
-        public Builder_ withValueRangeState(ValueRangeResolver<Solution_> valueRangeResolver) {
+        public Builder_ withValueRangeResolver(ValueRangeResolver<Solution_> valueRangeResolver) {
             this.valueRangeResolver = Objects.requireNonNull(valueRangeResolver);
             return (Builder_) this;
         }

@@ -490,7 +490,7 @@ class SolutionDescriptorTest {
 
             // Add 1 to the value range sizes, since the value range allows unassigned
             softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeResolver)).isEqualTo(4L);
-            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeResolver)).isEqualTo(4L);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeResolver)).isEqualTo(3L + 4L);
             softly.assertThat(solutionDescriptor.getProblemScale(solution, valueRangeResolver))
                     .isCloseTo(Math.log10(4 * 4), Percentage.withPercentage(1.0));
         });
@@ -511,7 +511,7 @@ class SolutionDescriptorTest {
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
 
             softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeResolver)).isEqualTo(3L);
-            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeResolver)).isEqualTo(3L);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeResolver)).isEqualTo(2L + 3L);
         });
     }
 
