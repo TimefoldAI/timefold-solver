@@ -19,7 +19,7 @@ import org.jspecify.annotations.Nullable;
  * 
  * <p>
  * Outside a {@link ProblemChange}, value ranges are not allowed to change.
- * Call {@link #reset()} every time the working solution changes through a problem fact,
+ * Call {@link #reset(Object)} every time the working solution changes through a problem fact,
  * so that all caches can be invalidated.
  *
  * @see ValueRange
@@ -27,9 +27,8 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ValueRangeResolver<Solution_> {
 
+    private @Nullable Solution_ cachedWorkingSolution = null;
     private final Map<ValueRangeDescriptor<Solution_>, ValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
-    private final Map<ValueRangeDescriptor<Solution_>, Long> fromSolutionSizeMap = new IdentityHashMap<>();
-    private final Map<Object, Map<ValueRangeDescriptor<Solution_>, ValueRange<?>>> fromEntityMap = new IdentityHashMap<>();
 
     @SuppressWarnings("unchecked")
     public <T> ValueRange<T> extractValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
@@ -45,49 +44,36 @@ public final class ValueRangeResolver<Solution_> {
 
     private <T> ValueRange<T> fetchValueRangeForSolution(@NonNull Solution_ solution,
             ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        var valueRange = fromSolutionMap.get(valueRangeDescriptor);
-        if (valueRange == null) {
-            valueRange = valueRangeDescriptor.extractValueRange(Objects.requireNonNull(solution), null);
-            fromSolutionMap.put(valueRangeDescriptor, valueRange);
+        if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+            // No need to use the cache since there will be no additional overhead to compute the range
+            return valueRangeDescriptor.extractValueRange(Objects.requireNonNull(solution), valueRangeDescriptor);
+        } else {
+            var valueRange = fromSolutionMap.computeIfAbsent(valueRangeDescriptor,
+                    descriptor -> descriptor.extractValueRange(Objects.requireNonNull(solution), null));
+            return (ValueRange<T>) valueRange;
         }
-        return (ValueRange<T>) valueRange;
     }
 
     private <T> ValueRange<T> fetchValueRangeForEntity(@NonNull Object entity,
             ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        var valueRangeMap = fromEntityMap.get(Objects.requireNonNull(entity));
-        if (valueRangeMap == null) {
-            valueRangeMap = new IdentityHashMap<>();
-            fromEntityMap.put(entity, valueRangeMap);
-        }
-        var valueRange = (ValueRange<T>) valueRangeMap.get(valueRangeDescriptor);
-        if (valueRange == null) {
-            valueRange = valueRangeDescriptor.extractValueRange(null, entity);
-            valueRangeMap.put(valueRangeDescriptor, valueRange);
-        }
-        return valueRange;
+        // Experiments indicate
+        // that caching value ranges for large datasets is less effective
+        // than recomputing the value range.
+        // Therefore, no cache is used for entity value ranges.
+        return valueRangeDescriptor.extractValueRange(null, entity);
     }
 
     public long extractValueRangeSize(ValueRangeDescriptor<Solution_> valueRangeDescriptor, @Nullable Solution_ solution,
             @Nullable Object entity) {
         if (solution != null) {
-            var size = fromSolutionSizeMap.get(valueRangeDescriptor);
-            if (size != null) {
-                return size;
+            if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+                // No need to use the cache since there will be no additional overhead to compute the range
+                return valueRangeDescriptor.extractValueRangeSize(solution, null);
+            } else {
+                var valueRange = (CountableValueRange<Solution_>) fetchValueRangeForSolution(solution, valueRangeDescriptor);
+                return valueRange.getSize();
             }
-            size = valueRangeDescriptor.extractValueRangeSize(solution, null);
-            // We cache the size because calculating it can be resource-intensive
-            // when generating the list of unique elements is necessary
-            fromSolutionSizeMap.put(valueRangeDescriptor, size);
-            return size;
         } else if (entity != null) {
-            var valueRangeMap = fromEntityMap.get(Objects.requireNonNull(entity));
-            if (valueRangeMap != null) {
-                var valueRange = valueRangeMap.get(valueRangeDescriptor);
-                if (valueRange instanceof CountableValueRange<?> countableValueRange) {
-                    return countableValueRange.getSize();
-                }
-            }
             // There is no need to cache as getting the size requires no complex calculation
             return valueRangeDescriptor.extractValueRangeSize(null, entity);
         }
@@ -95,9 +81,13 @@ public final class ValueRangeResolver<Solution_> {
                 "The value range cannot be retrieved because both the solution and entity instances are null");
     }
 
-    public void reset() {
-        fromSolutionMap.clear();
-        fromSolutionSizeMap.clear();
-        fromEntityMap.clear();
+    public void reset(@Nullable Solution_ workingSolution) {
+        if (workingSolution == null || workingSolution != cachedWorkingSolution) {
+            fromSolutionMap.clear();
+            // We only update the cached solution if it is not null
+            if (workingSolution != null) {
+                cachedWorkingSolution = workingSolution;
+            }
+        }
     }
 }

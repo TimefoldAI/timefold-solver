@@ -1226,7 +1226,16 @@ public class SolutionDescriptor<Solution_> {
         var out = new MutableLong();
         for (var variableDescriptor : genuineVariableDescriptorSet) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-            out.add(valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, solution, null));
+            if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+                out.add(valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, solution, null));
+            } else {
+                visitEntitiesByEntityClass(solution,
+                        variableDescriptor.getEntityDescriptor().getEntityClass(),
+                        entity -> {
+                            out.add(valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, null, entity));
+                            return false;
+                        });
+            }
         }
         return out.longValue();
     }
