@@ -41,7 +41,8 @@ public class FromEntityPropertyValueRangeDescriptor<Solution_>
     public <T> ValueRange<T> extractValueRange(Solution_ solution, Object entity) {
         if (entity == null) {
             var entityList = variableDescriptor.getEntityDescriptor().extractEntities(solution);
-            return new FromEntityListValueRange<>(entityList, this);
+            var valueRange = new FromEntityListValueRange<T>(entityList, this);
+            return doNullInValueRangeWrapping(valueRange);
         } else {
             return readValueRange(entity);
         }
