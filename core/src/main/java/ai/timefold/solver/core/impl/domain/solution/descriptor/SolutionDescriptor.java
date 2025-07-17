@@ -1227,12 +1227,12 @@ public class SolutionDescriptor<Solution_> {
         for (var variableDescriptor : genuineVariableDescriptorSet) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-                out.add(valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, solution, null));
+                out.add(valueRangeResolver.extractValueRangeSizeFromSolution(valueRangeDescriptor, solution));
             } else {
                 visitEntitiesByEntityClass(solution,
                         variableDescriptor.getEntityDescriptor().getEntityClass(),
                         entity -> {
-                            out.add(valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, null, entity));
+                            out.add(valueRangeResolver.extractValueRangeSizeFromEntity(valueRangeDescriptor, entity));
                             return false;
                         });
             }
@@ -1345,7 +1345,7 @@ public class SolutionDescriptor<Solution_> {
             // We count every possibly unassigned element in every list variable.
             // And later we subtract the assigned elements.
             unassignedValueCount.add((int) valueRangeResolver
-                    .extractValueRangeSize(listVariableDescriptor.getValueRangeDescriptor(), solution, null));
+                    .extractValueRangeSizeFromSolution(listVariableDescriptor.getValueRangeDescriptor(), solution));
         }
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());

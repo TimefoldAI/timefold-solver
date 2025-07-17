@@ -172,12 +172,12 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
         if (!variableDescriptor.canExtractValueRangeFromSolution()) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             if (rightEntity != null) {
-                var rightValueRange = extractValueRange(scoreDirector, valueRangeDescriptor, null, rightEntity);
+                var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, rightEntity);
                 if (!rightValueRange.contains(leftValue)) {
                     return false;
                 }
             }
-            var leftValueRange = extractValueRange(scoreDirector, valueRangeDescriptor, null, leftEntity);
+            var leftValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
             return leftValueRange.contains(rightValue);
         }
         return true;

@@ -15,7 +15,7 @@ public interface IterableValueRangeDescriptor<Solution_> extends ValueRangeDescr
      * The method allows extracting the value range only from the solution,
      * and it is compatible with problem facts defined in the solution class.
      * The method should not be invoked directly by selectors or other components of the solver.
-     * The {@link ValueRangeResolver#extractValueRange(ValueRangeDescriptor, Object, Object)}
+     * The {@link ValueRangeResolver#extractValueRangeFromSolution(ValueRangeDescriptor, Object)}
      * serves as the single source of truth for managing value ranges and should be used by outer components.
      * <p>
      * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
@@ -34,7 +34,7 @@ public interface IterableValueRangeDescriptor<Solution_> extends ValueRangeDescr
      * The method allows extracting the value range size only from the solution,
      * and it is compatible with problem facts defined in the solution class.
      * The method should not be invoked directly by selectors or other components of the solver.
-     * The {@link ValueRangeResolver#extractValueRangeSize(ValueRangeDescriptor, Object, Object)}
+     * The {@link ValueRangeResolver#extractValueRangeSizeFromSolution(ValueRangeDescriptor, Object)}
      * serves as the single source of truth for managing value ranges and should be used by outer components.
      * <p>
      * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.

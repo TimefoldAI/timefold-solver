@@ -88,7 +88,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     public int countUnassigned(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
-        var valueCount = new MutableLong(valueRangeResolver.extractValueRangeSize(getValueRangeDescriptor(), solution, null));
+        var valueCount =
+                new MutableLong(valueRangeResolver.extractValueRangeSizeFromSolution(getValueRangeDescriptor(), solution));
         var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
         solutionDescriptor.visitEntitiesByEntityClass(solution,
                 entityDescriptor.getEntityClass(), entity -> {

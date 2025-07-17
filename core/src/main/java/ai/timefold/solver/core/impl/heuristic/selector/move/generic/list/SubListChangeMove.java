@@ -92,7 +92,8 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
             ValueRangeResolver<Solution_> valueRangeResolver =
                     ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
             var destinationValueRange =
-                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, destinationEntity);
+                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                            destinationEntity);
             var sourceList = variableDescriptor.getValue(sourceEntity);
             var subList = sourceList.subList(sourceIndex, sourceIndex + length);
             secondPass = subList.stream().allMatch(destinationValueRange::contains);

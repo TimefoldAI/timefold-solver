@@ -863,8 +863,16 @@ public class EntityDescriptor<Solution_> {
     public long getMaximumValueCount(Solution_ solution, Object entity, ValueRangeResolver<Solution_> valueRangeResolver) {
         var maximumValueCount = 0L;
         for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            maximumValueCount = Math.max(maximumValueCount,
-                    valueRangeResolver.extractValueRangeSize(variableDescriptor.getValueRangeDescriptor(), solution, entity));
+            if (variableDescriptor.canExtractValueRangeFromSolution()) {
+                maximumValueCount = Math.max(maximumValueCount,
+                        valueRangeResolver.extractValueRangeSizeFromSolution(variableDescriptor.getValueRangeDescriptor(),
+                                solution));
+            } else {
+                maximumValueCount = Math.max(maximumValueCount,
+                        valueRangeResolver.extractValueRangeSizeFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                                entity));
+
+            }
         }
         return maximumValueCount;
 
@@ -873,8 +881,10 @@ public class EntityDescriptor<Solution_> {
     public void processProblemScale(Solution_ solution, Object entity, ProblemScaleTracker tracker,
             ValueRangeResolver<Solution_> valueRangeResolver) {
         for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            var valueCount =
-                    valueRangeResolver.extractValueRangeSize(variableDescriptor.getValueRangeDescriptor(), solution, entity);
+            var valueCount = variableDescriptor.canExtractValueRangeFromSolution()
+                    ? valueRangeResolver.extractValueRangeSizeFromSolution(variableDescriptor.getValueRangeDescriptor(),
+                            solution)
+                    : valueRangeResolver.extractValueRangeSizeFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
             if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
                 if (basicVariableDescriptor.isChained()) {
@@ -884,8 +894,11 @@ public class EntityDescriptor<Solution_> {
                         tracker.addPinnedListValueCount(1);
                     }
                     // Anchors are entities
-                    var valueRange = valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(),
-                            solution, entity);
+                    var valueRange = variableDescriptor.canExtractValueRangeFromSolution()
+                            ? valueRangeResolver.extractValueRangeFromSolution(variableDescriptor.getValueRangeDescriptor(),
+                                    solution)
+                            : valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                                    entity);
                     if (valueRange instanceof CountableValueRange<?> countableValueRange) {
                         var valueIterator = countableValueRange.createOriginalIterator();
                         while (valueIterator.hasNext()) {
@@ -912,8 +925,12 @@ public class EntityDescriptor<Solution_> {
                     }
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                tracker.setListTotalValueCount((int) valueRangeResolver
-                        .extractValueRangeSize(listVariableDescriptor.getValueRangeDescriptor(), solution, entity));
+                var size = variableDescriptor.canExtractValueRangeFromSolution()
+                        ? valueRangeResolver.extractValueRangeSizeFromSolution(listVariableDescriptor.getValueRangeDescriptor(),
+                                solution)
+                        : valueRangeResolver.extractValueRangeSizeFromEntity(listVariableDescriptor.getValueRangeDescriptor(),
+                                entity);
+                tracker.setListTotalValueCount((int) size);
                 if (isMovable(solution, entity)) {
                     tracker.incrementListEntityCount(true);
                     tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));

@@ -128,10 +128,10 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
                     ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
             var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
             var leftElementValueRange =
-                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, leftEntity);
+                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
             var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
             var rightElementValueRange =
-                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, rightEntity);
+                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
             secondPass = leftElementValueRange.contains(rightElement) && rightElementValueRange.contains(leftElement);
         }
         return firstPass && secondPass;

@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -26,7 +25,6 @@ public final class FromEntityPropertyValueSelector<Solution_>
     private final boolean randomSelection;
 
     private ValueRangeResolver<Solution_> valueRangeResolver;
-    private Solution_ workingSolution;
 
     public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
@@ -45,19 +43,6 @@ public final class FromEntityPropertyValueSelector<Solution_>
     }
 
     @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseStarted(phaseScope);
-        // type cast in order to avoid SolverLifeCycleListener and all its children needing to be generified
-        workingSolution = phaseScope.getWorkingSolution();
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseEnded(phaseScope);
-        workingSolution = null;
-    }
-
-    @Override
     public boolean isCountable() {
         return valueRangeDescriptor.isCountable();
     }
@@ -69,12 +54,12 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public long getSize(Object entity) {
-        return valueRangeResolver.extractValueRangeSize(valueRangeDescriptor, workingSolution, entity);
+        return valueRangeResolver.extractValueRangeSizeFromEntity(valueRangeDescriptor, entity);
     }
 
     @Override
     public Iterator<Object> iterator(Object entity) {
-        ValueRange<Object> valueRange = valueRangeResolver.extractValueRange(valueRangeDescriptor, workingSolution, entity);
+        ValueRange<Object> valueRange = valueRangeResolver.extractValueRangeFromEntity(valueRangeDescriptor, entity);
         if (!randomSelection) {
             return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
         } else {
@@ -84,7 +69,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
-        ValueRange<Object> valueRange = valueRangeResolver.extractValueRange(valueRangeDescriptor, workingSolution, entity);
+        ValueRange<Object> valueRange = valueRangeResolver.extractValueRangeFromEntity(valueRangeDescriptor, entity);
         return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
     }
 

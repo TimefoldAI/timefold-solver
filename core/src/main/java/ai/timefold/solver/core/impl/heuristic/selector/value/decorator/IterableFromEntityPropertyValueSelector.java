@@ -93,14 +93,14 @@ public final class IterableFromEntityPropertyValueSelector<Solution_> extends Ab
 
     @Override
     public long getSize() {
-        return innerScoreDirector.getValueRangeResolver().extractValueRangeSize(valueRangeDescriptor,
-                innerScoreDirector.getWorkingSolution(), null);
+        return innerScoreDirector.getValueRangeResolver().extractValueRangeSizeFromSolution(valueRangeDescriptor,
+                innerScoreDirector.getWorkingSolution());
     }
 
     @Override
     public Iterator<Object> iterator() {
         var valueRange = (CountableValueRange<Object>) innerScoreDirector.getValueRangeResolver()
-                .extractValueRange(valueRangeDescriptor, innerScoreDirector.getWorkingSolution(), null);
+                .extractValueRangeFromSolution(valueRangeDescriptor, innerScoreDirector.getWorkingSolution());
         if (randomSelection) {
             return valueRange.createRandomIterator(workingRandom);
         } else {

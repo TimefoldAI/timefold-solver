@@ -84,11 +84,11 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
             var leftEntity = leftSubList.entity();
             var leftList = subList(leftSubList);
             var leftValueRange =
-                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, leftEntity);
+                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
             var rightEntity = rightSubList.entity();
             var rightList = subList(rightSubList);
             var rightValueRange =
-                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, rightEntity);
+                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
             secondPass = leftList.stream().allMatch(rightValueRange::contains)
                     && rightList.stream().allMatch(leftValueRange::contains);
         }

@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.exception.EmptyRangeException;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -29,65 +30,79 @@ public final class ValueRangeResolver<Solution_> {
 
     private @Nullable Solution_ cachedWorkingSolution = null;
     private final Map<ValueRangeDescriptor<Solution_>, ValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
+    private Map<Object, Map<ValueRangeDescriptor<Solution_>, ValueRange<?>>> fromEntityMap = new IdentityHashMap<>();
 
     @SuppressWarnings("unchecked")
-    public <T> ValueRange<T> extractValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            @Nullable Solution_ solution, @Nullable Object entity) {
-        if (solution != null) {
-            return fetchValueRangeForSolution(solution, valueRangeDescriptor);
-        } else if (entity != null) {
-            return fetchValueRangeForEntity(entity, valueRangeDescriptor);
-        }
-        throw new IllegalStateException(
-                "The value range cannot be retrieved because both the solution and entity instances are null");
+    public <T> ValueRange<T> extractValueRangeFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            @NonNull Solution_ solution) {
+        var valueRange = fromSolutionMap.computeIfAbsent(valueRangeDescriptor,
+                descriptor -> descriptor.extractValueRange(Objects.requireNonNull(solution), null));
+        return (ValueRange<T>) valueRange;
     }
 
-    private <T> ValueRange<T> fetchValueRangeForSolution(@NonNull Solution_ solution,
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-            // No need to use the cache since there will be no additional overhead to compute the range
-            return valueRangeDescriptor.extractValueRange(Objects.requireNonNull(solution), valueRangeDescriptor);
-        } else {
-            var valueRange = fromSolutionMap.computeIfAbsent(valueRangeDescriptor,
-                    descriptor -> descriptor.extractValueRange(Objects.requireNonNull(solution), null));
-            return (ValueRange<T>) valueRange;
-        }
+    @SuppressWarnings("unchecked")
+    public <T> ValueRange<T> extractValueRangeFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            @NonNull Object entity) {
+        var valueRangeMap = fromEntityMap.computeIfAbsent(entity, e -> {
+            var map = new IdentityHashMap<ValueRangeDescriptor<Solution_>, ValueRange<?>>();
+            var range = valueRangeDescriptor.extractValueRange(null, Objects.requireNonNull(entity));
+            map.put(valueRangeDescriptor, range);
+            return map;
+        });
+        return (ValueRange<T>) valueRangeMap.computeIfAbsent(valueRangeDescriptor,
+                descriptor -> valueRangeDescriptor.extractValueRange(null, Objects.requireNonNull(entity)));
     }
 
-    private <T> ValueRange<T> fetchValueRangeForEntity(@NonNull Object entity,
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        // Experiments indicate
-        // that caching value ranges for large datasets is less effective
-        // than recomputing the value range.
-        // Therefore, no cache is used for entity value ranges.
-        return valueRangeDescriptor.extractValueRange(null, entity);
-    }
-
-    public long extractValueRangeSize(ValueRangeDescriptor<Solution_> valueRangeDescriptor, @Nullable Solution_ solution,
-            @Nullable Object entity) {
-        if (solution != null) {
-            if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-                // No need to use the cache since there will be no additional overhead to compute the range
-                return valueRangeDescriptor.extractValueRangeSize(solution, null);
+    public long extractValueRangeSizeFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            @NonNull Solution_ solution) {
+        try {
+            // We rely on the value range to fetch the size
+            var valueRange = extractValueRangeFromSolution(valueRangeDescriptor, solution);
+            if (valueRange instanceof CountableValueRange<?> countableValueRange) {
+                return countableValueRange.getSize();
             } else {
-                var valueRange = (CountableValueRange<Solution_>) fetchValueRangeForSolution(solution, valueRangeDescriptor);
-                return valueRange.getSize();
+                // It is not countable, and we need to call the descriptor specifically
+                return valueRangeDescriptor.extractValueRangeSize(Objects.requireNonNull(solution), null);
             }
-        } else if (entity != null) {
-            // There is no need to cache as getting the size requires no complex calculation
-            return valueRangeDescriptor.extractValueRangeSize(null, entity);
+        } catch (EmptyRangeException e) {
+            // Attempting to retrieve a range from an empty value list will result in an EmptyRangeException,
+            // while fetching only the size will return zero.
+            return 0;
         }
-        throw new IllegalStateException(
-                "The value range cannot be retrieved because both the solution and entity instances are null");
+    }
+
+    public long extractValueRangeSizeFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, @NonNull Object entity) {
+        try {
+            // We rely on the value range to fetch the size
+            var valueRange = extractValueRangeFromEntity(valueRangeDescriptor, entity);
+            if (valueRange instanceof CountableValueRange<?> countableValueRange) {
+                return countableValueRange.getSize();
+            } else {
+                // It is not countable, and we need to call the descriptor specifically
+                return valueRangeDescriptor.extractValueRangeSize(null, Objects.requireNonNull(entity));
+            }
+        } catch (EmptyRangeException e) {
+            // Attempting to retrieve a range from an empty value list will result in an EmptyRangeException,
+            // while fetching only the size will return zero.
+            return 0;
+        }
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
         if (workingSolution == null || workingSolution != cachedWorkingSolution) {
             fromSolutionMap.clear();
+            fromEntityMap.clear();
             // We only update the cached solution if it is not null
             if (workingSolution != null) {
                 cachedWorkingSolution = workingSolution;
             }
         }
+    }
+
+    public void resize(int entityCount) {
+        var resizedFromEntityMap =
+                new IdentityHashMap<Object, Map<ValueRangeDescriptor<Solution_>, ValueRange<?>>>(entityCount);
+        resizedFromEntityMap.putAll(fromEntityMap);
+        this.fromEntityMap = resizedFromEntityMap;
     }
 }

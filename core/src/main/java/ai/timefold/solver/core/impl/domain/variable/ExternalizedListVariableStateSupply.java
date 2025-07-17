@@ -54,7 +54,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         workingSolution = scoreDirector.getWorkingSolution();
         var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
         listVariableState.initialize(innerScoreDirector, (int) innerScoreDirector.getValueRangeResolver()
-                .extractValueRangeSize(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution, null));
+                .extractValueRangeSizeFromSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
         // Will run over all entities and unmark all present elements as unassigned.
         sourceVariableDescriptor.getEntityDescriptor()
                 .visitAllEntities(workingSolution, this::insert);

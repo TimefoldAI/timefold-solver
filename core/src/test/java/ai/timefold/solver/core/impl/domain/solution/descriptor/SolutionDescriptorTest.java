@@ -492,7 +492,7 @@ class SolutionDescriptorTest {
             softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeResolver)).isEqualTo(4L);
             softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeResolver)).isEqualTo(3L + 4L);
             softly.assertThat(solutionDescriptor.getProblemScale(solution, valueRangeResolver))
-                    .isCloseTo(Math.log10(4 * 4), Percentage.withPercentage(1.0));
+                    .isCloseTo(Math.log10(3 * 4), Percentage.withPercentage(1.0));
         });
     }
 

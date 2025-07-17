@@ -245,10 +245,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
-        // This visits all the entities.
         valueRangeResolver.reset(workingSolution);
+        // This visits all the entities.
         var initializationStatistics =
                 solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeResolver);
+        valueRangeResolver.resize(initializationStatistics.genuineEntityCount());
         setWorkingEntityListDirty();
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
