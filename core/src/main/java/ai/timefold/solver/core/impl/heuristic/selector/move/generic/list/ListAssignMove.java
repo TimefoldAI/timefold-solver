@@ -57,7 +57,7 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
             ValueRangeResolver<Solution_> valueRangeResolver =
                     ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
             secondPass = valueRangeResolver
-                    .extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, destinationEntity)
+                    .extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
                     .contains(planningValue);
         }
         return firstPass && secondPass;

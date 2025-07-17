@@ -56,7 +56,7 @@ public class PillarChangeMove<Solution_> extends AbstractMove<Solution_> {
         if (!variableDescriptor.canExtractValueRangeFromSolution()) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             for (Object entity : pillar) {
-                var rightValueRange = extractValueRange(scoreDirector, valueRangeDescriptor, null, entity);
+                var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, entity);
                 if (!rightValueRange.contains(toPlanningValue)) {
                     return false;
                 }

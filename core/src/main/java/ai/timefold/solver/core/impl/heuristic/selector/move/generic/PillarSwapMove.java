@@ -64,14 +64,14 @@ public class PillarSwapMove<Solution_> extends AbstractMove<Solution_> {
                     var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
                     for (var rightEntity : rightPillar) {
                         var rightValueRange =
-                                extractValueRange(scoreDirector, valueRangeDescriptor, null, rightEntity);
+                                extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, rightEntity);
                         if (!rightValueRange.contains(leftValue)) {
                             return false;
                         }
                     }
                     for (var leftEntity : leftPillar) {
                         var leftValueRange =
-                                extractValueRange(scoreDirector, valueRangeDescriptor, null, leftEntity);
+                                extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
                         if (!leftValueRange.contains(rightValue)) {
                             return false;
                         }

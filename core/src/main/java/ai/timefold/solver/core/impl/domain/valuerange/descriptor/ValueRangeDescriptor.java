@@ -39,8 +39,9 @@ public interface ValueRangeDescriptor<Solution_> {
      * The method allows extracting the value range from a solution or an entity,
      * and it is compatible with problem facts defined in the solution or entity classes.
      * The method should not be invoked directly by selectors or other components of the solver.
-     * The {@link ValueRangeResolver#extractValueRange(ValueRangeDescriptor, Object, Object)}
-     * serves as the single source of truth for managing value ranges and should be used by outer components.
+     * The {@link ValueRangeResolver#extractValueRangeFromSolution(ValueRangeDescriptor, Object)}
+     * and {@link ValueRangeResolver#extractValueRangeFromEntity(ValueRangeDescriptor, Object)}
+     * serve as the single source of truth for managing value ranges and should be used by outer components.
      * <p>
      * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
      * 
@@ -58,8 +59,9 @@ public interface ValueRangeDescriptor<Solution_> {
      * The method allows extracting the value range size from a solution or an entity,
      * and it is compatible with problem facts defined in the solution or entity classes.
      * The method should not be invoked directly by selectors or other components of the solver.
-     * The {@link ValueRangeResolver#extractValueRangeSize(ValueRangeDescriptor, Object, Object)}
-     * serves as the single source of truth for managing value ranges and should be used by outer components.
+     * The {@link ValueRangeResolver#extractValueRangeSizeFromSolution(ValueRangeDescriptor, Object)}
+     * and {@link ValueRangeResolver#extractValueRangeSizeFromEntity(ValueRangeDescriptor, Object)}
+     * serve as the single source of truth for managing value ranges and should be used by outer components.
      * <p>
      * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
      * 

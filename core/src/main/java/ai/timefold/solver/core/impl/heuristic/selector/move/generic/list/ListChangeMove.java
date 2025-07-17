@@ -143,7 +143,8 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
             ValueRangeResolver<Solution_> valueRangeResolver =
                     ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
             secondPass = valueRangeResolver
-                    .extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, destinationEntity).contains(value);
+                    .extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
+                    .contains(value);
         }
         return firstPass && secondPass;
     }

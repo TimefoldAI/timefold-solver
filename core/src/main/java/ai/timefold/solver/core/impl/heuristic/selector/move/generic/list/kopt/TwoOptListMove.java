@@ -232,11 +232,11 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             ValueRangeResolver<Solution_> valueRangeResolver =
                     ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
             var firstValueRange =
-                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, firstEntity);
+                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), firstEntity);
             var firstListVariable = variableDescriptor.getValue(firstEntity);
             var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
             var secondValueRange =
-                    valueRangeResolver.extractValueRange(variableDescriptor.getValueRangeDescriptor(), null, secondEntity);
+                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), secondEntity);
             var secondListVariable = variableDescriptor.getValue(secondEntity);
             var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
             secondPass = firstListVariableTail.stream().allMatch(secondValueRange::contains)
