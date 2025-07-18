@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
@@ -44,20 +42,20 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        boolean movable = false;
-        for (GenuineVariableDescriptor<Solution_> variableDescriptor : variableDescriptorList) {
-            Object leftValue = variableDescriptor.getValue(leftEntity);
-            Object rightValue = variableDescriptor.getValue(rightEntity);
+        var movable = false;
+        for (var variableDescriptor : variableDescriptorList) {
+            var leftValue = variableDescriptor.getValue(leftEntity);
+            var rightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(leftValue, rightValue)) {
                 movable = true;
-                if (!variableDescriptor.isValueRangeEntityIndependent()) {
-                    ValueRangeDescriptor<Solution_> valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-                    Solution_ workingSolution = scoreDirector.getWorkingSolution();
-                    ValueRange rightValueRange = valueRangeDescriptor.extractValueRange(workingSolution, rightEntity);
+                if (!variableDescriptor.canExtractValueRangeFromSolution()) {
+                    var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+                    var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, rightEntity);
                     if (!rightValueRange.contains(leftValue)) {
                         return false;
                     }
-                    ValueRange leftValueRange = valueRangeDescriptor.extractValueRange(workingSolution, leftEntity);
+                    var leftValueRange =
+                            extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
                     if (!leftValueRange.contains(rightValue)) {
                         return false;
                     }

@@ -3,10 +3,15 @@ package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+@NullMarked
 public interface ValueRangeDescriptor<Solution_> {
 
     /**
@@ -21,12 +26,10 @@ public interface ValueRangeDescriptor<Solution_> {
     boolean isCountable();
 
     /**
-     * If this method return true, this instance is safe to cast to {@link EntityIndependentValueRangeDescriptor},
-     * otherwise it requires an entity to determine the {@link ValueRange}.
-     *
-     * @return true if the {@link ValueRange} is the same for all entities of the same solution
+     * Returns true if the value range is defined at the solution level and can be directly extracted from the solution;
+     * otherwise, it returns false, as the value range can only be extracted or computed from the entities.
      */
-    boolean isEntityIndependent();
+    boolean canExtractValueRangeFromSolution();
 
     /**
      * @return true if the {@link ValueRange} might contain a planning entity instance
@@ -35,20 +38,45 @@ public interface ValueRangeDescriptor<Solution_> {
     boolean mightContainEntity();
 
     /**
-     * @param solution never null
-     * @param entity never null. To avoid this parameter,
-     *        use {@link EntityIndependentValueRangeDescriptor#extractValueRange} instead.
+     * The method allows extracting the value range from a solution or an entity,
+     * and it is compatible with problem facts defined in the solution or entity classes.
+     * The method should not be invoked directly by selectors or other components of the solver.
+     * The {@link ValueRangeManager#getFromSolution(ValueRangeDescriptor, Object)}
+     * and {@link ValueRangeManager#getFromEntity(ValueRangeDescriptor, Object)}
+     * serve as the single source of truth for managing value ranges and should be used by outer components.
+     * <p>
+     * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
+     * 
+     * @param solution the solution
+     * @param entity the entity. To avoid this parameter,
+     *        use {@link IterableValueRangeDescriptor#extractValueRange} instead.
+     * 
      * @return never null
+     * 
+     * @see ValueRangeManager
      */
-    <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity);
+    <Value_> ValueRange<Value_> extractValueRange(@Nullable Solution_ solution, @Nullable Object entity);
 
     /**
-     * @param solution never null
-     * @param entity never null. To avoid this parameter,
-     *        use {@link EntityIndependentValueRangeDescriptor#extractValueRangeSize} instead.
+     * The method allows extracting the value range size from a solution or an entity,
+     * and it is compatible with problem facts defined in the solution or entity classes.
+     * The method should not be invoked directly by selectors or other components of the solver.
+     * The {@link ValueRangeManager#countOnSolution(ValueRangeDescriptor, Object)}
+     * and {@link ValueRangeManager#countOnEntity(ValueRangeDescriptor, Object)}
+     * serve as the single source of truth for managing value ranges and should be used by outer components.
+     * <p>
+     * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
+     * 
+     * @param solution the solution
+     * @param entity the entity. To avoid this parameter,
+     *        use {@link IterableValueRangeDescriptor#extractValueRangeSize} instead.
+     * 
      * @return never null
+     * 
      * @throws UnsupportedOperationException if {@link #isCountable()} returns false
+     * 
+     * @see ValueRangeManager
      */
-    long extractValueRangeSize(Solution_ solution, Object entity);
+    long extractValueRangeSize(@Nullable Solution_ solution, @Nullable Object entity);
 
 }

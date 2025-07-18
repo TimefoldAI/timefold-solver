@@ -8,17 +8,17 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 
 public class MimicRecordingValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
-        implements ValueMimicRecorder<Solution_>, EntityIndependentValueSelector<Solution_> {
+        implements ValueMimicRecorder<Solution_>, IterableValueSelector<Solution_> {
 
-    protected final EntityIndependentValueSelector<Solution_> childValueSelector;
+    protected final IterableValueSelector<Solution_> childValueSelector;
 
     protected final List<MimicReplayingValueSelector<Solution_>> replayingValueSelectorList;
 
-    public MimicRecordingValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector) {
+    public MimicRecordingValueSelector(IterableValueSelector<Solution_> childValueSelector) {
         this.childValueSelector = childValueSelector;
         phaseLifecycleSupport.addEventListener(childValueSelector);
         replayingValueSelectorList = new ArrayList<>();

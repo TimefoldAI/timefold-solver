@@ -11,7 +11,7 @@ import static org.mockito.Mockito.when;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -24,7 +24,7 @@ class MimicReplayingValueSelectorTest {
 
     @Test
     void originalSelection() {
-        EntityIndependentValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
                 TestdataEntity.class, "value",
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"));
 

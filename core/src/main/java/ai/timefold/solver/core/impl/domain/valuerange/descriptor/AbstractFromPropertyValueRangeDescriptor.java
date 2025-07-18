@@ -15,6 +15,7 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentityListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
@@ -28,8 +29,10 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     protected boolean collectionWrapping;
     protected boolean arrayWrapping;
     protected boolean countable;
+    // Field related to the generic type of the value range, e.g., List<String> -> String
+    private final boolean isGenericTypeImmutable;
 
-    public AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
+    protected AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             boolean addNullInValueRange,
             MemberAccessor memberAccessor) {
         super(variableDescriptor, addNullInValueRange);
@@ -39,6 +42,9 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
             throw new IllegalStateException("The member (%s) must have a valueRangeProviderAnnotation (%s)."
                     .formatted(memberAccessor, valueRangeProviderAnnotation));
         }
+        var type = memberAccessor.getType();
+        collectionWrapping = Collection.class.isAssignableFrom(type);
+        arrayWrapping = type.isArray();
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
         if (addNullInValueRange && !countable) {
             throw new IllegalStateException("""
@@ -46,13 +52,19 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     Maybe the member (%s) should return %s."""
                     .formatted(this, countable, memberAccessor, CountableValueRange.class.getSimpleName()));
         }
+        if (collectionWrapping) {
+            var genericType = ConfigUtils.extractGenericTypeParameterOrFail("solutionClass or entityClass",
+                    memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),
+                    ValueRangeProvider.class, memberAccessor.getName());
+            this.isGenericTypeImmutable = ConfigUtils.isGenericTypeImmutable(genericType);
+        } else {
+            this.isGenericTypeImmutable = true;
+        }
     }
 
     private void processValueRangeProviderAnnotation(ValueRangeProvider valueRangeProviderAnnotation) {
         EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
         Class<?> type = memberAccessor.getType();
-        collectionWrapping = Collection.class.isAssignableFrom(type);
-        arrayWrapping = type.isArray();
         if (!collectionWrapping && !arrayWrapping && !ValueRange.class.isAssignableFrom(type)) {
             throw new IllegalArgumentException("""
                     The entityClass (%s) has a @%s-annotated property (%s) that refers to a @%s-annotated member \
@@ -121,6 +133,9 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                                         PlanningVariable.class.getSimpleName()));
             }
             valueRange = new ListValueRange<>(list);
+            if (!isGenericTypeImmutable) {
+                valueRange = new IdentityListValueRange<>((ListValueRange<Value_>) valueRange);
+            }
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }

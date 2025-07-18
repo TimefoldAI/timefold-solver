@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 
 /**
@@ -17,18 +17,18 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
  * If the inverse entity is not null, the value is assigned, otherwise it is unassigned.
  * A subclass must implement the {@link #valueFilter(Object)} to decide whether assigned or unassigned values will be selected.
  * <p>
- * Does implement {@link EntityIndependentValueSelector} because the question whether a value is assigned or not does not depend
+ * Does implement {@link IterableValueSelector} because the question whether a value is assigned or not does not depend
  * on a specific entity.
  */
 abstract class AbstractInverseEntityFilteringValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
-        implements EntityIndependentValueSelector<Solution_> {
+        implements IterableValueSelector<Solution_> {
 
-    protected final EntityIndependentValueSelector<Solution_> childValueSelector;
+    protected final IterableValueSelector<Solution_> childValueSelector;
 
     protected ListVariableStateSupply<Solution_> listVariableStateSupply;
 
-    protected AbstractInverseEntityFilteringValueSelector(EntityIndependentValueSelector<Solution_> childValueSelector) {
+    protected AbstractInverseEntityFilteringValueSelector(IterableValueSelector<Solution_> childValueSelector) {
         if (childValueSelector.isNeverEnding()) {
             throw new IllegalArgumentException("The selector (" + this
                     + ") has a childValueSelector (" + childValueSelector

@@ -81,28 +81,28 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private int workingInitScore = 0;
 
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
+
+    private final ValueRangeManager<Solution_> valueRangeManager;
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
+    private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
 
-    // Null when no list variable
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
-
-    protected AbstractScoreDirector(Factory_ scoreDirectorFactory, boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState) {
-        var solutionDescriptor = scoreDirectorFactory.getSolutionDescriptor();
-        this.lookUpEnabled = lookUpEnabled;
+    protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
+        this.scoreDirectorFactory = builder.scoreDirectorFactory;
+        var solutionDescriptor = this.scoreDirectorFactory.getSolutionDescriptor();
+        this.lookUpEnabled = builder.lookUpEnabled;
         this.lookUpManager = lookUpEnabled
                 ? new LookUpManager(solutionDescriptor.getLookUpStrategyResolver())
                 : null;
-        this.constraintMatchPolicy = constraintMatchPolicy;
-        this.expectShadowVariablesInCorrectState = expectShadowVariablesInCorrectState;
-        this.scoreDirectorFactory = scoreDirectorFactory;
+        this.constraintMatchPolicy = builder.constraintMatchPolicy;
+        this.expectShadowVariablesInCorrectState = builder.expectShadowVariablesInCorrectState;
         this.variableDescriptorCache = new VariableDescriptorCache<>(solutionDescriptor);
         this.variableListenerSupport = VariableListenerSupport.create(this);
         this.variableListenerSupport.linkVariableListeners();
-        this.solutionTracker = scoreDirectorFactory.isTrackingWorkingSolution()
+        this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
+        this.valueRangeManager = Objects.requireNonNull(builder.valueRangeManager);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -198,6 +198,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
+    public ValueRangeManager<Solution_> getValueRangeManager() {
+        return valueRangeManager;
+    }
+
+    @Override
     public MoveDirector<Solution_, Score_> getMoveDirector() {
         return moveDirector;
     }
@@ -240,11 +245,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
+        valueRangeManager.reset(workingSolution);
         // This visits all the entities.
         var initializationStatistics =
-                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor);
+                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeManager);
         setWorkingEntityListDirty();
-
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
         assertInitScoreZeroOrLess();
@@ -434,6 +439,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 moveStreamsBasedMoveRepository.insert(entity);
             }
             setWorkingEntityListDirty();
+            // Some selectors depend on this revision value to detect changes in entity value ranges.
+            // Therefore, we need to reset the value range state, but the working solution does not change.
+            valueRangeManager.reset(null);
         }
     }
 
@@ -531,6 +539,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 moveStreamsBasedMoveRepository.retract(entity);
             }
             setWorkingEntityListDirty();
+            // Some selectors depend on this revision value to detect changes in entity value ranges.
+            // Therefore, we need to reset the value range state, but the working solution does not change.
+            valueRangeManager.reset(null);
         }
     }
 
@@ -691,6 +702,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
+                .withValueRangeManager(valueRangeManager)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
@@ -975,12 +987,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         protected final Factory_ scoreDirectorFactory;
 
+        // May be replaced by a shared state coming from the solver.
+        protected ValueRangeManager<Solution_> valueRangeManager = new ValueRangeManager<>();
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
+        }
+
+        @SuppressWarnings("unchecked")
+        public Builder_ withValueRangeManager(ValueRangeManager<Solution_> valueRangeManager) {
+            this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
+            return (Builder_) this;
         }
 
         @SuppressWarnings("unchecked")

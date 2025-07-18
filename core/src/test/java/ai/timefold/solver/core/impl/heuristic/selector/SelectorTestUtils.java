@@ -25,7 +25,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayi
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicReplayingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
@@ -128,16 +128,16 @@ public class SelectorTestUtils {
         return valueSelector;
     }
 
-    public static <Solution_> EntityIndependentValueSelector<Solution_> mockEntityIndependentValueSelector(
+    public static <Solution_> IterableValueSelector<Solution_> mockIterableValueSelector(
             Class<?> entityClass, String variableName, Object... values) {
         GenuineVariableDescriptor<Solution_> variableDescriptor = mockVariableDescriptor(entityClass, variableName);
-        when(variableDescriptor.isValueRangeEntityIndependent()).thenReturn(true);
-        return mockEntityIndependentValueSelector(variableDescriptor, values);
+        when(variableDescriptor.canExtractValueRangeFromSolution()).thenReturn(true);
+        return mockIterableValueSelector(variableDescriptor, values);
     }
 
-    public static <Solution_> EntityIndependentValueSelector<Solution_> mockEntityIndependentValueSelector(
+    public static <Solution_> IterableValueSelector<Solution_> mockIterableValueSelector(
             GenuineVariableDescriptor<Solution_> variableDescriptor, Object... values) {
-        EntityIndependentValueSelector<Solution_> valueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector<Solution_> valueSelector = mock(IterableValueSelector.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         final List<Object> valueList = Arrays.asList(values);
         when(valueSelector.iterator(any())).thenAnswer(invocation -> valueList.iterator());
@@ -232,20 +232,39 @@ public class SelectorTestUtils {
     // ************************************************************************
 
     public static <Solution_> SolverScope<Solution_> solvingStarted(PhaseLifecycleListener<Solution_> listener) {
-        return solvingStarted(listener, null, null);
+        return solvingStarted(listener, null, null, null);
     }
 
     public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
             PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector) {
-        return solvingStarted(listener, scoreDirector, null);
+        return solvingStarted(listener, scoreDirector, null, null);
     }
 
     public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
-            PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector, Random random) {
+            PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector,
+            ValueSelector<Solution_> valueSelector) {
+        return solvingStarted(listener, scoreDirector, null, valueSelector);
+    }
+
+    public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
+            PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector,
+            Random random) {
+        return solvingStarted(listener, scoreDirector, random, null);
+    }
+
+    public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
+            PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector, Random random,
+            ValueSelector<Solution_> valueSelector) {
         SolverScope<Solution_> solverScope = new SolverScope<>();
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setWorkingRandom(random);
         listener.solvingStarted(solverScope);
+        if (scoreDirector != null) {
+            solverScope.setValueRangeManager(scoreDirector.getValueRangeManager());
+        }
+        if (valueSelector != null) {
+            valueSelector.solvingStarted(solverScope);
+        }
         return solverScope;
     }
 

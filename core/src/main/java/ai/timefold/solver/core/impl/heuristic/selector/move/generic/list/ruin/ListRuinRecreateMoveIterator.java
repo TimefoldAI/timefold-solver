@@ -9,13 +9,13 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final EntityIndependentValueSelector<Solution_> valueSelector;
+    private final IterableValueSelector<Solution_> valueSelector;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
@@ -23,7 +23,7 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
     private final int maximumRuinedCount;
     private final Random workingRandom;
 
-    public ListRuinRecreateMoveIterator(EntityIndependentValueSelector<Solution_> valueSelector,
+    public ListRuinRecreateMoveIterator(IterableValueSelector<Solution_> valueSelector,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
             ListVariableStateSupply<Solution_> listVariableStateSupply, int minimumRuinedCount, int maximumRuinedCount,

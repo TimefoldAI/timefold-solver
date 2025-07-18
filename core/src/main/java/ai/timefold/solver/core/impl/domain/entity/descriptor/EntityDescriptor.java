@@ -67,6 +67,7 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShad
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
@@ -859,18 +860,31 @@ public class EntityDescriptor<Solution_> {
         return effectivePlanningPinToIndexReader;
     }
 
-    public long getMaximumValueCount(Solution_ solution, Object entity) {
+    public long getMaximumValueCount(Solution_ solution, Object entity, ValueRangeManager<Solution_> valueRangeManager) {
         var maximumValueCount = 0L;
         for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            maximumValueCount = Math.max(maximumValueCount, variableDescriptor.getValueRangeSize(solution, entity));
+            if (variableDescriptor.canExtractValueRangeFromSolution()) {
+                maximumValueCount = Math.max(maximumValueCount,
+                        valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(),
+                                solution));
+            } else {
+                maximumValueCount = Math.max(maximumValueCount,
+                        valueRangeManager.countOnEntity(variableDescriptor.getValueRangeDescriptor(),
+                                entity));
+
+            }
         }
         return maximumValueCount;
 
     }
 
-    public void processProblemScale(Solution_ solution, Object entity, ProblemScaleTracker tracker) {
+    public void processProblemScale(Solution_ solution, Object entity, ProblemScaleTracker tracker,
+            ValueRangeManager<Solution_> valueRangeManager) {
         for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            var valueCount = variableDescriptor.getValueRangeSize(solution, entity);
+            var valueCount = variableDescriptor.canExtractValueRangeFromSolution()
+                    ? valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(),
+                            solution)
+                    : valueRangeManager.countOnEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
             if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
                 if (basicVariableDescriptor.isChained()) {
@@ -880,7 +894,11 @@ public class EntityDescriptor<Solution_> {
                         tracker.addPinnedListValueCount(1);
                     }
                     // Anchors are entities
-                    var valueRange = variableDescriptor.getValueRangeDescriptor().extractValueRange(solution, entity);
+                    var valueRange = variableDescriptor.canExtractValueRangeFromSolution()
+                            ? valueRangeManager.getFromSolution(variableDescriptor.getValueRangeDescriptor(),
+                                    solution)
+                            : valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                                    entity);
                     if (valueRange instanceof CountableValueRange<?> countableValueRange) {
                         var valueIterator = countableValueRange.createOriginalIterator();
                         while (valueIterator.hasNext()) {
@@ -907,7 +925,12 @@ public class EntityDescriptor<Solution_> {
                     }
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                tracker.setListTotalValueCount((int) listVariableDescriptor.getValueRangeSize(solution, entity));
+                var size = variableDescriptor.canExtractValueRangeFromSolution()
+                        ? valueRangeManager.countOnSolution(listVariableDescriptor.getValueRangeDescriptor(),
+                                solution)
+                        : valueRangeManager.countOnEntity(listVariableDescriptor.getValueRangeDescriptor(),
+                                entity);
+                tracker.setListTotalValueCount((int) size);
                 if (isMovable(solution, entity)) {
                     tracker.incrementListEntityCount(true);
                     tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));

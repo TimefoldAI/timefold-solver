@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -95,13 +96,8 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         // subLists will get corrupted by ConcurrentModifications, so do the operations
         // on a clone
         var combinedListCopy = combinedList.copy();
-        for (var move : equivalent2Opts) {
-            move.doMoveOnGenuineVariables(combinedListCopy);
-        }
-
-        combinedListCopy.moveElementsOfDelegates(newEndIndices);
-
-        Collections.rotate(combinedListCopy, postShiftAmount);
+        flipSublists(equivalent2Opts, combinedListCopy, postShiftAmount);
+        // At this point, all related genuine variables are actually updated
         combinedList.applyChangesFromCopy(combinedListCopy);
 
         combinedList.actOnAffectedElements(listVariableDescriptor,
@@ -113,7 +109,24 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return !equivalent2Opts.isEmpty();
+        var doable = !equivalent2Opts.isEmpty();
+        if (!doable || listVariableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
+        var singleEntity = originalEntities.length == 1;
+        if (singleEntity) {
+            // The changes will be applied to a single entity. No need to check the value ranges.
+            return true;
+        }
+        // When the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming values
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        // We need to compute the combined list of values to check the source and destination
+        var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
+        flipSublists(equivalent2Opts, combinedList, postShiftAmount);
+        // We now check if the new arrangement of elements meets the entity value ranges
+        return combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeManager);
     }
 
     @Override
@@ -157,6 +170,16 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
 
         return out;
+    }
+
+    private <T> void flipSublists(List<FlipSublistAction> actions, MultipleDelegateList<T> combinedList, int shiftAmount) {
+        // Apply all flip actions
+        for (var move : actions) {
+            move.execute(combinedList);
+        }
+        // Update the delegate sublists of the combined list
+        combinedList.moveElementsOfDelegates(newEndIndices);
+        Collections.rotate(combinedList, shiftAmount);
     }
 
     public String toString() {

@@ -1,29 +1,27 @@
 package ai.timefold.solver.core.impl.solver;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
-public class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score_>>
+import org.jspecify.annotations.NullMarked;
+
+public final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score_>>
         extends AbstractScoreDirector<Solution_, Score_, MoveAssertScoreDirectorFactory<Solution_, Score_>> {
+
     private final Consumer<Solution_> moveSolutionConsumer;
     private boolean firstTrigger = true;
     private final boolean isDerived;
 
-    protected MoveAssertScoreDirector(MoveAssertScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory,
-            boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy,
-            boolean expectShadowVariablesInCorrectState,
-            Consumer<Solution_> moveSolutionConsumer,
-            boolean isDerived) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy, expectShadowVariablesInCorrectState);
-        this.moveSolutionConsumer = moveSolutionConsumer;
+    private MoveAssertScoreDirector(Builder<Solution_, Score_> builder, boolean isDerived) {
+        super(builder);
+        this.moveSolutionConsumer = Objects.requireNonNull(builder.moveSolutionConsumer);
         this.isDerived = isDerived;
     }
 
@@ -61,4 +59,32 @@ public class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score_>>
     public boolean requiresFlushing() {
         return false;
     }
+
+    @NullMarked
+    public static final class Builder<Solution_, Score_ extends Score<Score_>>
+            extends
+            AbstractScoreDirectorBuilder<Solution_, Score_, MoveAssertScoreDirectorFactory<Solution_, Score_>, MoveAssertScoreDirector.Builder<Solution_, Score_>> {
+
+        private Consumer<Solution_> moveSolutionConsumer;
+
+        public Builder(MoveAssertScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory) {
+            super(scoreDirectorFactory);
+        }
+
+        public Builder<Solution_, Score_> withMoveSolutionConsumer(Consumer<Solution_> moveSolutionConsumer) {
+            this.moveSolutionConsumer = moveSolutionConsumer;
+            return this;
+        }
+
+        @Override
+        public MoveAssertScoreDirector<Solution_, Score_> build() {
+            return new MoveAssertScoreDirector<>(this, false);
+        }
+
+        @Override
+        public MoveAssertScoreDirector<Solution_, Score_> buildDerived() {
+            return new MoveAssertScoreDirector<>(this, true);
+        }
+    }
+
 }

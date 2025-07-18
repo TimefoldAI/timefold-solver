@@ -6,9 +6,7 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -51,15 +49,14 @@ public class PillarChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        Object oldValue = variableDescriptor.getValue(pillar.get(0));
+        var oldValue = variableDescriptor.getValue(pillar.get(0));
         if (Objects.equals(oldValue, toPlanningValue)) {
             return false;
         }
-        if (!variableDescriptor.isValueRangeEntityIndependent()) {
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-            Solution_ workingSolution = scoreDirector.getWorkingSolution();
+        if (!variableDescriptor.canExtractValueRangeFromSolution()) {
+            var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             for (Object entity : pillar) {
-                ValueRange rightValueRange = valueRangeDescriptor.extractValueRange(workingSolution, entity);
+                var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, entity);
                 if (!rightValueRange.contains(toPlanningValue)) {
                     return false;
                 }

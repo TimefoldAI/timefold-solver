@@ -34,6 +34,7 @@ import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
@@ -115,8 +116,10 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
                     metricsRequiringConstraintMatchSet);
         }
-
+        var valueRangeManager = new ValueRangeManager<Solution_>();
+        solverScope.setValueRangeManager(valueRangeManager);
         var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
+                .withValueRangeManager(valueRangeManager)
                 .withLookUpEnabled(true)
                 .withConstraintMatchPolicy(
                         constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)

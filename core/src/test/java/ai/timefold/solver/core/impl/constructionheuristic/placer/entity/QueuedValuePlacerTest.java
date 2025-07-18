@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -39,7 +39,7 @@ class QueuedValuePlacerTest {
         EntitySelector<TestdataSolution> entitySelector =
                 SelectorTestUtils.mockEntitySelector(variableDescriptor.getEntityDescriptor(),
                         new TestdataEntity("a"), new TestdataEntity("b"), new TestdataEntity("c"));
-        EntityIndependentValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockIterableValueSelector(
                 variableDescriptor,
                 new TestdataValue("1"), new TestdataValue("2"));
         MimicRecordingValueSelector<TestdataSolution> recordingValueSelector =
@@ -108,7 +108,7 @@ class QueuedValuePlacerTest {
         EntitySelector<TestdataSolution> entitySelector =
                 SelectorTestUtils.mockEntitySelector(variableDescriptor.getEntityDescriptor(),
                         new TestdataEntity("a"), new TestdataEntity("b"), new TestdataEntity("c"));
-        EntityIndependentValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockIterableValueSelector(
                 variableDescriptor,
                 new TestdataValue("1"), new TestdataValue("2"));
         MimicRecordingValueSelector<TestdataSolution> recordingValueSelector =

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
-import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockEntityIndependentValueSelector;
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockIterableValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
@@ -13,7 +13,7 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -42,7 +42,7 @@ class UnassignedListValueSelectorTest {
         scoreDirector.setWorkingSolution(solution);
 
         var childValueSelector =
-                mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1, v2, v3, v4, v5);
+                mockIterableValueSelector(getListVariableDescriptor(scoreDirector), v1, v2, v3, v4, v5);
         var valueSelector = new UnassignedListValueSelector<>(childValueSelector);
 
         SolverScope<TestdataListSolution> solverScope = mock(SolverScope.class);
@@ -66,7 +66,7 @@ class UnassignedListValueSelectorTest {
 
     @Test
     void requireEndingChildValueSelector() {
-        EntityIndependentValueSelector<TestdataListSolution> childValueSelector = mock(EntityIndependentValueSelector.class);
+        IterableValueSelector<TestdataListSolution> childValueSelector = mock(IterableValueSelector.class);
 
         when(childValueSelector.isNeverEnding()).thenReturn(true);
 
