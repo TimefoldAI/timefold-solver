@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
-import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntityIndependentValueSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIterableValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 
@@ -37,8 +37,8 @@ class RandomListSwapIteratorTest {
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor = getListVariableDescriptor(scoreDirector);
         RandomListSwapIterator<TestdataListSolution> randomListSwapIterator = new RandomListSwapIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v1, v1, v3),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v2, v3, v1));
+                mockIterableValueSelector(listVariableDescriptor, v1, v1, v1, v3),
+                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v1));
 
         assertCodesOfIterator(randomListSwapIterator,
                 "No change",

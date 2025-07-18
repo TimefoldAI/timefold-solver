@@ -75,7 +75,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
@@ -1214,7 +1214,7 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return {@code >= 0}
      */
-    public long getApproximateValueCount(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
+    public long getApproximateValueCount(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
         var genuineVariableDescriptorSet =
                 Collections.newSetFromMap(new IdentityHashMap<GenuineVariableDescriptor<Solution_>, Boolean>());
         visitAllEntities(solution, entity -> {
@@ -1227,12 +1227,12 @@ public class SolutionDescriptor<Solution_> {
         for (var variableDescriptor : genuineVariableDescriptorSet) {
             var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
             if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-                out.add(valueRangeResolver.extractValueRangeSizeFromSolution(valueRangeDescriptor, solution));
+                out.add(valueRangeManager.countOnSolution(valueRangeDescriptor, solution));
             } else {
                 visitEntitiesByEntityClass(solution,
                         variableDescriptor.getEntityDescriptor().getEntityClass(),
                         entity -> {
-                            out.add(valueRangeResolver.extractValueRangeSizeFromEntity(valueRangeDescriptor, entity));
+                            out.add(valueRangeManager.countOnEntity(valueRangeDescriptor, entity));
                             return false;
                         });
             }
@@ -1240,12 +1240,12 @@ public class SolutionDescriptor<Solution_> {
         return out.longValue();
     }
 
-    public long getMaximumValueRangeSize(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
+    public long getMaximumValueRangeSize(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
         return extractAllEntitiesStream(solution)
                 .mapToLong(entity -> {
                     var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
                     return entityDescriptor.isGenuine()
-                            ? entityDescriptor.getMaximumValueCount(solution, entity, valueRangeResolver)
+                            ? entityDescriptor.getMaximumValueCount(solution, entity, valueRangeManager)
                             : 0L;
                 })
                 .max()
@@ -1259,13 +1259,13 @@ public class SolutionDescriptor<Solution_> {
      * @param solution never null
      * @return {@code >= 0}
      */
-    public double getProblemScale(Solution_ solution, ValueRangeResolver<Solution_> valueRangeResolver) {
-        var logBase = Math.max(2, getMaximumValueRangeSize(solution, valueRangeResolver));
+    public double getProblemScale(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
+        var logBase = Math.max(2, getMaximumValueRangeSize(solution, valueRangeManager));
         var problemScaleTracker = new ProblemScaleTracker(logBase);
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
             if (entityDescriptor.isGenuine()) {
-                entityDescriptor.processProblemScale(solution, entity, problemScaleTracker, valueRangeResolver);
+                entityDescriptor.processProblemScale(solution, entity, problemScaleTracker, valueRangeManager);
             }
         });
         var result = problemScaleTracker.getBasicProblemScaleLog();
@@ -1312,21 +1312,21 @@ public class SolutionDescriptor<Solution_> {
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution,
-            ValueRangeResolver<Solution_> valueRangeResolver) {
+            ValueRangeManager<Solution_> valueRangeManager) {
         return new ProblemSizeStatistics(
                 getGenuineEntityCount(solution),
                 getGenuineVariableCount(solution),
-                getApproximateValueCount(solution, valueRangeResolver),
-                getProblemScale(solution, valueRangeResolver));
+                getApproximateValueCount(solution, valueRangeManager),
+                getProblemScale(solution, valueRangeManager));
     }
 
     public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution,
-            ValueRangeResolver<Solution_> valueRangeResolver) {
-        return computeInitializationStatistics(solution, null, valueRangeResolver);
+            ValueRangeManager<Solution_> valueRangeManager) {
+        return computeInitializationStatistics(solution, null, valueRangeManager);
     }
 
     public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution, Consumer<Object> finisher,
-            ValueRangeResolver<Solution_> valueRangeResolver) {
+            ValueRangeManager<Solution_> valueRangeManager) {
         /*
          * The score director requires all of these data points,
          * so we calculate them all in a single pass over the entities.
@@ -1344,8 +1344,8 @@ public class SolutionDescriptor<Solution_> {
             }
             // We count every possibly unassigned element in every list variable.
             // And later we subtract the assigned elements.
-            unassignedValueCount.add((int) valueRangeResolver
-                    .extractValueRangeSizeFromSolution(listVariableDescriptor.getValueRangeDescriptor(), solution));
+            unassignedValueCount.add((int) valueRangeManager
+                    .countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution));
         }
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());

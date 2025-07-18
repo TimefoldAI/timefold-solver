@@ -458,7 +458,7 @@ public class ConfigUtils {
         if (type == null) {
             return false;
         }
-        return IMMUTABLE_CLASSES.contains(type) || type.isRecord();
+        return type.isRecord() || IMMUTABLE_CLASSES.contains(type);
     }
 
     public static Optional<Class<?>> extractGenericTypeParameter(@NonNull String parentClassConcept,

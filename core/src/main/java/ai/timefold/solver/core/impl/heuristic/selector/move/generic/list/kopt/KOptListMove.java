@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -109,24 +109,24 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var firstPass = !equivalent2Opts.isEmpty();
-        var secondPass = true;
+        var doable = !equivalent2Opts.isEmpty();
+        if (!doable || listVariableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
+        var singleEntity = originalEntities.length == 1;
+        if (singleEntity) {
+            // The changes will be applied to a single entity. No need to check the value ranges.
+            return true;
+        }
         // When the value range is located at the entity,
         // we need to check if the destination's value range accepts the upcoming values
-        if (firstPass && !listVariableDescriptor.canExtractValueRangeFromSolution()) {
-            // The changes will be applied to a single entity. No need to check the value ranges.
-            secondPass = originalEntities.length == 1;
-            if (!secondPass) {
-                ValueRangeResolver<Solution_> valueRangeResolver =
-                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
-                // We need to compute the combined list of values to check the source and destination
-                var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
-                flipSublists(equivalent2Opts, combinedList, postShiftAmount);
-                // We now check if the new arrangement of elements meets the entity value ranges
-                secondPass = combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeResolver);
-            }
-        }
-        return firstPass && secondPass;
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        // We need to compute the combined list of values to check the source and destination
+        var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
+        flipSublists(equivalent2Opts, combinedList, postShiftAmount);
+        // We now check if the new arrangement of elements meets the entity value ranges
+        return combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeManager);
     }
 
     @Override

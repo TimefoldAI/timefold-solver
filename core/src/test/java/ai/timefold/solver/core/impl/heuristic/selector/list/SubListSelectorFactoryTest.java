@@ -6,20 +6,16 @@ import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
-import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicRecordingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicReplayingSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.SubListMimicRecorder;
-import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListUtils;
@@ -110,19 +106,5 @@ class SubListSelectorFactoryTest {
                 () -> SubListSelectorFactory.<TestdataListSolution> create(config)
                         .buildMimicReplaying(buildHeuristicConfigPolicy(TestdataListSolution.buildSolutionDescriptor())))
                 .withMessageContaining("has another property");
-    }
-
-    @Test
-    void requiresListVariable() {
-        SubListSelectorConfig subListSelectorConfig = new SubListSelectorConfig();
-
-        EntitySelector<TestdataSolution> entitySelector =
-                SelectorTestUtils.mockEntitySelector(TestdataEntity.buildEntityDescriptor());
-
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> SubListSelectorFactory.<TestdataSolution> create(subListSelectorConfig)
-                        .buildSubListSelector(buildHeuristicConfigPolicy(TestdataSolution.buildSolutionDescriptor()),
-                                entitySelector, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM))
-                .withMessageContaining("@" + PlanningListVariable.class.getSimpleName());
     }
 }

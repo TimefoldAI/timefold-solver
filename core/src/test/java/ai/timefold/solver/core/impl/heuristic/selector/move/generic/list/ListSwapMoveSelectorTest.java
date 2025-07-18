@@ -5,7 +5,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedListVariableDescriptor;
-import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntityIndependentValueSelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIterableValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelectorWithoutSize;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
@@ -44,8 +44,8 @@ class ListSwapMoveSelectorTest {
 
         var listVariableDescriptor = getListVariableDescriptor(scoreDirector);
         var moveSelector = new ListSwapMoveSelector<>(
-                mockEntityIndependentValueSelector(listVariableDescriptor, v3, v1, v2),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v3, v1, v2),
+                mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
+                mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -88,8 +88,8 @@ class ListSwapMoveSelectorTest {
         scoreDirector.setWorkingSolution(solution);
         var listVariableDescriptor = getPinnedListVariableDescriptor(scoreDirector);
         var moveSelector = new ListSwapMoveSelector<>(
-                mockEntityIndependentValueSelector(listVariableDescriptor, v3, v1, v2),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v3, v1, v2),
+                mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
+                mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
                 false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
@@ -128,8 +128,8 @@ class ListSwapMoveSelectorTest {
         // swap moves do not support uninitialized entities
         var listVariableDescriptor = getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector);
         var moveSelector = new ListSwapMoveSelector<>(
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v2, v3, v4),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v4, v3, v2, v1),
+                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v4),
+                mockIterableValueSelector(listVariableDescriptor, v4, v3, v2, v1),
                 false);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -173,8 +173,8 @@ class ListSwapMoveSelectorTest {
         var moveSelector = new ListSwapMoveSelector<>(
                 // Value selectors are longer than the number of expected codes because they're expected
                 // to be never ending, so they must not be exhausted after the last asserted code.
-                mockEntityIndependentValueSelector(listVariableDescriptor, v2, v3, v2, v3, v2, v3, v1, v1, v1, v1),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v2, v3, v1, v2, v3, v1, v2, v3, v1),
+                mockIterableValueSelector(listVariableDescriptor, v2, v3, v2, v3, v2, v3, v1, v1, v1, v1),
+                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v1, v2, v3, v1, v2, v3, v1),
                 true);
 
         solvingStarted(moveSelector, scoreDirector);
@@ -211,8 +211,8 @@ class ListSwapMoveSelectorTest {
         var moveSelector = new ListSwapMoveSelector<>(
                 // Value selectors are longer than the number of expected codes because they're expected
                 // to be never ending, so they must not be exhausted after the last asserted code.
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v2, v3, v1, v2, v3, v1, v2, v3),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v3, v2, v1, v3, v2, v1, v3, v2),
+                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v1, v2, v3, v1, v2, v3),
+                mockIterableValueSelector(listVariableDescriptor, v1, v3, v2, v1, v3, v2, v1, v3, v2),
                 true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
@@ -246,8 +246,8 @@ class ListSwapMoveSelectorTest {
         var moveSelector = new ListSwapMoveSelector<>(
                 // Value selectors are longer than the number of expected codes because they're expected
                 // to be never ending, so they must not be exhausted after the last asserted code.
-                mockEntityIndependentValueSelector(listVariableDescriptor, v2, v3, v4, v2, v3, v4, v2, v3, v4, v1, v1, v1, v1),
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v2, v3, v4, v1, v2, v3, v4, v1, v2, v3, v1, v4),
+                mockIterableValueSelector(listVariableDescriptor, v2, v3, v4, v2, v3, v4, v2, v3, v4, v1, v1, v1, v1),
+                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v4, v1, v2, v3, v4, v1, v2, v3, v1, v4),
                 true);
 
         solvingStarted(moveSelector, scoreDirector);

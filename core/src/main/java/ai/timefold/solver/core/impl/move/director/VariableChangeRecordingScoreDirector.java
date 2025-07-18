@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.RevertableScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorCache;
 
 public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extends Score<Score_>>
@@ -175,8 +175,8 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     }
 
     @Override
-    public ValueRangeResolver<Solution_> getValueRangeResolver() {
-        return getBacking().getValueRangeResolver();
+    public ValueRangeManager<Solution_> getValueRangeManager() {
+        return getBacking().getValueRangeManager();
     }
 
     /**

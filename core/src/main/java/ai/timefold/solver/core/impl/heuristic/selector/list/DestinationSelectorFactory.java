@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
@@ -32,14 +31,14 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
-        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
+        var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder);
         var baseDestinationSelector =
                 new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
         return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector);
     }
 
-    private IterableValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildIterableValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy, EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory
@@ -61,13 +60,6 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                          * the configPolicy that only allows this filtering type in the CH phase.
                          */
                         ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED);
-        if (!(valueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException(
-                    "The destinationSelector (%s) for a list variable needs to be based on an %s (%s). Check your @%s annotations."
-                            .formatted(config, IterableValueSelector.class.getSimpleName(), valueSelector,
-                                    ValueRangeProvider.class.getSimpleName()));
-
-        }
         return (IterableValueSelector<Solution_>) valueSelector;
     }
 

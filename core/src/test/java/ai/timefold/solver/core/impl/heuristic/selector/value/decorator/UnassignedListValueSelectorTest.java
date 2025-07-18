@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
-import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockEntityIndependentValueSelector;
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockIterableValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
@@ -42,7 +42,7 @@ class UnassignedListValueSelectorTest {
         scoreDirector.setWorkingSolution(solution);
 
         var childValueSelector =
-                mockEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1, v2, v3, v4, v5);
+                mockIterableValueSelector(getListVariableDescriptor(scoreDirector), v1, v2, v3, v4, v5);
         var valueSelector = new UnassignedListValueSelector<>(childValueSelector);
 
         SolverScope<TestdataListSolution> solverScope = mock(SolverScope.class);

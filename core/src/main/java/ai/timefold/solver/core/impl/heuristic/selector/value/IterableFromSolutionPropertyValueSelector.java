@@ -56,7 +56,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         var scoreDirector = phaseScope.getScoreDirector();
-        cachedValueRange = scoreDirector.getValueRangeResolver().extractValueRangeFromSolution(valueRangeDescriptor,
+        cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
                 scoreDirector.getWorkingSolution());
         if (valueRangeMightContainEntity) {
             cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
@@ -73,7 +73,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
                 if (minimumCacheType.compareTo(SelectionCacheType.STEP) > 0) {
                     cachedEntityListIsDirty = true;
                 } else {
-                    cachedValueRange = scoreDirector.getValueRangeResolver().extractValueRangeFromSolution(valueRangeDescriptor,
+                    cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
                             scoreDirector.getWorkingSolution());
                     cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
                 }

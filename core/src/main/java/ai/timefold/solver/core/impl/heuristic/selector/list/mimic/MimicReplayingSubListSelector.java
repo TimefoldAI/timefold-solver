@@ -29,7 +29,7 @@ public class MimicReplayingSubListSelector<Solution_> extends AbstractSelector<S
         // Precondition for iterator(Object)'s current implementation
         if (!subListMimicRecorder.getVariableDescriptor().canExtractValueRangeFromSolution()) {
             throw new IllegalArgumentException(
-                    "The current implementation support only an entityIndependent variable ("
+                    "The current implementation support only the solution value range ("
                             + subListMimicRecorder.getVariableDescriptor() + ").");
         }
     }

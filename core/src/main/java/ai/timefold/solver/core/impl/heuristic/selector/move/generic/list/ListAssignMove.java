@@ -7,7 +7,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
@@ -49,18 +49,17 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var firstPass = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
-        var secondPass = true;
+        var doable = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
+        if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
         // When the value range is located at the entity,
         // we need to check if the destination's value range accepts the upcoming value
-        if (firstPass && !variableDescriptor.canExtractValueRangeFromSolution()) {
-            ValueRangeResolver<Solution_> valueRangeResolver =
-                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
-            secondPass = valueRangeResolver
-                    .extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
-                    .contains(planningValue);
-        }
-        return firstPass && secondPass;
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        return valueRangeManager
+                .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
+                .contains(planningValue);
     }
 
     @Override

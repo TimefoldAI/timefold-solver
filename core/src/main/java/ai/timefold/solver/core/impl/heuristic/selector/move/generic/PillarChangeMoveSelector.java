@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -51,13 +50,7 @@ public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Sol
 
     @Override
     public long getSize() {
-        if (!(valueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException("To use the method getSize(), the moveSelector (" + this
-                    + ") needs to be based on an "
-                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-        }
-        return pillarSelector.getSize() * ((IterableValueSelector) valueSelector).getSize();
+        return pillarSelector.getSize() * ((IterableValueSelector<Solution_>) valueSelector).getSize();
     }
 
     @Override

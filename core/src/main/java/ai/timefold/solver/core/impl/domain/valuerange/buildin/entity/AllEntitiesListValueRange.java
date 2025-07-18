@@ -18,11 +18,11 @@ import org.jspecify.annotations.NonNull;
  * 
  * @param <Value_> the value type
  */
-public final class FromEntityListValueRange<Value_> extends AbstractCountableValueRange<Value_> {
+public final class AllEntitiesListValueRange<Value_> extends AbstractCountableValueRange<Value_> {
 
     private final ValueRangeCacheStrategy<Value_> cacheStrategy;
 
-    public <Solution_> FromEntityListValueRange(List<?> entityList,
+    public <Solution_> AllEntitiesListValueRange(List<?> entityList,
             FromEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor) {
         if (entityList.isEmpty()) {
             throw new IllegalArgumentException("Impossible state: the entity list (%s) cannot be empty."

@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.chained;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
@@ -57,12 +56,6 @@ public class SubChainSelectorFactory<Solution_> {
         // ValueSelector uses SelectionOrder.ORIGINAL because a SubChainSelector STEP caches the values
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, SelectionOrder.ORIGINAL);
-        if (!(valueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException("The subChainSelectorConfig (" + config
-                    + ") needs to be based on an "
-                    + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-        }
         return new DefaultSubChainSelector<>((IterableValueSelector<Solution_>) valueSelector,
                 inheritedSelectionOrder.toRandomSelectionBoolean(),
                 Objects.requireNonNullElse(config.getMinimumSubChainSize(), DEFAULT_MINIMUM_SUB_CHAIN_SIZE),

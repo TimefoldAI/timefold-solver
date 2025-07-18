@@ -14,7 +14,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.function.TriConsumer;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
 /**
  * A list that delegates get and set operations to multiple delegates.
@@ -121,14 +121,19 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
      * each sublist generated after applying all changes is validated against the related value ranges.
      */
     public <S> boolean isElementsFromDelegateInEntityValueRange(ListVariableDescriptor<S> listVariableDescriptor,
-            ValueRangeResolver<S> valueRangeResolver) {
+            ValueRangeManager<S> valueRangeManager) {
         if (listVariableDescriptor.getValueRangeDescriptor().canExtractValueRangeFromSolution()) {
+            // When the value range can be extracted from the solution,
+            // there is no need to check if the new arrangement corresponds to the value list.
+            // However, this is not the case when the value range is associated with the entity.
+            // In such instances,
+            // we must ensure that the value list for each delegated entity aligns with the related value range.
             return true;
         }
         for (var i = 0; i < delegateEntities.length; i++) {
             var entity = delegateEntities[i];
             var valueRange =
-                    valueRangeResolver.extractValueRangeFromEntity(listVariableDescriptor.getValueRangeDescriptor(), entity);
+                    valueRangeManager.getFromEntity(listVariableDescriptor.getValueRangeDescriptor(), entity);
             var containsAll = delegates[i].stream().allMatch(valueRange::contains);
             if (!containsAll) {
                 return false;

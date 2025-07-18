@@ -24,7 +24,7 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.difficultyweight.TestdataDifficultyWeightSolution;
@@ -64,7 +64,7 @@ class QueuedEntityPlacerFactoryTest {
         InnerScoreDirector<TestdataMultiVarSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         when(phaseScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
         when(scoreDirector.getWorkingSolution()).thenReturn(generateTestdataSolution());
-        when(scoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeResolver<>());
+        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
         entityPlacer.phaseStarted(phaseScope);
         Iterator<Placement<TestdataMultiVarSolution>> placementIterator = entityPlacer.iterator();
         assertThat(placementIterator).hasNext();

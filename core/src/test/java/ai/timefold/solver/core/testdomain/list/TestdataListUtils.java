@@ -69,14 +69,14 @@ public final class TestdataListUtils {
                 (Object[]) entities);
     }
 
-    public static <Solution_> IterableValueSelector<Solution_> mockEntityIndependentValueSelector(
+    public static <Solution_> IterableValueSelector<Solution_> mockIterableValueSelector(
             ListVariableDescriptor<Solution_> listVariableDescriptor, Object... values) {
-        return SelectorTestUtils.mockEntityIndependentValueSelector(listVariableDescriptor, values);
+        return SelectorTestUtils.mockIterableValueSelector(listVariableDescriptor, values);
     }
 
-    public static IterableValueSelector<TestdataListSolution> mockNeverEndingEntityIndependentValueSelector(
+    public static IterableValueSelector<TestdataListSolution> mockNeverEndingIterableValueSelector(
             ListVariableDescriptor<TestdataListSolution> listVariableDescriptor, TestdataListValue... values) {
-        var valueSelector = mockEntityIndependentValueSelector(
+        var valueSelector = mockIterableValueSelector(
                 listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
@@ -84,10 +84,10 @@ public final class TestdataListUtils {
     }
 
     public static IterableValueSelector<TestdataListEntityProvidingSolution>
-            mockEntityRangeNeverEndingEntityIndependentValueSelector(
+            mockEntityRangeNeverEndingIterableValueSelector(
                     ListVariableDescriptor<TestdataListEntityProvidingSolution> listVariableDescriptor,
                     TestdataValue... values) {
-        var valueSelector = mockEntityIndependentValueSelector(
+        var valueSelector = mockIterableValueSelector(
                 listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
@@ -95,30 +95,30 @@ public final class TestdataListUtils {
     }
 
     public static IterableValueSelector<TestdataPinnedWithIndexListSolution>
-            mockNeverEndingEntityIndependentValueSelector(
+            mockNeverEndingIterableValueSelector(
                     ListVariableDescriptor<TestdataPinnedWithIndexListSolution> listVariableDescriptor,
                     TestdataPinnedWithIndexListValue... values) {
-        var valueSelector = mockEntityIndependentValueSelector(listVariableDescriptor, (Object[]) values);
+        var valueSelector = mockIterableValueSelector(listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
         return valueSelector;
     }
 
     public static IterableValueSelector<TestdataListPinnedEntityProvidingSolution>
-            mockPinnedEntityRangeNeverEndingEntityIndependentValueSelector(
+            mockPinnedEntityRangeNeverEndingIterableValueSelector(
                     ListVariableDescriptor<TestdataListPinnedEntityProvidingSolution> listVariableDescriptor,
                     TestdataValue... values) {
-        var valueSelector = mockEntityIndependentValueSelector(listVariableDescriptor, (Object[]) values);
+        var valueSelector = mockIterableValueSelector(listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
         return valueSelector;
     }
 
     public static IterableValueSelector<TestdataAllowsUnassignedValuesListSolution>
-            mockNeverEndingEntityIndependentValueSelector(
+            mockNeverEndingIterableValueSelector(
                     ListVariableDescriptor<TestdataAllowsUnassignedValuesListSolution> listVariableDescriptor,
                     TestdataAllowsUnassignedValuesListValue... values) {
-        var valueSelector = mockEntityIndependentValueSelector(
+        var valueSelector = mockIterableValueSelector(
                 listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
@@ -126,10 +126,10 @@ public final class TestdataListUtils {
     }
 
     public static IterableValueSelector<TestdataListUnassignedEntityProvidingSolution>
-            mockAllowsUnassignedEntityRangeNeverEndingEntityIndependentValueSelector(
+            mockAllowsUnassignedEntityRangeNeverEndingIterableValueSelector(
                     ListVariableDescriptor<TestdataListUnassignedEntityProvidingSolution> listVariableDescriptor,
                     TestdataValue... values) {
-        var valueSelector = mockEntityIndependentValueSelector(
+        var valueSelector = mockIterableValueSelector(
                 listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));
@@ -137,10 +137,10 @@ public final class TestdataListUtils {
     }
 
     public static IterableValueSelector<TestdataPinnedUnassignedValuesListSolution>
-            mockNeverEndingEntityIndependentValueSelector(
+            mockNeverEndingIterableValueSelector(
                     ListVariableDescriptor<TestdataPinnedUnassignedValuesListSolution> listVariableDescriptor,
                     TestdataPinnedUnassignedValuesListValue... values) {
-        var valueSelector = mockEntityIndependentValueSelector(
+        var valueSelector = mockIterableValueSelector(
                 listVariableDescriptor, (Object[]) values);
         when(valueSelector.isNeverEnding()).thenReturn(true);
         when(valueSelector.iterator()).thenAnswer(invocation -> cyclicIterator(Arrays.asList(values)));

@@ -62,7 +62,7 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
         solverScope.setProblemSizeStatistics(
                 solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getWorkingSolution(),
-                        solverScope.getValueRangeResolver()));
+                        solverScope.getValueRangeManager()));
         for (Phase<Solution_> phase : phaseList) {
             phase.solvingStarted(solverScope);
         }
