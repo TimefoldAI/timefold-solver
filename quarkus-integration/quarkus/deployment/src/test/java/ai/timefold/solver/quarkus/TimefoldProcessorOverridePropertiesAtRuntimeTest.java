@@ -51,7 +51,6 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
             .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.enabled", "false")
             .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.sliding-window-duration", "3h")
             .overrideConfigKey("quarkus.timefold.solver.termination.diminished-returns.minimum-improvement-ratio", "0.25")
-            .overrideConfigKey("quarkus.timefold.solver.random-seed", "123")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusEntity.class,
                             TestdataQuarkusSolution.class,
@@ -63,6 +62,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
     private static Map<String, String> getRuntimeProperties() {
         Map<String, String> out = new HashMap<>();
         out.put("quarkus.timefold.solver.termination.best-score-limit", "7");
+        out.put("quarkus.timefold.solver.random-seed", "123");
         out.put("quarkus.timefold.solver.move-thread-count", "3");
         out.put("quarkus.timefold.solver-manager.parallel-solver-count", "10");
         out.put("quarkus.timefold.solver.termination.diminished-returns.enabled", "true");
@@ -97,7 +97,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
                             diminishedReturnsConfig.getMinimumImprovementRatio(),
                             solverConfig.getTerminationConfig().getBestScoreLimit(),
                             solverConfig.getMoveThreadCount(),
-                            solverConfig.getRandomSeed());
+                            123);
         }
 
         @GET

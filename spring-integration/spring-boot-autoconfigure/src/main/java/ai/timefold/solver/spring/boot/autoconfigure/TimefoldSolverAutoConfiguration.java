@@ -284,9 +284,6 @@ public class TimefoldSolverAutoConfiguration
         if (solverProperties.getMoveThreadCount() != null) {
             solverConfig.setMoveThreadCount(solverProperties.getMoveThreadCount());
         }
-        if (solverProperties.getRandomSeed() != null) {
-            solverConfig.setRandomSeed(solverProperties.getRandomSeed());
-        }
         applyTerminationProperties(solverConfig, solverProperties.getTermination());
     }
 

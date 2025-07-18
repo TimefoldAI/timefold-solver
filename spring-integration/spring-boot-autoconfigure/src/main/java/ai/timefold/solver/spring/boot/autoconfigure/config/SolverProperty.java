@@ -52,7 +52,6 @@ public enum SolverProperty {
             value -> ConstraintStreamImplType.valueOf(value.toString())),
     CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING("constraint-stream-automatic-node-sharing",
             SolverProperties::setConstraintStreamAutomaticNodeSharing, value -> Boolean.valueOf(value.toString())),
-    RANDOM_SEED("random-seed", SolverProperties::setRandomSeed, value -> Long.parseLong(value.toString())),
     TERMINATION("termination", SolverProperties::setTermination, value -> {
         if (value instanceof TerminationProperties terminationProperties) {
             return terminationProperties;
