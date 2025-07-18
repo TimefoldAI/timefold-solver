@@ -6,9 +6,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public sealed class ForEachIncludingUnassignedUniNode<A>
-        extends AbstractForEachUniNode<A>
-        permits ForEachFromSolutionUniNode {
+public final class ForEachIncludingUnassignedUniNode<A>
+        extends AbstractForEachUniNode<A> {
 
     public ForEachIncludingUnassignedUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {

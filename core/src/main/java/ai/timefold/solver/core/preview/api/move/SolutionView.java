@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.preview.api.move;
 
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
@@ -60,5 +62,37 @@ public interface SolutionView<Solution_> {
      */
     <Entity_, Value_> ElementPosition getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value);
+
+    /**
+     * Checks if a given value is present in the value range of a genuine planning variable,
+     * when the value range is defined on {@link PlanningSolution}.
+     * 
+     * @param variableMetaModel variable in question
+     * @param value value to check
+     * @return true if the value is acceptable for the variable
+     * @param <Entity_> generic type of the entity that the variable is defined on
+     * @param <Value_> generic type of the value that the variable can take
+     * @throws IllegalArgumentException if the value range is on an entity as opposed to a solution;
+     *         use {@link #isValueInRange(GenuineVariableMetaModel, Object, Object)} instead.
+     */
+    default <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @Nullable Value_ value) {
+        return isValueInRange(variableMetaModel, null, value);
+    }
+
+    /**
+     * Checks if a given value is present in the value range of a genuine planning variable.
+     *
+     * @param variableMetaModel variable in question
+     * @param entity entity that the value would be applied to;
+     *        must be of a type that the variable is defined on
+     * @param value value to check
+     * @return true if the value is acceptable for the variable
+     * @param <Entity_> generic type of the entity that the variable is defined on
+     * @param <Value_> generic type of the value that the variable can take
+     * @throws IllegalArgumentException if the value range is on an entity as opposed to a solution, and the entity is null
+     */
+    <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @Nullable Entity_ entity, @Nullable Value_ value);
 
 }
