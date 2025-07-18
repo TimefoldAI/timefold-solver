@@ -156,6 +156,9 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
             return new FromSolutionPropertyValueRangeDescriptor<>(this, addNullInValueRange, valueRangeProviderMemberAccessor);
         } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor)) {
+            if (isListVariable()) {
+                throw new IllegalStateException("Entity value ranges for list variables are not supported.");
+            }
             return new FromEntityPropertyValueRangeDescriptor<>(this, addNullInValueRange,
                     valueRangeProviderMemberAccessor);
         } else {
