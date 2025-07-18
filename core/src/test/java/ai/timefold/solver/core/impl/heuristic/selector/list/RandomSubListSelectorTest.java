@@ -9,7 +9,6 @@ import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListV
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.listSize;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntitySelector;
-import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockNeverEndingEntityIndependentValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
@@ -22,6 +21,7 @@ import java.util.List;
 
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
+import ai.timefold.solver.core.testdomain.list.TestdataListUtils;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
@@ -59,7 +59,7 @@ class RandomSubListSelectorTest {
 
         var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a, b),
-                mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
+                TestdataListUtils.mockNeverEndingIterableValueSelector(getListVariableDescriptor(scoreDirector), v1),
                 minimumSubListSize,
                 maximumSubListSize);
 
@@ -101,7 +101,7 @@ class RandomSubListSelectorTest {
 
         var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a, b),
-                mockNeverEndingEntityIndependentValueSelector(getPinnedListVariableDescriptor(scoreDirector), v1, v2),
+                TestdataListUtils.mockNeverEndingIterableValueSelector(getPinnedListVariableDescriptor(scoreDirector), v1, v2),
                 minimumSubListSize,
                 maximumSubListSize);
 
@@ -142,7 +142,8 @@ class RandomSubListSelectorTest {
 
         var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a, b),
-                mockNeverEndingEntityIndependentValueSelector(getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
+                TestdataListUtils.mockNeverEndingIterableValueSelector(
+                        getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
                         v1, v2, v3, v4),
                 minimumSubListSize,
                 maximumSubListSize);
@@ -181,7 +182,7 @@ class RandomSubListSelectorTest {
 
         var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a, b),
-                mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector), v1),
+                TestdataListUtils.mockNeverEndingIterableValueSelector(getListVariableDescriptor(scoreDirector), v1),
                 minimumSubListSize,
                 maximumSubListSize);
 
@@ -210,7 +211,7 @@ class RandomSubListSelectorTest {
 
         var selector = new RandomSubListSelector<>(
                 mockEntitySelector(a),
-                mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector)),
+                TestdataListUtils.mockNeverEndingIterableValueSelector(getListVariableDescriptor(scoreDirector)),
                 minimumSubListSize,
                 maximumSubListSize);
 
@@ -224,7 +225,7 @@ class RandomSubListSelectorTest {
         var scoreDirector = mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
 
         var entitySelector = mockEntitySelector(new TestdataListEntity[0]);
-        var valueSelector = mockNeverEndingEntityIndependentValueSelector(getListVariableDescriptor(scoreDirector));
+        var valueSelector = TestdataListUtils.mockNeverEndingIterableValueSelector(getListVariableDescriptor(scoreDirector));
 
         var minimumSubListSize = 1;
         var maximumSubListSize = Integer.MAX_VALUE;
@@ -255,7 +256,8 @@ class RandomSubListSelectorTest {
     void validateConstructorArguments() {
         var entitySelector = mockEntitySelector(new TestdataListEntity[0]);
         var valueSelector =
-                mockNeverEndingEntityIndependentValueSelector(TestdataListEntity.buildVariableDescriptorForValueList());
+                TestdataListUtils
+                        .mockNeverEndingIterableValueSelector(TestdataListEntity.buildVariableDescriptorForValueList());
 
         assertThatIllegalArgumentException().isThrownBy(() -> new RandomSubListSelector<>(
                 entitySelector, valueSelector, 0, 5))

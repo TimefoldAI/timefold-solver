@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
-import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntityIndependentValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntitySelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIterableValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.singletonList;
@@ -38,7 +38,7 @@ class OriginalListChangeIteratorTest {
                 mockScoreDirector(TestdataListSolution.buildSolutionDescriptor());
         ListVariableDescriptor<TestdataListSolution> listVariableDescriptor = getListVariableDescriptor(scoreDirector);
         IterableValueSelector<TestdataListSolution> valueSelector =
-                mockEntityIndependentValueSelector(listVariableDescriptor, values.toArray());
+                mockIterableValueSelector(listVariableDescriptor, values.toArray());
         OriginalListChangeIterator<TestdataListSolution> listChangeIterator = new OriginalListChangeIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 valueSelector,

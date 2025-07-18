@@ -41,7 +41,7 @@ class SortingValueSelectorTest {
     }
 
     public void runOriginalSelection(SelectionCacheType cacheType, int timesCalled) {
-        IterableValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
                 TestdataEntity.class, "value",
                 new TestdataValue("jan"), new TestdataValue("feb"), new TestdataValue("mar"),
                 new TestdataValue("apr"), new TestdataValue("may"), new TestdataValue("jun"));

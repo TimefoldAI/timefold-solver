@@ -13,7 +13,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -39,7 +39,7 @@ class ListAssignMoveTest {
     void setUp() {
         when(innerScoreDirector.getSolutionDescriptor())
                 .thenReturn(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
-        when(otherInnerScoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeResolver<>());
+        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
     }
 
     @Test

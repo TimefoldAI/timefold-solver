@@ -2,9 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
@@ -13,7 +10,6 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.AbstractFromConfigFactory;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.mimic.MimicRecordingSubListSelector;
@@ -48,7 +44,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                             .formatted(config, inheritedSelectionOrder));
         }
 
-        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
+        var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, inheritedSelectionOrder);
 
         var minimumSubListSize = Objects.requireNonNullElse(config.getMinimumSubListSize(), DEFAULT_MINIMUM_SUB_LIST_SIZE);
@@ -110,7 +106,7 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, subListSelector);
     }
 
-    private IterableValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildIterableValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy, EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
         ValueSelectorConfig valueSelectorConfig = config != null ? config.getValueSelectorConfig() : null;
@@ -126,20 +122,6 @@ public final class SubListSelectorFactory<Solution_> extends AbstractFromConfigF
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory
                 .<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder);
-        GenuineVariableDescriptor<Solution_> solutionGenuineVariableDescriptor = valueSelector.getVariableDescriptor();
-        if (!solutionGenuineVariableDescriptor.isListVariable()) {
-            throw new IllegalArgumentException(
-                    "The subListSelector (%s) can only be used when the domain model has a list variable. Check your @%s and make sure it has a @%s."
-                            .formatted(config, PlanningEntity.class.getSimpleName(),
-                                    PlanningListVariable.class.getSimpleName()));
-        }
-        if (!(valueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException(
-                    "The subListSelector (%s) for a list variable needs to be based on an %s (%s). Check your @%s annotations."
-                            .formatted(config, IterableValueSelector.class.getSimpleName(), valueSelector,
-                                    ValueRangeProvider.class.getSimpleName()));
-
-        }
         return (IterableValueSelector<Solution_>) valueSelector;
     }
 }

@@ -115,7 +115,7 @@ public final class FromEntitySortingValueSelector<Solution_>
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        FromEntitySortingValueSelector<?> that = (FromEntitySortingValueSelector<?>) other;
+        var that = (FromEntitySortingValueSelector<?>) other;
         return Objects.equals(childValueSelector, that.childValueSelector) && cacheType == that.cacheType
                 && Objects.equals(sorter, that.sorter);
     }

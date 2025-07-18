@@ -23,7 +23,7 @@ class SelectedCountLimitValueSelectorTest {
 
     @Test
     void selectSizeLimitLowerThanSelectorSize() {
-        IterableValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
                 TestdataValue.class, "value",
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"), new TestdataValue("v4"),
                 new TestdataValue("v5"));
@@ -83,7 +83,7 @@ class SelectedCountLimitValueSelectorTest {
 
     @Test
     void selectSizeLimitHigherThanSelectorSize() {
-        IterableValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
                 TestdataValue.class, "value",
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"));
         IterableValueSelector valueSelector = new SelectedCountLimitValueSelector(childValueSelector, 5L);

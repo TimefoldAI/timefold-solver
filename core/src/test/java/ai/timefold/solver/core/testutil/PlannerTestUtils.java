@@ -33,7 +33,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.trend.InitializingScoreTrend;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -130,13 +130,13 @@ public final class PlannerTestUtils {
         if (useSolution) {
             var mockedScoreDirector = mock(InnerScoreDirector.class,
                     AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
-            doReturn(new ValueRangeResolver<>()).when(mockedScoreDirector).getValueRangeResolver();
+            doReturn(new ValueRangeManager<>()).when(mockedScoreDirector).getValueRangeManager();
             return mockedScoreDirector;
         } else {
             var mockedScoreDirector = mock(InnerScoreDirector.class,
                     AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
             doReturn(InnerScore.fullyAssigned(SimpleScore.ZERO)).when(mockedScoreDirector).calculateScore();
-            doReturn(new ValueRangeResolver<>()).when(mockedScoreDirector).getValueRangeResolver();
+            doReturn(new ValueRangeManager<>()).when(mockedScoreDirector).getValueRangeManager();
             return mockedScoreDirector;
         }
     }

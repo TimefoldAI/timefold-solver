@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.domain.valuerange.cache;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 
@@ -20,19 +21,20 @@ import org.jspecify.annotations.NonNull;
 public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
     // The value and its index
-    private final Map<Value_, Integer> cache;
+    private final Set<Value_> cache;
     private final List<Value_> values;
 
-    public IdentityValueRangeCache(int size) {
-        cache = new IdentityHashMap<>(size);
-        values = new ArrayList<>(size);
+    public IdentityValueRangeCache(List<Value_> list) {
+        values = new ArrayList<>(list);
+        cache = Collections.newSetFromMap(new IdentityHashMap<>(list.size()));
+        cache.addAll(list);
     }
 
     @Override
     public void add(@NonNull Value_ value) {
-        if (!cache.containsKey(value)) {
+        if (!cache.contains(value)) {
             values.add(value);
-            cache.put(value, values.size() - 1);
+            cache.add(value);
         }
     }
 
@@ -46,7 +48,7 @@ public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStr
 
     @Override
     public boolean contains(@NonNull Value_ value) {
-        return cache.containsKey(value);
+        return cache.contains(value);
     }
 
     @Override

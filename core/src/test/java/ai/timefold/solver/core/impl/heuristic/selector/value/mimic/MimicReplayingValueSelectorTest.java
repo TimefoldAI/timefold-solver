@@ -24,7 +24,7 @@ class MimicReplayingValueSelectorTest {
 
     @Test
     void originalSelection() {
-        IterableValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
                 TestdataEntity.class, "value",
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"));
 

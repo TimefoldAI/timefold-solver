@@ -142,7 +142,7 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
 
     VariableDescriptorCache<Solution_> getVariableDescriptorCache();
 
-    ValueRangeResolver<Solution_> getValueRangeResolver();
+    ValueRangeManager<Solution_> getValueRangeManager();
 
     @Override
     default void beforeVariableChanged(Object entity, String variableName) {

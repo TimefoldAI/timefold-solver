@@ -47,9 +47,9 @@ public final class KOptListMoveSelectorFactory<Solution_>
             valueSelectorConfig.setVariableName(listVariableDescriptor.getVariableName());
         }
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
-        var originSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, originSelectorConfig,
+        var originSelector = buildIterableValueSelector(configPolicy, entityDescriptor, originSelectorConfig,
                 minimumCacheType, selectionOrder);
-        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
+        var valueSelector = buildIterableValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
                 minimumCacheType, selectionOrder);
 
         int minimumK = Objects.requireNonNullElse(config.getMinimumK(), DEFAULT_MINIMUM_K);
@@ -79,7 +79,7 @@ public final class KOptListMoveSelectorFactory<Solution_>
                 pickedKDistribution);
     }
 
-    private IterableValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildIterableValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor,
             ValueSelectorConfig valueSelectorConfig,

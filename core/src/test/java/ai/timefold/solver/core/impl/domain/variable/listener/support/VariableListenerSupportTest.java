@@ -27,7 +27,7 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInv
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -216,7 +216,7 @@ class VariableListenerSupportTest {
         var solutionDescriptor = TestdataConcurrentSolution.buildSolutionDescriptor();
         InnerScoreDirector<TestdataConcurrentSolution, HardSoftScore> scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        when(scoreDirector.getValueRangeResolver()).thenReturn(new ValueRangeResolver<>());
+        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
 
         AtomicReference<MockTopologicalOrderGraph> graphReference = new AtomicReference<>(null);
         var registry = new NotifiableRegistry<>(solutionDescriptor);

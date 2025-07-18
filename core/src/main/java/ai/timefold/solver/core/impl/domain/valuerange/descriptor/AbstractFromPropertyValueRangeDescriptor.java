@@ -15,8 +15,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentityListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.exception.EmptyRangeException;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
@@ -32,7 +32,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     // Field related to the generic type of the value range, e.g., List<String> -> String
     private final boolean isGenericTypeImmutable;
 
-    public AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
+    protected AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             boolean addNullInValueRange,
             MemberAccessor memberAccessor) {
         super(variableDescriptor, addNullInValueRange);
@@ -132,13 +132,16 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                                         list,
                                         PlanningVariable.class.getSimpleName()));
             }
-            valueRange = new ListValueRange<>(list, isGenericTypeImmutable);
+            valueRange = new ListValueRange<>(list);
+            if (!isGenericTypeImmutable) {
+                valueRange = new IdentityListValueRange<>((ListValueRange<Value_>) valueRange);
+            }
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }
         valueRange = doNullInValueRangeWrapping(valueRange);
         if (valueRange.isEmpty()) {
-            throw new EmptyRangeException("""
+            throw new IllegalStateException("""
                     The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
                     Maybe apply over-constrained planning as described in the documentation."""
                     .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));

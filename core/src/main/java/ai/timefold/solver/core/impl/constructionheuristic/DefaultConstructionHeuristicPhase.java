@@ -65,7 +65,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             // To prevent that, we need to limit the number of steps to the number of unassigned values.
             var workingSolution = phaseScope.getWorkingSolution();
             maxStepCount = solutionDescriptor.getListVariableDescriptor().countUnassigned(workingSolution,
-                    solverScope.getValueRangeResolver());
+                    solverScope.getValueRangeManager());
         }
 
         TerminationStatus earlyTerminationStatus = null;

@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.entity.FromEntityListValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.entity.AllEntitiesListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.cache.CacheableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
@@ -41,7 +41,7 @@ public class FromEntityPropertyValueRangeDescriptor<Solution_>
     public <T> ValueRange<T> extractValueRange(Solution_ solution, Object entity) {
         if (entity == null) {
             var entityList = variableDescriptor.getEntityDescriptor().extractEntities(solution);
-            var valueRange = new FromEntityListValueRange<T>(entityList, this);
+            var valueRange = new AllEntitiesListValueRange<T>(entityList, this);
             return doNullInValueRangeWrapping(valueRange);
         } else {
             return readValueRange(entity);

@@ -54,8 +54,8 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
     protected <Value_> ValueRange<Value_> extractValueRangeFromEntity(ScoreDirector<Solution_> scoreDirector,
             ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
         if (scoreDirector instanceof VariableDescriptorAwareScoreDirector<Solution_> variableDescriptorAwareScoreDirector) {
-            return variableDescriptorAwareScoreDirector.getValueRangeResolver()
-                    .extractValueRangeFromEntity(valueRangeDescriptor, entity);
+            return variableDescriptorAwareScoreDirector.getValueRangeManager()
+                    .getFromEntity(valueRangeDescriptor, entity);
         } else {
             return valueRangeDescriptor.extractValueRange(null, entity);
         }

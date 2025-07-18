@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
@@ -63,12 +62,6 @@ public final class SelectedCountLimitValueSelector<Solution_>
 
     @Override
     public long getSize() {
-        if (!(childValueSelector instanceof IterableValueSelector)) {
-            throw new IllegalArgumentException("To use the method getSize(), the moveSelector (" + this
-                    + ") needs to be based on an "
-                    + IterableValueSelector.class.getSimpleName() + " (" + childValueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-        }
         long childSize = ((IterableValueSelector<Solution_>) childValueSelector).getSize();
         return Math.min(selectedCountLimit, childSize);
     }

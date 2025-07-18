@@ -128,14 +128,14 @@ public class SelectorTestUtils {
         return valueSelector;
     }
 
-    public static <Solution_> IterableValueSelector<Solution_> mockEntityIndependentValueSelector(
+    public static <Solution_> IterableValueSelector<Solution_> mockIterableValueSelector(
             Class<?> entityClass, String variableName, Object... values) {
         GenuineVariableDescriptor<Solution_> variableDescriptor = mockVariableDescriptor(entityClass, variableName);
         when(variableDescriptor.canExtractValueRangeFromSolution()).thenReturn(true);
-        return mockEntityIndependentValueSelector(variableDescriptor, values);
+        return mockIterableValueSelector(variableDescriptor, values);
     }
 
-    public static <Solution_> IterableValueSelector<Solution_> mockEntityIndependentValueSelector(
+    public static <Solution_> IterableValueSelector<Solution_> mockIterableValueSelector(
             GenuineVariableDescriptor<Solution_> variableDescriptor, Object... values) {
         IterableValueSelector<Solution_> valueSelector = mock(IterableValueSelector.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
@@ -260,7 +260,7 @@ public class SelectorTestUtils {
         solverScope.setWorkingRandom(random);
         listener.solvingStarted(solverScope);
         if (scoreDirector != null) {
-            solverScope.setValueRangeResolver(scoreDirector.getValueRangeResolver());
+            solverScope.setValueRangeManager(scoreDirector.getValueRangeManager());
         }
         if (valueSelector != null) {
             valueSelector.solvingStarted(solverScope);

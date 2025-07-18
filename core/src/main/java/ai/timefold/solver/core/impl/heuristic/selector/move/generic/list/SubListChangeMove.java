@@ -10,7 +10,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -83,22 +83,21 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
         if (sameEntity && destinationIndex == sourceIndex) {
             return false;
         }
-        var firstPass = !sameEntity || destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
-        var secondPass = true;
+        var doable = !sameEntity || destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
+        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
         // When the first and second elements are different,
         // and the value range is located at the entity,
         // we need to check if the destination's value range accepts the upcoming values
-        if (firstPass && !sameEntity && !variableDescriptor.canExtractValueRangeFromSolution()) {
-            ValueRangeResolver<Solution_> valueRangeResolver =
-                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
-            var destinationValueRange =
-                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(),
-                            destinationEntity);
-            var sourceList = variableDescriptor.getValue(sourceEntity);
-            var subList = sourceList.subList(sourceIndex, sourceIndex + length);
-            secondPass = subList.stream().allMatch(destinationValueRange::contains);
-        }
-        return firstPass && secondPass;
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        var destinationValueRange =
+                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                        destinationEntity);
+        var sourceList = variableDescriptor.getValue(sourceEntity);
+        var subList = sourceList.subList(sourceIndex, sourceIndex + length);
+        return subList.stream().allMatch(destinationValueRange::contains);
     }
 
     @Override

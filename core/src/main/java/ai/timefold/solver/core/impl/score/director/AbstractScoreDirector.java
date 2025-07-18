@@ -82,7 +82,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
 
-    private final ValueRangeResolver<Solution_> valueRangeResolver;
+    private final ValueRangeManager<Solution_> valueRangeManager;
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
@@ -102,7 +102,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
-        this.valueRangeResolver = Objects.requireNonNull(builder.valueRangeResolver);
+        this.valueRangeManager = Objects.requireNonNull(builder.valueRangeManager);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -198,8 +198,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public ValueRangeResolver<Solution_> getValueRangeResolver() {
-        return valueRangeResolver;
+    public ValueRangeManager<Solution_> getValueRangeManager() {
+        return valueRangeManager;
     }
 
     @Override
@@ -245,11 +245,10 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
-        valueRangeResolver.reset(workingSolution);
+        valueRangeManager.reset(workingSolution);
         // This visits all the entities.
         var initializationStatistics =
-                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeResolver);
-        valueRangeResolver.resize(initializationStatistics.genuineEntityCount());
+                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeManager);
         setWorkingEntityListDirty();
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
@@ -442,7 +441,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             setWorkingEntityListDirty();
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
-            valueRangeResolver.reset(null);
+            valueRangeManager.reset(null);
         }
     }
 
@@ -542,7 +541,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             setWorkingEntityListDirty();
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
-            valueRangeResolver.reset(null);
+            valueRangeManager.reset(null);
         }
     }
 
@@ -703,7 +702,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .withValueRangeResolver(valueRangeResolver)
+                .withValueRangeManager(valueRangeManager)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
@@ -989,7 +988,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         protected final Factory_ scoreDirectorFactory;
 
         // May be replaced by a shared state coming from the solver.
-        protected ValueRangeResolver<Solution_> valueRangeResolver = new ValueRangeResolver<>();
+        protected ValueRangeManager<Solution_> valueRangeManager = new ValueRangeManager<>();
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
@@ -999,8 +998,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
 
         @SuppressWarnings("unchecked")
-        public Builder_ withValueRangeResolver(ValueRangeResolver<Solution_> valueRangeResolver) {
-            this.valueRangeResolver = Objects.requireNonNull(valueRangeResolver);
+        public Builder_ withValueRangeManager(ValueRangeManager<Solution_> valueRangeManager) {
+            this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
             return (Builder_) this;
         }
 

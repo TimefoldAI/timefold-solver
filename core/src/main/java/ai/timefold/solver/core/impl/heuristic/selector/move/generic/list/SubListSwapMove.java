@@ -11,7 +11,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
-import ai.timefold.solver.core.impl.score.director.ValueRangeResolver;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -73,26 +73,25 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
         // If both subLists are on the same entity, then they must not overlap.
-        var firstPass = leftSubList.entity() != rightSubList.entity() || rightFromIndex >= leftToIndex;
-        var secondPass = true;
+        var doable = leftSubList.entity() != rightSubList.entity() || rightFromIndex >= leftToIndex;
+        if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
         // When the left and right elements are different,
         // and the value range is located at the entity,
         // we need to check if the destination's value range accepts the upcoming values
-        if (firstPass && !variableDescriptor.canExtractValueRangeFromSolution()) {
-            ValueRangeResolver<Solution_> valueRangeResolver =
-                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeResolver();
-            var leftEntity = leftSubList.entity();
-            var leftList = subList(leftSubList);
-            var leftValueRange =
-                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
-            var rightEntity = rightSubList.entity();
-            var rightList = subList(rightSubList);
-            var rightValueRange =
-                    valueRangeResolver.extractValueRangeFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
-            secondPass = leftList.stream().allMatch(rightValueRange::contains)
-                    && rightList.stream().allMatch(leftValueRange::contains);
-        }
-        return firstPass && secondPass;
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        var leftEntity = leftSubList.entity();
+        var leftList = subList(leftSubList);
+        var leftValueRange =
+                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
+        var rightEntity = rightSubList.entity();
+        var rightList = subList(rightSubList);
+        var rightValueRange =
+                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
+        return leftList.stream().allMatch(rightValueRange::contains)
+                && rightList.stream().allMatch(leftValueRange::contains);
     }
 
     @Override

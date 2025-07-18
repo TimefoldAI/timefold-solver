@@ -19,11 +19,11 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 
 import org.junit.jupiter.api.Test;
 
-class EntityIndependentFilteringValueSelectorTest {
+class IterableFilteringValueSelectorTest {
 
     @Test
-    void filterEntityIndependent() {
-        IterableValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+    void filter() {
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
                 TestdataEntity.class, "value",
                 new TestdataValue("v1"), new TestdataValue("v2"), new TestdataValue("v3"), new TestdataValue("v4"));
 

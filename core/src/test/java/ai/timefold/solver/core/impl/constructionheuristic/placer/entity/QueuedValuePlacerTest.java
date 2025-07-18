@@ -39,7 +39,7 @@ class QueuedValuePlacerTest {
         EntitySelector<TestdataSolution> entitySelector =
                 SelectorTestUtils.mockEntitySelector(variableDescriptor.getEntityDescriptor(),
                         new TestdataEntity("a"), new TestdataEntity("b"), new TestdataEntity("c"));
-        IterableValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockIterableValueSelector(
                 variableDescriptor,
                 new TestdataValue("1"), new TestdataValue("2"));
         MimicRecordingValueSelector<TestdataSolution> recordingValueSelector =
@@ -108,7 +108,7 @@ class QueuedValuePlacerTest {
         EntitySelector<TestdataSolution> entitySelector =
                 SelectorTestUtils.mockEntitySelector(variableDescriptor.getEntityDescriptor(),
                         new TestdataEntity("a"), new TestdataEntity("b"), new TestdataEntity("c"));
-        IterableValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector<TestdataSolution> valueSelector = SelectorTestUtils.mockIterableValueSelector(
                 variableDescriptor,
                 new TestdataValue("1"), new TestdataValue("2"));
         MimicRecordingValueSelector<TestdataSolution> recordingValueSelector =

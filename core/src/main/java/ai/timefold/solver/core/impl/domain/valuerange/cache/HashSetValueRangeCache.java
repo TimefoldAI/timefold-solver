@@ -24,6 +24,11 @@ public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStra
         values = new ArrayList<>(size);
     }
 
+    public HashSetValueRangeCache(List<Value_> list) {
+        values = new ArrayList<>(list);
+        cache = new HashSet<>(list);
+    }
+
     @Override
     public void add(@NonNull Value_ value) {
         if (cache.add(value)) {
