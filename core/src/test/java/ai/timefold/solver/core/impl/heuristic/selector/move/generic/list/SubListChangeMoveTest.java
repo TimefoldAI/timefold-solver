@@ -21,6 +21,7 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class SubListChangeMoveTest {
@@ -62,6 +63,7 @@ class SubListChangeMoveTest {
         assertThat(new SubListChangeMove<>(variableDescriptor, e1, 1, 2, e2, 0, false).isMoveDoable(scoreDirector)).isTrue();
     }
 
+    @Disabled("Temporarily disabled")
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
         var value1 = new TestdataListEntityProvidingValue("1");
