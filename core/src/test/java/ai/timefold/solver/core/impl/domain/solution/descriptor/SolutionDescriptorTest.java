@@ -446,13 +446,11 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeManager)).isEqualTo(0);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeManager)).isEqualTo(0);
+            softly.assertThat(solutionDescriptor.getProblemScale(solution, valueRangeManager))
+                    .isEqualTo(0);
         });
-        assertThatCode(() -> solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeManager))
-                .hasMessageContaining("must not return an empty valueRange ([])");
-        assertThatCode(() -> solutionDescriptor.getApproximateValueCount(solution, valueRangeManager))
-                .hasMessageContaining("must not return an empty valueRange ([])");
-        assertThatCode(() -> solutionDescriptor.getProblemScale(solution, valueRangeManager))
-                .hasMessageContaining("must not return an empty valueRange ([])");
     }
 
     @Test

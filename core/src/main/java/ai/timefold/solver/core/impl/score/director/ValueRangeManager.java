@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.exception.EmptyRangeException;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -62,32 +63,52 @@ public final class ValueRangeManager<Solution_> {
     public long countOnSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             @NonNull Solution_ solution) {
         // We rely on the value range to fetch the size
-        var valueRange = getFromSolution(valueRangeDescriptor, solution);
-        if (valueRange instanceof CountableValueRange<?> countableValueRange) {
-            return countableValueRange.getSize();
-        } else {
-            // It is not countable, and we need to call the descriptor specifically
-            var size = valueRangeDescriptor.extractValueRangeSize(Objects.requireNonNull(solution), null);
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
-                size++;
+        try {
+            var valueRange = getFromSolution(valueRangeDescriptor, solution);
+            if (valueRange instanceof CountableValueRange<?> countableValueRange) {
+                return countableValueRange.getSize();
+            } else {
+                // It is not countable, and we need to call the descriptor specifically
+                var size = valueRangeDescriptor.extractValueRangeSize(Objects.requireNonNull(solution), null);
+                if (valueRangeDescriptor.acceptNullInValueRange()) {
+                    size++;
+                }
+                return size;
             }
-            return size;
+        } catch (EmptyRangeException e) {
+            // Attempting to retrieve a range from an empty value list will result in an EmptyRangeException,
+            // while fetching only the size will return zero.
+            // Throwing exceptions is costly,
+            // so a special empty value range is added to avoid future exceptions.
+            //            fromSolutionMap.put(valueRangeDescriptor, new EmptyValueRange<>());
+            return 0;
         }
     }
 
     public long countOnEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, @NonNull Object entity) {
         // We rely on the value range to fetch the size
-        var valueRange = getFromEntity(valueRangeDescriptor, entity);
-        if (valueRange instanceof CountableValueRange<?> countableValueRange) {
-            return countableValueRange.getSize();
-        } else {
-            // It is not countable, and we need to call the descriptor specifically
-            var size = valueRangeDescriptor.extractValueRangeSize(null, Objects.requireNonNull(entity));
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
-                size++;
+        try {
+            var valueRange = getFromEntity(valueRangeDescriptor, entity);
+            if (valueRange instanceof CountableValueRange<?> countableValueRange) {
+                return countableValueRange.getSize();
+            } else {
+                // It is not countable, and we need to call the descriptor specifically
+                var size = valueRangeDescriptor.extractValueRangeSize(null, Objects.requireNonNull(entity));
+                if (valueRangeDescriptor.acceptNullInValueRange()) {
+                    size++;
+                }
+                return size;
             }
-            return size;
+        } catch (EmptyRangeException e) {
+            // Attempting to retrieve a range from an empty value list will result in an EmptyRangeException,
+            // while fetching only the size will return zero.
+            // Throwing exceptions is costly,
+            // so a special empty value range is added to avoid future exceptions for the entity.
+            //            var valueRangeMap = fromEntityMap.computeIfAbsent(entity, param -> new IdentityHashMap<>());
+            //            valueRangeMap.put(valueRangeDescriptor, new EmptyValueRange<>());
+            return 0;
         }
+
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
