@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding;
+package ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -15,42 +15,42 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningSolution
-public class TestdataEntityProvidingSolution extends TestdataObject {
+public class TestdataAllowsUnassignedEntityProvidingSolution extends TestdataObject {
 
-    public static SolutionDescriptor<TestdataEntityProvidingSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataEntityProvidingSolution.class,
-                TestdataEntityProvidingEntity.class);
+    public static SolutionDescriptor<TestdataAllowsUnassignedEntityProvidingSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataAllowsUnassignedEntityProvidingSolution.class,
+                TestdataAllowsUnassignedEntityProvidingEntity.class);
     }
 
-    public static TestdataEntityProvidingSolution generateSolution() {
-        var solution = new TestdataEntityProvidingSolution("s1");
+    public static TestdataAllowsUnassignedEntityProvidingSolution generateSolution() {
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
         var value1 = new TestdataValue("v1");
         var value2 = new TestdataValue("v2");
         var value3 = new TestdataValue("v3");
-        var entity1 = new TestdataEntityProvidingEntity("e1", List.of(value1, value2));
-        var entity2 = new TestdataEntityProvidingEntity("e2", List.of(value1, value3));
+        var entity1 = new TestdataAllowsUnassignedEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataAllowsUnassignedEntityProvidingEntity("e2", List.of(value1, value3));
         solution.setEntityList(List.of(entity1, entity2));
         return solution;
     }
 
-    private List<TestdataEntityProvidingEntity> entityList;
+    private List<TestdataAllowsUnassignedEntityProvidingEntity> entityList;
 
     private SimpleScore score;
 
-    public TestdataEntityProvidingSolution() {
+    public TestdataAllowsUnassignedEntityProvidingSolution() {
         // Required for cloning
     }
 
-    public TestdataEntityProvidingSolution(String code) {
+    public TestdataAllowsUnassignedEntityProvidingSolution(String code) {
         super(code);
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataEntityProvidingEntity> getEntityList() {
+    public List<TestdataAllowsUnassignedEntityProvidingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataEntityProvidingEntity> entityList) {
+    public void setEntityList(List<TestdataAllowsUnassignedEntityProvidingEntity> entityList) {
         this.entityList = entityList;
     }
 
@@ -70,7 +70,7 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
     @ProblemFactCollectionProperty
     public Collection<TestdataValue> getProblemFacts() {
         Set<TestdataValue> valueSet = new HashSet<>();
-        for (TestdataEntityProvidingEntity entity : entityList) {
+        for (TestdataAllowsUnassignedEntityProvidingEntity entity : entityList) {
             valueSet.addAll(entity.getValueRange());
         }
         return valueSet;

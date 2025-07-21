@@ -30,11 +30,7 @@ public abstract class AbstractCountableValueRange<T> implements CacheableValueRa
     @Override
     public @NonNull ValueRangeCacheStrategy<T> generateCache() {
         var cacheStrategy = new HashSetValueRangeCache<T>((int) getSize());
-        createOriginalIterator().forEachRemaining(value -> {
-            if (value != null) {
-                cacheStrategy.add(value);
-            }
-        });
+        createOriginalIterator().forEachRemaining(cacheStrategy::add);
         return cacheStrategy;
     }
 

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding;
+package ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar;
 
 import java.util.List;
 
@@ -11,14 +11,14 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity
-public class TestdataEntityProvidingEntity extends TestdataObject {
+public class TestdataAllowsUnassignedEntityProvidingEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataEntityProvidingSolution> buildEntityDescriptor() {
-        return TestdataEntityProvidingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataEntityProvidingEntity.class);
+    public static EntityDescriptor<TestdataAllowsUnassignedEntityProvidingSolution> buildEntityDescriptor() {
+        return TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataAllowsUnassignedEntityProvidingEntity.class);
     }
 
-    public static GenuineVariableDescriptor<TestdataEntityProvidingSolution> buildVariableDescriptorForValue() {
+    public static GenuineVariableDescriptor<TestdataAllowsUnassignedEntityProvidingSolution> buildVariableDescriptorForValue() {
         return buildEntityDescriptor().getGenuineVariableDescriptor("value");
     }
 
@@ -26,21 +26,21 @@ public class TestdataEntityProvidingEntity extends TestdataObject {
 
     private TestdataValue value;
 
-    public TestdataEntityProvidingEntity() {
+    public TestdataAllowsUnassignedEntityProvidingEntity() {
         // Required for cloning
     }
 
-    public TestdataEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
+    public TestdataAllowsUnassignedEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
         this(code, valueRange, null);
     }
 
-    public TestdataEntityProvidingEntity(String code, List<TestdataValue> valueRange, TestdataValue value) {
+    public TestdataAllowsUnassignedEntityProvidingEntity(String code, List<TestdataValue> valueRange, TestdataValue value) {
         super(code);
         this.valueRange = valueRange;
         this.value = value;
     }
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", allowsUnassigned = true)
     public TestdataValue getValue() {
         return value;
     }

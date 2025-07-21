@@ -16,8 +16,8 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,13 +31,13 @@ class PillarChangeMoveTest {
         var v4 = new TestdataValue("4");
         var v5 = new TestdataValue("5");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
-        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
 
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
-        var variableDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
+        ScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
+        var variableDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue();
 
-        PillarChangeMove<TestdataEntityProvidingSolution> abMove;
+        PillarChangeMove<TestdataAllowsUnassignedEntityProvidingSolution> abMove;
         a.setValue(v2);
         b.setValue(v2);
         abMove = new PillarChangeMove<>(Arrays.asList(a, b), variableDescriptor, v1);
@@ -64,14 +64,16 @@ class PillarChangeMoveTest {
         var v4 = new TestdataValue("4");
         var v5 = new TestdataValue("5");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
-        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
-        var c = new TestdataEntityProvidingEntity("c", Arrays.asList(v3, v4, v5), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
+        var c = new TestdataAllowsUnassignedEntityProvidingEntity("c", Arrays.asList(v3, v4, v5), null);
 
-        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
-                solution -> SimpleScore.ZERO);
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = scoreDirectorFactory.buildScoreDirector();
-        var variableDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
+        var scoreDirectorFactory =
+                new EasyScoreDirectorFactory<>(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor(),
+                        solution -> SimpleScore.ZERO);
+        ScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution> scoreDirector =
+                scoreDirectorFactory.buildScoreDirector();
+        var variableDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue();
 
         var abMove = new PillarChangeMove<>(Arrays.asList(a, b), variableDescriptor, v2);
 

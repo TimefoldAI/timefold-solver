@@ -25,11 +25,7 @@ public sealed interface ValueRangeCacheStrategy<Value_> permits HashSetValueRang
      * by combining the current cache instance with the one passed as an argument.
      */
     default void merge(@NonNull CountableValueRange<Value_> otherCache) {
-        otherCache.createOriginalIterator().forEachRemaining(value -> {
-            if (value != null) {
-                this.add(value);
-            }
-        });
+        otherCache.createOriginalIterator().forEachRemaining(this::add);
     }
 
 }

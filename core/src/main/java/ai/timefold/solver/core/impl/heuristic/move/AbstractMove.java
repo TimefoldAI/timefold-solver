@@ -6,8 +6,10 @@ import java.util.List;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
@@ -57,7 +59,14 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
             return variableDescriptorAwareScoreDirector.getValueRangeManager()
                     .getFromEntity(valueRangeDescriptor, entity);
         } else {
-            return valueRangeDescriptor.extractValueRange(null, entity);
+            var valueRange = valueRangeDescriptor.<Value_> extractValueRange(null, entity);
+            if (valueRange instanceof CountableValueRange<Value_> countableValueRange
+                    && valueRangeDescriptor.acceptNullInValueRange()) {
+                // Not accessible from the value range manager,
+                // the null check must be evaluated
+                valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
+            }
+            return valueRange;
         }
     }
 

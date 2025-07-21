@@ -15,8 +15,8 @@ public class FromEntityPropertyValueRangeDescriptor<Solution_>
         implements IterableValueRangeDescriptor<Solution_> {
 
     public FromEntityPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean addNullInValueRange, MemberAccessor memberAccessor) {
-        super(variableDescriptor, addNullInValueRange, memberAccessor);
+            boolean acceptNullInValueRange, MemberAccessor memberAccessor) {
+        super(variableDescriptor, acceptNullInValueRange, memberAccessor);
     }
 
     @Override
@@ -41,8 +41,7 @@ public class FromEntityPropertyValueRangeDescriptor<Solution_>
     public <T> ValueRange<T> extractValueRange(Solution_ solution, Object entity) {
         if (entity == null) {
             var entityList = variableDescriptor.getEntityDescriptor().extractEntities(solution);
-            var valueRange = new AllEntitiesListValueRange<T>(entityList, this);
-            return doNullInValueRangeWrapping(valueRange);
+            return new AllEntitiesListValueRange<>(entityList, this);
         } else {
             return readValueRange(entity);
         }

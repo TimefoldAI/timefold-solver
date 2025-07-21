@@ -19,9 +19,9 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     protected final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
 
     public CompositeValueRangeDescriptor(
-            GenuineVariableDescriptor<Solution_> variableDescriptor, boolean addNullInValueRange,
+            GenuineVariableDescriptor<Solution_> variableDescriptor, boolean acceptNullInValueRange,
             List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
-        super(variableDescriptor, addNullInValueRange);
+        super(variableDescriptor, acceptNullInValueRange);
         this.childValueRangeDescriptorList = childValueRangeDescriptorList;
         var canExtractFromSolution = true;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
@@ -57,7 +57,7 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             childValueRangeList.add((CountableValueRange<T>) valueRangeDescriptor.<T> extractValueRange(solution, entity));
         }
-        return doNullInValueRangeWrapping(new CompositeCountableValueRange<>(childValueRangeList));
+        return new CompositeCountableValueRange<>(childValueRangeList);
     }
 
     @Override
@@ -72,12 +72,12 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
             childValueRangeList
                     .add((CountableValueRange<T>) iterableValueRangeDescriptor.<T> extractValueRange(solution));
         }
-        return doNullInValueRangeWrapping(new CompositeCountableValueRange<>(childValueRangeList));
+        return new CompositeCountableValueRange<>(childValueRangeList);
     }
 
     @Override
     public long extractValueRangeSize(Solution_ solution, Object entity) {
-        var size = addNullInValueRange ? 1L : 0L;
+        var size = 0L;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             size += ((CountableValueRange<Object>) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
         }
@@ -86,7 +86,7 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
 
     @Override
     public long extractValueRangeSize(Solution_ solution) {
-        var size = addNullInValueRange ? 1L : 0L;
+        var size = 0L;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             var iterableValueRangeDescriptor = (IterableValueRangeDescriptor<Solution_>) valueRangeDescriptor;
             size += ((CountableValueRange<Object>) iterableValueRangeDescriptor.extractValueRange(solution)).getSize();

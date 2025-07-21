@@ -6,11 +6,23 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity
 public class TestdataListUnassignedEntityProvidingEntity extends TestdataObject {
+
+    public static EntityDescriptor<TestdataListUnassignedEntityProvidingSolution> buildEntityDescriptor() {
+        return TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataListUnassignedEntityProvidingEntity.class);
+    }
+
+    public static ListVariableDescriptor<TestdataListUnassignedEntityProvidingSolution> buildVariableDescriptorForValueList() {
+        return (ListVariableDescriptor<TestdataListUnassignedEntityProvidingSolution>) buildEntityDescriptor()
+                .getGenuineVariableDescriptor("valueList");
+    }
 
     @ValueRangeProvider(id = "valueRange")
     private final List<TestdataValue> valueRange;
@@ -18,7 +30,6 @@ public class TestdataListUnassignedEntityProvidingEntity extends TestdataObject 
     private List<TestdataValue> valueList;
 
     public TestdataListUnassignedEntityProvidingEntity() {
-        // Required for cloning
         valueRange = new ArrayList<>();
         valueList = new ArrayList<>();
     }

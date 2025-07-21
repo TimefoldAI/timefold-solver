@@ -74,18 +74,31 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         }
         var valueRangeDescriptorList =
                 new ArrayList<ValueRangeDescriptor<Solution_>>(valueRangeProviderMemberAccessors.length);
-        var addNullInValueRange =
+        // Only the basic variables are evaluated
+        // because null values are not allowed for value ranges of list variables,
+        // or it will cause a NPE.
+        // The move selectors for list variables use a different strategy
+        // to unassign a planning value than basic variables,
+        // where setting it to null is enough.
+        // For example, the class `ElementPositionRandomIterator`
+        // contains logic to select a destination
+        // after choosing a planning value from a specified range in list change moves.
+        // The destination may involve unassigning the planning value from its current entity,
+        // but the selected planning value must not be null.
+        // Therefore, only the basic variables will be checked,
+        // and list variables cannot accept null values in their value ranges.
+        var acceptNullInValueRange =
                 this instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
                         && basicVariableDescriptor.allowsUnassigned()
                         && valueRangeProviderMemberAccessors.length == 1;
         for (var valueRangeProviderMemberAccessor : valueRangeProviderMemberAccessors) {
             valueRangeDescriptorList
-                    .add(buildValueRangeDescriptor(descriptorPolicy, valueRangeProviderMemberAccessor, addNullInValueRange));
+                    .add(buildValueRangeDescriptor(descriptorPolicy, valueRangeProviderMemberAccessor, acceptNullInValueRange));
         }
         if (valueRangeDescriptorList.size() == 1) {
             valueRangeDescriptor = valueRangeDescriptorList.get(0);
         } else {
-            valueRangeDescriptor = new CompositeValueRangeDescriptor<>(this, addNullInValueRange, valueRangeDescriptorList);
+            valueRangeDescriptor = new CompositeValueRangeDescriptor<>(this, acceptNullInValueRange, valueRangeDescriptorList);
         }
     }
 
@@ -152,14 +165,15 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     }
 
     private ValueRangeDescriptor<Solution_> buildValueRangeDescriptor(DescriptorPolicy descriptorPolicy,
-            MemberAccessor valueRangeProviderMemberAccessor, boolean addNullInValueRange) {
+            MemberAccessor valueRangeProviderMemberAccessor, boolean acceptNullInValueRange) {
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            return new FromSolutionPropertyValueRangeDescriptor<>(this, addNullInValueRange, valueRangeProviderMemberAccessor);
+            return new FromSolutionPropertyValueRangeDescriptor<>(this, acceptNullInValueRange,
+                    valueRangeProviderMemberAccessor);
         } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor)) {
             if (isListVariable()) {
                 throw new IllegalStateException("Entity value ranges for list variables are not supported.");
             }
-            return new FromEntityPropertyValueRangeDescriptor<>(this, addNullInValueRange,
+            return new FromEntityPropertyValueRangeDescriptor<>(this, acceptNullInValueRange,
                     valueRangeProviderMemberAccessor);
         } else {
             throw new IllegalStateException("Impossible state: member accessor (" + valueRangeProviderMemberAccessor

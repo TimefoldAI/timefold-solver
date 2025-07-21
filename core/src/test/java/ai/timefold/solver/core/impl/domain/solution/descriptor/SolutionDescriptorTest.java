@@ -68,8 +68,8 @@ import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnk
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnsupportedWildcardSolution;
 import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeEntity;
 import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.CodeAssertableArrayList;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
@@ -477,16 +477,16 @@ class SolutionDescriptorTest {
 
     @Test
     void basicVariableProblemScaleEntityProvidingValueRange() {
-        var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
-        var solution = new TestdataEntityProvidingSolution("Solution");
+        var solutionDescriptor = TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor();
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("Solution");
         var v1 = new TestdataValue("1");
         var v2 = new TestdataValue("2");
         solution.setEntityList(List.of(
-                new TestdataEntityProvidingEntity("A",
+                new TestdataAllowsUnassignedEntityProvidingEntity("A",
                         List.of(v1, v2)),
-                new TestdataEntityProvidingEntity("B",
+                new TestdataAllowsUnassignedEntityProvidingEntity("B",
                         List.of(v1, v2, new TestdataValue("3")))));
-        var valueRangeManager = new ValueRangeManager<TestdataEntityProvidingSolution>();
+        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
@@ -521,12 +521,12 @@ class SolutionDescriptorTest {
 
     @Test
     void problemScaleSingleEntityProvidingSingleValueRange() {
-        var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
-        var solution = new TestdataEntityProvidingSolution("Solution");
-        var valueRangeManager = new ValueRangeManager<TestdataEntityProvidingSolution>();
+        var solutionDescriptor = TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor();
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("Solution");
+        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
         var v1 = new TestdataValue("1");
         solution.setEntityList(List.of(
-                new TestdataEntityProvidingEntity("A",
+                new TestdataAllowsUnassignedEntityProvidingEntity("A",
                         List.of(v1))));
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(1L);

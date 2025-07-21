@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding;
+package ai.timefold.solver.core.testdomain.valuerange.entityproviding.composite;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -15,42 +15,44 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningSolution
-public class TestdataEntityProvidingSolution extends TestdataObject {
+public class TestdataCompositeEntityProvidingSolution extends TestdataObject {
 
-    public static SolutionDescriptor<TestdataEntityProvidingSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataEntityProvidingSolution.class,
-                TestdataEntityProvidingEntity.class);
+    public static SolutionDescriptor<TestdataCompositeEntityProvidingSolution> buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataCompositeEntityProvidingSolution.class,
+                TestdataCompositeEntityProvidingEntity.class);
     }
 
-    public static TestdataEntityProvidingSolution generateSolution() {
-        var solution = new TestdataEntityProvidingSolution("s1");
+    public static TestdataCompositeEntityProvidingSolution generateSolution() {
+        var solution = new TestdataCompositeEntityProvidingSolution("s1");
         var value1 = new TestdataValue("v1");
         var value2 = new TestdataValue("v2");
         var value3 = new TestdataValue("v3");
-        var entity1 = new TestdataEntityProvidingEntity("e1", List.of(value1, value2));
-        var entity2 = new TestdataEntityProvidingEntity("e2", List.of(value1, value3));
+        var value4 = new TestdataValue("v4");
+        var value5 = new TestdataValue("v5");
+        var entity1 = new TestdataCompositeEntityProvidingEntity("e1", List.of(value1, value2), List.of(value1, value4));
+        var entity2 = new TestdataCompositeEntityProvidingEntity("e2", List.of(value1, value3), List.of(value1, value5));
         solution.setEntityList(List.of(entity1, entity2));
         return solution;
     }
 
-    private List<TestdataEntityProvidingEntity> entityList;
+    private List<TestdataCompositeEntityProvidingEntity> entityList;
 
     private SimpleScore score;
 
-    public TestdataEntityProvidingSolution() {
+    public TestdataCompositeEntityProvidingSolution() {
         // Required for cloning
     }
 
-    public TestdataEntityProvidingSolution(String code) {
+    public TestdataCompositeEntityProvidingSolution(String code) {
         super(code);
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataEntityProvidingEntity> getEntityList() {
+    public List<TestdataCompositeEntityProvidingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataEntityProvidingEntity> entityList) {
+    public void setEntityList(List<TestdataCompositeEntityProvidingEntity> entityList) {
         this.entityList = entityList;
     }
 
@@ -70,8 +72,9 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
     @ProblemFactCollectionProperty
     public Collection<TestdataValue> getProblemFacts() {
         Set<TestdataValue> valueSet = new HashSet<>();
-        for (TestdataEntityProvidingEntity entity : entityList) {
-            valueSet.addAll(entity.getValueRange());
+        for (TestdataCompositeEntityProvidingEntity entity : entityList) {
+            valueSet.addAll(entity.getValueRange1());
+            valueSet.addAll(entity.getValueRange2());
         }
         return valueSet;
     }

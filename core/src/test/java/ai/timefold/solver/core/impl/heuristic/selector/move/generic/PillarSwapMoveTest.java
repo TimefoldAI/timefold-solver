@@ -15,8 +15,8 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,13 +30,14 @@ class PillarSwapMoveTest {
         var v4 = new TestdataValue("4");
         var v5 = new TestdataValue("5");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
-        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
-        var c = new TestdataEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
-        var z = new TestdataEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
+        var c = new TestdataAllowsUnassignedEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
+        var z = new TestdataAllowsUnassignedEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
 
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
-        var variableDescriptorList = TestdataEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
+        ScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
+        var variableDescriptorList =
+                TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
 
         var abMove = new PillarSwapMove<>(variableDescriptorList, Arrays.asList(a), Arrays.asList(b));
         a.setValue(v1);
@@ -111,15 +112,17 @@ class PillarSwapMoveTest {
         var v4 = new TestdataValue("4");
         var v5 = new TestdataValue("5");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3, v4), null);
-        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
-        var c = new TestdataEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
-        var z = new TestdataEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3, v4), null);
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
+        var c = new TestdataAllowsUnassignedEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
+        var z = new TestdataAllowsUnassignedEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
 
-        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
-                solution -> SimpleScore.ZERO);
+        var scoreDirectorFactory =
+                new EasyScoreDirectorFactory<>(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor(),
+                        solution -> SimpleScore.ZERO);
         var scoreDirector = scoreDirectorFactory.buildScoreDirector();
-        var variableDescriptorList = TestdataEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
+        var variableDescriptorList =
+                TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
 
         var abMove = new PillarSwapMove<>(variableDescriptorList, Arrays.asList(a), Arrays.asList(b));
 

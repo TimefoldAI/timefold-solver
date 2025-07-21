@@ -1,15 +1,15 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding;
+package ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataEntityProvidingScoreCalculator
-        implements EasyScoreCalculator<TestdataEntityProvidingSolution, SimpleScore> {
+public class TestdataAllowsUnassignedEntityProvidingScoreCalculator
+        implements EasyScoreCalculator<TestdataAllowsUnassignedEntityProvidingSolution, SimpleScore> {
 
     @Override
-    public @NonNull SimpleScore calculateScore(@NonNull TestdataEntityProvidingSolution solution) {
+    public @NonNull SimpleScore calculateScore(@NonNull TestdataAllowsUnassignedEntityProvidingSolution solution) {
         int score = 0;
         for (var entity : solution.getEntityList()) {
             if (entity.getValue() == null) {

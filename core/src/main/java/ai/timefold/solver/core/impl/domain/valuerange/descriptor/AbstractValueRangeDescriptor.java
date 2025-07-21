@@ -1,10 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
@@ -13,17 +10,22 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 public abstract class AbstractValueRangeDescriptor<Solution_> implements ValueRangeDescriptor<Solution_> {
 
     protected final GenuineVariableDescriptor<Solution_> variableDescriptor;
-    protected final boolean addNullInValueRange;
+    protected final boolean acceptNullInValueRange;
 
-    public AbstractValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean addNullInValueRange) {
+    protected AbstractValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
+            boolean acceptNullInValueRange) {
         this.variableDescriptor = variableDescriptor;
-        this.addNullInValueRange = addNullInValueRange;
+        this.acceptNullInValueRange = acceptNullInValueRange;
     }
 
     @Override
     public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
         return variableDescriptor;
+    }
+
+    @Override
+    public boolean acceptNullInValueRange() {
+        return acceptNullInValueRange;
     }
 
     // ************************************************************************
@@ -40,13 +42,6 @@ public abstract class AbstractValueRangeDescriptor<Solution_> implements ValueRa
             }
         }
         return false;
-    }
-
-    protected <T> ValueRange<T> doNullInValueRangeWrapping(ValueRange<T> valueRange) {
-        if (addNullInValueRange) {
-            valueRange = new NullAllowingCountableValueRange<>((CountableValueRange) valueRange);
-        }
-        return valueRange;
     }
 
     @Override

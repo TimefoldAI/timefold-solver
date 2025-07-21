@@ -33,9 +33,9 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     private final boolean isGenericTypeImmutable;
 
     protected AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean addNullInValueRange,
+            boolean acceptNullInValueRange,
             MemberAccessor memberAccessor) {
-        super(variableDescriptor, addNullInValueRange);
+        super(variableDescriptor, acceptNullInValueRange);
         this.memberAccessor = memberAccessor;
         ValueRangeProvider valueRangeProviderAnnotation = memberAccessor.getAnnotation(ValueRangeProvider.class);
         if (valueRangeProviderAnnotation == null) {
@@ -46,7 +46,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         collectionWrapping = Collection.class.isAssignableFrom(type);
         arrayWrapping = type.isArray();
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
-        if (addNullInValueRange && !countable) {
+        if (acceptNullInValueRange && !countable) {
             throw new IllegalStateException("""
                     The valueRangeDescriptor (%s) allows unassigned values, but not countable (%s).
                     Maybe the member (%s) should return %s."""
@@ -139,7 +139,6 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }
-        valueRange = doNullInValueRangeWrapping(valueRange);
         if (valueRange.isEmpty()) {
             throw new IllegalStateException("""
                     The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
@@ -157,11 +156,10 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
-        var size = addNullInValueRange ? 1L : 0L;
         if (collectionWrapping) {
-            return size + ((Collection<Object>) valueRangeObject).size();
+            return ((Collection<Object>) valueRangeObject).size();
         } else if (arrayWrapping) {
-            return size + Array.getLength(valueRangeObject);
+            return Array.getLength(valueRangeObject);
         }
         var valueRange = (ValueRange<Object>) valueRangeObject;
         if (valueRange.isEmpty()) {
@@ -170,7 +168,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                     Maybe apply over-constrained planning as described in the documentation."""
                     .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         } else if (valueRange instanceof CountableValueRange<Object> countableValueRange) {
-            return size + countableValueRange.getSize();
+            return countableValueRange.getSize();
         } else {
             throw new UnsupportedOperationException(
                     "The @%s-annotated member (%s) called on bean (%s) is not countable and therefore does not support getSize()."

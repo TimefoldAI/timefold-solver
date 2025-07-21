@@ -7,6 +7,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 
 import org.jspecify.annotations.NonNull;
@@ -35,7 +36,10 @@ public final class ValueRangeManager<Solution_> {
     public <T> ValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             @NonNull Solution_ solution) {
         var valueRange = fromSolutionMap.computeIfAbsent(valueRangeDescriptor,
-                descriptor -> descriptor.extractValueRange(Objects.requireNonNull(solution), null));
+                descriptor -> {
+                    var extractedValueRange = descriptor.<T> extractValueRange(Objects.requireNonNull(solution), null);
+                    return checkForNullValues(descriptor, extractedValueRange);
+                });
         return (ValueRange<T>) valueRange;
     }
 
@@ -43,13 +47,16 @@ public final class ValueRangeManager<Solution_> {
     public <T> ValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             @NonNull Object entity) {
         var valueRangeMap = fromEntityMap.computeIfAbsent(entity, e -> {
-            var map = new IdentityHashMap<ValueRangeDescriptor<Solution_>, ValueRange<?>>();
-            var range = valueRangeDescriptor.extractValueRange(null, Objects.requireNonNull(entity));
-            map.put(valueRangeDescriptor, range);
-            return map;
+            var entityMap = new IdentityHashMap<ValueRangeDescriptor<Solution_>, ValueRange<?>>();
+            var extractedValueRange = valueRangeDescriptor.<T> extractValueRange(null, Objects.requireNonNull(entity));
+            entityMap.put(valueRangeDescriptor, checkForNullValues(valueRangeDescriptor, extractedValueRange));
+            return entityMap;
         });
         return (ValueRange<T>) valueRangeMap.computeIfAbsent(valueRangeDescriptor,
-                descriptor -> valueRangeDescriptor.extractValueRange(null, Objects.requireNonNull(entity)));
+                descriptor -> {
+                    var extractedValueRange = valueRangeDescriptor.<T> extractValueRange(null, Objects.requireNonNull(entity));
+                    return checkForNullValues(descriptor, extractedValueRange);
+                });
     }
 
     public long countOnSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
@@ -60,7 +67,11 @@ public final class ValueRangeManager<Solution_> {
             return countableValueRange.getSize();
         } else {
             // It is not countable, and we need to call the descriptor specifically
-            return valueRangeDescriptor.extractValueRangeSize(Objects.requireNonNull(solution), null);
+            var size = valueRangeDescriptor.extractValueRangeSize(Objects.requireNonNull(solution), null);
+            if (valueRangeDescriptor.acceptNullInValueRange()) {
+                size++;
+            }
+            return size;
         }
     }
 
@@ -71,7 +82,11 @@ public final class ValueRangeManager<Solution_> {
             return countableValueRange.getSize();
         } else {
             // It is not countable, and we need to call the descriptor specifically
-            return valueRangeDescriptor.extractValueRangeSize(null, Objects.requireNonNull(entity));
+            var size = valueRangeDescriptor.extractValueRangeSize(null, Objects.requireNonNull(entity));
+            if (valueRangeDescriptor.acceptNullInValueRange()) {
+                size++;
+            }
+            return size;
         }
     }
 
@@ -84,5 +99,14 @@ public final class ValueRangeManager<Solution_> {
                 cachedWorkingSolution = workingSolution;
             }
         }
+    }
+
+    private <T> ValueRange<T> checkForNullValues(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            ValueRange<T> valueRange) {
+        if (valueRangeDescriptor.acceptNullInValueRange()
+                && valueRange instanceof CountableValueRange<T> countableValueRange) {
+            return new NullAllowingCountableValueRange<>(countableValueRange);
+        }
+        return valueRange;
     }
 }

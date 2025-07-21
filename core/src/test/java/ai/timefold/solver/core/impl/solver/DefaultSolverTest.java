@@ -140,9 +140,9 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingScoreCalculator;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
@@ -2097,8 +2097,9 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
 
         var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataEntityProvidingSolution.class, TestdataEntityProvidingEntity.class)
-                .withEasyScoreCalculatorClass(TestdataEntityProvidingScoreCalculator.class)
+                .buildSolverConfig(TestdataAllowsUnassignedEntityProvidingSolution.class,
+                        TestdataAllowsUnassignedEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEntityProvidingScoreCalculator.class)
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig);
 
@@ -2107,11 +2108,11 @@ class DefaultSolverTest extends AbstractMeterTest {
         var value3 = new TestdataValue("v3");
         var value4 = new TestdataValue("v4");
         var value5 = new TestdataValue("v5");
-        var entity1 = new TestdataEntityProvidingEntity("e1", List.of(value1, value2, value3));
-        var entity2 = new TestdataEntityProvidingEntity("e2", List.of(value1, value2, value5));
-        var entity3 = new TestdataEntityProvidingEntity("e3", List.of(value4, value5));
+        var entity1 = new TestdataAllowsUnassignedEntityProvidingEntity("e1", List.of(value1, value2, value3));
+        var entity2 = new TestdataAllowsUnassignedEntityProvidingEntity("e2", List.of(value1, value2, value5));
+        var entity3 = new TestdataAllowsUnassignedEntityProvidingEntity("e3", List.of(value4, value5));
 
-        var solution = new TestdataEntityProvidingSolution();
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
         solution.setEntityList(List.of(entity1, entity2, entity3));
 
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);

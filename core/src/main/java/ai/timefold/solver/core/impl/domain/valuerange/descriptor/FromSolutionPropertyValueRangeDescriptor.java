@@ -13,9 +13,9 @@ public class FromSolutionPropertyValueRangeDescriptor<Solution_>
         implements IterableValueRangeDescriptor<Solution_> {
 
     public FromSolutionPropertyValueRangeDescriptor(
-            GenuineVariableDescriptor<Solution_> variableDescriptor, boolean addNullInValueRange,
+            GenuineVariableDescriptor<Solution_> variableDescriptor, boolean acceptNullInValueRange,
             MemberAccessor memberAccessor) {
-        super(variableDescriptor, addNullInValueRange, memberAccessor);
+        super(variableDescriptor, acceptNullInValueRange, memberAccessor);
     }
 
     @Override

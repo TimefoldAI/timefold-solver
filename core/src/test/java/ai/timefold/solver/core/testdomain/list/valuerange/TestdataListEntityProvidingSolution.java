@@ -17,6 +17,17 @@ public class TestdataListEntityProvidingSolution {
                 TestdataListEntityProvidingEntity.class);
     }
 
+    public static TestdataListEntityProvidingSolution generateSolution() {
+        var solution = new TestdataListEntityProvidingSolution();
+        var value1 = new TestdataListEntityProvidingValue("v1");
+        var value2 = new TestdataListEntityProvidingValue("v2");
+        var value3 = new TestdataListEntityProvidingValue("v3");
+        var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value1, value3));
+        solution.setEntityList(List.of(entity1, entity2));
+        return solution;
+    }
+
     private List<TestdataListEntityProvidingEntity> entityList;
     private List<TestdataListEntityProvidingValue> temporaryValueList;
 

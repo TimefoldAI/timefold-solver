@@ -20,6 +20,11 @@ public interface ValueRangeDescriptor<Solution_> {
     GenuineVariableDescriptor<Solution_> getVariableDescriptor();
 
     /**
+     * When the planning variable accepts unassigned values, it returns true; otherwise, it returns false.
+     */
+    boolean acceptNullInValueRange();
+
+    /**
      * @return true if the {@link ValueRange} is countable
      *         (for example a double value range between 1.2 and 1.4 is not countable)
      */
