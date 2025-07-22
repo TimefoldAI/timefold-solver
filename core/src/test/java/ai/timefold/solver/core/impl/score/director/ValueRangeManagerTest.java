@@ -60,7 +60,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(2);
     }
 
     @Test
@@ -80,7 +79,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(4);
     }
 
     @Test
@@ -99,7 +97,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(2);
     }
 
     @Test
@@ -121,7 +118,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(4);
     }
 
     @Test
@@ -140,7 +136,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(3);
 
         // The value range manager will add the null value
         // e1(v1, v2) -> 2 distinct values
@@ -152,8 +147,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(2);
-
     }
 
     @Test
@@ -174,7 +167,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(6);
 
         // The value range manager will not add the null value
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
@@ -187,7 +179,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(4);
     }
 
     @Test
@@ -206,7 +197,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(3);
 
         // The value range manager will add the null value
         // e1(v1, v2) -> 2 distinct values
@@ -218,8 +208,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(2);
-
     }
 
     @Test
@@ -240,7 +228,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(6);
 
         // The value range manager will not add the null value
         // e1([v1, v2], [v1, v4]) -> 3 distinct values
@@ -253,7 +240,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(4);
     }
 
     @Test
@@ -272,7 +258,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(2);
     }
 
     @Test
@@ -292,7 +277,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(4);
     }
 
     @Test
@@ -312,7 +296,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(2);
     }
 
     @Test
@@ -332,7 +315,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(4);
     }
 
     @Disabled("Temporarily disabled")
@@ -352,7 +334,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(3);
 
         // The value range manager will not add the null value because it is a list variable
         // e1(v1, v2) -> 2 distinct values
@@ -364,7 +345,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(2);
     }
 
     @Disabled("Temporarily disabled")
@@ -386,7 +366,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(6);
 
         // The value range manager will not add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
@@ -399,7 +378,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(4);
     }
 
     @Disabled("Temporarily disabled")
@@ -419,7 +397,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value because it is a list variable
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(3);
 
         // The value range manager will not add the null value because it is a list variable
         // e1(v1, v2) -> 2 distinct values
@@ -431,7 +408,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(2);
     }
 
     @Disabled("Temporarily disabled")
@@ -453,7 +429,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value because it is a list variable
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(solution, null)).isEqualTo(6);
 
         // The value range manager will add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
@@ -466,7 +441,6 @@ class ValueRangeManagerTest {
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
-        assertThat(valueRangeDescriptor.extractValueRangeSize(null, entity)).isEqualTo(4);
     }
 
     @Test
@@ -478,7 +452,7 @@ class ValueRangeManagerTest {
 
         // The value range manager will not add the null value because because it is a list variable
         assertThatCode(() -> valueRangeManager.countOnSolution(valueRangeDescriptor, solution))
-                .hasMessageContaining("is not countable and therefore does not support getSize().");
+                .hasMessageContaining("is not countable.");
 
     }
 }

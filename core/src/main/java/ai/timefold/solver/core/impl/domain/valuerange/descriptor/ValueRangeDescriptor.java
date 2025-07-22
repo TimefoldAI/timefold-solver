@@ -62,26 +62,4 @@ public interface ValueRangeDescriptor<Solution_> {
      */
     <Value_> ValueRange<Value_> extractValueRange(@Nullable Solution_ solution, @Nullable Object entity);
 
-    /**
-     * The method allows extracting the value range size from a solution or an entity,
-     * and it is compatible with problem facts defined in the solution or entity classes.
-     * The method should not be invoked directly by selectors or other components of the solver.
-     * The {@link ValueRangeManager#countOnSolution(ValueRangeDescriptor, Object)}
-     * and {@link ValueRangeManager#countOnEntity(ValueRangeDescriptor, Object)}
-     * serve as the single source of truth for managing value ranges and should be used by outer components.
-     * <p>
-     * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
-     * 
-     * @param solution the solution
-     * @param entity the entity. To avoid this parameter,
-     *        use {@link IterableValueRangeDescriptor#extractValueRangeSize} instead.
-     * 
-     * @return never null
-     * 
-     * @throws UnsupportedOperationException if {@link #isCountable()} returns false
-     * 
-     * @see ValueRangeManager
-     */
-    long extractValueRangeSize(@Nullable Solution_ solution, @Nullable Object entity);
-
 }

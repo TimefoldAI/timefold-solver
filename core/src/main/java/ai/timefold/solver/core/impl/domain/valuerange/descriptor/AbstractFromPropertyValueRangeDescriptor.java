@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -141,31 +140,6 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }
         return valueRange.isEmpty() ? (ValueRange<Value_>) EmptyValueRange.INSTANCE : valueRange;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected long readValueRangeSize(Object bean) {
-        var valueRangeObject = memberAccessor.executeGetter(bean);
-        if (valueRangeObject == null) {
-            throw new IllegalStateException(
-                    "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
-                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
-        }
-        if (collectionWrapping) {
-            return ((Collection<Object>) valueRangeObject).size();
-        } else if (arrayWrapping) {
-            return Array.getLength(valueRangeObject);
-        }
-        var valueRange = (ValueRange<Object>) valueRangeObject;
-        if (valueRange.isEmpty()) {
-            return 0;
-        } else if (valueRange instanceof CountableValueRange<Object> countableValueRange) {
-            return countableValueRange.getSize();
-        } else {
-            throw new UnsupportedOperationException(
-                    "The @%s-annotated member (%s) called on bean (%s) is not countable and therefore does not support getSize()."
-                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean));
-        }
     }
 
     private <T> List<T> transformCollectionToList(Collection<T> collection) {

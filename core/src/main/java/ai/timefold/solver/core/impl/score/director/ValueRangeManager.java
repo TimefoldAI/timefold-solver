@@ -8,8 +8,10 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.empty.EmptyValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 
 import org.jspecify.annotations.NullMarked;
@@ -35,18 +37,19 @@ public final class ValueRangeManager<Solution_> {
 
     @SuppressWarnings("unchecked")
     public <T> ValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution) {
-        var valueRange = fromSolutionMap.computeIfAbsent(valueRangeDescriptor,
-                descriptor -> {
-                    var extractedValueRange = descriptor.<T> extractValueRange(Objects.requireNonNull(solution), null);
-                    if (valueRangeDescriptor.acceptNullInValueRange()) {
-                        return checkForNullValues(descriptor, extractedValueRange);
-                    } else {
-                        if (extractedValueRange instanceof EmptyValueRange<?>) {
-                            throw getOnSolutionRangeEmptyException(valueRangeDescriptor, solution);
-                        }
-                        return extractedValueRange;
-                    }
-                });
+        var valueRange = fromSolutionMap.get(valueRangeDescriptor);
+        if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
+            var extractedValueRange = valueRangeDescriptor.<T> extractValueRange(Objects.requireNonNull(solution), null);
+            if (valueRangeDescriptor.acceptNullInValueRange()) {
+                valueRange = checkForNullValues(valueRangeDescriptor, extractedValueRange);
+            } else {
+                if (extractedValueRange instanceof EmptyValueRange<?>) {
+                    throw getOnSolutionRangeEmptyException(valueRangeDescriptor, solution);
+                }
+                valueRange = extractedValueRange;
+            }
+            fromSolutionMap.put(valueRangeDescriptor, valueRange);
+        }
         return (ValueRange<T>) valueRange;
     }
 
@@ -60,24 +63,21 @@ public final class ValueRangeManager<Solution_> {
 
     @SuppressWarnings("unchecked")
     public <T> ValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
-        var valueRangeMap = fromEntityMap.computeIfAbsent(entity, e -> {
-            var entityMap = new IdentityHashMap<ValueRangeDescriptor<Solution_>, ValueRange<?>>();
+        var valueRangeMap = fromEntityMap.computeIfAbsent(entity, e -> new IdentityHashMap<>());
+        var valueRange = valueRangeMap.get(valueRangeDescriptor);
+        if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange = valueRangeDescriptor.<T> extractValueRange(null, Objects.requireNonNull(entity));
-            entityMap.put(valueRangeDescriptor, checkForNullValues(valueRangeDescriptor, extractedValueRange));
-            return entityMap;
-        });
-        return (ValueRange<T>) valueRangeMap.computeIfAbsent(valueRangeDescriptor,
-                descriptor -> {
-                    var extractedValueRange = valueRangeDescriptor.<T> extractValueRange(null, Objects.requireNonNull(entity));
-                    if (valueRangeDescriptor.acceptNullInValueRange()) {
-                        return checkForNullValues(descriptor, extractedValueRange);
-                    } else {
-                        if (extractedValueRange instanceof EmptyValueRange<?>) {
-                            throw getOnEntityRangeEmptyException(valueRangeDescriptor, entity);
-                        }
-                        return extractedValueRange;
-                    }
-                });
+            if (valueRangeDescriptor.acceptNullInValueRange()) {
+                valueRange = checkForNullValues(valueRangeDescriptor, extractedValueRange);
+            } else {
+                if (extractedValueRange instanceof EmptyValueRange<?>) {
+                    throw getOnEntityRangeEmptyException(valueRangeDescriptor, entity);
+                }
+                valueRange = extractedValueRange;
+            }
+            valueRangeMap.put(valueRangeDescriptor, valueRange);
+        }
+        return (ValueRange<T>) valueRange;
     }
 
     private static IllegalStateException getOnEntityRangeEmptyException(ValueRangeDescriptor<?> valueRangeDescriptor,
@@ -100,12 +100,11 @@ public final class ValueRangeManager<Solution_> {
         } else if (valueRange instanceof CountableValueRange<?> countableValueRange) {
             return countableValueRange.getSize();
         } else {
-            // It is not countable, and we need to call the descriptor specifically
-            var size = valueRangeDescriptor.extractValueRangeSize(Objects.requireNonNull(solution), null);
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
-                size++;
-            }
-            return size;
+            throw new UnsupportedOperationException("""
+                    Impossible state: value range (%s) on planning solution (%s) is not countable.
+                    Replace %s with %s."""
+                    .formatted(valueRangeDescriptor, solution, DoubleValueRange.class.getSimpleName(),
+                            BigDecimalValueRange.class.getSimpleName()));
         }
     }
 
@@ -121,12 +120,11 @@ public final class ValueRangeManager<Solution_> {
         } else if (valueRange instanceof CountableValueRange<?> countableValueRange) {
             return countableValueRange.getSize();
         } else {
-            // It is not countable, and we need to call the descriptor specifically
-            var size = valueRangeDescriptor.extractValueRangeSize(null, Objects.requireNonNull(entity));
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
-                size++;
-            }
-            return size;
+            throw new UnsupportedOperationException("""
+                    Impossible state: value range (%s) on planning entity (%s) is not countable.
+                    Replace %s with %s."""
+                    .formatted(valueRangeDescriptor, entity, DoubleValueRange.class.getSimpleName(),
+                            BigDecimalValueRange.class.getSimpleName()));
         }
     }
 
@@ -149,4 +147,5 @@ public final class ValueRangeManager<Solution_> {
         }
         return valueRange;
     }
+
 }

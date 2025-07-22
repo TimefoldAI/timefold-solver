@@ -49,23 +49,16 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
 
     @Override
     public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
-        return innerExtractValueRange(solution, entity);
-    }
-
-    private <T> ValueRange<T> innerExtractValueRange(Solution_ solution, Object entity) {
-        var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
+        var childValueRangeList = new ArrayList<CountableValueRange<Value_>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            childValueRangeList.add((CountableValueRange<T>) valueRangeDescriptor.<T> extractValueRange(solution, entity));
+            childValueRangeList
+                    .add((CountableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(solution, entity));
         }
         return new CompositeCountableValueRange<>(childValueRangeList);
     }
 
     @Override
     public <T> ValueRange<T> extractValueRange(Solution_ solution) {
-        return innerExtractValueRange(solution);
-    }
-
-    private <T> ValueRange<T> innerExtractValueRange(Solution_ solution) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             var iterableValueRangeDescriptor = (IterableValueRangeDescriptor<Solution_>) valueRangeDescriptor;
@@ -73,25 +66,6 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
                     .add((CountableValueRange<T>) iterableValueRangeDescriptor.<T> extractValueRange(solution));
         }
         return new CompositeCountableValueRange<>(childValueRangeList);
-    }
-
-    @Override
-    public long extractValueRangeSize(Solution_ solution, Object entity) {
-        var size = 0L;
-        for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            size += ((CountableValueRange<Object>) valueRangeDescriptor.extractValueRange(solution, entity)).getSize();
-        }
-        return size;
-    }
-
-    @Override
-    public long extractValueRangeSize(Solution_ solution) {
-        var size = 0L;
-        for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            var iterableValueRangeDescriptor = (IterableValueRangeDescriptor<Solution_>) valueRangeDescriptor;
-            size += ((CountableValueRange<Object>) iterableValueRangeDescriptor.extractValueRange(solution)).getSize();
-        }
-        return size;
     }
 
 }

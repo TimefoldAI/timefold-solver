@@ -28,23 +28,4 @@ public interface IterableValueRangeDescriptor<Solution_> extends ValueRangeDescr
      */
     <T> ValueRange<T> extractValueRange(Solution_ solution);
 
-    /**
-     * As specified by {@link ValueRangeDescriptor#extractValueRangeSize}.
-     * <p>
-     * The method allows extracting the value range size only from the solution,
-     * and it is compatible with problem facts defined in the solution class.
-     * The method should not be invoked directly by selectors or other components of the solver.
-     * The {@link ValueRangeManager#countOnSolution(ValueRangeDescriptor, Object)}
-     * serves as the single source of truth for managing value ranges and should be used by outer components.
-     * <p>
-     * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
-     *
-     * @param solution never null
-     * @return never null
-     *
-     * @see ValueRangeManager
-     * @see ValueRangeDescriptor#extractValueRangeSize
-     */
-    long extractValueRangeSize(Solution_ solution);
-
 }
