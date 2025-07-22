@@ -66,6 +66,7 @@ import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataPro
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataProblemFactIsPlanningEntityCollectionPropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnknownFactTypeSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.invalid.TestdataUnsupportedWildcardSolution;
+import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeEntity;
 import ai.timefold.solver.core.testdomain.valuerange.TestdataValueRangeSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
@@ -446,8 +447,28 @@ class SolutionDescriptorTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeManager)).isEqualTo(0);
-            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeManager)).isEqualTo(0);
+            softly.assertThatThrownBy(() -> solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeManager))
+                    .isInstanceOf(IllegalStateException.class);
+            softly.assertThatThrownBy(() -> solutionDescriptor.getApproximateValueCount(solution, valueRangeManager))
+                    .isInstanceOf(IllegalStateException.class);
+            softly.assertThatThrownBy(() -> solutionDescriptor.getProblemScale(solution, valueRangeManager))
+                    .isInstanceOf(IllegalStateException.class);
+        });
+    }
+
+    @Test
+    void emptyProblemScaleAllowsUnassigned() {
+        var valueCount = 27;
+        var entityCount = 27;
+        var solutionDescriptor = TestdataAllowsUnassignedSolution.buildSolutionDescriptor();
+        var solution = TestdataAllowsUnassignedSolution.generateSolution(valueCount, entityCount);
+        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedSolution>();
+        solution.getValueList().clear();
+        assertSoftly(softly -> {
+            softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
+            softly.assertThat(solutionDescriptor.getMaximumValueRangeSize(solution, valueRangeManager)).isEqualTo(1);
+            softly.assertThat(solutionDescriptor.getApproximateValueCount(solution, valueRangeManager)).isEqualTo(1);
             softly.assertThat(solutionDescriptor.getProblemScale(solution, valueRangeManager))
                     .isEqualTo(0);
         });

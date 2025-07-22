@@ -17,7 +17,7 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentityListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.exception.EmptyRangeException;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.empty.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
@@ -140,13 +140,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }
-        if (!acceptNullInValueRange && valueRange.isEmpty()) {
-            throw new EmptyRangeException("""
-                    The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
-                    Maybe apply over-constrained planning as described in the documentation."""
-                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
-        }
-        return valueRange;
+        return valueRange.isEmpty() ? (ValueRange<Value_>) EmptyValueRange.INSTANCE : valueRange;
     }
 
     @SuppressWarnings("unchecked")
@@ -164,10 +158,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         }
         var valueRange = (ValueRange<Object>) valueRangeObject;
         if (valueRange.isEmpty()) {
-            throw new IllegalStateException("""
-                    The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
-                    Maybe apply over-constrained planning as described in the documentation."""
-                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
+            return 0;
         } else if (valueRange instanceof CountableValueRange<Object> countableValueRange) {
             return countableValueRange.getSize();
         } else {

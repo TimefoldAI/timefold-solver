@@ -11,7 +11,13 @@ import org.jspecify.annotations.Nullable;
 /**
  * Special range for empty value ranges.
  */
-public class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
+public final class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
+
+    public static final EmptyValueRange<Object> INSTANCE = new EmptyValueRange<>();
+
+    private EmptyValueRange() {
+        // Intentionally empty
+    }
 
     @Override
     public long getSize() {
@@ -30,7 +36,7 @@ public class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public boolean contains(@Nullable T value) {
-        throw new UnsupportedOperationException();
+        return false;
     }
 
     @Override
