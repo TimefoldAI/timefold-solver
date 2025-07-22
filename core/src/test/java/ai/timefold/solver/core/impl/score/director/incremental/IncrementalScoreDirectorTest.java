@@ -61,7 +61,7 @@ class IncrementalScoreDirectorTest {
             scoreDirector.setWorkingSolution(solution);
             reset(incrementalScoreCalculator);
 
-            assertThat(b1.getNextEntity()).isEqualTo(null);
+            assertThat(b1.getNextEntity()).isNull();
 
             scoreDirector.beforeVariableChanged(a3, "chainedObject");
             a3.setChainedObject(b1);
@@ -116,9 +116,7 @@ class IncrementalScoreDirectorTest {
         IncrementalScoreDirectorFactory<Object, SimpleScore> factory = mock(IncrementalScoreDirectorFactory.class);
         when(factory.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         SolutionDescriptor<Object> solutionDescriptor = mock(SolutionDescriptor.class);
-        when(solutionDescriptor.computeInitializationStatistics(any()))
-                .thenReturn(new SolutionDescriptor.SolutionInitializationStatistics(0, 0, 0, 0, 0));
-        when(solutionDescriptor.computeInitializationStatistics(any(), any()))
+        when(solutionDescriptor.computeInitializationStatistics(any(), any(), any()))
                 .thenReturn(new SolutionDescriptor.SolutionInitializationStatistics(0, 0, 0, 0, 0));
         when(factory.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         return factory;

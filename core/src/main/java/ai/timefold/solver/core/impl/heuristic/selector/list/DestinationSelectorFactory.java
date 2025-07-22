@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.list;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
@@ -12,7 +11,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
@@ -32,14 +31,14 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
-        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
+        var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder);
         var baseDestinationSelector =
                 new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
         return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector);
     }
 
-    private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildIterableValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy, EntityDescriptor<Solution_> entityDescriptor,
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory
@@ -61,14 +60,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                          * the configPolicy that only allows this filtering type in the CH phase.
                          */
                         ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED);
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
-            throw new IllegalArgumentException("The destinationSelector (" + config
-                    + ") for a list variable needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-
-        }
-        return (EntityIndependentValueSelector<Solution_>) valueSelector;
+        return (IterableValueSelector<Solution_>) valueSelector;
     }
 
     private DestinationSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,

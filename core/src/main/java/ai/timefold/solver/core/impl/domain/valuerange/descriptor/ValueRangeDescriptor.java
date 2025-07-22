@@ -2,17 +2,36 @@ package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public interface ValueRangeDescriptor<Solution_> {
+@NullMarked
+public sealed interface ValueRangeDescriptor<Solution_>
+        permits AbstractValueRangeDescriptor {
 
     /**
      * @return never null
      */
     GenuineVariableDescriptor<Solution_> getVariableDescriptor();
+
+    /**
+     * True when {@link PlanningVariable#allowsUnassigned()}.
+     * Always false with {@link PlanningListVariable}
+     * as list variables get unassigned through a different mechanism
+     * (e.g. ElementPositionRandomIterator).
+     */
+    default boolean acceptsNullInValueRange() {
+        return getVariableDescriptor() instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                && basicVariableDescriptor.allowsUnassigned();
+    }
 
     /**
      * @return true if the {@link ValueRange} is countable
@@ -21,12 +40,10 @@ public interface ValueRangeDescriptor<Solution_> {
     boolean isCountable();
 
     /**
-     * If this method return true, this instance is safe to cast to {@link EntityIndependentValueRangeDescriptor},
-     * otherwise it requires an entity to determine the {@link ValueRange}.
-     *
-     * @return true if the {@link ValueRange} is the same for all entities of the same solution
+     * Returns true if the value range is defined at the solution level and can be directly extracted from the solution;
+     * otherwise, it returns false, as the value range can only be extracted or computed from the entities.
      */
-    boolean isEntityIndependent();
+    boolean canExtractValueRangeFromSolution();
 
     /**
      * @return true if the {@link ValueRange} might contain a planning entity instance
@@ -35,20 +52,31 @@ public interface ValueRangeDescriptor<Solution_> {
     boolean mightContainEntity();
 
     /**
-     * @param solution never null
-     * @param entity never null. To avoid this parameter,
-     *        use {@link EntityIndependentValueRangeDescriptor#extractValueRange} instead.
-     * @return never null
+     * Extracts the {@link ValueRange} from the solution or,
+     * if the value range is defined at the entity level,
+     * extracts a composite {@link ValueRange} from all entities in the solution.
+     * <p>
+     * The method should not be invoked directly by selectors or other components of the solver.
+     * The {@link ValueRangeManager#getFromSolution(ValueRangeDescriptor, Object)}
+     * and {@link ValueRangeManager#getFromEntity(ValueRangeDescriptor, Object)}
+     * serve as the single source of truth for managing value ranges and should be used by outer components.
+     * <p>
+     * Calling this method outside {@link ValueRangeManager} may lead to unnecessary recomputation of ranges.
      */
-    <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity);
+    <T> ValueRange<T> extractAllValues(Solution_ solution);
 
     /**
-     * @param solution never null
-     * @param entity never null. To avoid this parameter,
-     *        use {@link EntityIndependentValueRangeDescriptor#extractValueRangeSize} instead.
-     * @return never null
-     * @throws UnsupportedOperationException if {@link #isCountable()} returns false
+     * Extracts the {@link ValueRange} from the planning entity.
+     * If the value range is defined at the solution level instead,
+     * this method reads the value range from there.
+     * <p>
+     * The method should not be invoked directly by selectors or other components of the solver.
+     * The {@link ValueRangeManager#getFromSolution(ValueRangeDescriptor, Object)}
+     * and {@link ValueRangeManager#getFromEntity(ValueRangeDescriptor, Object)}
+     * serve as the single source of truth for managing value ranges and should be used by outer components.
+     * <p>
+     * Calling this method outside {@link ValueRangeManager} may lead to unnecessary recomputation of ranges.
      */
-    long extractValueRangeSize(Solution_ solution, Object entity);
+    <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity);
 
 }

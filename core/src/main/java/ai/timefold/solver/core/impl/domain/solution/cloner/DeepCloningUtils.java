@@ -39,7 +39,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 public final class DeepCloningUtils {
 
     // Instances of these JDK classes will never be deep-cloned.
-    private static final Set<Class<?>> IMMUTABLE_CLASSES = Set.of(
+    public static final Set<Class<?>> IMMUTABLE_CLASSES = Set.of(
             // Numbers
             Byte.class, Short.class, Integer.class, Long.class, Float.class, Double.class, BigInteger.class, BigDecimal.class,
             // Optional

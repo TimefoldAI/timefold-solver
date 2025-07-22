@@ -8,6 +8,7 @@ import java.util.Set;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -216,20 +217,31 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        if (firstEntity == secondEntity) {
-            if (shift != 0) {
-                // A shift will rotate the entire list, changing the visiting order
-                return true;
-            }
-            var chainLength = Math.abs(secondEdgeEndpoint - firstEdgeEndpoint);
-
-            // The chain flipped by a K-Opt only changes if there are at least 2 values
-            // in the chain
-            return chainLength >= 2;
+        var sameEntity = firstEntity == secondEntity;
+        var doable = !sameEntity ||
+        // A shift will rotate the entire list, changing the visiting order
+                shift != 0 ||
+                // The chain flipped by a K-Opt only changes if there are at least 2 values
+                // in the chain
+                Math.abs(secondEdgeEndpoint - firstEdgeEndpoint) >= 2;
+        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
         }
-        // This is a tail-swap move otherwise, which always changes at least one element
-        // (the element where the tail begins for each entity)
-        return true;
+        // When the first and second elements are different,
+        // and the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming values
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        var firstValueRange =
+                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), firstEntity);
+        var firstListVariable = variableDescriptor.getValue(firstEntity);
+        var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
+        var secondValueRange =
+                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), secondEntity);
+        var secondListVariable = variableDescriptor.getValue(secondEntity);
+        var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
+        return firstListVariableTail.stream().allMatch(secondValueRange::contains)
+                && secondListVariableTail.stream().allMatch(firstValueRange::contains);
     }
 
     @Override

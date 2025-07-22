@@ -34,13 +34,14 @@ public class TestdataExtendedShadowSolution {
     public SimpleScore score;
 
     public TestdataExtendedShadowSolution() {
+        // Required for cloning
     }
 
     public TestdataExtendedShadowSolution(TestdataExtendedShadowShadowEntity shadowShadowEntity) {
         this.testdataEntity = new TestdataEntity("Entity 1");
         this.testdataValueList = List.of(new TestdataValue("Value 1"));
         this.shadowEntityList = Collections.singletonList(shadowShadowEntity);
-        this.planningVariableList = Collections.emptyList();
+        this.planningVariableList = List.of(new TestdataExtendedShadowVariable(1));
     }
 
 }

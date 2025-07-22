@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.mimic;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
 public interface ValueMimicRecorder<Solution_> {
@@ -32,8 +32,8 @@ public interface ValueMimicRecorder<Solution_> {
     boolean isNeverEnding();
 
     /**
-     * @return As defined by {@link EntityIndependentValueSelector#getSize()}
-     * @see EntityIndependentValueSelector#getSize()
+     * @return As defined by {@link IterableValueSelector#getSize()}
+     * @see IterableValueSelector#getSize()
      */
     long getSize();
 

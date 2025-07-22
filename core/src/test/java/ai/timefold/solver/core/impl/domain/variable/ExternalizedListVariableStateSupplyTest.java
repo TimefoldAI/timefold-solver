@@ -8,8 +8,8 @@ import static org.mockito.Mockito.when;
 import java.util.ArrayList;
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
@@ -22,7 +22,8 @@ class ExternalizedListVariableStateSupplyTest {
     @Test
     void initializeRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(InnerScoreDirector.class);
+        var scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
@@ -50,7 +51,8 @@ class ExternalizedListVariableStateSupplyTest {
     @Test
     void assignRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        var scoreDirector = (ScoreDirector<TestdataAllowsUnassignedValuesListSolution>) mock(InnerScoreDirector.class);
+        var scoreDirector = mock(InnerScoreDirector.class);
+        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");

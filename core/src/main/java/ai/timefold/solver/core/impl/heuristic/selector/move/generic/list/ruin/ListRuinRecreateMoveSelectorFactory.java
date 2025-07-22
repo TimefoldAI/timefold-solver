@@ -11,7 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.CountSupplier;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
 public final class ListRuinRecreateMoveSelectorFactory<Solution_>
@@ -35,7 +35,7 @@ public final class ListRuinRecreateMoveSelectorFactory<Solution_>
         var listVariableDescriptor = configPolicy.getSolutionDescriptor().getListVariableDescriptor();
         var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
         var valueSelector =
-                (EntityIndependentValueSelector<Solution_>) ValueSelectorFactory
+                (IterableValueSelector<Solution_>) ValueSelectorFactory
                         .<Solution_> create(
                                 new ValueSelectorConfig().withVariableName(listVariableDescriptor.getVariableName()))
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, SelectionOrder.RANDOM,

@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
 /**
@@ -20,13 +20,13 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
 
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> leftValueIterator;
-    private final EntityIndependentValueSelector<Solution_> rightValueSelector;
+    private final IterableValueSelector<Solution_> rightValueSelector;
     private Iterator<Object> rightValueIterator;
     private Object upcomingLeftValue;
 
     public OriginalListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            EntityIndependentValueSelector<Solution_> leftValueSelector,
-            EntityIndependentValueSelector<Solution_> rightValueSelector) {
+            IterableValueSelector<Solution_> leftValueSelector,
+            IterableValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;

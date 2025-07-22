@@ -7,7 +7,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 
 /**
@@ -20,7 +20,8 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
     private final Iterator<ElementPosition> destinationIterator;
 
     public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            EntityIndependentValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
+            IterableValueSelector<Solution_> valueSelector,
+            DestinationSelector<Solution_> destinationSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
         this.destinationIterator = destinationSelector.iterator();
@@ -32,8 +33,7 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
             return noUpcomingSelection();
         }
         var upcomingValue = valueIterator.next();
-        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, upcomingValue,
-                destinationIterator);
+        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator);
         if (move == null) {
             return noUpcomingSelection();
         } else {

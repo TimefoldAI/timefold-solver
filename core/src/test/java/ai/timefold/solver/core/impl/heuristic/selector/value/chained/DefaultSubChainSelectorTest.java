@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -35,7 +35,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void notChainedVariableDescriptor() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(false);
@@ -47,7 +47,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void neverEndingValueSelector() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
@@ -60,7 +60,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void minimumSubChainSizeIsZero() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
@@ -72,7 +72,7 @@ class DefaultSubChainSelectorTest {
 
     @Test
     void minimumSubChainSizeIsGreaterThanMaximumSubChainSize() {
-        var valueSelector = mock(EntityIndependentValueSelector.class);
+        var valueSelector = mock(IterableValueSelector.class);
         var variableDescriptor = mock(BasicVariableDescriptor.class);
         when(valueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
         when(variableDescriptor.isChained()).thenReturn(true);
@@ -116,7 +116,7 @@ class DefaultSubChainSelectorTest {
         var b1 = new TestdataChainedEntity("b1", b0);
         var b2 = new TestdataChainedEntity("b2", b1);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
         var selector = new DefaultSubChainSelector(valueSelector, false, minimumSubChainSize, maximumSubChainSize);
         assertThat(selector.calculateSubChainSelectionSize(
@@ -144,7 +144,7 @@ class DefaultSubChainSelectorTest {
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, b1, b2));
         scoreDirector.setWorkingSolution(solution);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
 
         var subChainSelector = new DefaultSubChainSelector(valueSelector, false, 1, Integer.MAX_VALUE);
@@ -225,7 +225,7 @@ class DefaultSubChainSelectorTest {
         solution.setChainedEntityList(Collections.emptyList());
         scoreDirector.setWorkingSolution(solution);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, b0);
 
         var subChainSelector = new DefaultSubChainSelector(valueSelector, false, 1, Integer.MAX_VALUE);
@@ -290,7 +290,7 @@ class DefaultSubChainSelectorTest {
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, b1, b2));
         scoreDirector.setWorkingSolution(solution);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
 
         var subChainSelector = new DefaultSubChainSelector(valueSelector, false, 2, 3);
@@ -343,7 +343,7 @@ class DefaultSubChainSelectorTest {
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, b1, b2));
         scoreDirector.setWorkingSolution(solution);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4, b0, b1, b2);
 
         var subChainSelector = new DefaultSubChainSelector(
@@ -389,7 +389,7 @@ class DefaultSubChainSelectorTest {
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4));
         scoreDirector.setWorkingSolution(solution);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4);
 
         var subChainSelector = new DefaultSubChainSelector(valueSelector, true, 1, Integer.MAX_VALUE);
@@ -445,7 +445,7 @@ class DefaultSubChainSelectorTest {
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4));
         scoreDirector.setWorkingSolution(solution);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4);
 
         var subChainSelector = new DefaultSubChainSelector(
@@ -497,7 +497,7 @@ class DefaultSubChainSelectorTest {
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4));
         scoreDirector.setWorkingSolution(solution);
 
-        var valueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(variableDescriptor,
+        var valueSelector = SelectorTestUtils.mockIterableValueSelector(variableDescriptor,
                 a0, a1, a2, a3, a4);
 
         var subChainSelector = new DefaultSubChainSelector(

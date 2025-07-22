@@ -6,8 +6,11 @@ import java.util.List;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
  * Abstract superclass for {@link Move}, requiring implementation of undo moves.
@@ -48,6 +51,13 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
      */
     protected abstract void doMoveOnGenuineVariables(ScoreDirector<Solution_> scoreDirector);
 
+    protected <Value_> ValueRange<Value_> extractValueRangeFromEntity(ScoreDirector<Solution_> scoreDirector,
+            ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
+        var castScoreDirector = (VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector;
+        return castScoreDirector.getValueRangeManager()
+                .getFromEntity(valueRangeDescriptor, entity);
+    }
+
     // ************************************************************************
     // Util methods
     // ************************************************************************
@@ -67,5 +77,4 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
         }
         return rebasedObjectSet;
     }
-
 }

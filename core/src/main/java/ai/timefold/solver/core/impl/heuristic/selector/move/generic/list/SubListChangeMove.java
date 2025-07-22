@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -78,13 +79,25 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        if (destinationEntity != sourceEntity) {
-            return true;
-        } else if (destinationIndex == sourceIndex) {
+        var sameEntity = destinationEntity == sourceEntity;
+        if (sameEntity && destinationIndex == sourceIndex) {
             return false;
-        } else {
-            return destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
         }
+        var doable = !sameEntity || destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
+        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
+        // When the first and second elements are different,
+        // and the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming values
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        var destinationValueRange =
+                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                        destinationEntity);
+        var sourceList = variableDescriptor.getValue(sourceEntity);
+        var subList = sourceList.subList(sourceIndex, sourceIndex + length);
+        return subList.stream().allMatch(destinationValueRange::contains);
     }
 
     @Override

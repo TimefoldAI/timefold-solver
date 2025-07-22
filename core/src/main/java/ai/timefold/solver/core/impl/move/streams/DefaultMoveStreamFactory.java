@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
@@ -72,8 +73,11 @@ public final class DefaultMoveStreamFactory<Solution_>
         }
         var variableDescriptor = getVariableDescriptor(variableMetaModel);
         var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-        if (variableDescriptor.isValueRangeEntityIndependent()) {
-            return dataStreamFactory.forEachFromSolution(new FromSolutionValueCollectingFunction<>(valueRangeDescriptor));
+        if (variableDescriptor.canExtractValueRangeFromSolution()) {
+            // TODO - Refactor the code to fetch the value range manager from the director
+            return dataStreamFactory
+                    .forEachFromSolution(
+                            new FromSolutionValueCollectingFunction<>(valueRangeDescriptor, new ValueRangeManager<>()));
         } else {
             throw new UnsupportedOperationException("Value range on entity is not yet supported.");
         }

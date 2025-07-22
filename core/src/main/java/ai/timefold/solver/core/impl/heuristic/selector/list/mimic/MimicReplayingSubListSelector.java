@@ -27,10 +27,10 @@ public class MimicReplayingSubListSelector<Solution_> extends AbstractSelector<S
         // No PhaseLifecycleSupport because the MimicRecordingSubListSelector is hooked up elsewhere too
         subListMimicRecorder.addMimicReplayingSubListSelector(this);
         // Precondition for iterator(Object)'s current implementation
-        if (!subListMimicRecorder.getVariableDescriptor().isValueRangeEntityIndependent()) {
+        if (!subListMimicRecorder.getVariableDescriptor().canExtractValueRangeFromSolution()) {
             throw new IllegalArgumentException(
-                    "The current implementation support only an entityIndependent variable ("
-                            + subListMimicRecorder.getVariableDescriptor() + ").");
+                    "The current implementation only supports value ranges on planning solution (%s)."
+                            .formatted(subListMimicRecorder.getVariableDescriptor()));
         }
     }
 

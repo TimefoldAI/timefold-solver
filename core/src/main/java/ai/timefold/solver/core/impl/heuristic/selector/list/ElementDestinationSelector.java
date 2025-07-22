@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
@@ -40,13 +40,13 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
 
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final EntitySelector<Solution_> entitySelector;
-    private final EntityIndependentValueSelector<Solution_> valueSelector;
+    private final IterableValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     public ElementDestinationSelector(EntitySelector<Solution_> entitySelector,
-            EntityIndependentValueSelector<Solution_> valueSelector, boolean randomSelection) {
+            IterableValueSelector<Solution_> valueSelector, boolean randomSelection) {
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.entitySelector = entitySelector;
         var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
@@ -62,8 +62,8 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
 
-    private EntityIndependentValueSelector<Solution_> filterUnassignedValues(
-            EntityIndependentValueSelector<Solution_> valueSelector) {
+    private IterableValueSelector<Solution_> filterUnassignedValues(
+            IterableValueSelector<Solution_> valueSelector) {
         /*
          * In case of list variable that allows unassigned values,
          * unassigned elements will show up in the valueSelector.

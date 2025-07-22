@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlac
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -42,6 +43,7 @@ class QueuedValuePlacerFactoryTest {
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         when(phaseScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
         when(scoreDirector.getWorkingSolution()).thenReturn(generateSolution());
+        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
         placer.phaseStarted(phaseScope);
         Iterator<Placement<TestdataSolution>> placementIterator = placer.iterator();
         assertThat(placementIterator).hasNext();

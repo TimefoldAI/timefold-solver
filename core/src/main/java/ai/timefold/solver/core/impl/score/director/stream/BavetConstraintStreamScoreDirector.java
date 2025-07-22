@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
@@ -32,11 +31,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     private final boolean derived;
     private BavetConstraintSession<Score_> session;
 
-    private BavetConstraintStreamScoreDirector(
-            BavetConstraintStreamScoreDirectorFactory<Solution_, Score_> scoreDirectorFactory, boolean lookUpEnabled,
-            ConstraintMatchPolicy constraintMatchPolicy, boolean expectShadowVariablesInCorrectState, boolean derived) {
-        super(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
-                expectShadowVariablesInCorrectState);
+    private BavetConstraintStreamScoreDirector(Builder<Solution_, Score_> builder, boolean derived) {
+        super(builder);
         this.derived = derived;
     }
 
@@ -208,15 +204,13 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
         @Override
         public BavetConstraintStreamScoreDirector<Solution_, Score_> build() {
-            return new BavetConstraintStreamScoreDirector<>(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
-                    expectShadowVariablesInCorrectState, false);
+            return new BavetConstraintStreamScoreDirector<>(this, false);
         }
 
         @Override
         public AbstractScoreDirector<Solution_, Score_, BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>>
                 buildDerived() {
-            return new BavetConstraintStreamScoreDirector<>(scoreDirectorFactory, lookUpEnabled, constraintMatchPolicy,
-                    expectShadowVariablesInCorrectState, true);
+            return new BavetConstraintStreamScoreDirector<>(this, true);
         }
     }
 

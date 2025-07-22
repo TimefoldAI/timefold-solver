@@ -227,7 +227,8 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             var scoreDirector = phaseScope.getScoreDirector();
             var solutionDescriptor = scoreDirector.getSolutionDescriptor();
             var workingSolution = scoreDirector.getWorkingSolution();
-            var initializationStatistics = solutionDescriptor.computeInitializationStatistics(workingSolution);
+            var initializationStatistics =
+                    solutionDescriptor.computeInitializationStatistics(workingSolution, phaseScope.getValueRangeManager());
             var uninitializedEntityCount = initializationStatistics.uninitializedEntityCount();
             if (uninitializedEntityCount > 0) {
                 throw new IllegalStateException(

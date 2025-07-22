@@ -76,16 +76,19 @@ public abstract class UpcomingSelectionIterator<S> extends SelectionIterator<S> 
             ListVariableDescriptor<?> listVariableDescriptor) {
         while (destinationIterator.hasNext()) {
             var destination = destinationIterator.next();
-            if (destination instanceof PositionInList positionInList) {
-                var isPinned = listVariableDescriptor.isElementPinned(null, positionInList.entity(), positionInList.index());
-                if (!isPinned) {
-                    return destination;
-                }
-            } else { // Unassigned element can not be pinned.
+            if (!isPinned(destination, listVariableDescriptor)) {
                 return destination;
             }
         }
         return null;
+    }
+
+    public static boolean isPinned(ElementPosition destination, ListVariableDescriptor<?> listVariableDescriptor) {
+        if (destination instanceof PositionInList positionInList) {
+            return listVariableDescriptor.isElementPinned(null, positionInList.entity(), positionInList.index());
+        } else { // Unassigned element cannot be pinned.
+            return false;
+        }
     }
 
 }

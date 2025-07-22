@@ -2,8 +2,8 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
-import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntityIndependentValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntitySelector;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIterableValueSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 
@@ -37,9 +37,9 @@ class RandomListChangeIteratorTest {
         var listVariableDescriptor = getListVariableDescriptor(scoreDirector);
         // Iterates over values in this given order.
         var sourceValueSelector =
-                mockEntityIndependentValueSelector(listVariableDescriptor, v1, v2, v3);
+                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3);
         var destinationValueSelector =
-                mockEntityIndependentValueSelector(listVariableDescriptor, v2, v3);
+                mockIterableValueSelector(listVariableDescriptor, v2, v3);
         var entitySelector = mockEntitySelector(b, a, c);
         var destinationSelector = new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true);
 

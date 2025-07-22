@@ -4,13 +4,12 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.pillar.PillarSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 
 public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Solution_> {
@@ -51,13 +50,7 @@ public class PillarChangeMoveSelector<Solution_> extends GenericMoveSelector<Sol
 
     @Override
     public long getSize() {
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
-            throw new IllegalArgumentException("To use the method getSize(), the moveSelector (" + this
-                    + ") needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-        }
-        return pillarSelector.getSize() * ((EntityIndependentValueSelector) valueSelector).getSize();
+        return pillarSelector.getSize() * ((IterableValueSelector<Solution_>) valueSelector).getSize();
     }
 
     @Override

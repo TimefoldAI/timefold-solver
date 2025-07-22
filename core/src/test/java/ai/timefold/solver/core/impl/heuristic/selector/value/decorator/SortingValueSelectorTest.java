@@ -12,7 +12,7 @@ import java.util.Comparator;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -41,14 +41,14 @@ class SortingValueSelectorTest {
     }
 
     public void runOriginalSelection(SelectionCacheType cacheType, int timesCalled) {
-        EntityIndependentValueSelector childValueSelector = SelectorTestUtils.mockEntityIndependentValueSelector(
+        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
                 TestdataEntity.class, "value",
                 new TestdataValue("jan"), new TestdataValue("feb"), new TestdataValue("mar"),
                 new TestdataValue("apr"), new TestdataValue("may"), new TestdataValue("jun"));
 
         SelectionSorter<TestdataSolution, TestdataValue> sorter = (scoreDirector, selectionList) -> selectionList
                 .sort(Comparator.comparing(TestdataObject::getCode));
-        EntityIndependentValueSelector valueSelector = new SortingValueSelector(childValueSelector, cacheType, sorter);
+        IterableValueSelector valueSelector = new SortingValueSelector(childValueSelector, cacheType, sorter);
 
         SolverScope solverScope = mock(SolverScope.class);
         valueSelector.solvingStarted(solverScope);

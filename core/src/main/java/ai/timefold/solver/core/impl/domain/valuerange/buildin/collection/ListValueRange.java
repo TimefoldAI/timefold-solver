@@ -5,13 +5,16 @@ import java.util.List;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.cache.HashSetValueRangeCache;
+import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
 import org.jspecify.annotations.NonNull;
 
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
-    private final List<T> list;
+    final List<T> list;
+    private ValueRangeCacheStrategy<T> cacheStrategy;
 
     public ListValueRange(List<T> list) {
         this.list = list;
@@ -32,7 +35,15 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public boolean contains(T value) {
-        return list.contains(value);
+        if (cacheStrategy == null) {
+            cacheStrategy = generateCache();
+        }
+        return cacheStrategy.contains(value);
+    }
+
+    @Override
+    public @NonNull ValueRangeCacheStrategy<T> generateCache() {
+        return new HashSetValueRangeCache<>(list);
     }
 
     @Override

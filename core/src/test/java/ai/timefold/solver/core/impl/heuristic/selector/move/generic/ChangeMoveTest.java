@@ -16,8 +16,8 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.testdomain.multivar.TestdataOtherValue;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,11 +29,11 @@ class ChangeMoveTest {
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
 
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
+        ScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
 
-        var variableDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
+        var variableDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue();
 
         var aMove = new ChangeMove<>(variableDescriptor, a, v2);
         a.setValue(v1);
@@ -52,12 +52,13 @@ class ChangeMoveTest {
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
 
-        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
-                solution -> SimpleScore.ZERO);
+        var scoreDirectorFactory =
+                new EasyScoreDirectorFactory<>(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor(),
+                        solution -> SimpleScore.ZERO);
         var scoreDirector = scoreDirectorFactory.buildScoreDirector();
-        var variableDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue();
+        var variableDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue();
 
         var aMove = new ChangeMove<>(variableDescriptor, a, v2);
         a.setValue(v1);

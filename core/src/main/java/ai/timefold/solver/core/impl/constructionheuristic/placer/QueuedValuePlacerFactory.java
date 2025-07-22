@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
@@ -23,8 +23,9 @@ public class QueuedValuePlacerFactory<Solution_>
         extends AbstractEntityPlacerFactory<Solution_, QueuedValuePlacerConfig> {
 
     public static QueuedValuePlacerConfig unfoldNew(MoveSelectorConfig templateMoveSelectorConfig) {
-        throw new UnsupportedOperationException("The <constructionHeuristic> contains a moveSelector ("
-                + templateMoveSelectorConfig + ") and the <queuedValuePlacer> does not support unfolding those yet.");
+        throw new UnsupportedOperationException(
+                "The <constructionHeuristic> contains a moveSelector (%s) and the <queuedValuePlacer> does not support unfolding those yet."
+                        .formatted(templateMoveSelectorConfig));
     }
 
     public QueuedValuePlacerFactory(QueuedValuePlacerConfig placerConfig) {
@@ -48,15 +49,14 @@ public class QueuedValuePlacerFactory<Solution_>
 
         MoveSelector<Solution_> moveSelector = MoveSelectorFactory.<Solution_> create(moveSelectorConfig_)
                 .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.ORIGINAL, false);
-        if (!(valueSelector instanceof EntityIndependentValueSelector)) {
-            throw new IllegalArgumentException("The queuedValuePlacer (" + this
-                    + ") needs to be based on an "
-                    + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                    + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
+        if (!(valueSelector instanceof IterableValueSelector<Solution_> iterableValueSelector)) {
+            throw new IllegalArgumentException(
+                    "The queuedValuePlacer (%s) needs to be based on an %s (%s). Check your @%s annotations.".formatted(this,
+                            IterableValueSelector.class.getSimpleName(), valueSelector,
+                            ValueRangeProvider.class.getSimpleName()));
 
         }
-        return new QueuedValuePlacer<>(this, configPolicy, (EntityIndependentValueSelector<Solution_>) valueSelector,
-                moveSelector);
+        return new QueuedValuePlacer<>(this, configPolicy, iterableValueSelector, moveSelector);
     }
 
     private ValueSelectorConfig buildValueSelectorConfig(HeuristicConfigPolicy<Solution_> configPolicy,

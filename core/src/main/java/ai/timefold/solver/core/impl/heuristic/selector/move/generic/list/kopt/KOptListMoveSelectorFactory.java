@@ -12,7 +12,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.EntityIndependentValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 
 public final class KOptListMoveSelectorFactory<Solution_>
@@ -47,9 +47,9 @@ public final class KOptListMoveSelectorFactory<Solution_>
             valueSelectorConfig.setVariableName(listVariableDescriptor.getVariableName());
         }
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
-        var originSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, originSelectorConfig,
+        var originSelector = buildIterableValueSelector(configPolicy, entityDescriptor, originSelectorConfig,
                 minimumCacheType, selectionOrder);
-        var valueSelector = buildEntityIndependentValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
+        var valueSelector = buildIterableValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
                 minimumCacheType, selectionOrder);
 
         int minimumK = Objects.requireNonNullElse(config.getMinimumK(), DEFAULT_MINIMUM_K);
@@ -79,7 +79,7 @@ public final class KOptListMoveSelectorFactory<Solution_>
                 pickedKDistribution);
     }
 
-    private EntityIndependentValueSelector<Solution_> buildEntityIndependentValueSelector(
+    private IterableValueSelector<Solution_> buildIterableValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor,
             ValueSelectorConfig valueSelectorConfig,
@@ -87,12 +87,12 @@ public final class KOptListMoveSelectorFactory<Solution_>
             SelectionOrder inheritedSelectionOrder) {
         var valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder);
-        if (valueSelector instanceof EntityIndependentValueSelector<Solution_> entityIndependentValueSelector) {
-            return entityIndependentValueSelector;
+        if (valueSelector instanceof IterableValueSelector<Solution_> iterableValueSelector) {
+            return iterableValueSelector;
         }
         throw new IllegalArgumentException("""
                 The kOptListMoveSelector (%s) for a list variable needs to be based on an %s (%s).
                 Check your valueSelectorConfig."""
-                .formatted(config, EntityIndependentValueSelector.class.getSimpleName(), valueSelector));
+                .formatted(config, IterableValueSelector.class.getSimpleName(), valueSelector));
     }
 }

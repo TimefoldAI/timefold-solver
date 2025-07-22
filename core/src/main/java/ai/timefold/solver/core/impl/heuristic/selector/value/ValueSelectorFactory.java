@@ -13,7 +13,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.EntityIndependentValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -28,9 +27,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.EntityDependentSortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FromEntitySortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.InitializedValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ReinitializeVariableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SelectedCountLimitValueSelector;
@@ -107,9 +107,10 @@ public class ValueSelectorFactory<Solution_>
         validateSelectedLimit(minimumCacheType);
 
         // baseValueSelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
+        var randomSelection = determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder);
         var valueSelector =
                 buildBaseValueSelector(variableDescriptor, SelectionCacheType.max(minimumCacheType, resolvedCacheType),
-                        determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder));
+                        randomSelection);
 
         if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
@@ -190,15 +191,10 @@ public class ValueSelectorFactory<Solution_>
                 false;
             case RANDOM ->
                 // Predict if caching will occur
-                resolvedCacheType.isNotCached()
-                        || (isBaseInherentlyCached(variableDescriptor) && !hasFiltering(variableDescriptor));
+                resolvedCacheType.isNotCached() || !hasFiltering(variableDescriptor);
             default -> throw new IllegalStateException("The selectionOrder (" + resolvedSelectionOrder
                     + ") is not implemented.");
         };
-    }
-
-    protected boolean isBaseInherentlyCached(GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        return variableDescriptor.isValueRangeEntityIndependent();
     }
 
     private ValueSelector<Solution_> buildBaseValueSelector(GenuineVariableDescriptor<Solution_> variableDescriptor,
@@ -211,13 +207,12 @@ public class ValueSelectorFactory<Solution_>
             throw new IllegalArgumentException("The minimumCacheType (" + minimumCacheType
                     + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
         }
-        if (valueRangeDescriptor.isEntityIndependent()) {
-            return new FromSolutionPropertyValueSelector<>(
-                    (EntityIndependentValueRangeDescriptor<Solution_>) valueRangeDescriptor, minimumCacheType,
-                    randomSelection);
+        if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
+            return new IterableFromSolutionPropertyValueSelector<>(valueRangeDescriptor, minimumCacheType, randomSelection);
         } else {
             // TODO Do not allow PHASE cache on FromEntityPropertyValueSelector, except if the moveSelector is PHASE cached too.
-            return new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
+            var fromEntityPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
+            return new IterableFromEntityPropertyValueSelector<>(fromEntityPropertySelector, randomSelection);
         }
     }
 
@@ -336,19 +331,19 @@ public class ValueSelectorFactory<Solution_>
                         .formatted(config, resolvedSelectionOrder, sorterManner, config.getSorterComparatorClass(),
                                 config.getSorterWeightFactoryClass(), config.getSorterClass()));
             }
-            if (!valueSelector.getVariableDescriptor().isValueRangeEntityIndependent()
+            if (!valueSelector.getVariableDescriptor().canExtractValueRangeFromSolution()
                     && resolvedCacheType == SelectionCacheType.STEP) {
-                valueSelector = new EntityDependentSortingValueSelector<>(valueSelector, resolvedCacheType, sorter);
+                valueSelector = new FromEntitySortingValueSelector<>(valueSelector, resolvedCacheType, sorter);
             } else {
-                if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+                if (!(valueSelector instanceof IterableValueSelector)) {
                     throw new IllegalArgumentException("The valueSelectorConfig (" + config
                             + ") with resolvedCacheType (" + resolvedCacheType
                             + ") and resolvedSelectionOrder (" + resolvedSelectionOrder
                             + ") needs to be based on an "
-                            + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                            + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                             + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
                 }
-                valueSelector = new SortingValueSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector,
+                valueSelector = new SortingValueSelector<>((IterableValueSelector<Solution_>) valueSelector,
                         resolvedCacheType, sorter);
             }
         }
@@ -376,15 +371,15 @@ public class ValueSelectorFactory<Solution_>
             }
             SelectionProbabilityWeightFactory<Solution_, Object> probabilityWeightFactory = instanceCache.newInstance(config,
                     "probabilityWeightFactoryClass", config.getProbabilityWeightFactoryClass());
-            if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+            if (!(valueSelector instanceof IterableValueSelector)) {
                 throw new IllegalArgumentException("The valueSelectorConfig (" + config
                         + ") with resolvedCacheType (" + resolvedCacheType
                         + ") and resolvedSelectionOrder (" + resolvedSelectionOrder
                         + ") needs to be based on an "
-                        + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                        + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                         + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
             }
-            valueSelector = new ProbabilityValueSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector,
+            valueSelector = new ProbabilityValueSelector<>((IterableValueSelector<Solution_>) valueSelector,
                     resolvedCacheType, probabilityWeightFactory);
         }
         return valueSelector;
@@ -393,15 +388,15 @@ public class ValueSelectorFactory<Solution_>
     private ValueSelector<Solution_> applyShuffling(SelectionCacheType resolvedCacheType,
             SelectionOrder resolvedSelectionOrder, ValueSelector<Solution_> valueSelector) {
         if (resolvedSelectionOrder == SelectionOrder.SHUFFLED) {
-            if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+            if (!(valueSelector instanceof IterableValueSelector)) {
                 throw new IllegalArgumentException("The valueSelectorConfig (" + config
                         + ") with resolvedCacheType (" + resolvedCacheType
                         + ") and resolvedSelectionOrder (" + resolvedSelectionOrder
                         + ") needs to be based on an "
-                        + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                        + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                         + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
             }
-            valueSelector = new ShufflingValueSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector,
+            valueSelector = new ShufflingValueSelector<>((IterableValueSelector<Solution_>) valueSelector,
                     resolvedCacheType);
         }
         return valueSelector;
@@ -410,15 +405,15 @@ public class ValueSelectorFactory<Solution_>
     private ValueSelector<Solution_> applyCaching(SelectionCacheType resolvedCacheType,
             SelectionOrder resolvedSelectionOrder, ValueSelector<Solution_> valueSelector) {
         if (resolvedCacheType.isCached() && resolvedCacheType.compareTo(valueSelector.getCacheType()) > 0) {
-            if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+            if (!(valueSelector instanceof IterableValueSelector)) {
                 throw new IllegalArgumentException("The valueSelectorConfig (" + config
                         + ") with resolvedCacheType (" + resolvedCacheType
                         + ") and resolvedSelectionOrder (" + resolvedSelectionOrder
                         + ") needs to be based on an "
-                        + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                        + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                         + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
             }
-            valueSelector = new CachingValueSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector,
+            valueSelector = new CachingValueSelector<>((IterableValueSelector<Solution_>) valueSelector,
                     resolvedCacheType, resolvedSelectionOrder.toRandomSelectionBoolean());
         }
         return valueSelector;
@@ -455,15 +450,15 @@ public class ValueSelectorFactory<Solution_>
             if (id.isEmpty()) {
                 throw new IllegalArgumentException("The valueSelectorConfig (%s) has an empty id (%s).".formatted(config, id));
             }
-            if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+            if (!(valueSelector instanceof IterableValueSelector)) {
                 throw new IllegalArgumentException("""
                         The valueSelectorConfig (%s) with id (%s) needs to be based on an %s (%s).
                         Check your @%s annotations."""
-                        .formatted(config, id, EntityIndependentValueSelector.class.getSimpleName(), valueSelector,
+                        .formatted(config, id, IterableValueSelector.class.getSimpleName(), valueSelector,
                                 ValueRangeProvider.class.getSimpleName()));
             }
             var mimicRecordingValueSelector =
-                    new MimicRecordingValueSelector<>((EntityIndependentValueSelector<Solution_>) valueSelector);
+                    new MimicRecordingValueSelector<>((IterableValueSelector<Solution_>) valueSelector);
             configPolicy.addValueMimicRecorder(id, mimicRecordingValueSelector);
             valueSelector = mimicRecordingValueSelector;
         }
@@ -475,16 +470,16 @@ public class ValueSelectorFactory<Solution_>
             GenuineVariableDescriptor<Solution_> variableDescriptor, ValueSelector<Solution_> valueSelector) {
         if (variableDescriptor.isListVariable() && configPolicy.isUnassignedValuesAllowed()
                 && listValueFilteringType != ListValueFilteringType.NONE) {
-            if (!(valueSelector instanceof EntityIndependentValueSelector)) {
+            if (!(valueSelector instanceof IterableValueSelector)) {
                 throw new IllegalArgumentException("The valueSelectorConfig (" + config
                         + ") with id (" + config.getId()
                         + ") needs to be based on an "
-                        + EntityIndependentValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
+                        + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
                         + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
             }
             valueSelector = listValueFilteringType == ListValueFilteringType.ACCEPT_ASSIGNED
-                    ? new AssignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector))
-                    : new UnassignedListValueSelector<>(((EntityIndependentValueSelector<Solution_>) valueSelector));
+                    ? new AssignedListValueSelector<>(((IterableValueSelector<Solution_>) valueSelector))
+                    : new UnassignedListValueSelector<>(((IterableValueSelector<Solution_>) valueSelector));
         }
         return valueSelector;
     }

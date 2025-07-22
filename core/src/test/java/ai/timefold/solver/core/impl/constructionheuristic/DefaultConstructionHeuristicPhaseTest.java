@@ -33,6 +33,10 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
@@ -44,9 +48,13 @@ import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAll
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.Metrics;
@@ -329,6 +337,54 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                     .containsExactly(firstValue, secondValue);
         });
 
+    }
+
+    @Test
+    void solveWithEntityValueRangeBasicVariable() {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataAllowsUnassignedEntityProvidingSolution.class,
+                        TestdataAllowsUnassignedEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEntityProvidingScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var value3 = new TestdataValue("v3");
+        var entity1 = new TestdataAllowsUnassignedEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataAllowsUnassignedEntityProvidingEntity("e2", List.of(value3));
+
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
+        // Only one entity should provide the value list and assign the values.
+        assertThat(bestSolution.getEntityList().get(0).getValue()).isNotNull();
+        assertThat(bestSolution.getEntityList().get(1).getValue()).isSameAs(value3);
+    }
+
+    @Disabled("Temporarily disabled")
+    @Test
+    void solveWithEntityValueRangeListVariable() {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataListEntityProvidingSolution.class, TestdataListEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataListEntityProvidingScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig());
+
+        var value1 = new TestdataListEntityProvidingValue("v1");
+        var value2 = new TestdataListEntityProvidingValue("v2");
+        var value3 = new TestdataListEntityProvidingValue("v3");
+        var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value2, value3));
+
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
+        // Only one entity should provide the value list and assign the values.
+        assertThat(bestSolution.getEntityList().get(0).getValueList()).hasSameElementsAs(List.of(value1, value2));
+        assertThat(bestSolution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(value3));
     }
 
     @Test

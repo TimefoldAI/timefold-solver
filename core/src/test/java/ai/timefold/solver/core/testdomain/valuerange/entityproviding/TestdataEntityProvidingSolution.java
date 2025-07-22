@@ -22,11 +22,23 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
                 TestdataEntityProvidingEntity.class);
     }
 
+    public static TestdataEntityProvidingSolution generateSolution() {
+        var solution = new TestdataEntityProvidingSolution("s1");
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var value3 = new TestdataValue("v3");
+        var entity1 = new TestdataEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataEntityProvidingEntity("e2", List.of(value1, value3));
+        solution.setEntityList(List.of(entity1, entity2));
+        return solution;
+    }
+
     private List<TestdataEntityProvidingEntity> entityList;
 
     private SimpleScore score;
 
     public TestdataEntityProvidingSolution() {
+        // Required for cloning
     }
 
     public TestdataEntityProvidingSolution(String code) {

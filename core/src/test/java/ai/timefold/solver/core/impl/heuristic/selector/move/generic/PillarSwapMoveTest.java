@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfCollection;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
@@ -10,13 +11,15 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -30,13 +33,21 @@ class PillarSwapMoveTest {
         var v4 = new TestdataValue("4");
         var v5 = new TestdataValue("5");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
-        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
-        var c = new TestdataEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
-        var z = new TestdataEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
+        var c = new TestdataAllowsUnassignedEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
+        var z = new TestdataAllowsUnassignedEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
+        solution.setEntityList(Arrays.asList(a, b, c, z));
 
-        ScoreDirector<TestdataEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
-        var variableDescriptorList = TestdataEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
+        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        var scoreDirector = (VariableDescriptorAwareScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution>) mock(
+                VariableDescriptorAwareScoreDirector.class);
+        doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();
+        valueRangeManager.reset(solution);
+
+        var variableDescriptorList =
+                TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
 
         var abMove = new PillarSwapMove<>(variableDescriptorList, Arrays.asList(a), Arrays.asList(b));
         a.setValue(v1);
@@ -111,15 +122,17 @@ class PillarSwapMoveTest {
         var v4 = new TestdataValue("4");
         var v5 = new TestdataValue("5");
 
-        var a = new TestdataEntityProvidingEntity("a", Arrays.asList(v1, v2, v3, v4), null);
-        var b = new TestdataEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
-        var c = new TestdataEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
-        var z = new TestdataEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3, v4), null);
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
+        var c = new TestdataAllowsUnassignedEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
+        var z = new TestdataAllowsUnassignedEntityProvidingEntity("z", Arrays.asList(v1, v2, v3, v4, v5), null);
 
-        var scoreDirectorFactory = new EasyScoreDirectorFactory<>(TestdataEntityProvidingSolution.buildSolutionDescriptor(),
-                solution -> SimpleScore.ZERO);
+        var scoreDirectorFactory =
+                new EasyScoreDirectorFactory<>(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor(),
+                        solution -> SimpleScore.ZERO);
         var scoreDirector = scoreDirectorFactory.buildScoreDirector();
-        var variableDescriptorList = TestdataEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
+        var variableDescriptorList =
+                TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor().getGenuineVariableDescriptorList();
 
         var abMove = new PillarSwapMove<>(variableDescriptorList, Arrays.asList(a), Arrays.asList(b));
 

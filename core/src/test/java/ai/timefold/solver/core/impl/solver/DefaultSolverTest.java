@@ -115,6 +115,9 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntityFirstEntity;
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySecondEntity;
@@ -137,6 +140,9 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
@@ -146,6 +152,7 @@ import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -2079,6 +2086,106 @@ class DefaultSolverTest extends AbstractMeterTest {
             // and LS will find no improvement
             assertThat(entity.getBasicValue()).isNotSameAs(entity.getSecondBasicValue());
         }
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForSingleVar")
+    void solveBasicVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectionConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataAllowsUnassignedEntityProvidingSolution.class,
+                        TestdataAllowsUnassignedEntityProvidingEntity.class)
+                .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEntityProvidingScoreCalculator.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig);
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var value3 = new TestdataValue("v3");
+        var value4 = new TestdataValue("v4");
+        var value5 = new TestdataValue("v5");
+        var entity1 = new TestdataAllowsUnassignedEntityProvidingEntity("e1", List.of(value1, value2, value3));
+        var entity2 = new TestdataAllowsUnassignedEntityProvidingEntity("e2", List.of(value1, value2, value5));
+        var entity3 = new TestdataAllowsUnassignedEntityProvidingEntity("e3", List.of(value4, value5));
+
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2, entity3));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
+
+        var bestEntity1 = bestSolution.getEntityList().get(0);
+        assertThat(bestEntity1.getValue()).isNotIn(value4, value5);
+        var bestEntity2 = bestSolution.getEntityList().get(1);
+        assertThat(bestEntity2.getValue()).isNotIn(value3, value4);
+        var bestEntity3 = bestSolution.getEntityList().get(2);
+        assertThat(bestEntity3.getValue()).isNotIn(value1, value2, value3);
+    }
+
+    private static List<MoveSelectorConfig> generateMovesForListVarEntityRangeModel() {
+        // Local Search
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Change - list
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Swap - list
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Sublist change - list
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        // Sublist swap - list
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
+        // KOpt - list
+        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        // R&R - list
+        allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
+    @Disabled("Temporarily disabled")
+    @ParameterizedTest
+    @MethodSource("generateMovesForListVarEntityRangeModel")
+    void solveListVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
+        // Local search
+        var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectionConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataListUnassignedEntityProvidingSolution.class,
+                        TestdataListUnassignedEntityProvidingEntity.class)
+                .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
+                .withEasyScoreCalculatorClass(TestdataListUnassignedEntityProvidingScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig);
+
+        var value1 = new TestdataValue("v1");
+        var value2 = new TestdataValue("v2");
+        var value3 = new TestdataValue("v3");
+        var value4 = new TestdataValue("v4");
+        var value5 = new TestdataValue("v5");
+        var entity1 = new TestdataListUnassignedEntityProvidingEntity("e1", List.of(value1, value2));
+        var entity2 = new TestdataListUnassignedEntityProvidingEntity("e2", List.of(value2, value3));
+        var entity3 = new TestdataListUnassignedEntityProvidingEntity("e3", List.of(value4, value5));
+
+        var solution = new TestdataListUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2, entity3));
+
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(bestSolution).isNotNull();
+
+        var bestEntity1 = bestSolution.getEntityList().get(0);
+        assertThat(bestEntity1.getValueList()).hasSizeGreaterThan(0);
+        assertThat(bestEntity1.getValueList()).doesNotContain(value3, value4, value5);
+        var bestEntity2 = bestSolution.getEntityList().get(1);
+        assertThat(bestEntity2.getValueList()).hasSizeGreaterThan(0);
+        assertThat(bestEntity2.getValueList()).doesNotContain(value1, value4, value5);
+        var bestEntity3 = bestSolution.getEntityList().get(2);
+        assertThat(bestEntity3.getValueList()).hasSizeGreaterThan(0);
+        assertThat(bestEntity3.getValueList()).doesNotContain(value1, value2, value3);
     }
 
     @Test

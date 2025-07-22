@@ -5,42 +5,33 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class FromSolutionPropertyValueRangeDescriptor<Solution_>
-        extends AbstractFromPropertyValueRangeDescriptor<Solution_>
-        implements EntityIndependentValueRangeDescriptor<Solution_> {
+@NullMarked
+public final class FromSolutionPropertyValueRangeDescriptor<Solution_>
+        extends AbstractFromPropertyValueRangeDescriptor<Solution_> {
 
-    public FromSolutionPropertyValueRangeDescriptor(
-            GenuineVariableDescriptor<Solution_> variableDescriptor, boolean addNullInValueRange,
+    public FromSolutionPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             MemberAccessor memberAccessor) {
-        super(variableDescriptor, addNullInValueRange, memberAccessor);
+        super(variableDescriptor, memberAccessor);
     }
 
     @Override
-    public boolean isEntityIndependent() {
+    public <T> ValueRange<T> extractAllValues(Solution_ solution) {
+        return readValueRange(solution);
+    }
+
+    @Override
+    public <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity) {
+        return readValueRange(solution); // Needed for composite ranges on solution and on entity.
+    }
+
+    @Override
+    public boolean canExtractValueRangeFromSolution() {
         return true;
-    }
-
-    @Override
-    public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
-        return readValueRange(solution);
-    }
-
-    @Override
-    public long extractValueRangeSize(Solution_ solution, Object entity) {
-        return readValueRangeSize(solution);
-    }
-
-    @Override
-    public <T> ValueRange<T> extractValueRange(Solution_ solution) {
-        return readValueRange(solution);
-    }
-
-    @Override
-    public long extractValueRangeSize(Solution_ solution) {
-        return readValueRangeSize(solution);
     }
 
 }

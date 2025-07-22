@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -15,44 +14,50 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentityListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.empty.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
+public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
         extends AbstractValueRangeDescriptor<Solution_> {
 
     protected final MemberAccessor memberAccessor;
     protected boolean collectionWrapping;
     protected boolean arrayWrapping;
     protected boolean countable;
+    // Field related to the generic type of the value range, e.g., List<String> -> String
+    private final boolean isGenericTypeImmutable;
 
-    public AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean addNullInValueRange,
+    protected AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             MemberAccessor memberAccessor) {
-        super(variableDescriptor, addNullInValueRange);
+        super(variableDescriptor);
         this.memberAccessor = memberAccessor;
         ValueRangeProvider valueRangeProviderAnnotation = memberAccessor.getAnnotation(ValueRangeProvider.class);
         if (valueRangeProviderAnnotation == null) {
             throw new IllegalStateException("The member (%s) must have a valueRangeProviderAnnotation (%s)."
                     .formatted(memberAccessor, valueRangeProviderAnnotation));
         }
+        var type = memberAccessor.getType();
+        collectionWrapping = Collection.class.isAssignableFrom(type);
+        arrayWrapping = type.isArray();
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
-        if (addNullInValueRange && !countable) {
-            throw new IllegalStateException("""
-                    The valueRangeDescriptor (%s) allows unassigned values, but not countable (%s).
-                    Maybe the member (%s) should return %s."""
-                    .formatted(this, countable, memberAccessor, CountableValueRange.class.getSimpleName()));
+        if (collectionWrapping) {
+            var genericType = ConfigUtils.extractGenericTypeParameterOrFail("solutionClass or entityClass",
+                    memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),
+                    ValueRangeProvider.class, memberAccessor.getName());
+            this.isGenericTypeImmutable = ConfigUtils.isGenericTypeImmutable(genericType);
+        } else {
+            this.isGenericTypeImmutable = true;
         }
     }
 
     private void processValueRangeProviderAnnotation(ValueRangeProvider valueRangeProviderAnnotation) {
         EntityDescriptor<Solution_> entityDescriptor = variableDescriptor.getEntityDescriptor();
         Class<?> type = memberAccessor.getType();
-        collectionWrapping = Collection.class.isAssignableFrom(type);
-        arrayWrapping = type.isArray();
         if (!collectionWrapping && !arrayWrapping && !ValueRange.class.isAssignableFrom(type)) {
             throw new IllegalArgumentException("""
                     The entityClass (%s) has a @%s-annotated property (%s) that refers to a @%s-annotated member \
@@ -121,46 +126,13 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
                                         PlanningVariable.class.getSimpleName()));
             }
             valueRange = new ListValueRange<>(list);
+            if (!isGenericTypeImmutable) {
+                valueRange = new IdentityListValueRange<>((ListValueRange<Value_>) valueRange);
+            }
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
         }
-        valueRange = doNullInValueRangeWrapping(valueRange);
-        if (valueRange.isEmpty()) {
-            throw new IllegalStateException("""
-                    The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
-                    Maybe apply over-constrained planning as described in the documentation."""
-                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
-        }
-        return valueRange;
-    }
-
-    @SuppressWarnings("unchecked")
-    protected long readValueRangeSize(Object bean) {
-        var valueRangeObject = memberAccessor.executeGetter(bean);
-        if (valueRangeObject == null) {
-            throw new IllegalStateException(
-                    "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
-                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
-        }
-        var size = addNullInValueRange ? 1L : 0L;
-        if (collectionWrapping) {
-            return size + ((Collection<Object>) valueRangeObject).size();
-        } else if (arrayWrapping) {
-            return size + Array.getLength(valueRangeObject);
-        }
-        var valueRange = (ValueRange<Object>) valueRangeObject;
-        if (valueRange.isEmpty()) {
-            throw new IllegalStateException("""
-                    The @%s-annotated member (%s) called on bean (%s) must not return an empty valueRange (%s).
-                    Maybe apply over-constrained planning as described in the documentation."""
-                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
-        } else if (valueRange instanceof CountableValueRange<Object> countableValueRange) {
-            return size + countableValueRange.getSize();
-        } else {
-            throw new UnsupportedOperationException(
-                    "The @%s-annotated member (%s) called on bean (%s) is not countable and therefore does not support getSize()."
-                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean));
-        }
+        return valueRange.isEmpty() ? (ValueRange<Value_>) EmptyValueRange.INSTANCE : valueRange;
     }
 
     private <T> List<T> transformCollectionToList(Collection<T> collection) {
