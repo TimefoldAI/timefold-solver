@@ -27,8 +27,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
@@ -899,25 +897,16 @@ public class EntityDescriptor<Solution_> {
                                     solution)
                             : valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
                                     entity);
-                    if (valueRange instanceof CountableValueRange<?> countableValueRange) {
-                        var valueIterator = countableValueRange.createOriginalIterator();
-                        while (valueIterator.hasNext()) {
-                            var value = valueIterator.next();
-                            if (variableDescriptor.isValuePotentialAnchor(value)) {
-                                if (tracker.isAnchorVisited(value)) {
-                                    continue;
-                                }
-                                // Assumes anchors are not pinned
-                                tracker.incrementListEntityCount(true);
+                    var valueIterator = valueRange.createOriginalIterator();
+                    while (valueIterator.hasNext()) {
+                        var value = valueIterator.next();
+                        if (variableDescriptor.isValuePotentialAnchor(value)) {
+                            if (tracker.isAnchorVisited(value)) {
+                                continue;
                             }
+                            // Assumes anchors are not pinned
+                            tracker.incrementListEntityCount(true);
                         }
-                    } else {
-                        throw new IllegalStateException("""
-                                The value range (%s) for variable (%s) is not countable.
-                                Verify that a @%s does not return a %s when it can return %s or %s.
-                                """.formatted(valueRange, variableDescriptor.getSimpleEntityAndVariableName(),
-                                ValueRangeProvider.class.getSimpleName(), ValueRange.class.getSimpleName(),
-                                CountableValueRange.class.getSimpleName(), Collection.class.getSimpleName()));
                     }
                 } else {
                     if (isMovable(solution, entity)) {
