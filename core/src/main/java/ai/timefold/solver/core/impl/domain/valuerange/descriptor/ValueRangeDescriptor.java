@@ -28,7 +28,7 @@ public sealed interface ValueRangeDescriptor<Solution_>
      * as list variables get unassigned through a different mechanism
      * (e.g. ElementPositionRandomIterator).
      */
-    default boolean acceptNullInValueRange() {
+    default boolean acceptsNullInValueRange() {
         return getVariableDescriptor() instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
                 && basicVariableDescriptor.allowsUnassigned();
     }

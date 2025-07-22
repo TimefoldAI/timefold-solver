@@ -40,7 +40,7 @@ public final class ValueRangeManager<Solution_> {
         var valueRange = fromSolutionMap.get(valueRangeDescriptor);
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
+            if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 valueRange = checkForNullValues(valueRangeDescriptor, extractedValueRange);
             } else {
                 if (extractedValueRange instanceof EmptyValueRange<?>) {
@@ -73,7 +73,7 @@ public final class ValueRangeManager<Solution_> {
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange =
                     valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
+            if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 valueRange = checkForNullValues(valueRangeDescriptor, extractedValueRange);
             } else {
                 if (extractedValueRange instanceof EmptyValueRange<?>) {
@@ -98,7 +98,7 @@ public final class ValueRangeManager<Solution_> {
         // We rely on the value range to fetch the size
         var valueRange = getFromSolution(valueRangeDescriptor, solution);
         if (valueRange instanceof EmptyValueRange) {
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
+            if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 return 1; // Empty value range with null allowed counts as size 1
             } else {
                 throw getOnSolutionRangeEmptyException(valueRangeDescriptor, solution);
@@ -118,7 +118,7 @@ public final class ValueRangeManager<Solution_> {
         // We rely on the value range to fetch the size
         var valueRange = getFromEntity(valueRangeDescriptor, entity);
         if (valueRange instanceof EmptyValueRange) {
-            if (valueRangeDescriptor.acceptNullInValueRange()) {
+            if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 return 1; // Empty value range with null allowed counts as size 1
             } else {
                 throw getOnEntityRangeEmptyException(valueRangeDescriptor, entity);
@@ -147,7 +147,7 @@ public final class ValueRangeManager<Solution_> {
 
     private <T> ValueRange<T> checkForNullValues(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             ValueRange<T> valueRange) {
-        if (valueRangeDescriptor.acceptNullInValueRange()
+        if (valueRangeDescriptor.acceptsNullInValueRange()
                 && valueRange instanceof CountableValueRange<T> countableValueRange) {
             return new NullAllowingCountableValueRange<>(countableValueRange);
         }
