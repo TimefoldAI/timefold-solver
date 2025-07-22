@@ -50,6 +50,10 @@ public class TestdataListUnassignedCompositeEntityProvidingEntity extends Testda
         return valueRange1;
     }
 
+    public List<TestdataListEntityProvidingValue> getValueRange2() {
+        return valueRange2;
+    }
+
     public List<TestdataListEntityProvidingValue> getValueList() {
         return valueList;
     }

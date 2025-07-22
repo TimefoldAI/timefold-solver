@@ -59,12 +59,6 @@ class ValueRangeManagerTest {
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
-    private <Solution_> ValueRangeManager<Solution_> createValueRangeManager(Solution_ solution) {
-        var valueRangeManager = new ValueRangeManager<Solution_>();
-        valueRangeManager.reset(solution);
-        return valueRangeManager;
-    }
-
     @Test
     void extractValueFromSolutionCompositeUnassignedBasicVariable() {
         var solution = TestdataAllowsUnassignedCompositeSolution.generateSolution(2, 2);
@@ -446,4 +440,9 @@ class ValueRangeManagerTest {
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
+    private <Solution_> ValueRangeManager<Solution_> createValueRangeManager(Solution_ solution) {
+        var valueRangeManager = new ValueRangeManager<Solution_>();
+        valueRangeManager.reset(solution);
+        return valueRangeManager;
+    }
 }
