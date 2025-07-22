@@ -13,7 +13,6 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.IterableValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -209,8 +208,7 @@ public class ValueSelectorFactory<Solution_>
                     + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
         }
         if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-            return new IterableFromSolutionPropertyValueSelector<>(
-                    (IterableValueRangeDescriptor<Solution_>) valueRangeDescriptor, minimumCacheType, randomSelection);
+            return new IterableFromSolutionPropertyValueSelector<>(valueRangeDescriptor, minimumCacheType, randomSelection);
         } else {
             // TODO Do not allow PHASE cache on FromEntityPropertyValueSelector, except if the moveSelector is PHASE cached too.
             var fromEntityPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);

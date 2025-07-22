@@ -22,7 +22,7 @@ public final class AllEntitiesListValueRange<Value_> extends AbstractCountableVa
 
     private final ValueRangeCacheStrategy<Value_> cacheStrategy;
 
-    public <Solution_> AllEntitiesListValueRange(List<?> entityList,
+    public <Solution_> AllEntitiesListValueRange(Solution_ solution, List<?> entityList,
             FromEntityPropertyValueRangeDescriptor<Solution_> valueRangeDescriptor) {
         if (entityList.isEmpty()) {
             throw new IllegalArgumentException("Impossible state: the entity list (%s) cannot be empty."
@@ -33,12 +33,13 @@ public final class AllEntitiesListValueRange<Value_> extends AbstractCountableVa
         // such as the iterators and the list variable state,
         // expect the value list to have the correct size.
         // Therefore, we create a unique values list in advance to return consistent information to the outer tiers.
-        var firstValueRange =
-                (CacheableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(null, entityList.get(0));
+        var firstValueRange = (CacheableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValuesFromEntity(solution,
+                entityList.get(0));
         this.cacheStrategy = firstValueRange.generateCache();
         for (var i = 1; i < entityList.size(); ++i) {
             var entity = entityList.get(i);
-            var otherValueRange = (CountableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(null, entity);
+            var otherValueRange =
+                    (CountableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValuesFromEntity(solution, entity);
             this.cacheStrategy.merge(otherValueRange);
         }
     }

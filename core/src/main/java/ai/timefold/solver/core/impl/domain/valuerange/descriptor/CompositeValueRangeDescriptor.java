@@ -9,14 +9,17 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.CompositeCountableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRangeDescriptor<Solution_>
-        implements IterableValueRangeDescriptor<Solution_> {
+@NullMarked
+public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRangeDescriptor<Solution_>
+        implements ValueRangeDescriptor<Solution_> {
 
     private final boolean canExtractValueRangeFromSolution;
-    protected final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
+    private final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
 
     public CompositeValueRangeDescriptor(
             GenuineVariableDescriptor<Solution_> variableDescriptor, boolean acceptNullInValueRange,
@@ -48,22 +51,20 @@ public class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRange
     }
 
     @Override
-    public <Value_> ValueRange<Value_> extractValueRange(Solution_ solution, Object entity) {
-        var childValueRangeList = new ArrayList<CountableValueRange<Value_>>(childValueRangeDescriptorList.size());
+    public <T> ValueRange<T> extractAllValues(Solution_ solution) {
+        var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            childValueRangeList
-                    .add((CountableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValueRange(solution, entity));
+            childValueRangeList.add((CountableValueRange<T>) valueRangeDescriptor.<T> extractAllValues(solution));
         }
         return new CompositeCountableValueRange<>(childValueRangeList);
     }
 
     @Override
-    public <T> ValueRange<T> extractValueRange(Solution_ solution) {
+    public <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity) {
         var childValueRangeList = new ArrayList<CountableValueRange<T>>(childValueRangeDescriptorList.size());
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
-            var iterableValueRangeDescriptor = (IterableValueRangeDescriptor<Solution_>) valueRangeDescriptor;
             childValueRangeList
-                    .add((CountableValueRange<T>) iterableValueRangeDescriptor.<T> extractValueRange(solution));
+                    .add((CountableValueRange<T>) valueRangeDescriptor.<T> extractValuesFromEntity(solution, entity));
         }
         return new CompositeCountableValueRange<>(childValueRangeList);
     }

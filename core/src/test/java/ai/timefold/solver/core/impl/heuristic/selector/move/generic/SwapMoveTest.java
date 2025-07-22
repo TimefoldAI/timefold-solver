@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
@@ -11,6 +12,8 @@ import java.util.Collections;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -35,8 +38,15 @@ class SwapMoveTest {
         var a = new TestdataAllowsUnassignedEntityProvidingEntity("a", Arrays.asList(v1, v2, v3), null);
         var b = new TestdataAllowsUnassignedEntityProvidingEntity("b", Arrays.asList(v2, v3, v4, v5), null);
         var c = new TestdataAllowsUnassignedEntityProvidingEntity("c", Arrays.asList(v4, v5), null);
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
+        solution.setEntityList(Arrays.asList(a, b, c));
 
-        ScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution> scoreDirector = mock(ScoreDirector.class);
+        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        var scoreDirector = (VariableDescriptorAwareScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution>) mock(
+                VariableDescriptorAwareScoreDirector.class);
+        doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();
+        valueRangeManager.reset(solution);
+
         var entityDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor();
 
         var abMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, b);

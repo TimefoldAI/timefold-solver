@@ -28,15 +28,17 @@ class EmptyValueRangeTest {
 
     @Test
     void createOriginalIterator() {
-        assertThatExceptionOfType(UnsupportedOperationException.class)
-                .isThrownBy(() -> EmptyValueRange.INSTANCE.createOriginalIterator());
+        assertThat(EmptyValueRange.INSTANCE.createOriginalIterator())
+                .toIterable()
+                .isEmpty();
     }
 
     @Test
     void createRandomIterator() {
         Random workingRandom = new Random(0);
-        assertThatExceptionOfType(UnsupportedOperationException.class)
-                .isThrownBy(() -> EmptyValueRange.INSTANCE.createRandomIterator(workingRandom));
+        assertThat(EmptyValueRange.INSTANCE.createRandomIterator(workingRandom))
+                .toIterable()
+                .isEmpty();
     }
 
 }

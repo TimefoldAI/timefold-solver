@@ -39,7 +39,7 @@ public final class ValueRangeManager<Solution_> {
     public <T> ValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution) {
         var valueRange = fromSolutionMap.get(valueRangeDescriptor);
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
-            var extractedValueRange = valueRangeDescriptor.<T> extractValueRange(Objects.requireNonNull(solution), null);
+            var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
             if (valueRangeDescriptor.acceptNullInValueRange()) {
                 valueRange = checkForNullValues(valueRangeDescriptor, extractedValueRange);
             } else {
@@ -63,10 +63,16 @@ public final class ValueRangeManager<Solution_> {
 
     @SuppressWarnings("unchecked")
     public <T> ValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException(
+                    "Impossible state: value range (%s) on planning entity (%s) requested before the working solution is known."
+                            .formatted(valueRangeDescriptor, entity));
+        }
         var valueRangeMap = fromEntityMap.computeIfAbsent(entity, e -> new IdentityHashMap<>());
         var valueRange = valueRangeMap.get(valueRangeDescriptor);
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
-            var extractedValueRange = valueRangeDescriptor.<T> extractValueRange(null, Objects.requireNonNull(entity));
+            var extractedValueRange =
+                    valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
             if (valueRangeDescriptor.acceptNullInValueRange()) {
                 valueRange = checkForNullValues(valueRangeDescriptor, extractedValueRange);
             } else {

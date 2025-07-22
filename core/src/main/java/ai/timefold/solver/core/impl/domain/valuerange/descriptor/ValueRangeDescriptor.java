@@ -6,7 +6,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -43,23 +42,31 @@ public interface ValueRangeDescriptor<Solution_> {
     boolean mightContainEntity();
 
     /**
-     * The method allows extracting the value range from a solution or an entity,
-     * and it is compatible with problem facts defined in the solution or entity classes.
+     * Extracts the {@link ValueRange} from the solution or,
+     * if the value range is defined at the entity level,
+     * extracts a composite {@link ValueRange} from all entities in the solution.
+     * <p>
      * The method should not be invoked directly by selectors or other components of the solver.
      * The {@link ValueRangeManager#getFromSolution(ValueRangeDescriptor, Object)}
      * and {@link ValueRangeManager#getFromEntity(ValueRangeDescriptor, Object)}
      * serve as the single source of truth for managing value ranges and should be used by outer components.
      * <p>
-     * Calling this method outside the resolver may lead to unnecessary recomputation of ranges.
-     * 
-     * @param solution the solution
-     * @param entity the entity. To avoid this parameter,
-     *        use {@link IterableValueRangeDescriptor#extractValueRange} instead.
-     * 
-     * @return never null
-     * 
-     * @see ValueRangeManager
+     * Calling this method outside {@link ValueRangeManager} may lead to unnecessary recomputation of ranges.
      */
-    <Value_> ValueRange<Value_> extractValueRange(@Nullable Solution_ solution, @Nullable Object entity);
+    <T> ValueRange<T> extractAllValues(Solution_ solution);
+
+    /**
+     * Extracts the {@link ValueRange} from the planning entity.
+     * If the value range is defined at the solution level instead,
+     * this method reads the value range from there.
+     * <p>
+     * The method should not be invoked directly by selectors or other components of the solver.
+     * The {@link ValueRangeManager#getFromSolution(ValueRangeDescriptor, Object)}
+     * and {@link ValueRangeManager#getFromEntity(ValueRangeDescriptor, Object)}
+     * serve as the single source of truth for managing value ranges and should be used by outer components.
+     * <p>
+     * Calling this method outside {@link ValueRangeManager} may lead to unnecessary recomputation of ranges.
+     */
+    <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity);
 
 }

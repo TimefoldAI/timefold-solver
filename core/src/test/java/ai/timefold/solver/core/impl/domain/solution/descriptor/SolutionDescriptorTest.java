@@ -505,7 +505,10 @@ class SolutionDescriptorTest {
                         List.of(v1, v2)),
                 new TestdataAllowsUnassignedEntityProvidingEntity("B",
                         List.of(v1, v2, new TestdataValue("3")))));
+
         var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        valueRangeManager.reset(solution);
+
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
@@ -542,7 +545,10 @@ class SolutionDescriptorTest {
     void problemScaleSingleEntityProvidingSingleValueRange() {
         var solutionDescriptor = TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataAllowsUnassignedEntityProvidingSolution("Solution");
+
         var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        valueRangeManager.reset(solution);
+
         var v1 = new TestdataValue("1");
         solution.setEntityList(List.of(
                 new TestdataAllowsUnassignedEntityProvidingEntity("A",

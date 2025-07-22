@@ -33,8 +33,7 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     private final boolean isGenericTypeImmutable;
 
     protected AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean acceptNullInValueRange,
-            MemberAccessor memberAccessor) {
+            boolean acceptNullInValueRange, MemberAccessor memberAccessor) {
         super(variableDescriptor, acceptNullInValueRange);
         this.memberAccessor = memberAccessor;
         ValueRangeProvider valueRangeProviderAnnotation = memberAccessor.getAnnotation(ValueRangeProvider.class);

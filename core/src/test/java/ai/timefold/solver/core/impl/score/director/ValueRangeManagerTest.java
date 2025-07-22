@@ -46,8 +46,8 @@ class ValueRangeManagerTest {
 
     @Test
     void extractValueFromSolutionUnassignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedSolution>();
         var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
 
@@ -58,14 +58,20 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
+    }
+
+    private <Solution_> ValueRangeManager<Solution_> createValueRangeManager(Solution_ solution) {
+        var valueRangeManager = new ValueRangeManager<Solution_>();
+        valueRangeManager.reset(solution);
+        return valueRangeManager;
     }
 
     @Test
     void extractValueFromSolutionCompositeUnassignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedCompositeSolution>();
         var solution = TestdataAllowsUnassignedCompositeSolution.generateSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedCompositeEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
 
@@ -77,14 +83,14 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
     @Test
     void extractValueFromSolutionAssignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataSolution>();
         var solution = TestdataSolution.generateSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
 
@@ -95,14 +101,14 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
     @Test
     void extractValueFromSolutionCompositeAssignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataCompositeSolution>();
         var solution = TestdataCompositeSolution.generateSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataCompositeSolution.buildSolutionDescriptor()
                 .findEntityDescriptor(TestdataCompositeEntity.class)
                 .getGenuineVariableDescriptor("value")
@@ -116,14 +122,14 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
     @Test
     void extractValueFromEntityUnassignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
         var solution = TestdataAllowsUnassignedEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
 
@@ -134,7 +140,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will add the null value
@@ -145,14 +151,14 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
     @Test
     void extractValueFromEntityCompositeUnassignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedCompositeEntityProvidingSolution>();
         var solution = TestdataAllowsUnassignedCompositeEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedCompositeEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
 
@@ -165,7 +171,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(6);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
 
         // The value range manager will not add the null value
@@ -177,14 +183,14 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
     @Test
     void extractValueFromEntityAssignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataEntityProvidingSolution>();
         var solution = TestdataEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
 
@@ -195,7 +201,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will add the null value
@@ -206,14 +212,14 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
     @Test
     void extractValueFromEntityCompositeAssignedBasicVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataCompositeEntityProvidingSolution>();
         var solution = TestdataCompositeEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataCompositeEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
 
@@ -226,7 +232,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(6);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
 
         // The value range manager will not add the null value
@@ -238,14 +244,14 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
     @Test
     void extractValueFromSolutionUnassignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedValuesListSolution>();
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 
@@ -256,14 +262,14 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
     @Test
     void extractValueFromSolutionCompositeUnassignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedCompositeListSolution>();
         var solution = TestdataAllowsUnassignedCompositeListSolution.generateSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedCompositeListEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 
@@ -275,14 +281,14 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
     @Test
     void extractValueFromSolutionAssignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataListSolution>();
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListSolution.buildSolutionDescriptor()
                 .findEntityDescriptor(TestdataListEntity.class)
                 .getGenuineVariableDescriptor("valueList")
@@ -294,14 +300,14 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(2);
     }
 
     @Test
     void extractValueFromSolutionCompositeAssignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataListCompositeSolution>();
         var solution = TestdataListCompositeSolution.generateSolution(2, 2);
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListCompositeEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 
@@ -313,15 +319,15 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
     @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityUnassignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataListUnassignedEntityProvidingSolution>();
         var solution = TestdataListUnassignedEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListUnassignedEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 
@@ -332,7 +338,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will not add the null value because it is a list variable
@@ -343,15 +349,15 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
     @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityCompositeUnassignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataListUnassignedCompositeEntityProvidingSolution>();
         var solution = TestdataListUnassignedCompositeEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListUnassignedCompositeEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 
@@ -364,7 +370,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(6);
 
         // Fetching from the descriptor does not include the null value
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
 
         // The value range manager will not add the null value because it is a list variable
@@ -376,15 +382,15 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
     @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityAssignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataListEntityProvidingSolution>();
         var solution = TestdataListEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 
@@ -395,7 +401,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value because it is a list variable
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(3);
 
         // The value range manager will not add the null value because it is a list variable
@@ -406,15 +412,15 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(2);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
     @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityCompositeAssignedListVariable() {
-        var valueRangeManager = new ValueRangeManager<TestdataListCompositeEntityProvidingSolution>();
         var solution = TestdataListCompositeEntityProvidingSolution.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListCompositeEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 
@@ -427,7 +433,7 @@ class ValueRangeManagerTest {
         assertThat(valueRange.getSize()).isEqualTo(6);
 
         // Fetching from the descriptor does not include the null value because it is a list variable
-        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(solution, null);
+        var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
         assertThat(otherValueRange.getSize()).isEqualTo(6);
 
         // The value range manager will add the null value because it is a list variable
@@ -439,14 +445,14 @@ class ValueRangeManagerTest {
         assertThat(entityValueRange.getSize()).isEqualTo(4);
 
         // Fetching from the descriptor does not include the null value
-        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValueRange(null, entity);
+        var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
     @Test
     void testNonCountableValueRange() {
-        var valueRangeManager = new ValueRangeManager<TestdataListSolutionWithDoubleValueRange>();
         var solution = TestdataListSolutionWithDoubleValueRange.generateSolution();
+        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListEntityWithDoubleValueRange.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
 

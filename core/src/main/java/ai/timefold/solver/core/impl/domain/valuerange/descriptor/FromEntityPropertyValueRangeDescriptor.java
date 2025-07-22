@@ -6,12 +6,15 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.entity.AllEntitiesListValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class FromEntityPropertyValueRangeDescriptor<Solution_>
+@NullMarked
+public final class FromEntityPropertyValueRangeDescriptor<Solution_>
         extends AbstractFromPropertyValueRangeDescriptor<Solution_>
-        implements IterableValueRangeDescriptor<Solution_> {
+        implements ValueRangeDescriptor<Solution_> {
 
     public FromEntityPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             boolean acceptNullInValueRange, MemberAccessor memberAccessor) {
@@ -19,18 +22,14 @@ public class FromEntityPropertyValueRangeDescriptor<Solution_>
     }
 
     @Override
-    public <T> ValueRange<T> extractValueRange(Solution_ solution, Object entity) {
-        if (entity == null) {
-            var entityList = variableDescriptor.getEntityDescriptor().extractEntities(solution);
-            return new AllEntitiesListValueRange<>(entityList, this);
-        } else {
-            return readValueRange(entity);
-        }
+    public <T> ValueRange<T> extractAllValues(Solution_ solution) {
+        var entityList = variableDescriptor.getEntityDescriptor().extractEntities(solution);
+        return new AllEntitiesListValueRange<>(solution, entityList, this);
     }
 
     @Override
-    public <T> ValueRange<T> extractValueRange(Solution_ solution) {
-        return extractValueRange(solution, null);
+    public <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity) {
+        return readValueRange(entity);
     }
 
     @Override
