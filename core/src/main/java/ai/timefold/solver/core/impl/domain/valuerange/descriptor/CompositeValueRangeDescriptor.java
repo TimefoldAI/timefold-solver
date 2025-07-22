@@ -18,7 +18,6 @@ import org.jspecify.annotations.NullMarked;
 public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRangeDescriptor<Solution_> {
 
     private final boolean canExtractValueRangeFromSolution;
-    private final boolean acceptsNullInValueRange;
     private final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
 
     public CompositeValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
@@ -26,7 +25,6 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
         super(variableDescriptor);
         this.childValueRangeDescriptorList = childValueRangeDescriptorList;
         var canExtractFromSolution = true;
-        var acceptsNull = false;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             if (!valueRangeDescriptor.isCountable()) {
                 throw new IllegalStateException(
@@ -34,10 +32,8 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
                                 .formatted(this, valueRangeDescriptor, valueRangeDescriptor.isCountable()));
             }
             canExtractFromSolution = canExtractFromSolution && valueRangeDescriptor.canExtractValueRangeFromSolution();
-            acceptsNull = acceptsNull || valueRangeDescriptor.acceptsNullInValueRange();
         }
         this.canExtractValueRangeFromSolution = canExtractFromSolution;
-        this.acceptsNullInValueRange = acceptsNull;
     }
 
     @Override
@@ -48,11 +44,6 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
     @Override
     public boolean isCountable() {
         return true;
-    }
-
-    @Override
-    public boolean acceptsNullInValueRange() {
-        return acceptsNullInValueRange;
     }
 
     @Override
