@@ -2,6 +2,9 @@ package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
@@ -11,7 +14,8 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public interface ValueRangeDescriptor<Solution_> {
+public sealed interface ValueRangeDescriptor<Solution_>
+        permits AbstractValueRangeDescriptor {
 
     /**
      * @return never null
@@ -19,9 +23,15 @@ public interface ValueRangeDescriptor<Solution_> {
     GenuineVariableDescriptor<Solution_> getVariableDescriptor();
 
     /**
-     * When the planning variable accepts unassigned values, it returns true; otherwise, it returns false.
+     * True when {@link PlanningVariable#allowsUnassigned()}.
+     * Always false with {@link PlanningListVariable}
+     * as list variables get unassigned through a different mechanism
+     * (e.g. ElementPositionRandomIterator).
      */
-    boolean acceptNullInValueRange();
+    default boolean acceptNullInValueRange() {
+        return getVariableDescriptor() instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor
+                && basicVariableDescriptor.allowsUnassigned();
+    }
 
     /**
      * @return true if the {@link ValueRange} is countable

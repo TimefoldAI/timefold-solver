@@ -10,25 +10,19 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public abstract class AbstractValueRangeDescriptor<Solution_> implements ValueRangeDescriptor<Solution_> {
+public abstract sealed class AbstractValueRangeDescriptor<Solution_>
+        implements ValueRangeDescriptor<Solution_>
+        permits AbstractFromPropertyValueRangeDescriptor, CompositeValueRangeDescriptor {
 
     protected final GenuineVariableDescriptor<Solution_> variableDescriptor;
-    protected final boolean acceptNullInValueRange;
 
-    protected AbstractValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean acceptNullInValueRange) {
+    protected AbstractValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor) {
         this.variableDescriptor = variableDescriptor;
-        this.acceptNullInValueRange = acceptNullInValueRange;
     }
 
     @Override
     public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
         return variableDescriptor;
-    }
-
-    @Override
-    public boolean acceptNullInValueRange() {
-        return acceptNullInValueRange;
     }
 
     // ************************************************************************

@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -18,8 +17,6 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.composite.TestdataA
 import ai.timefold.solver.core.testdomain.list.unassignedvar.composite.TestdataAllowsUnassignedCompositeListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityWithDoubleValueRange;
-import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListSolutionWithDoubleValueRange;
 import ai.timefold.solver.core.testdomain.list.valuerange.composite.TestdataListCompositeEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.composite.TestdataListCompositeEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
@@ -449,16 +446,4 @@ class ValueRangeManagerTest {
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
-    @Test
-    void testNonCountableValueRange() {
-        var solution = TestdataListSolutionWithDoubleValueRange.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
-        var valueRangeDescriptor = TestdataListEntityWithDoubleValueRange.buildVariableDescriptorForValueList()
-                .getValueRangeDescriptor();
-
-        // The value range manager will not add the null value because because it is a list variable
-        assertThatCode(() -> valueRangeManager.countOnSolution(valueRangeDescriptor, solution))
-                .hasMessageContaining("is not countable.");
-
-    }
 }

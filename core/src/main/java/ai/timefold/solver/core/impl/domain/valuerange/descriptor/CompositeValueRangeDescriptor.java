@@ -15,16 +15,14 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRangeDescriptor<Solution_>
-        implements ValueRangeDescriptor<Solution_> {
+public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValueRangeDescriptor<Solution_> {
 
     private final boolean canExtractValueRangeFromSolution;
     private final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
 
-    public CompositeValueRangeDescriptor(
-            GenuineVariableDescriptor<Solution_> variableDescriptor, boolean acceptNullInValueRange,
+    public CompositeValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
             List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
-        super(variableDescriptor, acceptNullInValueRange);
+        super(variableDescriptor);
         this.childValueRangeDescriptorList = childValueRangeDescriptorList;
         var canExtractFromSolution = true;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
@@ -48,6 +46,11 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
     @Override
     public boolean isCountable() {
         return true;
+    }
+
+    @Override
+    public boolean acceptNullInValueRange() {
+        return false; // Nullity is the job of the child ranges.
     }
 
     @Override

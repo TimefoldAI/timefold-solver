@@ -22,7 +22,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
+public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Solution_>
         extends AbstractValueRangeDescriptor<Solution_> {
 
     protected final MemberAccessor memberAccessor;
@@ -33,8 +33,8 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
     private final boolean isGenericTypeImmutable;
 
     protected AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean acceptNullInValueRange, MemberAccessor memberAccessor) {
-        super(variableDescriptor, acceptNullInValueRange);
+            MemberAccessor memberAccessor) {
+        super(variableDescriptor);
         this.memberAccessor = memberAccessor;
         ValueRangeProvider valueRangeProviderAnnotation = memberAccessor.getAnnotation(ValueRangeProvider.class);
         if (valueRangeProviderAnnotation == null) {
@@ -45,12 +45,6 @@ public abstract class AbstractFromPropertyValueRangeDescriptor<Solution_>
         collectionWrapping = Collection.class.isAssignableFrom(type);
         arrayWrapping = type.isArray();
         processValueRangeProviderAnnotation(valueRangeProviderAnnotation);
-        if (acceptNullInValueRange && !countable) {
-            throw new IllegalStateException("""
-                    The valueRangeDescriptor (%s) allows unassigned values, but not countable (%s).
-                    Maybe the member (%s) should return %s."""
-                    .formatted(this, countable, memberAccessor, CountableValueRange.class.getSimpleName()));
-        }
         if (collectionWrapping) {
             var genericType = ConfigUtils.extractGenericTypeParameterOrFail("solutionClass or entityClass",
                     memberAccessor.getDeclaringClass(), memberAccessor.getType(), memberAccessor.getGenericType(),

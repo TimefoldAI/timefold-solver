@@ -12,12 +12,11 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public final class FromSolutionPropertyValueRangeDescriptor<Solution_>
-        extends AbstractFromPropertyValueRangeDescriptor<Solution_>
-        implements ValueRangeDescriptor<Solution_> {
+        extends AbstractFromPropertyValueRangeDescriptor<Solution_> {
 
     public FromSolutionPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            boolean acceptNullInValueRange, MemberAccessor memberAccessor) {
-        super(variableDescriptor, acceptNullInValueRange, memberAccessor);
+            MemberAccessor memberAccessor) {
+        super(variableDescriptor, memberAccessor);
     }
 
     @Override
