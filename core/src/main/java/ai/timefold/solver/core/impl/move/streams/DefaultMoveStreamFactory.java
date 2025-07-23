@@ -32,7 +32,7 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor,
             ValueRangeManager<Solution_> valueRangeManager) {
-        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
+        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, valueRangeManager);
         this.datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
         this.valueRangeManager = valueRangeManager;
     }
@@ -85,9 +85,7 @@ public final class DefaultMoveStreamFactory<Solution_>
                                 && planningListVariableMetaModel.allowsUnassignedValues();
         if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
             // No need for filtering the value range; all values from solution are valid.
-            var stream = dataStreamFactory.forEachFromSolution(
-                    new FromSolutionValueCollectingFunction<Solution_, Value_>(valueRangeDescriptor, valueRangeManager),
-                    includeNull);
+            var stream = dataStreamFactory.forEachFromSolution(variableMetaModel, includeNull);
             return entityDataStream.join(stream);
         } else {
             var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);

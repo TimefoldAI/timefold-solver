@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -17,15 +18,16 @@ import org.jspecify.annotations.Nullable;
  * but if the values are numbers, they can also be stored in memory by their bounds
  * to use less memory and provide more opportunities.
  * <p>
- * ValueRange is stateful.
+ * ValueRange is stateless, and its contents must not depend on any planning variables.
  * Implementations must be immutable.
  * <p>
- * Prefer using {@link CountableValueRange}.
- * In a future version of Timefold Solver, uncountable value ranges will not be allowed,
- * and certain recently introduced features already do not support them.
+ * Use {@link CountableValueRange} instead.
+ * {@link ValueRange} only has a single non-countable implementation,
+ * {@link DoubleValueRange}, which is deprecated and does not work any more.
  *
- * @see ValueRangeFactory
  * @see CountableValueRange
+ * @see ValueRangeProvider
+ * @see ValueRangeFactory
  */
 @NullMarked
 public interface ValueRange<T> {

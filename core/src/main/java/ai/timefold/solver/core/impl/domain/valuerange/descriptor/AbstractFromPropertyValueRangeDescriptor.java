@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
@@ -192,20 +190,20 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         if (array.length == 0) {
             return Collections.emptyList();
         }
-        return Arrays.asList(array);
+        return List.of(array);
     }
 
     private static <T> List<T> transformCollectionToList(Collection<T> collection) {
         if (collection instanceof List<T> list) {
             if (collection instanceof LinkedList<T> linkedList) {
                 // ValueRange.createRandomIterator(Random) and ValueRange.get(int) wouldn't be efficient.
-                return new ArrayList<>(linkedList);
+                return List.copyOf(linkedList);
             } else {
+                // Avoid copying the list if it is already a List; even though it will keep mutability.
                 return list;
             }
         } else {
-            // TODO If only ValueRange.createOriginalIterator() is used, cloning a Set to a List is a waste of time.
-            return new ArrayList<>(collection);
+            return List.copyOf(collection);
         }
     }
 

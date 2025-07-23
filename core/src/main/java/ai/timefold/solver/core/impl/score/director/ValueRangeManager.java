@@ -5,7 +5,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
@@ -25,8 +24,17 @@ import org.jspecify.annotations.Nullable;
  * Outside a {@link ProblemChange}, value ranges are not allowed to change.
  * Call {@link #reset(Object)} every time the working solution changes through a problem fact,
  * so that all caches can be invalidated.
+ * 
+ * <p>
+ * Two score directors can never share the same instance of this class;
+ * this class contains state that is specific to a particular instance of a working solution.
+ * Even a clone of that same solution must not share the same instance of this class,
+ * unless {@link #reset(Object)} is called with the clone;
+ * failing to follow this rule will result in score corruptions as the cached value ranges reference
+ * objects from the original working solution pre-clone.
  *
- * @see ValueRange
+ * @see CountableValueRange
+ * @see ValueRangeProvider
  */
 @NullMarked
 public final class ValueRangeManager<Solution_> {

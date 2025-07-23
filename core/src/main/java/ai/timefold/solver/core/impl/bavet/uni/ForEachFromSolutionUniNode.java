@@ -1,9 +1,12 @@
 package ai.timefold.solver.core.impl.bavet.uni;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -28,14 +31,19 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
         extends ForEachIncludingUnassignedUniNode<A>
         implements AbstractForEachUniNode.InitializableForEachNode<Solution_> {
 
-    private final FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction;
+    private final ValueRangeManager<Solution_> valueRangeManager;
+    private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
 
     private boolean isInitialized = false;
 
-    public ForEachFromSolutionUniNode(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction,
-            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
-        super(valueCollectingFunction.declaredClass(), nextNodesTupleLifecycle, outputStoreSize);
-        this.valueCollectingFunction = valueCollectingFunction;
+    @SuppressWarnings("unchecked")
+    public ForEachFromSolutionUniNode(ValueRangeManager<Solution_> valueRangeManager,
+            ValueRangeDescriptor<Solution_> valueRangeDescriptor, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
+            int outputStoreSize) {
+        super((Class<A>) valueRangeDescriptor.getVariableDescriptor().getVariablePropertyType(), nextNodesTupleLifecycle,
+                outputStoreSize);
+        this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
+        this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);
     }
 
     @Override
@@ -45,7 +53,7 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
                     .formatted(this));
         } else {
             this.isInitialized = true;
-            var valueRange = valueCollectingFunction.apply(workingSolution);
+            var valueRange = valueRangeManager.<A> getFromSolution(valueRangeDescriptor, workingSolution);
             var valueIterator = valueRange.createOriginalIterator();
             while (valueIterator.hasNext()) {
                 var value = valueIterator.next();
@@ -56,11 +64,6 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
 
     @Override
     public void insert(@Nullable A a) {
-        if (a == null) {
-            // Avoid the exception, but do not actually insert null.
-            // Null will be inserted, if necessary, when the working solution is initialized.
-            return;
-        }
         throw new UnsupportedOperationException("Impossible state: direct insert is not supported on %s."
                 .formatted(this));
     }

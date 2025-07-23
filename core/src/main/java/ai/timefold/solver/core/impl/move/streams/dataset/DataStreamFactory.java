@@ -3,15 +3,18 @@ package ai.timefold.solver.core.impl.move.streams.dataset;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -19,10 +22,12 @@ import org.jspecify.annotations.NullMarked;
 public final class DataStreamFactory<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
+    private final ValueRangeManager<Solution_> valueRangeManager;
     private final Map<AbstractDataStream<Solution_>, AbstractDataStream<Solution_>> sharingStreamMap = new HashMap<>(256);
 
-    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
-        this.solutionDescriptor = solutionDescriptor;
+    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor, ValueRangeManager<Solution_> valueRangeManager) {
+        this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
+        this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
     }
 
     public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass, boolean includeNull) {
@@ -30,6 +35,7 @@ public final class DataStreamFactory<Solution_> {
         return share(new ForEachIncludingPinnedDataStream<>(this, sourceClass, includeNull));
     }
 
+    @SuppressWarnings("unchecked")
     public <A> UniDataStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
         if (!solutionDescriptor.getMetaModel().hasEntity(sourceClass)) {
@@ -55,10 +61,12 @@ public final class DataStreamFactory<Solution_> {
         return share((AbstractUniDataStream<Solution_, A>) stream);
     }
 
-    public <A> UniDataStream<Solution_, A>
-            forEachFromSolution(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction,
-                    boolean includeNull) {
-        return share(new ForEachFromSolutionDataStream<>(this, valueCollectingFunction, includeNull));
+    @SuppressWarnings("unchecked")
+    public <A> UniDataStream<Solution_, A> forEachFromSolution(GenuineVariableMetaModel<Solution_, ?, A> variableMetaModel,
+            boolean includeNull) {
+        var variableDescriptor = ((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
+        return share(new ForEachFromSolutionDataStream<>(valueRangeManager, this, variableDescriptor.getValueRangeDescriptor(),
+                includeNull));
     }
 
     public <A> void assertValidForEachType(Class<A> fromType) {
