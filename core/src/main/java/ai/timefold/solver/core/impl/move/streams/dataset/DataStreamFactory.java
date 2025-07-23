@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -112,11 +113,12 @@ public final class DataStreamFactory<Solution_> {
         return solutionDescriptor;
     }
 
+    @SuppressWarnings("unchecked")
     public List<AbstractDataset<Solution_, ?>> getDatasets() {
         return sharingStreamMap.values().stream()
                 .flatMap(s -> {
-                    if (s instanceof TerminalUniDataStream<Solution_, ?> terminalStream) {
-                        return Stream.of(terminalStream.getDataset());
+                    if (s instanceof TerminalDataStream<?, ?, ?> terminalStream) {
+                        return Stream.of((AbstractDataset<Solution_, ?>) terminalStream.getDataset());
                     }
                     return Stream.empty();
                 })

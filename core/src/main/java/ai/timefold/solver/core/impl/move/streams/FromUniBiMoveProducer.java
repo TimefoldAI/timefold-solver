@@ -10,7 +10,7 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -19,15 +19,15 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class BiMoveProducer<Solution_, A, B> implements InnerMoveProducer<Solution_> {
+public final class FromUniBiMoveProducer<Solution_, A, B> implements InnerMoveProducer<Solution_> {
 
-    private final AbstractDataset<Solution_, UniTuple<A>> aDataset;
-    private final AbstractDataset<Solution_, UniTuple<B>> bDataset;
+    private final UniDataset<Solution_, A> aDataset;
+    private final UniDataset<Solution_, B> bDataset;
     private final BiMoveConstructor<Solution_, A, B> moveConstructor;
     private final BiPredicate<A, B> filter;
 
-    public BiMoveProducer(AbstractDataset<Solution_, UniTuple<A>> aDataset, AbstractDataset<Solution_, UniTuple<B>> bDataset,
-            BiPredicate<A, B> filter, BiMoveConstructor<Solution_, A, B> moveConstructor) {
+    public FromUniBiMoveProducer(UniDataset<Solution_, A> aDataset, UniDataset<Solution_, B> bDataset, BiPredicate<A, B> filter,
+            BiMoveConstructor<Solution_, A, B> moveConstructor) {
         this.aDataset = Objects.requireNonNull(aDataset);
         this.bDataset = Objects.requireNonNull(bDataset);
         this.filter = Objects.requireNonNull(filter);

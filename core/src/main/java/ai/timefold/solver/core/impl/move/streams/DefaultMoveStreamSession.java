@@ -2,10 +2,11 @@ package ai.timefold.solver.core.impl.move.streams;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataset;
-import ai.timefold.solver.core.impl.move.streams.dataset.DatasetInstance;
+import ai.timefold.solver.core.impl.move.streams.dataset.BiDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.BiDatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSession;
+import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.UniDatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 
 import org.jspecify.annotations.NullMarked;
@@ -22,9 +23,12 @@ public final class DefaultMoveStreamSession<Solution_>
         this.workingSolution = Objects.requireNonNull(workingSolution);
     }
 
-    public <Out_ extends AbstractTuple> DatasetInstance<Solution_, Out_>
-            getDatasetInstance(AbstractDataset<Solution_, Out_> dataset) {
-        return datasetSession.getInstance(dataset);
+    public <A> UniDatasetInstance<Solution_, A> getDatasetInstance(UniDataset<Solution_, A> dataset) {
+        return (UniDatasetInstance<Solution_, A>) datasetSession.getInstance(dataset);
+    }
+
+    public <A, B> BiDatasetInstance<Solution_, A, B> getDatasetInstance(BiDataset<Solution_, A, B> dataset) {
+        return (BiDatasetInstance<Solution_, A, B>) datasetSession.getInstance(dataset);
     }
 
     public void insert(Object fact) {
