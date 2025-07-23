@@ -8,7 +8,8 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This caching strategy employs an {@link IdentityHashMap} to keep track of the values that have been added so far.
@@ -18,6 +19,7 @@ import org.jspecify.annotations.NonNull;
  * 
  * @param <Value_> the value type
  */
+@NullMarked
 public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
     // The value and its index
@@ -30,8 +32,14 @@ public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStr
         cache.addAll(list);
     }
 
+    public IdentityValueRangeCache(Set<Value_> set) {
+        values = new ArrayList<>(set);
+        cache = Collections.newSetFromMap(new IdentityHashMap<>(set.size()));
+        cache.addAll(set);
+    }
+
     @Override
-    public void add(@NonNull Value_ value) {
+    public void add(@Nullable Value_ value) {
         if (!cache.contains(value)) {
             values.add(value);
             cache.add(value);
@@ -47,7 +55,7 @@ public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStr
     }
 
     @Override
-    public boolean contains(@NonNull Value_ value) {
+    public boolean contains(@Nullable Value_ value) {
         return cache.contains(value);
     }
 
@@ -57,7 +65,7 @@ public final class IdentityValueRangeCache<Value_> implements ValueRangeCacheStr
     }
 
     @Override
-    public @NonNull List<Value_> getAll() {
+    public List<Value_> getAll() {
         return values;
     }
 }

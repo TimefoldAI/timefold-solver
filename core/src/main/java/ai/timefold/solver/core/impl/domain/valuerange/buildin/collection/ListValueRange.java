@@ -9,12 +9,14 @@ import ai.timefold.solver.core.impl.domain.valuerange.cache.HashSetValueRangeCac
 import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
     final List<T> list;
-    private ValueRangeCacheStrategy<T> cacheStrategy;
+    private @Nullable ValueRangeCacheStrategy<T> cacheStrategy;
 
     public ListValueRange(List<T> list) {
         this.list = list;
@@ -26,7 +28,7 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     }
 
     @Override
-    public T get(long index) {
+    public @Nullable T get(long index) {
         if (index > Integer.MAX_VALUE) {
             throw new IndexOutOfBoundsException("The index (" + index + ") must fit in an int.");
         }
@@ -34,7 +36,7 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     }
 
     @Override
-    public boolean contains(T value) {
+    public boolean contains(@Nullable T value) {
         if (cacheStrategy == null) {
             cacheStrategy = generateCache();
         }
@@ -42,17 +44,17 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     }
 
     @Override
-    public @NonNull ValueRangeCacheStrategy<T> generateCache() {
+    public ValueRangeCacheStrategy<T> generateCache() {
         return new HashSetValueRangeCache<>(list);
     }
 
     @Override
-    public @NonNull Iterator<T> createOriginalIterator() {
+    public Iterator<T> createOriginalIterator() {
         return list.iterator();
     }
 
     @Override
-    public @NonNull Iterator<T> createRandomIterator(@NonNull Random workingRandom) {
+    public Iterator<T> createRandomIterator(Random workingRandom) {
         return new CachedListRandomIterator<>(list, workingRandom);
     }
 

@@ -6,20 +6,20 @@ import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrat
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Same as {@link ListValueRange}, but it employs a different caching strategy and remains immutable.
+ * Same as {@link SetValueRange}, but it employs a different caching strategy and remains immutable.
  *
  * @param <T> the value type
  */
 @NullMarked
-public final class IdentityListValueRange<T> extends AbstractIdentityValueRange<T, ListValueRange<T>> {
+public final class IdentitySetValueRange<T> extends AbstractIdentityValueRange<T, SetValueRange<T>> {
 
-    public IdentityListValueRange(ListValueRange<T> valueRange) {
+    public IdentitySetValueRange(SetValueRange<T> valueRange) {
         super(valueRange);
     }
 
     @Override
     public ValueRangeCacheStrategy<T> generateCache() {
-        return new IdentityValueRangeCache<>(valueRange.list);
+        return new IdentityValueRangeCache<>(valueRange.set);
     }
 
 }

@@ -4,7 +4,7 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
  * @see ValueRangeFactory
  * @see ValueRange
  */
+@NullMarked
 public interface CountableValueRange<T> extends ValueRange<T> {
 
     /**
@@ -36,7 +37,6 @@ public interface CountableValueRange<T> extends ValueRange<T> {
     /**
      * Select the elements in original (natural) order.
      */
-    @NonNull
     Iterator<T> createOriginalIterator();
 
 }

@@ -5,7 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * This caching strategy employs a {@link HashSet} to track the values that have been added so far.
@@ -14,6 +15,7 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Value_> the value type
  */
+@NullMarked
 public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStrategy<Value_> {
 
     private final Set<Value_> cache;
@@ -29,8 +31,13 @@ public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStra
         cache = new HashSet<>(list);
     }
 
+    public HashSetValueRangeCache(Set<Value_> set) {
+        values = new ArrayList<>(set);
+        cache = new HashSet<>(set);
+    }
+
     @Override
-    public void add(@NonNull Value_ value) {
+    public void add(@Nullable Value_ value) {
         if (cache.add(value)) {
             values.add(value);
         }
@@ -45,7 +52,7 @@ public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStra
     }
 
     @Override
-    public boolean contains(@NonNull Value_ value) {
+    public boolean contains(@Nullable Value_ value) {
         return cache.contains(value);
     }
 
@@ -55,7 +62,7 @@ public final class HashSetValueRangeCache<Value_> implements ValueRangeCacheStra
     }
 
     @Override
-    public @NonNull List<Value_> getAll() {
+    public List<Value_> getAll() {
         return values;
     }
 }

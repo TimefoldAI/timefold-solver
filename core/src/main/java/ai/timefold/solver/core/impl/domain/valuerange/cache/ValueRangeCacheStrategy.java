@@ -5,18 +5,20 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public sealed interface ValueRangeCacheStrategy<Value_> permits HashSetValueRangeCache, IdentityValueRangeCache {
 
-    void add(@NonNull Value_ value);
+    void add(@Nullable Value_ value);
 
-    Value_ get(int index);
+    @Nullable Value_ get(int index);
 
-    boolean contains(@NonNull Value_ value);
+    boolean contains(@Nullable Value_ value);
 
     long getSize();
 
-    @NonNull
     List<Value_> getAll();
 
     /**

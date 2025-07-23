@@ -8,7 +8,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -27,6 +27,7 @@ import org.jspecify.annotations.Nullable;
  * @see ValueRangeFactory
  * @see CountableValueRange
  */
+@NullMarked
 public interface ValueRange<T> {
 
     /**
@@ -50,7 +51,6 @@ public interface ValueRange<T> {
      * @param workingRandom the {@link Random} to use when any random number is needed,
      *        so runs are reproducible.
      */
-    @NonNull
-    Iterator<T> createRandomIterator(@NonNull Random workingRandom);
+    Iterator<T> createRandomIterator(Random workingRandom);
 
 }

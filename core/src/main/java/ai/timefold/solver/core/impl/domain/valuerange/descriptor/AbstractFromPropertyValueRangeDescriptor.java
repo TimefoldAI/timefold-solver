@@ -1,21 +1,28 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+import java.util.SortedSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentityListValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentitySetValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.SetValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.empty.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
@@ -109,25 +116,32 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
         ValueRange<Value_> valueRange;
-        if (collectionWrapping || arrayWrapping) {
-            List<Value_> list = collectionWrapping ? transformCollectionToList((Collection<Value_>) valueRangeObject)
-                    : ReflectionHelper.transformArrayToList(valueRangeObject);
-            // Don't check the entire list for performance reasons, but do check common pitfalls
-            if (!list.isEmpty() && (list.get(0) == null || list.get(list.size() - 1) == null)) {
-                throw new IllegalStateException(
-                        """
-                                The @%s-annotated member (%s) called on bean (%s) must not return a %s (%s) with an element that is null.
-                                Maybe remove that null element from the dataset.
-                                Maybe use @%s(allowsUnassigned = true) instead."""
-                                .formatted(ValueRangeProvider.class.getSimpleName(),
-                                        memberAccessor, bean,
-                                        collectionWrapping ? Collection.class.getSimpleName() : "array",
-                                        list,
-                                        PlanningVariable.class.getSimpleName()));
-            }
-            valueRange = new ListValueRange<>(list);
-            if (!isGenericTypeImmutable) {
-                valueRange = new IdentityListValueRange<>((ListValueRange<Value_>) valueRange);
+        if (arrayWrapping) {
+            List<Value_> list = transformArrayToList(valueRangeObject);
+            assertNullNotPresent(list, bean);
+            valueRange = buildValueRange(list);
+        } else if (collectionWrapping) {
+            var collection = (Collection<Value_>) valueRangeObject;
+            if (collection instanceof Set<Value_> set) {
+                if (!(collection instanceof SortedSet<Value_> || collection instanceof LinkedHashSet<Value_>)) {
+                    throw new IllegalStateException("""
+                            The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with undefined iteration order.
+                            Use SortedSet or LinkedHashSet to ensure solver reproducibility.
+                            """
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set.getClass()));
+                } else if (set.contains(null)) {
+                    throw new IllegalStateException("""
+                            The @%s-annotated member (%s) called on bean (%s) returns a Set (%s) with a null element.
+                            Maybe remove that null element from the dataset \
+                            and use @%s(allowsUnassigned = true) or @%s(allowsUnassignedValues = true) instead."""
+                            .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set,
+                                    PlanningVariable.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
+                }
+                valueRange = buildValueRange(set);
+            } else {
+                List<Value_> list = transformCollectionToList(collection);
+                assertNullNotPresent(list, bean);
+                valueRange = buildValueRange(list);
             }
         } else {
             valueRange = (ValueRange<Value_>) valueRangeObject;
@@ -135,7 +149,53 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         return valueRange.isEmpty() ? (ValueRange<Value_>) EmptyValueRange.INSTANCE : valueRange;
     }
 
-    private <T> List<T> transformCollectionToList(Collection<T> collection) {
+    private void assertNullNotPresent(List<?> list, Object bean) {
+        // Don't check the entire list for performance reasons, but do check common pitfalls
+        if (!list.isEmpty() && (list.get(0) == null || list.get(list.size() - 1) == null)) {
+            throw new IllegalStateException("""
+                    The @%s-annotated member (%s) called on bean (%s) must not return a %s (%s) with an element that is null.
+                    Maybe remove that null element from the dataset \
+                    and use @%s(allowsUnassigned = true) or @%s(allowsUnassignedValues = true) instead."""
+                    .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean,
+                            collectionWrapping ? Collection.class.getSimpleName() : "array", list,
+                            PlanningVariable.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
+        }
+    }
+
+    private <T> ValueRange<T> buildValueRange(Collection<T> valueCollection) {
+        if (valueCollection instanceof Set<T> set) {
+            var valueRange = new SetValueRange<>(set);
+            if (!isGenericTypeImmutable) {
+                return new IdentitySetValueRange<>(valueRange);
+            } else {
+                return valueRange;
+            }
+        } else if (valueCollection instanceof List<T> list) {
+            var valueRange = new ListValueRange<>(list);
+            if (!isGenericTypeImmutable) {
+                return new IdentityListValueRange<>(valueRange);
+            } else {
+                return valueRange;
+            }
+        } else {
+            throw new IllegalArgumentException("Impossible state: The collection (%s) must be a Set or a List."
+                    .formatted(valueCollection));
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <Value_> List<Value_> transformArrayToList(Object arrayObject) {
+        if (arrayObject == null) {
+            return Collections.emptyList();
+        }
+        var array = (Value_[]) arrayObject;
+        if (array.length == 0) {
+            return Collections.emptyList();
+        }
+        return Arrays.asList(array);
+    }
+
+    private static <T> List<T> transformCollectionToList(Collection<T> collection) {
         if (collection instanceof List<T> list) {
             if (collection instanceof LinkedList<T> linkedList) {
                 // ValueRange.createRandomIterator(Random) and ValueRange.get(int) wouldn't be efficient.
