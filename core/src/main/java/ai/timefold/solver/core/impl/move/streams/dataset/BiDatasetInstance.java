@@ -36,10 +36,13 @@ public final class BiDatasetInstance<Solution_, A, B>
     @Override
     public void retract(BiTuple<A, B> tuple) {
         ElementAwareListEntry<BiTuple<A, B>> entry = tuple.removeStore(inputStoreIndex);
-        var tupleList = entry.getList();
-        entry.remove();
-        if (tupleList.size() == 0) {
-            tupleListMap.remove(tuple.factA);
+        // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
+        if (entry != null) {
+            var tupleList = entry.getList();
+            entry.remove();
+            if (tupleList.size() == 0) {
+                tupleListMap.remove(tuple.factA);
+            }
         }
     }
 

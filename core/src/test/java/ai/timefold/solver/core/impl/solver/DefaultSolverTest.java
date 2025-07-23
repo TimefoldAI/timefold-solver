@@ -194,7 +194,7 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         var solution = TestdataSolution.generateSolution(3, 2);
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solve(solverConfig, solution, false);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
