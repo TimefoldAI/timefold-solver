@@ -95,4 +95,20 @@ public @interface ShadowSources {
      * @return A non-empty list of variables the supplier method accesses.
      */
     String[] value();
+
+    /**
+     * If non-empty, this is a property on the entity that will be used
+     * to identify the entity's group.
+     * <p>
+     * When the group key is non-null, the shadow variable will only be calculated
+     * for one entity with that group key, and all other entities with that group key will
+     * have their shadows set to that value.
+     * <p>
+     * When the group key is unspecified or null, the entity is not considered to
+     * be part of a group and will not share variable calculations with other
+     * entities.
+     *
+     * @return A property on the entity to group by, or the empty string to not performing grouping.
+     */
+    String groupKey() default "";
 }

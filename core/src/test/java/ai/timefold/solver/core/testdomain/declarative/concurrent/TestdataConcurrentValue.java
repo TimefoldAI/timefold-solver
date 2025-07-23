@@ -127,7 +127,8 @@ public class TestdataConcurrentValue {
         return null;
     }
 
-    @ShadowSources({ "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" })
+    @ShadowSources(value = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" },
+            groupKey = "concurrentValueGroup")
     public LocalDateTime serviceStartTimeUpdater() {
         if (serviceReadyTime == null) {
             return null;

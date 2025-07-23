@@ -292,19 +292,17 @@ class VariableListenerSupportTest {
         for (var visit : solution.getValues()) {
 
             // If a visit does not have a concurrent group, all variables of that visit share the same node.
-            if (visit.getConcurrentValueGroup() != null) {
-                // serviceStartTime and serviceFinishTime are in the same group, so no edge between them!
-                verifyAddEdge.accept(serviceReadyTime, visit, serviceStartTime, visit);
+            if (visit.getConcurrentValueGroup() != null && visit.equals(visit.getConcurrentValueGroup().get(0))) {
+                // all values in the concurrent value group point to the representative member,
+                // which is the first member of the group
+                for (var element : visit.getConcurrentValueGroup()) {
+                    verifyAddEdge.accept(serviceReadyTime, element, serviceStartTime, visit);
+                    verifyAddEdge.accept(serviceStartTime, visit, serviceFinishTime, element);
+                }
             }
 
             if (visit.getPreviousValue() != null) {
                 verifyAddEdge.accept(serviceFinishTime, visit.getPreviousValue(), serviceReadyTime, visit);
-            }
-
-            if (visit.getConcurrentValueGroup() != null) {
-                for (var element : visit.getConcurrentValueGroup()) {
-                    verifyAddEdge.accept(serviceReadyTime, element, serviceStartTime, visit);
-                }
             }
         }
         // Note: addEdge only adds an edge if it does not already exists in the graph,

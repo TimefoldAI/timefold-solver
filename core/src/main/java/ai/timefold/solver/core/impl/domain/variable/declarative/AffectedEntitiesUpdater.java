@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Objects;
@@ -159,7 +160,13 @@ final class AffectedEntitiesUpdater<Solution_>
     private void changeShadowVariableAndNotify(VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity,
             Object newValue) {
         var variableDescriptor = shadowVariableReference.variableDescriptor();
-        changeShadowVariableAndNotify(variableDescriptor, entity, newValue);
+        if (shadowVariableReference.groupEntities() == null) {
+            changeShadowVariableAndNotify(variableDescriptor, entity, newValue);
+        } else {
+            for (var groupEntity : shadowVariableReference.groupEntities()) {
+                changeShadowVariableAndNotify(variableDescriptor, groupEntity, newValue);
+            }
+        }
     }
 
     private void changeShadowVariableAndNotify(VariableDescriptor<Solution_> variableDescriptor, Object entity,
@@ -184,7 +191,12 @@ final class AffectedEntitiesUpdater<Solution_>
             if (shadowVariableLoopedDescriptor == null) {
                 return;
             }
-            entitiesForLoopedVarUpdateSet.add(shadowVariable.entity());
+            var entityGroup = shadowVariable.variableReferences().get(0).groupEntities();
+            if (entityGroup == null) {
+                entitiesForLoopedVarUpdateSet.add(shadowVariable.entity());
+            } else {
+                entitiesForLoopedVarUpdateSet.addAll(Arrays.asList(entityGroup));
+            }
         }
 
         public void processAndClear() {

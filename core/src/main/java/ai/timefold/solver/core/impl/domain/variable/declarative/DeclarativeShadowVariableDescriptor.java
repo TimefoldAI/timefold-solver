@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.lang.reflect.Member;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
@@ -24,6 +26,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     MemberAccessor calculator;
     RootVariableSource<?, ?>[] sources;
     String[] sourcePaths;
+    Function<Object, Object> groupKeyMap;
 
     public DeclarativeShadowVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
@@ -80,6 +83,28 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                     Maybe add one source?
                     """.formatted(methodName, ShadowVariable.class.getSimpleName(), variableMemberAccessor));
         }
+
+        if (shadowVariableUpdater.groupKey() != null && !shadowVariableUpdater.groupKey().isEmpty()) {
+            var groupKey = shadowVariableUpdater.groupKey();
+            Member member = ReflectionHelper.getDeclaredField(entityDescriptor.getEntityClass(), groupKey);
+            if (member == null) {
+                member = ReflectionHelper.getDeclaredGetterMethod(entityDescriptor.getEntityClass(), groupKey);
+                if (member == null) {
+                    throw new IllegalArgumentException("""
+                            @%s %s's supplier method "%s" has a groupKey property "%s"
+                            that does not exist on the entity class (%s).
+                            Maybe you misspelled it?
+                            """.formatted(ShadowVariable.class.getSimpleName(), variableName,
+                            method.getName(), groupKey, entityDescriptor.getEntityClass()));
+                }
+            }
+            groupKeyMap =
+                    entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
+                            MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
+                            descriptorPolicy.getDomainAccessType())::executeGetter;
+        } else {
+            groupKeyMap = ignored -> null;
+        }
     }
 
     @Override
@@ -127,6 +152,10 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     public MemberAccessor getCalculator() {
         return calculator;
+    }
+
+    public Function<Object, Object> getGroupKeyMap() {
+        return groupKeyMap;
     }
 
     public RootVariableSource<?, ?>[] getSources() {
