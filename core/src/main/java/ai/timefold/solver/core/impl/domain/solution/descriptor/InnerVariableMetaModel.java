@@ -6,7 +6,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public sealed interface InnerVariableMetaModel<Solution_>
-        permits DefaultPlanningVariableMetaModel, DefaultPlanningListVariableMetaModel, DefaultShadowVariableMetaModel {
+        permits DefaultShadowVariableMetaModel, InnerGenuineVariableMetaModel {
 
     VariableDescriptor<Solution_> variableDescriptor();
 

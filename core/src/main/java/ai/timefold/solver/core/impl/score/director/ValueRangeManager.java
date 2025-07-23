@@ -36,6 +36,22 @@ public final class ValueRangeManager<Solution_> {
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
 
+    /**
+     * As {@link #getFromSolution(ValueRangeDescriptor, Object)}, but the solution is taken from the cached working solution.
+     * This requires {@link #reset(Object)} to be called before the first call to this method,
+     * and therefore this method will throw an exception if called before the score director is instantiated.
+     *
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException(
+                    "Impossible state: value range (%s) requested before the working solution is known."
+                            .formatted(valueRangeDescriptor));
+        }
+        return getFromSolution(valueRangeDescriptor, cachedWorkingSolution);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {
@@ -63,6 +79,9 @@ public final class ValueRangeManager<Solution_> {
         return (CountableValueRange<T>) valueRange;
     }
 
+    /**
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
         if (cachedWorkingSolution == null) {
