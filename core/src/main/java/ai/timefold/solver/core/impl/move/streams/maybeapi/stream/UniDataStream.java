@@ -3,12 +3,14 @@ package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
 
 import java.util.Arrays;
+import java.util.function.BiPredicate;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -19,6 +21,34 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * and match if {@link Predicate#test(Object)} returns true.
      */
     UniDataStream<Solution_, A> filter(Predicate<A> predicate);
+
+    /**
+     * Create a new {@link BiDataStream} for every combination of A and B for which the {@link BiJoiner}
+     * is true (for the properties it extracts from both facts).
+     * <p>
+     * Important: Joining is faster and more scalable than a {@link BiDataStream#filter(BiPredicate) filter},
+     * because it applies hashing and/or indexing on the properties,
+     * so it doesn't create nor checks every combination of A and B.
+     *
+     * @param <B> the type of the second matched fact
+     * @return a stream that matches every combination of A and B for which the {@link BiJoiner} is true
+     */
+    <B> @NonNull BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream, @NonNull BiJoiner<A, B>... joiners);
+
+    /**
+     * Create a new {@link BiDataStream} for every combination of A and B
+     * for which the {@link BiJoiner} is true (for the properties it extracts from both facts).
+     * The stream will include all facts or entities of the given class,
+     * regardless of their pinning status.
+     * <p>
+     * Important: Joining is faster and more scalable than a {@link BiDataStream#filter(BiPredicate) filter},
+     * because it applies hashing and/or indexing on the properties,
+     * so it doesn't create nor checks every combination of A and B.
+     *
+     * @param <B> the type of the second matched fact
+     * @return a stream that matches every combination of A and B for which the {@link BiJoiner} is true
+     */
+    <B> @NonNull BiDataStream<Solution_, A, B> join(@NonNull Class<B> otherClass, @NonNull BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link UniDataStream} for every A where B exists for which all {@link BiJoiner}s are true

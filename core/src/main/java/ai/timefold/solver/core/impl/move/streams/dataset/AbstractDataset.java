@@ -23,6 +23,10 @@ public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
         return new DatasetInstance<>(this, storeIndex);
     }
 
+    public DataStreamFactory<Solution_> getDataStreamFactory() {
+        return dataStreamFactory;
+    }
+
     @Override
     public boolean equals(Object entity) {
         if (!(entity instanceof AbstractDataset<?, ?> dataset)) {

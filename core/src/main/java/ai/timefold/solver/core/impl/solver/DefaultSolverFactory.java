@@ -146,7 +146,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
-        var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
+        var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination, valueRangeManager);
 
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
                 (UniversalTermination<Solution_>) termination, phaseList, solverScope,
@@ -220,7 +220,8 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverTermination<Solution_> termination) {
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverTermination<Solution_> termination,
+            ValueRangeManager<Solution_> valueRangeManager) {
         var phaseConfigList = solverConfig.getPhaseConfigList();
         if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
             var genuineEntityDescriptorCollection = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
@@ -241,7 +242,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             }
             phaseConfigList.add(new LocalSearchPhaseConfig());
         }
-        return PhaseFactory.buildPhases(phaseConfigList, configPolicy, bestSolutionRecaller, termination);
+        return PhaseFactory.buildPhases(phaseConfigList, configPolicy, bestSolutionRecaller, termination, valueRangeManager);
     }
 
     private ConstructionHeuristicPhaseConfig

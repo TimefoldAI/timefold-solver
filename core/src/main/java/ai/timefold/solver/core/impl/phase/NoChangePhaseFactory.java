@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.phase;
 
 import ai.timefold.solver.core.config.phase.NoChangePhaseConfig;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
@@ -19,8 +20,8 @@ public class NoChangePhaseFactory<Solution_> extends AbstractPhaseFactory<Soluti
 
     @Override
     public NoChangePhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
-            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            SolverTermination<Solution_> solverTermination) {
+                                               HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+                                               SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
         HeuristicConfigPolicy<Solution_> phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         return new NoChangePhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(),
                 buildPhaseTermination(phaseConfigPolicy, solverTermination)).build();

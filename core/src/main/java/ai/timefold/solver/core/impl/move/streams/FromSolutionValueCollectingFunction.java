@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.move.streams;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
@@ -14,16 +13,7 @@ public record FromSolutionValueCollectingFunction<Solution_, A>(ValueRangeDescri
 
     @Override
     public CountableValueRange<A> apply(Solution_ solution) {
-        return ensureCountable(valueRangeManager.getFromSolution(valueRangeDescriptor, solution));
-    }
-
-    private static <A> CountableValueRange<A> ensureCountable(ValueRange<A> valueRange) {
-        if (valueRange instanceof CountableValueRange<A> countableValueRange) {
-            return countableValueRange;
-        } else { // Non-countable value ranges cannot be enumerated.
-            throw new UnsupportedOperationException("The value range (%s) is not countable."
-                    .formatted(valueRange));
-        }
+        return valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
     }
 
     @SuppressWarnings("unchecked")
@@ -36,4 +26,5 @@ public record FromSolutionValueCollectingFunction<Solution_, A>(ValueRangeDescri
         return "FromSolution(%s)"
                 .formatted(valueRangeDescriptor.getVariableDescriptor());
     }
+
 }

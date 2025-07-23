@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.generic.move.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.generic.provider.ChangeMoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -29,7 +30,7 @@ class ChangeMoveProviderTest {
                 .entity(TestdataEntity.class)
                 .genuineVariable()
                 .ensurePlanningVariable();
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, new ValueRangeManager<>());
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
 
@@ -91,7 +92,7 @@ class ChangeMoveProviderTest {
                 .entity(TestdataAllowsUnassignedEntity.class)
                 .genuineVariable()
                 .ensurePlanningVariable();
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, new ValueRangeManager<>());
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
 

@@ -348,7 +348,7 @@ public class SolverScope<Solution_> {
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
-    public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
+    public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType, ValueRangeManager<Solution_> valueRangeManager) {
         SolverScope<Solution_> childThreadSolverScope = new SolverScope<>(clock);
         childThreadSolverScope.bestSolution.set(null);
         childThreadSolverScope.bestScore.set(null);
@@ -359,7 +359,7 @@ public class SolverScope<Solution_> {
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
         childThreadSolverScope.workingRandom = new Random(workingRandom.nextLong());
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
-        childThreadSolverScope.setValueRangeManager(new ValueRangeManager<>());
+        childThreadSolverScope.setValueRangeManager(valueRangeManager);
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
         childThreadSolverScope.startingInitializedScore = null;

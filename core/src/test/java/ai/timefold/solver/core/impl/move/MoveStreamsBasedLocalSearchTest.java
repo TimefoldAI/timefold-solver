@@ -98,7 +98,7 @@ class MoveStreamsBasedLocalSearchTest {
                 .genuineVariable()
                 .ensurePlanningVariable();
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, new ValueRangeManager<>());
         var moveProducer = moveProvider.apply(moveStreamFactory);
         // Random selection otherwise LS gets stuck in an endless loop.
         return new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer, true);
