@@ -348,7 +348,8 @@ public class SolverScope<Solution_> {
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
-    public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType, ValueRangeManager<Solution_> valueRangeManager) {
+    public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType,
+            ValueRangeManager<Solution_> valueRangeManager) {
         SolverScope<Solution_> childThreadSolverScope = new SolverScope<>(clock);
         childThreadSolverScope.bestSolution.set(null);
         childThreadSolverScope.bestScore.set(null);

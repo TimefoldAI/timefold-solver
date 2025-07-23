@@ -23,7 +23,8 @@ public final class DefaultUniMoveStream<Solution_, A> implements InnerUniMoveStr
 
     @Override
     public <B> BiMoveStream<Solution_, A, B> pick(UniDataStream<Solution_, B> uniDataStream, BiPredicate<A, B> filter) {
-        return new DefaultBiFromUnisMoveStream<>(dataset, ((AbstractUniDataStream<Solution_, B>) uniDataStream).createDataset(), filter);
+        return new DefaultBiFromUnisMoveStream<>(dataset, ((AbstractUniDataStream<Solution_, B>) uniDataStream).createDataset(),
+                filter);
     }
 
     @Override

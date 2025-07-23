@@ -14,7 +14,7 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.streams.generic.move.ListAssignMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
 import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencyConstraintProvider;

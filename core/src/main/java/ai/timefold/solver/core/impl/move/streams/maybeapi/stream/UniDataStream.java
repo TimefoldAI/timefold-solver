@@ -33,7 +33,8 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @param <B> the type of the second matched fact
      * @return a stream that matches every combination of A and B for which the {@link BiJoiner} is true
      */
-    <B> @NonNull BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream, @NonNull BiJoiner<A, B>... joiners);
+    <B> @NonNull BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners);
 
     /**
      * Create a new {@link BiDataStream} for every combination of A and B

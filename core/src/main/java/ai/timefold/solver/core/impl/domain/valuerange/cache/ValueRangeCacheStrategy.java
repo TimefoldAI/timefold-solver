@@ -13,7 +13,8 @@ public sealed interface ValueRangeCacheStrategy<Value_> permits HashSetValueRang
 
     void add(@Nullable Value_ value);
 
-    @Nullable Value_ get(int index);
+    @Nullable
+    Value_ get(int index);
 
     boolean contains(@Nullable Value_ value);
 

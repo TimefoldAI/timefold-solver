@@ -32,8 +32,9 @@ public final class AllEntitiesListValueRange<Value_> extends AbstractCountableVa
         // such as the iterators and the list variable state,
         // expect the value list to have the correct size.
         // Therefore, we create a unique values list in advance to return consistent information to the outer tiers.
-        var firstValueRange = (AbstractCountableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValuesFromEntity(solution,
-                entityList.get(0));
+        var firstValueRange =
+                (AbstractCountableValueRange<Value_>) valueRangeDescriptor.<Value_> extractValuesFromEntity(solution,
+                        entityList.get(0));
         this.cacheStrategy = firstValueRange.generateCache();
         for (var i = 1; i < entityList.size(); ++i) {
             var entity = entityList.get(i);

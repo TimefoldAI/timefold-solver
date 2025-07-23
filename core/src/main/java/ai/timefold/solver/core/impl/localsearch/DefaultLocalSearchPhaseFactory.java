@@ -59,8 +59,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     @Override
     public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
-                                                  HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-                                                  SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
         var moveProviderClass = phaseConfig.<Solution_> getMoveProvidersClass();
         var moveStreamsEnabled = moveProviderClass != null;
         var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
@@ -88,8 +88,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     private LocalSearchDecider<Solution_> buildMoveStreamsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-                                                                       PhaseTermination<Solution_> termination, Class<? extends MoveProviders<Solution_>> moveProvidersClass,
-                                                                       ValueRangeManager<Solution_> valueRangeManager) {
+            PhaseTermination<Solution_> termination, Class<? extends MoveProviders<Solution_>> moveProvidersClass,
+            ValueRangeManager<Solution_> valueRangeManager) {
         configPolicy.ensurePreviewFeature(PreviewFeature.MOVE_STREAMS);
 
         var solutionDescriptor = configPolicy.getSolutionDescriptor();

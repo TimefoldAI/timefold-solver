@@ -9,7 +9,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.move.streams.generic.move.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMove;
 import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataValue;

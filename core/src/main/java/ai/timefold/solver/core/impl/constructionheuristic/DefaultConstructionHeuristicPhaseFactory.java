@@ -79,8 +79,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
 
     @Override
     public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
-                                                            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-                                                            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
         return getBuilder(phaseIndex, lastInitializingPhase, solverConfigPolicy, solverTermination)
                 .build();
     }

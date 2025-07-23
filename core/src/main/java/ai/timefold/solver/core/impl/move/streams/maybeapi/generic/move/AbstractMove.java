@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.generic.move;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
 
 import java.util.ArrayList;
 import java.util.Collections;

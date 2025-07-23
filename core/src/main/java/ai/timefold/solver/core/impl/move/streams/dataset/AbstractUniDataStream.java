@@ -31,7 +31,8 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     }
 
     @Override
-    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream, @NonNull BiJoiner<A, B>... joiners) {
+    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
         var other = (AbstractUniDataStream<Solution_, B>) otherStream;
         var leftBridge = new ForeBridgeUniDataStream<Solution_, A>(dataStreamFactory, this);
         var rightBridge = new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other);

@@ -16,7 +16,8 @@ import org.jspecify.annotations.Nullable;
  * @param <T> the value type
  */
 @NullMarked
-public abstract class AbstractIdentityValueRange<T, Range_ extends CountableValueRange<T>> extends AbstractCountableValueRange<T> {
+public abstract class AbstractIdentityValueRange<T, Range_ extends CountableValueRange<T>>
+        extends AbstractCountableValueRange<T> {
 
     protected final Range_ valueRange;
 

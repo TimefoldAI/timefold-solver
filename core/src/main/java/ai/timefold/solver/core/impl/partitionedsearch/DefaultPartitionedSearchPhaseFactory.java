@@ -17,8 +17,8 @@ public class DefaultPartitionedSearchPhaseFactory<Solution_>
 
     @Override
     public PartitionedSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
-                                                        HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-                                                        SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
+            HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
+            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
         return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.PARTITIONED_SEARCH)
                 .buildPartitionedSearch(phaseIndex, phaseConfig, solverConfigPolicy, solverTermination,
                         this::buildPhaseTermination);
