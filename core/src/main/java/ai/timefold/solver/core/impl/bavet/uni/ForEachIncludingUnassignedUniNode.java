@@ -4,6 +4,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public sealed class ForEachIncludingUnassignedUniNode<A>
@@ -16,7 +17,7 @@ public sealed class ForEachIncludingUnassignedUniNode<A>
     }
 
     @Override
-    public void update(A a) {
+    public void update(@Nullable A a) {
         var tuple = tupleMap.get(a);
         if (tuple == null) {
             throw new IllegalStateException("The fact (%s) was never inserted, so it cannot update."

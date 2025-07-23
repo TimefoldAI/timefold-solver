@@ -19,8 +19,8 @@ public final class ForEachFromSolutionDataStream<Solution_, A>
     private final FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction;
 
     public ForEachFromSolutionDataStream(DataStreamFactory<Solution_> dataStreamFactory,
-            FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
-        super(dataStreamFactory, Objects.requireNonNull(valueCollectingFunction).declaredClass());
+            FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction, boolean includeNull) {
+        super(dataStreamFactory, Objects.requireNonNull(valueCollectingFunction).declaredClass(), includeNull);
         this.valueCollectingFunction = valueCollectingFunction;
     }
 

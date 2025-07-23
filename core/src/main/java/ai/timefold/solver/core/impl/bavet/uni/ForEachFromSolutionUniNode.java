@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.streams.FromSolutionValueCollectingFunction;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Node that reads a property from a planning solution.
@@ -54,13 +55,18 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
     }
 
     @Override
-    public void insert(A a) {
+    public void insert(@Nullable A a) {
+        if (a == null) {
+            // Avoid the exception, but do not actually insert null.
+            // Null will be inserted, if necessary, when the working solution is initialized.
+            return;
+        }
         throw new UnsupportedOperationException("Impossible state: direct insert is not supported on %s."
                 .formatted(this));
     }
 
     @Override
-    public void retract(A a) {
+    public void retract(@Nullable A a) {
         throw new UnsupportedOperationException("Impossible state: direct retract is not supported on %s."
                 .formatted(this));
     }

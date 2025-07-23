@@ -31,8 +31,6 @@ public final class ForEachExcludingPinnedUniNode<Solution_, A>
      * 
      * @param entityMetaModel Expects a pinnable entity.
      *        Every other option should have already been exluded and passed to a different kind of node.
-     * @param nextNodesTupleLifecycle
-     * @param outputStoreSize
      */
     public ForEachExcludingPinnedUniNode(PlanningEntityMetaModel<Solution_, A> entityMetaModel,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
@@ -57,7 +55,7 @@ public final class ForEachExcludingPinnedUniNode<Solution_, A>
     }
 
     @Override
-    public void insert(A a) {
+    public void insert(@Nullable A a) {
         if (!filter.test(a)) { // Skip inserting the tuple as it does not pass the filter.
             return;
         }
@@ -65,7 +63,7 @@ public final class ForEachExcludingPinnedUniNode<Solution_, A>
     }
 
     @Override
-    public void update(A a) {
+    public void update(@Nullable A a) {
         var tuple = tupleMap.get(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             insert(a);
@@ -77,7 +75,7 @@ public final class ForEachExcludingPinnedUniNode<Solution_, A>
     }
 
     @Override
-    public void retract(A a) {
+    public void retract(@Nullable A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             return;

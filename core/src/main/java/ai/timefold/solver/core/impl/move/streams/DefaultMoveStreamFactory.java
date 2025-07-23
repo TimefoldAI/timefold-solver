@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -43,48 +44,53 @@ public final class DefaultMoveStreamFactory<Solution_>
     }
 
     @Override
-    public <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass, boolean includeNull) {
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) { // Not an entity, can't be pinned.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         if (entityDescriptor.isGenuine()) { // Genuine entity can be pinned.
-            return dataStreamFactory.forEachExcludingPinned(sourceClass);
+            return dataStreamFactory.forEachExcludingPinned(sourceClass, includeNull);
         }
         // From now on, we are testing a shadow entity.
         var listVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (listVariableDescriptor == null) { // Can't be pinned when there are only basic variables.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         if (!listVariableDescriptor.supportsPinning()) { // The genuine entity does not support pinning.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         if (!listVariableDescriptor.acceptsValueType(sourceClass)) { // Can't be used as an element.
-            return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+            return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
         }
         // Finally a valid pin-supporting type.
-        return dataStreamFactory.forEachExcludingPinned(sourceClass);
+        return dataStreamFactory.forEachExcludingPinned(sourceClass, includeNull);
     }
 
     @Override
-    public <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass) {
-        return dataStreamFactory.forEachNonDiscriminating(sourceClass);
+    public <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass, boolean includeNull) {
+        return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
     }
 
     @Override
     public <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             UniDataStream<Solution_, Entity_> entityDataStream) {
-        // TODO somehow include null for unassigned values
         var variableDescriptor = getVariableDescriptor(variableMetaModel);
         var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
+        var includeNull =
+                variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariableMetaModel
+                        ? planningVariableMetaModel.allowsUnassigned()
+                        : variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariableMetaModel
+                                && planningListVariableMetaModel.allowsUnassignedValues();
         if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
             // No need for filtering the value range; all values from solution are valid.
             var stream = dataStreamFactory.forEachFromSolution(
-                    new FromSolutionValueCollectingFunction<Solution_, Value_>(valueRangeDescriptor, valueRangeManager));
+                    new FromSolutionValueCollectingFunction<Solution_, Value_>(valueRangeDescriptor, valueRangeManager),
+                    includeNull);
             return entityDataStream.join(stream);
         } else {
-            var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type());
+            var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
             return entityDataStream.join(stream, Joiners.filtering(
                     (entity, value) -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity).contains(value)));
         }

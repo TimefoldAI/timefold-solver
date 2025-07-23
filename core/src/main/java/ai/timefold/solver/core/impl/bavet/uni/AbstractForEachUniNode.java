@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Filtering nodes are expensive.
@@ -38,7 +39,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
-    public void insert(A a) {
+    public void insert(@Nullable A a) {
         var tuple = new UniTuple<>(a, outputStoreSize);
         var old = tupleMap.put(a, tuple);
         if (old != null) {
@@ -48,9 +49,9 @@ public abstract sealed class AbstractForEachUniNode<A>
         propagationQueue.insert(tuple);
     }
 
-    public abstract void update(A a);
+    public abstract void update(@Nullable A a);
 
-    protected final void updateExisting(A a, UniTuple<A> tuple) {
+    protected final void updateExisting(@Nullable A a, UniTuple<A> tuple) {
         var state = tuple.state;
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
@@ -63,7 +64,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         }
     }
 
-    public void retract(A a) {
+    public void retract(@Nullable A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) {
             throw new IllegalStateException("The fact (%s) was never inserted, so it cannot retract."
@@ -72,7 +73,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         retractExisting(a, tuple);
     }
 
-    protected void retractExisting(A a, UniTuple<A> tuple) {
+    protected void retractExisting(@Nullable A a, UniTuple<A> tuple) {
         var state = tuple.state;
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {

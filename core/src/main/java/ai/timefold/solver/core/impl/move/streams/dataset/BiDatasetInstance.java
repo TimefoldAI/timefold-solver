@@ -96,7 +96,10 @@ public final class BiDatasetInstance<Solution_, A, B>
 
         @Override
         public boolean hasNext() {
-            if (keyList.isEmpty()) {
+            if (selection != null) {
+                // If we already have a selection, return true.
+                return true;
+            } else if (keyList.isEmpty()) {
                 // All keys were removed. This means all tuples from all lists were removed.
                 return false;
             }
@@ -129,7 +132,9 @@ public final class BiDatasetInstance<Solution_, A, B>
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            return selection;
+            var result = selection;
+            selection = null;
+            return result;
         }
     }
 

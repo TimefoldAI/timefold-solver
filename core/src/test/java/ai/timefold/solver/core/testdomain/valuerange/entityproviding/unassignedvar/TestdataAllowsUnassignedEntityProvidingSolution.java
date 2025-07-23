@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +31,38 @@ public class TestdataAllowsUnassignedEntityProvidingSolution extends TestdataObj
         var entity1 = new TestdataAllowsUnassignedEntityProvidingEntity("e1", List.of(value1, value2));
         var entity2 = new TestdataAllowsUnassignedEntityProvidingEntity("e2", List.of(value1, value3));
         solution.setEntityList(List.of(entity1, entity2));
+        return solution;
+    }
+
+    public static TestdataAllowsUnassignedEntityProvidingSolution generateSolution(int valueListSize, int entityListSize) {
+        return generateSolution(valueListSize, entityListSize, true);
+    }
+
+    public static TestdataAllowsUnassignedEntityProvidingSolution generateUninitializedSolution(int valueListSize,
+            int entityListSize) {
+        return generateSolution(valueListSize, entityListSize, false);
+    }
+
+    private static TestdataAllowsUnassignedEntityProvidingSolution generateSolution(int valueListSize, int entityListSize,
+            boolean initialized) {
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("Generated Solution 0");
+        var valueList = new ArrayList<TestdataValue>(valueListSize);
+        for (var i = 0; i < valueListSize; i++) {
+            var value = new TestdataValue("Generated Value " + i);
+            valueList.add(value);
+        }
+        var entityList = new ArrayList<TestdataAllowsUnassignedEntityProvidingEntity>(entityListSize);
+        for (var i = 0; i < entityListSize; i++) {
+            var expectedCount = Math.max(1, valueListSize / entityListSize);
+            var valueRange = new ArrayList<TestdataValue>();
+            for (var j = 0; j < expectedCount; j++) {
+                valueRange.add(valueList.get((i * j) % valueListSize));
+            }
+            var entity = new TestdataAllowsUnassignedEntityProvidingEntity("Generated Entity " + i, valueRange);
+            entity.setValue(initialized ? valueList.get(i % valueListSize) : null);
+            entityList.add(entity);
+        }
+        solution.setEntityList(entityList);
         return solution;
     }
 

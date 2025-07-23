@@ -7,6 +7,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class ForEachExcludingUnassignedUniNode<A>
@@ -21,7 +22,7 @@ public final class ForEachExcludingUnassignedUniNode<A>
     }
 
     @Override
-    public void insert(A a) {
+    public void insert(@Nullable A a) {
         if (!filter.test(a)) { // Skip inserting the tuple as it does not pass the filter.
             return;
         }
@@ -29,7 +30,7 @@ public final class ForEachExcludingUnassignedUniNode<A>
     }
 
     @Override
-    public void update(A a) {
+    public void update(@Nullable A a) {
         var tuple = tupleMap.get(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             insert(a);
@@ -41,7 +42,7 @@ public final class ForEachExcludingUnassignedUniNode<A>
     }
 
     @Override
-    public void retract(A a) {
+    public void retract(@Nullable A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) { // The tuple was never inserted because it did not pass the filter.
             return;

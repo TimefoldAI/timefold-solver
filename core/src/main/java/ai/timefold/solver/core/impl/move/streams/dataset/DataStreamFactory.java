@@ -25,19 +25,23 @@ public final class DataStreamFactory<Solution_> {
         this.solutionDescriptor = solutionDescriptor;
     }
 
-    public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
-        return share(new ForEachIncludingPinnedDataStream<>(this, sourceClass));
+        return share(new ForEachIncludingPinnedDataStream<>(this, sourceClass, includeNull));
     }
 
-    public <A> UniDataStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass) {
+    public <A> UniDataStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
+        if (!solutionDescriptor.getMetaModel().hasEntity(sourceClass)) {
+            // The sourceClass is not a planning entity, therefore it cannot be pinned.
+            return forEachNonDiscriminating(sourceClass, includeNull);
+        }
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         // We have a basic variable, or the sourceClass is not a valid type for a list variable value.
         // In that case, we use the standard exclusion logic.
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
-            return share(new ForEachExcludingPinnedDataStream<>(this,
-                    solutionDescriptor.getMetaModel().entity(sourceClass)));
+            return share(new ForEachExcludingPinnedDataStream<>(this, solutionDescriptor.getMetaModel().entity(sourceClass),
+                    includeNull));
         }
         // The sourceClass is a list variable value, therefore we need to specialize the exclusion logic.
         var parentEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
@@ -45,16 +49,16 @@ public final class DataStreamFactory<Solution_> {
             throw new UnsupportedOperationException("Impossible state: the list variable (%s) does not support pinning."
                     .formatted(listVariableDescriptor.getVariableName()));
         }
-        var stream = forEachNonDiscriminating(sourceClass)
+        var stream = forEachNonDiscriminating(sourceClass, includeNull)
                 .ifNotExists(parentEntityDescriptor.getEntityClass(),
                         Joiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
         return share((AbstractUniDataStream<Solution_, A>) stream);
-
     }
 
     public <A> UniDataStream<Solution_, A>
-            forEachFromSolution(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction) {
-        return share(new ForEachFromSolutionDataStream<>(this, valueCollectingFunction));
+            forEachFromSolution(FromSolutionValueCollectingFunction<Solution_, A> valueCollectingFunction,
+                    boolean includeNull) {
+        return share(new ForEachFromSolutionDataStream<>(this, valueCollectingFunction, includeNull));
     }
 
     public <A> void assertValidForEachType(Class<A> fromType) {

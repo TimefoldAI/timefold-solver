@@ -81,7 +81,7 @@ class MoveStreamsBasedLocalSearchTest {
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setBestScore(score);
         solverScope.setBestSolution(scoreDirector.cloneSolution(solution));
-        solverScope.setValueRangeManager(new ValueRangeManager<>());
+        solverScope.setValueRangeManager(scoreDirector.getValueRangeManager());
         solverScope.setProblemSizeStatistics(
                 solutionDescriptor.getProblemSizeStatistics(solution, solverScope.getValueRangeManager()));
         solverScope.startingNow();
