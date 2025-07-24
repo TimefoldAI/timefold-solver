@@ -457,7 +457,8 @@ class ValueRangeManagerTest {
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
-    private <Solution_> ValueRangeManager<Solution_> createValueRangeManager(Solution_ solution, SolutionDescriptor<Solution_> solutionDescriptor) {
+    private <Solution_> ValueRangeManager<Solution_> createValueRangeManager(Solution_ solution,
+            SolutionDescriptor<Solution_> solutionDescriptor) {
         var valueRangeManager = new ValueRangeManager<Solution_>(solutionDescriptor);
         valueRangeManager.reset(solution);
         return valueRangeManager;

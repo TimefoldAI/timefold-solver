@@ -66,7 +66,8 @@ class KOptListMoveTest {
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
+        when(otherInnerScoreDirector.getValueRangeManager())
+                .thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
     }
 
     // TODO: It appears the multi-entity approach does not like kopt-affected-elements;

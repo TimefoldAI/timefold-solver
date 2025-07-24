@@ -58,11 +58,11 @@ public final class ValueRangeManager<Solution_> {
 
     public SolutionDescriptor.SolutionInitializationStatistics getInitializationStatistics() {
         if (cachedWorkingSolution == null) {
-            throw new IllegalStateException("Impossible state: initialization statistics requested before the working solution is known.");
+            throw new IllegalStateException(
+                    "Impossible state: initialization statistics requested before the working solution is known.");
         }
         return solutionDescriptor.computeInitializationStatistics(cachedWorkingSolution, this);
     }
-
 
     public ProblemSizeStatistics getProblemSizeStatistics() {
         if (cachedWorkingSolution == null) {

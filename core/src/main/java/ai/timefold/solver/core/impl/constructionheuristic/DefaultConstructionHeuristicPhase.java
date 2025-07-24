@@ -66,7 +66,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             // because it comes from the same score director as the working solution,
             // and therefore is guaranteed to match.
             var valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
-            maxStepCount = valueRangeManager.getInitializationStatistics().unassignedValueCount();
+            maxStepCount = valueRangeManager.getInitializationStatistics().notInAnyListValueCount();
         }
 
         TerminationStatus earlyTerminationStatus = null;

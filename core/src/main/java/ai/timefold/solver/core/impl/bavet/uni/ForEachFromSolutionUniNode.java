@@ -35,7 +35,8 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
     private boolean isInitialized = false;
 
     @SuppressWarnings("unchecked")
-    public ForEachFromSolutionUniNode(ValueRangeDescriptor<Solution_> valueRangeDescriptor, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
+    public ForEachFromSolutionUniNode(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         super((Class<A>) valueRangeDescriptor.getVariableDescriptor().getVariablePropertyType(), nextNodesTupleLifecycle,
                 outputStoreSize);
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);

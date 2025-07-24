@@ -1336,16 +1336,19 @@ public class SolutionDescriptor<Solution_> {
         var uninitializedEntityCount = new MutableInt();
         var uninitializedVariableCount = new MutableInt();
         var unassignedValueCount = new MutableInt();
+        var notInAnyListValueCount = new MutableInt();
         var genuineEntityCount = new MutableInt();
         var shadowEntityCount = new MutableInt();
         for (var listVariableDescriptor : listVariableDescriptorList) {
+            var count = (int) valueRangeManager
+                    .countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution);
+            notInAnyListValueCount.add(count);
             if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
                 continue;
             }
             // We count every possibly unassigned element in every list variable.
             // And later we subtract the assigned elements.
-            unassignedValueCount.add((int) valueRangeManager
-                    .countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution));
+            unassignedValueCount.add(count);
         }
         visitAllEntities(solution, entity -> {
             var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
@@ -1366,22 +1369,38 @@ public class SolutionDescriptor<Solution_> {
                 return;
             }
             for (var listVariableDescriptor : listVariableDescriptorList) {
+                var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
+                var count = listVariableDescriptor.getListSize(entity);
+                notInAnyListValueCount.subtract(count);
                 if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
                     continue;
                 }
-                var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
                 if (listVariableEntityDescriptor.matchesEntity(entity)) {
-                    unassignedValueCount.subtract(listVariableDescriptor.getListSize(entity));
+                    unassignedValueCount.subtract(count);
                 }
                 // TODO maybe detect duplicates and elements that are outside the value range
             }
         });
         return new SolutionInitializationStatistics(genuineEntityCount.intValue(), shadowEntityCount.intValue(),
-                uninitializedEntityCount.intValue(), uninitializedVariableCount.intValue(), unassignedValueCount.intValue());
+                uninitializedEntityCount.intValue(), uninitializedVariableCount.intValue(), unassignedValueCount.intValue(),
+                notInAnyListValueCount.intValue());
     }
 
+    /**
+     * 
+     * @param genuineEntityCount
+     * @param shadowEntityCount
+     * @param uninitializedEntityCount
+     * @param uninitializedVariableCount Zero if unassigned values are allowed.
+     * @param unassignedValueCount How many values aren't in any list variable,
+     *        assuming unassigned values aren't allowed.
+     *        Otherwise zero.
+     * @param notInAnyListValueCount How many values aren't in any list variable,
+     *        regardless of whether unassigned values are allowed.
+     */
     public record SolutionInitializationStatistics(int genuineEntityCount, int shadowEntityCount,
-            int uninitializedEntityCount, int uninitializedVariableCount, int unassignedValueCount) {
+            int uninitializedEntityCount, int uninitializedVariableCount, int unassignedValueCount,
+            int notInAnyListValueCount) {
 
         public int getInitCount() {
             return uninitializedVariableCount + uninitializedEntityCount;

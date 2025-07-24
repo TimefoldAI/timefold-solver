@@ -18,7 +18,8 @@ public final class ForEachFromSolutionDataStream<Solution_, A>
 
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
 
-    public ForEachFromSolutionDataStream(DataStreamFactory<Solution_> dataStreamFactory, ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean includeNull) {
+    public ForEachFromSolutionDataStream(DataStreamFactory<Solution_> dataStreamFactory,
+            ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean includeNull) {
         super(dataStreamFactory, (Class<A>) valueRangeDescriptor.getVariableDescriptor().getVariablePropertyType(),
                 includeNull);
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);

@@ -25,7 +25,7 @@ public abstract class AbstractSession implements AutoCloseable {
         this.retractEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public final void initialize(SessionContext context) {
         for (var node : findInitializableNodes()) {
             node.initialize(context);

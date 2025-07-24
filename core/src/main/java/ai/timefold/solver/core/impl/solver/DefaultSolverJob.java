@@ -61,6 +61,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private ConsumerSupport<Solution_, ProblemId_> consumerSupport;
     private final AtomicBoolean terminatedEarly = new AtomicBoolean(false);
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
+    private volatile ProblemSizeStatistics temporaryProblemSizeStatistics;
 
     public DefaultSolverJob(
             DefaultSolverManager<Solution_, ProblemId_> solverManager,
@@ -253,11 +254,24 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         var solverScope = solver.getSolverScope();
         var problemSizeStatistics = solverScope.getProblemSizeStatistics();
         if (problemSizeStatistics != null) {
+            this.temporaryProblemSizeStatistics = null;
             return problemSizeStatistics;
+        } else if (temporaryProblemSizeStatistics != null) {
+            // If the problem size statistics were already computed, return them.
+            // This can happen if the problem size statistics were computed before the solving started.
+            return temporaryProblemSizeStatistics;
         }
-        // Solving has not started yet
-        return solverScope.getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId),
-                new ValueRangeManager<>()); // TODO fix
+        // Solving has not started yet; we do not have a working solution.
+        // Therefore we cannot rely on ScoreDirector's ValueRangeManager
+        // and we need to use a new cold instance.
+        // This will be inefficient on account of recomputing all the value ranges,
+        // but it only exists to solve a corner case of accessing the problem size statistics
+        // before the solving has started.
+        // Once the solving has started, the problem size statistics will be computed
+        // using the ScoreDirector's hot ValueRangeManager.
+        var solutionDescriptor = solverScope.getSolutionDescriptor();
+        return this.temporaryProblemSizeStatistics = solutionDescriptor.getProblemSizeStatistics(problemFinder.apply(problemId),
+                new ValueRangeManager<>(solutionDescriptor));
     }
 
     public SolverTermination<Solution_> getSolverTermination() {

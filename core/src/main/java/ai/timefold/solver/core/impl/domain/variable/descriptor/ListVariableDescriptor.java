@@ -90,19 +90,6 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
                 variableMemberAccessor.getName());
     }
 
-    public int countUnassigned(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
-        var valueCount =
-                new MutableLong(valueRangeManager.countOnSolution(getValueRangeDescriptor(), solution));
-        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
-        solutionDescriptor.visitEntitiesByEntityClass(solution,
-                entityDescriptor.getEntityClass(), entity -> {
-                    var assignedValues = getValue(entity);
-                    valueCount.subtract(assignedValues.size());
-                    return false;
-                });
-        return valueCount.intValue();
-    }
-
     public InverseRelationShadowVariableDescriptor<Solution_> getInverseRelationShadowVariableDescriptor() {
         var inverseRelationEntityDescriptor =
                 getEntityDescriptor().getSolutionDescriptor().findEntityDescriptor(getElementType());

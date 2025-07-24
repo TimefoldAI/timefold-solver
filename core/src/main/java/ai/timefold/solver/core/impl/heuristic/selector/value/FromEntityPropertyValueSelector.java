@@ -9,8 +9,10 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * This is the common {@link ValueSelector} implementation.
@@ -37,16 +39,41 @@ public final class FromEntityPropertyValueSelector<Solution_>
     }
 
     @Override
+    public void solvingStarted(SolverScope<Solution_> solverScope) {
+        super.solvingStarted(solverScope);
+        this.valueRangeManager = solverScope.getScoreDirector().getValueRangeManager();
+    }
+
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        // Make sure we're still using the latest value range manager.
+        this.valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
+    }
+
+    @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         super.stepStarted(stepScope);
-        // This value range manager is guaranteed to match the working solution being used in this step.
+        // Make sure we're still using the latest value range manager.
         this.valueRangeManager = stepScope.getScoreDirector().getValueRangeManager();
     }
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        super.stepEnded(stepScope);
         this.valueRangeManager = null;
+        super.stepEnded(stepScope);
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        this.valueRangeManager = null;
+        super.phaseEnded(phaseScope);
+    }
+
+    @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        this.valueRangeManager = null;
+        super.solvingEnded(solverScope);
     }
 
     @Override
