@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
+import static ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -7,7 +9,6 @@ import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
-import ai.timefold.solver.core.impl.bavet.uni.ForEachFromSolutionUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
@@ -38,8 +39,7 @@ abstract sealed class AbstractForEachDataStream<Solution_, A>
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var outputStoreSize = buildHelper.extractTupleStoreSize(this);
         var node = getNode(tupleLifecycle, outputStoreSize);
-        if (shouldIncludeNull && !(node instanceof ForEachFromSolutionUniNode<?, ?>)) {
-            // If the node is a ForEachFromSolutionUniNode, it will handle nulls itself during initialization.
+        if (shouldIncludeNull && node.supports(LifecycleOperation.INSERT)) {
             node.insert(null);
         }
         buildHelper.addNode(node, this, null);

@@ -10,14 +10,10 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
-/**
- * Same as {@link ListValueRange}, but it employs a different caching strategy and remains immutable.
- *
- * @param <T> the value type
- */
 @NullMarked
-public abstract class AbstractIdentityValueRange<T, Range_ extends CountableValueRange<T>>
-        extends AbstractCountableValueRange<T> {
+public sealed abstract class AbstractIdentityValueRange<T, Range_ extends CountableValueRange<T>>
+        extends AbstractCountableValueRange<T>
+        permits IdentityListValueRange, IdentitySetValueRange {
 
     protected final Range_ valueRange;
 

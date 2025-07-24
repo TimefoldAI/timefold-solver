@@ -9,7 +9,11 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link ValueRange} that is ending. Therefore, it has a discrete (as in non-continuous) range.
- *
+ * <p>
+ * Don't implement this interface directly.
+ * If you can't use a collection to store the values,
+ * use {@link ValueRangeFactory} to get an instance of a {@link CountableValueRange}.
+ * 
  * @see ValueRangeFactory
  * @see ValueRange
  */

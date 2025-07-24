@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A ValueRange is a set of a values for a {@link PlanningVariable}.
+ * A ValueRange is a set of a values for a {@link PlanningVariable} or {@link PlanningListVariable}.
  * These values might be stored in memory as a {@link Collection} (usually a {@link List} or {@link Set}),
  * but if the values are numbers, they can also be stored in memory by their bounds
  * to use less memory and provide more opportunities.
@@ -21,9 +21,9 @@ import org.jspecify.annotations.Nullable;
  * ValueRange is stateless, and its contents must not depend on any planning variables.
  * Implementations must be immutable.
  * <p>
- * Use {@link CountableValueRange} instead.
- * {@link ValueRange} only has a single non-countable implementation,
- * {@link DoubleValueRange}, which is deprecated and does not work any more.
+ * Don't implement this interface directly.
+ * If you can't use a collection to store the values,
+ * use {@link ValueRangeFactory} to get an instance of a {@link CountableValueRange}.
  *
  * @see CountableValueRange
  * @see ValueRangeProvider

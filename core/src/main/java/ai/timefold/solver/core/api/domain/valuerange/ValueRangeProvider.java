@@ -31,8 +31,8 @@ import org.jspecify.annotations.NonNull;
  * 
  * <p>
  * Value ranges are not allowed to contain {@code null} values.
- * The solver will automatically add a null value to any range
- * when {@link PlanningVariable#allowsUnassigned()} or {@link PlanningListVariable#allowsUnassignedValues()} is true.
+ * When {@link PlanningVariable#allowsUnassigned()} or {@link PlanningListVariable#allowsUnassignedValues()} is true,
+ * the solver will handle {@code null} values on its own.
  *
  * <p>
  * Value ranges are not allowed to contain multiple copies of the same object,
