@@ -8,7 +8,6 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.move.PlacerBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -57,16 +56,17 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         var phaseScope = buildPhaseScope(solverScope, phaseIndex);
         phaseStarted(phaseScope);
 
-        var solutionDescriptor = solverScope.getSolutionDescriptor();
         var hasListVariable = moveRepository.hasListVariable();
         var maxStepCount = -1;
         if (hasListVariable) {
             // In case of list variable with support for unassigned values, the placer will iterate indefinitely.
             // (When it exhausts all values, it will start over from the beginning.)
             // To prevent that, we need to limit the number of steps to the number of unassigned values.
-            var workingSolution = phaseScope.getWorkingSolution();
-            var valueRangeManager = new ValueRangeManager<Solution_>(); // TODO fix
-            maxStepCount = solutionDescriptor.getListVariableDescriptor().countUnassigned(workingSolution, valueRangeManager);
+            // The use of ValueRangeManager is safe
+            // because it comes from the same score director as the working solution,
+            // and therefore is guaranteed to match.
+            var valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
+            maxStepCount = valueRangeManager.getInitializationStatistics().unassignedValueCount();
         }
 
         TerminationStatus earlyTerminationStatus = null;

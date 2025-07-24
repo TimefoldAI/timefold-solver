@@ -6,7 +6,9 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
@@ -39,10 +41,35 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ValueRangeManager<Solution_> {
 
-    private @Nullable Solution_ cachedWorkingSolution = null;
+    private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
+
+    private @Nullable Solution_ cachedWorkingSolution = null;
+
+    public ValueRangeManager() {
+        throw new UnsupportedOperationException();
+    }
+
+    public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
+        this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
+    }
+
+    public SolutionDescriptor.SolutionInitializationStatistics getInitializationStatistics() {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException("Impossible state: initialization statistics requested before the working solution is known.");
+        }
+        return solutionDescriptor.computeInitializationStatistics(cachedWorkingSolution, this);
+    }
+
+
+    public ProblemSizeStatistics getProblemSizeStatistics() {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException("Impossible state: problem size requested before the working solution is known.");
+        }
+        return solutionDescriptor.getProblemSizeStatistics(cachedWorkingSolution, this);
+    }
 
     /**
      * As {@link #getFromSolution(ValueRangeDescriptor, Object)}, but the solution is taken from the cached working solution.

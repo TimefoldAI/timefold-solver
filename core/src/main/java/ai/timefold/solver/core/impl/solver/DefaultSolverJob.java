@@ -250,12 +250,13 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     @Override
     public @NonNull ProblemSizeStatistics getProblemSizeStatistics() {
-        var problemSizeStatistics = solver.getSolverScope().getProblemSizeStatistics();
+        var solverScope = solver.getSolverScope();
+        var problemSizeStatistics = solverScope.getProblemSizeStatistics();
         if (problemSizeStatistics != null) {
             return problemSizeStatistics;
         }
         // Solving has not started yet
-        return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId),
+        return solverScope.getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId),
                 new ValueRangeManager<>()); // TODO fix
     }
 
