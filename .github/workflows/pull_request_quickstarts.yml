@@ -1,5 +1,8 @@
 name: Quickstarts Workflow
 
+env:
+  NODE_OPTIONS: '--max_old_space_size=4096' # Increase memory limit for Node.js processes, makes Surefire report work.
+
 on:
   push:
     branches: [main]
