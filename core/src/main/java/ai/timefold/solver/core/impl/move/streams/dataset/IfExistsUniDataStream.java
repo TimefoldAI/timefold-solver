@@ -11,8 +11,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.IndexedIfExistsUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.UnindexedIfExistsUniNode;
-import ai.timefold.solver.core.impl.move.streams.dataset.common.BavetIfExistsDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.IfExistsDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -21,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class IfExistsUniDataStream<Solution_, A, B>
         extends AbstractUniDataStream<Solution_, A>
-        implements BavetIfExistsDataStream<Solution_> {
+        implements IfExistsDataStream<Solution_> {
 
     private final AbstractUniDataStream<Solution_, A> parentA;
     private final ForeBridgeUniDataStream<Solution_, B> parentBridgeB;

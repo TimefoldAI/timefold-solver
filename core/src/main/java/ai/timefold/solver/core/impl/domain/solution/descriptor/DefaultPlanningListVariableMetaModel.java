@@ -14,7 +14,7 @@ public record DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>(
         ListVariableDescriptor<Solution_> variableDescriptor)
         implements
             PlanningListVariableMetaModel<Solution_, Entity_, Value_>,
-            InnerVariableMetaModel<Solution_> {
+            InnerGenuineVariableMetaModel<Solution_> {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -25,6 +25,11 @@ public record DefaultPlanningListVariableMetaModel<Solution_, Entity_, Value_>(
     @Override
     public String name() {
         return variableDescriptor.getVariableName();
+    }
+
+    @Override
+    public boolean hasValueRangeOnEntity() {
+        return !variableDescriptor.canExtractValueRangeFromSolution();
     }
 
     @Override

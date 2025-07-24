@@ -5,12 +5,11 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.empty.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 
@@ -25,8 +24,17 @@ import org.jspecify.annotations.Nullable;
  * Outside a {@link ProblemChange}, value ranges are not allowed to change.
  * Call {@link #reset(Object)} every time the working solution changes through a problem fact,
  * so that all caches can be invalidated.
+ * 
+ * <p>
+ * Two score directors can never share the same instance of this class;
+ * this class contains state that is specific to a particular instance of a working solution.
+ * Even a clone of that same solution must not share the same instance of this class,
+ * unless {@link #reset(Object)} is called with the clone;
+ * failing to follow this rule will result in score corruptions as the cached value ranges reference
+ * objects from the original working solution pre-clone.
  *
- * @see ValueRange
+ * @see CountableValueRange
+ * @see ValueRangeProvider
  */
 @NullMarked
 public final class ValueRangeManager<Solution_> {
@@ -35,6 +43,22 @@ public final class ValueRangeManager<Solution_> {
     private final Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
+
+    /**
+     * As {@link #getFromSolution(ValueRangeDescriptor, Object)}, but the solution is taken from the cached working solution.
+     * This requires {@link #reset(Object)} to be called before the first call to this method,
+     * and therefore this method will throw an exception if called before the score director is instantiated.
+     *
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException(
+                    "Impossible state: value range (%s) requested before the working solution is known."
+                            .formatted(valueRangeDescriptor));
+        }
+        return getFromSolution(valueRangeDescriptor, cachedWorkingSolution);
+    }
 
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
@@ -63,6 +87,9 @@ public final class ValueRangeManager<Solution_> {
         return (CountableValueRange<T>) valueRange;
     }
 
+    /**
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
         if (cachedWorkingSolution == null) {

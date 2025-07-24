@@ -14,7 +14,7 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
         BasicVariableDescriptor<Solution_> variableDescriptor)
         implements
             PlanningVariableMetaModel<Solution_, Entity_, Value_>,
-            InnerVariableMetaModel<Solution_> {
+            InnerGenuineVariableMetaModel<Solution_> {
 
     @SuppressWarnings("unchecked")
     @Override
@@ -25,6 +25,11 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
     @Override
     public String name() {
         return variableDescriptor.getVariableName();
+    }
+
+    @Override
+    public boolean hasValueRangeOnEntity() {
+        return !variableDescriptor.canExtractValueRangeFromSolution();
     }
 
     @Override
@@ -58,4 +63,5 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
         return "Genuine Variable '%s %s.%s' (allowsUnassigned: %b, isChained: %b)"
                 .formatted(type(), entity.getClass().getSimpleName(), name(), allowsUnassigned(), isChained());
     }
+
 }

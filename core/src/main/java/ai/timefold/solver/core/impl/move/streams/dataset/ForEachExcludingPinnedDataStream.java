@@ -19,8 +19,8 @@ public final class ForEachExcludingPinnedDataStream<Solution_, A>
     private final PlanningEntityMetaModel<Solution_, A> entityMetaModel;
 
     public ForEachExcludingPinnedDataStream(DataStreamFactory<Solution_> dataStreamFactory,
-            PlanningEntityMetaModel<Solution_, A> entityMetaModel) {
-        super(dataStreamFactory, Objects.requireNonNull(entityMetaModel).type());
+            PlanningEntityMetaModel<Solution_, A> entityMetaModel, boolean includeNull) {
+        super(dataStreamFactory, Objects.requireNonNull(entityMetaModel).type(), includeNull);
         this.entityMetaModel = entityMetaModel;
     }
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
+import static ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
+
 import java.util.Objects;
 import java.util.Set;
 
@@ -18,10 +20,13 @@ abstract sealed class AbstractForEachDataStream<Solution_, A>
         permits ForEachIncludingPinnedDataStream, ForEachExcludingPinnedDataStream, ForEachFromSolutionDataStream {
 
     protected final Class<A> forEachClass;
+    private final boolean shouldIncludeNull;
 
-    protected AbstractForEachDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass) {
+    protected AbstractForEachDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
+            boolean includeNull) {
         super(dataStreamFactory, null);
         this.forEachClass = Objects.requireNonNull(forEachClass);
+        this.shouldIncludeNull = includeNull;
     }
 
     @Override
@@ -34,6 +39,9 @@ abstract sealed class AbstractForEachDataStream<Solution_, A>
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var outputStoreSize = buildHelper.extractTupleStoreSize(this);
         var node = getNode(tupleLifecycle, outputStoreSize);
+        if (shouldIncludeNull && node.supports(LifecycleOperation.INSERT)) {
+            node.insert(null);
+        }
         buildHelper.addNode(node, this, null);
     }
 

@@ -5,6 +5,9 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
 
     private final DataStreamFactory<Solution_> dataStreamFactory;
@@ -19,8 +22,10 @@ public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
         parent.collectActiveDataStreams(dataStreamSet);
     }
 
-    public DatasetInstance<Solution_, Tuple_> instantiate(int storeIndex) {
-        return new DatasetInstance<>(this, storeIndex);
+    public abstract AbstractDatasetInstance<Solution_, Tuple_> instantiate(int storeIndex);
+
+    public DataStreamFactory<Solution_> getDataStreamFactory() {
+        return dataStreamFactory;
     }
 
     @Override

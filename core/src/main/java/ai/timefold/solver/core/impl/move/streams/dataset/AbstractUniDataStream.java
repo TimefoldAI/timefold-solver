@@ -5,8 +5,10 @@ import java.util.function.Predicate;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.BiJoinerComber;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -28,10 +30,31 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         return shareAndAddChild(new FilterUniDataStream<>(dataStreamFactory, this, predicate));
     }
 
+    @Override
+    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream,
+            @NonNull BiJoiner<A, B>... joiners) {
+        var other = (AbstractUniDataStream<Solution_, B>) otherStream;
+        var leftBridge = new ForeBridgeUniDataStream<Solution_, A>(dataStreamFactory, this);
+        var rightBridge = new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other);
+        var joinerComber = BiJoinerComber.comb(joiners);
+        var joinStream = new JoinBiDataStream<>(dataStreamFactory, leftBridge, rightBridge,
+                joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering());
+        return dataStreamFactory.share(joinStream, joinStream_ -> {
+            // Connect the bridges upstream, as it is an actual new join.
+            getChildStreamList().add(leftBridge);
+            other.getChildStreamList().add(rightBridge);
+        });
+    }
+
+    @Override
+    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull Class<B> otherClass, @NonNull BiJoiner<A, B>... joiners) {
+        return join(dataStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
+    }
+
     @SafeVarargs
     @Override
     public final <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        return ifExists(dataStreamFactory.forEachNonDiscriminating(otherClass), joiners);
+        return ifExists(dataStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
     @SafeVarargs
@@ -43,7 +66,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     @SafeVarargs
     @Override
     public final <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiJoiner<A, B>... joiners) {
-        return ifExistsOrNot(false, dataStreamFactory.forEachNonDiscriminating(otherClass), joiners);
+        return ifExistsOrNot(false, dataStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
     @SafeVarargs

@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.generic.provider.ChangeMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
@@ -81,7 +81,7 @@ class MoveStreamsBasedLocalSearchTest {
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setBestScore(score);
         solverScope.setBestSolution(scoreDirector.cloneSolution(solution));
-        solverScope.setValueRangeManager(new ValueRangeManager<>());
+        solverScope.setValueRangeManager(scoreDirector.getValueRangeManager());
         solverScope.setProblemSizeStatistics(
                 solutionDescriptor.getProblemSizeStatistics(solution, solverScope.getValueRangeManager()));
         solverScope.startingNow();
@@ -98,7 +98,7 @@ class MoveStreamsBasedLocalSearchTest {
                 .genuineVariable()
                 .ensurePlanningVariable();
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, new ValueRangeManager<>());
         var moveProducer = moveProvider.apply(moveStreamFactory);
         // Random selection otherwise LS gets stuck in an endless loop.
         return new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer, true);

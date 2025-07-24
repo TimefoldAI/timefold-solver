@@ -6,27 +6,30 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * A ValueRange is a set of a values for a {@link PlanningVariable}.
+ * A ValueRange is a set of a values for a {@link PlanningVariable} or {@link PlanningListVariable}.
  * These values might be stored in memory as a {@link Collection} (usually a {@link List} or {@link Set}),
  * but if the values are numbers, they can also be stored in memory by their bounds
  * to use less memory and provide more opportunities.
  * <p>
- * ValueRange is stateful.
+ * ValueRange is stateless, and its contents must not depend on any planning variables.
  * Implementations must be immutable.
  * <p>
- * Prefer using {@link CountableValueRange}.
- * In a future version of Timefold Solver, uncountable value ranges will not be allowed,
- * and certain recently introduced features already do not support them.
+ * Don't implement this interface directly.
+ * If you can't use a collection to store the values,
+ * use {@link ValueRangeFactory} to get an instance of a {@link CountableValueRange}.
  *
- * @see ValueRangeFactory
  * @see CountableValueRange
+ * @see ValueRangeProvider
+ * @see ValueRangeFactory
  */
+@NullMarked
 public interface ValueRange<T> {
 
     /**
@@ -50,7 +53,6 @@ public interface ValueRange<T> {
      * @param workingRandom the {@link Random} to use when any random number is needed,
      *        so runs are reproducible.
      */
-    @NonNull
-    Iterator<T> createRandomIterator(@NonNull Random workingRandom);
+    Iterator<T> createRandomIterator(Random workingRandom);
 
 }

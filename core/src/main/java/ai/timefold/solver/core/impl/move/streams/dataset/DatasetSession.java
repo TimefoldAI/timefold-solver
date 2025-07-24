@@ -10,14 +10,15 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
 public final class DatasetSession<Solution_> extends AbstractSession {
 
-    private final Map<AbstractDataset<Solution_, ?>, DatasetInstance<Solution_, ?>> datasetInstanceMap =
+    private final Map<AbstractDataset<Solution_, ?>, AbstractDatasetInstance<Solution_, ?>> datasetInstanceMap =
             new IdentityHashMap<>();
 
     DatasetSession(NodeNetwork nodeNetwork) {
         super(nodeNetwork);
     }
 
-    public void registerDatasetInstance(AbstractDataset<Solution_, ?> dataset, DatasetInstance<Solution_, ?> datasetInstance) {
+    public void registerDatasetInstance(AbstractDataset<Solution_, ?> dataset,
+            AbstractDatasetInstance<Solution_, ?> datasetInstance) {
         var oldDatasetInstance = datasetInstanceMap.put(dataset, datasetInstance);
         if (oldDatasetInstance != null) {
             throw new IllegalStateException("The dataset (%s) has already been registered with session (%s)."
@@ -26,8 +27,9 @@ public final class DatasetSession<Solution_> extends AbstractSession {
     }
 
     @SuppressWarnings("unchecked")
-    public <Out_ extends AbstractTuple> DatasetInstance<Solution_, Out_> getInstance(AbstractDataset<Solution_, Out_> dataset) {
-        return (DatasetInstance<Solution_, Out_>) Objects.requireNonNull(datasetInstanceMap.get(dataset));
+    public <Out_ extends AbstractTuple> AbstractDatasetInstance<Solution_, Out_>
+            getInstance(AbstractDataset<Solution_, Out_> dataset) {
+        return (AbstractDatasetInstance<Solution_, Out_>) Objects.requireNonNull(datasetInstanceMap.get(dataset));
     }
 
 }

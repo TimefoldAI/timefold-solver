@@ -8,6 +8,7 @@ import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
@@ -20,7 +21,7 @@ public class DefaultCustomPhaseFactory<Solution_> extends AbstractPhaseFactory<S
     @Override
     public CustomPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            SolverTermination<Solution_> solverTermination) {
+            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         var customPhaseCommandClassList = phaseConfig.getCustomPhaseCommandClassList();
         var customPhaseCommandList = phaseConfig.getCustomPhaseCommandList();

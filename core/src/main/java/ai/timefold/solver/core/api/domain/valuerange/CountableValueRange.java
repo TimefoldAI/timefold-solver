@@ -4,15 +4,20 @@ import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * A {@link ValueRange} that is ending. Therefore, it has a discrete (as in non-continuous) range.
- *
+ * <p>
+ * Don't implement this interface directly.
+ * If you can't use a collection to store the values,
+ * use {@link ValueRangeFactory} to get an instance of a {@link CountableValueRange}.
+ * 
  * @see ValueRangeFactory
  * @see ValueRange
  */
+@NullMarked
 public interface CountableValueRange<T> extends ValueRange<T> {
 
     /**
@@ -36,7 +41,6 @@ public interface CountableValueRange<T> extends ValueRange<T> {
     /**
      * Select the elements in original (natural) order.
      */
-    @NonNull
     Iterator<T> createOriginalIterator();
 
 }

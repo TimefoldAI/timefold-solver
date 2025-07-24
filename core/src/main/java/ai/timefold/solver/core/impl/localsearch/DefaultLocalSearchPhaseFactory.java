@@ -45,6 +45,7 @@ import ai.timefold.solver.core.impl.move.MoveStreamsBasedMoveRepository;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProviders;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
@@ -59,7 +60,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     @Override
     public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            SolverTermination<Solution_> solverTermination) {
+            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
         var moveProviderClass = phaseConfig.<Solution_> getMoveProvidersClass();
         var moveStreamsEnabled = moveProviderClass != null;
         var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
@@ -72,7 +73,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
         var decider = moveStreamsEnabled
-                ? buildMoveStreamsBasedDecider(phaseConfigPolicy, phaseTermination, moveProviderClass)
+                ? buildMoveStreamsBasedDecider(phaseConfigPolicy, phaseTermination, moveProviderClass, valueRangeManager)
                 : buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
         return new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
                 decider)
@@ -87,7 +88,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     private LocalSearchDecider<Solution_> buildMoveStreamsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination, Class<? extends MoveProviders<Solution_>> moveProvidersClass) {
+            PhaseTermination<Solution_> termination, Class<? extends MoveProviders<Solution_>> moveProvidersClass,
+            ValueRangeManager<Solution_> valueRangeManager) {
         configPolicy.ensurePreviewFeature(PreviewFeature.MOVE_STREAMS);
 
         var solutionDescriptor = configPolicy.getSolutionDescriptor();
@@ -134,7 +136,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                             .formatted(moveProvidersClass, moveProviderList.size()));
         }
         var moveProvider = moveProviderList.get(0);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, valueRangeManager);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveRepository = new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer,
                 pickSelectionOrder() == SelectionOrder.RANDOM);

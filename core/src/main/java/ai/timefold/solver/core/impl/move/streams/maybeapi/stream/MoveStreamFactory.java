@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -22,7 +22,7 @@ public interface MoveStreamFactory<Solution_> {
      * <p>
      * If the sourceClass is a {@link PlanningEntity}, then it is automatically
      * {@link UniDataStream#filter(Predicate) filtered} to only contain entities
-     * which are pinned.
+     * which are not pinned.
      * <p>
      * If the sourceClass is a shadow entity (an entity without any genuine planning variables),
      * and if there exists a genuine {@link PlanningEntity} with a {@link PlanningListVariable}
@@ -37,40 +37,52 @@ public interface MoveStreamFactory<Solution_> {
      * @return A stream containing a tuple for each of the entities as described above.
      * @see PlanningPin An annotation to mark the entire entity as pinned.
      * @see PlanningPinToIndex An annotation to specify only a portion of {@link PlanningListVariable} is pinned.
-     * @see #enumerateIncludingPinned(Class) Specialized method exists to automatically include pinned entities as well.
+     * @see #enumerateIncludingPinned(Class, boolean) Specialized method exists to automatically include pinned entities as
+     *      well.
      */
-    <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass);
+    <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass, boolean includeNull);
 
     /**
      * Start a {@link ConstraintStream} of all instances of the sourceClass
      * that are known as {@link ProblemFactCollectionProperty problem facts} or {@link PlanningEntity planning entities}.
      * If the sourceClass is a genuine or shadow entity,
      * it returns instances regardless of their pinning status.
-     * Otherwise as defined by {@link #enumerate(Class)}.
+     * Otherwise as defined by {@link #enumerate(Class, boolean)}.
      */
-    <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass);
+    <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass, boolean includeNull);
 
     /**
-     * Enumerate possible values for a given basic variable.
+     * Enumerate possible values for any given entity,
+     * where entities are obtained using {@link #enumerate(Class, boolean)},
+     * with the class matching the entity type of the variable.
      * If the variable allows unassigned values, the resulting stream will include a null value.
      *
-     * @throws UnsupportedOperationException If the variable in question is a list variable,
-     *         or if the basic variable is chained.
+     * @param variableMetaModel the meta model of the variable to enumerate
      * @return data stream with all possible values of a given variable
-     * @see #enumeratePossiblePositions(PlanningListVariableMetaModel) For list variables, use a specialized method.
      */
-    <Entity_, A> UniDataStream<Solution_, A>
-            enumeratePossibleValues(PlanningVariableMetaModel<Solution_, Entity_, A> variableMetaModel);
-
-    default <Entity_, A> UniDataStream<Solution_, A>
-            enumeratePossiblePositions(PlanningListVariableMetaModel<Solution_, Entity_, A> variableMetaModel) {
-        throw new UnsupportedOperationException(); // TODO
+    default <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
+            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        return enumerateEntityValuePairs(variableMetaModel, enumerate(variableMetaModel.entity().type(), false));
     }
 
+    /**
+     * Enumerate possible values for any given entity.
+     * If the variable allows unassigned values, the resulting stream will include a null value.
+     *
+     * @param variableMetaModel the meta model of the variable to enumerate
+     * @param entityDataStream the data stream of entities to enumerate values for
+     * @return data stream with all possible values of a given variable
+     */
+    <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            UniDataStream<Solution_, Entity_> entityDataStream);
+
     default <A> UniMoveStream<Solution_, A> pick(Class<A> clz) {
-        return pick(enumerate(clz));
+        return pick(enumerate(clz, false));
     }
 
     <A> UniMoveStream<Solution_, A> pick(UniDataStream<Solution_, A> dataStream);
+
+    <A, B> BiMoveStream<Solution_, A, B> pick(BiDataStream<Solution_, A, B> dataStream);
 
 }
