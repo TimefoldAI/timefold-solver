@@ -19,6 +19,9 @@ jobs:
       group: pull_request-${{ github.event_name }}-${{ github.head_ref }}-${{ matrix.os }}-${{ matrix.java-version }}
       cancel-in-progress: true
     runs-on: ${{matrix.os}}
+    permissions: # The workflow requires write access to the repository to publish test reports.
+      checks: write
+      contents: read
     strategy:
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest ]
@@ -52,6 +55,9 @@ jobs:
   java_full:
     name: "Java Solver (with flag -Dfull)"
     runs-on: ubuntu-latest
+    permissions: # The workflow requires write access to the repository to publish test reports.
+      checks: write
+      contents: read
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -72,6 +78,9 @@ jobs:
   spring_boot_3_3_x:
     name: "Spring Boot 3.3.x"
     runs-on: ubuntu-latest
+    permissions: # The workflow requires write access to the repository to publish test reports.
+      checks: write
+      contents: read
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -97,6 +106,9 @@ jobs:
   spring_boot_3_4_x:
     name: "Spring Boot 3.4.x"
     runs-on: ubuntu-latest
+    permissions: # The workflow requires write access to the repository to publish test reports.
+      checks: write
+      contents: read
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v4
@@ -125,6 +137,9 @@ jobs:
       group: pull_request_native-${{ github.event_name }}-${{ github.head_ref }}-${{matrix.os}}-${{ matrix.module }}-${{ matrix.java-version }}
       cancel-in-progress: true
     runs-on: ${{matrix.os}}
+    permissions: # The workflow requires write access to the repository to publish test reports.
+      checks: write
+      contents: read
     strategy:
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm ] # Windows doesn't work, Mac is not a deploy OS.

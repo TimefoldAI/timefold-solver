@@ -59,6 +59,9 @@ jobs:
     needs: approval_required
     name: Integration Tests
     runs-on: ubuntu-latest
+    permissions: # The workflow requires write access to the repository to publish test reports.
+      checks: write
+      contents: read
     concurrency:
       group: pr-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
@@ -142,6 +145,9 @@ jobs:
     needs: approval_required
     name: Enterprise Edition (Java)
     runs-on: ubuntu-latest
+    permissions: # The workflow requires write access to the repository to publish test reports.
+      checks: write
+      contents: read
     concurrency:
       group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
