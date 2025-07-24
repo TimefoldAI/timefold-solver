@@ -250,7 +250,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             for (var declarativeShadowVariableDescriptor : entryGroupVariables) {
                 var updater = new VariableUpdaterInfo<>(
                         declarativeShadowVariableDescriptor.getVariableMetaModel(),
-                        entryKey,
+                        updaterKey,
                         declarativeShadowVariableDescriptor,
                         declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariableLoopedDescriptor(),
                         declarativeShadowVariableDescriptor.getMemberAccessor(),

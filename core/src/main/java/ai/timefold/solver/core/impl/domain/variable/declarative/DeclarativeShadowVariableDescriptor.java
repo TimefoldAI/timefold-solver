@@ -86,24 +86,15 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
         if (shadowVariableUpdater.groupKey() != null && !shadowVariableUpdater.groupKey().isEmpty()) {
             var groupKey = shadowVariableUpdater.groupKey();
-            Member member = ReflectionHelper.getDeclaredField(entityDescriptor.getEntityClass(), groupKey);
-            if (member == null) {
-                member = ReflectionHelper.getDeclaredGetterMethod(entityDescriptor.getEntityClass(), groupKey);
-                if (member == null) {
-                    throw new IllegalArgumentException("""
-                            @%s %s's supplier method "%s" has a groupKey property "%s"
-                            that does not exist on the entity class (%s).
-                            Maybe you misspelled it?
-                            """.formatted(ShadowVariable.class.getSimpleName(), variableName,
-                            method.getName(), groupKey, entityDescriptor.getEntityClass()));
-                }
-            }
+            Member member = RootVariableSource.getMember(entityDescriptor.getEntityClass(),
+                    groupKey, entityDescriptor.getEntityClass(),
+                    groupKey);
             groupKeyMap =
                     entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                             MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
                             descriptorPolicy.getDomainAccessType())::executeGetter;
         } else {
-            groupKeyMap = ignored -> null;
+            groupKeyMap = null;
         }
     }
 
