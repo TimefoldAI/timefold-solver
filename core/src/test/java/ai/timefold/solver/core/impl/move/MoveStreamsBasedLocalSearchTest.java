@@ -20,7 +20,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
@@ -81,7 +80,7 @@ class MoveStreamsBasedLocalSearchTest {
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setBestScore(score);
         solverScope.setBestSolution(scoreDirector.cloneSolution(solution));
-        solverScope.setProblemSizeStatistics(solutionDescriptor.getProblemSizeStatistics(solution, new ValueRangeManager<>()));
+        solverScope.setProblemSizeStatistics(scoreDirector.getValueRangeManager().getProblemSizeStatistics());
         solverScope.startingNow();
 
         bestSolutionRecaller.solvingStarted(solverScope);

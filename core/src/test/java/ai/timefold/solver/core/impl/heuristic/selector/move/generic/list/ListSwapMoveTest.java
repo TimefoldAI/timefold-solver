@@ -42,7 +42,7 @@ class ListSwapMoveTest {
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
+        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
     }
 
     @Test

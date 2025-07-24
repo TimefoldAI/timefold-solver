@@ -41,7 +41,7 @@ class SwapMoveTest {
         var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
         solution.setEntityList(Arrays.asList(a, b, c));
 
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        var valueRangeManager = new ValueRangeManager<>(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
         var scoreDirector = (VariableDescriptorAwareScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution>) mock(
                 VariableDescriptorAwareScoreDirector.class);
         doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();

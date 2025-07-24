@@ -369,7 +369,7 @@ class SolutionDescriptorTest {
         var entityCount = 3;
         var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
-        var valueRangeManager = new ValueRangeManager<TestdataListSolution>();
+        var valueRangeManager = new ValueRangeManager<TestdataListSolution>(solutionDescriptor);
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution, valueRangeManager);
         assertThat(initializationStats.genuineEntityCount()).isEqualTo(entityCount);
         assertThat(initializationStats.shadowEntityCount()).isEqualTo(valueCount);
@@ -382,7 +382,7 @@ class SolutionDescriptorTest {
         var solution = TestdataSolution.generateSolution(valueCount, entityCount);
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
 
-        var valueRangeManager = new ValueRangeManager<TestdataSolution>();
+        var valueRangeManager = new ValueRangeManager<TestdataSolution>(solutionDescriptor);
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution, valueRangeManager);
         assertThat(initializationStats.uninitializedVariableCount()).isZero();
 
@@ -400,8 +400,8 @@ class SolutionDescriptorTest {
         var valueCount = 10;
         var entityCount = 3;
         var solution = TestdataListSolution.generateInitializedSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataListSolution>();
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
+        var valueRangeManager = new ValueRangeManager<TestdataListSolution>(solutionDescriptor);
 
         var initializationStats = solutionDescriptor.computeInitializationStatistics(solution, valueRangeManager);
         assertThat(initializationStats.unassignedValueCount()).isZero();
@@ -425,7 +425,7 @@ class SolutionDescriptorTest {
         var entityCount = 20;
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solution = TestdataSolution.generateSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -442,7 +442,7 @@ class SolutionDescriptorTest {
         var entityCount = 27;
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var solution = TestdataSolution.generateSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         solution.getValueList().clear();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
@@ -462,7 +462,7 @@ class SolutionDescriptorTest {
         var entityCount = 27;
         var solutionDescriptor = TestdataAllowsUnassignedSolution.buildSolutionDescriptor();
         var solution = TestdataAllowsUnassignedSolution.generateSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         solution.getValueList().clear();
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
@@ -478,7 +478,7 @@ class SolutionDescriptorTest {
     void problemScaleMultipleValueRanges() {
         var solutionDescriptor = TestdataValueRangeSolution.buildSolutionDescriptor();
         var solution = new TestdataValueRangeSolution("Solution");
-        var valueRangeManager = new ValueRangeManager<TestdataValueRangeSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         solution.setEntityList(List.of(new TestdataValueRangeEntity("A")));
         final var entityCount = 1L;
         final var valueCount = 3L;
@@ -506,7 +506,7 @@ class SolutionDescriptorTest {
                 new TestdataAllowsUnassignedEntityProvidingEntity("B",
                         List.of(v1, v2, new TestdataValue("3")))));
 
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         valueRangeManager.reset(solution);
 
         assertSoftly(softly -> {
@@ -526,7 +526,7 @@ class SolutionDescriptorTest {
     void listVariableProblemScaleEntityProvidingValueRange() {
         var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataListEntityProvidingSolution();
-        var valueRangeManager = new ValueRangeManager<TestdataListEntityProvidingSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         var v1 = new TestdataListEntityProvidingValue("1");
         var v2 = new TestdataListEntityProvidingValue("2");
         solution.setEntityList(List.of(
@@ -546,7 +546,7 @@ class SolutionDescriptorTest {
         var solutionDescriptor = TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor();
         var solution = new TestdataAllowsUnassignedEntityProvidingSolution("Solution");
 
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         valueRangeManager.reset(solution);
 
         var v1 = new TestdataValue("1");
@@ -571,7 +571,7 @@ class SolutionDescriptorTest {
         var entityCount = 500;
         var solutionDescriptor = TestdataChainedSolution.buildSolutionDescriptor();
         var solution = generateChainedSolution(anchorCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataChainedSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
@@ -606,7 +606,7 @@ class SolutionDescriptorTest {
         var entityCount = 20;
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataListSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -624,7 +624,7 @@ class SolutionDescriptorTest {
         var entityCount = 1;
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var solution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataListSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -640,7 +640,7 @@ class SolutionDescriptorTest {
         var entityCount = 1;
         var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedValuesListSolution>();
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
@@ -655,13 +655,13 @@ class SolutionDescriptorTest {
     void assertProblemScaleListIsApproximatelyProblemScaleChained() {
         var valueCount = 500;
         var entityCount = 20;
-        var solutionDescriptorList = TestdataListSolution.buildSolutionDescriptor();
+        var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
-        var valueRangeManager = new ValueRangeManager<TestdataListSolution>();
-        var listPowerExponent = solutionDescriptorList.getProblemScale(listSolution, valueRangeManager);
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
+        var listPowerExponent = solutionDescriptor.getProblemScale(listSolution, valueRangeManager);
         var solutionDescriptorChained = TestdataChainedSolution.buildSolutionDescriptor();
         var solutionChained = generateChainedSolution(entityCount, valueCount);
-        var valueRangeManagerChained = new ValueRangeManager<TestdataChainedSolution>();
+        var valueRangeManagerChained = new ValueRangeManager<>(solutionDescriptorChained);
         var chainedPowerExponent = solutionDescriptorChained.getProblemScale(solutionChained, valueRangeManagerChained);
         // Since they are using different bases in calculation, some difference is expected,
         // but the numbers should be relatively (i.e. ~1%) close.

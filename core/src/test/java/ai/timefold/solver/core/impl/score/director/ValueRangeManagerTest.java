@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.director;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.composite.TestdataCompositeEntity;
@@ -44,9 +45,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionUnassignedBasicVariable() {
         var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will add the null value
         // 2 distinct values
@@ -62,9 +64,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionCompositeUnassignedBasicVariable() {
         var solution = TestdataAllowsUnassignedCompositeSolution.generateSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedCompositeEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value
         // valueRange1 [v1, v2] -> 2 distinct values
@@ -81,9 +84,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionAssignedBasicVariable() {
         var solution = TestdataSolution.generateSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value
         // 2 distinct values
@@ -99,11 +103,12 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionCompositeAssignedBasicVariable() {
         var solution = TestdataCompositeSolution.generateSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataCompositeSolution.buildSolutionDescriptor()
                 .findEntityDescriptor(TestdataCompositeEntity.class)
                 .getGenuineVariableDescriptor("value")
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value
         // valueRange1 [v0, v1] -> 2 distinct values
@@ -120,9 +125,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityUnassignedBasicVariable() {
         var solution = TestdataAllowsUnassignedEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will add the null value
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
@@ -149,9 +155,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityCompositeUnassignedBasicVariable() {
         var solution = TestdataAllowsUnassignedCompositeEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedCompositeEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will add the null value
         // e1([v1, v2], [v1, v4]) -> 3 distinct values
@@ -180,9 +187,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityAssignedBasicVariable() {
         var solution = TestdataEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will add the null value
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
@@ -209,9 +217,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityCompositeAssignedBasicVariable() {
         var solution = TestdataCompositeEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataCompositeEntityProvidingEntity.buildVariableDescriptorForValue()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value
         // e1([v1, v2], [v1, v4]) -> 3 distinct values
@@ -241,9 +250,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionUnassignedListVariable() {
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value because it is a list variable
         // 2 distinct values
@@ -259,9 +269,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionCompositeUnassignedListVariable() {
         var solution = TestdataAllowsUnassignedCompositeListSolution.generateSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataAllowsUnassignedCompositeListEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value because it is a list variable
         // valueRange1 [v1, v2] -> 2 distinct values
@@ -278,11 +289,13 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionAssignedListVariable() {
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListSolution.buildSolutionDescriptor()
                 .findEntityDescriptor(TestdataListEntity.class)
                 .getGenuineVariableDescriptor("valueList")
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
+
         // The value range manager will not add the null value
         // 2 distinct values
         assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(2);
@@ -297,9 +310,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromSolutionCompositeAssignedListVariable() {
         var solution = TestdataListCompositeSolution.generateSolution(2, 2);
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListCompositeEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value
         // valueRange1 [v0, v1] -> 2 distinct values
@@ -317,9 +331,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityUnassignedListVariable() {
         var solution = TestdataListUnassignedEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListUnassignedEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value because it is a list variable
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
@@ -347,9 +362,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityCompositeUnassignedListVariable() {
         var solution = TestdataListUnassignedCompositeEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListUnassignedCompositeEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
@@ -380,9 +396,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityAssignedListVariable() {
         var solution = TestdataListEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value because it is a list variable
         // Two entities: e1(v1, v2) and e2(v1, v3) -> 3 distinct values
@@ -410,9 +427,10 @@ class ValueRangeManagerTest {
     @Test
     void extractValueFromEntityCompositeAssignedListVariable() {
         var solution = TestdataListCompositeEntityProvidingSolution.generateSolution();
-        var valueRangeManager = createValueRangeManager(solution);
         var valueRangeDescriptor = TestdataListCompositeEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
+        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var valueRangeManager = createValueRangeManager(solution, solutionDescriptor);
 
         // The value range manager will not add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
@@ -439,8 +457,8 @@ class ValueRangeManagerTest {
         assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
     }
 
-    private <Solution_> ValueRangeManager<Solution_> createValueRangeManager(Solution_ solution) {
-        var valueRangeManager = new ValueRangeManager<Solution_>();
+    private <Solution_> ValueRangeManager<Solution_> createValueRangeManager(Solution_ solution, SolutionDescriptor<Solution_> solutionDescriptor) {
+        var valueRangeManager = new ValueRangeManager<Solution_>(solutionDescriptor);
         valueRangeManager.reset(solution);
         return valueRangeManager;
     }

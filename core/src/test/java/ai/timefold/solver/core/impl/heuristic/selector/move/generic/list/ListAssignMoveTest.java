@@ -38,9 +38,8 @@ class ListAssignMoveTest {
 
     @BeforeEach
     void setUp() {
-        when(innerScoreDirector.getSolutionDescriptor())
-                .thenReturn(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
-        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
+        when(innerScoreDirector.getSolutionDescriptor()).thenReturn(variableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
     }
 
     @Test

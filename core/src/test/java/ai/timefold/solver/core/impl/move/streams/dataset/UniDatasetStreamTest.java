@@ -162,9 +162,9 @@ class UniDatasetStreamTest {
             Solution_ solution, SupplyManager supplyManager) {
         var datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
         var datasetSession = datasetSessionFactory.buildSession();
-        datasetSession.initialize(new SessionContext<>(solution, new ValueRangeManager<>(), supplyManager));
-
         var solutionDescriptor = dataStreamFactory.getSolutionDescriptor();
+        datasetSession.initialize(new SessionContext<>(solution, new ValueRangeManager<>(solutionDescriptor), supplyManager));
+
         solutionDescriptor.visitAll(solution, datasetSession::insert);
 
         datasetSession.settle();
