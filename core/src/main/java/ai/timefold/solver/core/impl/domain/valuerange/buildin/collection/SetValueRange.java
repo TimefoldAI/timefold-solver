@@ -6,9 +6,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.HashSetValueRangeCache;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
-import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
+import ai.timefold.solver.core.impl.domain.valuerange.ValueRangeCache;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -19,11 +17,22 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
     private static final int VALUES_TO_LIST_IN_TO_STRING = 3;
     private static final String VALUE_DELIMITER = ", ";
 
-    final Set<T> set;
-    private @Nullable ValueRangeCacheStrategy<T> cacheStrategy;
+    private final boolean isValueImmutable;
+    private final Set<T> set;
+    private @Nullable ValueRangeCache<T> cache;
 
     public SetValueRange(Set<T> set) {
+        this(set, false);
+    }
+
+    public SetValueRange(Set<T> set, boolean isValueImmutable) {
+        this.isValueImmutable = isValueImmutable;
         this.set = set;
+    }
+
+    @Override
+    public boolean isValueImmutable() {
+        return isValueImmutable;
     }
 
     @Override
@@ -33,20 +42,21 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public @Nullable T get(long index) {
-        if (cacheStrategy == null) {
-            cacheStrategy = generateCache();
+        return getCache().get((int) index);
+    }
+
+    private ValueRangeCache<T> getCache() {
+        if (cache == null) {
+            var cacheBuilder = isValueImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
+                    : ValueRangeCache.Builder.FOR_USER_VALUES;
+            cache = cacheBuilder.buildCache(set);
         }
-        return cacheStrategy.get((int) index);
+        return cache;
     }
 
     @Override
     public boolean contains(@Nullable T value) {
         return set.contains(value);
-    }
-
-    @Override
-    public ValueRangeCacheStrategy<T> generateCache() {
-        return new HashSetValueRangeCache<>(set);
     }
 
     @Override
@@ -56,10 +66,7 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public Iterator<T> createRandomIterator(Random workingRandom) {
-        if (cacheStrategy == null) {
-            cacheStrategy = generateCache();
-        }
-        return new CachedListRandomIterator<>(cacheStrategy.getAll(), workingRandom);
+        return getCache().iterator(workingRandom);
     }
 
     @Override

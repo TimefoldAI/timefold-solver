@@ -12,12 +12,26 @@ import org.jspecify.annotations.NonNull;
 
 public final class NullAllowingCountableValueRange<T> extends AbstractCountableValueRange<T> {
 
-    private final CountableValueRange<T> childValueRange;
+    private final AbstractCountableValueRange<T> childValueRange;
     private final long size;
 
     public NullAllowingCountableValueRange(CountableValueRange<T> childValueRange) {
-        this.childValueRange = childValueRange;
+        this.childValueRange = (AbstractCountableValueRange<T>) childValueRange;
+        if (childValueRange instanceof NullAllowingCountableValueRange<T>) {
+            throw new IllegalArgumentException(
+                    "Impossible state: The childValueRange (%s) must not be a %s, because it is already wrapped in one."
+                            .formatted(childValueRange, NullAllowingCountableValueRange.class.getSimpleName()));
+        }
         size = childValueRange.getSize() + 1L;
+    }
+
+    @Override
+    public boolean isValueImmutable() {
+        return super.isValueImmutable();
+    }
+
+    AbstractCountableValueRange<T> getChildValueRange() {
+        return childValueRange;
     }
 
     @Override

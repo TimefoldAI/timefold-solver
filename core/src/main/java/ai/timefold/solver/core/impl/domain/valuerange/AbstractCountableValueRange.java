@@ -1,12 +1,10 @@
 package ai.timefold.solver.core.impl.domain.valuerange;
 
+import java.time.OffsetDateTime;
+
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.HashSetValueRangeCache;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
-
-import org.jspecify.annotations.NonNull;
 
 /**
  * Abstract superclass for {@link CountableValueRange} (and therefore {@link ValueRange}).
@@ -17,18 +15,22 @@ import org.jspecify.annotations.NonNull;
  */
 public abstract class AbstractCountableValueRange<T> implements CountableValueRange<T> {
 
+    /**
+     * Certain optimizations can be applied if {@link Object#equals(Object)} can be relied upon
+     * to determine that two objects are the same.
+     * Typically, this is not guaranteed for user-provided objects,
+     * but is true for many builtin types and classes,
+     * such as {@link String}, {@link Integer}, {@link OffsetDateTime}, etc.
+     * 
+     * @return true if we should trust {@link Object#equals(Object)} in this value range
+     */
+    public boolean isValueImmutable() {
+        return true; // Override in subclasses if needed.
+    }
+
     @Override
     public boolean isEmpty() {
         return getSize() == 0L;
-    }
-
-    /**
-     * By default, we use the {@link HashSetValueRangeCache} strategy as it is applicable in more general cases.
-     */
-    public @NonNull ValueRangeCacheStrategy<T> generateCache() {
-        var cacheStrategy = new HashSetValueRangeCache<T>((int) getSize());
-        createOriginalIterator().forEachRemaining(cacheStrategy::add);
-        return cacheStrategy;
     }
 
 }

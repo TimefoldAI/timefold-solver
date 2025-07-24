@@ -2,110 +2,70 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Random;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
-import ai.timefold.solver.core.impl.solver.random.RandomUtils;
+import ai.timefold.solver.core.impl.domain.valuerange.ValueRangeCache;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class CompositeCountableValueRange<T> extends AbstractCountableValueRange<T> {
 
-    private final List<? extends CountableValueRange<T>> childValueRangeList;
-    private final long size;
+    private final boolean isValueImmutable;
+    private final ValueRangeCache<T> cache;
 
-    public CompositeCountableValueRange(List<? extends CountableValueRange<T>> childValueRangeList) {
-        this.childValueRangeList = childValueRangeList;
-        long size = 0L;
-        for (CountableValueRange<T> childValueRange : childValueRangeList) {
-            size += childValueRange.getSize();
+    public CompositeCountableValueRange(List<? extends AbstractCountableValueRange<T>> childValueRangeList) {
+        var maximumSize = 0L;
+        var isValueImmutable = true;
+        for (AbstractCountableValueRange<T> childValueRange : childValueRangeList) {
+            isValueImmutable &= childValueRange.isValueImmutable();
+            maximumSize += childValueRange.getSize();
         }
-        this.size = size;
+        // To eliminate duplicates, we immediately expand the child value ranges into a cache.
+        var cacheBuilder = isValueImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
+                : ValueRangeCache.Builder.FOR_USER_VALUES;
+        this.cache = cacheBuilder.buildCache((int) maximumSize);
+        for (var childValueRange : childValueRangeList) {
+            // If the child value range includes nulls, we will ignore them.
+            // They will be added later by the wrapper, if necessary.
+            if (childValueRange instanceof NullAllowingCountableValueRange<T> nullAllowingCountableValueRange) {
+                childValueRange = nullAllowingCountableValueRange.getChildValueRange();
+            }
+            childValueRange.createOriginalIterator().forEachRemaining(cache::add);
+        }
+        this.isValueImmutable = isValueImmutable;
+    }
+
+    @Override
+    public boolean isValueImmutable() {
+        return isValueImmutable;
     }
 
     @Override
     public long getSize() {
-        return size;
+        return cache.getSize();
     }
 
     @Override
     public T get(long index) {
-        long remainingIndex = index;
-        for (CountableValueRange<T> childValueRange : childValueRangeList) {
-            long childSize = childValueRange.getSize();
-            if (remainingIndex < childSize) {
-                return childValueRange.get(remainingIndex);
-            }
-            remainingIndex -= childSize;
-        }
-        throw new IndexOutOfBoundsException("The index (" + index + ") must be less than the size (" + size + ").");
+        return cache.get((int) index);
     }
 
     @Override
-    public boolean contains(T value) {
-        for (CountableValueRange<T> childValueRange : childValueRangeList) {
-            if (childValueRange.contains(value)) {
-                return true;
-            }
-        }
-        return false;
+    public boolean contains(@Nullable T value) {
+        return cache.contains(value);
     }
 
     @Override
-    public @NonNull Iterator<T> createOriginalIterator() {
-        Stream<T> stream = Stream.empty();
-        for (CountableValueRange<T> childValueRange : childValueRangeList) {
-            stream = Stream.concat(stream, originalIteratorToStream(childValueRange));
-        }
-        return stream.iterator();
-    }
-
-    private static <T> Stream<T> originalIteratorToStream(CountableValueRange<T> valueRange) {
-        return StreamSupport.stream(
-                Spliterators.spliterator(valueRange.createOriginalIterator(), valueRange.getSize(), Spliterator.ORDERED),
-                false);
+    public Iterator<T> createOriginalIterator() {
+        return cache.iterator();
     }
 
     @Override
-    public @NonNull Iterator<T> createRandomIterator(@NonNull Random workingRandom) {
-        return new RandomCompositeValueRangeIterator(workingRandom);
-    }
-
-    private class RandomCompositeValueRangeIterator extends ValueRangeIterator<T> {
-
-        private final Random workingRandom;
-
-        public RandomCompositeValueRangeIterator(Random workingRandom) {
-            this.workingRandom = workingRandom;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return true;
-        }
-
-        @Override
-        public T next() {
-            long index = RandomUtils.nextLong(workingRandom, size);
-            long remainingIndex = index;
-            for (CountableValueRange<T> childValueRange : childValueRangeList) {
-                long childSize = childValueRange.getSize();
-                if (remainingIndex < childSize) {
-                    return childValueRange.get(remainingIndex);
-                }
-                remainingIndex -= childSize;
-            }
-            throw new NoSuchElementException("Impossible state because index (%d) is always less than the size (%d)."
-                    .formatted(index, size));
-        }
-
+    public Iterator<T> createRandomIterator(Random workingRandom) {
+        return cache.iterator(workingRandom);
     }
 
 }

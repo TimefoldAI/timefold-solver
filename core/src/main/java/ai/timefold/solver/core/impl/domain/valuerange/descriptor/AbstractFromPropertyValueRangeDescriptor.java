@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.domain.valuerange.descriptor;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -17,11 +17,9 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentityListValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.IdentitySetValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.ListValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.collection.SetValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.empty.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 
 /**
@@ -106,18 +104,17 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
     }
 
     @SuppressWarnings("unchecked")
-    protected <Value_> ValueRange<Value_> readValueRange(Object bean) {
+    protected <Value_> CountableValueRange<Value_> readValueRange(Object bean) {
         Object valueRangeObject = memberAccessor.executeGetter(bean);
         if (valueRangeObject == null) {
             throw new IllegalStateException(
                     "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, valueRangeObject));
         }
-        ValueRange<Value_> valueRange;
         if (arrayWrapping) {
             List<Value_> list = transformArrayToList(valueRangeObject);
             assertNullNotPresent(list, bean);
-            valueRange = buildValueRange(list);
+            return buildValueRange(list);
         } else if (collectionWrapping) {
             var collection = (Collection<Value_>) valueRangeObject;
             if (collection instanceof Set<Value_> set) {
@@ -135,16 +132,16 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
                             .formatted(ValueRangeProvider.class.getSimpleName(), memberAccessor, bean, set,
                                     PlanningVariable.class.getSimpleName(), PlanningListVariable.class.getSimpleName()));
                 }
-                valueRange = buildValueRange(set);
+                return buildValueRange(set);
             } else {
                 List<Value_> list = transformCollectionToList(collection);
                 assertNullNotPresent(list, bean);
-                valueRange = buildValueRange(list);
+                return buildValueRange(list);
             }
         } else {
-            valueRange = (ValueRange<Value_>) valueRangeObject;
+            var valueRange = (CountableValueRange<Value_>) valueRangeObject;
+            return valueRange.isEmpty() ? EmptyValueRange.instance() : valueRange;
         }
-        return valueRange.isEmpty() ? (ValueRange<Value_>) EmptyValueRange.INSTANCE : valueRange;
     }
 
     private void assertNullNotPresent(List<?> list, Object bean) {
@@ -160,21 +157,13 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         }
     }
 
-    private <T> ValueRange<T> buildValueRange(Collection<T> valueCollection) {
-        if (valueCollection instanceof Set<T> set) {
-            var valueRange = new SetValueRange<>(set);
-            if (!isGenericTypeImmutable) {
-                return new IdentitySetValueRange<>(valueRange);
-            } else {
-                return valueRange;
-            }
+    private <T> CountableValueRange<T> buildValueRange(Collection<T> valueCollection) {
+        if (valueCollection.isEmpty()) {
+            return EmptyValueRange.instance();
+        } else if (valueCollection instanceof Set<T> set) {
+            return new SetValueRange<>(set, isGenericTypeImmutable);
         } else if (valueCollection instanceof List<T> list) {
-            var valueRange = new ListValueRange<>(list);
-            if (!isGenericTypeImmutable) {
-                return new IdentityListValueRange<>(valueRange);
-            } else {
-                return valueRange;
-            }
+            return new ListValueRange<>(list, isGenericTypeImmutable);
         } else {
             throw new IllegalArgumentException("Impossible state: The collection (%s) must be a Set or a List."
                     .formatted(valueCollection));
@@ -190,18 +179,15 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         if (array.length == 0) {
             return Collections.emptyList();
         }
-        return List.of(array);
+        return Arrays.asList(array); // Does not involve any copying, just a view of the array.
     }
 
     private static <T> List<T> transformCollectionToList(Collection<T> collection) {
-        if (collection instanceof List<T> list) {
-            if (collection instanceof LinkedList<T> linkedList) {
-                // ValueRange.createRandomIterator(Random) and ValueRange.get(int) wouldn't be efficient.
-                return List.copyOf(linkedList);
-            } else {
-                // Avoid copying the list if it is already a List; even though it will keep mutability.
-                return list;
-            }
+        if (collection.isEmpty()) {
+            return Collections.emptyList();
+        } else if (collection instanceof List<T> list) {
+            // Avoid copying the list if it is already a List; even though it will keep mutability.
+            return Collections.unmodifiableList(list);
         } else {
             return List.copyOf(collection);
         }

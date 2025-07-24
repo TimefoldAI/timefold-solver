@@ -5,8 +5,7 @@ import java.util.List;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.HashSetValueRangeCache;
-import ai.timefold.solver.core.impl.domain.valuerange.cache.ValueRangeCacheStrategy;
+import ai.timefold.solver.core.impl.domain.valuerange.ValueRangeCache;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
 import org.jspecify.annotations.NullMarked;
@@ -15,11 +14,22 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
-    final List<T> list;
-    private @Nullable ValueRangeCacheStrategy<T> cacheStrategy;
+    private final boolean isValueImmutable;
+    private final List<T> list;
+    private @Nullable ValueRangeCache<T> cache;
 
     public ListValueRange(List<T> list) {
+        this(list, false);
+    }
+
+    public ListValueRange(List<T> list, boolean isValueImmutable) {
+        this.isValueImmutable = isValueImmutable;
         this.list = list;
+    }
+
+    @Override
+    public boolean isValueImmutable() {
+        return isValueImmutable;
     }
 
     @Override
@@ -37,15 +47,12 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public boolean contains(@Nullable T value) {
-        if (cacheStrategy == null) {
-            cacheStrategy = generateCache();
+        if (cache == null) {
+            var cacheBuilder = isValueImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
+                    : ValueRangeCache.Builder.FOR_USER_VALUES;
+            cache = cacheBuilder.buildCache(list);
         }
-        return cacheStrategy.contains(value);
-    }
-
-    @Override
-    public ValueRangeCacheStrategy<T> generateCache() {
-        return new HashSetValueRangeCache<>(list);
+        return cache.contains(value);
     }
 
     @Override

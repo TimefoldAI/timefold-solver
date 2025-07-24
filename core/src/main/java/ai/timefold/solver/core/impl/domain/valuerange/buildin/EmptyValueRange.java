@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.domain.valuerange.buildin.empty;
+package ai.timefold.solver.core.impl.domain.valuerange.buildin;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -16,7 +16,12 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
 
-    public static final EmptyValueRange<Object> INSTANCE = new EmptyValueRange<>();
+    private static final EmptyValueRange<Object> INSTANCE = new EmptyValueRange<>();
+
+    @SuppressWarnings("unchecked")
+    public static <T> EmptyValueRange<T> instance() {
+        return (EmptyValueRange<T>) INSTANCE;
+    }
 
     private EmptyValueRange() {
         // Intentionally empty

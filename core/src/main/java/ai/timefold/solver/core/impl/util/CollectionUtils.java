@@ -104,6 +104,10 @@ public final class CollectionUtils {
         return (int) Math.min(Math.ceil(numElements / 0.75d), Integer.MAX_VALUE);
     }
 
+    public static <T> Set<T> newIdentityHashSet(int size) {
+        return Collections.newSetFromMap(CollectionUtils.newIdentityHashMap(size));
+    }
+
     public static <T> Set<T> newLinkedHashSet(int size) {
         return new LinkedHashSet<>(calculateCapacityForDefaultLoadFactor(size));
     }
