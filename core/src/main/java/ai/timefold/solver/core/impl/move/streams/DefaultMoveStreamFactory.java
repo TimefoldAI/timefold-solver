@@ -85,7 +85,7 @@ public final class DefaultMoveStreamFactory<Solution_>
             var stream = dataStreamFactory.forEachFromSolution(variableMetaModel, includeNull);
             return entityDataStream.join(stream);
         } else {
-            var valueRangeManager = new ValueRangeManager<Solution_>(); // TODO fix
+            var valueRangeManager = new ValueRangeManager<>(dataStreamFactory.getSolutionDescriptor()); // TODO fix
             var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
             return entityDataStream.join(stream, Joiners.filtering(
                     (entity, value) -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity).contains(value)));
