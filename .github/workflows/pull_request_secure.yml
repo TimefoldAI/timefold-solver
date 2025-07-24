@@ -7,6 +7,10 @@ name: Secured Workflow
 env:
   NODE_OPTIONS: '--max_old_space_size=4096' # Increase memory limit for Node.js processes, makes Surefire report work.
 
+permissions: # The workflow requires write access to checks to publish test reports.
+  checks: write
+  contents: read
+
 on:
   push:
     branches: [ main ]
@@ -15,7 +19,7 @@ on:
   # - The workflow will be executed automatically, without requiring a manual approval.
   # Therefore the workflow needs to be explicitly secured; see "known_user" and "approval_required" jobs below.
   pull_request_target:
-    branches: [ main ] # Benchmarks aren't branched, so they will only ever work against current main.
+    branches: [ main ]
     types:
       - opened
       - reopened
@@ -62,9 +66,6 @@ jobs:
     needs: approval_required
     name: Integration Tests
     runs-on: ubuntu-latest
-    permissions: # The workflow requires write access to the repository to publish test reports.
-      checks: write
-      contents: read
     concurrency:
       group: pr-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
@@ -148,9 +149,6 @@ jobs:
     needs: approval_required
     name: Enterprise Edition (Java)
     runs-on: ubuntu-latest
-    permissions: # The workflow requires write access to the repository to publish test reports.
-      checks: write
-      contents: read
     concurrency:
       group: downstream-enterprise-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true

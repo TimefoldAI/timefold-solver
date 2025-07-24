@@ -3,6 +3,10 @@ name: Quickstarts Workflow
 env:
   NODE_OPTIONS: '--max_old_space_size=4096' # Increase memory limit for Node.js processes, makes Surefire report work.
 
+permissions: # The workflow requires write access to checks to publish test reports.
+  checks: write
+  contents: read
+
 on:
   push:
     branches: [main]
@@ -23,9 +27,6 @@ jobs:
   java:
     name: "Java Quickstarts"
     runs-on: ubuntu-latest
-    permissions: # The workflow requires write access to the repository to publish test reports.
-      checks: write
-      contents: read
     concurrency:
       group: downstream-quickstarts-${{ github.event_name }}-${{ github.head_ref }}
       cancel-in-progress: true
