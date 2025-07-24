@@ -44,6 +44,11 @@ jobs:
 
       - name: Build and test timefold-solver
         run: mvn -B verify
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@1a128e49c0585bc0b8e38e541ac3b6e35a5bc727
+
   java_full:
     name: "Java Solver (with flag -Dfull)"
     runs-on: ubuntu-latest
@@ -59,6 +64,10 @@ jobs:
 
       - name: Build and test timefold-solver using flag -Dfull
         run: mvn -Dfull -B verify
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@1a128e49c0585bc0b8e38e541ac3b6e35a5bc727
 
   spring_boot_3_3_x:
     name: "Spring Boot 3.3.x"
@@ -81,6 +90,10 @@ jobs:
         run: |
           cd spring-integration
           mvn -B verify
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@1a128e49c0585bc0b8e38e541ac3b6e35a5bc727
+
   spring_boot_3_4_x:
     name: "Spring Boot 3.4.x"
     runs-on: ubuntu-latest
@@ -102,6 +115,9 @@ jobs:
         run: |
           cd spring-integration
           mvn -B verify
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@1a128e49c0585bc0b8e38e541ac3b6e35a5bc727
 
   native:
     name: "Native Image"
@@ -140,3 +156,7 @@ jobs:
         run: |
           cd ${{matrix.module}}
           mvn -B -Dnative verify
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@1a128e49c0585bc0b8e38e541ac3b6e35a5bc727

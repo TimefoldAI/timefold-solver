@@ -68,3 +68,7 @@ jobs:
         working-directory: ./timefold-quickstarts
         shell: bash
         run: mvn -B clean verify
+
+      - name: Publish Test Report
+        if: success() || failure()
+        uses: scacap/action-surefire-report@1a128e49c0585bc0b8e38e541ac3b6e35a5bc727
