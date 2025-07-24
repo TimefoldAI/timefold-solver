@@ -5,13 +5,13 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamSession;
 import ai.timefold.solver.core.impl.move.streams.MoveIterable;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -43,12 +43,12 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
+    public void initialize(SessionContext<Solution_> context) {
         if (moveStreamSession != null) {
             throw new IllegalStateException("Impossible state: move repository initialized twice.");
         }
-        moveStreamSession = moveStreamFactory.createSession(workingSolution, supplyManager);
-        moveStreamFactory.getSolutionDescriptor().visitAll(workingSolution, moveStreamSession::insert);
+        moveStreamSession = moveStreamFactory.createSession(context);
+        moveStreamFactory.getSolutionDescriptor().visitAll(context.workingSolution(), moveStreamSession::insert);
         moveStreamSession.settle();
         moveIterable = moveProducer.getMoveIterable(moveStreamSession);
     }

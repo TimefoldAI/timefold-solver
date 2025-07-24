@@ -9,6 +9,7 @@ import java.util.stream.StreamSupport;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
@@ -372,7 +373,8 @@ class ChangeMoveProviderTest {
     private <Solution_> MoveStreamSession<Solution_> createSession(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
             InnerScoreDirector<Solution_, ?> scoreDirector) {
         var solution = scoreDirector.getWorkingSolution();
-        var moveStreamSession = moveStreamFactory.createSession(solution, scoreDirector.getSupplyManager());
+        var moveStreamSession = moveStreamFactory.createSession(new SessionContext<>(solution,
+                scoreDirector.getValueRangeManager(), scoreDirector.getSupplyManager()));
         scoreDirector.getSolutionDescriptor().visitAll(solution, moveStreamSession::insert);
         moveStreamSession.settle();
         return moveStreamSession;

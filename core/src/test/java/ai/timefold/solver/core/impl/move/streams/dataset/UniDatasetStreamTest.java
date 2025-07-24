@@ -12,6 +12,8 @@ import java.util.List;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -160,7 +162,7 @@ class UniDatasetStreamTest {
             Solution_ solution, SupplyManager supplyManager) {
         var datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
         var datasetSession = datasetSessionFactory.buildSession();
-        datasetSession.initialize(solution, supplyManager);
+        datasetSession.initialize(new SessionContext<>(solution, new ValueRangeManager<>(), supplyManager));
 
         var solutionDescriptor = dataStreamFactory.getSolutionDescriptor();
         solutionDescriptor.visitAll(solution, datasetSession::insert);

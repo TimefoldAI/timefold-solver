@@ -6,9 +6,9 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacer;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -36,7 +36,7 @@ public final class PlacerBasedMoveRepository<Solution_>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
+    public void initialize(SessionContext<Solution_> context) {
         placementIterator = placer.iterator();
     }
 

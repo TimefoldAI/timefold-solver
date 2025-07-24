@@ -5,8 +5,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -43,14 +42,14 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
+    public void initialize(SessionContext<Solution_> context) {
         if (this.isInitialized) { // Failsafe.
             throw new IllegalStateException("Impossible state: initialize() has already been called on %s."
                     .formatted(this));
         } else {
             this.isInitialized = true;
-            var valueRangeManager = new ValueRangeManager<Solution_>(); // TODO fix
-            var valueRange = valueRangeManager.<A> getFromSolution(valueRangeDescriptor, workingSolution);
+            var valueRangeManager = context.valueRangeManager();
+            var valueRange = valueRangeManager.<A> getFromSolution(valueRangeDescriptor, context.workingSolution());
             var valueIterator = valueRange.createOriginalIterator();
             while (valueIterator.hasNext()) {
                 var value = valueIterator.next();

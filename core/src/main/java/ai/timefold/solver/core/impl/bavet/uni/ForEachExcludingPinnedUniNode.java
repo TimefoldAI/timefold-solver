@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningEntityMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -39,8 +40,8 @@ public final class ForEachExcludingPinnedUniNode<Solution_, A>
     }
 
     @Override
-    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
-        this.filter = buildFilter(workingSolution, supplyManager);
+    public void initialize(SessionContext<Solution_> context) {
+        this.filter = buildFilter(context.workingSolution(), context.supplyManager());
     }
 
     private Predicate<A> buildFilter(Solution_ workingSolution, SupplyManager supplyManager) {
