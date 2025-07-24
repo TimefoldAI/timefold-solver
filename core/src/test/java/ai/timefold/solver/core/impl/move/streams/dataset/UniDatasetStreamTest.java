@@ -12,7 +12,6 @@ import java.util.List;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -27,7 +26,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachBasicVariable() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor());
         var uniDataset = ((AbstractUniDataStream<TestdataSolution, TestdataEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataEntity.class, false))
                 .createDataset();
@@ -60,7 +59,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachBasicVariableIncludingNull() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor());
         var uniDataset = ((AbstractUniDataStream<TestdataSolution, TestdataEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataEntity.class, true))
                 .createDataset();
@@ -93,8 +92,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariable() {
-        var dataStreamFactory =
-                new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor(), new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor());
         var uniDataset = ((AbstractUniDataStream<TestdataListSolution, TestdataListEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataListEntity.class, false))
                 .createDataset();
@@ -127,8 +125,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableIncludingNull() {
-        var dataStreamFactory =
-                new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor(), new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor());
         var uniDataset = ((AbstractUniDataStream<TestdataListSolution, TestdataListEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataListEntity.class, true))
                 .createDataset();
@@ -174,8 +171,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableIncludingPinned() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
-                new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, false))
@@ -220,8 +216,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableIncludingPinnedAndNull() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
-                new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, true))
@@ -266,8 +261,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableExcludingPinned() { // Entities with planningPin true will be skipped.
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
-                new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, false))
@@ -313,8 +307,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableExcludingPinnedIncludingNull() { // Entities with planningPin true will be skipped.
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
-                new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, true))
@@ -360,8 +353,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableIncludingPinnedValues() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
-                new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, false))
@@ -413,8 +405,7 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableIncludingPinnedValuesAndNull() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
-                new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, true))
@@ -467,7 +458,7 @@ class UniDatasetStreamTest {
     @Test
     void forEachListVariableExcludingPinnedValues() {
         var solutionDescriptor = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor();
-        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListValue.class, false))
@@ -548,7 +539,7 @@ class UniDatasetStreamTest {
     @Test
     void forEachListVariableExcludingPinnedValuesIncludingNull() {
         var solutionDescriptor = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor();
-        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, new ValueRangeManager<>());
+        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListValue.class, true))

@@ -8,7 +8,6 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachFromSolutionUniNode;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -17,21 +16,17 @@ public final class ForEachFromSolutionDataStream<Solution_, A>
         extends AbstractForEachDataStream<Solution_, A>
         implements TupleSource {
 
-    private final ValueRangeManager<Solution_> valueRangeManager;
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
 
-    public ForEachFromSolutionDataStream(ValueRangeManager<Solution_> valueRangeManager,
-            DataStreamFactory<Solution_> dataStreamFactory, ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            boolean includeNull) {
+    public ForEachFromSolutionDataStream(DataStreamFactory<Solution_> dataStreamFactory, ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean includeNull) {
         super(dataStreamFactory, (Class<A>) valueRangeDescriptor.getVariableDescriptor().getVariablePropertyType(),
                 includeNull);
-        this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);
     }
 
     @Override
     protected AbstractForEachUniNode<A> getNode(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
-        return new ForEachFromSolutionUniNode<>(valueRangeManager, valueRangeDescriptor, tupleLifecycle, outputStoreSize);
+        return new ForEachFromSolutionUniNode<>(valueRangeDescriptor, tupleLifecycle, outputStoreSize);
     }
 
     @Override

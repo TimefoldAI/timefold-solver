@@ -28,6 +28,7 @@ import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
@@ -255,7 +256,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         }
         // Solving has not started yet
         return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId),
-                solver.getSolverScope().getValueRangeManager());
+                new ValueRangeManager<>()); // TODO fix
     }
 
     public SolverTermination<Solution_> getSolverTermination() {

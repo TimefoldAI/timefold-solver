@@ -81,9 +81,7 @@ class MoveStreamsBasedLocalSearchTest {
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setBestScore(score);
         solverScope.setBestSolution(scoreDirector.cloneSolution(solution));
-        solverScope.setValueRangeManager(scoreDirector.getValueRangeManager());
-        solverScope.setProblemSizeStatistics(
-                solutionDescriptor.getProblemSizeStatistics(solution, solverScope.getValueRangeManager()));
+        solverScope.setProblemSizeStatistics(solutionDescriptor.getProblemSizeStatistics(solution, new ValueRangeManager<>()));
         solverScope.startingNow();
 
         bestSolutionRecaller.solvingStarted(solverScope);
@@ -98,7 +96,7 @@ class MoveStreamsBasedLocalSearchTest {
                 .genuineVariable()
                 .ensurePlanningVariable();
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, new ValueRangeManager<>());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         // Random selection otherwise LS gets stuck in an endless loop.
         return new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer, true);

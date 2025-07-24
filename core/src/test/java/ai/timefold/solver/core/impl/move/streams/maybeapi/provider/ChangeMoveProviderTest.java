@@ -53,7 +53,7 @@ class ChangeMoveProviderTest {
         var secondValue = solution.getValueList().get(1);
         var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -121,7 +121,7 @@ class ChangeMoveProviderTest {
         var scoreDirector =
                 createScoreDirector(solutionDescriptor, new TestdataIncompleteValueRangeConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -181,7 +181,7 @@ class ChangeMoveProviderTest {
         var firstValue = firstEntity.getValueRange().get(0);
         var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataEntityProvidingConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -223,7 +223,7 @@ class ChangeMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor,
                 new TestdataAllowsUnassignedEntityProvidingConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -284,7 +284,7 @@ class ChangeMoveProviderTest {
         var secondValue = solution.getValueList().get(1);
         var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataAllowsUnassignedConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);

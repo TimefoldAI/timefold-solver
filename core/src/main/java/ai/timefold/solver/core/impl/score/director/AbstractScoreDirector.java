@@ -82,7 +82,14 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
 
-    private final ValueRangeManager<Solution_> valueRangeManager;
+    /**
+     * Must never be shared between score directors,
+     * because it contains state based on the current clone of the working solution.
+     * Creating these value range caches is expensive,
+     * but they are only created on first access to each
+     * and operations which do not perform moves do not require them.
+     */
+    private final ValueRangeManager<Solution_> valueRangeManager = new ValueRangeManager<>();
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
@@ -102,7 +109,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
-        this.valueRangeManager = Objects.requireNonNull(builder.valueRangeManager);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -702,7 +708,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .withValueRangeManager(valueRangeManager)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
@@ -987,20 +992,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         protected final Factory_ scoreDirectorFactory;
 
-        // May be replaced by a shared state coming from the solver.
-        protected ValueRangeManager<Solution_> valueRangeManager = new ValueRangeManager<>();
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
-        }
-
-        @SuppressWarnings("unchecked")
-        public Builder_ withValueRangeManager(ValueRangeManager<Solution_> valueRangeManager) {
-            this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
-            return (Builder_) this;
         }
 
         @SuppressWarnings("unchecked")

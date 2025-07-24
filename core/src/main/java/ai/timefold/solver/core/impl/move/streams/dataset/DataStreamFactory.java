@@ -13,7 +13,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVaria
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -22,12 +21,10 @@ import org.jspecify.annotations.NullMarked;
 public final class DataStreamFactory<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final ValueRangeManager<Solution_> valueRangeManager;
     private final Map<AbstractDataStream<Solution_>, AbstractDataStream<Solution_>> sharingStreamMap = new HashMap<>(256);
 
-    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor, ValueRangeManager<Solution_> valueRangeManager) {
+    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
     }
 
     public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass, boolean includeNull) {
@@ -65,7 +62,7 @@ public final class DataStreamFactory<Solution_> {
     public <A> UniDataStream<Solution_, A> forEachFromSolution(GenuineVariableMetaModel<Solution_, ?, A> variableMetaModel,
             boolean includeNull) {
         var variableDescriptor = ((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
-        return share(new ForEachFromSolutionDataStream<>(valueRangeManager, this, variableDescriptor.getValueRangeDescriptor(),
+        return share(new ForEachFromSolutionDataStream<>(this, variableDescriptor.getValueRangeDescriptor(),
                 includeNull));
     }
 

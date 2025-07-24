@@ -28,13 +28,10 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     private final DataStreamFactory<Solution_> dataStreamFactory;
     private final DatasetSessionFactory<Solution_> datasetSessionFactory;
-    private final ValueRangeManager<Solution_> valueRangeManager;
 
-    public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ValueRangeManager<Solution_> valueRangeManager) {
-        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, valueRangeManager);
+    public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
+        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
         this.datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
-        this.valueRangeManager = valueRangeManager;
     }
 
     public DefaultMoveStreamSession<Solution_> createSession(Solution_ workingSolution, SupplyManager supplyManager) {
@@ -88,6 +85,7 @@ public final class DefaultMoveStreamFactory<Solution_>
             var stream = dataStreamFactory.forEachFromSolution(variableMetaModel, includeNull);
             return entityDataStream.join(stream);
         } else {
+            var valueRangeManager = new ValueRangeManager<Solution_>(); // TODO fix
             var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
             return entityDataStream.join(stream, Joiners.filtering(
                     (entity, value) -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity).contains(value)));
@@ -122,7 +120,4 @@ public final class DefaultMoveStreamFactory<Solution_>
         return dataStreamFactory.getSolutionDescriptor();
     }
 
-    public ValueRangeManager<Solution_> getValueRangeManager() {
-        return valueRangeManager;
-    }
 }

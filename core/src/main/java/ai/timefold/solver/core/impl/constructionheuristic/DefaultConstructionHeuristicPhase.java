@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.move.PlacerBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -64,8 +65,8 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             // (When it exhausts all values, it will start over from the beginning.)
             // To prevent that, we need to limit the number of steps to the number of unassigned values.
             var workingSolution = phaseScope.getWorkingSolution();
-            maxStepCount = solutionDescriptor.getListVariableDescriptor().countUnassigned(workingSolution,
-                    solverScope.getValueRangeManager());
+            var valueRangeManager = new ValueRangeManager<Solution_>(); // TODO fix
+            maxStepCount = solutionDescriptor.getListVariableDescriptor().countUnassigned(workingSolution, valueRangeManager);
         }
 
         TerminationStatus earlyTerminationStatus = null;

@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleSupport;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -60,9 +61,8 @@ public abstract class AbstractSolver<Solution_> implements Solver<Solution_> {
         bestSolutionRecaller.solvingStarted(solverScope);
         globalTermination.solvingStarted(solverScope);
         phaseLifecycleSupport.fireSolvingStarted(solverScope);
-        solverScope.setProblemSizeStatistics(
-                solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getWorkingSolution(),
-                        solverScope.getValueRangeManager()));
+        var problemSizeStatistics = solverScope.getSolutionDescriptor().getProblemSizeStatistics(solverScope.getWorkingSolution(), new ValueRangeManager<>()); // TODO fix
+        solverScope.setProblemSizeStatistics(problemSizeStatistics);
         for (Phase<Solution_> phase : phaseList) {
             phase.solvingStarted(solverScope);
         }

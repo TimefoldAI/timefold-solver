@@ -39,7 +39,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        this.valueRangeManager = solverScope.getValueRangeManager();
+        this.valueRangeManager = new ValueRangeManager<>(); // TODO fix
     }
 
     @Override

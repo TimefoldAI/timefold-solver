@@ -31,18 +31,14 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
         extends ForEachIncludingUnassignedUniNode<A>
         implements AbstractForEachUniNode.InitializableForEachNode<Solution_> {
 
-    private final ValueRangeManager<Solution_> valueRangeManager;
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
 
     private boolean isInitialized = false;
 
     @SuppressWarnings("unchecked")
-    public ForEachFromSolutionUniNode(ValueRangeManager<Solution_> valueRangeManager,
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            int outputStoreSize) {
+    public ForEachFromSolutionUniNode(ValueRangeDescriptor<Solution_> valueRangeDescriptor, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         super((Class<A>) valueRangeDescriptor.getVariableDescriptor().getVariablePropertyType(), nextNodesTupleLifecycle,
                 outputStoreSize);
-        this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);
     }
 
@@ -53,6 +49,7 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
                     .formatted(this));
         } else {
             this.isInitialized = true;
+            var valueRangeManager = new ValueRangeManager<Solution_>(); // TODO fix
             var valueRange = valueRangeManager.<A> getFromSolution(valueRangeDescriptor, workingSolution);
             var valueIterator = valueRange.createOriginalIterator();
             while (valueIterator.hasNext()) {
