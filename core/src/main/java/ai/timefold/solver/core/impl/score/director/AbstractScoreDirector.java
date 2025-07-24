@@ -89,7 +89,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * but they are only created on first access to each
      * and operations which do not perform moves do not require them.
      */
-    private final ValueRangeManager<Solution_> valueRangeManager = new ValueRangeManager<>();
+    private final ValueRangeManager<Solution_> valueRangeManager;
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
     private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
@@ -109,6 +109,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
+        this.valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
