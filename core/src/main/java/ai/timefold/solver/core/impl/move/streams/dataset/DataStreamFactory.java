@@ -8,10 +8,10 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
@@ -54,7 +54,7 @@ public final class DataStreamFactory<Solution_> {
         }
         var stream = forEachNonDiscriminating(sourceClass, includeNull)
                 .ifNotExists(parentEntityDescriptor.getEntityClass(),
-                        Joiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
+                        DataJoiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
         return share((AbstractUniDataStream<Solution_, A>) stream);
     }
 

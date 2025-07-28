@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.move.streams;
 
-import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -9,13 +8,13 @@ import ai.timefold.solver.core.impl.move.streams.dataset.AbstractBiDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -35,7 +34,7 @@ public final class DefaultMoveStreamFactory<Solution_>
     }
 
     public DefaultMoveStreamSession<Solution_> createSession(SessionContext<Solution_> context) {
-        var session = datasetSessionFactory.buildSession();
+        var session = datasetSessionFactory.buildSession(context);
         session.initialize(context);
         return new DefaultMoveStreamSession<>(session, context.workingSolution());
     }
@@ -85,10 +84,9 @@ public final class DefaultMoveStreamFactory<Solution_>
             var stream = dataStreamFactory.forEachFromSolution(variableMetaModel, includeNull);
             return entityDataStream.join(stream);
         } else {
-            var valueRangeManager = new ValueRangeManager<>(dataStreamFactory.getSolutionDescriptor()); // TODO fix
             var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
-            return entityDataStream.join(stream, Joiners.filtering(
-                    (entity, value) -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity).contains(value)));
+            return entityDataStream.join(stream, DataJoiners.<Solution_, Entity_, Value_> filtering(
+                    (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value)));
         }
     }
 

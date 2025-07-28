@@ -23,7 +23,7 @@ public final class DefaultBiJoiner<A, B> extends AbstractJoiner<B> implements Bi
         this.leftMappings = new Function[] { leftMapping };
     }
 
-    private <Property_> DefaultBiJoiner(Function<A, Property_>[] leftMappings, JoinerType[] joinerTypes,
+    public <Property_> DefaultBiJoiner(Function<A, Property_>[] leftMappings, JoinerType[] joinerTypes,
             Function<B, Property_>[] rightMappings) {
         super(rightMappings, joinerTypes);
         this.leftMappings = leftMappings;

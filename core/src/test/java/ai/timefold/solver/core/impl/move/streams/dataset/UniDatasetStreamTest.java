@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -158,12 +159,16 @@ class UniDatasetStreamTest {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private static <Solution_> DatasetSession<Solution_> createSession(DataStreamFactory<Solution_> dataStreamFactory,
             Solution_ solution, SupplyManager supplyManager) {
+        var sessionContext = new SessionContext<Solution_>(solution, mock(SolutionView.class),
+                new ValueRangeManager<>(dataStreamFactory.getSolutionDescriptor()),
+                supplyManager);
         var datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
-        var datasetSession = datasetSessionFactory.buildSession();
+        var datasetSession = datasetSessionFactory.buildSession(sessionContext);
         var solutionDescriptor = dataStreamFactory.getSolutionDescriptor();
-        datasetSession.initialize(new SessionContext<>(solution, new ValueRangeManager<>(solutionDescriptor), supplyManager));
+        datasetSession.initialize(sessionContext);
 
         solutionDescriptor.visitAll(solution, datasetSession::insert);
 

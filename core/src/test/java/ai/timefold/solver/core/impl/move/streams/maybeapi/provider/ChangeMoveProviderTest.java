@@ -373,8 +373,7 @@ class ChangeMoveProviderTest {
     private <Solution_> MoveStreamSession<Solution_> createSession(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
             InnerScoreDirector<Solution_, ?> scoreDirector) {
         var solution = scoreDirector.getWorkingSolution();
-        var moveStreamSession = moveStreamFactory.createSession(new SessionContext<>(solution,
-                scoreDirector.getValueRangeManager(), scoreDirector.getSupplyManager()));
+        var moveStreamSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
         scoreDirector.getSolutionDescriptor().visitAll(solution, moveStreamSession::insert);
         moveStreamSession.settle();
         return moveStreamSession;

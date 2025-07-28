@@ -6,6 +6,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -48,10 +49,10 @@ public final class ValueRangeManager<Solution_> {
 
     private @Nullable Solution_ cachedWorkingSolution = null;
 
-    public ValueRangeManager() {
-        throw new UnsupportedOperationException();
-    }
-
+    /**
+     * It is not recommended for code other than {@link ScoreDirector} to create instances of this class.
+     * See class-level documentation for more details.
+     */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
     }

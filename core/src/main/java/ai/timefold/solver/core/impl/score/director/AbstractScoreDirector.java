@@ -263,7 +263,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
         variableListenerSupport.resetWorkingSolution();
         if (moveRepository != null) {
-            moveRepository.initialize(new SessionContext<>(workingSolution, valueRangeManager, variableListenerSupport));
+            moveRepository.initialize(new SessionContext<>(this));
         }
     }
 
@@ -271,7 +271,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void setMoveRepository(@Nullable MoveRepository<Solution_> moveRepository) {
         this.moveRepository = moveRepository;
         if (moveRepository != null) {
-            moveRepository.initialize(new SessionContext<>(workingSolution, valueRangeManager, variableListenerSupport));
+            moveRepository.initialize(new SessionContext<>(this));
         }
     }
 

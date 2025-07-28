@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 
 public final class DatasetSessionFactory<Solution_> {
 
@@ -20,13 +21,13 @@ public final class DatasetSessionFactory<Solution_> {
         this.dataStreamFactory = dataStreamFactory;
     }
 
-    public DatasetSession<Solution_> buildSession() {
+    public DatasetSession<Solution_> buildSession(SessionContext<Solution_> context) {
         var activeDataStreamSet = new LinkedHashSet<AbstractDataStream<Solution_>>();
         var datasets = dataStreamFactory.getDatasets();
         for (var dataset : datasets) {
             dataset.collectActiveDataStreams(activeDataStreamSet);
         }
-        var buildHelper = new DataNodeBuildHelper<>(activeDataStreamSet);
+        var buildHelper = new DataNodeBuildHelper<>(context, activeDataStreamSet);
         var session = new DatasetSession<Solution_>(buildNodeNetwork(activeDataStreamSet, buildHelper, null));
         for (var datasetInstance : buildHelper.getDatasetInstanceList()) {
             session.registerDatasetInstance(datasetInstance.getParent(), datasetInstance);
