@@ -45,7 +45,6 @@ import ai.timefold.solver.core.testdomain.list.valuerange.pinned.TestdataListPin
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.TestdataListUnassignedEntityProvidingSolution;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ListChangeMoveSelectorTest {
@@ -109,7 +108,6 @@ class ListChangeMoveSelectorTest {
                 "2 {A[0]->A[1]}");
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void originalWithEntityValueRange() {
         var v1 = new TestdataListEntityProvidingValue("1");
@@ -213,7 +211,6 @@ class ListChangeMoveSelectorTest {
         );
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void originalWithPinningAndEntityValueRange() {
         var v1 = new TestdataValue("1");
@@ -334,7 +331,6 @@ class ListChangeMoveSelectorTest {
                 "2 {A[0]->null}");
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void originalAllowsUnassignedValuesWithEntityValueRange() {
         var v1 = new TestdataValue("1");
@@ -437,7 +433,6 @@ class ListChangeMoveSelectorTest {
                 "3 {C[0]->A[2]}");
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void randomWithEntityValueRange() {
         var v1 = new TestdataListEntityProvidingValue("1");
@@ -527,7 +522,6 @@ class ListChangeMoveSelectorTest {
                 "2 {A[1]->C[0]}");
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void randomWithPinningAndEntityValueRange() {
         var v1 = new TestdataValue("1");
@@ -615,7 +609,6 @@ class ListChangeMoveSelectorTest {
                 "3 {C[0]->A[2]}");
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void randomAllowsUnassignedValuesWithEntityValueRange() {
         var v1 = new TestdataValue("1");
