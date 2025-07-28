@@ -3,12 +3,13 @@ package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEqualsForDataStreams;
 
 import java.util.Arrays;
-import java.util.function.BiPredicate;
-import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -16,16 +17,16 @@ import org.jspecify.annotations.NullMarked;
 public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
 
     /**
-     * Exhaustively test each fact against the {@link Predicate}
-     * and match if {@link Predicate#test(Object)} returns true.
+     * Exhaustively test each fact against the {@link UniDataFilter}
+     * and match if {@link UniDataFilter#test(SolutionView, Object)} returns true.
      */
-    UniDataStream<Solution_, A> filter(Predicate<A> predicate);
+    UniDataStream<Solution_, A> filter(UniDataFilter<Solution_, A> filter);
 
     /**
      * Create a new {@link BiDataStream} for every combination of A and B for which the {@link BiDataJoiner}
      * is true (for the properties it extracts from both facts).
      * <p>
-     * Important: Joining is faster and more scalable than a {@link BiDataStream#filter(BiPredicate) filter},
+     * Important: Joining is faster and more scalable than a {@link BiDataStream#filter(BiDataFilter) filter},
      * because it applies hashing and/or indexing on the properties,
      * so it doesn't create nor checks every combination of A and B.
      *
@@ -40,7 +41,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * The stream will include all facts or entities of the given class,
      * regardless of their pinning status.
      * <p>
-     * Important: Joining is faster and more scalable than a {@link BiDataStream#filter(BiPredicate) filter},
+     * Important: Joining is faster and more scalable than a {@link BiDataStream#filter(BiDataFilter) filter},
      * because it applies hashing and/or indexing on the properties,
      * so it doesn't create nor checks every combination of A and B.
      *

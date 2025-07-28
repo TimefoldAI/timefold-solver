@@ -1,10 +1,9 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
-import java.util.function.Predicate;
-
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.joiner.BiDataJoinerComber;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
@@ -26,8 +25,8 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     }
 
     @Override
-    public final UniDataStream<Solution_, A> filter(Predicate<A> predicate) {
-        return shareAndAddChild(new FilterUniDataStream<>(dataStreamFactory, this, predicate));
+    public final UniDataStream<Solution_, A> filter(UniDataFilter<Solution_, A> filter) {
+        return shareAndAddChild(new FilterUniDataStream<>(dataStreamFactory, this, filter));
     }
 
     @Override

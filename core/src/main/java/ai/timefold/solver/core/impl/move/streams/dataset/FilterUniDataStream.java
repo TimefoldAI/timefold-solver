@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
 import java.util.Objects;
-import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -13,23 +13,24 @@ import org.jspecify.annotations.NullMarked;
 final class FilterUniDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A> {
 
-    private final Predicate<A> predicate;
+    private final UniDataFilter<Solution_, A> filter;
 
     public FilterUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent,
-            Predicate<A> predicate) {
+            UniDataFilter<Solution_, A> filter) {
         super(dataStreamFactory, parent);
-        this.predicate = Objects.requireNonNull(predicate, "The predicate cannot be null.");
+        this.filter = Objects.requireNonNull(filter, "The filter cannot be null.");
     }
 
     @Override
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
+        var predicate = filter.toPredicate(buildHelper.getSessionContext().solutionView());
         buildHelper.<UniTuple<A>> putInsertUpdateRetract(this, childStreamList,
                 tupleLifecycle -> TupleLifecycle.conditionally(tupleLifecycle, predicate));
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(parent, predicate);
+        return Objects.hash(parent, filter);
     }
 
     @Override
@@ -38,7 +39,7 @@ final class FilterUniDataStream<Solution_, A>
             return true;
         } else if (o instanceof FilterUniDataStream<?, ?> other) {
             return parent == other.parent
-                    && predicate == other.predicate;
+                    && filter == other.filter;
         } else {
             return false;
         }

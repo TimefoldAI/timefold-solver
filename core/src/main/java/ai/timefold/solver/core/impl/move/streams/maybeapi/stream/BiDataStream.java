@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
-import java.util.function.BiPredicate;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -8,9 +9,9 @@ import org.jspecify.annotations.NullMarked;
 public interface BiDataStream<Solution_, A, B> extends DataStream<Solution_> {
 
     /**
-     * Exhaustively test each fact against the {@link BiPredicate}
-     * and match if {@link BiPredicate#test(Object, Object)} returns true.
+     * Exhaustively test each fact against the {@link BiDataFilter}
+     * and match if {@link BiDataFilter#test(SolutionView, Object, Object)} returns true.
      */
-    BiDataStream<Solution_, A, B> filter(BiPredicate<A, B> predicate);
+    BiDataStream<Solution_, A, B> filter(BiDataFilter<Solution_, A, B> filter);
 
 }
