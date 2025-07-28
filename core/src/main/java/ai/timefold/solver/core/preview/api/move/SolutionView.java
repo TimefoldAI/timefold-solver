@@ -2,6 +2,7 @@ package ai.timefold.solver.core.preview.api.move;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
+import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -70,8 +71,8 @@ public interface SolutionView<Solution_> {
      * checking if a {@link PlanningListVariable}'s value is pinned requires checking:
      * <ul>
      * <li>the entity's {@link PlanningPin} field,</li>
-     * <li>the entity's {@link ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex} field,</li>
-     * <li>the value's position in the list variable</li>.
+     * <li>the entity's {@link PlanningPinToIndex} field,</li>
+     * <li>and the value's position in the list variable.</li>
      * </ul>
      * As this is complex, this method is provided as a convenience.
      *

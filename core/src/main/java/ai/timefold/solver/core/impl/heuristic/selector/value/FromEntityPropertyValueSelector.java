@@ -60,20 +60,20 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        this.valueRangeManager = null;
         super.stepEnded(stepScope);
+        this.valueRangeManager = null;
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        this.valueRangeManager = null;
         super.phaseEnded(phaseScope);
+        this.valueRangeManager = null;
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
-        this.valueRangeManager = null;
         super.solvingEnded(solverScope);
+        this.valueRangeManager = null;
     }
 
     @Override

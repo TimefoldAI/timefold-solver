@@ -32,12 +32,12 @@ public final class ForEachExcludingPinnedDataStream<Solution_, A>
     @Override
     public boolean equals(Object o) {
         return o instanceof ForEachExcludingPinnedDataStream<?, ?> that &&
-                Objects.equals(forEachClass, that.forEachClass);
+                Objects.equals(entityMetaModel, that.entityMetaModel);
     }
 
     @Override
     public int hashCode() {
-        return forEachClass.hashCode();
+        return entityMetaModel.hashCode();
     }
 
     @Override

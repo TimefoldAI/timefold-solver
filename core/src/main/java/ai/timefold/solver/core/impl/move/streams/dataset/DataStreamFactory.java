@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -101,7 +102,7 @@ public final class DataStreamFactory<Solution_> {
      * If a stream already exists in this factory, it replaces it with the old copy.
      * {@link AbstractDataStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link DatasetSessionFactory#buildSession()} needs this to happen for all streams.
+     * {@link DatasetSessionFactory#buildSession(SessionContext)} needs this to happen for all streams.
      * <p>
      * This must be called before the stream receives child streams.
      *
