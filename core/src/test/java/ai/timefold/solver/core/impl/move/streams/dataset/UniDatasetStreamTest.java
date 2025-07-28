@@ -156,7 +156,6 @@ class UniDatasetStreamTest {
         var datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
         var datasetSession = datasetSessionFactory.buildSession(sessionContext);
         var solutionDescriptor = dataStreamFactory.getSolutionDescriptor();
-        datasetSession.initialize(sessionContext);
 
         solutionDescriptor.visitAll(solution, datasetSession::insert);
 

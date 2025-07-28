@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
@@ -20,6 +22,10 @@ public record SessionContext<Solution_>(Solution_ workingSolution, SolutionView<
     public SessionContext(InnerScoreDirector<Solution_, ?> scoreDirector) {
         this(scoreDirector.getWorkingSolution(), scoreDirector.getMoveDirector(),
                 scoreDirector.getValueRangeManager(), scoreDirector.getSupplyManager());
+    }
+
+    public <T> CountableValueRange<T> getValueRange(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        return valueRangeManager.getFromSolution(valueRangeDescriptor);
     }
 
 }

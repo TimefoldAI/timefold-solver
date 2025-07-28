@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
@@ -195,6 +196,19 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public <Entity_, Value_> ElementPosition
             getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
         return getPositionOf(backingScoreDirector, variableMetaModel, value);
+    }
+
+    @Override
+    public <Entity_, Value_> boolean isPinned(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @Nullable Entity_ entity) {
+        return isPinned(extractVariableDescriptor(variableMetaModel).getEntityDescriptor(), entity);
+    }
+
+    public <Value_> boolean isPinned(EntityDescriptor<Solution_> entityDescriptor, @Nullable Value_ entity) {
+        if (entity == null) {
+            return false; // Null is never pinned.
+        }
+        return !entityDescriptor.isMovable(backingScoreDirector.getWorkingSolution(), entity);
     }
 
     protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,

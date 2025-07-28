@@ -64,6 +64,8 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShad
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
@@ -131,6 +133,12 @@ public class EntityDescriptor<Solution_> {
     // Duplicate of effectiveGenuineVariableDescriptorMap.values() for faster iteration on the hot path.
     private List<GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorList;
     private List<ListVariableDescriptor<Solution_>> effectiveGenuineListVariableDescriptorList;
+
+    private final UniDataFilter<Solution_, Object> entityMovablePredicate =
+            (solutionView, entity) -> {
+                var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
+                return !moveDirector.isPinned(this, entity);
+            };
 
     // Caches the metamodel
     private PlanningEntityMetaModel<Solution_, ?> entityMetaModel = null;
@@ -645,16 +653,17 @@ public class EntityDescriptor<Solution_> {
         return effectiveMovableEntityFilter != null;
     }
 
-    public boolean hasCascadingShadowVariables() {
-        return !declaredShadowVariableDescriptorMap.isEmpty();
-    }
-
     public boolean supportsPinning() {
         return hasEffectiveMovableEntityFilter() || effectivePlanningPinToIndexReader != null;
     }
 
     public BiPredicate<Solution_, Object> getEffectiveMovableEntityFilter() {
         return effectiveMovableEntityFilter;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <A> UniDataFilter<Solution_, A> getEntityMovablePredicate() {
+        return (UniDataFilter<Solution_, A>) entityMovablePredicate;
     }
 
     public SelectionSorter<Solution_, Object> getDecreasingDifficultySorter() {

@@ -44,8 +44,10 @@ public final class DataStreamFactory<Solution_> {
         // We have a basic variable, or the sourceClass is not a valid type for a list variable value.
         // In that case, we use the standard exclusion logic.
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
-            return share(new ForEachExcludingPinnedDataStream<>(this, solutionDescriptor.getMetaModel().entity(sourceClass),
-                    includeNull));
+            var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(sourceClass);
+            // The predicate is cached to allow for node-sharing, which expects identical lambdas.
+            return share((AbstractUniDataStream<Solution_, A>) forEachNonDiscriminating(sourceClass, includeNull)
+                    .filter(entityDescriptor.getEntityMovablePredicate()));
         }
         // The sourceClass is a list variable value, therefore we need to specialize the exclusion logic.
         var parentEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
@@ -53,6 +55,7 @@ public final class DataStreamFactory<Solution_> {
             throw new UnsupportedOperationException("Impossible state: the list variable (%s) does not support pinning."
                     .formatted(listVariableDescriptor.getVariableName()));
         }
+        // The predicate is cached to allow for node-sharing, which expects identical lambdas.
         var stream = forEachNonDiscriminating(sourceClass, includeNull)
                 .ifNotExists(parentEntityDescriptor.getEntityClass(),
                         DataJoiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));

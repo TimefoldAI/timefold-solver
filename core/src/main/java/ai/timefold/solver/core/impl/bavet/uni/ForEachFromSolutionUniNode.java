@@ -49,8 +49,7 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
                     .formatted(this));
         } else {
             this.isInitialized = true;
-            var valueRangeManager = context.valueRangeManager();
-            var valueRange = valueRangeManager.<A> getFromSolution(valueRangeDescriptor, context.workingSolution());
+            var valueRange = context.<A> getValueRange(valueRangeDescriptor);
             var valueIterator = valueRange.createOriginalIterator();
             while (valueIterator.hasNext()) {
                 var value = valueIterator.next();

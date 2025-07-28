@@ -67,8 +67,17 @@ public interface SolutionView<Solution_> {
             Value_ value);
 
     /**
-     * Unlike for {@link PlanningVariable} where checking if an entity is pinned is straightforward,
-     * checking if a {@link PlanningListVariable}'s value is pinned requires checking:
+     * Checks if a {@link PlanningEntity} with a basic {@link PlanningVariable} is pinned.
+     *
+     * @param variableMetaModel Describes the variable whose value is to be read.
+     * @param entity The entity to check if it is pinned.
+     * @return boolean indicating if the value is pinned in the variable
+     */
+    <Entity_, Value_> boolean isPinned(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @Nullable Entity_ entity);
+
+    /**
+     * Checking if a {@link PlanningListVariable}'s value is pinned requires checking:
      * <ul>
      * <li>the entity's {@link PlanningPin} field,</li>
      * <li>the entity's {@link PlanningPinToIndex} field,</li>

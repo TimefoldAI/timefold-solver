@@ -20,7 +20,7 @@ public interface MoveStreamFactory<Solution_> {
      * that are known as {@link ProblemFactCollectionProperty problem facts} or {@link PlanningEntity planning entities}.
      * <p>
      * If the sourceClass is a {@link PlanningEntity}, then it is automatically
-     * {@link UniDataStream#filter(UniDataFilter)}  filtered} to only contain entities
+     * {@link UniDataStream#filter(UniDataFilter)} filtered} to only contain entities
      * which are not pinned.
      * <p>
      * If the sourceClass is a shadow entity (an entity without any genuine planning variables),
@@ -31,7 +31,7 @@ public interface MoveStreamFactory<Solution_> {
      * <p>
      * This stream returns genuine entities regardless of whether they have any null genuine planning variables.
      * This stream returns shadow entities regardless of whether they are assigned to any genuine entity.
-     * They can easily be {@link UniDataStream#filter(UniDataFilter)}  filtered out}.
+     * They can easily be {@link UniDataStream#filter(UniDataFilter)} filtered out}.
      *
      * @return A stream containing a tuple for each of the entities as described above.
      * @see PlanningPin An annotation to mark the entire entity as pinned.
