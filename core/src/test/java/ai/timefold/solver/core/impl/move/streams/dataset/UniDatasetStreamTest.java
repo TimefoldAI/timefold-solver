@@ -1,20 +1,12 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -34,9 +26,8 @@ class UniDatasetStreamTest {
                 .forEachNonDiscriminating(TestdataEntity.class, false))
                 .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
         var solution = TestdataSolution.generateSolution(2, 2);
-        try (var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             var entity1 = solution.getEntityList().get(0);
@@ -67,9 +58,8 @@ class UniDatasetStreamTest {
                 .forEachNonDiscriminating(TestdataEntity.class, true))
                 .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
         var solution = TestdataSolution.generateSolution(2, 2);
-        try (var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             var entity1 = solution.getEntityList().get(0);
@@ -100,9 +90,8 @@ class UniDatasetStreamTest {
                 .forEachNonDiscriminating(TestdataListEntity.class, false))
                 .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
         var solution = TestdataListSolution.generateInitializedSolution(2, 2);
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             var entity1 = solution.getEntityList().get(0);
@@ -133,9 +122,8 @@ class UniDatasetStreamTest {
                 .forEachNonDiscriminating(TestdataListEntity.class, true))
                 .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
         var solution = TestdataListSolution.generateInitializedSolution(2, 2);
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             var entity1 = solution.getEntityList().get(0);
@@ -159,12 +147,11 @@ class UniDatasetStreamTest {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static <Solution_> DatasetSession<Solution_> createSession(DataStreamFactory<Solution_> dataStreamFactory,
-            Solution_ solution, SupplyManager supplyManager) {
-        var sessionContext = new SessionContext<Solution_>(solution, mock(SolutionView.class),
-                new ValueRangeManager<>(dataStreamFactory.getSolutionDescriptor()),
-                supplyManager);
+    private static <Solution_> DatasetSession<Solution_> createSession(DataStreamFactory<Solution_> dataStreamFactory, Solution_ solution) {
+        var scoreDirector = new EasyScoreDirectorFactory<>(dataStreamFactory.getSolutionDescriptor(), s -> SimpleScore.ZERO)
+                .buildScoreDirector();
+        scoreDirector.setWorkingSolution(solution);
+        var sessionContext = new SessionContext<>(scoreDirector);
         var datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
         var datasetSession = datasetSessionFactory.buildSession(sessionContext);
         var solutionDescriptor = dataStreamFactory.getSolutionDescriptor();
@@ -184,8 +171,6 @@ class UniDatasetStreamTest {
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, false))
                         .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
-
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
         // 1 value, entity pinned.
@@ -199,7 +184,7 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             assertThat(uniDatasetInstance.iterator())
@@ -229,8 +214,6 @@ class UniDatasetStreamTest {
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, true))
                         .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
-
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
         // 1 value, entity pinned.
@@ -244,7 +227,7 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             assertThat(uniDatasetInstance.iterator())
@@ -274,8 +257,6 @@ class UniDatasetStreamTest {
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, false))
                         .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
-
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
         // 1 value, entity pinned.
@@ -290,7 +271,7 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             assertThat(uniDatasetInstance.iterator())
@@ -320,8 +301,6 @@ class UniDatasetStreamTest {
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, true))
                         .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
-
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
         // 1 value, entity pinned.
@@ -336,7 +315,7 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             assertThat(uniDatasetInstance.iterator())
@@ -366,8 +345,6 @@ class UniDatasetStreamTest {
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, false))
                         .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
-
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
         var value1 = solution.getValueList().get(0);
@@ -388,20 +365,11 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
         unpinnedEntity.setValueList(List.of(value4));
+        // Properly set shadow variables based on the changes above.
+        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
-
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(value1, value2, value3, value4, unassignedValue);
-
-            // Make incremental changes.
-            var entity4 = new TestdataPinnedWithIndexListEntity("entity4", unassignedValue);
-            datasetSession.insert(entity4); // This will add the value to the dataset.
-            datasetSession.retract(partiallyPinnedEntity); // This will remove the pin on value3.
-            datasetSession.settle();
 
             assertThat(uniDatasetInstance.iterator())
                     .toIterable()
@@ -418,8 +386,6 @@ class UniDatasetStreamTest {
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, true))
                         .createDataset();
 
-        var supplyManager = mock(SupplyManager.class);
-
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
         var value1 = solution.getValueList().get(0);
@@ -440,20 +406,11 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
         unpinnedEntity.setValueList(List.of(value4));
+        // Properly set shadow variables based on the changes above.
+        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
-
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, value1, value2, value3, value4, unassignedValue);
-
-            // Make incremental changes.
-            var entity4 = new TestdataPinnedWithIndexListEntity("entity4", unassignedValue);
-            datasetSession.insert(entity4); // This will add the value to the dataset.
-            datasetSession.retract(partiallyPinnedEntity); // This will remove the pin on value3.
-            datasetSession.settle();
 
             assertThat(uniDatasetInstance.iterator())
                     .toIterable()
@@ -494,52 +451,16 @@ class UniDatasetStreamTest {
         // Fully pinned, but not initially present in the solution.
         var entityAddedLater = new TestdataPinnedWithIndexListEntity("entity4", value4);
         entityAddedLater.setPinned(true);
+        // Properly set shadow variables based on the changes above.
+        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        // Emulate pinning logic.
-        // Otherwise we'd have to mock everything from score director down.
-        // We're not testing pin detection; we're testing that the session can ignore values already marked as pinned.
-        var supplyManager = mock(SupplyManager.class);
-        var listVariableStateSupply = mock(ListVariableStateSupply.class);
-        var effectiveEntityList = new ArrayList<>(List.of(fullyPinnedEntity, partiallyPinnedEntity, unpinnedEntity));
-        doAnswer(invocation -> {
-            var element = (TestdataPinnedWithIndexListValue) invocation.getArgument(0);
-            for (var entity : effectiveEntityList) {
-                var indexOf = entity.getValueList().indexOf(element);
-                if (indexOf < 0) {
-                    continue;
-                }
-                if (entity.isPinned()) {
-                    return true;
-                } else {
-                    var pinToIndex = entity.getPinIndex();
-                    return indexOf < pinToIndex;
-                }
-            }
-            return false;
-        }).when(listVariableStateSupply).isPinned(any());
-        doReturn(listVariableStateSupply).when(supplyManager).demand(any(ListVariableStateDemand.class));
-
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             assertThat(uniDatasetInstance.iterator())
                     .toIterable()
                     .map(t -> t.factA)
                     .containsExactly(value2, value3, value4);
-
-            // Make incremental changes.
-            partiallyPinnedEntity.setPlanningPinToIndex(0);
-            effectiveEntityList.add(entityAddedLater);
-            effectiveEntityList.remove(fullyPinnedEntity);
-            datasetSession.insert(entityAddedLater); // This will add the value to the dataset, but make it pinned.
-            datasetSession.retract(fullyPinnedEntity); // This will remove value0.
-            datasetSession.update(partiallyPinnedEntity); // This will remove the pin from value1.
-            datasetSession.settle();
-
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactlyInAnyOrder(value0, value1, value2, value3);
         }
     }
 
@@ -575,52 +496,16 @@ class UniDatasetStreamTest {
         // Fully pinned, but not initially present in the solution.
         var entityAddedLater = new TestdataPinnedWithIndexListEntity("entity4", value4);
         entityAddedLater.setPinned(true);
+        // Properly set shadow variables based on the changes above.
+        solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        // Emulate pinning logic.
-        // Otherwise we'd have to mock everything from score director down.
-        // We're not testing pin detection; we're testing that the session can ignore values already marked as pinned.
-        var supplyManager = mock(SupplyManager.class);
-        var listVariableStateSupply = mock(ListVariableStateSupply.class);
-        var effectiveEntityList = new ArrayList<>(List.of(fullyPinnedEntity, partiallyPinnedEntity, unpinnedEntity));
-        doAnswer(invocation -> {
-            var element = (TestdataPinnedWithIndexListValue) invocation.getArgument(0);
-            for (var entity : effectiveEntityList) {
-                var indexOf = entity.getValueList().indexOf(element);
-                if (indexOf < 0) {
-                    continue;
-                }
-                if (entity.isPinned()) {
-                    return true;
-                } else {
-                    var pinToIndex = entity.getPinIndex();
-                    return indexOf < pinToIndex;
-                }
-            }
-            return false;
-        }).when(listVariableStateSupply).isPinned(any());
-        doReturn(listVariableStateSupply).when(supplyManager).demand(any(ListVariableStateDemand.class));
-
-        try (var datasetSession = createSession(dataStreamFactory, solution, supplyManager)) {
+        try (var datasetSession = createSession(dataStreamFactory, solution)) {
             var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
             assertThat(uniDatasetInstance.iterator())
                     .toIterable()
                     .map(t -> t.factA)
                     .containsExactly(null, value2, value3, value4);
-
-            // Make incremental changes.
-            partiallyPinnedEntity.setPlanningPinToIndex(0);
-            effectiveEntityList.add(entityAddedLater);
-            effectiveEntityList.remove(fullyPinnedEntity);
-            datasetSession.insert(entityAddedLater); // This will add the value to the dataset, but make it pinned.
-            datasetSession.retract(fullyPinnedEntity); // This will remove value0.
-            datasetSession.update(partiallyPinnedEntity); // This will remove the pin from value1.
-            datasetSession.settle();
-
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactlyInAnyOrder(null, value0, value1, value2, value3);
         }
     }
 

@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.preview.api.move;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -65,6 +66,23 @@ public interface SolutionView<Solution_> {
             Value_ value);
 
     /**
+     * Unlike for {@link PlanningVariable} where checking if an entity is pinned is straightforward,
+     * checking if a {@link PlanningListVariable}'s value is pinned requires checking:
+     * <ul>
+     * <li>the entity's {@link PlanningPin} field,</li>
+     * <li>the entity's {@link ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex} field,</li>
+     * <li>the value's position in the list variable</li>.
+     * </ul>
+     * As this is complex, this method is provided as a convenience.
+     *
+     * @param variableMetaModel Describes the variable whose value is to be read.
+     * @param value             The value to check if it is pinned; may be null, in which case the method returns false.
+     * @return boolean indicating if the value is pinned in the variable
+     */
+    <Entity_, Value_> boolean isPinned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+                                       @Nullable Value_ value);
+
+    /**
      * Checks if a given value is present in the value range of a genuine planning variable,
      * when the value range is defined on {@link PlanningSolution}.
      *
@@ -74,7 +92,7 @@ public interface SolutionView<Solution_> {
      * @param <Entity_> generic type of the entity that the variable is defined on
      * @param <Value_> generic type of the value that the variable can take
      * @throws IllegalArgumentException if the value range is on an entity as opposed to a solution;
-     *         use {@link #isValueInRange(GenuineVariableMetaModel, Object, Object)} instead.
+     *         use {@link #isValueInRange(GenuineVariableMetaModel, Object, Object)} to provide the entity instance.
      */
     default <Entity_, Value_> boolean isValueInRange(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             @Nullable Value_ value) {

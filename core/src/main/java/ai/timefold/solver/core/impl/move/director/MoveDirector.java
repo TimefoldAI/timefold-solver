@@ -198,9 +198,22 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value) {
-        return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(variableMetaModel))
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableDescriptor, Value_ value) {
+        return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(listVariableDescriptor))
                 .getElementPosition(value);
+    }
+
+    @Override
+    public <Entity_, Value_> boolean isPinned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            @Nullable Value_ value) {
+        return isPinned(extractVariableDescriptor(variableMetaModel), value);
+    }
+
+    public <Value_> boolean isPinned(ListVariableDescriptor<Solution_> listVariableDescriptor, @Nullable Value_ value) {
+        if (value == null) {
+            return false; // Null is never pinned.
+        }
+        return backingScoreDirector.getListVariableStateSupply(listVariableDescriptor).isPinned(value);
     }
 
     @Override
