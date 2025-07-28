@@ -166,6 +166,10 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 .iterator();
     }
 
+    public Iterator<Object> endingValueIterator() {
+        return valueSelector.endingIterator(null);
+    }
+
     @Override
     public boolean equals(Object o) {
         return o instanceof ElementDestinationSelector<?> that
