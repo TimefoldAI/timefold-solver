@@ -37,7 +37,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         var rightBridge = new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other);
         var joinerComber = BiDataJoinerComber.<Solution_, A, B> comb(joiners);
         var joinStream = new JoinBiDataStream<>(dataStreamFactory, leftBridge, rightBridge,
-                joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering());
+                joinerComber.mergedJoiner(), joinerComber.mergedFiltering());
         return dataStreamFactory.share(joinStream, joinStream_ -> {
             // Connect the bridges upstream, as it is an actual new join.
             getChildStreamList().add(leftBridge);
@@ -83,7 +83,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         var joinerComber = BiDataJoinerComber.<Solution_, A, B> comb(joiners);
         var parentBridgeB = other.shareAndAddChild(new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other));
         return dataStreamFactory.share(new IfExistsUniDataStream<>(dataStreamFactory, this, parentBridgeB, shouldExist,
-                joinerComber.getMergedJoiner(), joinerComber.getMergedFiltering()), childStreamList::add);
+                joinerComber.mergedJoiner(), joinerComber.mergedFiltering()), childStreamList::add);
     }
 
     public UniDataset<Solution_, A> createDataset() {

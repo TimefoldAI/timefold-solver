@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.move.streams.dataset.joiner;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
@@ -18,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  * @param <B>
  */
 @NullMarked
-public final class BiDataJoinerComber<Solution_, A, B> {
+public record BiDataJoinerComber<Solution_, A, B>(DefaultBiDataJoiner<A, B> mergedJoiner, @Nullable BiDataFilter<Solution_, A, B> mergedFiltering) {
 
     public static <Solution_, A, B> BiDataJoinerComber<Solution_, A, B> comb(BiDataJoiner<A, B>[] joiners) {
         List<DefaultBiDataJoiner<A, B>> defaultJoinerList = new ArrayList<>(joiners.length);
@@ -69,28 +68,6 @@ public final class BiDataJoinerComber<Solution_, A, B> {
                     return true;
                 };
         };
-    }
-
-    private final DefaultBiDataJoiner<A, B> mergedJoiner;
-    private final @Nullable BiDataFilter<Solution_, A, B> mergedFiltering;
-
-    public BiDataJoinerComber(DefaultBiDataJoiner<A, B> mergedJoiner, @Nullable BiDataFilter<Solution_, A, B> mergedFiltering) {
-        this.mergedJoiner = Objects.requireNonNull(mergedJoiner);
-        this.mergedFiltering = mergedFiltering;
-    }
-
-    /**
-     * @return never null
-     */
-    public DefaultBiDataJoiner<A, B> getMergedJoiner() {
-        return mergedJoiner;
-    }
-
-    /**
-     * @return null if not applicable
-     */
-    public @Nullable BiDataFilter<Solution_, A, B> getMergedFiltering() {
-        return mergedFiltering;
     }
 
 }
