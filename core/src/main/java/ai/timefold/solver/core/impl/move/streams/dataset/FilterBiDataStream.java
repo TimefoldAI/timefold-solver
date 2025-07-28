@@ -18,7 +18,7 @@ final class FilterBiDataStream<Solution_, A, B>
     public FilterBiDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractBiDataStream<Solution_, A, B> parent,
             BiDataFilter<Solution_, A, B> filter) {
         super(dataStreamFactory, parent);
-        this.filter = Objects.requireNonNull(filter, "The predicate cannot be null.");
+        this.filter = Objects.requireNonNull(filter, "The filter cannot be null.");
     }
 
     @Override

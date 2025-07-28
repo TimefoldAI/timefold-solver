@@ -5,6 +5,9 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public abstract class AbstractDataJoiner<Right_> {
 
     protected final Function<Right_, Object>[] rightMappings;

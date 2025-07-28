@@ -2,10 +2,14 @@ package ai.timefold.solver.core.impl.move.streams.dataset.joiner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Combs an array of {@link BiDataJoiner} instances into a mergedJoiner and a mergedFiltering.
@@ -13,6 +17,7 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
  * @param <A>
  * @param <B>
  */
+@NullMarked
 public final class BiDataJoinerComber<Solution_, A, B> {
 
     public static <Solution_, A, B> BiDataJoinerComber<Solution_, A, B> comb(BiDataJoiner<A, B>[] joiners) {
@@ -45,7 +50,7 @@ public final class BiDataJoinerComber<Solution_, A, B> {
         return new BiDataJoinerComber<>(mergedJoiner, mergedFiltering);
     }
 
-    private static <Solution_, A, B> BiDataFilter<Solution_, A, B>
+    private static <Solution_, A, B> @Nullable BiDataFilter<Solution_, A, B>
             mergeFiltering(List<BiDataFilter<Solution_, A, B>> filteringList) {
         if (filteringList.isEmpty()) {
             return null;
@@ -66,11 +71,11 @@ public final class BiDataJoinerComber<Solution_, A, B> {
         };
     }
 
-    private DefaultBiDataJoiner<A, B> mergedJoiner;
-    private final BiDataFilter<Solution_, A, B> mergedFiltering;
+    private final DefaultBiDataJoiner<A, B> mergedJoiner;
+    private final @Nullable BiDataFilter<Solution_, A, B> mergedFiltering;
 
-    public BiDataJoinerComber(DefaultBiDataJoiner<A, B> mergedJoiner, BiDataFilter<Solution_, A, B> mergedFiltering) {
-        this.mergedJoiner = mergedJoiner;
+    public BiDataJoinerComber(DefaultBiDataJoiner<A, B> mergedJoiner, @Nullable BiDataFilter<Solution_, A, B> mergedFiltering) {
+        this.mergedJoiner = Objects.requireNonNull(mergedJoiner);
         this.mergedFiltering = mergedFiltering;
     }
 
@@ -84,12 +89,8 @@ public final class BiDataJoinerComber<Solution_, A, B> {
     /**
      * @return null if not applicable
      */
-    public BiDataFilter<Solution_, A, B> getMergedFiltering() {
+    public @Nullable BiDataFilter<Solution_, A, B> getMergedFiltering() {
         return mergedFiltering;
-    }
-
-    public void addJoiner(DefaultBiDataJoiner<A, B> extraJoiner) {
-        mergedJoiner = mergedJoiner.and(extraJoiner);
     }
 
 }

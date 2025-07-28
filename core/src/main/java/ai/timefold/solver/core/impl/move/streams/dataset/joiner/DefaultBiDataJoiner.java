@@ -10,9 +10,10 @@ import ai.timefold.solver.core.impl.bavet.common.joiner.AbstractJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
+@NullMarked
 public final class DefaultBiDataJoiner<A, B> extends AbstractDataJoiner<B> implements BiDataJoiner<A, B> {
 
     private static final DefaultBiDataJoiner NONE =
@@ -44,7 +45,7 @@ public final class DefaultBiDataJoiner<A, B> extends AbstractDataJoiner<B> imple
     }
 
     @Override
-    public @NonNull DefaultBiDataJoiner<A, B> and(@NonNull BiDataJoiner<A, B> otherJoiner) {
+    public DefaultBiDataJoiner<A, B> and(BiDataJoiner<A, B> otherJoiner) {
         var castJoiner = (DefaultBiDataJoiner<A, B>) otherJoiner;
         var joinerCount = getJoinerCount();
         var castJoinerCount = castJoiner.getJoinerCount();

@@ -5,8 +5,9 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class FilteringBiDataJoiner<Solution_, A, B> implements BiDataJoiner<A, B> {
 
     private final BiDataFilter<Solution_, A, B> filter;
@@ -16,7 +17,7 @@ public final class FilteringBiDataJoiner<Solution_, A, B> implements BiDataJoine
     }
 
     @Override
-    public @NonNull FilteringBiDataJoiner<Solution_, A, B> and(@NonNull BiDataJoiner<A, B> otherJoiner) {
+    public FilteringBiDataJoiner<Solution_, A, B> and(BiDataJoiner<A, B> otherJoiner) {
         FilteringBiDataJoiner<Solution_, A, B> castJoiner = (FilteringBiDataJoiner<Solution_, A, B>) otherJoiner;
         return new FilteringBiDataJoiner<>(filter.and(castJoiner.getFilter()));
     }
