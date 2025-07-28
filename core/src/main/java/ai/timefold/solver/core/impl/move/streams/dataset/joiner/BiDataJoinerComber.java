@@ -31,7 +31,7 @@ public final class BiDataJoinerComber<Solution_, A, B> {
             if (joiner instanceof FilteringBiDataJoiner) {
                 // From now on, only allow filtering joiners.
                 indexOfFirstFilter = i;
-                filteringList.add(((FilteringBiDataJoiner<Solution_, A, B>) joiner).getFilter());
+                filteringList.add(((FilteringBiDataJoiner<Solution_, A, B>) joiner).filter());
             } else if (joiner instanceof DefaultBiDataJoiner) {
                 if (indexOfFirstFilter >= 0) {
                     throw new IllegalStateException("""
