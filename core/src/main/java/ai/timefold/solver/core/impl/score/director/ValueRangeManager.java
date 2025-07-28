@@ -202,10 +202,17 @@ public final class ValueRangeManager<Solution_> {
     }
 
     /**
-     * Calculates an indication on how big this problem instance is.
-     * This is approximately the base 10 log of the search space size.
-     * 
-     * @return {@code >= 0}
+     * Calculates an indication of the size of the problem instance.
+     * This is approximately the base 10 logarithm of the search space size.
+     *
+     * <p>
+     * The method uses a logarithmic scale to estimate the problem size,
+     * where the base of the logarithm is determined by the maximum value range size.
+     * It accounts for both basic variables and list variables in the solution,
+     * considering pinned values and value ranges on both entity and solution.
+     *
+     * @return A non-negative double value representing the approximate base 10 logarithm of the search space size.
+     *         Returns {@code 0} if the calculation results in NaN or infinity.
      */
     double getProblemScale() {
         var logBase = Math.max(2, getMaximumValueRangeSize());
@@ -238,6 +245,15 @@ public final class ValueRangeManager<Solution_> {
         return scale;
     }
 
+    /**
+     * Calculates the maximum value range size across all entities in the working solution.
+     * <p>
+     * The "maximum value range size" is defined as the largest number of possible values
+     * for any genuine variable across all entities.
+     * This is determined by inspecting the value range descriptors of each variable in each entity.
+     *
+     * @return The maximum value range size, or 0 if no genuine variables are found.
+     */
     long getMaximumValueRangeSize() {
         return solutionDescriptor.extractAllEntitiesStream(cachedWorkingSolution)
                 .mapToLong(entity -> {
@@ -250,7 +266,7 @@ public final class ValueRangeManager<Solution_> {
                 .orElse(0L);
     }
 
-    public long getMaximumValueCount(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
+    private long getMaximumValueCount(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         var maximumValueCount = 0L;
         for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
             if (variableDescriptor.canExtractValueRangeFromSolution()) {
