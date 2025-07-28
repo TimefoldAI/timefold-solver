@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.BitSet;
-import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.function.IntFunction;
 
@@ -62,15 +61,8 @@ public final class FixedVariableReferenceGraph<Solution_>
             var entity = entityVariable.entity();
             var shadowVariableReferences = entityVariable.variableReferences();
             for (var shadowVariableReference : shadowVariableReferences) {
-                var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
-                var newValue = shadowVariableReference.calculator().apply(entity);
-                var isVariableChanged = !Objects.equals(oldValue, newValue);
+                var isVariableChanged = shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
                 if (isVariableChanged) {
-                    var variableDescriptor = shadowVariableReference.variableDescriptor();
-                    changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, entity);
-                    variableDescriptor.setValue(entity, newValue);
-                    changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
-
                     for (var iterator = graph.nodeForwardEdges(changedNode.nodeId()); iterator.hasNext();) {
                         var nextNode = iterator.next();
                         if (visited.get(nextNode)) {

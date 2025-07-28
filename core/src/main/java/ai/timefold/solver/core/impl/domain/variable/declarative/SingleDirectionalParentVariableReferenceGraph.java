@@ -6,7 +6,6 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
@@ -105,14 +104,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         while (current != null) {
             var anyChanged = false;
             for (var updater : sortedVariableUpdaterInfos) {
-                var oldValue = updater.memberAccessor().executeGetter(current);
-                var newValue = updater.calculator().apply(current);
-                if (!Objects.equals(oldValue, newValue)) {
-                    anyChanged = true;
-                    changedVariableNotifier.beforeVariableChanged().accept(updater.variableDescriptor(), current);
-                    updater.memberAccessor().executeSetter(current, newValue);
-                    changedVariableNotifier.afterVariableChanged().accept(updater.variableDescriptor(), current);
-                }
+                anyChanged |= updater.updateIfChanged(current, changedVariableNotifier);
             }
             if (anyChanged) {
                 previous = current;

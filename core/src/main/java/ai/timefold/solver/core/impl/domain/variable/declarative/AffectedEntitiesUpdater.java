@@ -131,41 +131,18 @@ final class AffectedEntitiesUpdater<Solution_>
         }
 
         for (var shadowVariableReference : shadowVariableReferences) {
-            anyChanged |= updateShadowVariable(entityVariable, isLooped, shadowVariableReference, entity);
+            anyChanged |= updateShadowVariable(isLooped, shadowVariableReference, entity);
         }
 
         return anyChanged;
     }
 
-    private boolean updateShadowVariable(EntityVariablePair<Solution_> entityVariable, boolean isLooped,
+    private boolean updateShadowVariable(boolean isLooped,
             VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity) {
-        var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
         if (isLooped) {
-            if (oldValue != null) {
-                affectedEntities.add(entityVariable);
-                changeShadowVariableAndNotify(shadowVariableReference, entity, null);
-            }
-            return true;
+            return shadowVariableReference.updateIfChanged(entity, null, changedVariableNotifier);
         } else {
-            var newValue = shadowVariableReference.calculator().apply(entity);
-            if (!Objects.equals(oldValue, newValue)) {
-                affectedEntities.add(entityVariable);
-                changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private void changeShadowVariableAndNotify(VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity,
-            Object newValue) {
-        var variableDescriptor = shadowVariableReference.variableDescriptor();
-        if (shadowVariableReference.groupEntities() == null) {
-            changeShadowVariableAndNotify(variableDescriptor, entity, newValue);
-        } else {
-            for (var groupEntity : shadowVariableReference.groupEntities()) {
-                changeShadowVariableAndNotify(variableDescriptor, groupEntity, newValue);
-            }
+            return shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
         }
     }
 

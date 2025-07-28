@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -36,6 +37,30 @@ public record VariableUpdaterInfo<Solution_>(
     public VariableUpdaterInfo<Solution_> withGroupEntities(Object[] groupEntities) {
         return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor,
                 calculator, groupEntities);
+    }
+
+    public boolean updateIfChanged(Object entity, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
+        return updateIfChanged(entity, calculator.apply(entity), changedVariableNotifier);
+    }
+
+    public boolean updateIfChanged(Object entity, @Nullable Object newValue,
+            ChangedVariableNotifier<Solution_> changedVariableNotifier) {
+        var oldValue = variableDescriptor.getValue(entity);
+        if (!Objects.equals(oldValue, newValue)) {
+            if (groupEntities == null) {
+                changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, entity);
+                variableDescriptor.setValue(entity, newValue);
+                changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
+            } else {
+                for (var groupEntity : groupEntities) {
+                    changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, groupEntity);
+                    variableDescriptor.setValue(groupEntity, newValue);
+                    changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, groupEntity);
+                }
+            }
+            return true;
+        }
+        return false;
     }
 
     @Override
