@@ -14,7 +14,6 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
@@ -364,11 +363,6 @@ public final class ValueRangeManager<Solution_> {
                                 BigDecimalValueRange.class.getSimpleName()));
             } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
-            } else if (extractedValueRange instanceof EmptyValueRange<?>) {
-                throw new IllegalStateException("""
-                        The @%s-annotated member (%s) on planning solution (%s) must not return an empty range.
-                        Maybe apply over-constrained planning as described in the documentation."""
-                        .formatted(ValueRangeProvider.class.getSimpleName(), valueRangeDescriptor, solution));
             } else {
                 valueRange = countableValueRange;
             }
@@ -400,11 +394,6 @@ public final class ValueRangeManager<Solution_> {
                                 BigDecimalValueRange.class.getSimpleName()));
             } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
-            } else if (extractedValueRange instanceof EmptyValueRange<?>) {
-                throw new IllegalStateException("""
-                        The @%s-annotated member (%s) on planning entity (%s) must not return an empty range.
-                        Maybe apply over-constrained planning as described in the documentation."""
-                        .formatted(ValueRangeProvider.class.getSimpleName(), valueRangeDescriptor, entity));
             } else {
                 valueRange = countableValueRange;
             }
