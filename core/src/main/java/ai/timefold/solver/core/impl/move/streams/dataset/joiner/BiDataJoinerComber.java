@@ -17,7 +17,8 @@ import org.jspecify.annotations.Nullable;
  * @param <B>
  */
 @NullMarked
-public record BiDataJoinerComber<Solution_, A, B>(DefaultBiDataJoiner<A, B> mergedJoiner, @Nullable BiDataFilter<Solution_, A, B> mergedFiltering) {
+public record BiDataJoinerComber<Solution_, A, B>(DefaultBiDataJoiner<A, B> mergedJoiner,
+        @Nullable BiDataFilter<Solution_, A, B> mergedFiltering) {
 
     public static <Solution_, A, B> BiDataJoinerComber<Solution_, A, B> comb(BiDataJoiner<A, B>[] joiners) {
         List<DefaultBiDataJoiner<A, B>> defaultJoinerList = new ArrayList<>(joiners.length);
