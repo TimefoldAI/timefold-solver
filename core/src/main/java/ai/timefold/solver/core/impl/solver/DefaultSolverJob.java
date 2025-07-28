@@ -270,8 +270,8 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
         // Once the solving has started, the problem size statistics will be computed
         // using the ScoreDirector's hot ValueRangeManager.
         var solutionDescriptor = solverScope.getSolutionDescriptor();
-        return this.temporaryProblemSizeStatistics = solutionDescriptor.getProblemSizeStatistics(problemFinder.apply(problemId),
-                new ValueRangeManager<>(solutionDescriptor));
+        var valueManager = ValueRangeManager.of(solutionDescriptor, problemFinder.apply(problemId));
+        return this.temporaryProblemSizeStatistics = valueManager.getProblemSizeStatistics();
     }
 
     public SolverTermination<Solution_> getSolverTermination() {

@@ -44,7 +44,6 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
@@ -65,7 +64,6 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShad
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
@@ -856,83 +854,6 @@ public class EntityDescriptor<Solution_> {
 
     public PlanningPinToIndexReader getEffectivePlanningPinToIndexReader() {
         return effectivePlanningPinToIndexReader;
-    }
-
-    public long getMaximumValueCount(Solution_ solution, Object entity, ValueRangeManager<Solution_> valueRangeManager) {
-        var maximumValueCount = 0L;
-        for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            if (variableDescriptor.canExtractValueRangeFromSolution()) {
-                maximumValueCount = Math.max(maximumValueCount,
-                        valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(),
-                                solution));
-            } else {
-                maximumValueCount = Math.max(maximumValueCount,
-                        valueRangeManager.countOnEntity(variableDescriptor.getValueRangeDescriptor(),
-                                entity));
-
-            }
-        }
-        return maximumValueCount;
-
-    }
-
-    public void processProblemScale(Solution_ solution, Object entity, ProblemScaleTracker tracker,
-            ValueRangeManager<Solution_> valueRangeManager) {
-        for (var variableDescriptor : effectiveGenuineVariableDescriptorList) {
-            var valueCount = variableDescriptor.canExtractValueRangeFromSolution()
-                    ? valueRangeManager.countOnSolution(variableDescriptor.getValueRangeDescriptor(),
-                            solution)
-                    : valueRangeManager.countOnEntity(variableDescriptor.getValueRangeDescriptor(), entity);
-            // TODO: When minimum Java supported is 21, this can be replaced with a sealed interface switch
-            if (variableDescriptor instanceof BasicVariableDescriptor<Solution_> basicVariableDescriptor) {
-                if (basicVariableDescriptor.isChained()) {
-                    // An entity is a value
-                    tracker.addListValueCount(1);
-                    if (!isMovable(solution, entity)) {
-                        tracker.addPinnedListValueCount(1);
-                    }
-                    // Anchors are entities
-                    var valueRange = variableDescriptor.canExtractValueRangeFromSolution()
-                            ? valueRangeManager.getFromSolution(variableDescriptor.getValueRangeDescriptor(),
-                                    solution)
-                            : valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
-                                    entity);
-                    var valueIterator = valueRange.createOriginalIterator();
-                    while (valueIterator.hasNext()) {
-                        var value = valueIterator.next();
-                        if (variableDescriptor.isValuePotentialAnchor(value)) {
-                            if (tracker.isAnchorVisited(value)) {
-                                continue;
-                            }
-                            // Assumes anchors are not pinned
-                            tracker.incrementListEntityCount(true);
-                        }
-                    }
-                } else {
-                    if (isMovable(solution, entity)) {
-                        tracker.addBasicProblemScale(valueCount);
-                    }
-                }
-            } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                var size = variableDescriptor.canExtractValueRangeFromSolution()
-                        ? valueRangeManager.countOnSolution(listVariableDescriptor.getValueRangeDescriptor(),
-                                solution)
-                        : valueRangeManager.countOnEntity(listVariableDescriptor.getValueRangeDescriptor(),
-                                entity);
-                tracker.setListTotalValueCount((int) size);
-                if (isMovable(solution, entity)) {
-                    tracker.incrementListEntityCount(true);
-                    tracker.addPinnedListValueCount(listVariableDescriptor.getFirstUnpinnedIndex(entity));
-                } else {
-                    tracker.incrementListEntityCount(false);
-                    tracker.addPinnedListValueCount(listVariableDescriptor.getListSize(entity));
-                }
-            } else {
-                throw new IllegalStateException(
-                        "Unhandled subclass of %s encountered (%s).".formatted(VariableDescriptor.class.getSimpleName(),
-                                variableDescriptor.getClass().getSimpleName()));
-            }
-        }
     }
 
     public int countUninitializedVariables(Object entity) {

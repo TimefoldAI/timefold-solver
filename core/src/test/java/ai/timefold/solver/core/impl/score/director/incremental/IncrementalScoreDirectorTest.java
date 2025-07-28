@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.score.director.incremental;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
@@ -116,8 +115,6 @@ class IncrementalScoreDirectorTest {
         IncrementalScoreDirectorFactory<Object, SimpleScore> factory = mock(IncrementalScoreDirectorFactory.class);
         when(factory.getScoreDefinition()).thenReturn(new SimpleScoreDefinition());
         SolutionDescriptor<Object> solutionDescriptor = mock(SolutionDescriptor.class);
-        when(solutionDescriptor.computeInitializationStatistics(any(), any(), any()))
-                .thenReturn(new SolutionDescriptor.SolutionInitializationStatistics(0, 0, 0, 0, 0, 0));
         when(factory.getSolutionDescriptor()).thenReturn(solutionDescriptor);
         return factory;
     }

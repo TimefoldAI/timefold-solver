@@ -31,9 +31,7 @@ final class Assigner<Solution_, Score_ extends Score<Score_>, Recommendation_, I
 
     @Override
     public List<Recommendation_> apply(InnerScoreDirector<Solution_, Score_> scoreDirector) {
-        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
-        var initializationStatistics =
-                solutionDescriptor.computeInitializationStatistics(originalSolution, scoreDirector.getValueRangeManager());
+        var initializationStatistics = scoreDirector.getValueRangeManager().getInitializationStatistics();
         var uninitializedCount =
                 initializationStatistics.uninitializedEntityCount() + initializationStatistics.unassignedValueCount();
         if (uninitializedCount > 1) {

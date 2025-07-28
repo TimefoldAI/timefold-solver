@@ -19,7 +19,6 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,7 +50,6 @@ import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -75,8 +73,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
-import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 import ai.timefold.solver.core.impl.util.MutablePair;
@@ -256,7 +252,6 @@ public class SolutionDescriptor<Solution_> {
                 .toList();
     }
 
-    @SuppressWarnings("unchecked")
     private static boolean hasAnyAnnotatedMembers(Class<?> solutionClass) {
         return !extractAnnotatedMembers(solutionClass).isEmpty();
     }
@@ -1210,86 +1205,6 @@ public class SolutionDescriptor<Solution_> {
         return result.longValue();
     }
 
-    /**
-     * @param solution never null
-     * @return {@code >= 0}
-     */
-    public long getApproximateValueCount(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
-        var genuineVariableDescriptorSet =
-                Collections.newSetFromMap(new IdentityHashMap<GenuineVariableDescriptor<Solution_>, Boolean>());
-        visitAllEntities(solution, entity -> {
-            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
-            if (entityDescriptor.isGenuine()) {
-                genuineVariableDescriptorSet.addAll(entityDescriptor.getGenuineVariableDescriptorList());
-            }
-        });
-        var out = new MutableLong();
-        for (var variableDescriptor : genuineVariableDescriptorSet) {
-            var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-            if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-                out.add(valueRangeManager.countOnSolution(valueRangeDescriptor, solution));
-            } else {
-                visitEntitiesByEntityClass(solution,
-                        variableDescriptor.getEntityDescriptor().getEntityClass(),
-                        entity -> {
-                            out.add(valueRangeManager.countOnEntity(valueRangeDescriptor, entity));
-                            return false;
-                        });
-            }
-        }
-        return out.longValue();
-    }
-
-    public long getMaximumValueRangeSize(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
-        return extractAllEntitiesStream(solution)
-                .mapToLong(entity -> {
-                    var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
-                    return entityDescriptor.isGenuine()
-                            ? entityDescriptor.getMaximumValueCount(solution, entity, valueRangeManager)
-                            : 0L;
-                })
-                .max()
-                .orElse(0L);
-    }
-
-    /**
-     * Calculates an indication on how big this problem instance is.
-     * This is approximately the base 10 log of the search space size.
-     *
-     * @param solution never null
-     * @return {@code >= 0}
-     */
-    public double getProblemScale(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
-        var logBase = Math.max(2, getMaximumValueRangeSize(solution, valueRangeManager));
-        var problemScaleTracker = new ProblemScaleTracker(logBase);
-        visitAllEntities(solution, entity -> {
-            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
-            if (entityDescriptor.isGenuine()) {
-                entityDescriptor.processProblemScale(solution, entity, problemScaleTracker, valueRangeManager);
-            }
-        });
-        var result = problemScaleTracker.getBasicProblemScaleLog();
-        if (problemScaleTracker.getListTotalEntityCount() != 0L) {
-            // List variables do not support from entity value ranges
-            var totalListValueCount = problemScaleTracker.getListTotalValueCount();
-            var totalListMovableValueCount = totalListValueCount - problemScaleTracker.getListPinnedValueCount();
-            var possibleTargetsForListValue = problemScaleTracker.getListMovableEntityCount();
-            var listVariableDescriptor = getListVariableDescriptor();
-            if (listVariableDescriptor != null && listVariableDescriptor.allowsUnassignedValues()) {
-                // Treat unassigned values as assigned to a single virtual vehicle for the sake of this calculation
-                possibleTargetsForListValue++;
-            }
-
-            result += MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, logBase,
-                    totalListMovableValueCount, possibleTargetsForListValue);
-        }
-        var scale = (result / (double) MathUtils.LOG_PRECISION) / MathUtils.getLogInBase(logBase, 10d);
-        if (Double.isNaN(scale) || Double.isInfinite(scale)) {
-            return 0;
-        }
-        return scale;
-    }
-
     public List<ShadowVariableDescriptor<Solution_>> getAllShadowVariableDescriptors() {
         var out = new ArrayList<ShadowVariableDescriptor<Solution_>>();
         for (var entityDescriptor : entityDescriptorMap.values()) {
@@ -1311,108 +1226,7 @@ public class SolutionDescriptor<Solution_> {
         return new ArrayList<>(out);
     }
 
-    public ProblemSizeStatistics getProblemSizeStatistics(Solution_ solution,
-            ValueRangeManager<Solution_> valueRangeManager) {
-        return new ProblemSizeStatistics(
-                getGenuineEntityCount(solution),
-                getGenuineVariableCount(solution),
-                getApproximateValueCount(solution, valueRangeManager),
-                getProblemScale(solution, valueRangeManager));
-    }
-
-    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution,
-            ValueRangeManager<Solution_> valueRangeManager) {
-        return computeInitializationStatistics(solution, null, valueRangeManager);
-    }
-
-    public SolutionInitializationStatistics computeInitializationStatistics(Solution_ solution, Consumer<Object> finisher,
-            ValueRangeManager<Solution_> valueRangeManager) {
-        /*
-         * The score director requires all of these data points,
-         * so we calculate them all in a single pass over the entities.
-         * This is an important performance improvement,
-         * as there are potentially thousands of entities.
-         */
-        var uninitializedEntityCount = new MutableInt();
-        var uninitializedVariableCount = new MutableInt();
-        var unassignedValueCount = new MutableInt();
-        var notInAnyListValueCount = new MutableInt();
-        var genuineEntityCount = new MutableInt();
-        var shadowEntityCount = new MutableInt();
-        for (var listVariableDescriptor : listVariableDescriptorList) {
-            var count = (int) valueRangeManager
-                    .countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), solution);
-            notInAnyListValueCount.add(count);
-            if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
-                continue;
-            }
-            // We count every possibly unassigned element in every list variable.
-            // And later we subtract the assigned elements.
-            unassignedValueCount.add(count);
-        }
-        visitAllEntities(solution, entity -> {
-            var entityDescriptor = findEntityDescriptorOrFail(entity.getClass());
-            if (entityDescriptor.isGenuine()) {
-                genuineEntityCount.increment();
-                var uninitializedVariableCountForEntity = entityDescriptor.countUninitializedVariables(entity);
-                if (uninitializedVariableCountForEntity > 0) {
-                    uninitializedEntityCount.increment();
-                    uninitializedVariableCount.add(uninitializedVariableCountForEntity);
-                }
-            } else {
-                shadowEntityCount.increment();
-            }
-            if (finisher != null) {
-                finisher.accept(entity);
-            }
-            if (!entityDescriptor.hasAnyGenuineListVariables()) {
-                return;
-            }
-            for (var listVariableDescriptor : listVariableDescriptorList) {
-                var listVariableEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
-                var count = listVariableDescriptor.getListSize(entity);
-                notInAnyListValueCount.subtract(count);
-                if (listVariableDescriptor.allowsUnassignedValues()) { // Unassigned elements count as assigned.
-                    continue;
-                }
-                if (listVariableEntityDescriptor.matchesEntity(entity)) {
-                    unassignedValueCount.subtract(count);
-                }
-                // TODO maybe detect duplicates and elements that are outside the value range
-            }
-        });
-        return new SolutionInitializationStatistics(genuineEntityCount.intValue(), shadowEntityCount.intValue(),
-                uninitializedEntityCount.intValue(), uninitializedVariableCount.intValue(), unassignedValueCount.intValue(),
-                notInAnyListValueCount.intValue());
-    }
-
-    /**
-     * 
-     * @param genuineEntityCount
-     * @param shadowEntityCount
-     * @param uninitializedEntityCount
-     * @param uninitializedVariableCount Zero if unassigned values are allowed.
-     * @param unassignedValueCount How many values aren't in any list variable,
-     *        assuming unassigned values aren't allowed.
-     *        Otherwise zero.
-     * @param notInAnyListValueCount How many values aren't in any list variable,
-     *        regardless of whether unassigned values are allowed.
-     */
-    public record SolutionInitializationStatistics(int genuineEntityCount, int shadowEntityCount,
-            int uninitializedEntityCount, int uninitializedVariableCount, int unassignedValueCount,
-            int notInAnyListValueCount) {
-
-        public int getInitCount() {
-            return uninitializedVariableCount + uninitializedEntityCount;
-        }
-
-        public boolean isInitialized() {
-            return getInitCount() == 0;
-        }
-
-    }
-
-    private Stream<Object> extractAllEntitiesStream(Solution_ solution) {
+    public Stream<Object> extractAllEntitiesStream(Solution_ solution) {
         var stream = Stream.empty();
         for (var memberAccessor : entityMemberAccessorMap.values()) {
             var entity = extractMemberObject(memberAccessor, solution);

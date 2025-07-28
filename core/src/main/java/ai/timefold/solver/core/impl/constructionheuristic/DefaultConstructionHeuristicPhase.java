@@ -65,8 +65,12 @@ public class DefaultConstructionHeuristicPhase<Solution_>
             // The use of ValueRangeManager is safe
             // because it comes from the same score director as the working solution,
             // and therefore is guaranteed to match.
-            var valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
-            maxStepCount = valueRangeManager.getInitializationStatistics().notInAnyListValueCount();
+            // We compute fresh initialization statistics as opposed to possibly relying on a cached one,
+            // as otherwise Ruin&Recreate doesn't work correctly with its nested CH phase.
+            var scoreDirector = phaseScope.getScoreDirector();
+            var valueRangeManager = scoreDirector.getValueRangeManager();
+            maxStepCount = valueRangeManager.computeInitializationStatistics(scoreDirector.getWorkingSolution(), null)
+                    .notInAnyListValueCount();
         }
 
         TerminationStatus earlyTerminationStatus = null;

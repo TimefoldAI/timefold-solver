@@ -252,11 +252,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
-        valueRangeManager.reset(workingSolution);
+        setWorkingEntityListDirty(workingSolution);
         // This visits all the entities.
-        var initializationStatistics =
-                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeManager);
-        setWorkingEntityListDirty();
+        var initializationStatistics = valueRangeManager.getInitializationStatistics(entityAndFactVisitor);
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
         assertInitScoreZeroOrLess();
@@ -321,8 +319,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return workingInitScore == 0;
     }
 
-    protected void setWorkingEntityListDirty() {
+    private void setWorkingEntityListDirty(@Nullable Solution_ solution) {
         workingEntityListRevision++;
+        valueRangeManager.reset(solution);
     }
 
     @Override
@@ -445,10 +444,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
                 moveStreamsBasedMoveRepository.insert(entity);
             }
-            setWorkingEntityListDirty();
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
-            valueRangeManager.reset(null);
+            setWorkingEntityListDirty(null);
         }
     }
 
@@ -545,10 +543,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
                 moveStreamsBasedMoveRepository.retract(entity);
             }
-            setWorkingEntityListDirty();
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
-            valueRangeManager.reset(null);
+            setWorkingEntityListDirty(null);
         }
     }
 

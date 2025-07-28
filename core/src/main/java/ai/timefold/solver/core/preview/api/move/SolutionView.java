@@ -76,11 +76,11 @@ public interface SolutionView<Solution_> {
      * As this is complex, this method is provided as a convenience.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.
-     * @param value             The value to check if it is pinned; may be null, in which case the method returns false.
+     * @param value The value to check if it is pinned; may be null, in which case the method returns false.
      * @return boolean indicating if the value is pinned in the variable
      */
     <Entity_, Value_> boolean isPinned(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-                                       @Nullable Value_ value);
+            @Nullable Value_ value);
 
     /**
      * Checks if a given value is present in the value range of a genuine planning variable,

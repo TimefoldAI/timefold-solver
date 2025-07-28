@@ -147,7 +147,8 @@ class UniDatasetStreamTest {
         }
     }
 
-    private static <Solution_> DatasetSession<Solution_> createSession(DataStreamFactory<Solution_> dataStreamFactory, Solution_ solution) {
+    private static <Solution_> DatasetSession<Solution_> createSession(DataStreamFactory<Solution_> dataStreamFactory,
+            Solution_ solution) {
         var scoreDirector = new EasyScoreDirectorFactory<>(dataStreamFactory.getSolutionDescriptor(), s -> SimpleScore.ZERO)
                 .buildScoreDirector();
         scoreDirector.setWorkingSolution(solution);
