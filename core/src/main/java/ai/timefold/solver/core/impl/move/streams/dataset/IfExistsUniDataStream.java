@@ -2,9 +2,7 @@ package ai.timefold.solver.core.impl.move.streams.dataset;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiPredicate;
 
-import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.AbstractIfExistsNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -14,6 +12,8 @@ import ai.timefold.solver.core.impl.bavet.uni.UnindexedIfExistsUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.IfExistsDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.joiner.DefaultBiDataJoiner;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -26,12 +26,12 @@ final class IfExistsUniDataStream<Solution_, A, B>
     private final AbstractUniDataStream<Solution_, A> parentA;
     private final ForeBridgeUniDataStream<Solution_, B> parentBridgeB;
     private final boolean shouldExist;
-    private final DefaultBiJoiner<A, B> joiner;
-    private final @Nullable BiPredicate<A, B> filtering;
+    private final DefaultBiDataJoiner<A, B> joiner;
+    private final @Nullable BiDataFilter<Solution_, A, B> filtering;
 
     public IfExistsUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parentA,
-            ForeBridgeUniDataStream<Solution_, B> parentBridgeB, boolean shouldExist, DefaultBiJoiner<A, B> joiner,
-            @Nullable BiPredicate<A, B> filtering) {
+            ForeBridgeUniDataStream<Solution_, B> parentBridgeB, boolean shouldExist, DefaultBiDataJoiner<A, B> joiner,
+            @Nullable BiDataFilter<Solution_, A, B> filtering) {
         super(dataStreamFactory);
         this.parentA = parentA;
         this.parentBridgeB = parentBridgeB;
@@ -50,13 +50,14 @@ final class IfExistsUniDataStream<Solution_, A, B>
     @Override
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         TupleLifecycle<UniTuple<A>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        var indexerFactory = new IndexerFactory<>(joiner);
+        var indexerFactory = new IndexerFactory<>(joiner.toBiJoiner());
         var node = getNode(indexerFactory, buildHelper, downstream);
         buildHelper.addNode(node, this, this, parentBridgeB);
     }
 
     private AbstractIfExistsNode<UniTuple<A>, B> getNode(IndexerFactory<B> indexerFactory,
             DataNodeBuildHelper<Solution_> buildHelper, TupleLifecycle<UniTuple<A>> downstream) {
+        var sessionContext = buildHelper.getSessionContext();
         var isFiltering = filtering != null;
         if (indexerFactory.hasJoiners()) {
             if (isFiltering) {
@@ -67,7 +68,7 @@ final class IfExistsUniDataStream<Solution_, A, B>
                         buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        downstream, filtering);
+                        downstream, filtering.toBiPredicate(sessionContext.solutionView()));
             } else {
                 return new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
                         buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
@@ -82,7 +83,7 @@ final class IfExistsUniDataStream<Solution_, A, B>
                     buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
                     buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
                     buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                    downstream, filtering);
+                    downstream, filtering.toBiPredicate(sessionContext.solutionView()));
         } else {
             return new UnindexedIfExistsUniNode<>(shouldExist,
                     buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),

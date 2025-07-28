@@ -130,13 +130,13 @@ public final class PlannerTestUtils {
         if (useSolution) {
             var mockedScoreDirector = mock(InnerScoreDirector.class,
                     AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
-            doReturn(new ValueRangeManager<>()).when(mockedScoreDirector).getValueRangeManager();
+            doReturn(new ValueRangeManager<>(solutionDescriptor)).when(mockedScoreDirector).getValueRangeManager();
             return mockedScoreDirector;
         } else {
             var mockedScoreDirector = mock(InnerScoreDirector.class,
                     AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
             doReturn(InnerScore.fullyAssigned(SimpleScore.ZERO)).when(mockedScoreDirector).calculateScore();
-            doReturn(new ValueRangeManager<>()).when(mockedScoreDirector).getValueRangeManager();
+            doReturn(new ValueRangeManager<>(solutionDescriptor)).when(mockedScoreDirector).getValueRangeManager();
             return mockedScoreDirector;
         }
     }

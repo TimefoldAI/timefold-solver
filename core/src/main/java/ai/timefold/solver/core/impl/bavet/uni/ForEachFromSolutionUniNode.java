@@ -5,8 +5,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -31,29 +30,26 @@ public final class ForEachFromSolutionUniNode<Solution_, A>
         extends ForEachIncludingUnassignedUniNode<A>
         implements AbstractForEachUniNode.InitializableForEachNode<Solution_> {
 
-    private final ValueRangeManager<Solution_> valueRangeManager;
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
 
     private boolean isInitialized = false;
 
     @SuppressWarnings("unchecked")
-    public ForEachFromSolutionUniNode(ValueRangeManager<Solution_> valueRangeManager,
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
-            int outputStoreSize) {
+    public ForEachFromSolutionUniNode(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle, int outputStoreSize) {
         super((Class<A>) valueRangeDescriptor.getVariableDescriptor().getVariablePropertyType(), nextNodesTupleLifecycle,
                 outputStoreSize);
-        this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);
     }
 
     @Override
-    public void initialize(Solution_ workingSolution, SupplyManager supplyManager) {
+    public void initialize(SessionContext<Solution_> context) {
         if (this.isInitialized) { // Failsafe.
             throw new IllegalStateException("Impossible state: initialize() has already been called on %s."
                     .formatted(this));
         } else {
             this.isInitialized = true;
-            var valueRange = valueRangeManager.<A> getFromSolution(valueRangeDescriptor, workingSolution);
+            var valueRange = context.<A> getValueRange(valueRangeDescriptor);
             var valueIterator = valueRange.createOriginalIterator();
             while (valueIterator.hasNext()) {
                 var value = valueIterator.next();

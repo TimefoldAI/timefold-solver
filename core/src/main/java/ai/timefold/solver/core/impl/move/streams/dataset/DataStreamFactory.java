@@ -8,12 +8,12 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -22,12 +22,10 @@ import org.jspecify.annotations.NullMarked;
 public final class DataStreamFactory<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final ValueRangeManager<Solution_> valueRangeManager;
     private final Map<AbstractDataStream<Solution_>, AbstractDataStream<Solution_>> sharingStreamMap = new HashMap<>(256);
 
-    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor, ValueRangeManager<Solution_> valueRangeManager) {
+    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
     }
 
     public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass, boolean includeNull) {
@@ -46,8 +44,10 @@ public final class DataStreamFactory<Solution_> {
         // We have a basic variable, or the sourceClass is not a valid type for a list variable value.
         // In that case, we use the standard exclusion logic.
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
-            return share(new ForEachExcludingPinnedDataStream<>(this, solutionDescriptor.getMetaModel().entity(sourceClass),
-                    includeNull));
+            var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(sourceClass);
+            // The predicate is cached to allow for node-sharing, which expects identical lambdas.
+            return share((AbstractUniDataStream<Solution_, A>) forEachNonDiscriminating(sourceClass, includeNull)
+                    .filter(entityDescriptor.getEntityMovablePredicate()));
         }
         // The sourceClass is a list variable value, therefore we need to specialize the exclusion logic.
         var parentEntityDescriptor = listVariableDescriptor.getEntityDescriptor();
@@ -55,9 +55,10 @@ public final class DataStreamFactory<Solution_> {
             throw new UnsupportedOperationException("Impossible state: the list variable (%s) does not support pinning."
                     .formatted(listVariableDescriptor.getVariableName()));
         }
+        // The predicate is cached to allow for node-sharing, which expects identical lambdas.
         var stream = forEachNonDiscriminating(sourceClass, includeNull)
                 .ifNotExists(parentEntityDescriptor.getEntityClass(),
-                        Joiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
+                        DataJoiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
         return share((AbstractUniDataStream<Solution_, A>) stream);
     }
 
@@ -65,7 +66,7 @@ public final class DataStreamFactory<Solution_> {
     public <A> UniDataStream<Solution_, A> forEachFromSolution(GenuineVariableMetaModel<Solution_, ?, A> variableMetaModel,
             boolean includeNull) {
         var variableDescriptor = ((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
-        return share(new ForEachFromSolutionDataStream<>(valueRangeManager, this, variableDescriptor.getValueRangeDescriptor(),
+        return share(new ForEachFromSolutionDataStream<>(this, variableDescriptor.getValueRangeDescriptor(),
                 includeNull));
     }
 
@@ -104,7 +105,7 @@ public final class DataStreamFactory<Solution_> {
      * If a stream already exists in this factory, it replaces it with the old copy.
      * {@link AbstractDataStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link DatasetSessionFactory#buildSession()} needs this to happen for all streams.
+     * {@link DatasetSessionFactory#buildSession(SessionContext)} needs this to happen for all streams.
      * <p>
      * This must be called before the stream receives child streams.
      *

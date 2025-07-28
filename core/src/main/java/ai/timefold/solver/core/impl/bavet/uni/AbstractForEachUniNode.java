@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
-        permits ForEachExcludingUnassignedUniNode, ForEachExcludingPinnedUniNode, ForEachIncludingUnassignedUniNode {
+        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode {
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;
@@ -138,7 +138,7 @@ public abstract sealed class AbstractForEachUniNode<A>
 
     public interface InitializableForEachNode<Solution_> extends AutoCloseable {
 
-        void initialize(Solution_ workingSolution, SupplyManager supplyManager);
+        void initialize(SessionContext<Solution_> context);
 
         @Override
         void close(); // Drop the checked exception.

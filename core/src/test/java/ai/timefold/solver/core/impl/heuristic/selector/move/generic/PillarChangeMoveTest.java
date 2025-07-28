@@ -39,11 +39,11 @@ class PillarChangeMoveTest {
         var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
         solution.setEntityList(Arrays.asList(a, b));
 
-        var valueRangeManager = new ValueRangeManager<TestdataAllowsUnassignedEntityProvidingSolution>();
+        var valueRangeManager =
+                ValueRangeManager.of(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor(), solution);
         var scoreDirector = (VariableDescriptorAwareScoreDirector<TestdataAllowsUnassignedEntityProvidingSolution>) mock(
                 VariableDescriptorAwareScoreDirector.class);
         doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();
-        valueRangeManager.reset(solution);
 
         var variableDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildVariableDescriptorForValue();
 

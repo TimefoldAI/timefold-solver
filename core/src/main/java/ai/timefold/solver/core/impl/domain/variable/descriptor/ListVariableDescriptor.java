@@ -14,8 +14,8 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
-import ai.timefold.solver.core.impl.util.MutableLong;
+import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
@@ -24,23 +24,11 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         var list = getValue(entity);
         return list.contains(element);
     };
-    private final BiPredicate<Object, Object> entityContainsPinnedValuePredicate = (value, entity) -> {
-        if (value == null) {
-            return false; // Null is never pinned.
-        }
-        // Find an entity that has this value at a pinned position.
-        var parentEntityDescriptor = getEntityDescriptor();
-        // The null here is safe, because PinningFilter is not supported with move streams
-        // and no other MovableFilter actually needs the solution argument.
-        var entityMovable = parentEntityDescriptor.isMovable(null, entity);
-        var pinToIndex = entityMovable ? parentEntityDescriptor.getEffectivePlanningPinToIndexReader()
-                .applyAsInt(entity) : Integer.MAX_VALUE;
-        var valueIndex = getValue(entity).indexOf(value);
-        if (valueIndex < 0) { // Entity list variable does not contain the value.
-            return false;
-        }
-        return valueIndex < pinToIndex;
-    };
+    private final BiDataFilter<Solution_, Object, Object> entityContainsPinnedValuePredicate =
+            (solutionView, value, entity) -> {
+                var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
+                return moveDirector.isPinned(this, value);
+            };
 
     private boolean allowsUnassignedValues = true;
 
@@ -59,8 +47,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
     }
 
     @SuppressWarnings("unchecked")
-    public <A, B> BiPredicate<A, B> getEntityContainsPinnedValuePredicate() {
-        return (BiPredicate<A, B>) entityContainsPinnedValuePredicate;
+    public <A, B> BiDataFilter<Solution_, A, B> getEntityContainsPinnedValuePredicate() {
+        return (BiDataFilter<Solution_, A, B>) entityContainsPinnedValuePredicate;
     }
 
     public boolean allowsUnassignedValues() {
@@ -88,19 +76,6 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         return ConfigUtils.extractGenericTypeParameterOrFail("entityClass", entityDescriptor.getEntityClass(),
                 variableMemberAccessor.getType(), variableMemberAccessor.getGenericType(), PlanningListVariable.class,
                 variableMemberAccessor.getName());
-    }
-
-    public int countUnassigned(Solution_ solution, ValueRangeManager<Solution_> valueRangeManager) {
-        var valueCount =
-                new MutableLong(valueRangeManager.countOnSolution(getValueRangeDescriptor(), solution));
-        var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
-        solutionDescriptor.visitEntitiesByEntityClass(solution,
-                entityDescriptor.getEntityClass(), entity -> {
-                    var assignedValues = getValue(entity);
-                    valueCount.subtract(assignedValues.size());
-                    return false;
-                });
-        return valueCount.intValue();
     }
 
     public InverseRelationShadowVariableDescriptor<Solution_> getInverseRelationShadowVariableDescriptor() {

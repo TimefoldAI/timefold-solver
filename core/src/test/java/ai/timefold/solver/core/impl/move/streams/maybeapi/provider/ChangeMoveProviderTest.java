@@ -14,6 +14,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMov
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -53,7 +54,7 @@ class ChangeMoveProviderTest {
         var secondValue = solution.getValueList().get(1);
         var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -121,7 +122,7 @@ class ChangeMoveProviderTest {
         var scoreDirector =
                 createScoreDirector(solutionDescriptor, new TestdataIncompleteValueRangeConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -181,7 +182,7 @@ class ChangeMoveProviderTest {
         var firstValue = firstEntity.getValueRange().get(0);
         var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataEntityProvidingConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -223,7 +224,7 @@ class ChangeMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor,
                 new TestdataAllowsUnassignedEntityProvidingConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -284,7 +285,7 @@ class ChangeMoveProviderTest {
         var secondValue = solution.getValueList().get(1);
         var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataAllowsUnassignedConstraintProvider(), solution);
 
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, scoreDirector.getValueRangeManager());
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
@@ -372,7 +373,7 @@ class ChangeMoveProviderTest {
     private <Solution_> MoveStreamSession<Solution_> createSession(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
             InnerScoreDirector<Solution_, ?> scoreDirector) {
         var solution = scoreDirector.getWorkingSolution();
-        var moveStreamSession = moveStreamFactory.createSession(solution, scoreDirector.getSupplyManager());
+        var moveStreamSession = moveStreamFactory.createSession(new SessionContext<>(scoreDirector));
         scoreDirector.getSolutionDescriptor().visitAll(solution, moveStreamSession::insert);
         moveStreamSession.settle();
         return moveStreamSession;

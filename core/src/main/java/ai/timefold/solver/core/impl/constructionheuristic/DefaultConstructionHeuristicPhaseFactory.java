@@ -32,7 +32,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
@@ -80,7 +79,7 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     @Override
     public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager) {
+            SolverTermination<Solution_> solverTermination) {
         return getBuilder(phaseIndex, lastInitializingPhase, solverConfigPolicy, solverTermination)
                 .build();
     }

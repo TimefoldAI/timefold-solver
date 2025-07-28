@@ -82,6 +82,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     private final @Nullable SolutionTracker<Solution_> solutionTracker; // Null when tracking disabled.
 
+    /**
+     * Must never be shared between score directors,
+     * because it contains state based on the current clone of the working solution.
+     * Creating these value range caches is expensive,
+     * but they are only created on first access to each
+     * and operations which do not perform moves do not require them.
+     */
     private final ValueRangeManager<Solution_> valueRangeManager;
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
@@ -102,7 +109,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         this.solutionTracker = this.scoreDirectorFactory.isTrackingWorkingSolution()
                 ? new SolutionTracker<>(getSolutionDescriptor(), getSupplyManager())
                 : null;
-        this.valueRangeManager = Objects.requireNonNull(builder.valueRangeManager);
+        this.valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
             this.listVariableStateSupply = null;
@@ -245,18 +252,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         }
         Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
-        valueRangeManager.reset(workingSolution);
+        setWorkingEntityListDirty(workingSolution);
         // This visits all the entities.
-        var initializationStatistics =
-                solutionDescriptor.computeInitializationStatistics(workingSolution, entityAndFactVisitor, valueRangeManager);
-        setWorkingEntityListDirty();
+        var initializationStatistics = valueRangeManager.getInitializationStatistics(entityAndFactVisitor);
         workingInitScore =
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
         assertInitScoreZeroOrLess();
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
         variableListenerSupport.resetWorkingSolution();
         if (moveRepository != null) {
-            moveRepository.initialize(workingSolution, getSupplyManager());
+            moveRepository.initialize(new SessionContext<>(this));
         }
     }
 
@@ -264,7 +269,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void setMoveRepository(@Nullable MoveRepository<Solution_> moveRepository) {
         this.moveRepository = moveRepository;
         if (moveRepository != null) {
-            moveRepository.initialize(workingSolution, getSupplyManager());
+            moveRepository.initialize(new SessionContext<>(this));
         }
     }
 
@@ -314,8 +319,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return workingInitScore == 0;
     }
 
-    protected void setWorkingEntityListDirty() {
+    private void setWorkingEntityListDirty(@Nullable Solution_ solution) {
         workingEntityListRevision++;
+        valueRangeManager.reset(solution);
     }
 
     @Override
@@ -438,10 +444,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
                 moveStreamsBasedMoveRepository.insert(entity);
             }
-            setWorkingEntityListDirty();
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
-            valueRangeManager.reset(null);
+            setWorkingEntityListDirty(null);
         }
     }
 
@@ -538,10 +543,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
                 moveStreamsBasedMoveRepository.retract(entity);
             }
-            setWorkingEntityListDirty();
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
-            valueRangeManager.reset(null);
+            setWorkingEntityListDirty(null);
         }
     }
 
@@ -702,7 +706,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         // Most score directors don't need derived status; CS will override this.
         try (var uncorruptedScoreDirector = assertionScoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
-                .withValueRangeManager(valueRangeManager)
                 .buildDerived()) {
             uncorruptedScoreDirector.setWorkingSolution(workingSolution);
             var uncorruptedInnerScore = uncorruptedScoreDirector.calculateScore();
@@ -987,20 +990,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
         protected final Factory_ scoreDirectorFactory;
 
-        // May be replaced by a shared state coming from the solver.
-        protected ValueRangeManager<Solution_> valueRangeManager = new ValueRangeManager<>();
         protected ConstraintMatchPolicy constraintMatchPolicy = ConstraintMatchPolicy.DISABLED;
         protected boolean lookUpEnabled = false;
         protected boolean expectShadowVariablesInCorrectState = true;
 
         protected AbstractScoreDirectorBuilder(Factory_ scoreDirectorFactory) {
             this.scoreDirectorFactory = Objects.requireNonNull(scoreDirectorFactory);
-        }
-
-        @SuppressWarnings("unchecked")
-        public Builder_ withValueRangeManager(ValueRangeManager<Solution_> valueRangeManager) {
-            this.valueRangeManager = Objects.requireNonNull(valueRangeManager);
-            return (Builder_) this;
         }
 
         @SuppressWarnings("unchecked")

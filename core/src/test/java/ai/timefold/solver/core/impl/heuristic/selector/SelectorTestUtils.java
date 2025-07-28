@@ -259,9 +259,6 @@ public class SelectorTestUtils {
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setWorkingRandom(random);
         listener.solvingStarted(solverScope);
-        if (scoreDirector != null) {
-            solverScope.setValueRangeManager(scoreDirector.getValueRangeManager());
-        }
         if (valueSelector != null) {
             valueSelector.solvingStarted(solverScope);
         }

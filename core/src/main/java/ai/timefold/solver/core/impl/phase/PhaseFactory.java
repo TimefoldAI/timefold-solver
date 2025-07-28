@@ -18,7 +18,6 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhaseFactory;
 import ai.timefold.solver.core.impl.partitionedsearch.DefaultPartitionedSearchPhaseFactory;
 import ai.timefold.solver.core.impl.phase.custom.DefaultCustomPhaseFactory;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
@@ -45,7 +44,7 @@ public interface PhaseFactory<Solution_> {
 
     static <Solution_> List<Phase<Solution_>> buildPhases(List<PhaseConfig> phaseConfigList,
             HeuristicConfigPolicy<Solution_> configPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            SolverTermination<Solution_> termination, ValueRangeManager<Solution_> valueRangeManager) {
+            SolverTermination<Solution_> termination) {
         List<Phase<Solution_>> phaseList = new ArrayList<>(phaseConfigList.size());
         boolean isPhaseSelected = false;
         for (int phaseIndex = 0; phaseIndex < phaseConfigList.size(); phaseIndex++) {
@@ -80,7 +79,7 @@ public interface PhaseFactory<Solution_> {
             PhaseFactory<Solution_> phaseFactory = PhaseFactory.create(phaseConfig);
             var phase = phaseFactory.buildPhase(phaseIndex,
                     !isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch, updatedConfigPolicy,
-                    bestSolutionRecaller, termination, valueRangeManager);
+                    bestSolutionRecaller, termination);
             // Ensure only one initialization phase is set
             if (!isPhaseSelected && isConstructionOrCustomPhase && isNextPhaseLocalSearch) {
                 isPhaseSelected = true;
@@ -102,5 +101,5 @@ public interface PhaseFactory<Solution_> {
 
     Phase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
-            SolverTermination<Solution_> solverTermination, ValueRangeManager<Solution_> valueRangeManager);
+            SolverTermination<Solution_> solverTermination);
 }

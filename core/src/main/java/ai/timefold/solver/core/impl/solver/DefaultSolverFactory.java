@@ -34,7 +34,6 @@ import ai.timefold.solver.core.impl.phase.PhaseFactory;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactoryFactory;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.random.DefaultRandomFactory;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
@@ -116,10 +115,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                     "Enabling constraint matching as required by the enabled metrics ({}). This will impact solver performance.",
                     metricsRequiringConstraintMatchSet);
         }
-        var valueRangeManager = new ValueRangeManager<Solution_>();
-        solverScope.setValueRangeManager(valueRangeManager);
         var castScoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
-                .withValueRangeManager(valueRangeManager)
                 .withLookUpEnabled(true)
                 .withConstraintMatchPolicy(
                         constraintMatchEnabled ? ConstraintMatchPolicy.ENABLED : ConstraintMatchPolicy.DISABLED)
@@ -146,7 +142,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
                 .build();
         var basicPlumbingTermination = new BasicPlumbingTermination<Solution_>(isDaemon);
         var termination = buildTermination(basicPlumbingTermination, configPolicy, configOverride);
-        var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination, valueRangeManager);
+        var phaseList = buildPhaseList(configPolicy, bestSolutionRecaller, termination);
 
         return new DefaultSolver<>(environmentMode, randomFactory, bestSolutionRecaller, basicPlumbingTermination,
                 (UniversalTermination<Solution_>) termination, phaseList, solverScope,
@@ -220,8 +216,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
     }
 
     public List<Phase<Solution_>> buildPhaseList(HeuristicConfigPolicy<Solution_> configPolicy,
-            BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverTermination<Solution_> termination,
-            ValueRangeManager<Solution_> valueRangeManager) {
+            BestSolutionRecaller<Solution_> bestSolutionRecaller, SolverTermination<Solution_> termination) {
         var phaseConfigList = solverConfig.getPhaseConfigList();
         if (ConfigUtils.isEmptyCollection(phaseConfigList)) {
             var genuineEntityDescriptorCollection = configPolicy.getSolutionDescriptor().getGenuineEntityDescriptors();
@@ -242,7 +237,7 @@ public final class DefaultSolverFactory<Solution_> implements SolverFactory<Solu
             }
             phaseConfigList.add(new LocalSearchPhaseConfig());
         }
-        return PhaseFactory.buildPhases(phaseConfigList, configPolicy, bestSolutionRecaller, termination, valueRangeManager);
+        return PhaseFactory.buildPhases(phaseConfigList, configPolicy, bestSolutionRecaller, termination);
     }
 
     private ConstructionHeuristicPhaseConfig

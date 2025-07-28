@@ -1,21 +1,20 @@
 package ai.timefold.solver.core.impl.move.streams;
 
-import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractBiDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniMoveStream;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -28,19 +27,15 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     private final DataStreamFactory<Solution_> dataStreamFactory;
     private final DatasetSessionFactory<Solution_> datasetSessionFactory;
-    private final ValueRangeManager<Solution_> valueRangeManager;
 
-    public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ValueRangeManager<Solution_> valueRangeManager) {
-        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, valueRangeManager);
+    public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
+        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
         this.datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
-        this.valueRangeManager = valueRangeManager;
     }
 
-    public DefaultMoveStreamSession<Solution_> createSession(Solution_ workingSolution, SupplyManager supplyManager) {
-        var session = datasetSessionFactory.buildSession();
-        session.initialize(workingSolution, supplyManager);
-        return new DefaultMoveStreamSession<>(session, workingSolution);
+    public DefaultMoveStreamSession<Solution_> createSession(SessionContext<Solution_> context) {
+        var session = datasetSessionFactory.buildSession(context);
+        return new DefaultMoveStreamSession<>(session, context.workingSolution());
     }
 
     @Override
@@ -89,8 +84,8 @@ public final class DefaultMoveStreamFactory<Solution_>
             return entityDataStream.join(stream);
         } else {
             var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
-            return entityDataStream.join(stream, Joiners.filtering(
-                    (entity, value) -> valueRangeManager.getFromEntity(valueRangeDescriptor, entity).contains(value)));
+            return entityDataStream.join(stream, DataJoiners.<Solution_, Entity_, Value_> filtering(
+                    (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value)));
         }
     }
 
@@ -122,7 +117,4 @@ public final class DefaultMoveStreamFactory<Solution_>
         return dataStreamFactory.getSolutionDescriptor();
     }
 
-    public ValueRangeManager<Solution_> getValueRangeManager() {
-        return valueRangeManager;
-    }
 }

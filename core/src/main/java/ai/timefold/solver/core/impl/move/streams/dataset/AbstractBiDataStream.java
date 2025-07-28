@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
-import java.util.function.BiPredicate;
-
+import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 
 import org.jspecify.annotations.NullMarked;
@@ -21,8 +20,8 @@ public abstract class AbstractBiDataStream<Solution_, A, B> extends AbstractData
     }
 
     @Override
-    public final BiDataStream<Solution_, A, B> filter(BiPredicate<A, B> predicate) {
-        return shareAndAddChild(new FilterBiDataStream<>(dataStreamFactory, this, predicate));
+    public final BiDataStream<Solution_, A, B> filter(BiDataFilter<Solution_, A, B> filter) {
+        return shareAndAddChild(new FilterBiDataStream<>(dataStreamFactory, this, filter));
     }
 
     public BiDataset<Solution_, A, B> createDataset() {

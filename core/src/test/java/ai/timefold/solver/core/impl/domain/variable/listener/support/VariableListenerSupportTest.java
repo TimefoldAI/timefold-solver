@@ -216,7 +216,7 @@ class VariableListenerSupportTest {
         var solutionDescriptor = TestdataConcurrentSolution.buildSolutionDescriptor();
         InnerScoreDirector<TestdataConcurrentSolution, HardSoftScore> scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
+        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>(solutionDescriptor));
 
         AtomicReference<MockTopologicalOrderGraph> graphReference = new AtomicReference<>(null);
         var registry = new NotifiableRegistry<>(solutionDescriptor);

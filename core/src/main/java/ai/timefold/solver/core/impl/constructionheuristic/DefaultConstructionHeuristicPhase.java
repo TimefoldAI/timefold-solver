@@ -56,16 +56,21 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         var phaseScope = buildPhaseScope(solverScope, phaseIndex);
         phaseStarted(phaseScope);
 
-        var solutionDescriptor = solverScope.getSolutionDescriptor();
         var hasListVariable = moveRepository.hasListVariable();
         var maxStepCount = -1;
         if (hasListVariable) {
             // In case of list variable with support for unassigned values, the placer will iterate indefinitely.
             // (When it exhausts all values, it will start over from the beginning.)
             // To prevent that, we need to limit the number of steps to the number of unassigned values.
-            var workingSolution = phaseScope.getWorkingSolution();
-            maxStepCount = solutionDescriptor.getListVariableDescriptor().countUnassigned(workingSolution,
-                    solverScope.getValueRangeManager());
+            // The use of ValueRangeManager is safe
+            // because it comes from the same score director as the working solution,
+            // and therefore is guaranteed to match.
+            // We compute fresh initialization statistics as opposed to possibly relying on a cached one,
+            // as otherwise Ruin&Recreate doesn't work correctly with its nested CH phase.
+            var scoreDirector = phaseScope.getScoreDirector();
+            var valueRangeManager = scoreDirector.getValueRangeManager();
+            maxStepCount = valueRangeManager.computeInitializationStatistics(scoreDirector.getWorkingSolution(), null)
+                    .notInAnyListValueCount();
         }
 
         TerminationStatus earlyTerminationStatus = null;

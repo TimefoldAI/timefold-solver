@@ -17,7 +17,7 @@ import org.jspecify.annotations.NullMarked;
 abstract sealed class AbstractForEachDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
         implements TupleSource
-        permits ForEachIncludingPinnedDataStream, ForEachExcludingPinnedDataStream, ForEachFromSolutionDataStream {
+        permits ForEachIncludingPinnedDataStream, ForEachFromSolutionDataStream {
 
     protected final Class<A> forEachClass;
     private final boolean shouldIncludeNull;

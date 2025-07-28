@@ -23,7 +23,8 @@ class ExternalizedListVariableStateSupplyTest {
     void initializeRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
+        when(scoreDirector.getValueRangeManager())
+                .thenReturn(new ValueRangeManager<>(variableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
@@ -52,7 +53,8 @@ class ExternalizedListVariableStateSupplyTest {
     void assignRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
         var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>());
+        when(scoreDirector.getValueRangeManager())
+                .thenReturn(new ValueRangeManager<>(variableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");

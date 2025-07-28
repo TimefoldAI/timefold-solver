@@ -24,7 +24,6 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.change.DefaultProblemChangeDirector;
 import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
@@ -51,7 +50,6 @@ public class SolverScope<Solution_> {
     private Tags monitoringTags;
     private int startingSolverCount;
     private Random workingRandom;
-    private ValueRangeManager<Solution_> valueRangeManager;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
     private AbstractSolver<Solution_> solver;
     private DefaultProblemChangeDirector<Solution_> problemChangeDirector;
@@ -98,14 +96,6 @@ public class SolverScope<Solution_> {
 
     public Clock getClock() {
         return clock;
-    }
-
-    public ValueRangeManager<Solution_> getValueRangeManager() {
-        return valueRangeManager;
-    }
-
-    public void setValueRangeManager(ValueRangeManager<Solution_> valueRangeManager) {
-        this.valueRangeManager = valueRangeManager;
     }
 
     public AbstractSolver<Solution_> getSolver() {
@@ -167,9 +157,6 @@ public class SolverScope<Solution_> {
 
     public void setScoreDirector(InnerScoreDirector<Solution_, ?> scoreDirector) {
         this.scoreDirector = scoreDirector;
-        if (valueRangeManager == null && scoreDirector != null) {
-            valueRangeManager = scoreDirector.getValueRangeManager();
-        }
     }
 
     public void setRunnableThreadSemaphore(Semaphore runnableThreadSemaphore) {
@@ -348,8 +335,7 @@ public class SolverScope<Solution_> {
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
-    public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType,
-            ValueRangeManager<Solution_> valueRangeManager) {
+    public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
         SolverScope<Solution_> childThreadSolverScope = new SolverScope<>(clock);
         childThreadSolverScope.bestSolution.set(null);
         childThreadSolverScope.bestScore.set(null);
@@ -360,7 +346,6 @@ public class SolverScope<Solution_> {
         // Experiments show that this trick to attain reproducibility doesn't break uniform distribution
         childThreadSolverScope.workingRandom = new Random(workingRandom.nextLong());
         childThreadSolverScope.scoreDirector = scoreDirector.createChildThreadScoreDirector(childThreadType);
-        childThreadSolverScope.setValueRangeManager(valueRangeManager);
         childThreadSolverScope.startingSystemTimeMillis.set(startingSystemTimeMillis.get());
         resetAtomicLongTimeMillis(childThreadSolverScope.endingSystemTimeMillis);
         childThreadSolverScope.startingInitializedScore = null;

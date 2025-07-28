@@ -2,29 +2,29 @@ package ai.timefold.solver.core.impl.move.streams.dataset;
 
 import java.util.Objects;
 import java.util.Set;
-import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.impl.bavet.bi.IndexedJoinBiNode;
 import ai.timefold.solver.core.impl.bavet.bi.UnindexedJoinBiNode;
-import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.JoinDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.joiner.DefaultBiDataJoiner;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 
 public final class JoinBiDataStream<Solution_, A, B> extends AbstractBiDataStream<Solution_, A, B>
         implements JoinDataStream<Solution_> {
 
     private final ForeBridgeUniDataStream<Solution_, A> leftParent;
     private final ForeBridgeUniDataStream<Solution_, B> rightParent;
-    private final DefaultBiJoiner<A, B> joiner;
-    private final BiPredicate<A, B> filtering;
+    private final DefaultBiDataJoiner<A, B> joiner;
+    private final BiDataFilter<Solution_, A, B> filtering;
 
     public JoinBiDataStream(DataStreamFactory<Solution_> dataStreamFactory,
             ForeBridgeUniDataStream<Solution_, A> leftParent, ForeBridgeUniDataStream<Solution_, B> rightParent,
-            DefaultBiJoiner<A, B> joiner, BiPredicate<A, B> filtering) {
+            DefaultBiDataJoiner<A, B> joiner, BiDataFilter<Solution_, A, B> filtering) {
         super(dataStreamFactory);
         this.leftParent = leftParent;
         this.rightParent = rightParent;
@@ -41,9 +41,11 @@ public final class JoinBiDataStream<Solution_, A, B> extends AbstractBiDataStrea
 
     @Override
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
-        int outputStoreSize = buildHelper.extractTupleStoreSize(this);
+        var solutionView = buildHelper.getSessionContext().solutionView();
+        var filteringDataJoiner = this.filtering == null ? null : this.filtering.toBiPredicate(solutionView);
+        var outputStoreSize = buildHelper.extractTupleStoreSize(this);
         TupleLifecycle<BiTuple<A, B>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
-        IndexerFactory<B> indexerFactory = new IndexerFactory<>(joiner);
+        var indexerFactory = new IndexerFactory<>(joiner.toBiJoiner());
         var node = indexerFactory.hasJoiners()
                 ? new IndexedJoinBiNode<>(indexerFactory,
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
@@ -52,15 +54,15 @@ public final class JoinBiDataStream<Solution_, A, B> extends AbstractBiDataStrea
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        downstream, filtering, outputStoreSize + 2,
-                        outputStoreSize, outputStoreSize + 1)
+                        downstream, filteringDataJoiner,
+                        outputStoreSize + 2, outputStoreSize, outputStoreSize + 1)
                 : new UnindexedJoinBiNode<>(
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
                         buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        downstream, filtering, outputStoreSize + 2,
-                        outputStoreSize, outputStoreSize + 1);
+                        downstream, filteringDataJoiner,
+                        outputStoreSize + 2, outputStoreSize, outputStoreSize + 1);
         buildHelper.addNode(node, this, leftParent, rightParent);
     }
 

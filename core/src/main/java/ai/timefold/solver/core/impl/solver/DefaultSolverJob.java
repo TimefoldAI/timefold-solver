@@ -11,6 +11,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -28,6 +29,7 @@ import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 
@@ -60,6 +62,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private ConsumerSupport<Solution_, ProblemId_> consumerSupport;
     private final AtomicBoolean terminatedEarly = new AtomicBoolean(false);
     private final BestSolutionHolder<Solution_> bestSolutionHolder = new BestSolutionHolder<>();
+    private final AtomicReference<ProblemSizeStatistics> temporaryProblemSizeStatistics = new AtomicReference<>();
 
     public DefaultSolverJob(
             DefaultSolverManager<Solution_, ProblemId_> solverManager,
@@ -249,13 +252,30 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     @Override
     public @NonNull ProblemSizeStatistics getProblemSizeStatistics() {
-        var problemSizeStatistics = solver.getSolverScope().getProblemSizeStatistics();
+        var solverScope = solver.getSolverScope();
+        var problemSizeStatistics = solverScope.getProblemSizeStatistics();
         if (problemSizeStatistics != null) {
+            temporaryProblemSizeStatistics.set(null);
             return problemSizeStatistics;
         }
-        // Solving has not started yet
-        return solver.getSolverScope().getSolutionDescriptor().getProblemSizeStatistics(problemFinder.apply(problemId),
-                solver.getSolverScope().getValueRangeManager());
+        // Solving has not started yet; we do not have a working solution.
+        // Therefore we cannot rely on ScoreDirector's ValueRangeManager
+        // and we need to use a new cold instance.
+        // This will be inefficient on account of recomputing all the value ranges,
+        // but it only exists to solve a corner case of accessing the problem size statistics
+        // before the solving has started.
+        // Once the solving has started, the problem size statistics will be computed
+        // using the ScoreDirector's hot ValueRangeManager.
+        return temporaryProblemSizeStatistics.updateAndGet(oldStatistics -> {
+            if (oldStatistics != null) {
+                // If the problem size statistics were already computed, return them.
+                // This can happen if the problem size statistics were computed before the solving started.
+                return oldStatistics;
+            }
+            var solutionDescriptor = solverScope.getSolutionDescriptor();
+            var valueManager = ValueRangeManager.of(solutionDescriptor, problemFinder.apply(problemId));
+            return valueManager.getProblemSizeStatistics();
+        });
     }
 
     public SolverTermination<Solution_> getSolverTermination() {

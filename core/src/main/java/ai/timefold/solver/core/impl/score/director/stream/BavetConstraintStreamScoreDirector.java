@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescr
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
+import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
 
 import org.jspecify.annotations.NullMarked;
@@ -55,7 +56,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     @Override
     public void setWorkingSolution(Solution_ workingSolution) {
         session = scoreDirectorFactory.newSession(workingSolution, constraintMatchPolicy, derived);
-        session.initialize(workingSolution, this.getSupplyManager());
+        session.initialize(new SessionContext<>(this));
         super.setWorkingSolution(workingSolution, session::insert);
     }
 
