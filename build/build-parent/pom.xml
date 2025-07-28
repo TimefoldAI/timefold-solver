@@ -29,9 +29,9 @@
     <version.org.freemarker>2.3.34</version.org.freemarker>
     <version.org.jfree.jfreechart>1.5.6</version.org.jfree.jfreechart>
     <version.org.jspecify>1.0.0</version.org.jspecify>
-    <version.org.junit.jupiter>5.13.3</version.org.junit.jupiter>
+    <version.org.junit.jupiter>5.13.4</version.org.junit.jupiter>
     <version.org.openrewrite.recipe>3.11.1</version.org.openrewrite.recipe>
-    <version.org.springframework.boot>3.5.3</version.org.springframework.boot>
+    <version.org.springframework.boot>3.5.4</version.org.springframework.boot>
     <version.ow2.asm>9.8</version.ow2.asm>
 
     <!-- ************************************************************************ -->
@@ -50,7 +50,7 @@
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
     <version.sonar.plugin>5.1.0.4751</version.sonar.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
-    <version.spotless.plugin>2.46.0</version.spotless.plugin>
+    <version.spotless.plugin>2.46.1</version.spotless.plugin>
     <version.surefire.plugin>3.5.3</version.surefire.plugin>
     <version.versions.plugin>2.18.0</version.versions.plugin>
 
