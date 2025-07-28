@@ -314,9 +314,7 @@ public final class ValueRangeManager<Solution_> {
                     }
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                var size = variableDescriptor.canExtractValueRangeFromSolution()
-                        ? countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), cachedWorkingSolution)
-                        : countOnEntity(listVariableDescriptor.getValueRangeDescriptor(), entity);
+                var size = countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), cachedWorkingSolution);
                 tracker.setListTotalValueCount((int) size);
                 if (entityDescriptor.isMovable(cachedWorkingSolution, entity)) {
                     tracker.incrementListEntityCount(true);
