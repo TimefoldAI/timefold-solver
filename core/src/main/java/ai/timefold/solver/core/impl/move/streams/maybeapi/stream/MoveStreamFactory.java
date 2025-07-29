@@ -5,10 +5,8 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -16,11 +14,12 @@ import org.jspecify.annotations.NullMarked;
 public interface MoveStreamFactory<Solution_> {
 
     /**
-     * Start a {@link ConstraintStream} of all instances of the sourceClass
-     * that are known as {@link ProblemFactCollectionProperty problem facts} or {@link PlanningEntity planning entities}.
+     * Start a {@link DataStream} of all instances of the sourceClass
+     * that are known as {@link ProblemFactCollectionProperty problem facts}
+     * or {@link PlanningEntity planning entities}.
      * <p>
      * If the sourceClass is a {@link PlanningEntity}, then it is automatically
-     * {@link UniDataStream#filter(UniDataFilter)} filtered} to only contain entities
+     * {@link UniDataStream#filter(UniDataFilter) filtered} to only contain entities
      * which are not pinned.
      * <p>
      * If the sourceClass is a shadow entity (an entity without any genuine planning variables),
@@ -31,7 +30,7 @@ public interface MoveStreamFactory<Solution_> {
      * <p>
      * This stream returns genuine entities regardless of whether they have any null genuine planning variables.
      * This stream returns shadow entities regardless of whether they are assigned to any genuine entity.
-     * They can easily be {@link UniDataStream#filter(UniDataFilter)} filtered out}.
+     * They can easily be {@link UniDataStream#filter(UniDataFilter) filtered out}.
      *
      * @return A stream containing a tuple for each of the entities as described above.
      * @see PlanningPin An annotation to mark the entire entity as pinned.
@@ -42,8 +41,9 @@ public interface MoveStreamFactory<Solution_> {
     <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass, boolean includeNull);
 
     /**
-     * Start a {@link ConstraintStream} of all instances of the sourceClass
-     * that are known as {@link ProblemFactCollectionProperty problem facts} or {@link PlanningEntity planning entities}.
+     * Start a {@link DataStream} of all instances of the sourceClass
+     * that are known as {@link ProblemFactCollectionProperty problem facts}
+     * or {@link PlanningEntity planning entities}.
      * If the sourceClass is a genuine or shadow entity,
      * it returns instances regardless of their pinning status.
      * Otherwise as defined by {@link #enumerate(Class, boolean)}.
@@ -60,7 +60,7 @@ public interface MoveStreamFactory<Solution_> {
      * @return data stream with all possible values of a given variable
      */
     default <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         return enumerateEntityValuePairs(variableMetaModel, enumerate(variableMetaModel.entity().type(), false));
     }
 
