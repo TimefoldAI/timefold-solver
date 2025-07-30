@@ -64,14 +64,14 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
             var unassignMove =
                     new ListUnassignMove<>(listVariableDescriptor, rightDestination.entity(), rightDestination.index());
             var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, rightDestination.entity(),
-                    rightDestination.index());
+                    rightDestination.index(), true);
             return CompositeMove.buildMove(unassignMove, assignMove);
         } else if (rightUnassigned) { // Unassign left, put right where left used to be.
             var leftDestination = upcomingLeft.ensureAssigned();
             var unassignMove =
                     new ListUnassignMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index());
             var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingRightValue, leftDestination.entity(),
-                    leftDestination.index());
+                    leftDestination.index(), true);
             return CompositeMove.buildMove(unassignMove, assignMove);
         } else {
             var leftDestination = upcomingLeft.ensureAssigned();

@@ -40,6 +40,7 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
             ListVariableDescriptor<Solution_> variableDescriptor,
             Object sourceEntity, int sourceIndex, int length,
             Object destinationEntity, int destinationIndex, boolean reversing) {
+        super(true);
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
         this.sourceIndex = sourceIndex;
@@ -87,17 +88,20 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        // When the first and second elements are different,
-        // and the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming values
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        var destinationValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
-                        destinationEntity);
-        var sourceList = variableDescriptor.getValue(sourceEntity);
-        var subList = sourceList.subList(sourceIndex, sourceIndex + length);
-        return subList.stream().allMatch(destinationValueRange::contains);
+        if (assertMoveDoable) {
+            // When the first and second elements are different,
+            // and the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming values
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            var destinationValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                            destinationEntity);
+            var sourceList = variableDescriptor.getValue(sourceEntity);
+            var subList = sourceList.subList(sourceIndex, sourceIndex + length);
+            doable = subList.stream().allMatch(destinationValueRange::contains);
+        }
+        return doable;
     }
 
     @Override

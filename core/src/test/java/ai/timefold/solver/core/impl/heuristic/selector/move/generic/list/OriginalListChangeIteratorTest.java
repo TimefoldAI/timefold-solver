@@ -45,7 +45,8 @@ class OriginalListChangeIteratorTest {
                 new ElementDestinationSelector<>(
                         mockEntitySelector(entities.toArray(TestdataListEntity[]::new)),
                         valueSelector,
-                        false));
+                        false, false),
+                true);
 
         assertThat(listChangeIterator).isExhausted();
     }

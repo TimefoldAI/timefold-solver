@@ -27,6 +27,7 @@ public class PillarSwapMove<Solution_> extends AbstractMove<Solution_> {
 
     public PillarSwapMove(List<GenuineVariableDescriptor<Solution_>> variableDescriptorList,
             List<Object> leftPillar, List<Object> rightPillar) {
+        super(false);
         this.variableDescriptorList = variableDescriptorList;
         this.leftPillar = leftPillar;
         this.rightPillar = rightPillar;

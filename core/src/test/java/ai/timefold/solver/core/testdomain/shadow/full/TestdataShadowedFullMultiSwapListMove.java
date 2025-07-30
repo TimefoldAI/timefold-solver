@@ -17,6 +17,7 @@ public class TestdataShadowedFullMultiSwapListMove extends AbstractMove<Testdata
     public TestdataShadowedFullMultiSwapListMove(TestdataShadowedFullEntity a, TestdataShadowedFullEntity b,
             List<List<TestdataShadowedFullValue>> aValueLists,
             List<List<TestdataShadowedFullValue>> bValueLists) {
+        super(false);
         this.a = a;
         this.b = b;
         this.aValueLists = aValueLists;

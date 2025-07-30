@@ -20,6 +20,12 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
  */
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
+    protected final boolean assertMoveDoable;
+
+    protected AbstractMove(boolean assertMoveDoable) {
+        this.assertMoveDoable = assertMoveDoable;
+    }
+
     @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
         var recordingScoreDirector =

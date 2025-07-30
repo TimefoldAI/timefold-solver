@@ -43,6 +43,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     protected final boolean assertStepScoreFromScratch;
     protected final boolean assertExpectedStepScore;
     protected final boolean assertShadowVariablesAreNotStaleAfterStep;
+    protected final boolean assertMoveDoable;
 
     /** Used for {@link #addPhaseLifecycleListener(PhaseLifecycleListener)}. */
     protected PhaseLifecycleSupport<Solution_> phaseLifecycleSupport = new PhaseLifecycleSupport<>();
@@ -54,6 +55,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         assertPhaseScoreFromScratch = builder.assertPhaseScoreFromScratch;
         assertStepScoreFromScratch = builder.assertStepScoreFromScratch;
         assertExpectedStepScore = builder.assertExpectedStepScore;
+        assertMoveDoable = builder.assertMoveDoable;
         assertShadowVariablesAreNotStaleAfterStep = builder.assertShadowVariablesAreNotStaleAfterStep;
     }
 
@@ -75,6 +77,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
 
     public boolean isAssertShadowVariablesAreNotStaleAfterStep() {
         return assertShadowVariablesAreNotStaleAfterStep;
+    }
+
+    public boolean isAssertMoveDoable() {
+        return assertMoveDoable;
     }
 
     public abstract String getPhaseTypeString();
@@ -104,6 +110,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         phaseTermination.phaseStarted(phaseScope);
         phaseScope.setTermination(phaseTermination);
         phaseLifecycleSupport.firePhaseStarted(phaseScope);
+        phaseScope.setAssertMoveDoable(isAssertMoveDoable());
     }
 
     /**
@@ -259,6 +266,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         private boolean assertStepScoreFromScratch = false;
         private boolean assertExpectedStepScore = false;
         private boolean assertShadowVariablesAreNotStaleAfterStep = false;
+        private boolean assertMoveDoable = false;
 
         protected AbstractPhaseBuilder(int phaseIndex, String logIndentation, PhaseTermination<Solution_> phaseTermination) {
             this.phaseIndex = phaseIndex;
@@ -271,6 +279,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
             assertStepScoreFromScratch = environmentMode.isFullyAsserted();
             assertExpectedStepScore = environmentMode.isIntrusivelyAsserted();
             assertShadowVariablesAreNotStaleAfterStep = environmentMode.isIntrusivelyAsserted();
+            assertMoveDoable = environmentMode.isIntrusivelyAsserted();
             return this;
         }
 

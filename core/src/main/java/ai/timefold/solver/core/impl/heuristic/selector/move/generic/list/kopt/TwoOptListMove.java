@@ -58,6 +58,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             Object firstEntity, Object secondEntity,
             int firstEdgeEndpoint,
             int secondEdgeEndpoint) {
+        super(true);
         this.variableDescriptor = variableDescriptor;
         this.firstEntity = firstEntity;
         this.secondEntity = secondEntity;
@@ -90,6 +91,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             int secondEdgeEndpoint,
             int entityFirstUnpinnedIndex,
             int shift) {
+        super(true);
         this.variableDescriptor = variableDescriptor;
         this.firstEntity = firstEntity;
         this.secondEntity = secondEntity;
@@ -227,21 +229,24 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        // When the first and second elements are different,
-        // and the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming values
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        var firstValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), firstEntity);
-        var firstListVariable = variableDescriptor.getValue(firstEntity);
-        var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
-        var secondValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), secondEntity);
-        var secondListVariable = variableDescriptor.getValue(secondEntity);
-        var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
-        return firstListVariableTail.stream().allMatch(secondValueRange::contains)
-                && secondListVariableTail.stream().allMatch(firstValueRange::contains);
+        if (assertMoveDoable) {
+            // When the first and second elements are different,
+            // and the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming values
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            var firstValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), firstEntity);
+            var firstListVariable = variableDescriptor.getValue(firstEntity);
+            var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
+            var secondValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), secondEntity);
+            var secondListVariable = variableDescriptor.getValue(secondEntity);
+            var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
+            doable = firstListVariableTail.stream().allMatch(secondValueRange::contains)
+                    && secondListVariableTail.stream().allMatch(firstValueRange::contains);
+        }
+        return doable;
     }
 
     @Override

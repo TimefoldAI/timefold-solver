@@ -270,7 +270,7 @@ class MoveDirectorTest {
         var ephemeralMoveDirector = moveDirector.ephemeral();
         var scoreDirector = ephemeralMoveDirector.getScoreDirector();
         var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
-                ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1), Set.of(e1));
+                ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1), Set.of(e1), true);
         move.doMoveOnly(scoreDirector);
         var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
         // e1 must be analyzed at the beginning of the move execution
@@ -404,7 +404,7 @@ class MoveDirectorTest {
         var ephemeralMoveDirector = moveDirector.ephemeral();
         var scoreDirector = ephemeralMoveDirector.getScoreDirector();
         var move = new ListAssignMove<>(TestdataSingleCascadingEntity.buildVariableDescriptorForValueList(), valueA,
-                entityA, 0);
+                entityA, 0, true);
         move.doMoveOnly(scoreDirector);
         assertThat(valueA.getCascadeValue()).isNotNull();
         ephemeralMoveDirector.close();

@@ -83,7 +83,7 @@ class ListVariableListenerTest {
 
     void doChangeMove(TestdataListEntityWithShadowHistory sourceEntity, int sourceIndex,
             TestdataListEntityWithShadowHistory destinationEntity, int destinationIndex) {
-        new ListChangeMove<>(variableDescriptor, sourceEntity, sourceIndex, destinationEntity, destinationIndex)
+        new ListChangeMove<>(variableDescriptor, sourceEntity, sourceIndex, destinationEntity, destinationIndex, true)
                 .doMoveOnly(scoreDirector);
     }
 
@@ -183,7 +183,7 @@ class ListVariableListenerTest {
         scoreDirector.setWorkingSolution(solution);
         assertThat(scoreDirector.calculateScore()).isEqualTo(InnerScore.withUnassignedCount(SimpleScore.ZERO, 1));
 
-        new ListAssignMove<>(variableDescriptor, x, ann, 2).doMoveOnly(scoreDirector);
+        new ListAssignMove<>(variableDescriptor, x, ann, 2, true).doMoveOnly(scoreDirector);
 
         assertThat(ann.getValueList()).containsExactly(a, b, x, c);
 
@@ -327,7 +327,7 @@ class ListVariableListenerTest {
 
         scoreDirector.setWorkingSolution(buildSolution(ann, bob));
 
-        new ListChangeMove<>(variableDescriptor, ann, 0, bob, 1).doMoveOnly(scoreDirector);
+        new ListChangeMove<>(variableDescriptor, ann, 0, bob, 1, true).doMoveOnly(scoreDirector);
 
         assertThat(ann.getValueList()).containsExactly(b, c);
         assertThat(bob.getValueList()).containsExactly(x, a, y);

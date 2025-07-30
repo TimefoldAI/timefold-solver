@@ -60,13 +60,13 @@ class ListChangeMoveTest {
         TestdataListEntity e2 = new TestdataListEntity("e2", v3);
 
         // same entity, same index => not doable because the move doesn't change anything
-        assertThat(new ListChangeMove<>(variableDescriptor, e1, 1, e1, 1).isMoveDoable(scoreDirector)).isFalse();
+        assertThat(new ListChangeMove<>(variableDescriptor, e1, 1, e1, 1, true).isMoveDoable(scoreDirector)).isFalse();
         // same entity, different index => doable
-        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e1, 1).isMoveDoable(scoreDirector)).isTrue();
+        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e1, 1, true).isMoveDoable(scoreDirector)).isTrue();
         // same entity, index == list size => not doable because the element is first removed (list size is reduced by 1)
-        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e1, 2).isMoveDoable(scoreDirector)).isFalse();
+        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e1, 2, true).isMoveDoable(scoreDirector)).isFalse();
         // different entity => doable
-        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e2, 0).isMoveDoable(scoreDirector)).isTrue();
+        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e2, 0, true).isMoveDoable(scoreDirector)).isTrue();
     }
 
     @Disabled("Temporarily disabled")
@@ -78,10 +78,10 @@ class ListChangeMoveTest {
         var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2), List.of(value1, value2));
         var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value1, value3), List.of(value3));
         // different entity => valid value
-        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 0, entity2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 0, entity2, 0, true).isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
         // different entity => invalid value
-        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 1, entity2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 1, entity2, 0, true).isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
     }
 
@@ -90,7 +90,7 @@ class ListChangeMoveTest {
         TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2);
         TestdataListEntity e2 = new TestdataListEntity("e2", v3);
 
-        ListChangeMove<TestdataListSolution> move = new ListChangeMove<>(variableDescriptor, e1, 1, e2, 1);
+        ListChangeMove<TestdataListSolution> move = new ListChangeMove<>(variableDescriptor, e1, 1, e2, 1, true);
 
         move.doMoveOnly(scoreDirector);
 
@@ -128,7 +128,7 @@ class ListChangeMoveTest {
 
         // When V2 is moved to destinationIndex...
         ListChangeMove<TestdataListSolution> move =
-                new ListChangeMove<>(variableDescriptor, e, sourceIndex, e, destinationIndex);
+                new ListChangeMove<>(variableDescriptor, e, sourceIndex, e, destinationIndex, true);
 
         // Some destinationIndexes make the move ephemeral.
         if (expectedValueList == null) {
@@ -175,11 +175,11 @@ class ListChangeMoveTest {
         assertSameProperties(
                 destinationE1, 0, destinationV1,
                 destinationE2, 1,
-                new ListChangeMove<>(variableDescriptor, e1, 0, e2, 1).rebase(destinationScoreDirector));
+                new ListChangeMove<>(variableDescriptor, e1, 0, e2, 1, true).rebase(destinationScoreDirector));
         assertSameProperties(
                 destinationE2, 0, destinationV3,
                 destinationE2, 0,
-                new ListChangeMove<>(variableDescriptor, e2, 0, e2, 0).rebase(destinationScoreDirector));
+                new ListChangeMove<>(variableDescriptor, e2, 0, e2, 0, true).rebase(destinationScoreDirector));
     }
 
     static void assertSameProperties(Object sourceEntity, int sourceIndex, Object movedValue, Object destinationEntity,
@@ -196,7 +196,7 @@ class ListChangeMoveTest {
         TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2);
         TestdataListEntity e2 = new TestdataListEntity("e2", v3);
 
-        ListChangeMove<TestdataListSolution> moveTwoEntities = new ListChangeMove<>(variableDescriptor, e1, 1, e2, 1);
+        ListChangeMove<TestdataListSolution> moveTwoEntities = new ListChangeMove<>(variableDescriptor, e1, 1, e2, 1, true);
         // Do the move first because that might affect the returned values.
         moveTwoEntities.doMoveOnGenuineVariables(scoreDirector);
         assertThat(moveTwoEntities.getPlanningEntities()).containsExactly(e1, e2);
@@ -207,7 +207,7 @@ class ListChangeMoveTest {
     void tabuIntrospection_oneEntity() {
         TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2);
 
-        ListChangeMove<TestdataListSolution> moveOneEntity = new ListChangeMove<>(variableDescriptor, e1, 0, e1, 1);
+        ListChangeMove<TestdataListSolution> moveOneEntity = new ListChangeMove<>(variableDescriptor, e1, 0, e1, 1, true);
         // Do the move first because that might affect the returned values.
         moveOneEntity.doMoveOnGenuineVariables(scoreDirector);
         assertThat(moveOneEntity.getPlanningEntities()).containsExactly(e1);
@@ -219,8 +219,8 @@ class ListChangeMoveTest {
         TestdataListEntity e1 = new TestdataListEntity("e1", v1, v2);
         TestdataListEntity e2 = new TestdataListEntity("e2", v3);
 
-        assertThat(new ListChangeMove<>(variableDescriptor, e1, 1, e1, 0)).hasToString("2 {e1[1] -> e1[0]}");
-        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e2, 1)).hasToString("1 {e1[0] -> e2[1]}");
+        assertThat(new ListChangeMove<>(variableDescriptor, e1, 1, e1, 0, true)).hasToString("2 {e1[1] -> e1[0]}");
+        assertThat(new ListChangeMove<>(variableDescriptor, e1, 0, e2, 1, true)).hasToString("1 {e1[0] -> e2[1]}");
     }
 
     @Test

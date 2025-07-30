@@ -18,7 +18,8 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
     private final int destinationIndex;
 
     public ListAssignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object planningValue, Object destinationEntity,
-            int destinationIndex) {
+            int destinationIndex, boolean assertMoveDoable) {
+        super(assertMoveDoable);
         this.variableDescriptor = variableDescriptor;
         this.planningValue = planningValue;
         this.destinationEntity = destinationEntity;
@@ -53,13 +54,16 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        // When the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming value
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        return valueRangeManager
-                .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
-                .contains(planningValue);
+        if (assertMoveDoable) {
+            // When the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming value
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            doable = valueRangeManager
+                    .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
+                    .contains(planningValue);
+        }
+        return doable;
     }
 
     @Override
@@ -78,7 +82,7 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public ListAssignMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         return new ListAssignMove<>(variableDescriptor, destinationScoreDirector.lookUpWorkingObject(planningValue),
-                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex);
+                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex, assertMoveDoable);
     }
 
     @Override

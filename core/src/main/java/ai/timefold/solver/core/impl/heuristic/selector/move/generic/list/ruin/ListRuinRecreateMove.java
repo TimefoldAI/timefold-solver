@@ -31,7 +31,9 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
 
     public ListRuinRecreateMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
-            SolverScope<Solution_> solverScope, List<Object> ruinedValueList, Set<Object> affectedEntitySet) {
+            SolverScope<Solution_> solverScope, List<Object> ruinedValueList, Set<Object> affectedEntitySet,
+            boolean assertMoveDoable) {
+        super(assertMoveDoable);
         this.listVariableDescriptor = listVariableDescriptor;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
@@ -166,7 +168,7 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
         var rebasedListVariableDescriptor = ((InnerScoreDirector<Solution_, ?>) destinationScoreDirector)
                 .getSolutionDescriptor().getListVariableDescriptor();
         return new ListRuinRecreateMove<>(rebasedListVariableDescriptor, constructionHeuristicPhaseBuilder, solverScope,
-                rebasedRuinedValueList, rebasedAffectedEntitySet);
+                rebasedRuinedValueList, rebasedAffectedEntitySet, assertMoveDoable);
     }
 
     @Override

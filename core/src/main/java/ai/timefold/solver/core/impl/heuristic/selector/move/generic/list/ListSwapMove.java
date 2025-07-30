@@ -78,6 +78,7 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
             ListVariableDescriptor<Solution_> variableDescriptor,
             Object leftEntity, int leftIndex,
             Object rightEntity, int rightIndex) {
+        super(true);
         this.variableDescriptor = variableDescriptor;
         this.leftEntity = leftEntity;
         this.leftIndex = leftIndex;
@@ -122,18 +123,21 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        // When the left and right are different,
-        // and the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming values
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
-        var leftElementValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
-        var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
-        var rightElementValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
-        return leftElementValueRange.contains(rightElement) && rightElementValueRange.contains(leftElement);
+        if (assertMoveDoable) {
+            // When the left and right are different,
+            // and the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming values
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
+            var leftElementValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
+            var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
+            var rightElementValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
+            doable = leftElementValueRange.contains(rightElement) && rightElementValueRange.contains(leftElement);
+        }
+        return doable;
     }
 
     @Override

@@ -50,7 +50,7 @@ class ListRuinRecreateMoveTest {
 
         var move = new ListRuinRecreateMove<TestdataListSolution>(mock(ListVariableDescriptor.class),
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mock(SolverScope.class), Arrays.asList(v1, v2),
-                Set.of(e1, e2, e3));
+                Set.of(e1, e2, e3), true);
         var rebasedMove = move.rebase(destinationScoreDirector);
 
         assertSoftly(softly -> {
@@ -73,25 +73,25 @@ class ListRuinRecreateMoveTest {
         var descriptor = mock(ListVariableDescriptor.class);
         var move = new ListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mock(SolverScope.class), List.of(e1),
-                Set.of(v1));
+                Set.of(v1), true);
         var sameMove = new ListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mock(SolverScope.class), List.of(e1),
-                Set.of(v1));
+                Set.of(v1), true);
         assertThat(move).isEqualTo(sameMove);
 
         var differentMove = new ListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mock(SolverScope.class), List.of(e1),
-                Set.of(v2));
+                Set.of(v2), true);
         assertThat(move).isNotEqualTo(differentMove);
 
         var anotherDifferentMove = new ListRuinRecreateMove<TestdataListSolution>(descriptor,
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mock(SolverScope.class), List.of(e2),
-                Set.of(v1));
+                Set.of(v1), true);
         assertThat(move).isNotEqualTo(anotherDifferentMove);
 
         var yetAnotherDifferentMove = new ListRuinRecreateMove<TestdataListSolution>(mock(ListVariableDescriptor.class),
                 mock(RuinRecreateConstructionHeuristicPhaseBuilder.class), mock(SolverScope.class), List.of(e1),
-                Set.of(v1));
+                Set.of(v1), true);
         assertThat(move).isNotEqualTo(yetAnotherDifferentMove);
     }
 

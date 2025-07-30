@@ -21,6 +21,7 @@ public final class NoChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     private NoChangeMove() {
         // No external instances allowed.
+        super(false);
     }
 
     @Override

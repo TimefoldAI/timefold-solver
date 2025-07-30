@@ -31,6 +31,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             List<FlipSublistAction> equivalent2Opts,
             int postShiftAmount,
             int[] newEndIndices) {
+        super(true);
         this.listVariableDescriptor = listVariableDescriptor;
         this.descriptor = descriptor;
         this.equivalent2Opts = equivalent2Opts;
@@ -57,6 +58,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             int postShiftAmount,
             int[] newEndIndices,
             Object[] originalEntities) {
+        super(true);
         this.listVariableDescriptor = listVariableDescriptor;
         this.descriptor = descriptor;
         this.equivalent2Opts = equivalent2Opts;
@@ -118,15 +120,18 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             // The changes will be applied to a single entity. No need to check the value ranges.
             return true;
         }
-        // When the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming values
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        // We need to compute the combined list of values to check the source and destination
-        var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
-        flipSublists(equivalent2Opts, combinedList, postShiftAmount);
-        // We now check if the new arrangement of elements meets the entity value ranges
-        return combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeManager);
+        if (assertMoveDoable) {
+            // When the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming values
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            // We need to compute the combined list of values to check the source and destination
+            var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
+            flipSublists(equivalent2Opts, combinedList, postShiftAmount);
+            // We now check if the new arrangement of elements meets the entity value ranges
+            doable = combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeManager);
+        }
+        return doable;
     }
 
     @Override

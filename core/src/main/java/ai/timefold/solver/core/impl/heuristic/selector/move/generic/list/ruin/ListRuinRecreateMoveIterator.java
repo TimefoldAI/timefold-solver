@@ -22,12 +22,13 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
     private final int minimumRuinedCount;
     private final int maximumRuinedCount;
     private final Random workingRandom;
+    private final boolean assertMoveDoable;
 
     public ListRuinRecreateMoveIterator(IterableValueSelector<Solution_> valueSelector,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
             ListVariableStateSupply<Solution_> listVariableStateSupply, int minimumRuinedCount, int maximumRuinedCount,
-            Random workingRandom) {
+            Random workingRandom, boolean assertMoveDoable) {
         this.valueSelector = valueSelector;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;
         this.solverScope = solverScope;
@@ -35,6 +36,7 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
         this.minimumRuinedCount = minimumRuinedCount;
         this.maximumRuinedCount = maximumRuinedCount;
         this.workingRandom = workingRandom;
+        this.assertMoveDoable = assertMoveDoable;
     }
 
     @Override
@@ -69,7 +71,7 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
             }
         }
         return new ListRuinRecreateMove<>(listVariableStateSupply.getSourceVariableDescriptor(),
-                constructionHeuristicPhaseBuilder, solverScope, selectedValueList, affectedEntitySet);
+                constructionHeuristicPhaseBuilder, solverScope, selectedValueList, affectedEntitySet, assertMoveDoable);
     }
 
 }

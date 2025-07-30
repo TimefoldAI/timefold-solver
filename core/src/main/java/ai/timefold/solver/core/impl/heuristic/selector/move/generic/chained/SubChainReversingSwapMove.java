@@ -34,6 +34,7 @@ public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_
     public SubChainReversingSwapMove(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply,
             SubChain leftSubChain, SubChain rightSubChain) {
+        super(false);
         this.variableDescriptor = variableDescriptor;
         this.leftSubChain = leftSubChain;
         leftTrailingLastEntity = inverseVariableSupply.getInverseSingleton(leftSubChain.getLastEntity());
@@ -44,6 +45,7 @@ public class SubChainReversingSwapMove<Solution_> extends AbstractMove<Solution_
     public SubChainReversingSwapMove(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SubChain leftSubChain, Object leftTrailingLastEntity,
             SubChain rightSubChain, Object rightTrailingLastEntity) {
+        super(false);
         this.variableDescriptor = variableDescriptor;
         this.leftSubChain = leftSubChain;
         this.rightSubChain = rightSubChain;

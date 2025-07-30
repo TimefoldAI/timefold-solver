@@ -18,22 +18,29 @@ public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterat
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
     private final Iterator<ElementPosition> destinationIterator;
+    private final boolean assertMoveDoable;
 
     public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            IterableValueSelector<Solution_> valueSelector,
-            DestinationSelector<Solution_> destinationSelector) {
+            IterableValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector,
+            boolean assertMoveDoable) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
         this.destinationIterator = destinationSelector.iterator();
+        this.assertMoveDoable = assertMoveDoable;
     }
 
     @Override
     protected Move<Solution_> createUpcomingSelection() {
-        if (!valueIterator.hasNext() || !destinationIterator.hasNext()) {
+        if (!valueIterator.hasNext()) {
             return noUpcomingSelection();
         }
+        // The destination may depend on selecting the value before checking if it has a next value
         var upcomingValue = valueIterator.next();
-        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator);
+        if (!destinationIterator.hasNext()) {
+            return noUpcomingSelection();
+        }
+        var move = OriginalListChangeIterator.buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator,
+                assertMoveDoable);
         if (move == null) {
             return noUpcomingSelection();
         } else {

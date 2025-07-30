@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveS
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -22,6 +23,8 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final CountSupplier minimumSelectedCountSupplier;
     private final CountSupplier maximumSelectedCountSupplier;
+
+    private boolean assertMoveDoable;
 
     private SolverScope<Solution_> solverScope;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
@@ -79,12 +82,18 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     }
 
     @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        this.assertMoveDoable = phaseScope.isAssertMoveDoable();
+    }
+
+    @Override
     public Iterator<Move<Solution_>> iterator() {
         var valueSelectorSize = valueSelector.getSize();
         return new ListRuinRecreateMoveIterator<>(valueSelector, constructionHeuristicPhaseBuilder,
                 solverScope, listVariableStateSupply,
                 minimumSelectedCountSupplier.applyAsInt(valueSelectorSize),
                 maximumSelectedCountSupplier.applyAsInt(valueSelectorSize),
-                workingRandom);
+                workingRandom, assertMoveDoable);
     }
 }

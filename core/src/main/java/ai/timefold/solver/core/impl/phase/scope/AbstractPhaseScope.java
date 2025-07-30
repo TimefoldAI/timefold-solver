@@ -37,6 +37,8 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected int bestSolutionStepIndex;
 
+    protected boolean assertMoveDoable = false;
+
     /**
      * The phase termination configuration
      */
@@ -99,6 +101,14 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();
+
+    public boolean isAssertMoveDoable() {
+        return assertMoveDoable;
+    }
+
+    public void setAssertMoveDoable(boolean assertMoveDoable) {
+        this.assertMoveDoable = assertMoveDoable;
+    }
 
     // ************************************************************************
     // Calculated methods

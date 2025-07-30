@@ -26,6 +26,7 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
     public RuinRecreateMove(GenuineVariableDescriptor<Solution_> genuineVariableDescriptor,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope, List<Object> ruinedEntityList, Set<Object> affectedValueSet) {
+        super(false);
         this.genuineVariableDescriptor = genuineVariableDescriptor;
         this.ruinedEntityList = ruinedEntityList;
         this.affectedValueSet = affectedValueSet;

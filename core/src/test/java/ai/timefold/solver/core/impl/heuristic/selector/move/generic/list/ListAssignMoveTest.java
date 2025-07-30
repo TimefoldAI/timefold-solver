@@ -51,7 +51,7 @@ class ListAssignMoveTest {
         var v3 = new TestdataListValue("3");
         var e1 = new TestdataListEntity("e1");
 
-        moveDirector.executeTemporary(new ListAssignMove<>(variableDescriptor, v1, e1, 0),
+        moveDirector.executeTemporary(new ListAssignMove<>(variableDescriptor, v1, e1, 0, true),
                 (__, ___) -> {
                     assertThat(e1.getValueList()).containsExactly(v1);
                     verify(innerScoreDirector).beforeListVariableChanged(variableDescriptor, e1, 0, 0);
@@ -63,11 +63,11 @@ class ListAssignMoveTest {
                 });
 
         // v2 -> e1[0]
-        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v2, e1, 0));
+        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v2, e1, 0, true));
         // v3 -> e1[1]
-        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v3, e1, 1));
+        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v3, e1, 1, true));
         // v1 -> e1[0]
-        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v1, e1, 0));
+        moveDirector.execute(new ListAssignMove<>(variableDescriptor, v1, e1, 0, true));
         assertThat(e1.getValueList()).containsExactly(v1, v2, v3);
     }
 
@@ -83,12 +83,12 @@ class ListAssignMoveTest {
         valueRangeManager.reset(solution);
 
         // different entity => valid value
-        assertThat(new ListAssignMove<>(otherVariableDescriptor, v1, e1, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListAssignMove<>(otherVariableDescriptor, v1, e1, 0, true).isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
-        assertThat(new ListAssignMove<>(otherVariableDescriptor, v1, e2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListAssignMove<>(otherVariableDescriptor, v1, e2, 0, true).isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
         // different entity => invalid value
-        assertThat(new ListAssignMove<>(otherVariableDescriptor, v3, e1, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListAssignMove<>(otherVariableDescriptor, v3, e1, 0, true).isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
     }
 
@@ -108,7 +108,7 @@ class ListAssignMoveTest {
 
         assertSameProperties(
                 destinationV1, destinationE1, 0,
-                new ListAssignMove<>(variableDescriptor, v1, e1, 0).rebase(destinationScoreDirector));
+                new ListAssignMove<>(variableDescriptor, v1, e1, 0, true).rebase(destinationScoreDirector));
     }
 
     static void assertSameProperties(Object movedValue, Object destinationEntity, int destinationIndex,
@@ -123,6 +123,6 @@ class ListAssignMoveTest {
         var v1 = new TestdataListValue("1");
         var e1 = new TestdataListEntity("E1");
 
-        assertThat(new ListAssignMove<>(variableDescriptor, v1, e1, 15)).hasToString("1 {null -> E1[15]}");
+        assertThat(new ListAssignMove<>(variableDescriptor, v1, e1, 15, true)).hasToString("1 {null -> E1[15]}");
     }
 }

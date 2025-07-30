@@ -41,14 +41,15 @@ class RandomListChangeIteratorTest {
         var destinationValueSelector =
                 mockIterableValueSelector(listVariableDescriptor, v2, v3);
         var entitySelector = mockEntitySelector(b, a, c);
-        var destinationSelector = new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true);
+        var destinationSelector = new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true, false);
 
         var random = new TestRandom(3, 0, 1);
         solvingStarted(destinationSelector, scoreDirector, random);
         var randomListChangeIterator = new RandomListChangeIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 sourceValueSelector,
-                destinationSelector);
+                destinationSelector,
+                true);
 
         // <3 => entity selector; >=3 => value selector
         final var destinationRange = entitySelector.getSize() + destinationValueSelector.getSize();

@@ -45,6 +45,7 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
             SubList leftSubList,
             SubList rightSubList,
             boolean reversing) {
+        super(true);
         this.variableDescriptor = variableDescriptor;
         if (leftSubList.entity() == rightSubList.entity() && leftSubList.fromIndex() > rightSubList.fromIndex()) {
             this.leftSubList = rightSubList;
@@ -77,21 +78,24 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        // When the left and right elements are different,
-        // and the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming values
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        var leftEntity = leftSubList.entity();
-        var leftList = subList(leftSubList);
-        var leftValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
-        var rightEntity = rightSubList.entity();
-        var rightList = subList(rightSubList);
-        var rightValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
-        return leftList.stream().allMatch(rightValueRange::contains)
-                && rightList.stream().allMatch(leftValueRange::contains);
+        if (assertMoveDoable) {
+            // When the left and right elements are different,
+            // and the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming values
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            var leftEntity = leftSubList.entity();
+            var leftList = subList(leftSubList);
+            var leftValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
+            var rightEntity = rightSubList.entity();
+            var rightList = subList(rightSubList);
+            var rightValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
+            doable = leftList.stream().allMatch(rightValueRange::contains)
+                    && rightList.stream().allMatch(leftValueRange::contains);
+        }
+        return doable;
     }
 
     @Override
