@@ -20,12 +20,14 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     MemberAccessor calculator;
     RootVariableSource<?, ?>[] sources;
     String[] sourcePaths;
+    String groupKey;
     Function<Object, Object> groupKeyMap;
 
     public DeclarativeShadowVariableDescriptor(int ordinal,
@@ -85,16 +87,9 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         }
 
         if (shadowVariableUpdater.groupKey() != null && !shadowVariableUpdater.groupKey().isEmpty()) {
-            var groupKey = shadowVariableUpdater.groupKey();
-            Member member = RootVariableSource.getMember(entityDescriptor.getEntityClass(),
-                    groupKey, entityDescriptor.getEntityClass(),
-                    groupKey);
-            groupKeyMap =
-                    entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                            MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
-                            descriptorPolicy.getDomainAccessType())::executeGetter;
+            groupKey = shadowVariableUpdater.groupKey();
         } else {
-            groupKeyMap = null;
+            groupKey = null;
         }
     }
 
@@ -121,15 +116,59 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         sources = new RootVariableSource[sourcePaths.length];
+        var solutionMetamodel = entityDescriptor.getSolutionDescriptor().getMetaModel();
+        var memberAccessorFactory = entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory();
+
         for (int i = 0; i < sources.length; i++) {
             sources[i] = RootVariableSource.from(
-                    entityDescriptor.getSolutionDescriptor().getMetaModel(),
+                    solutionMetamodel,
                     entityDescriptor.getEntityClass(),
                     variableMemberAccessor.getName(),
                     sourcePaths[i],
-                    entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory(),
+                    memberAccessorFactory,
                     descriptorPolicy);
         }
+
+        var groupKeyMember = getGroupKeyMemberForEntityProperty(solutionMetamodel,
+                entityDescriptor.getEntityClass(),
+                calculator,
+                variableName,
+                groupKey);
+        if (groupKeyMember != null) {
+            groupKeyMap = memberAccessorFactory.buildAndCacheMemberAccessor(groupKeyMember,
+                    MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
+                    descriptorPolicy.getDomainAccessType())::executeGetter;
+        } else {
+            groupKeyMap = null;
+        }
+    }
+
+    protected static Member getGroupKeyMemberForEntityProperty(
+            PlanningSolutionMetaModel<?> solutionMetamodel,
+            Class<?> entityClass,
+            MemberAccessor calculator,
+            String variableName,
+            String propertyName) {
+        if (propertyName == null) {
+            return null;
+        }
+        Member member = RootVariableSource.getMember(entityClass,
+                propertyName, entityClass,
+                propertyName);
+        if (RootVariableSource.isVariable(solutionMetamodel, member.getDeclaringClass(),
+                member.getName())) {
+            throw new IllegalArgumentException(
+                    """
+                            The @%s-annotated supplier method (%s) for variable (%s) on class (%s) uses a groupKey (%s) that is a variable.
+                            A groupKey must be a problem fact and cannot change during solving.
+                            """
+                            .formatted(ShadowSources.class.getSimpleName(),
+                                    calculator.getName(),
+                                    variableName,
+                                    entityClass.getCanonicalName(),
+                                    propertyName));
+        }
+        return member;
     }
 
     @Override

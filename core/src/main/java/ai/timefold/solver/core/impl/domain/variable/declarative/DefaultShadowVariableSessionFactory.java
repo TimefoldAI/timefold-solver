@@ -225,14 +225,24 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var groupVariables = new ArrayList<DeclarativeShadowVariableDescriptor<Solution_>>();
         groupIndexToVariables.put(0, groupVariables);
         for (var declarativeShadowVariableDescriptor : sortedDeclarativeVariableDescriptors) {
-            if (!groupVariables.isEmpty() && (Arrays.stream(declarativeShadowVariableDescriptor.getSources())
-                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP)
-                    || declarativeShadowVariableDescriptor.getGroupKeyMap() != null ||
-                    groupVariables.get(groupVariables.size() - 1).getGroupKeyMap() != null)) {
-                // Create a new variable group, since the group might reference prior variables.
-                // Create a new variable group when a group key is used, since we are updating a group of entities.
-                // Create a new variable group when the previous variable uses a group key, since each element in the group may
-                // have variables that need to be updated independently.
+            // If a @ShadowSources has a group source (i.e. "visitGroup[].arrivalTimes"),
+            // create a new group since it must wait until all members of that group are processed
+            var hasGroupSources = Arrays.stream(declarativeShadowVariableDescriptor.getSources())
+                    .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP);
+
+            // If a @ShadowSources has a group key,
+            // create a new group since multiple entities must be updated for this node
+            var hasGroupKey = declarativeShadowVariableDescriptor.getGroupKeyMap() != null;
+
+            // If the previous @ShadowSources has a group key,
+            // create a new group since we are updating a single entity again
+            // NOTE: Can potentially be optimized/share a node if VariableUpdaterInfo
+            //       update each group member independently after the groupKey
+            var previousHasGroupKey = !groupVariables.isEmpty() && groupVariables.get(0).getGroupKeyMap() != null;
+
+            if (!groupVariables.isEmpty() && (hasGroupSources
+                    || hasGroupKey
+                    || previousHasGroupKey)) {
                 groupVariables = new ArrayList<>();
                 groupIndexToVariables.put(groupIndexToVariables.size(), groupVariables);
             }

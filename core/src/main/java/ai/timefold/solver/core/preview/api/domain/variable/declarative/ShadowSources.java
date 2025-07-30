@@ -97,7 +97,7 @@ public @interface ShadowSources {
     String[] value();
 
     /**
-     * If non-empty, this is a property on the entity that will be used
+     * If non-empty, this is the property name of a problem fact on the entity that will be used
      * to identify the entity's group.
      * <p>
      * When the group key is non-null, the shadow variable will only be calculated
@@ -107,8 +107,10 @@ public @interface ShadowSources {
      * When the group key is unspecified or null, the entity is not considered to
      * be part of a group and will not share variable calculations with other
      * entities.
+     * <p>
+     * Important: the group key must not be a variable and must not change during solving.
      *
-     * @return A property on the entity to group by, or the empty string to not performing grouping.
+     * @return The property name of a problem fact on the entity to group by, or the empty string to not performing grouping.
      */
     String groupKey() default "";
 }
