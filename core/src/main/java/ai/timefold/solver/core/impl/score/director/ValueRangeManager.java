@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.demand.ReachableValueMatrixDemand;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
@@ -55,6 +56,8 @@ public final class ValueRangeManager<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
+            new IdentityHashMap<>();
+    private final Map<ValueRangeDescriptor<Solution_>, ReachableValueMatrixDemand<Solution_>> demandMatrixMap =
             new IdentityHashMap<>();
 
     private @Nullable Solution_ cachedWorkingSolution = null;
@@ -410,9 +413,25 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
+    public ReachableValueMatrixDemand<Solution_> getDemand(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException(
+                    "Impossible state: ValueToEntityMatrixDemand for (%s) requested before the working solution is known."
+                            .formatted(valueRangeDescriptor));
+        }
+        var demand = demandMatrixMap.get(valueRangeDescriptor);
+        if (demand == null) {
+            demand = new ReachableValueMatrixDemand<>(cachedWorkingSolution, this,
+                    valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor(), valueRangeDescriptor);
+            demandMatrixMap.put(valueRangeDescriptor, demand);
+        }
+        return demand;
+    }
+
     public void reset(@Nullable Solution_ workingSolution) {
         fromSolutionMap.clear();
         fromEntityMap.clear();
+        demandMatrixMap.clear();
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
             cachedWorkingSolution = workingSolution;

@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.stepStarted;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getEntityRangeListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedListVariableDescriptor;
@@ -12,10 +13,12 @@ import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIter
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterableSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterableSelectorWithoutSize;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static org.mockito.Mockito.doReturn;
 
 import java.util.Collections;
 import java.util.List;
@@ -23,7 +26,10 @@ import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityValueRangeSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -38,6 +44,9 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.pinned.TestdataPinnedUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -63,7 +72,7 @@ class ElementDestinationSelectorTest {
         var valueSelector = mockIterableValueSelector(getListVariableDescriptor(scoreDirector), v3, v1, v2);
         var destinationSize = entitySelector.getSize() + valueSelector.getSize();
 
-        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false, false);
 
         solvingStarted(selector, scoreDirector);
 
@@ -103,7 +112,7 @@ class ElementDestinationSelectorTest {
                 TestdataListUtils.mockNeverEndingIterableValueSelector(getListVariableDescriptor(scoreDirector), v3, v2, v1);
         var destinationSize = entitySelector.getSize() + valueSelector.getSize();
 
-        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, false);
 
         // <4 => entity selector; >=4 => value selector
         var random = new TestRandom(
@@ -133,6 +142,93 @@ class ElementDestinationSelectorTest {
                 "C[0]");
 
         random.assertIntBoundJustRequested((int) destinationSize);
+    }
+
+    @Test
+    void randomWithEntityValueRange() {
+        var v1 = new TestdataListEntityProvidingValue("V1");
+        var v2 = new TestdataListEntityProvidingValue("V2");
+        var v3 = new TestdataListEntityProvidingValue("V3");
+        var v4 = new TestdataListEntityProvidingValue("V4");
+        var v5 = new TestdataListEntityProvidingValue("V5");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v1, v2));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
+        var c = new TestdataListEntityProvidingEntity("C", List.of(v3, v4, v5), List.of(v4, v5));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b, c));
+
+        var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        // Value order: [v3, v1, v2, v4, v5]
+        // Entity order: [a, b, c]
+        // Initial state:
+        // - 1 [A]
+        // - 2 [A, B]
+        // - 3 [B, C]
+        // - 4 [C]
+        // - 5 [C]
+
+        // select C for V3 and first unpinned pos C[0]
+        // Random values
+        // 1 - pick entity C in RandomFilteringValueRangeIterator
+        // 1 - pick random value in ElementPositionRandomIterator and return the first unpinned position
+        // 1 - remaining call
+        var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
+        var replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
+        checkEntityValueRange(new FilteringEntityValueRangeSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+                new FilteringValueRangeSelector<>(valueSelector, replayinValueSelector, true), scoreDirector,
+                new TestRandom(1, 1, 1),
+                "C[0]");
+
+        // select A for V1 and random pos A[2]
+        // Random values
+        // 0 - pick entity A in RandomFilteringValueRangeIterator
+        // 3 - pick a random value in ElementPositionRandomIterator and force generating a random position
+        // 0 - pick random position, only v2 is reachable
+        // 0 - remaining call
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
+        replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
+        // Cause the value iterator return no value at the second call
+        doReturn(List.of(v1).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
+        checkEntityValueRange(new FilteringEntityValueRangeSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+                new FilteringValueRangeSelector<>(valueSelector, replayinValueSelector, true), scoreDirector,
+                new TestRandom(0, 3, 0, 0), "A[2]");
+
+        // select B for V1 and random pos B[1]
+        // 1 - pick entity B in RandomFilteringValueRangeIterator
+        // 3 - pick a random value in ElementPositionRandomIterator and force generating a random position
+        // 1 - pick random position, v1 and v3 are reachable
+        // 0 - remaining call
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v2, v2, v2, v2, v2); // simulate five positions
+        replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v2);
+        // Cause the value iterator return no value at the second call
+        doReturn(List.of(v2).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
+        checkEntityValueRange(new FilteringEntityValueRangeSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+                new FilteringValueRangeSelector<>(valueSelector, replayinValueSelector, true), scoreDirector,
+                new TestRandom(1, 3, 1, 0), "B[1]");
+
+        // select C for V5 and first unpinned pos C[1]
+        // 0 - pick entity C in RandomFilteringValueRangeIterator
+        // 3 - pick random value in ElementPositionRandomIterator and force generating a random position
+        // 1 - pick random position, v3 and v4 are reachable
+        // 0 - remaining call
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v5, v5, v5, v5, v5); // simulate five positions
+        replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v5);
+        // Cause the value iterator return no value at the second call
+        doReturn(List.of(v5).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
+        checkEntityValueRange(new FilteringEntityValueRangeSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
+                new FilteringValueRangeSelector<>(valueSelector, replayinValueSelector, true), scoreDirector,
+                new TestRandom(0, 3, 1, 0), "C[1]");
+    }
+
+    private void checkEntityValueRange(FilteringEntityValueRangeSelector<TestdataListEntityProvidingSolution> entitySelector,
+            FilteringValueRangeSelector<TestdataListEntityProvidingSolution> valueSelector,
+            InnerScoreDirector<TestdataListEntityProvidingSolution, ?> scoreDirector, TestRandom random, String code) {
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, true);
+        var solverScope = solvingStarted(selector, scoreDirector, random, entitySelector, valueSelector);
+        phaseStarted(solverScope, selector, entitySelector, valueSelector);
+        assertCodesOfNeverEndingIterableSelectorWithoutSize(selector, code);
     }
 
     @Test
@@ -192,7 +288,7 @@ class ElementDestinationSelectorTest {
         var valueSelector = mockIterableValueSelector(
                 getPinnedAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
                 unassignedValue, v6, v5, v4, v3, v2, v1);
-        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, false);
         selector.solvingStarted(solverScope);
         selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
 
@@ -235,7 +331,7 @@ class ElementDestinationSelectorTest {
         var valueSelector = mockIterableValueSelector(
                 getAllowsUnassignedvaluesListVariableDescriptor(scoreDirector),
                 unassignedValue);
-        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, false);
         selector.solvingStarted(solverScope);
         selector.phaseStarted(new LocalSearchPhaseScope<>(solverScope, 0));
 
@@ -266,7 +362,7 @@ class ElementDestinationSelectorTest {
         var valueSelector =
                 TestdataListUtils.mockNeverEndingIterableValueSelector(getPinnedListVariableDescriptor(scoreDirector), v3, v2,
                         v1);
-        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, false);
 
         // <4 => entity selector; >=4 => value selector
         var random = new TestRandom(
@@ -308,11 +404,11 @@ class ElementDestinationSelectorTest {
         var valueSelector =
                 mockIterableValueSelector(TestdataListEntity.buildVariableDescriptorForValueList(), v1, v2, v3);
 
-        var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, false);
         solvingStarted(randomSelector, scoreDirector);
         assertEmptyNeverEndingIterableSelector(randomSelector, 0);
 
-        var originalSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
+        var originalSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, false, false);
         assertAllCodesOfIterableSelector(originalSelector, 0);
     }
 
@@ -331,10 +427,10 @@ class ElementDestinationSelectorTest {
         var entitySelector = mockEntitySelector(a, b);
         var valueSelector = mockIterableValueSelector(getListVariableDescriptor(scoreDirector));
 
-        var originalSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
+        var originalSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, false, false);
         assertAllCodesOfIterableSelector(originalSelector, 2, "A[0]", "B[0]");
 
-        var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, false);
         var random = new TestRandom(0, 1);
 
         solvingStarted(randomSelector, scoreDirector, random);
@@ -358,10 +454,10 @@ class ElementDestinationSelectorTest {
         var entitySelector = mockEntitySelector(a, b);
         var valueSelector = mockIterableValueSelector(getPinnedListVariableDescriptor(scoreDirector));
 
-        var originalSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
+        var originalSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, false, false);
         assertAllCodesOfIterableSelector(originalSelector, 2, "A[0]", "B[1]");
 
-        var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true);
+        var randomSelector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, false);
         var random = new TestRandom(0, 1);
 
         solvingStarted(randomSelector, scoreDirector, random);
@@ -376,7 +472,7 @@ class ElementDestinationSelectorTest {
         var entitySelector = mockEntitySelector(new TestdataListEntity[0]);
         var valueSelector = mockIterableValueSelector(getListVariableDescriptor(scoreDirector));
 
-        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false);
+        var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, false, false);
 
         var solverScope = solvingStarted(selector, scoreDirector);
         var phaseScope = phaseStarted(selector, solverScope);

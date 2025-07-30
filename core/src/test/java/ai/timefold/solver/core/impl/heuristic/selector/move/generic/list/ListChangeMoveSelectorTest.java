@@ -5,14 +5,14 @@ import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesEntityRangeListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getAllowsUnassignedvaluesListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getEntityRangeListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getEntityValueRangeDestinationSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getIterableFromEntityPropertyValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getListVariableDescriptor;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getMimicRecordingIterableFromEntityPropertyValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedEntityRangeListVariableDescriptor;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getPinnedListVariableDescriptor;
-import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockAllowsUnassignedValuesEntityRangeNeverEndingDestinationSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockAllowsUnassignedValuesNeverEndingDestinationSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockDestinationSelector;
-import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockEntityRangeNeverEndingDestinationSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockIterableValueSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockNeverEndingDestinationSelector;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.mockPinnedEntityRangeNeverEndingDestinationSelector;
@@ -121,42 +121,26 @@ class ListChangeMoveSelectorTest {
         var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        var iterablePropertySelector = getIterableFromEntityPropertyValueSelector(
+        var mimicRecordingValueSelector = getMimicRecordingIterableFromEntityPropertyValueSelector(
                 getEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), false);
-        var moveSelector = new ListChangeMoveSelector<>(
-                iterablePropertySelector,
-                mockDestinationSelector(
-                        ElementPosition.of(a, 0),
-                        ElementPosition.of(b, 0),
-                        ElementPosition.of(b, 1),
-                        ElementPosition.of(a, 1),
-                        ElementPosition.of(a, 2)),
-                false);
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
+        var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
+                entityDescriptor, false);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false);
 
-        solvingStarted(moveSelector, scoreDirector, iterablePropertySelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, destinationSelector);
+        phaseStarted(solverScope, mimicRecordingValueSelector, destinationSelector);
 
-        // Value order: [1, 2, 3]
-        // Entity order: [A, B]
-        // Initial state:
-        // - A [2, 1]
-        // - B [3]
-
-        assertAllCodesOfMoveSelector(moveSelector,
+        // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
+        assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
                 "1 {A[1]->A[0]}",
-                "1 {A[1]->B[0]}",
-                "1 {A[1]->B[1]}",
                 "1 {A[1]->A[1]}",
-                "1 {A[1]->A[2]}",
                 "2 {A[0]->A[0]}",
                 "2 {A[0]->B[0]}",
-                "2 {A[0]->B[1]}",
-                "2 {A[0]->A[1]}",
                 "2 {A[0]->A[2]}",
-                "3 {B[0]->A[0]}",
-                "3 {B[0]->B[0]}",
-                "3 {B[0]->B[1]}",
-                "3 {B[0]->A[1]}",
-                "3 {B[0]->A[2]}");
+                "2 {A[0]->B[1]}",
+                "3 {B[0]->B[0]}");
     }
 
     @Test
@@ -231,38 +215,23 @@ class ListChangeMoveSelectorTest {
         var scoreDirector = mockScoreDirector(TestdataListPinnedEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        var iterablePropertySelector = getIterableFromEntityPropertyValueSelector(
+        var mimicRecordingValueSelector = getMimicRecordingIterableFromEntityPropertyValueSelector(
                 getPinnedEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), false);
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListPinnedEntityProvidingEntity.class);
+        var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
+                entityDescriptor, false);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false);
 
-        var moveSelector = new ListChangeMoveSelector<>(
-                iterablePropertySelector,
-                mockDestinationSelector(
-                        ElementPosition.of(c, 0),
-                        ElementPosition.of(c, 1),
-                        ElementPosition.of(a, 2),
-                        ElementPosition.of(a, 1)),
-                false);
-
-        var solverScope = solvingStarted(moveSelector, scoreDirector);
-        phaseStarted(moveSelector, solverScope);
-
-        // Value order: [1,2,3,4]
-        // Entity order: [A, B, C]
-        // Initial state:
-        // - A [2, 1]
-        // - B [4]
-        // - C [3]
+        var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, destinationSelector);
+        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, destinationSelector);
 
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
-                "1 {A[1]->C[0]}",
-                "1 {A[1]->C[1]}",
-                "1 {A[1]->A[2]}",
                 "1 {A[1]->A[1]}",
+                "3 {C[0]->A[1]}",
                 "3 {C[0]->C[0]}",
-                "3 {C[0]->C[1]}",
-                "3 {C[0]->A[2]}",
-                "3 {C[0]->A[1]}");
+                "3 {C[0]->A[2]}");
     }
 
     @Test
@@ -346,46 +315,27 @@ class ListChangeMoveSelectorTest {
         var scoreDirector = mockScoreDirector(TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        var iterablePropertySelector = getIterableFromEntityPropertyValueSelector(
+        var mimicRecordingValueSelector = getMimicRecordingIterableFromEntityPropertyValueSelector(
                 getAllowsUnassignedvaluesEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), false);
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListUnassignedEntityProvidingEntity.class);
+        var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
+                entityDescriptor, false);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false);
 
-        var moveSelector = new ListChangeMoveSelector<>(
-                iterablePropertySelector,
-                mockDestinationSelector(
-                        ElementPosition.of(a, 0),
-                        ElementPosition.of(b, 0),
-                        ElementPosition.of(b, 1),
-                        ElementPosition.of(a, 1),
-                        ElementPosition.of(a, 2),
-                        ElementPosition.unassigned()),
-                false);
-
-        solvingStarted(moveSelector, scoreDirector, iterablePropertySelector);
-
-        // Value order: [1, 2, 3]
-        // Entity order: [A, B]
-        // Initial state:
-        // - A [2, 1]
-        // - B [3]
-
-        assertAllCodesOfMoveSelector(moveSelector,
+        var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, destinationSelector);
+        phaseStarted(solverScope, mimicRecordingValueSelector, destinationSelector);
+        // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
+        assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
                 "1 {A[1]->A[0]}",
-                "1 {A[1]->B[0]}",
-                "1 {A[1]->B[1]}",
                 "1 {A[1]->A[1]}",
-                "1 {A[1]->A[2]}",
                 "1 {A[1]->null}",
                 "2 {A[0]->A[0]}",
                 "2 {A[0]->B[0]}",
-                "2 {A[0]->B[1]}",
-                "2 {A[0]->A[1]}",
                 "2 {A[0]->A[2]}",
+                "2 {A[0]->B[1]}",
                 "2 {A[0]->null}",
-                "3 {B[0]->A[0]}",
                 "3 {B[0]->B[0]}",
-                "3 {B[0]->B[1]}",
-                "3 {B[0]->A[1]}",
-                "3 {B[0]->A[2]}",
                 "3 {B[0]->null}");
     }
 
@@ -446,33 +396,24 @@ class ListChangeMoveSelectorTest {
         var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        var iterablePropertySelector = getIterableFromEntityPropertyValueSelector(
+        var mimicRecordingValueSelector = getMimicRecordingIterableFromEntityPropertyValueSelector(
                 getEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), true);
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
+        var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
+                entityDescriptor, true);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
 
-        var moveSelector = new ListChangeMoveSelector<>(
-                iterablePropertySelector,
-                mockEntityRangeNeverEndingDestinationSelector(
-                        ElementPosition.of(b, 0),
-                        ElementPosition.of(a, 2),
-                        ElementPosition.of(a, 0),
-                        ElementPosition.of(a, 1),
-                        ElementPosition.of(a, 2)),
-                true);
+        var solverScope =
+                solvingStarted(moveSelector, scoreDirector, new Random(0), mimicRecordingValueSelector, destinationSelector);
+        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, destinationSelector);
 
-        solvingStarted(moveSelector, scoreDirector, new Random(0), iterablePropertySelector);
-
-        // Initial state:
-        // - A [2, 1]
-        // - B [3]
-
-        // The moved values (1, 2, 3) are supplied by the source value selector and their source positions
-        // are deduced using inverse relation and index supplies
         assertCodesOfNeverEndingMoveSelector(moveSelector,
-                "1 {A[1]->B[0]}",
-                "2 {A[0]->A[2]}",
-                "2 {A[0]->A[0]}",
-                "3 {B[0]->A[1]}",
-                "3 {B[0]->A[2]}"); // ephemeral
+                "1 {A[1]->A[1]}",
+                "3 {B[0]->B[0]}",
+                "1 {A[1]->A[1]}",
+                "3 {B[0]->B[0]}",
+                "3 {B[0]->B[0]}");
     }
 
     @Test
@@ -624,27 +565,23 @@ class ListChangeMoveSelectorTest {
         var scoreDirector = mockScoreDirector(TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        var iterablePropertySelector = getIterableFromEntityPropertyValueSelector(
+        var mimicRecordingValueSelector = getMimicRecordingIterableFromEntityPropertyValueSelector(
                 getAllowsUnassignedvaluesEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), true);
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListUnassignedEntityProvidingEntity.class);
+        var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
+                entityDescriptor, true);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
 
-        var moveSelector = new ListChangeMoveSelector<>(
-                iterablePropertySelector,
-                mockAllowsUnassignedValuesEntityRangeNeverEndingDestinationSelector(
-                        ElementPosition.of(b, 0),
-                        ElementPosition.unassigned(),
-                        ElementPosition.of(a, 2),
-                        ElementPosition.of(a, 0),
-                        ElementPosition.of(a, 1),
-                        ElementPosition.of(a, 2)),
-                true);
-
-        solvingStarted(moveSelector, scoreDirector, new Random(0), iterablePropertySelector);
+        var solverScope =
+                solvingStarted(moveSelector, scoreDirector, new Random(0), mimicRecordingValueSelector, destinationSelector);
+        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, destinationSelector);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
-                "1 {A[1]->B[0]}",
-                "2 {A[0]->null}",
-                "2 {A[0]->A[2]}",
-                "3 {B[0]->A[0]}",
-                "3 {B[0]->A[1]}");
+                "1 {A[1]->A[0]}",
+                "3 {B[0]->B[1]}",
+                "3 {B[0]->B[1]}",
+                "3 {B[0]->B[0]}",
+                "3 {B[0]->B[0]}");
     }
 }

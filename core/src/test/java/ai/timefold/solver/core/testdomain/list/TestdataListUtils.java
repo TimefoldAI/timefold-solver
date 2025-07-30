@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.testdomain.list;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -8,14 +10,23 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -57,6 +68,12 @@ public final class TestdataListUtils {
         return SelectorTestUtils.mockEntitySelector(TestdataListEntity.buildEntityDescriptor(), (Object[]) entities);
     }
 
+    public static EntitySelector<TestdataListEntityProvidingSolution>
+            mockEntitySelector(TestdataListEntityProvidingEntity... entities) {
+        return SelectorTestUtils.mockEntitySelector(
+                TestdataListEntityProvidingEntity.buildEntityDescriptor(), (Object[]) entities);
+    }
+
     public static EntitySelector<TestdataPinnedWithIndexListSolution>
             mockEntitySelector(TestdataPinnedWithIndexListEntity... entities) {
         return SelectorTestUtils.mockEntitySelector(TestdataPinnedWithIndexListEntity.buildEntityDescriptor(),
@@ -66,6 +83,12 @@ public final class TestdataListUtils {
     public static EntitySelector<TestdataAllowsUnassignedValuesListSolution>
             mockEntitySelector(TestdataAllowsUnassignedValuesListEntity... entities) {
         return SelectorTestUtils.mockEntitySelector(TestdataAllowsUnassignedValuesListEntity.buildEntityDescriptor(),
+                (Object[]) entities);
+    }
+
+    public static EntitySelector<TestdataListUnassignedEntityProvidingSolution>
+            mockEntitySelector(TestdataListUnassignedEntityProvidingEntity... entities) {
+        return SelectorTestUtils.mockEntitySelector(TestdataListUnassignedEntityProvidingEntity.buildEntityDescriptor(),
                 (Object[]) entities);
     }
 
@@ -263,6 +286,28 @@ public final class TestdataListUtils {
             getIterableFromEntityPropertyValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor, boolean randomSelection) {
         var fromPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
         return new IterableFromEntityPropertyValueSelector<>(fromPropertySelector, randomSelection);
+    }
+
+    public static <T> MimicRecordingValueSelector<T>
+            getMimicRecordingIterableFromEntityPropertyValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor,
+                    boolean randomSelection) {
+        var valueSelector = getIterableFromEntityPropertyValueSelector(valueRangeDescriptor, randomSelection);
+        return new MimicRecordingValueSelector<>(valueSelector);
+    }
+
+    public static <T, V> DestinationSelector<T> getEntityValueRangeDestinationSelector(
+            MimicRecordingValueSelector<T> mimicRecordingValueSelector, SolutionDescriptor<T> solutionDescriptor,
+            EntityDescriptor<V> entityDescriptor, boolean randomSelection) {
+        var destinationSelectorConfig = new DestinationSelectorConfig();
+        destinationSelectorConfig.setEntitySelectorConfig(new EntitySelectorConfig()
+                .withEntityClass(entityDescriptor.getEntityClass()));
+        destinationSelectorConfig.setValueSelectorConfig(new ValueSelectorConfig()
+                .withVariableName(entityDescriptor.getGenuineListVariableDescriptor().getVariableName()));
+        var configPolicy = mock(HeuristicConfigPolicy.class);
+        doReturn(solutionDescriptor).when(configPolicy).getSolutionDescriptor();
+        doReturn(mimicRecordingValueSelector).when(configPolicy).getValueMimicRecorder(any());
+        return DestinationSelectorFactory.<T> create(destinationSelectorConfig)
+                .buildDestinationSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, randomSelection, true, "any");
     }
 
     private static <T> Iterator<T> cyclicIterator(List<T> elements) {

@@ -84,14 +84,14 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
      * </pre>
      *
      * @param variableDescriptor descriptor of a list variable, for example {@code Employee.taskList}
-     * @param sourceEntity       planning entity instance from which a planning value will be removed, for example "Ann"
-     * @param sourceIndex        index in sourceEntity's list variable from which a planning value will be removed
-     * @param destinationEntity  planning entity instance to which a planning value will be moved, for example "Bob"
-     * @param destinationIndex   index in destinationEntity's list variable where the moved planning value will be inserted
-     * @param assertMoveDoable   assert the move is doable when the value range is located in the entity
+     * @param sourceEntity planning entity instance from which a planning value will be removed, for example "Ann"
+     * @param sourceIndex index in sourceEntity's list variable from which a planning value will be removed
+     * @param destinationEntity planning entity instance to which a planning value will be moved, for example "Bob"
+     * @param destinationIndex index in destinationEntity's list variable where the moved planning value will be inserted
+     * @param assertMoveDoable assert the move is doable when the value range is located in the entity
      */
     public ListChangeMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex,
-                          Object destinationEntity, int destinationIndex, boolean assertMoveDoable) {
+            Object destinationEntity, int destinationIndex, boolean assertMoveDoable) {
         super(assertMoveDoable);
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
