@@ -43,7 +43,7 @@ We'll fix it with the highest priority.
 
 Timefold Solver 1.x does not support `scoreDRL`, nor is it upgraded automatically.
 If you're still using `scoreDRL` from OptaPlanner 7.x,
-please link:https://timefold.ai/blog/2023/migrating-score-drl-to-constraint-streams/[upgrade to Constraint Streams first].
+please link:https://timefold.ai/blog/migrating-score-drl-to-constraint-streams[upgrade to Constraint Streams first].
 
 == Manual upgrade
 
