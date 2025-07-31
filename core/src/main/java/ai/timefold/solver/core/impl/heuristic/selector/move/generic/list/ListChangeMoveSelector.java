@@ -85,14 +85,12 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
             return new RandomListChangeIterator<>(
                     listVariableStateSupply,
                     sourceValueSelector,
-                    destinationSelector,
-                    isAssertValueRange());
+                    destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
                     listVariableStateSupply,
                     sourceValueSelector,
-                    destinationSelector,
-                    isAssertValueRange());
+                    destinationSelector);
         }
     }
 

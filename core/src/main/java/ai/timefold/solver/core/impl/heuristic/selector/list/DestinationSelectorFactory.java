@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory.applyValueRangeFiltering;
+
 import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -9,7 +11,6 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -18,9 +19,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.Filterin
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 
 public final class DestinationSelectorFactory<Solution_> extends AbstractSelectorFactory<Solution_, DestinationSelectorConfig> {
 
@@ -53,7 +51,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                                 .formatted(config));
             }
             valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entitySelector.getEntityDescriptor(),
-                    mimicRecorderId, minimumCacheType, selectionOrder, randomSelection);
+                    mimicRecorderId, minimumCacheType, selectionOrder, randomSelection, false);
             entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, mimicRecorderId, minimumCacheType,
                     selectionOrder, randomSelection);
         }
@@ -97,31 +95,6 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         }
         return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, destinationSelector);
-    }
-
-    private IterableValueSelector<Solution_> applyValueRangeFiltering(HeuristicConfigPolicy<Solution_> configPolicy,
-            IterableValueSelector<Solution_> valueSelector, EntityDescriptor<Solution_> entityDescriptor,
-            String valueSelectorId, SelectionCacheType minimumCacheType,
-            SelectionOrder selectionOrder, boolean randomSelection) {
-        var valueSelectorConfig = new ValueSelectorConfig()
-                .withMimicSelectorRef(valueSelectorId);
-        // Create a replaying value selector
-        var replayingValueSelector =
-                (IterableValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
-                        .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
-        return new FilteringValueRangeSelector<>(valueSelector, replayingValueSelector, randomSelection);
-    }
-
-    IterableValueSelector<Solution_> applyListValueFiltering(HeuristicConfigPolicy<?> configPolicy,
-            ValueSelectorFactory.ListValueFilteringType listValueFilteringType,
-            GenuineVariableDescriptor<Solution_> variableDescriptor, IterableValueSelector<Solution_> valueSelector) {
-        if (variableDescriptor.isListVariable() && configPolicy.isUnassignedValuesAllowed()
-                && listValueFilteringType != ValueSelectorFactory.ListValueFilteringType.NONE) {
-            valueSelector = listValueFilteringType == ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED
-                    ? new AssignedListValueSelector<>(valueSelector)
-                    : new UnassignedListValueSelector<>(valueSelector);
-        }
-        return valueSelector;
     }
 
     private EntitySelector<Solution_> applyEntityValueRangeFiltering(HeuristicConfigPolicy<Solution_> configPolicy,

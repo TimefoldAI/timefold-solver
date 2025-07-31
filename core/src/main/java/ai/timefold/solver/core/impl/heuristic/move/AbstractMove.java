@@ -8,6 +8,7 @@ import java.util.Set;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
@@ -20,17 +21,40 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
  */
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
+    private Boolean cachedDoableEvaluation;
+    private EnvironmentMode moveEnvironmentMode;
     private boolean assertValueRange = false;
 
     protected AbstractMove() {
     }
 
-    protected void enableValueRangeAssertion() {
-        this.assertValueRange = true;
+    public Boolean getCachedDoableEvaluation() {
+        return cachedDoableEvaluation;
+    }
+
+    public void setCachedDoableEvaluation(Boolean cachedDoableEvaluation) {
+        this.cachedDoableEvaluation = cachedDoableEvaluation;
+    }
+
+    public EnvironmentMode getMoveEnvironmentMode() {
+        return moveEnvironmentMode;
     }
 
     protected boolean isAssertValueRange() {
         return assertValueRange;
+    }
+
+    public void setAssertValueRange(boolean assertValueRange) {
+        this.assertValueRange = assertValueRange;
+    }
+
+    @Override
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        if (environmentMode == null) {
+            return;
+        }
+        this.moveEnvironmentMode = environmentMode;
+        assertValueRange = environmentMode.isIntrusivelyAsserted();
     }
 
     @Override

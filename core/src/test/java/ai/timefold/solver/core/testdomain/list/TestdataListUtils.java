@@ -25,8 +25,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -289,10 +291,24 @@ public final class TestdataListUtils {
     }
 
     public static <T> MimicRecordingValueSelector<T>
-            getMimicRecordingIterableFromEntityPropertyValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor,
+            getMimicRecordingIterableValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor,
                     boolean randomSelection) {
         var valueSelector = getIterableFromEntityPropertyValueSelector(valueRangeDescriptor, randomSelection);
         return new MimicRecordingValueSelector<>(valueSelector);
+    }
+
+    public static <T> MimicRecordingValueSelector<T>
+            getMimicRecordingIterableValueSelector(ListVariableDescriptor<T> listVariableDescriptor, Object... values) {
+        var valueSelector = mockIterableValueSelector(listVariableDescriptor, values);
+        return new MimicRecordingValueSelector<>(valueSelector);
+    }
+
+    public static <T> FilteringValueRangeSelector<T>
+            getFilteringValueRangeSelector(MimicRecordingValueSelector<T> mimicRecordingValueSelector,
+                    boolean randomSelection, boolean assertBothSides) {
+        var replayingValueSelector = new MimicReplayingValueSelector<>(mimicRecordingValueSelector);
+        return new FilteringValueRangeSelector<>(mimicRecordingValueSelector, replayingValueSelector, randomSelection,
+                assertBothSides);
     }
 
     public static <T, V> DestinationSelector<T> getEntityValueRangeDestinationSelector(

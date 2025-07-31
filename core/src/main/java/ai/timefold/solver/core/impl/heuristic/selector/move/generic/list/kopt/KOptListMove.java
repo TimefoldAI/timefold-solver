@@ -49,8 +49,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
 
         originalEntities = combinedList.delegateEntities;
-        // The move selector can still produce invalid moves, so we need to enable the assertion by default
-        enableValueRangeAssertion();
     }
 
     private KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
@@ -78,8 +76,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
 
         this.originalEntities = originalEntities;
-        // The move selector can still produce invalid moves, so we need to enable the assertion by default
-        enableValueRangeAssertion();
     }
 
     KOptDescriptor<?> getDescriptor() {
@@ -113,25 +109,33 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var doable = !equivalent2Opts.isEmpty();
-        if (!doable || listVariableDescriptor.canExtractValueRangeFromSolution()) {
-            return doable;
-        }
-        var singleEntity = originalEntities.length == 1;
-        if (singleEntity) {
-            // The changes will be applied to a single entity. No need to check the value ranges.
-            return true;
-        }
-        if (isAssertValueRange()) {
-            // When the value range is located at the entity,
-            // we need to check if the destination's value range accepts the upcoming values
-            ValueRangeManager<Solution_> valueRangeManager =
-                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-            // We need to compute the combined list of values to check the source and destination
-            var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
-            flipSublists(equivalent2Opts, combinedList, postShiftAmount);
-            // We now check if the new arrangement of elements meets the entity value ranges
-            doable = combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeManager);
+        var doable = getCachedDoableEvaluation();
+        if (doable == null) {
+            // The move selector can still produce invalid moves, so we need to enable the assertion by default
+            setAssertValueRange(true);
+            doable = !equivalent2Opts.isEmpty();
+            if (!doable || listVariableDescriptor.canExtractValueRangeFromSolution()) {
+                setCachedDoableEvaluation(doable);
+                return doable;
+            }
+            var singleEntity = originalEntities.length == 1;
+            if (singleEntity) {
+                // The changes will be applied to a single entity. No need to check the value ranges.
+                setCachedDoableEvaluation(true);
+                return true;
+            }
+            if (isAssertValueRange()) {
+                // When the value range is located at the entity,
+                // we need to check if the destination's value range accepts the upcoming values
+                ValueRangeManager<Solution_> valueRangeManager =
+                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+                // We need to compute the combined list of values to check the source and destination
+                var combinedList = computeCombinedList(listVariableDescriptor, originalEntities).copy();
+                flipSublists(equivalent2Opts, combinedList, postShiftAmount);
+                // We now check if the new arrangement of elements meets the entity value ranges
+                doable = combinedList.isElementsFromDelegateInEntityValueRange(listVariableDescriptor, valueRangeManager);
+                setCachedDoableEvaluation(doable);
+            }
         }
         return doable;
     }

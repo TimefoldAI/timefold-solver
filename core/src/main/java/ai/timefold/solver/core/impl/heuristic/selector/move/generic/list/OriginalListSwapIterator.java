@@ -25,8 +25,7 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     private Object upcomingLeftValue;
 
     public OriginalListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            IterableValueSelector<Solution_> leftValueSelector,
-            IterableValueSelector<Solution_> rightValueSelector) {
+            IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;
@@ -64,14 +63,14 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
             var unassignMove =
                     new ListUnassignMove<>(listVariableDescriptor, rightDestination.entity(), rightDestination.index());
             var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, rightDestination.entity(),
-                    rightDestination.index(), true);
+                    rightDestination.index());
             return CompositeMove.buildMove(unassignMove, assignMove);
         } else if (rightUnassigned) { // Unassign left, put right where left used to be.
             var leftDestination = upcomingLeft.ensureAssigned();
             var unassignMove =
                     new ListUnassignMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index());
             var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingRightValue, leftDestination.entity(),
-                    leftDestination.index(), true);
+                    leftDestination.index());
             return CompositeMove.buildMove(unassignMove, assignMove);
         } else {
             var leftDestination = upcomingLeft.ensureAssigned();

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.move;
 import java.util.Iterator;
 import java.util.Objects;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.QueuedValuePlacer;
@@ -21,6 +22,7 @@ public final class PlacerBasedMoveRepository<Solution_>
 
     private final EntityPlacer<Solution_> placer;
     private @Nullable Iterator<Placement<Solution_>> placementIterator;
+    private @Nullable EnvironmentMode environmentMode = null;
 
     public PlacerBasedMoveRepository(EntityPlacer<Solution_> placer) {
         this.placer = Objects.requireNonNull(placer);
@@ -28,6 +30,12 @@ public final class PlacerBasedMoveRepository<Solution_>
 
     public EntityPlacer<Solution_> getPlacer() {
         return placer;
+    }
+
+    @Override
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        // We only store the environment mode and use it later when generating moves
+        this.environmentMode = environmentMode;
     }
 
     @Override
@@ -74,7 +82,8 @@ public final class PlacerBasedMoveRepository<Solution_>
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return Objects.requireNonNull(placementIterator).next().iterator();
+        var iterator = Objects.requireNonNull(placementIterator).next().iterator();
+        return new PlacementAssertionIterator(iterator, environmentMode);
     }
 
     public boolean hasNext() {
@@ -88,6 +97,30 @@ public final class PlacerBasedMoveRepository<Solution_>
         // and in these cases, the move selector does not rely on a list variable.
         return placer instanceof QueuedValuePlacer<Solution_> queuedValuePlacer
                 && queuedValuePlacer.hasListChangeMoveSelector();
+    }
+
+    @NullMarked
+    private class PlacementAssertionIterator implements Iterator<Move<Solution_>> {
+
+        private final Iterator<Move<Solution_>> childIterator;
+        private final EnvironmentMode environmentMode;
+
+        private PlacementAssertionIterator(Iterator<Move<Solution_>> childIterator, EnvironmentMode environmentMode) {
+            this.childIterator = Objects.requireNonNull(childIterator);
+            this.environmentMode = Objects.requireNonNull(environmentMode);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return childIterator.hasNext();
+        }
+
+        @Override
+        public Move<Solution_> next() {
+            var move = childIterator.next();
+            move.enableAssertions(environmentMode);
+            return move;
+        }
     }
 
 }

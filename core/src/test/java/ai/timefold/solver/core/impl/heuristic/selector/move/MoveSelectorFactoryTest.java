@@ -12,6 +12,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -236,6 +237,11 @@ class MoveSelectorFactoryTest {
             @Override
             public Move<TestdataSolution> doMove(ScoreDirector<TestdataSolution> scoreDirector) {
                 return null;
+            }
+
+            @Override
+            public void enableAssertions(EnvironmentMode environmentMode) {
+                // Do nothing
             }
         };
         final MoveSelector<TestdataSolution> baseMoveSelector =

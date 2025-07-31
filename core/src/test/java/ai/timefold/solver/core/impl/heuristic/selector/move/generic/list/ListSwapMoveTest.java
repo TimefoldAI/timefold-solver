@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -72,14 +73,22 @@ class ListSwapMoveTest {
         valueRangeManager.reset(solution);
 
         // different entity => valid left and right
-        assertThat(new ListSwapMove<>(otherVariableDescriptor, entity1, 0, entity2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListSwapMove<>(otherVariableDescriptor, entity1, 0, entity2, 0)
+                .isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
         // different entity => invalid left
-        assertThat(new ListSwapMove<>(otherVariableDescriptor, entity1, 1, entity2, 0).isMoveDoable(otherInnerScoreDirector))
-                .isFalse();
+        assertThatCode(() -> {
+            var move = new ListSwapMove<>(otherVariableDescriptor, entity1, 1, entity2, 0);
+            move.setAssertValueRange(true);
+            move.isMoveDoable(otherInnerScoreDirector);
+        })
+                .hasMessageContaining("is not doable");
         // different entity => invalid right
-        assertThat(new ListSwapMove<>(otherVariableDescriptor, entity1, 0, entity2, 1).isMoveDoable(otherInnerScoreDirector))
-                .isFalse();
+        assertThatCode(() -> {
+            var move = new ListSwapMove<>(otherVariableDescriptor, entity1, 0, entity2, 1);
+            move.setAssertValueRange(true);
+            move.isMoveDoable(otherInnerScoreDirector);
+        }).hasMessageContaining("is not doable");
     }
 
     @Test

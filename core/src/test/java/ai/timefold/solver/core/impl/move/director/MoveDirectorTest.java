@@ -404,7 +404,7 @@ class MoveDirectorTest {
         var ephemeralMoveDirector = moveDirector.ephemeral();
         var scoreDirector = ephemeralMoveDirector.getScoreDirector();
         var move = new ListAssignMove<>(TestdataSingleCascadingEntity.buildVariableDescriptorForValueList(), valueA,
-                entityA, 0, true);
+                entityA, 0);
         move.doMoveOnly(scoreDirector);
         assertThat(valueA.getCascadeValue()).isNotNull();
         ephemeralMoveDirector.close();

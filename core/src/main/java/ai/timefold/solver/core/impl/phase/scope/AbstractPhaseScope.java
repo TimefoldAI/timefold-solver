@@ -37,8 +37,6 @@ public abstract class AbstractPhaseScope<Solution_> {
 
     protected int bestSolutionStepIndex;
 
-    protected boolean assertValueRange = false;
-
     /**
      * The phase termination configuration
      */
@@ -101,14 +99,6 @@ public abstract class AbstractPhaseScope<Solution_> {
     }
 
     public abstract AbstractStepScope<Solution_> getLastCompletedStepScope();
-
-    public boolean isAssertValueRange() {
-        return assertValueRange;
-    }
-
-    public void setAssertValueRange(boolean assertValueRange) {
-        this.assertValueRange = assertValueRange;
-    }
 
     // ************************************************************************
     // Calculated methods

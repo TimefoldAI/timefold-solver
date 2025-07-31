@@ -27,6 +27,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FromEntitySortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.InitializedValueSelector;
@@ -497,6 +498,19 @@ public class ValueSelectorFactory<Solution_>
             valueSelector = new DowncastingValueSelector<>(valueSelector, config.getDowncastEntityClass());
         }
         return valueSelector;
+    }
+
+    public static <Solution_> IterableValueSelector<Solution_> applyValueRangeFiltering(
+            HeuristicConfigPolicy<Solution_> configPolicy,
+            IterableValueSelector<Solution_> valueSelector, EntityDescriptor<Solution_> entityDescriptor,
+            String valueSelectorId, SelectionCacheType minimumCacheType,
+            SelectionOrder selectionOrder, boolean randomSelection, boolean assertBothSides) {
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef(valueSelectorId);
+        var replayingValueSelector =
+                (IterableValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
+                        .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
+        return new FilteringValueRangeSelector<>(valueSelector, replayingValueSelector, randomSelection, assertBothSides);
     }
 
     public enum ListValueFilteringType {

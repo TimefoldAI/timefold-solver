@@ -18,14 +18,11 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
     private final int destinationIndex;
 
     public ListAssignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object planningValue, Object destinationEntity,
-            int destinationIndex, boolean assertValueRange) {
+            int destinationIndex) {
         this.variableDescriptor = variableDescriptor;
         this.planningValue = planningValue;
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
-        if (assertValueRange) {
-            enableValueRangeAssertion();
-        }
     }
 
     public Object getDestinationEntity() {
@@ -52,18 +49,26 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var doable = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
-        if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
-            return doable;
-        }
-        if (isAssertValueRange()) {
-            // When the value range is located at the entity,
-            // we need to check if the destination's value range accepts the upcoming value
-            ValueRangeManager<Solution_> valueRangeManager =
-                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-            doable = valueRangeManager
-                    .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
-                    .contains(planningValue);
+        var doable = getCachedDoableEvaluation();
+        if (doable == null) {
+            doable = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
+            if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
+                setCachedDoableEvaluation(doable);
+                return doable;
+            }
+            if (isAssertValueRange()) {
+                // When the value range is located at the entity,
+                // we need to check if the destination's value range accepts the upcoming value
+                ValueRangeManager<Solution_> valueRangeManager =
+                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+                doable = valueRangeManager
+                        .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
+                        .contains(planningValue);
+                setCachedDoableEvaluation(doable);
+                if (!doable) {
+                    throw new IllegalStateException("Impossible state: the move %s is not doable.".formatted(this));
+                }
+            }
         }
         return doable;
     }
@@ -84,7 +89,7 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public ListAssignMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         return new ListAssignMove<>(variableDescriptor, destinationScoreDirector.lookUpWorkingObject(planningValue),
-                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex, isAssertValueRange());
+                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex);
     }
 
     @Override

@@ -48,8 +48,7 @@ class RandomListChangeIteratorTest {
         var randomListChangeIterator = new RandomListChangeIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 sourceValueSelector,
-                destinationSelector,
-                true);
+                destinationSelector);
 
         // <3 => entity selector; >=3 => value selector
         final var destinationRange = entitySelector.getSize() + destinationValueSelector.getSize();

@@ -47,8 +47,6 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
         this.reversing = reversing;
-        // The move selector can still produce invalid moves, so we need to enable the assertion by default
-        enableValueRangeAssertion();
     }
 
     public Object getSourceEntity() {
@@ -81,26 +79,34 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var sameEntity = destinationEntity == sourceEntity;
-        if (sameEntity && destinationIndex == sourceIndex) {
-            return false;
-        }
-        var doable = !sameEntity || destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
-        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
-            return doable;
-        }
-        if (isAssertValueRange()) {
-            // When the first and second elements are different,
-            // and the value range is located at the entity,
-            // we need to check if the destination's value range accepts the upcoming values
-            ValueRangeManager<Solution_> valueRangeManager =
-                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-            var destinationValueRange =
-                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
-                            destinationEntity);
-            var sourceList = variableDescriptor.getValue(sourceEntity);
-            var subList = sourceList.subList(sourceIndex, sourceIndex + length);
-            doable = subList.stream().allMatch(destinationValueRange::contains);
+        var doable = getCachedDoableEvaluation();
+        if (doable == null) {
+            // The move selector can still produce invalid moves, so we need to enable the assertion by default
+            setAssertValueRange(true);
+            var sameEntity = destinationEntity == sourceEntity;
+            if (sameEntity && destinationIndex == sourceIndex) {
+                setCachedDoableEvaluation(false);
+                return false;
+            }
+            doable = !sameEntity || destinationIndex + length <= variableDescriptor.getListSize(destinationEntity);
+            if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
+                setCachedDoableEvaluation(doable);
+                return doable;
+            }
+            if (isAssertValueRange()) {
+                // When the first and second elements are different,
+                // and the value range is located at the entity,
+                // we need to check if the destination's value range accepts the upcoming values
+                ValueRangeManager<Solution_> valueRangeManager =
+                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+                var destinationValueRange =
+                        valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(),
+                                destinationEntity);
+                var sourceList = variableDescriptor.getValue(sourceEntity);
+                var subList = sourceList.subList(sourceIndex, sourceIndex + length);
+                doable = subList.stream().allMatch(destinationValueRange::contains);
+                setCachedDoableEvaluation(doable);
+            }
         }
         return doable;
     }
