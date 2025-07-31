@@ -20,10 +20,17 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
  */
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
-    protected final boolean assertMoveDoable;
+    private boolean assertValueRange = false;
 
-    protected AbstractMove(boolean assertMoveDoable) {
-        this.assertMoveDoable = assertMoveDoable;
+    protected AbstractMove() {
+    }
+
+    protected void enableValueRangeAssertion() {
+        this.assertValueRange = true;
+    }
+
+    protected boolean isAssertValueRange() {
+        return assertValueRange;
     }
 
     @Override

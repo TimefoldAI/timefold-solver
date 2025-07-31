@@ -45,7 +45,6 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
             SubList leftSubList,
             SubList rightSubList,
             boolean reversing) {
-        super(true);
         this.variableDescriptor = variableDescriptor;
         if (leftSubList.entity() == rightSubList.entity() && leftSubList.fromIndex() > rightSubList.fromIndex()) {
             this.leftSubList = rightSubList;
@@ -57,6 +56,8 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
         this.reversing = reversing;
         rightFromIndex = this.rightSubList.fromIndex();
         leftToIndex = this.leftSubList.getToIndex();
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        enableValueRangeAssertion();
     }
 
     public SubList getLeftSubList() {
@@ -78,7 +79,7 @@ public class SubListSwapMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        if (assertMoveDoable) {
+        if (isAssertValueRange()) {
             // When the left and right elements are different,
             // and the value range is located at the entity,
             // we need to check if the destination's value range accepts the upcoming values

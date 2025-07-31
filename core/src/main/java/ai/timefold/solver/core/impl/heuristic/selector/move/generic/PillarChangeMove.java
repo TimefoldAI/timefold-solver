@@ -26,7 +26,6 @@ public class PillarChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     public PillarChangeMove(List<Object> pillar, GenuineVariableDescriptor<Solution_> variableDescriptor,
             Object toPlanningValue) {
-        super(false);
         this.pillar = pillar;
         this.variableDescriptor = variableDescriptor;
         this.toPlanningValue = toPlanningValue;

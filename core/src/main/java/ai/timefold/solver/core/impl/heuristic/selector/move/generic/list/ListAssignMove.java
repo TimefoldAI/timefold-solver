@@ -18,12 +18,14 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
     private final int destinationIndex;
 
     public ListAssignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object planningValue, Object destinationEntity,
-            int destinationIndex, boolean assertMoveDoable) {
-        super(assertMoveDoable);
+            int destinationIndex, boolean assertValueRange) {
         this.variableDescriptor = variableDescriptor;
         this.planningValue = planningValue;
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
+        if (assertValueRange) {
+            enableValueRangeAssertion();
+        }
     }
 
     public Object getDestinationEntity() {
@@ -54,7 +56,7 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        if (assertMoveDoable) {
+        if (isAssertValueRange()) {
             // When the value range is located at the entity,
             // we need to check if the destination's value range accepts the upcoming value
             ValueRangeManager<Solution_> valueRangeManager =
@@ -82,7 +84,7 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public ListAssignMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         return new ListAssignMove<>(variableDescriptor, destinationScoreDirector.lookUpWorkingObject(planningValue),
-                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex, assertMoveDoable);
+                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex, isAssertValueRange());
     }
 
     @Override

@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
@@ -20,8 +19,6 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     private final IterableValueSelector<Solution_> sourceValueSelector;
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
-
-    private boolean assertMoveDoable;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
@@ -46,12 +43,6 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supplyManager = solverScope.getScoreDirector().getSupplyManager();
         this.listVariableStateSupply = supplyManager.demand(listVariableDescriptor.getStateDemand());
-    }
-
-    @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseStarted(phaseScope);
-        this.assertMoveDoable = phaseScope.isAssertMoveDoable();
     }
 
     public static <Solution_> IterableValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
@@ -95,13 +86,13 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
                     listVariableStateSupply,
                     sourceValueSelector,
                     destinationSelector,
-                    assertMoveDoable);
+                    isAssertValueRange());
         } else {
             return new OriginalListChangeIterator<>(
                     listVariableStateSupply,
                     sourceValueSelector,
                     destinationSelector,
-                    assertMoveDoable);
+                    isAssertValueRange());
         }
     }
 

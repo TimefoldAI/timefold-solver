@@ -27,7 +27,6 @@ public class SubChainReversingChangeMove<Solution_> extends AbstractMove<Solutio
 
     public SubChainReversingChangeMove(SubChain subChain, GenuineVariableDescriptor<Solution_> variableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply, Object toPlanningValue) {
-        super(false);
         this.subChain = subChain;
         this.variableDescriptor = variableDescriptor;
         this.toPlanningValue = toPlanningValue;
@@ -38,7 +37,6 @@ public class SubChainReversingChangeMove<Solution_> extends AbstractMove<Solutio
 
     public SubChainReversingChangeMove(SubChain subChain, GenuineVariableDescriptor<Solution_> variableDescriptor,
             Object toPlanningValue, Object oldTrailingLastEntity, Object newTrailingEntity) {
-        super(false);
         this.subChain = subChain;
         this.variableDescriptor = variableDescriptor;
         this.toPlanningValue = toPlanningValue;

@@ -12,11 +12,9 @@ public class DummyMove extends AbstractMove<TestdataSolution> implements CodeAss
     protected String code;
 
     public DummyMove() {
-        super(false);
     }
 
     public DummyMove(String code) {
-        super(false);
         this.code = code;
     }
 

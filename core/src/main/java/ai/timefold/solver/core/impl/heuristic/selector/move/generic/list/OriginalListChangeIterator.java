@@ -22,18 +22,18 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
-    private final boolean assertMoveDoable;
+    private final boolean assertValueRange;
     private Iterator<ElementPosition> destinationIterator;
 
     private Object upcomingValue;
 
     public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
             IterableValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector,
-            boolean assertMoveDoable) {
+            boolean assertValueRange) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
         this.destinationSelector = destinationSelector;
-        this.assertMoveDoable = assertMoveDoable;
+        this.assertValueRange = assertValueRange;
         this.destinationIterator = Collections.emptyIterator();
     }
 
@@ -46,7 +46,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             upcomingValue = valueIterator.next();
             destinationIterator = destinationSelector.iterator();
         }
-        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator, assertMoveDoable);
+        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator, assertValueRange);
         if (move == null) {
             return noUpcomingSelection();
         } else {
@@ -55,7 +55,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     }
 
     static <Solution_> Move<Solution_> buildChangeMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator, boolean assertMoveDoable) {
+            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator, boolean assertValueRange) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (upcomingDestination == null) {
@@ -65,14 +65,14 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
         if (upcomingSource instanceof PositionInList sourceElement) {
             if (upcomingDestination instanceof PositionInList destinationElement) {
                 return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
-                        destinationElement.entity(), destinationElement.index(), assertMoveDoable);
+                        destinationElement.entity(), destinationElement.index(), assertValueRange);
             } else {
                 return new ListUnassignMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index());
             }
         } else {
             if (upcomingDestination instanceof PositionInList destinationElement) {
                 return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
-                        destinationElement.index(), assertMoveDoable);
+                        destinationElement.index(), assertValueRange);
             } else {
                 // Only used in construction heuristics to give the CH an option to leave the element unassigned.
                 return NoChangeMove.getInstance();

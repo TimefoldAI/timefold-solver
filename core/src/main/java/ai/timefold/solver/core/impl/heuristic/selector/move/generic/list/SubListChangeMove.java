@@ -40,7 +40,6 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
             ListVariableDescriptor<Solution_> variableDescriptor,
             Object sourceEntity, int sourceIndex, int length,
             Object destinationEntity, int destinationIndex, boolean reversing) {
-        super(true);
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
         this.sourceIndex = sourceIndex;
@@ -48,6 +47,8 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
         this.reversing = reversing;
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        enableValueRangeAssertion();
     }
 
     public Object getSourceEntity() {
@@ -88,7 +89,7 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        if (assertMoveDoable) {
+        if (isAssertValueRange()) {
             // When the first and second elements are different,
             // and the value range is located at the entity,
             // we need to check if the destination's value range accepts the upcoming values

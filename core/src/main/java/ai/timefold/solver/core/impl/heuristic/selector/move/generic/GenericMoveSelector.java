@@ -10,15 +10,16 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
  * @see MoveSelector
  */
 public abstract class GenericMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
-    private boolean assertMoveDoable = true;
+
+    private boolean assertValueRange = true;
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-
+        this.assertValueRange = phaseScope.isAssertValueRange();
     }
 
-    public boolean isAssertMoveDoable() {
-        return assertMoveDoable;
+    public boolean isAssertValueRange() {
+        return assertValueRange;
     }
 }

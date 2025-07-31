@@ -19,7 +19,6 @@ public class ListUnassignMove<Solution_> extends AbstractMove<Solution_> {
     private Object movedValue;
 
     public ListUnassignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
         this.sourceIndex = sourceIndex;

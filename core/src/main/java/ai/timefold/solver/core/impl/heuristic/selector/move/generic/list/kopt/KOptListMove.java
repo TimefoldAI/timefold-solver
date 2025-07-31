@@ -31,7 +31,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             List<FlipSublistAction> equivalent2Opts,
             int postShiftAmount,
             int[] newEndIndices) {
-        super(true);
         this.listVariableDescriptor = listVariableDescriptor;
         this.descriptor = descriptor;
         this.equivalent2Opts = equivalent2Opts;
@@ -50,6 +49,8 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
 
         originalEntities = combinedList.delegateEntities;
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        enableValueRangeAssertion();
     }
 
     private KOptListMove(ListVariableDescriptor<Solution_> listVariableDescriptor,
@@ -58,7 +59,6 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             int postShiftAmount,
             int[] newEndIndices,
             Object[] originalEntities) {
-        super(true);
         this.listVariableDescriptor = listVariableDescriptor;
         this.descriptor = descriptor;
         this.equivalent2Opts = equivalent2Opts;
@@ -78,6 +78,8 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
         }
 
         this.originalEntities = originalEntities;
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        enableValueRangeAssertion();
     }
 
     KOptDescriptor<?> getDescriptor() {
@@ -120,7 +122,7 @@ public final class KOptListMove<Solution_> extends AbstractMove<Solution_> {
             // The changes will be applied to a single entity. No need to check the value ranges.
             return true;
         }
-        if (assertMoveDoable) {
+        if (isAssertValueRange()) {
             // When the value range is located at the entity,
             // we need to check if the destination's value range accepts the upcoming values
             ValueRangeManager<Solution_> valueRangeManager =

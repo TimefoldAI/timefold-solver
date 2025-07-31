@@ -21,7 +21,6 @@ public class ChangeMove<Solution_> extends AbstractMove<Solution_> {
     protected final Object toPlanningValue;
 
     public ChangeMove(GenuineVariableDescriptor<Solution_> variableDescriptor, Object entity, Object toPlanningValue) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.entity = entity;
         this.toPlanningValue = toPlanningValue;

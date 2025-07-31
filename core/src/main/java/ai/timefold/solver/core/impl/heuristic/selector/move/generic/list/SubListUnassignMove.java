@@ -30,7 +30,6 @@ public class SubListUnassignMove<Solution_> extends AbstractMove<Solution_> {
 
     private SubListUnassignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex,
             int length) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
         this.sourceIndex = sourceIndex;

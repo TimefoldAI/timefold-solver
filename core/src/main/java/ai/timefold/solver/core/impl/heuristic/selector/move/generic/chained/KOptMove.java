@@ -31,7 +31,6 @@ public class KOptMove<Solution_> extends AbstractMove<Solution_> {
     public KOptMove(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply, AnchorVariableSupply anchorVariableSupply,
             Object entity, Object[] values) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.inverseVariableSupply = inverseVariableSupply;
         this.anchorVariableSupply = anchorVariableSupply;

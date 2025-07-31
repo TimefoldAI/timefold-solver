@@ -40,7 +40,6 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
     public TailChainSwapMove(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply, AnchorVariableSupply anchorVariableSupply,
             Object leftEntity, Object rightValue) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.leftEntity = leftEntity;
         leftValue = variableDescriptor.getValue(leftEntity);
@@ -75,7 +74,6 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
     protected TailChainSwapMove(GenuineVariableDescriptor<Solution_> variableDescriptor,
             Object leftEntity, Object leftValue, Object leftAnchor,
             Object rightEntity, Object rightValue, Object rightAnchor) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.leftEntity = leftEntity;
         this.leftValue = leftValue;
@@ -96,7 +94,6 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
             Object leftEntity, Object leftValue, Object leftAnchor,
             Object rightEntity, Object rightValue, Object rightAnchor,
             Object leftNextEntity, Object rightNextEntity) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.leftEntity = leftEntity;
         this.leftValue = leftValue;
@@ -117,7 +114,6 @@ public class TailChainSwapMove<Solution_> extends AbstractMove<Solution_> {
             Object leftEntity, Object leftValue, Object leftAnchor,
             Object rightEntity, Object rightValue, Object rightAnchor,
             Object leftNextEntity, Object rightNextEntity, Object lastEntityInChain, Object entityAfterAnchor) {
-        super(false);
         this.variableDescriptor = variableDescriptor;
         this.leftEntity = leftEntity;
         this.leftValue = leftValue;

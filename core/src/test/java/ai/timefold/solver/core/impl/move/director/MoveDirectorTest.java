@@ -270,7 +270,7 @@ class MoveDirectorTest {
         var ephemeralMoveDirector = moveDirector.ephemeral();
         var scoreDirector = ephemeralMoveDirector.getScoreDirector();
         var move = new ListRuinRecreateMove<TestdataListSolution>(listVariableDescriptor,
-                ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1), Set.of(e1), true);
+                ruinRecreateConstructionHeuristicPhaseBuilder, new SolverScope<>(), List.of(v1), Set.of(e1));
         move.doMoveOnly(scoreDirector);
         var undoMove = (RecordedUndoMove<TestdataListSolution>) ephemeralMoveDirector.createUndoMove();
         // e1 must be analyzed at the beginning of the move execution

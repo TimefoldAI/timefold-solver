@@ -53,7 +53,6 @@ public final class CompositeMove<Solution_> extends AbstractMove<Solution_> {
      */
     @SafeVarargs
     CompositeMove(Move<Solution_>... moves) {
-        super(false);
         this.moves = moves;
     }
 

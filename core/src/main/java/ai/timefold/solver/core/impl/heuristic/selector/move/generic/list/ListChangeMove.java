@@ -88,16 +88,18 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
      * @param sourceIndex index in sourceEntity's list variable from which a planning value will be removed
      * @param destinationEntity planning entity instance to which a planning value will be moved, for example "Bob"
      * @param destinationIndex index in destinationEntity's list variable where the moved planning value will be inserted
-     * @param assertMoveDoable assert the move is doable when the value range is located in the entity
+     * @param assertValueRange assert the move is doable in relation to the value range
      */
     public ListChangeMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex,
-            Object destinationEntity, int destinationIndex, boolean assertMoveDoable) {
-        super(assertMoveDoable);
+            Object destinationEntity, int destinationIndex, boolean assertValueRange) {
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
         this.sourceIndex = sourceIndex;
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
+        if (assertValueRange) {
+            enableValueRangeAssertion();
+        }
     }
 
     public Object getSourceEntity() {
@@ -138,7 +140,7 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        if (assertMoveDoable) {
+        if (isAssertValueRange()) {
             // When the source and destination are different,
             // and the value range is located at the entity,
             // we need to check if the destination's value range accepts the upcoming value
@@ -149,7 +151,7 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
                     .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
                     .contains(value);
             if (!doable) {
-                throw new IllegalStateException("Impossible state: the move is not doable.");
+                throw new IllegalStateException("Impossible state: the move %s is not doable.".formatted(this));
             }
         }
         return doable;
@@ -184,7 +186,7 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
     @Override
     public ListChangeMove<Solution_> rebase(ScoreDirector<Solution_> destinationScoreDirector) {
         return new ListChangeMove<>(variableDescriptor, destinationScoreDirector.lookUpWorkingObject(sourceEntity), sourceIndex,
-                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex, assertMoveDoable);
+                destinationScoreDirector.lookUpWorkingObject(destinationEntity), destinationIndex, isAssertValueRange());
     }
 
     // ************************************************************************

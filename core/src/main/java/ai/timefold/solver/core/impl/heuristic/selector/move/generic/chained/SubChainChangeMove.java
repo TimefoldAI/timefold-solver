@@ -26,7 +26,6 @@ public class SubChainChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     public SubChainChangeMove(SubChain subChain, GenuineVariableDescriptor<Solution_> variableDescriptor,
             SingletonInverseVariableSupply inverseVariableSupply, Object toPlanningValue) {
-        super(false);
         this.subChain = subChain;
         this.variableDescriptor = variableDescriptor;
         this.toPlanningValue = toPlanningValue;
@@ -37,7 +36,6 @@ public class SubChainChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     public SubChainChangeMove(SubChain subChain, GenuineVariableDescriptor<Solution_> variableDescriptor,
             Object toPlanningValue, Object oldTrailingLastEntity, Object newTrailingEntity) {
-        super(false);
         this.subChain = subChain;
         this.variableDescriptor = variableDescriptor;
         this.toPlanningValue = toPlanningValue;

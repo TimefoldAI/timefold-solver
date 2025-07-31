@@ -78,12 +78,13 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
             ListVariableDescriptor<Solution_> variableDescriptor,
             Object leftEntity, int leftIndex,
             Object rightEntity, int rightIndex) {
-        super(true);
         this.variableDescriptor = variableDescriptor;
         this.leftEntity = leftEntity;
         this.leftIndex = leftIndex;
         this.rightEntity = rightEntity;
         this.rightIndex = rightIndex;
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        enableValueRangeAssertion();
     }
 
     public Object getLeftEntity() {
@@ -123,7 +124,7 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        if (assertMoveDoable) {
+        if (isAssertValueRange()) {
             // When the left and right are different,
             // and the value range is located at the entity,
             // we need to check if the destination's value range accepts the upcoming values

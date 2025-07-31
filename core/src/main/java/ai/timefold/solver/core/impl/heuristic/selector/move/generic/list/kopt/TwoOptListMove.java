@@ -58,7 +58,6 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             Object firstEntity, Object secondEntity,
             int firstEdgeEndpoint,
             int secondEdgeEndpoint) {
-        super(true);
         this.variableDescriptor = variableDescriptor;
         this.firstEntity = firstEntity;
         this.secondEntity = secondEntity;
@@ -83,6 +82,8 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             entityFirstUnpinnedIndex = 0;
             shift = 0;
         }
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        enableValueRangeAssertion();
     }
 
     private TwoOptListMove(ListVariableDescriptor<Solution_> variableDescriptor,
@@ -91,7 +92,6 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
             int secondEdgeEndpoint,
             int entityFirstUnpinnedIndex,
             int shift) {
-        super(true);
         this.variableDescriptor = variableDescriptor;
         this.firstEntity = firstEntity;
         this.secondEntity = secondEntity;
@@ -99,6 +99,8 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         this.secondEdgeEndpoint = secondEdgeEndpoint;
         this.entityFirstUnpinnedIndex = entityFirstUnpinnedIndex;
         this.shift = shift;
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        enableValueRangeAssertion();
     }
 
     @Override
@@ -229,7 +231,7 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
         if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
             return doable;
         }
-        if (assertMoveDoable) {
+        if (isAssertValueRange()) {
             // When the first and second elements are different,
             // and the value range is located at the entity,
             // we need to check if the destination's value range accepts the upcoming values
