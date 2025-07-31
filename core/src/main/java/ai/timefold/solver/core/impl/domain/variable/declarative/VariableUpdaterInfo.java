@@ -64,6 +64,18 @@ public record VariableUpdaterInfo<Solution_>(
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof VariableUpdaterInfo<?> that))
+            return false;
+        return groupId == that.groupId && Objects.equals(id, that.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, groupId);
+    }
+
+    @Override
     public String toString() {
         return (groupEntities == null) ? "%s (%d)".formatted(id.name(), groupId)
                 : "%s (%d) %s".formatted(id.name(), groupId, Arrays.toString(groupEntities));

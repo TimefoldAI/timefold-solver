@@ -12,9 +12,9 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSou
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-public class DeclarativeShadowVariableDescriptorTest {
+class DeclarativeShadowVariableDescriptorTest {
     @Test
-    public void groupKeyMemberForNoKey() {
+    void groupKeyMemberForNoKey() {
         var member = DeclarativeShadowVariableDescriptor.getGroupKeyMemberForEntityProperty(
                 null, null, null, "shadow", null);
 
@@ -23,7 +23,7 @@ public class DeclarativeShadowVariableDescriptorTest {
 
     @Test
     @SuppressWarnings({ "rawtype", "unchecked" })
-    public void groupKeyMemberForEntityPropertyForFact() {
+    void groupKeyMemberForEntityPropertyForFact() {
         record Example(int fact) {
         }
 
@@ -50,7 +50,7 @@ public class DeclarativeShadowVariableDescriptorTest {
 
     @Test
     @SuppressWarnings({ "rawtype", "unchecked" })
-    public void groupKeyMemberForEntityPropertyForVariable() {
+    void groupKeyMemberForEntityPropertyForVariable() {
         var solutionMetamodel = Mockito.mock(PlanningSolutionMetaModel.class);
         var exampleMetamodel = Mockito.mock(PlanningEntityMetaModel.class);
         var calculator = Mockito.mock(MemberAccessor.class);

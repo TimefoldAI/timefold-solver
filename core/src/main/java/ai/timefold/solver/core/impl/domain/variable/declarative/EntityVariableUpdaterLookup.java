@@ -65,7 +65,7 @@ public class EntityVariableUpdaterLookup<Solution_> {
         Supplier<Lookup<Solution_>> lookupSupplier = () -> {
             var valueMap = new IdentityHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
             return new Lookup<>((entity, ignored) -> valueMap.get(entity),
-                    (entity, ignored, valueSupplier) -> valueMap.computeIfAbsent(entity, (ignored2) -> valueSupplier.get()));
+                    (entity, ignored, valueSupplier) -> valueMap.computeIfAbsent(entity, ignored2 -> valueSupplier.get()));
         };
         return new EntityVariableUpdaterLookup<>(lookupSupplier);
     }
