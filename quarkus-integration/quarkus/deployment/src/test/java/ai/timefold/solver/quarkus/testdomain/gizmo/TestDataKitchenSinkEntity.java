@@ -22,6 +22,7 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVar
 @PlanningEntity
 public class TestDataKitchenSinkEntity {
 
+    private String groupId;
     private Integer intVariable;
 
     @CustomShadowVariable(
@@ -68,7 +69,7 @@ public class TestDataKitchenSinkEntity {
         return stringVariable;
     }
 
-    @ShadowSources("stringVariable")
+    @ShadowSources(value = "stringVariable", alignmentKey = "groupId")
     private String copyStringVariable() {
         return stringVariable;
     }

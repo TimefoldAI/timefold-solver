@@ -20,6 +20,7 @@ import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurr
 import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 class ConcurrentValuesShadowVariableTest {
 
@@ -112,12 +113,12 @@ class ConcurrentValuesShadowVariableTest {
         var entity2 = new TestdataConcurrentEntity("v2");
         var entity3 = new TestdataConcurrentEntity("v3");
 
-        var valueA1 = new TestdataConcurrentValue("a1");
-        var valueA2 = new TestdataConcurrentValue("a2");
-        var valueB1 = new TestdataConcurrentValue("b1");
-        var valueB2 = new TestdataConcurrentValue("b2");
-        var valueB3 = new TestdataConcurrentValue("b3");
-        var valueC = new TestdataConcurrentValue("c");
+        var valueA1 = Mockito.spy(new TestdataConcurrentValue("a1"));
+        var valueA2 = Mockito.spy(new TestdataConcurrentValue("a2"));
+        var valueB1 = Mockito.spy(new TestdataConcurrentValue("b1"));
+        var valueB2 = Mockito.spy(new TestdataConcurrentValue("b2"));
+        var valueB3 = Mockito.spy(new TestdataConcurrentValue("b3"));
+        var valueC = Mockito.spy(new TestdataConcurrentValue("c"));
 
         var concurrentGroupA = List.of(valueA1, valueA2);
         var concurrentGroupB = List.of(valueB1, valueB2, valueB3);
@@ -138,6 +139,14 @@ class ConcurrentValuesShadowVariableTest {
         entity3.setValues(List.of(valueB1, valueC));
         SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
                 valueB1, valueB2, valueB3, valueC);
+
+        // Make sure only one group updater for serviceStartTimeUpdater is called.
+        Mockito.verify(valueA1, Mockito.times(1)).serviceStartTimeUpdater();
+        Mockito.verify(valueA2, Mockito.times(0)).serviceStartTimeUpdater();
+
+        Mockito.verify(valueB1, Mockito.times(1)).serviceStartTimeUpdater();
+        Mockito.verify(valueB2, Mockito.times(0)).serviceStartTimeUpdater();
+        Mockito.verify(valueB3, Mockito.times(0)).serviceStartTimeUpdater();
 
         // No delay for A1/A2, since their entities arrive at the same time
         assertStartsAfterDuration(Duration.ZERO, valueA1, valueA2);

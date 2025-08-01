@@ -1094,7 +1094,7 @@ class TimefoldProcessor {
     }
 
     private static void generateDomainAccessorsForShadowSources(IndexView indexView,
-            ArrayList<AnnotationInstance> membersToGeneratedAccessorsForCollection) {
+            List<AnnotationInstance> membersToGeneratedAccessorsForCollection) {
         for (var shadowSources : indexView.getAnnotations(DotNames.SHADOW_SOURCES)) {
             Class<?> rootType;
             try {
@@ -1106,26 +1106,37 @@ class TimefoldProcessor {
                                 ShadowSources.class.getSimpleName()));
             }
             var sources = shadowSources.value().asStringArray();
-            for (var source : sources) {
-                for (var iterator = RootVariableSource.pathIterator(rootType, source); iterator.hasNext();) {
-                    var member = iterator.next().member();
-                    AnnotationTarget target;
+            var alignmentKey = shadowSources.value("alignmentKey");
 
-                    if (member instanceof Field field) {
-                        target = indexView.getClassByName(field.getDeclaringClass()).field(field.getName());
-                    } else if (member instanceof Method method) {
-                        target = indexView.getClassByName(method.getDeclaringClass()).method(method.getName());
-                    } else {
-                        throw new IllegalStateException("Member (%s) is not on a field or method."
-                                .formatted(member));
-                    }
-                    // Create a fake annotation for it
-                    membersToGeneratedAccessorsForCollection.add(
-                            AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
-                                    .value(source)
-                                    .buildWithTarget(target));
-                }
+            if (alignmentKey != null && !alignmentKey.asString().isEmpty()) {
+                generateDomainAccessorsForSourcePath(indexView, rootType, alignmentKey.asString(),
+                        membersToGeneratedAccessorsForCollection);
             }
+            for (var source : sources) {
+                generateDomainAccessorsForSourcePath(indexView, rootType, source, membersToGeneratedAccessorsForCollection);
+            }
+        }
+    }
+
+    private static void generateDomainAccessorsForSourcePath(IndexView indexView, Class<?> rootType, String source,
+            List<AnnotationInstance> membersToGeneratedAccessorsForCollection) {
+        for (var iterator = RootVariableSource.pathIterator(rootType, source); iterator.hasNext();) {
+            var member = iterator.next().member();
+            AnnotationTarget target;
+
+            if (member instanceof Field field) {
+                target = indexView.getClassByName(field.getDeclaringClass()).field(field.getName());
+            } else if (member instanceof Method method) {
+                target = indexView.getClassByName(method.getDeclaringClass()).method(method.getName());
+            } else {
+                throw new IllegalStateException("Member (%s) is not on a field or method."
+                        .formatted(member));
+            }
+            // Create a fake annotation for it
+            membersToGeneratedAccessorsForCollection.add(
+                    AnnotationInstance.builder(DotNames.SHADOW_SOURCES)
+                            .value(source)
+                            .buildWithTarget(target));
         }
     }
 

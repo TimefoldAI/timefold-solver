@@ -4,27 +4,41 @@ import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.BiConsumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.util.MutableReference;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public class EntityVariableUpdaterLookup<Solution_> {
-    private final Map<VariableMetaModel<?, ?, ?>, Lookup<Solution_>> variableToEntityLookup;
+    private final Map<Object, Lookup<Solution_>> variableToEntityLookup;
     private final Supplier<Lookup<Solution_>> entityLookupSupplier;
     private int nextId = 0;
 
-    private record Lookup<Solution_>(Function<Object, List<VariableUpdaterInfo<Solution_>>> getter,
-            BiConsumer<Object, Supplier<List<VariableUpdaterInfo<Solution_>>>> setter) {
+    private interface LookupGetter<Solution_> {
+        List<VariableUpdaterInfo<Solution_>> get(Object entity, VariableMetaModel<Solution_, ?, ?> variableMetaModel);
+    }
 
-        List<VariableUpdaterInfo<Solution_>> getUpdaters(Object entity) {
-            return getter.apply(entity);
+    private interface LookupSetter<Solution_> {
+        void putIfMissing(Object entity, VariableMetaModel<Solution_, ?, ?> variableMetaModel,
+                Supplier<List<VariableUpdaterInfo<Solution_>>> valueSupplier);
+    }
+
+    private record Lookup<Solution_>(
+            LookupGetter<Solution_> getter,
+            LookupSetter<Solution_> setter) {
+
+        List<VariableUpdaterInfo<Solution_>> getUpdaters(Object entity, VariableMetaModel<Solution_, ?, ?> variableMetaModel) {
+            return getter.get(entity, variableMetaModel);
         }
 
-        void setUpdaters(Object entity, Supplier<List<VariableUpdaterInfo<Solution_>>> updatersSupplier) {
-            setter.accept(entity, updatersSupplier);
+        void setUpdaters(Object entity, VariableMetaModel<Solution_, ?, ?> variableMetaModel,
+                Supplier<List<VariableUpdaterInfo<Solution_>>> updatersSupplier) {
+            setter.putIfMissing(entity, variableMetaModel, updatersSupplier);
         }
 
     }
@@ -37,8 +51,8 @@ public class EntityVariableUpdaterLookup<Solution_> {
     public static <Solution_> EntityVariableUpdaterLookup<Solution_> entityIndependentLookup() {
         Supplier<Lookup<Solution_>> lookupSupplier = () -> {
             var sharedValue = new MutableReference<List<VariableUpdaterInfo<Solution_>>>(null);
-            return new Lookup<>(ignored -> sharedValue.getValue(),
-                    (ignored, valueSupplier) -> {
+            return new Lookup<>((ignored1, ignored2) -> sharedValue.getValue(),
+                    (ignored1, ignored2, valueSupplier) -> {
                         if (sharedValue.getValue() == null) {
                             sharedValue.setValue(valueSupplier.get());
                         }
@@ -50,17 +64,56 @@ public class EntityVariableUpdaterLookup<Solution_> {
     public static <Solution_> EntityVariableUpdaterLookup<Solution_> entityDependentLookup() {
         Supplier<Lookup<Solution_>> lookupSupplier = () -> {
             var valueMap = new IdentityHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
-            return new Lookup<>(valueMap::get,
-                    (entity, valueSupplier) -> valueMap.computeIfAbsent(entity, ignored -> valueSupplier.get()));
+            return new Lookup<>((entity, ignored) -> valueMap.get(entity),
+                    (entity, ignored, valueSupplier) -> valueMap.computeIfAbsent(entity, ignored2 -> valueSupplier.get()));
         };
         return new EntityVariableUpdaterLookup<>(lookupSupplier);
     }
 
-    public List<VariableUpdaterInfo<Solution_>> computeUpdatersForVariableOnEntity(VariableMetaModel<?, ?, ?> variableMetaModel,
+    public static <Solution_> EntityVariableUpdaterLookup<Solution_>
+            groupedEntityDependentLookup(
+                    Function<VariableMetaModel<Solution_, ?, ?>, @Nullable Function<Object, @Nullable Object>> variableToAlignmentKeyMapper) {
+        Supplier<Lookup<Solution_>> lookupSupplier = () -> {
+            var valueMap = new IdentityHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
+            var alignmentKeyToUpdaters = new LinkedHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
+
+            LookupGetter<Solution_> valueReader =
+                    (entity, variableMetaModel) -> {
+                        var alignmentKeyMapper = variableToAlignmentKeyMapper.apply(variableMetaModel);
+                        if (alignmentKeyMapper != null) {
+                            var alignmentKey = alignmentKeyMapper.apply(entity);
+                            if (alignmentKey != null) {
+                                return alignmentKeyToUpdaters.get(alignmentKey);
+                            }
+                        }
+                        return valueMap.get(entity);
+                    };
+
+            LookupSetter<Solution_> valueSetter =
+                    (entity, variableMetaModel, valueSupplier) -> {
+                        var alignmentKeyMapper = variableToAlignmentKeyMapper.apply(variableMetaModel);
+                        if (alignmentKeyMapper != null) {
+                            var alignmentKey = alignmentKeyMapper.apply(entity);
+                            if (alignmentKey != null) {
+                                alignmentKeyToUpdaters.computeIfAbsent(alignmentKey, ignored -> valueSupplier.get());
+                                return;
+                            }
+                        }
+                        valueMap.computeIfAbsent(entity, ignored -> valueSupplier.get());
+                    };
+            return new Lookup<>(valueReader,
+                    valueSetter);
+        };
+
+        return new EntityVariableUpdaterLookup<>(lookupSupplier);
+    }
+
+    public List<VariableUpdaterInfo<Solution_>> computeUpdatersForVariableOnEntity(
+            VariableMetaModel<Solution_, ?, ?> variableMetaModel,
             Object entity, Supplier<List<VariableUpdaterInfo<Solution_>>> updatersSupplier) {
         var entityLookup = variableToEntityLookup.computeIfAbsent(variableMetaModel, ignored -> entityLookupSupplier.get());
-        entityLookup.setUpdaters(entity, updatersSupplier);
-        return entityLookup.getUpdaters(entity);
+        entityLookup.setUpdaters(entity, variableMetaModel, updatersSupplier);
+        return entityLookup.getUpdaters(entity, variableMetaModel);
     }
 
     public int getNextId() {

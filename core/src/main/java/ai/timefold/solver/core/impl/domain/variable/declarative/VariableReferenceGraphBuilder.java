@@ -37,8 +37,14 @@ public final class VariableReferenceGraphBuilder<Solution_> {
 
     public <Entity_> void addVariableReferenceEntity(Entity_ entity, List<VariableUpdaterInfo<Solution_>> variableReferences) {
         var groupId = variableReferences.get(0).groupId();
+        var isGroup = variableReferences.get(0).groupEntities() != null;
+        var entityRepresentative = entity;
+        if (isGroup) {
+            entityRepresentative = (Entity_) variableReferences.get(0).groupEntities()[0];
+        }
         var instanceMap = variableGroupIdToInstanceMap.get(groupId);
-        var instance = instanceMap == null ? null : instanceMap.get(entity);
+
+        var instance = instanceMap == null ? null : instanceMap.get(entityRepresentative);
         if (instance != null) {
             return;
         }
@@ -46,15 +52,26 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             instanceMap = new IdentityHashMap<>();
             variableGroupIdToInstanceMap.put(groupId, instanceMap);
         }
+        var node = new EntityVariablePair<>(entityRepresentative, variableReferences, instanceList.size());
 
-        var node = new EntityVariablePair<>(entity, variableReferences, instanceList.size());
+        if (isGroup) {
+            for (var groupEntity : variableReferences.get(0).groupEntities()) {
+                addToInstanceMaps(instanceMap, groupEntity, node, variableReferences);
+            }
+        } else {
+            addToInstanceMaps(instanceMap, entity, node, variableReferences);
+        }
+        instanceList.add(node);
+    }
+
+    private void addToInstanceMaps(Map<Object, EntityVariablePair<Solution_>> instanceMap,
+            Object entity, EntityVariablePair<Solution_> node, List<VariableUpdaterInfo<Solution_>> variableReferences) {
         instanceMap.put(entity, node);
         for (var variable : variableReferences) {
             var variableInstanceMap =
                     variableReferenceToInstanceMap.computeIfAbsent(variable.id(), ignored -> new IdentityHashMap<>());
             variableInstanceMap.put(entity, node);
         }
-        instanceList.add(node);
     }
 
     public void addFixedEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {

@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.List;
 import java.util.Objects;
@@ -130,36 +131,19 @@ final class AffectedEntitiesUpdater<Solution_>
         }
 
         for (var shadowVariableReference : shadowVariableReferences) {
-            anyChanged |= updateShadowVariable(entityVariable, isLooped, shadowVariableReference, entity);
+            anyChanged |= updateShadowVariable(isLooped, shadowVariableReference, entity);
         }
 
         return anyChanged;
     }
 
-    private boolean updateShadowVariable(EntityVariablePair<Solution_> entityVariable, boolean isLooped,
+    private boolean updateShadowVariable(boolean isLooped,
             VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity) {
-        var oldValue = shadowVariableReference.memberAccessor().executeGetter(entity);
         if (isLooped) {
-            if (oldValue != null) {
-                affectedEntities.add(entityVariable);
-                changeShadowVariableAndNotify(shadowVariableReference, entity, null);
-            }
-            return true;
+            return shadowVariableReference.updateIfChanged(entity, null, changedVariableNotifier);
         } else {
-            var newValue = shadowVariableReference.calculator().apply(entity);
-            if (!Objects.equals(oldValue, newValue)) {
-                affectedEntities.add(entityVariable);
-                changeShadowVariableAndNotify(shadowVariableReference, entity, newValue);
-                return true;
-            }
+            return shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
         }
-        return false;
-    }
-
-    private void changeShadowVariableAndNotify(VariableUpdaterInfo<Solution_> shadowVariableReference, Object entity,
-            Object newValue) {
-        var variableDescriptor = shadowVariableReference.variableDescriptor();
-        changeShadowVariableAndNotify(variableDescriptor, entity, newValue);
     }
 
     private void changeShadowVariableAndNotify(VariableDescriptor<Solution_> variableDescriptor, Object entity,
@@ -184,7 +168,12 @@ final class AffectedEntitiesUpdater<Solution_>
             if (shadowVariableLoopedDescriptor == null) {
                 return;
             }
-            entitiesForLoopedVarUpdateSet.add(shadowVariable.entity());
+            var entityGroup = shadowVariable.variableReferences().get(0).groupEntities();
+            if (entityGroup == null) {
+                entitiesForLoopedVarUpdateSet.add(shadowVariable.entity());
+            } else {
+                entitiesForLoopedVarUpdateSet.addAll(Arrays.asList(entityGroup));
+            }
         }
 
         public void processAndClear() {

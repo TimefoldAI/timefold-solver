@@ -1018,6 +1018,138 @@ Do not use a @ShadowVariableLooped property in a method annotated with @ShadowSo
 @ShadowSources marked methods do not need to check @ShadowVariableLooped properties, since they are only called if all their dependencies are not looped.
 ====
 
+==== Aligning Shadow Variables
+
+`@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
+
+image::using-timefold-solver/modeling-planning-problems/alignmentShadowVariable.png[align="center"]
+
+To be used, a few requirements must be met:
+
+* `alignmentKey` must be the name of a problem fact on the entity.
+As with any problem fact, the value of this fact must not change during solving.
+
+* For all entities with the same, non-null `alignmentKey` value, calling the supplier method will result in the same value regardless of what entity is called.
+
+[IMPORTANT]
+====
+Only use alignment keys when you can *guarantee* the two requirements above are met.
+Since the calculation will only be performed on a single entity, if the supplier method can return a different value depending on what aligned entity is chosen, you will get *inconsistent and incorrect* results.
+====
+
+The code below meets the requirements, since the `leader` field is not a variable, and entities with the same `leader` will get the same value.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Leader {
+    @PlanningVariable
+    Integer value;
+    // ...
+}
+
+@PlanningEntity
+public class Follower {
+    Leader leader;
+
+    @ShadowVariable(supplierName="valueSupplier")
+    Integer value;
+
+    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
+    public Integer valueSupplier() {
+      return leader.value;
+    }
+}
+----
+====
+
+However, the code below does not meet the requirements, since `Follower` entities with the same `leader` but a different `minValue` may calculate different values.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Leader {
+    @PlanningVariable
+    Integer value;
+    // ...
+}
+
+@PlanningEntity
+public class Follower {
+    Leader leader;
+    int minValue;
+
+    @ShadowVariable(supplierName="valueSupplier")
+    Integer value;
+
+    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
+    public Integer valueSupplier() {
+      if (leader.value == null || leader.value < minValue) {
+          return minValue;
+      }
+      return leader.value;
+    }
+}
+----
+====
+
+Entities where the `alignmentKey` is evaluated to `null` are each calculated separately and won't share calculations for that shadow variable with other entities.
+
+This feature is particularly useful when you have a group of entities that must be aligned to the same value.
+For example:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+
+    @PreviousElementShadowVariable
+    Job previous;
+
+    private Collection<Job> alignedJobs;
+
+    @ShadowVariable(supplierName="readyDateSupplier")
+    private LocalDateTime readyDate;
+
+    @ShadowVariable(supplierName="startDateSupplier")
+    private LocalDateTime startDate;
+
+    @ShadowSources(/* ... */)
+    public LocalDate readyDateSupplier() {
+        // ...
+    }
+
+    @ShadowSources(value = {"readyDate", "alignedJobs[].readyDate"}, alignmentKey="alignedJobs")
+    public LocalDate startDateSupplier() {
+        if (alignedJobs == null) {
+            // All entities with a null alignmentKey (in this case, "alignedJobs")
+            // are calculated separately.
+            return readyDate;
+        }
+        var lastReadyDate = readyDate;
+        for (var job : alignedJobs) {
+            if (job.readyDate.isAfter(lastReadyDate)) {
+                lastReadyDate = job.readyDate;
+            }
+        }
+        return lastReadyDate;
+    }
+}
+----
+====
+
 === Shadow variable cloning
 
 A shadow variable's value (just like a genuine variable's value)

@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
+import java.lang.reflect.Member;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
@@ -18,12 +20,15 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     MemberAccessor calculator;
     RootVariableSource<?, ?>[] sources;
     String[] sourcePaths;
+    String alignmentKey;
+    Function<Object, Object> alignmentKeyMap;
 
     public DeclarativeShadowVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
@@ -80,6 +85,12 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                     Maybe add one source?
                     """.formatted(methodName, ShadowVariable.class.getSimpleName(), variableMemberAccessor));
         }
+
+        if (shadowVariableUpdater.alignmentKey() != null && !shadowVariableUpdater.alignmentKey().isEmpty()) {
+            alignmentKey = shadowVariableUpdater.alignmentKey();
+        } else {
+            alignmentKey = null;
+        }
     }
 
     @Override
@@ -105,15 +116,59 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     @Override
     public void linkVariableDescriptors(DescriptorPolicy descriptorPolicy) {
         sources = new RootVariableSource[sourcePaths.length];
+        var solutionMetamodel = entityDescriptor.getSolutionDescriptor().getMetaModel();
+        var memberAccessorFactory = entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory();
+
         for (int i = 0; i < sources.length; i++) {
             sources[i] = RootVariableSource.from(
-                    entityDescriptor.getSolutionDescriptor().getMetaModel(),
+                    solutionMetamodel,
                     entityDescriptor.getEntityClass(),
                     variableMemberAccessor.getName(),
                     sourcePaths[i],
-                    entityDescriptor.getSolutionDescriptor().getMemberAccessorFactory(),
+                    memberAccessorFactory,
                     descriptorPolicy);
         }
+
+        var alignmentKeyMember = getAlignmentKeyMemberForEntityProperty(solutionMetamodel,
+                entityDescriptor.getEntityClass(),
+                calculator,
+                variableName,
+                alignmentKey);
+        if (alignmentKeyMember != null) {
+            alignmentKeyMap = memberAccessorFactory.buildAndCacheMemberAccessor(alignmentKeyMember,
+                    MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
+                    descriptorPolicy.getDomainAccessType())::executeGetter;
+        } else {
+            alignmentKeyMap = null;
+        }
+    }
+
+    protected static Member getAlignmentKeyMemberForEntityProperty(
+            PlanningSolutionMetaModel<?> solutionMetamodel,
+            Class<?> entityClass,
+            MemberAccessor calculator,
+            String variableName,
+            String propertyName) {
+        if (propertyName == null) {
+            return null;
+        }
+        Member member = RootVariableSource.getMember(entityClass,
+                propertyName, entityClass,
+                propertyName);
+        if (RootVariableSource.isVariable(solutionMetamodel, member.getDeclaringClass(),
+                member.getName())) {
+            throw new IllegalArgumentException(
+                    """
+                            The @%s-annotated supplier method (%s) for variable (%s) on class (%s) uses a alignmentKey (%s) that is a variable.
+                            A alignmentKey must be a problem fact and cannot change during solving.
+                            """
+                            .formatted(ShadowSources.class.getSimpleName(),
+                                    calculator.getName(),
+                                    variableName,
+                                    entityClass.getCanonicalName(),
+                                    propertyName));
+        }
+        return member;
     }
 
     @Override
@@ -127,6 +182,10 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     public MemberAccessor getCalculator() {
         return calculator;
+    }
+
+    public Function<Object, Object> getAlignmentKeyMap() {
+        return alignmentKeyMap;
     }
 
     public RootVariableSource<?, ?>[] getSources() {
