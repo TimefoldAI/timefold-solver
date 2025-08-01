@@ -98,19 +98,22 @@ public @interface ShadowSources {
 
     /**
      * If non-empty, this is the property name of a problem fact on the entity that will be used
-     * to identify the entity's group.
+     * to define a group of entities to align values for.
      * <p>
-     * When the group key is non-null, the shadow variable will only be calculated
-     * for one entity with that group key, and all other entities with that group key will
+     * When the alignment key is null, the entity is considered independent and their alignment will
+     * not be aligned with any other entity.
+     * When the alignment key is non-null, the shadow variable will only be calculated
+     * for one entity with that alignment key, and all other entities with that alignment key will
      * have their shadows set to that value.
      * <p>
-     * When the group key is unspecified or null, the entity is not considered to
-     * be part of a group and will not share variable calculations with other
+     * When the alignment key is unspecified or null, the entity is not considered to
+     * be part of any alignment group and will not share variable calculations with other
      * entities.
      * <p>
-     * Important: the group key must not be a variable and must not change during solving.
+     * Important: the alignment key must not be a variable and must not change during solving.
      *
-     * @return The property name of a problem fact on the entity to group by, or the empty string to not performing grouping.
+     * @return The property name of a problem fact on the entity to use for value alignment, or the empty string to not align
+     *         values with any other entity.
      */
-    String groupKey() default "";
+    String alignmentKey() default "";
 }

@@ -72,18 +72,18 @@ public class EntityVariableUpdaterLookup<Solution_> {
 
     public static <Solution_> EntityVariableUpdaterLookup<Solution_>
             groupedEntityDependentLookup(
-                    Function<VariableMetaModel<Solution_, ?, ?>, @Nullable Function<Object, @Nullable Object>> variableToGroupKeyMapper) {
+                    Function<VariableMetaModel<Solution_, ?, ?>, @Nullable Function<Object, @Nullable Object>> variableToAlignmentKeyMapper) {
         Supplier<Lookup<Solution_>> lookupSupplier = () -> {
             var valueMap = new IdentityHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
-            var groupValueMap = new LinkedHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
+            var alignmentKeyToUpdaters = new LinkedHashMap<Object, List<VariableUpdaterInfo<Solution_>>>();
 
             LookupGetter<Solution_> valueReader =
                     (entity, variableMetaModel) -> {
-                        var groupMapper = variableToGroupKeyMapper.apply(variableMetaModel);
-                        if (groupMapper != null) {
-                            var groupKey = groupMapper.apply(entity);
-                            if (groupKey != null) {
-                                return groupValueMap.get(groupKey);
+                        var alignmentKeyMapper = variableToAlignmentKeyMapper.apply(variableMetaModel);
+                        if (alignmentKeyMapper != null) {
+                            var alignmentKey = alignmentKeyMapper.apply(entity);
+                            if (alignmentKey != null) {
+                                return alignmentKeyToUpdaters.get(alignmentKey);
                             }
                         }
                         return valueMap.get(entity);
@@ -91,11 +91,11 @@ public class EntityVariableUpdaterLookup<Solution_> {
 
             LookupSetter<Solution_> valueSetter =
                     (entity, variableMetaModel, valueSupplier) -> {
-                        var groupMapper = variableToGroupKeyMapper.apply(variableMetaModel);
-                        if (groupMapper != null) {
-                            var groupKey = groupMapper.apply(entity);
-                            if (groupKey != null) {
-                                groupValueMap.computeIfAbsent(groupKey, ignored -> valueSupplier.get());
+                        var alignmentKeyMapper = variableToAlignmentKeyMapper.apply(variableMetaModel);
+                        if (alignmentKeyMapper != null) {
+                            var alignmentKey = alignmentKeyMapper.apply(entity);
+                            if (alignmentKey != null) {
+                                alignmentKeyToUpdaters.computeIfAbsent(alignmentKey, ignored -> valueSupplier.get());
                                 return;
                             }
                         }

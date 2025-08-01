@@ -230,19 +230,19 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             var hasGroupSources = Arrays.stream(declarativeShadowVariableDescriptor.getSources())
                     .anyMatch(rootVariableSource -> rootVariableSource.parentVariableType() == ParentVariableType.GROUP);
 
-            // If a @ShadowSources has a group key,
+            // If a @ShadowSources has an alignment key,
             // create a new group since multiple entities must be updated for this node
-            var hasGroupKey = declarativeShadowVariableDescriptor.getGroupKeyMap() != null;
+            var hasAlignmentKey = declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null;
 
-            // If the previous @ShadowSources has a group key,
+            // If the previous @ShadowSources has an alignment key,
             // create a new group since we are updating a single entity again
             // NOTE: Can potentially be optimized/share a node if VariableUpdaterInfo
-            //       update each group member independently after the groupKey
-            var previousHasGroupKey = !groupVariables.isEmpty() && groupVariables.get(0).getGroupKeyMap() != null;
+            //       update each group member independently after the alignmentKey
+            var previousHasAlignmentKey = !groupVariables.isEmpty() && groupVariables.get(0).getAlignmentKeyMap() != null;
 
             if (!groupVariables.isEmpty() && (hasGroupSources
-                    || hasGroupKey
-                    || previousHasGroupKey)) {
+                    || hasAlignmentKey
+                    || previousHasAlignmentKey)) {
                 groupVariables = new ArrayList<>();
                 groupIndexToVariables.put(groupIndexToVariables.size(), groupVariables);
             }
@@ -265,25 +265,25 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariableLoopedDescriptor(),
                         declarativeShadowVariableDescriptor.getMemberAccessor(),
                         declarativeShadowVariableDescriptor.getCalculator()::executeGetter);
-                if (declarativeShadowVariableDescriptor.getGroupKeyMap() != null) {
-                    var groupKeyFunction = declarativeShadowVariableDescriptor.getGroupKeyMap();
-                    var groupKeyMap = new HashMap<Object, List<Object>>();
+                if (declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null) {
+                    var alignmentKeyFunction = declarativeShadowVariableDescriptor.getAlignmentKeyMap();
+                    var alignmentKeyToAlignedEntitiesMap = new HashMap<Object, List<Object>>();
                     for (var entity : entities) {
                         if (declarativeShadowVariableDescriptor.getEntityDescriptor().getEntityClass().isInstance(entity)) {
-                            var groupKey = groupKeyFunction.apply(entity);
-                            groupKeyMap.computeIfAbsent(groupKey, k -> new ArrayList<>()).add(entity);
+                            var alignmentKey = alignmentKeyFunction.apply(entity);
+                            alignmentKeyToAlignedEntitiesMap.computeIfAbsent(alignmentKey, k -> new ArrayList<>()).add(entity);
                         }
                     }
-                    for (var groupEntry : groupKeyMap.entrySet()) {
+                    for (var alignmentGroup : alignmentKeyToAlignedEntitiesMap.entrySet()) {
                         var updaterCopy = updater.withGroupId(updaterKey);
-                        if (groupEntry.getKey() == null) {
+                        if (alignmentGroup.getKey() == null) {
                             updaters.add(updaterCopy);
                             allUpdaters.add(updaterCopy);
                         } else {
-                            updaterCopy = updaterCopy.withGroupEntities(groupEntry.getValue().toArray(new Object[0]));
+                            updaterCopy = updaterCopy.withGroupEntities(alignmentGroup.getValue().toArray(new Object[0]));
                             var variableUpdaterMap = groupedUpdaters.computeIfAbsent(declarativeShadowVariableDescriptor,
                                     ignored -> new IdentityHashMap<>());
-                            for (var entity : groupEntry.getValue()) {
+                            for (var entity : alignmentGroup.getValue()) {
                                 variableUpdaterMap.put(entity, updaterCopy);
                             }
                         }
@@ -314,15 +314,16 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var declarativeShadowVariableDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
         // Use a dependent lookup; if an entity does not use groups, then all variables can share the same node.
         // If the entity use groups, then variables must be grouped into their own nodes.
-        var groupKeyMappers = new HashMap<VariableMetaModel<Solution_, ?, ?>, Function<Object, @Nullable Object>>();
+        var alignmentKeyMappers = new HashMap<VariableMetaModel<Solution_, ?, ?>, Function<Object, @Nullable Object>>();
         for (var declarativeShadowVariableDescriptor : declarativeShadowVariableDescriptors) {
-            if (declarativeShadowVariableDescriptor.getGroupKeyMap() != null) {
-                groupKeyMappers.put(declarativeShadowVariableDescriptor.getVariableMetaModel(),
-                        declarativeShadowVariableDescriptor.getGroupKeyMap());
+            if (declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null) {
+                alignmentKeyMappers.put(declarativeShadowVariableDescriptor.getVariableMetaModel(),
+                        declarativeShadowVariableDescriptor.getAlignmentKeyMap());
             }
         }
-        var variableIdToUpdater = groupKeyMappers.isEmpty() ? EntityVariableUpdaterLookup.<Solution_> entityDependentLookup()
-                : EntityVariableUpdaterLookup.<Solution_> groupedEntityDependentLookup(groupKeyMappers::get);
+        var variableIdToUpdater =
+                alignmentKeyMappers.isEmpty() ? EntityVariableUpdaterLookup.<Solution_> entityDependentLookup()
+                        : EntityVariableUpdaterLookup.<Solution_> groupedEntityDependentLookup(alignmentKeyMappers::get);
 
         // Create graph node for each entity/declarative shadow variable group pair.
         // Maps a variable id to the source aliases of all variables in its group;

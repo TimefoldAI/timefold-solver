@@ -15,7 +15,7 @@ import org.mockito.Mockito;
 class DeclarativeShadowVariableDescriptorTest {
     @Test
     void groupKeyMemberForNoKey() {
-        var member = DeclarativeShadowVariableDescriptor.getGroupKeyMemberForEntityProperty(
+        var member = DeclarativeShadowVariableDescriptor.getAlignmentKeyMemberForEntityProperty(
                 null, null, null, "shadow", null);
 
         assertThat(member).isNull();
@@ -37,7 +37,7 @@ class DeclarativeShadowVariableDescriptorTest {
                 .thenReturn(true);
         when(exampleMetamodel.hasVariable("fact")).thenReturn(false);
 
-        var member = DeclarativeShadowVariableDescriptor.getGroupKeyMemberForEntityProperty(
+        var member = DeclarativeShadowVariableDescriptor.getAlignmentKeyMemberForEntityProperty(
                 solutionMetamodel, Example.class, calculator, "shadow", "fact");
 
         assertThat(member.getName()).isEqualTo("fact");
@@ -62,7 +62,7 @@ class DeclarativeShadowVariableDescriptorTest {
         when(exampleMetamodel.hasVariable("variable")).thenReturn(true);
         when(calculator.getName()).thenReturn("valueSupplier");
 
-        assertThatCode(() -> DeclarativeShadowVariableDescriptor.getGroupKeyMemberForEntityProperty(
+        assertThatCode(() -> DeclarativeShadowVariableDescriptor.getAlignmentKeyMemberForEntityProperty(
                 solutionMetamodel, BadExample.class, calculator, "shadow", "variable"))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContainingAll(
@@ -70,6 +70,6 @@ class DeclarativeShadowVariableDescriptorTest {
                         "annotated supplier method (valueSupplier)",
                         "for variable (shadow)",
                         "on class (" + BadExample.class.getCanonicalName() + ")",
-                        "uses a groupKey (variable) that is a variable");
+                        "uses a alignmentKey (variable) that is a variable");
     }
 }

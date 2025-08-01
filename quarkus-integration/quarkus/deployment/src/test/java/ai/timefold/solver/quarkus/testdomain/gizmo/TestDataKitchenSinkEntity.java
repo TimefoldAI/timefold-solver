@@ -69,7 +69,7 @@ public class TestDataKitchenSinkEntity {
         return stringVariable;
     }
 
-    @ShadowSources(value = "stringVariable", groupKey = "groupId")
+    @ShadowSources(value = "stringVariable", alignmentKey = "groupId")
     private String copyStringVariable() {
         return stringVariable;
     }

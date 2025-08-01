@@ -26,7 +26,7 @@ public class TestdataFollowerEntity extends TestdataObject implements TestdataHa
         return value;
     }
 
-    @ShadowSources(value = "leader.value", groupKey = "leader")
+    @ShadowSources(value = "leader.value", alignmentKey = "leader")
     public TestdataValue valueSupplier() {
         return leader.value;
     }

@@ -1106,10 +1106,10 @@ class TimefoldProcessor {
                                 ShadowSources.class.getSimpleName()));
             }
             var sources = shadowSources.value().asStringArray();
-            var groupKey = shadowSources.value("groupKey");
+            var alignmentKey = shadowSources.value("alignmentKey");
 
-            if (groupKey != null && !groupKey.asString().isEmpty()) {
-                generateDomainAccessorsForSourcePath(indexView, rootType, groupKey.asString(),
+            if (alignmentKey != null && !alignmentKey.asString().isEmpty()) {
+                generateDomainAccessorsForSourcePath(indexView, rootType, alignmentKey.asString(),
                         membersToGeneratedAccessorsForCollection);
             }
             for (var source : sources) {

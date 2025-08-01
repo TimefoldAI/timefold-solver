@@ -27,8 +27,8 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     MemberAccessor calculator;
     RootVariableSource<?, ?>[] sources;
     String[] sourcePaths;
-    String groupKey;
-    Function<Object, Object> groupKeyMap;
+    String alignmentKey;
+    Function<Object, Object> alignmentKeyMap;
 
     public DeclarativeShadowVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
@@ -86,10 +86,10 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                     """.formatted(methodName, ShadowVariable.class.getSimpleName(), variableMemberAccessor));
         }
 
-        if (shadowVariableUpdater.groupKey() != null && !shadowVariableUpdater.groupKey().isEmpty()) {
-            groupKey = shadowVariableUpdater.groupKey();
+        if (shadowVariableUpdater.alignmentKey() != null && !shadowVariableUpdater.alignmentKey().isEmpty()) {
+            alignmentKey = shadowVariableUpdater.alignmentKey();
         } else {
-            groupKey = null;
+            alignmentKey = null;
         }
     }
 
@@ -129,21 +129,21 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                     descriptorPolicy);
         }
 
-        var groupKeyMember = getGroupKeyMemberForEntityProperty(solutionMetamodel,
+        var alignmentKeyMember = getAlignmentKeyMemberForEntityProperty(solutionMetamodel,
                 entityDescriptor.getEntityClass(),
                 calculator,
                 variableName,
-                groupKey);
-        if (groupKeyMember != null) {
-            groupKeyMap = memberAccessorFactory.buildAndCacheMemberAccessor(groupKeyMember,
+                alignmentKey);
+        if (alignmentKeyMember != null) {
+            alignmentKeyMap = memberAccessorFactory.buildAndCacheMemberAccessor(alignmentKeyMember,
                     MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD, ShadowSources.class,
                     descriptorPolicy.getDomainAccessType())::executeGetter;
         } else {
-            groupKeyMap = null;
+            alignmentKeyMap = null;
         }
     }
 
-    protected static Member getGroupKeyMemberForEntityProperty(
+    protected static Member getAlignmentKeyMemberForEntityProperty(
             PlanningSolutionMetaModel<?> solutionMetamodel,
             Class<?> entityClass,
             MemberAccessor calculator,
@@ -159,8 +159,8 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                 member.getName())) {
             throw new IllegalArgumentException(
                     """
-                            The @%s-annotated supplier method (%s) for variable (%s) on class (%s) uses a groupKey (%s) that is a variable.
-                            A groupKey must be a problem fact and cannot change during solving.
+                            The @%s-annotated supplier method (%s) for variable (%s) on class (%s) uses a alignmentKey (%s) that is a variable.
+                            A alignmentKey must be a problem fact and cannot change during solving.
                             """
                             .formatted(ShadowSources.class.getSimpleName(),
                                     calculator.getName(),
@@ -184,8 +184,8 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
         return calculator;
     }
 
-    public Function<Object, Object> getGroupKeyMap() {
-        return groupKeyMap;
+    public Function<Object, Object> getAlignmentKeyMap() {
+        return alignmentKeyMap;
     }
 
     public RootVariableSource<?, ?>[] getSources() {

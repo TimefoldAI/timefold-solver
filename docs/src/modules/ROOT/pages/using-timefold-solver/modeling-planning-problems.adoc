@@ -1018,16 +1018,26 @@ Do not use a @ShadowVariableLooped property in a method annotated with @ShadowSo
 @ShadowSources marked methods do not need to check @ShadowVariableLooped properties, since they are only called if all their dependencies are not looped.
 ====
 
-==== Grouping Shadow Variables
+==== Aligning Shadow Variables
 
-`@ShadowSources` has an optional `groupKey` parameter that can be used to reuse calculation results for related entities.
+`@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
+
+image::using-timefold-solver/modeling-planning-problems/alignmentShadowVariable.png[align="center"]
+
 To be used, a few requirements must be met:
 
-* `groupKey` must be the name of a problem fact on the entity; its value cannot change during solving.
+* `alignmentKey` must be the name of a problem fact on the entity.
+As with any problem fact, the value of this fact must not change during solving.
 
-* For all entities with the same, non-null `groupKey` value, calling the supplier method will result in the same value regardless of what entity is called.
+* For all entities with the same, non-null `alignmentKey` value, calling the supplier method will result in the same value regardless of what entity is called.
 
-For example,
+[IMPORTANT]
+====
+Only use alignment keys when you can *guarantee* the two requirements above are met.
+Since the calculation will only be performed on a single entity, if the supplier method can return a different value depending on what aligned entity is chosen, you will get *inconsistent and incorrect* results.
+====
+
+The code below meets the requirements, since the `leader` field is not a variable, and entities with the same `leader` will get the same value.
 
 [tabs]
 ====
@@ -1049,7 +1059,7 @@ public class Follower {
     @ShadowVariable(supplierName="valueSupplier")
     Integer value;
 
-    @ShadowSources(value = {"leader.value"}, groupKey = "leader")
+    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
     public Integer valueSupplier() {
       return leader.value;
     }
@@ -1057,9 +1067,7 @@ public class Follower {
 ----
 ====
 
-Meets the requirements since the `leader` field is not a variable, and entities with the same `leader` will get the same value.
-
-However,
+However, the code below does not meet the requirements, since `Follower` entities with the same `leader` but a different `minValue` may calculate different values.
 
 [tabs]
 ====
@@ -1082,7 +1090,7 @@ public class Follower {
     @ShadowVariable(supplierName="valueSupplier")
     Integer value;
 
-    @ShadowSources(value = {"leader.value"}, groupKey = "leader")
+    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
     public Integer valueSupplier() {
       if (leader.value == null || leader.value < minValue) {
           return minValue;
@@ -1093,9 +1101,7 @@ public class Follower {
 ----
 ====
 
-Does not meet the requirement, since `Follower` entities with the same `leader` but a different `minValue` may calculate different values.
-
-Entities where the `groupKey` is evaluated to `null` are each calculated separately and won't share calculations for that shadow variable with other entities.
+Entities where the `alignmentKey` is evaluated to `null` are each calculated separately and won't share calculations for that shadow variable with other entities.
 
 This feature is particularly useful when you have a group of entities that must be aligned to the same value.
 For example:
@@ -1125,10 +1131,10 @@ public class Job {
         // ...
     }
 
-    @ShadowSources(value = {"readyDate", "alignedJobs[].readyDate"}, groupKey="alignedJobs")
+    @ShadowSources(value = {"readyDate", "alignedJobs[].readyDate"}, alignmentKey="alignedJobs")
     public LocalDate startDateSupplier() {
         if (alignedJobs == null) {
-            // All entities with a null groupKey (in this case, "alignedJobs")
+            // All entities with a null alignmentKey (in this case, "alignedJobs")
             // are calculated separately.
             return readyDate;
         }
