@@ -49,17 +49,28 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var doable = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
-        if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
-            return doable;
+        var doable = getCachedDoableEvaluation();
+        if (doable == null) {
+            doable = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
+            if (!doable || variableDescriptor.canExtractValueRangeFromSolution()) {
+                setCachedDoableEvaluation(doable);
+                return doable;
+            }
+            if (isAssertValueRange()) {
+                // When the value range is located at the entity,
+                // we need to check if the destination's value range accepts the upcoming value
+                ValueRangeManager<Solution_> valueRangeManager =
+                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+                doable = valueRangeManager
+                        .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
+                        .contains(planningValue);
+                setCachedDoableEvaluation(doable);
+                if (!doable) {
+                    throw new IllegalStateException("Impossible state: the move %s is not doable.".formatted(this));
+                }
+            }
         }
-        // When the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming value
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        return valueRangeManager
-                .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
-                .contains(planningValue);
+        return doable;
     }
 
     @Override

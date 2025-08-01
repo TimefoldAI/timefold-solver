@@ -22,7 +22,6 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class SubListSwapMoveTest {
@@ -43,11 +42,12 @@ class SubListSwapMoveTest {
 
     private final ListVariableDescriptor<TestdataListEntityProvidingSolution> otherVariableDescriptor =
             TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
+    private final ValueRangeManager<TestdataListEntityProvidingSolution> valueRangeManager =
+            new ValueRangeManager<>(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeManager())
-                .thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
+        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
     }
 
     @Test
@@ -69,7 +69,6 @@ class SubListSwapMoveTest {
         assertThat(new SubListSwapMove<>(variableDescriptor, e1, 0, 5, e2, 0, 1, false).isMoveDoable(scoreDirector)).isTrue();
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
         var value1 = new TestdataListEntityProvidingValue("1");
@@ -81,6 +80,10 @@ class SubListSwapMoveTest {
                 new TestdataListEntityProvidingEntity("e1", List.of(value1, value2, value3), List.of(value1, value4, value2));
         var entity2 =
                 new TestdataListEntityProvidingEntity("e2", List.of(value1, value3, value4, value5), List.of(value3, value5));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2));
+        valueRangeManager.reset(solution);
+
         // different entity => valid sublist
         assertThat(
                 new SubListSwapMove<>(otherVariableDescriptor, entity1, 0, 2, entity2, 0, 1, false)

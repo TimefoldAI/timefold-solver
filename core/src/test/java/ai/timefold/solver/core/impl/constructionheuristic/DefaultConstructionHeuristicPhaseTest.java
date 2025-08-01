@@ -54,7 +54,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedv
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.Metrics;
@@ -363,7 +362,6 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         assertThat(bestSolution.getEntityList().get(1).getValue()).isSameAs(value3);
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void solveWithEntityValueRangeListVariable() {
         var solverConfig = PlannerTestUtils

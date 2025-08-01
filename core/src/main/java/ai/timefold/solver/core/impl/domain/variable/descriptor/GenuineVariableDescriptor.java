@@ -150,9 +150,6 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
             return new FromSolutionPropertyValueRangeDescriptor<>(this, valueRangeProviderMemberAccessor);
         } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            if (isListVariable()) {
-                throw new IllegalStateException("Entity value ranges for list variables are not supported.");
-            }
             return new FromEntityPropertyValueRangeDescriptor<>(this, valueRangeProviderMemberAccessor);
         } else {
             throw new IllegalStateException("Impossible state: member accessor (%s) is not a value range provider."

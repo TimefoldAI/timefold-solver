@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.move;
 import java.util.Iterator;
 import java.util.Objects;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
@@ -13,15 +14,23 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class MoveSelectorBasedMoveRepository<Solution_>
         implements MoveRepository<Solution_>, PhaseLifecycleListener<Solution_> {
 
     private final MoveSelector<Solution_> moveSelector;
+    private @Nullable EnvironmentMode environmentMode;
 
     public MoveSelectorBasedMoveRepository(MoveSelector<Solution_> moveSelector) {
         this.moveSelector = Objects.requireNonNull(moveSelector);
+    }
+
+    @Override
+    public void enableAssertions(EnvironmentMode environmentMode) {
+        // We only store the environment mode and use it later when generating moves
+        this.environmentMode = Objects.requireNonNull(environmentMode);
     }
 
     @Override
@@ -80,7 +89,9 @@ public final class MoveSelectorBasedMoveRepository<Solution_>
 
             @Override
             public Move<Solution_> next() {
-                return new LegacyMoveAdapter<>(delegate.next());
+                var move = delegate.next();
+                move.enableAssertions(environmentMode);
+                return new LegacyMoveAdapter<>(move);
             }
         };
     }

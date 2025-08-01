@@ -50,7 +50,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedv
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.composite.TestdataAllowsUnassignedCompositeEntityProvidingSolution;
 
 import org.assertj.core.data.Percentage;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ValueRangeManagerTest {
@@ -340,7 +339,6 @@ class ValueRangeManagerTest {
         assertThat(otherValueRange.getSize()).isEqualTo(4);
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityUnassignedListVariable() {
         var solution = TestdataListUnassignedEntityProvidingSolution.generateSolution();
@@ -371,7 +369,6 @@ class ValueRangeManagerTest {
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityCompositeUnassignedListVariable() {
         var solution = TestdataListUnassignedCompositeEntityProvidingSolution.generateSolution();
@@ -383,29 +380,28 @@ class ValueRangeManagerTest {
         // The value range manager will not add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
         // e2([v1, v4], [v1, v5]) -> 3 distinct values
-        // The composite range returns all values from both ranges -> 6 values
-        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(6);
+        // The composite range returns all distinct values -> 5 values
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(5);
         var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertThat(valueRange.getSize()).isEqualTo(6);
+        assertThat(valueRange.getSize()).isEqualTo(5);
 
         // Fetching from the descriptor does not include the null value
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
-        assertThat(otherValueRange.getSize()).isEqualTo(6);
+        assertThat(otherValueRange.getSize()).isEqualTo(5);
 
         // The value range manager will not add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
-        // The composite range returns all values from both ranges -> 4 values
+        // The composite range returns all distinct values from both ranges -> 3 values
         var entity = solution.getEntityList().get(0);
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(4);
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
         var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
-        assertThat(entityValueRange.getSize()).isEqualTo(4);
+        assertThat(entityValueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
-        assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
+        assertThat(otherEntityValueRange.getSize()).isEqualTo(3);
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityAssignedListVariable() {
         var solution = TestdataListEntityProvidingSolution.generateSolution();
@@ -436,7 +432,6 @@ class ValueRangeManagerTest {
         assertThat(otherEntityValueRange.getSize()).isEqualTo(2);
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void extractValueFromEntityCompositeAssignedListVariable() {
         var solution = TestdataListCompositeEntityProvidingSolution.generateSolution();
@@ -448,26 +443,26 @@ class ValueRangeManagerTest {
         // The value range manager will not add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
         // e2([v1, v4], [v1, v5]) -> 3 distinct values
-        // The composite range returns all values from both ranges -> 6 values
-        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(6);
+        // The composite range returns all distinct values from both ranges -> 5 values
+        assertThat(valueRangeManager.countOnSolution(valueRangeDescriptor, solution)).isEqualTo(5);
         var valueRange = (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution);
-        assertThat(valueRange.getSize()).isEqualTo(6);
+        assertThat(valueRange.getSize()).isEqualTo(5);
 
         // Fetching from the descriptor does not include the null value because it is a list variable
         var otherValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractAllValues(solution);
-        assertThat(otherValueRange.getSize()).isEqualTo(6);
+        assertThat(otherValueRange.getSize()).isEqualTo(5);
 
         // The value range manager will add the null value because it is a list variable
         // e1([v1, v2], [v1, v3]) -> 3 distinct values
-        // The composite range returns all values from both ranges -> 4 values
+        // The composite range returns all distinct values from both ranges -> 3 values
         var entity = solution.getEntityList().get(0);
-        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(4);
+        assertThat(valueRangeManager.countOnEntity(valueRangeDescriptor, entity)).isEqualTo(3);
         var entityValueRange = (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
-        assertThat(entityValueRange.getSize()).isEqualTo(4);
+        assertThat(entityValueRange.getSize()).isEqualTo(3);
 
         // Fetching from the descriptor does not include the null value
         var otherEntityValueRange = (CountableValueRange<?>) valueRangeDescriptor.extractValuesFromEntity(solution, entity);
-        assertThat(otherEntityValueRange.getSize()).isEqualTo(4);
+        assertThat(otherEntityValueRange.getSize()).isEqualTo(3);
     }
 
     @Test
@@ -562,12 +557,10 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThatThrownBy(valueRangeManager::getMaximumValueRangeSize)
-                    .isInstanceOf(IllegalStateException.class);
-            softly.assertThatThrownBy(valueRangeManager::getApproximateValueCount)
-                    .isInstanceOf(IllegalStateException.class);
-            softly.assertThatThrownBy(valueRangeManager::getProblemScale)
-                    .isInstanceOf(IllegalStateException.class);
+            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(0);
+            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(0);
+            softly.assertThat(valueRangeManager.getProblemScale())
+                    .isEqualTo(0);
         });
     }
 
@@ -636,7 +629,6 @@ class ValueRangeManagerTest {
         });
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void listVariableProblemScaleEntityProvidingValueRange() {
         var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();

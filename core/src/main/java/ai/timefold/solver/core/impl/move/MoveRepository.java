@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.move;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -31,5 +32,9 @@ public sealed interface MoveRepository<Solution_>
     boolean isNeverEnding();
 
     void initialize(SessionContext<Solution_> context);
+
+    default void enableAssertions(EnvironmentMode environmentMode) {
+        // No assertions are evaluated by default
+    }
 
 }

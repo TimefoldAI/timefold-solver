@@ -22,7 +22,6 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -36,11 +35,12 @@ class TwoOptListMoveTest {
             mock(InnerScoreDirector.class);
     private final ListVariableDescriptor<TestdataListEntityProvidingSolution> otherVariableDescriptor =
             TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
+    private final ValueRangeManager<TestdataListEntityProvidingSolution> valueRangeManager =
+            new ValueRangeManager<>(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeManager())
-                .thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
+        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
     }
 
     @Test
@@ -108,7 +108,6 @@ class TwoOptListMoveTest {
         assertThat(move.isMoveDoable(scoreDirector)).isTrue();
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
         var v1 = new TestdataListEntityProvidingValue("1");
@@ -119,6 +118,9 @@ class TwoOptListMoveTest {
         var v6 = new TestdataListEntityProvidingValue("6");
         var e1 = new TestdataListEntityProvidingEntity("e1", List.of(v1, v2, v3, v5, v6), List.of(v2, v1, v5));
         var e2 = new TestdataListEntityProvidingEntity("e2", List.of(v1, v3, v4, v5, v6), List.of(v4, v3, v6));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(e1, e2));
+        valueRangeManager.reset(solution);
 
         // different entity => valid left and right
         assertThat(new TwoOptListMove<>(otherVariableDescriptor, e1, e2, 1, 1).isMoveDoable(otherInnerScoreDirector))

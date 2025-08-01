@@ -5,13 +5,10 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
@@ -26,7 +23,9 @@ public final class FromEntityPropertyValueSelector<Solution_>
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final boolean randomSelection;
 
-    private ValueRangeManager<Solution_> valueRangeManager;
+    private InnerScoreDirector<Solution_, ?> scoreDirector;
+    private Solution_ cachedSolution = null;
+    private CountableValueRange<Object> cachedValueRange = null;
 
     public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
@@ -41,39 +40,23 @@ public final class FromEntityPropertyValueSelector<Solution_>
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
-        this.valueRangeManager = solverScope.getScoreDirector().getValueRangeManager();
-    }
-
-    @Override
-    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseStarted(phaseScope);
-        // Make sure we're still using the latest value range manager.
-        this.valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
-    }
-
-    @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        super.stepStarted(stepScope);
-        // Make sure we're still using the latest value range manager.
-        this.valueRangeManager = stepScope.getScoreDirector().getValueRangeManager();
-    }
-
-    @Override
-    public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        super.stepEnded(stepScope);
-        this.valueRangeManager = null;
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseEnded(phaseScope);
-        this.valueRangeManager = null;
+        this.scoreDirector = solverScope.getScoreDirector();
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
-        this.valueRangeManager = null;
+        this.scoreDirector = null;
+        this.cachedSolution = null;
+        this.cachedValueRange = null;
+    }
+
+    private void checkCachedValueRange() {
+        if (cachedSolution == null || cachedSolution != scoreDirector.getWorkingSolution()) {
+            this.cachedSolution = scoreDirector.getWorkingSolution();
+            this.cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
+                    cachedSolution);
+        }
     }
 
     @Override
@@ -88,14 +71,21 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public long getSize(Object entity) {
-        return valueRangeManager.countOnEntity(valueRangeDescriptor, entity);
+        if (entity == null) {
+            // When the entity is null, the size of the complete list of values is returned
+            // This logic aligns with the requirements for Nearby in the enterprise repository
+            checkCachedValueRange();
+            return cachedValueRange.getSize();
+        } else {
+            return scoreDirector.getValueRangeManager().countOnEntity(valueRangeDescriptor, entity);
+        }
     }
 
     @Override
     public Iterator<Object> iterator(Object entity) {
-        ValueRange<Object> valueRange = valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
+        var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity);
         if (!randomSelection) {
-            return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
+            return valueRange.createOriginalIterator();
         } else {
             return valueRange.createRandomIterator(workingRandom);
         }
@@ -103,8 +93,15 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
-        ValueRange<Object> valueRange = valueRangeManager.getFromEntity(valueRangeDescriptor, entity);
-        return ((CountableValueRange<Object>) valueRange).createOriginalIterator();
+        if (entity == null) {
+            // When the entity is null, the complete list of values is returned
+            // This logic aligns with the requirements for Nearby in the enterprise repository
+            checkCachedValueRange();
+            return cachedValueRange.createOriginalIterator();
+        } else {
+            var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity);
+            return valueRange.createOriginalIterator();
+        }
     }
 
     @Override

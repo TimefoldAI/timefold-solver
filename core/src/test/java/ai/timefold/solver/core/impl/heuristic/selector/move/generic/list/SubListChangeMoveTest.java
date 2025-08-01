@@ -21,7 +21,6 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class SubListChangeMoveTest {
@@ -40,11 +39,12 @@ class SubListChangeMoveTest {
             mock(InnerScoreDirector.class);
     private final ListVariableDescriptor<TestdataListEntityProvidingSolution> otherVariableDescriptor =
             TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
+    private final ValueRangeManager<TestdataListEntityProvidingSolution> valueRangeManager =
+            new ValueRangeManager<>(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeManager())
-                .thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
+        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
     }
 
     @Test
@@ -64,7 +64,6 @@ class SubListChangeMoveTest {
         assertThat(new SubListChangeMove<>(variableDescriptor, e1, 1, 2, e2, 0, false).isMoveDoable(scoreDirector)).isTrue();
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
         var value1 = new TestdataListEntityProvidingValue("1");
@@ -74,6 +73,10 @@ class SubListChangeMoveTest {
         var entity1 =
                 new TestdataListEntityProvidingEntity("e1", List.of(value1, value2, value4), List.of(value1, value4, value2));
         var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value1, value3, value4), List.of(value3));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(entity1, entity2));
+        valueRangeManager.reset(solution);
+
         // different entity => valid sublist
         assertThat(
                 new SubListChangeMove<>(otherVariableDescriptor, entity1, 0, 2, entity2, 0, false)

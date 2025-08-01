@@ -12,6 +12,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListC
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
 
 import org.jspecify.annotations.NonNull;
@@ -31,7 +32,7 @@ public final class NearbyUtil {
         if (entitySelectorConfig == null) {
             entitySelectorConfig = new EntitySelectorConfig();
         }
-        var entitySelectorId = addRandomSuffix("entitySelector", random);
+        var entitySelectorId = ConfigUtils.addRandomSuffix("entitySelector", random);
         entitySelectorConfig.withId(entitySelectorId);
         return entitySelectorConfig;
     }
@@ -128,7 +129,7 @@ public final class NearbyUtil {
         if (valueSelectorConfig == null) {
             valueSelectorConfig = new ValueSelectorConfig();
         }
-        var valueSelectorId = addRandomSuffix("valueSelector", random);
+        var valueSelectorId = ConfigUtils.addRandomSuffix("valueSelector", random);
         valueSelectorConfig.withId(valueSelectorId);
         return valueSelectorConfig;
     }
@@ -160,15 +161,6 @@ public final class NearbyUtil {
         var valueConfig = configureSecondaryValueSelector(nearbyConfig.getValueSelectorConfig(), originConfig, distanceMeter);
         return nearbyConfig.withOriginSelectorConfig(originConfig)
                 .withValueSelectorConfig(valueConfig);
-    }
-
-    public static String addRandomSuffix(String name, Random random) {
-        var value = new StringBuilder(name);
-        value.append("-");
-        random.ints(97, 122) // ['a', 'z']
-                .limit(4) // 4 letters
-                .forEach(value::appendCodePoint);
-        return value.toString();
     }
 
     private NearbyUtil() {

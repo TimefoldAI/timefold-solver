@@ -35,9 +35,14 @@ public class TestdataListUnassignedEntityProvidingEntity extends TestdataObject 
     }
 
     public TestdataListUnassignedEntityProvidingEntity(String code, List<TestdataValue> valueRange) {
+        this(code, valueRange, new ArrayList<>());
+    }
+
+    public TestdataListUnassignedEntityProvidingEntity(String code, List<TestdataValue> valueRange,
+            List<TestdataValue> valueList) {
         super(code);
         this.valueRange = valueRange;
-        valueList = new ArrayList<>();
+        this.valueList = valueList;
     }
 
     public List<TestdataValue> getValueRange() {

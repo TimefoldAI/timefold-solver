@@ -25,8 +25,7 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     private Object upcomingLeftValue;
 
     public OriginalListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            IterableValueSelector<Solution_> leftValueSelector,
-            IterableValueSelector<Solution_> rightValueSelector) {
+            IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;

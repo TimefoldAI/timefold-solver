@@ -28,7 +28,6 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -43,6 +42,8 @@ class KOptListMoveTest {
             TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList();
     private final InnerScoreDirector<TestdataListEntityProvidingSolution, ?> otherInnerScoreDirector =
             PlannerTestUtils.mockScoreDirector(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor());
+    private final ValueRangeManager<TestdataListEntityProvidingSolution> valueRangeManager =
+            new ValueRangeManager<>(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
 
     private final TestdataListValue v1 = new TestdataListValue("1");
     private final TestdataListValue v2 = new TestdataListValue("2");
@@ -66,8 +67,7 @@ class KOptListMoveTest {
 
     @BeforeEach
     void setUp() {
-        when(otherInnerScoreDirector.getValueRangeManager())
-                .thenReturn(new ValueRangeManager<>(otherVariableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
+        when(otherInnerScoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
     }
 
     // TODO: It appears the multi-entity approach does not like kopt-affected-elements;
@@ -565,7 +565,6 @@ class KOptListMoveTest {
         assertThat(kOptListMove.isMoveDoable(scoreDirector)).isFalse();
     }
 
-    @Disabled("Temporarily disabled")
     @Test
     void isMoveDoableValueRangeProviderOnEntity() {
         var value1 = new TestdataListEntityProvidingValue("1");
@@ -583,6 +582,7 @@ class KOptListMoveTest {
                         List.of(value6, value7, value4, value8));
         var solution = new TestdataListEntityProvidingSolution();
         solution.setEntityList(List.of(entity1, entity2));
+        valueRangeManager.reset(solution);
         otherInnerScoreDirector.setWorkingSolution(solution);
 
         // same entity => always valid

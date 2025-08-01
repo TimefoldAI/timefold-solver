@@ -29,10 +29,14 @@ public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator
 
     @Override
     protected Move<Solution_> createUpcomingSelection() {
-        if (!leftValueIterator.hasNext() || !rightValueIterator.hasNext()) {
+        if (!leftValueIterator.hasNext()) {
             return noUpcomingSelection();
         }
         var upcomingLeftValue = leftValueIterator.next();
+        // The right iterator may depend on a selected value from the left iterator
+        if (!rightValueIterator.hasNext()) {
+            return noUpcomingSelection();
+        }
         var upcomingRightValue = rightValueIterator.next();
         return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
     }

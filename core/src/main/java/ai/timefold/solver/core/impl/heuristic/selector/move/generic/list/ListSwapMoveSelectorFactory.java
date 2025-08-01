@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory.applyValueRangeFiltering;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +13,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -33,14 +36,31 @@ public class ListSwapMoveSelectorFactory<Solution_>
         var valueSelectorConfig =
                 Objects.requireNonNullElseGet(config.getValueSelectorConfig(), ValueSelectorConfig::new);
         var secondaryValueSelectorConfig =
-                Objects.requireNonNullElse(config.getSecondaryValueSelectorConfig(), valueSelectorConfig);
+                Objects.requireNonNullElseGet(config.getSecondaryValueSelectorConfig(), valueSelectorConfig::copyConfig);
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entityDescriptor = getTheOnlyEntityDescriptorWithListVariable(configPolicy.getSolutionDescriptor());
+        var enableEntityValueRangeFilter =
+                !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
+        String mimicSelectorId = null;
+        if (enableEntityValueRangeFilter) {
+            if (valueSelectorConfig.getId() == null && valueSelectorConfig.getMimicSelectorRef() == null) {
+                var variableName = Objects.requireNonNull(valueSelectorConfig.getVariableName());
+                // We set the id to make sure the value selector will use the mimic recorder
+                mimicSelectorId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom());
+                valueSelectorConfig.setId(mimicSelectorId);
+            } else {
+                mimicSelectorId = valueSelectorConfig.getId() != null ? valueSelectorConfig.getId()
+                        : valueSelectorConfig.getMimicSelectorRef();
+            }
+        }
         var leftValueSelector = buildIterableValueSelector(configPolicy,
                 entityDescriptor, valueSelectorConfig, minimumCacheType, selectionOrder);
         var rightValueSelector = buildIterableValueSelector(configPolicy, entityDescriptor,
                 secondaryValueSelectorConfig, minimumCacheType, selectionOrder);
-
+        if (enableEntityValueRangeFilter) {
+            rightValueSelector = applyValueRangeFiltering(configPolicy, rightValueSelector, entityDescriptor, mimicSelectorId,
+                    minimumCacheType, selectionOrder, randomSelection, true);
+        }
         var variableDescriptor = leftValueSelector.getVariableDescriptor();
         // This may be redundant but emphasizes that the ListSwapMove is not designed to swap elements
         // on multiple list variables, unlike the SwapMove, which swaps all (basic) variables between left and right entities.
