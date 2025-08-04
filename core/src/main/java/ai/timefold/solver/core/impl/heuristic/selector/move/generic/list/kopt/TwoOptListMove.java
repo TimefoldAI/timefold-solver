@@ -217,39 +217,34 @@ public final class TwoOptListMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var doable = getCachedDoableEvaluation();
-        if (doable == null) {
-            // The move selector can still produce invalid moves, so we need to enable the assertion by default
-            setAssertValueRange(true);
-            var sameEntity = firstEntity == secondEntity;
-            doable = !sameEntity ||
-            // A shift will rotate the entire list, changing the visiting order
-                    shift != 0 ||
-                    // The chain flipped by a K-Opt only changes if there are at least 2 values
-                    // in the chain
-                    Math.abs(secondEdgeEndpoint - firstEdgeEndpoint) >= 2;
-            if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
-                setCachedDoableEvaluation(doable);
-                return doable;
-            }
-            if (isAssertValueRange()) {
-                // When the first and second elements are different,
-                // and the value range is located at the entity,
-                // we need to check if the destination's value range accepts the upcoming values
-                ValueRangeManager<Solution_> valueRangeManager =
-                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-                var firstValueRange =
-                        valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), firstEntity);
-                var firstListVariable = variableDescriptor.getValue(firstEntity);
-                var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
-                var secondValueRange =
-                        valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), secondEntity);
-                var secondListVariable = variableDescriptor.getValue(secondEntity);
-                var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
-                doable = firstListVariableTail.stream().allMatch(secondValueRange::contains)
-                        && secondListVariableTail.stream().allMatch(firstValueRange::contains);
-                setCachedDoableEvaluation(doable);
-            }
+        // The move selector can still produce invalid moves, so we need to enable the assertion by default
+        setAssertValueRange(true);
+        var sameEntity = firstEntity == secondEntity;
+        var doable = !sameEntity ||
+        // A shift will rotate the entire list, changing the visiting order
+                shift != 0 ||
+                // The chain flipped by a K-Opt only changes if there are at least 2 values
+                // in the chain
+                Math.abs(secondEdgeEndpoint - firstEdgeEndpoint) >= 2;
+        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
+        if (isAssertValueRange()) {
+            // When the first and second elements are different,
+            // and the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming values
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            var firstValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), firstEntity);
+            var firstListVariable = variableDescriptor.getValue(firstEntity);
+            var firstListVariableTail = firstListVariable.subList(firstEdgeEndpoint, firstListVariable.size());
+            var secondValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), secondEntity);
+            var secondListVariable = variableDescriptor.getValue(secondEntity);
+            var secondListVariableTail = secondListVariable.subList(secondEdgeEndpoint, secondListVariable.size());
+            doable = firstListVariableTail.stream().allMatch(secondValueRange::contains)
+                    && secondListVariableTail.stream().allMatch(firstValueRange::contains);
         }
         return doable;
     }

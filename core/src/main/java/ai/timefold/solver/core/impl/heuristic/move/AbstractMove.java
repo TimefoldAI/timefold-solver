@@ -21,19 +21,10 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
  */
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
-    private Boolean cachedDoableEvaluation;
     private EnvironmentMode moveEnvironmentMode;
     private boolean assertValueRange = false;
 
     protected AbstractMove() {
-    }
-
-    public Boolean getCachedDoableEvaluation() {
-        return cachedDoableEvaluation;
-    }
-
-    public void setCachedDoableEvaluation(Boolean cachedDoableEvaluation) {
-        this.cachedDoableEvaluation = cachedDoableEvaluation;
     }
 
     public EnvironmentMode getMoveEnvironmentMode() {

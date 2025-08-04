@@ -54,16 +54,10 @@ public class SubListUnassignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var doable = getCachedDoableEvaluation();
-        if (doable == null) {
-            if (sourceIndex < 0) {
-                setCachedDoableEvaluation(false);
-                return false;
-            }
-            doable = variableDescriptor.getListSize(sourceEntity) >= getToIndex();
-            setCachedDoableEvaluation(doable);
+        if (sourceIndex < 0) {
+            return false;
         }
-        return doable;
+        return variableDescriptor.getListSize(sourceEntity) >= getToIndex();
     }
 
     @Override

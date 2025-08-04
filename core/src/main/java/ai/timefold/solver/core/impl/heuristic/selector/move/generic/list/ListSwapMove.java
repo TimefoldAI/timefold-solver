@@ -113,33 +113,28 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var doable = getCachedDoableEvaluation();
-        if (doable == null) {
-            // Do not use Object#equals on user-provided domain objects. Relying on user's implementation of Object#equals
-            // opens the opportunity to shoot themselves in the foot if different entities can be equal.
-            var sameEntity = leftEntity == rightEntity;
-            doable = !(sameEntity && leftIndex == rightIndex);
-            if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
-                setCachedDoableEvaluation(doable);
-                return doable;
-            }
-            if (isAssertValueRange()) {
-                // When the left and right are different,
-                // and the value range is located at the entity,
-                // we need to check if the destination's value range accepts the upcoming values
-                ValueRangeManager<Solution_> valueRangeManager =
-                        ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-                var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
-                var leftElementValueRange =
-                        valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
-                var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
-                var rightElementValueRange =
-                        valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
-                doable = leftElementValueRange.contains(rightElement) && rightElementValueRange.contains(leftElement);
-                setCachedDoableEvaluation(doable);
-                if (!doable) {
-                    throw new IllegalStateException("Impossible state: the move %s is not doable.".formatted(this));
-                }
+        // Do not use Object#equals on user-provided domain objects. Relying on user's implementation of Object#equals
+        // opens the opportunity to shoot themselves in the foot if different entities can be equal.
+        var sameEntity = leftEntity == rightEntity;
+        var doable = !(sameEntity && leftIndex == rightIndex);
+        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
+            return doable;
+        }
+        if (isAssertValueRange()) {
+            // When the left and right are different,
+            // and the value range is located at the entity,
+            // we need to check if the destination's value range accepts the upcoming values
+            ValueRangeManager<Solution_> valueRangeManager =
+                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+            var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
+            var leftElementValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
+            var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
+            var rightElementValueRange =
+                    valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
+            doable = leftElementValueRange.contains(rightElement) && rightElementValueRange.contains(leftElement);
+            if (!doable) {
+                throw new IllegalStateException("Impossible state: the move %s is not doable.".formatted(this));
             }
         }
         return doable;
