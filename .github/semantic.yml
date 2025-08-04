@@ -1,6 +1,6 @@
 # https://github.com/Ezard/semantic-prs
 enabled: true
-titleAndCommits: true
+titleOnly: true
 allowMergeCommits: false
 types:
   - feat
