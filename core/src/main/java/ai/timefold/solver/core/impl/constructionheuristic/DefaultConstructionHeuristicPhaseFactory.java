@@ -80,10 +80,8 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
     public ConstructionHeuristicPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
-        var constructionHeuristicPhase = getBuilder(phaseIndex, lastInitializingPhase, solverConfigPolicy, solverTermination)
+        return getBuilder(phaseIndex, lastInitializingPhase, solverConfigPolicy, solverTermination)
                 .build();
-        constructionHeuristicPhase.enableAssertions(solverConfigPolicy.getEnvironmentMode());
-        return constructionHeuristicPhase;
     }
 
     private Optional<EntityPlacerConfig<?>> getValidEntityPlacerConfig() {

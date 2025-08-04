@@ -8,7 +8,6 @@ import java.util.Set;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
@@ -20,33 +19,6 @@ import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreD
  * @see Move
  */
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {
-
-    private EnvironmentMode moveEnvironmentMode;
-    private boolean assertValueRange = false;
-
-    protected AbstractMove() {
-    }
-
-    public EnvironmentMode getMoveEnvironmentMode() {
-        return moveEnvironmentMode;
-    }
-
-    protected boolean isAssertValueRange() {
-        return assertValueRange;
-    }
-
-    public void setAssertValueRange(boolean assertValueRange) {
-        this.assertValueRange = assertValueRange;
-    }
-
-    @Override
-    public void enableAssertions(EnvironmentMode environmentMode) {
-        if (environmentMode == null) {
-            return;
-        }
-        this.moveEnvironmentMode = environmentMode;
-        assertValueRange = environmentMode.isIntrusivelyAsserted();
-    }
 
     @Override
     public final void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {

@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -131,26 +130,8 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
         // Do not use Object#equals on user-provided domain objects. Relying on user's implementation of Object#equals
         // opens the opportunity to shoot themselves in the foot if different entities can be equal.
         var sameEntity = destinationEntity == sourceEntity;
-        var doable = !sameEntity
+        return !sameEntity
                 || (destinationIndex != sourceIndex && destinationIndex != variableDescriptor.getListSize(sourceEntity));
-        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution()) {
-            return doable;
-        }
-        if (isAssertValueRange()) {
-            // When the source and destination are different,
-            // and the value range is located at the entity,
-            // we need to check if the destination's value range accepts the upcoming value
-            var value = variableDescriptor.getElement(sourceEntity, sourceIndex);
-            ValueRangeManager<Solution_> valueRangeManager =
-                    ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-            doable = valueRangeManager
-                    .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
-                    .contains(value);
-            if (!doable) {
-                throw new IllegalStateException("Impossible state: the move %s is not doable.".formatted(this));
-            }
-        }
-        return doable;
     }
 
     @Override

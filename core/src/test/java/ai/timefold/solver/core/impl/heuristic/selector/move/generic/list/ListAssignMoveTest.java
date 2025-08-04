@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockRebasingScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -88,12 +87,6 @@ class ListAssignMoveTest {
                 .isTrue();
         assertThat(new ListAssignMove<>(otherVariableDescriptor, v1, e2, 0).isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
-        // different entity => invalid value
-        assertThatCode(() -> {
-            var move = new ListAssignMove<>(otherVariableDescriptor, v3, e1, 0);
-            move.setAssertValueRange(true);
-            move.isMoveDoable(otherInnerScoreDirector);
-        }).hasMessageContaining("is not doable");
     }
 
     @Test

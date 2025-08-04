@@ -14,7 +14,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
@@ -186,11 +185,4 @@ public interface Move<Solution_> {
                 "Move class (%s) doesn't implement the extractPlanningEntities() method, so Value Tabu Search is impossible."
                         .formatted(getClass()));
     }
-
-    /**
-     * Evaluate and configure specific move settings and validations based on the running environment.
-     *
-     * @param environmentMode the solver environment
-     */
-    void enableAssertions(EnvironmentMode environmentMode);
 }

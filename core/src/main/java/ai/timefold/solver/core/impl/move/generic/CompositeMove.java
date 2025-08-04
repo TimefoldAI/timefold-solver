@@ -8,7 +8,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
@@ -54,13 +53,6 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     private CompositeMove(Move<Solution_>[] moves) {
         this.moves = moves;
-    }
-
-    @Override
-    public void enableAssertions(EnvironmentMode environmentMode) {
-        for (var move : moves) {
-            move.enableAssertions(environmentMode);
-        }
     }
 
     @Override

@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -133,15 +132,6 @@ public interface Move<Solution_> {
      */
     default String describe() {
         return getClass().getSimpleName();
-    }
-
-    /**
-     * Evaluate and configure specific move settings and validations based on the running environment.
-     *
-     * @param environmentMode the solver environment
-     */
-    default void enableAssertions(EnvironmentMode environmentMode) {
-        // TODO - Need to be enabled in the related moves when the API is completed
     }
 
     /**

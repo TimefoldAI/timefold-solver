@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 /**
@@ -55,13 +54,6 @@ public final class CompositeMove<Solution_> extends AbstractMove<Solution_> {
     @SafeVarargs
     CompositeMove(Move<Solution_>... moves) {
         this.moves = moves;
-    }
-
-    @Override
-    public void enableAssertions(EnvironmentMode environmentMode) {
-        for (var move : moves) {
-            move.enableAssertions(environmentMode);
-        }
     }
 
     public Move<Solution_>[] getMoves() {

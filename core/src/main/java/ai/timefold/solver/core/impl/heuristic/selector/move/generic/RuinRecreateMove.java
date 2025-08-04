@@ -51,7 +51,6 @@ public final class RuinRecreateMove<Solution_> extends AbstractMove<Solution_> {
                         .ensureThreadSafe(recordingScoreDirector.getBacking())
                         .withElementsToRecreate(ruinedEntityList)
                         .build();
-        constructionHeuristicPhase.enableAssertions(getMoveEnvironmentMode());
 
         var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
         nestedSolverScope.setSolver(solverScope.getSolver());

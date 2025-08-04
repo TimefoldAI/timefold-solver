@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.heuristic.move;
 import java.util.Collection;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
@@ -25,11 +24,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public record LegacyMoveAdapter<Solution_>(
         ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) implements Move<Solution_> {
-
-    @Override
-    public void enableAssertions(EnvironmentMode environmentMode) {
-        legacyMove.enableAssertions(environmentMode);
-    }
 
     /**
      * Used to determine if a move is doable.

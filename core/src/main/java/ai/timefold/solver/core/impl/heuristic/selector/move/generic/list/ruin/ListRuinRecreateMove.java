@@ -84,7 +84,6 @@ public final class ListRuinRecreateMove<Solution_> extends AbstractMove<Solution
                             .withElementsToRuin(entityToOriginalPositionMap.keySet())
                             .withElementsToRecreate(ruinedValueList)
                             .build();
-            constructionHeuristicPhase.enableAssertions(getMoveEnvironmentMode());
 
             var nestedSolverScope = new SolverScope<Solution_>(solverScope.getClock());
             nestedSolverScope.setSolver(solverScope.getSolver());

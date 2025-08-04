@@ -138,10 +138,6 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         solver.getBestSolutionRecaller().processWorkingSolutionDuringConstructionHeuristicsStep(stepScope);
     }
 
-    public void enableAssertions(EnvironmentMode environmentMode) {
-        moveRepository.enableAssertions(environmentMode);
-    }
-
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
