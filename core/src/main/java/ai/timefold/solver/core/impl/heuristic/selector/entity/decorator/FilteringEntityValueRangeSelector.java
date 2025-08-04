@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -9,16 +8,16 @@ import java.util.Random;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleBridge;
-import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLifecycleListener;
-import ai.timefold.solver.core.impl.heuristic.selector.common.demand.ReachableValueMatrix;
+import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValueMatrix;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * The decorator returns a list of reachable entities for a specific value.
@@ -35,8 +34,8 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  *
  * @param <Solution_> the solution type
  */
-public final class FilteringEntityValueRangeSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
-        implements EntitySelector<Solution_>, SelectionCacheLifecycleListener<Solution_> {
+public final class FilteringEntityValueRangeSelector<Solution_>
+        extends AbstractCachingEnabledSelector<Solution_, ReachableValueMatrix> implements EntitySelector<Solution_> {
 
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final EntitySelector<Solution_> childEntitySelector;
@@ -44,30 +43,17 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
     private long entitiesSize;
 
-    private long cachedEntityListRevision;
-    private ReachableValueMatrix reachableValueMatrix;
-
     public FilteringEntityValueRangeSelector(EntitySelector<Solution_> childEntitySelector,
             IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection) {
+        super(SelectionCacheType.PHASE, SelectionCacheType.STEP);
         this.replayingValueSelector = replayingValueSelector;
         this.childEntitySelector = childEntitySelector;
         this.randomSelection = randomSelection;
-        phaseLifecycleSupport.addEventListener(new SelectionCacheLifecycleBridge<>(SelectionCacheType.STEP, this));
     }
 
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
-
-    @Override
-    public void constructCache(SolverScope<Solution_> solverScope) {
-        loadEntityMatrix(solverScope.getScoreDirector());
-    }
-
-    @Override
-    public void disposeCache(SolverScope<Solution_> solverScope) {
-        // Dispose only at the end of the phase
-    }
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
@@ -78,7 +64,6 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        loadEntityMatrix(phaseScope.getScoreDirector());
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
         this.childEntitySelector.phaseStarted(phaseScope);
     }
@@ -86,16 +71,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        this.reachableValueMatrix = null;
-    }
-
-    private void loadEntityMatrix(InnerScoreDirector<Solution_, ?> scoreDirector) {
-        if (reachableValueMatrix == null || scoreDirector.isWorkingEntityListDirty(cachedEntityListRevision)) {
-            var demand = scoreDirector.getValueRangeManager()
-                    .getDemand(replayingValueSelector.getVariableDescriptor().getValueRangeDescriptor());
-            this.reachableValueMatrix = scoreDirector.getSupplyManager().demand(demand).read();
-            this.cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
-        }
+        resetCacheItem();
     }
 
     // ************************************************************************
@@ -104,6 +80,12 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
     public EntitySelector<Solution_> getChildEntitySelector() {
         return childEntitySelector;
+    }
+
+    @Override
+    public @NonNull ReachableValueMatrix buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
+        return scoreDirector.getValueRangeManager()
+                .getReachableValeMatrix(childEntitySelector.getEntityDescriptor().getGenuineListVariableDescriptor());
     }
 
     @Override
@@ -128,15 +110,16 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
     @Override
     public Iterator<Object> endingIterator() {
-        return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator());
+        return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), getCachedItem());
     }
 
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            return new EntityRandomFilteringValueRangeIterator(replayingValueSelector.iterator(), workingRandom);
+            return new EntityRandomFilteringValueRangeIterator(replayingValueSelector.iterator(), getCachedItem(),
+                    workingRandom);
         } else {
-            return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator());
+            return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), getCachedItem());
         }
     }
 
@@ -162,13 +145,15 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
         return Objects.hash(childEntitySelector, replayingValueSelector);
     }
 
-    private class OriginalFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
+    private static class OriginalFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
         private final Iterator<Object> valueIterator;
+        private final ReachableValueMatrix reachableValueMatrix;
         private Iterator<Object> otherIterator;
 
-        private OriginalFilteringValueRangeIterator(Iterator<Object> valueIterator) {
+        private OriginalFilteringValueRangeIterator(Iterator<Object> valueIterator, ReachableValueMatrix reachableValueMatrix) {
             this.valueIterator = valueIterator;
+            this.reachableValueMatrix = Objects.requireNonNull(reachableValueMatrix);
         }
 
         private void initialize() {
@@ -176,11 +161,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
                 return;
             }
             var allValues = reachableValueMatrix.extractReachableEntitiesAsList(Objects.requireNonNull(valueIterator.next()));
-            if (allValues != null) {
-                this.otherIterator = allValues.iterator();
-            } else {
-                this.otherIterator = Collections.emptyIterator();
-            }
+            this.otherIterator = Objects.requireNonNull(allValues).iterator();
         }
 
         @Override
@@ -193,15 +174,18 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
         }
     }
 
-    private class EntityRandomFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
+    private static class EntityRandomFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
         private final Iterator<Object> valueIterator;
+        private final ReachableValueMatrix reachableValueMatrix;
         private final Random workingRandom;
         private Object currentUpcomingValue;
         private List<Object> entityList;
 
-        private EntityRandomFilteringValueRangeIterator(Iterator<Object> valueIterator, Random workingRandom) {
+        private EntityRandomFilteringValueRangeIterator(Iterator<Object> valueIterator,
+                ReachableValueMatrix reachableValueMatrix, Random workingRandom) {
             this.valueIterator = valueIterator;
+            this.reachableValueMatrix = Objects.requireNonNull(reachableValueMatrix);
             this.workingRandom = workingRandom;
         }
 
@@ -215,12 +199,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
         private void loadValues() {
             upcomingCreated = false;
-            var allValues = reachableValueMatrix.extractReachableEntitiesAsList(currentUpcomingValue);
-            if (allValues != null) {
-                this.entityList = allValues;
-            } else {
-                this.entityList = Collections.emptyList();
-            }
+            this.entityList = reachableValueMatrix.extractReachableEntitiesAsList(currentUpcomingValue);
         }
 
         @Override

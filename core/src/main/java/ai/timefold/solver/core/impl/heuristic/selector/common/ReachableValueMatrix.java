@@ -1,6 +1,7 @@
-package ai.timefold.solver.core.impl.heuristic.selector.common.demand;
+package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,14 +31,14 @@ public final class ReachableValueMatrix {
     public ReachableValueMatrix(Map<Object, Set<Object>> valueToEntityMap, Map<Object, Set<Object>> valueToValueMap) {
         this.valueToEntityMap = valueToEntityMap;
         this.randomAccessValueToEntityMap = new IdentityHashMap<>(this.valueToEntityMap.size());
-        for (var entry : this.valueToEntityMap.entrySet()) {
-            randomAccessValueToEntityMap.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-        }
+        //        for (var entry : this.valueToEntityMap.entrySet()) {
+        //            randomAccessValueToEntityMap.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        //        }
         this.valueToValueMap = valueToValueMap;
         this.randomAccessValueToValueMap = new IdentityHashMap<>(this.valueToValueMap.size());
-        for (var entry : this.valueToValueMap.entrySet()) {
-            randomAccessValueToValueMap.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-        }
+        //        for (var entry : this.valueToValueMap.entrySet()) {
+        //            randomAccessValueToValueMap.put(entry.getKey(), new ArrayList<>(entry.getValue()));
+        //        }
         var first = valueToEntityMap.entrySet().stream().findFirst();
         this.valueClass = first.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
     }
@@ -56,12 +57,32 @@ public final class ReachableValueMatrix {
         return valueToValueMap.get(value);
     }
 
-    public @Nullable List<Object> extractReachableEntitiesAsList(Object value) {
-        return randomAccessValueToEntityMap.get(value);
+    public List<Object> extractReachableEntitiesAsList(Object value) {
+        var result = randomAccessValueToEntityMap.get(value);
+        if (result == null) {
+            var entitySet = this.valueToEntityMap.get(value);
+            if (entitySet != null) {
+                result = new ArrayList<>(entitySet);
+            } else {
+                result = Collections.emptyList();
+            }
+            randomAccessValueToEntityMap.put(value, result);
+        }
+        return result;
     }
 
-    public @Nullable List<Object> extractReachableValuesAsList(Object value) {
-        return randomAccessValueToValueMap.get(value);
+    public List<Object> extractReachableValuesAsList(Object value) {
+        var result = randomAccessValueToValueMap.get(value);
+        if (result == null) {
+            var valueSet = this.valueToValueMap.get(value);
+            if (valueSet != null) {
+                result = new ArrayList<>(valueSet);
+            } else {
+                result = Collections.emptyList();
+            }
+            randomAccessValueToValueMap.put(value, result);
+        }
+        return result;
     }
 
     public int getSize() {

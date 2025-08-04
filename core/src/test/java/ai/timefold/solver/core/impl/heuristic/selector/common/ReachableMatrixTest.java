@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.heuristic.selector.common.demand;
+package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -31,9 +31,8 @@ class ReachableMatrixTest {
 
         var solutionDescriptor = scoreDirector.getSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
-        var reachableValueMatrix = scoreDirector.getSupplyManager().demand(scoreDirector.getValueRangeManager()
-                .getDemand(entityDescriptor.getGenuineListVariableDescriptor().getValueRangeDescriptor()))
-                .read();
+        var reachableValueMatrix = scoreDirector.getValueRangeManager()
+                .getReachableValeMatrix(entityDescriptor.getGenuineListVariableDescriptor());
 
         assertThat(reachableValueMatrix.extractReachableEntities(v1)).containsExactlyInAnyOrder(a);
         assertThat(reachableValueMatrix.extractReachableEntities(v2)).containsExactlyInAnyOrder(a, b);
@@ -60,9 +59,8 @@ class ReachableMatrixTest {
 
         var solutionDescriptor = scoreDirector.getSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
-        var reachableValueMatrix = scoreDirector.getSupplyManager().demand(scoreDirector.getValueRangeManager()
-                .getDemand(entityDescriptor.getGenuineListVariableDescriptor().getValueRangeDescriptor()))
-                .read();
+        var reachableValueMatrix = scoreDirector.getValueRangeManager()
+                .getReachableValeMatrix(entityDescriptor.getGenuineListVariableDescriptor());
 
         assertThat(reachableValueMatrix.extractReachableValues(v1)).containsExactlyInAnyOrder(v2, v3);
         assertThat(reachableValueMatrix.extractReachableValues(v2)).containsExactlyInAnyOrder(v1, v3);

@@ -5,11 +5,15 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+
+import org.jspecify.annotations.NonNull;
 
 /**
  * This is the common {@link ValueSelector} implementation.
@@ -17,25 +21,23 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 public final class FromEntityPropertyValueSelector<Solution_>
-        extends AbstractDemandEnabledSelector<Solution_>
+        extends AbstractCachingEnabledSelector<Solution_, CountableValueRange<Object>>
         implements ValueSelector<Solution_> {
 
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final boolean randomSelection;
 
     private InnerScoreDirector<Solution_, ?> scoreDirector;
-    private Solution_ cachedSolution = null;
-    private CountableValueRange<Object> cachedValueRange = null;
 
     public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean randomSelection) {
+        super(SelectionCacheType.PHASE, SelectionCacheType.STEP);
         this.valueRangeDescriptor = valueRangeDescriptor;
         this.randomSelection = randomSelection;
     }
 
-    @Override
-    public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
-        return valueRangeDescriptor.getVariableDescriptor();
-    }
+    // ************************************************************************
+    // Lifecycle methods
+    // ************************************************************************
 
     @Override
     public void solvingStarted(SolverScope<Solution_> solverScope) {
@@ -47,16 +49,26 @@ public final class FromEntityPropertyValueSelector<Solution_>
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
         this.scoreDirector = null;
-        this.cachedSolution = null;
-        this.cachedValueRange = null;
     }
 
-    private void checkCachedValueRange() {
-        if (cachedSolution == null || cachedSolution != scoreDirector.getWorkingSolution()) {
-            this.cachedSolution = scoreDirector.getWorkingSolution();
-            this.cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
-                    cachedSolution);
-        }
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        resetCacheItem();
+    }
+
+    // ************************************************************************
+    // Worker methods
+    // ************************************************************************
+
+    @Override
+    public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
+        return valueRangeDescriptor.getVariableDescriptor();
+    }
+
+    @Override
+    public @NonNull CountableValueRange<Object> buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
+        return scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor);
     }
 
     @Override
@@ -74,8 +86,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
         if (entity == null) {
             // When the entity is null, the size of the complete list of values is returned
             // This logic aligns with the requirements for Nearby in the enterprise repository
-            checkCachedValueRange();
-            return cachedValueRange.getSize();
+            return Objects.requireNonNull(getCachedItem()).getSize();
         } else {
             return scoreDirector.getValueRangeManager().countOnEntity(valueRangeDescriptor, entity);
         }
@@ -96,8 +107,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
         if (entity == null) {
             // When the entity is null, the complete list of values is returned
             // This logic aligns with the requirements for Nearby in the enterprise repository
-            checkCachedValueRange();
-            return cachedValueRange.createOriginalIterator();
+            return Objects.requireNonNull(getCachedItem()).createOriginalIterator();
         } else {
             var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity);
             return valueRange.createOriginalIterator();

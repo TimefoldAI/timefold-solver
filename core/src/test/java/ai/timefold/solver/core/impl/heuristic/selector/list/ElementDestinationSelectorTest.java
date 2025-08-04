@@ -227,7 +227,7 @@ class ElementDestinationSelectorTest {
             InnerScoreDirector<TestdataListEntityProvidingSolution, ?> scoreDirector, TestRandom random, String code) {
         var selector = new ElementDestinationSelector<>(entitySelector, valueSelector, true, true);
         var solverScope = solvingStarted(selector, scoreDirector, random, entitySelector, valueSelector);
-        phaseStarted(solverScope, selector, entitySelector, valueSelector);
+        phaseStarted(solverScope, selector);
         assertCodesOfNeverEndingIterableSelectorWithoutSize(selector, code);
     }
 

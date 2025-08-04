@@ -223,8 +223,8 @@ class ListChangeMoveSelectorTest {
                 entityDescriptor, false);
         var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, destinationSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, destinationSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(solverScope, moveSelector);
 
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
@@ -404,9 +404,8 @@ class ListChangeMoveSelectorTest {
                 entityDescriptor, true);
         var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
 
-        var solverScope =
-                solvingStarted(moveSelector, scoreDirector, new Random(0), mimicRecordingValueSelector, destinationSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, destinationSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(solverScope, moveSelector);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[1]}",
@@ -567,8 +566,8 @@ class ListChangeMoveSelectorTest {
         var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
 
         var solverScope =
-                solvingStarted(moveSelector, scoreDirector, new Random(0), mimicRecordingValueSelector, destinationSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, destinationSelector);
+                solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(solverScope, moveSelector);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[0]}",

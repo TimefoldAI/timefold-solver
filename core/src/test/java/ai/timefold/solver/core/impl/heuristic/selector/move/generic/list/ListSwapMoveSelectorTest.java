@@ -182,8 +182,8 @@ class ListSwapMoveSelectorTest {
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, filteringValueRangeSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, filteringValueRangeSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(solverScope, moveSelector);
 
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
@@ -257,8 +257,8 @@ class ListSwapMoveSelectorTest {
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, filteringValueRangeSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, filteringValueRangeSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(solverScope, moveSelector);
 
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
@@ -323,9 +323,8 @@ class ListSwapMoveSelectorTest {
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0), mimicRecordingValueSelector,
-                filteringValueRangeSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, filteringValueRangeSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(solverScope, moveSelector);
 
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertCodesOfNeverEndingMoveSelector(moveSelector,
@@ -398,9 +397,8 @@ class ListSwapMoveSelectorTest {
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0), mimicRecordingValueSelector,
-                filteringValueRangeSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, filteringValueRangeSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(solverScope, moveSelector);
 
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertCodesOfNeverEndingMoveSelector(moveSelector,
@@ -469,9 +467,8 @@ class ListSwapMoveSelectorTest {
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0), mimicRecordingValueSelector,
-                filteringValueRangeSelector);
-        phaseStarted(solverScope, moveSelector, mimicRecordingValueSelector, filteringValueRangeSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(solverScope, moveSelector);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "3 {B[0]} <-> 2 {A[0]}",

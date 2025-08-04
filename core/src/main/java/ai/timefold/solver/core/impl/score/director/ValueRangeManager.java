@@ -2,8 +2,10 @@ package ai.timefold.solver.core.impl.score.director;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
@@ -22,7 +24,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.common.demand.ReachableValueMatrixDemand;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValueMatrix;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
@@ -57,9 +59,8 @@ public final class ValueRangeManager<Solution_> {
     private final Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
-    private final Map<ValueRangeDescriptor<Solution_>, ReachableValueMatrixDemand<Solution_>> demandMatrixMap =
-            new IdentityHashMap<>();
 
+    private @Nullable ReachableValueMatrix reachableValueMatrix = null;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
     private @Nullable ProblemSizeStatistics cachedProblemSizeStatistics = null;
@@ -413,25 +414,74 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
-    public ReachableValueMatrixDemand<Solution_> getDemand(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        if (cachedWorkingSolution == null) {
-            throw new IllegalStateException(
-                    "Impossible state: ValueToEntityMatrixDemand for (%s) requested before the working solution is known."
-                            .formatted(valueRangeDescriptor));
+    public ReachableValueMatrix getReachableValeMatrix(ListVariableDescriptor<Solution_> listVariableDescriptor) {
+        if (reachableValueMatrix == null) {
+            if (cachedWorkingSolution == null) {
+                throw new IllegalStateException(
+                        "Impossible state: the matrix %s requested before the working solution is known."
+                                .formatted(ReachableValueMatrix.class.getSimpleName()));
+            }
+            var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
+            var valueRangeDescriptor = listVariableDescriptor.getValueRangeDescriptor();
+            var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
+            var allValues = getFromSolution(valueRangeDescriptor);
+            var valuesSize = allValues.getSize();
+            if (valuesSize > Integer.MAX_VALUE) {
+                throw new IllegalStateException(
+                        "The matrix %s cannot be built for the entity %s (%s) because value range has a size (%d) which is higher than Integer.MAX_VALUE."
+                                .formatted(ReachableValueMatrix.class.getSimpleName(),
+                                        entityDescriptor.getEntityClass().getSimpleName(),
+                                        valueRangeDescriptor.getVariableDescriptor().getVariableName(), valuesSize));
+            }
+            // list of entities reachable for a value
+            var entityMatrix = new IdentityHashMap<Object, Set<Object>>((int) valuesSize);
+            // list of values reachable for a value
+            var valueMatrix = new IdentityHashMap<Object, Set<Object>>((int) valuesSize);
+            for (var entity : entityList) {
+                var valuesIterator = allValues.createOriginalIterator();
+                var range = getFromEntity(valueRangeDescriptor, entity);
+                while (valuesIterator.hasNext()) {
+                    var value = valuesIterator.next();
+                    if (range.contains(value)) {
+                        updateEntityMatrix(entityMatrix, entity, value, entityList.size());
+                        updateValueMatrix(valueMatrix, range, value, (int) valuesSize);
+                    }
+                }
+            }
+            reachableValueMatrix = new ReachableValueMatrix(entityMatrix, valueMatrix);
         }
-        var demand = demandMatrixMap.get(valueRangeDescriptor);
-        if (demand == null) {
-            demand = new ReachableValueMatrixDemand<>(cachedWorkingSolution, this,
-                    valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor(), valueRangeDescriptor);
-            demandMatrixMap.put(valueRangeDescriptor, demand);
+        return reachableValueMatrix;
+    }
+
+    private void updateEntityMatrix(Map<Object, Set<Object>> entityMatrix, Object entity, Object value, int entityListSize) {
+        var entitySet = entityMatrix.get(value);
+        if (entitySet == null) {
+            entitySet = new LinkedHashSet<>(entityListSize);
+            entityMatrix.put(value, entitySet);
         }
-        return demand;
+        entitySet.add(entity);
+    }
+
+    private void updateValueMatrix(Map<Object, Set<Object>> valueMatrix, CountableValueRange<Object> range, Object value,
+            int valueListSize) {
+        var reachableValues = valueMatrix.get(value);
+        if (reachableValues == null) {
+            reachableValues = new LinkedHashSet<>(valueListSize);
+            valueMatrix.put(value, reachableValues);
+        }
+        var entityValuesIterator = range.createOriginalIterator();
+        while (entityValuesIterator.hasNext()) {
+            var entityValue = entityValuesIterator.next();
+            if (!Objects.equals(entityValue, value)) {
+                reachableValues.add(entityValue);
+            }
+        }
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
         fromSolutionMap.clear();
         fromEntityMap.clear();
-        demandMatrixMap.clear();
+        reachableValueMatrix = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
             cachedWorkingSolution = workingSolution;
