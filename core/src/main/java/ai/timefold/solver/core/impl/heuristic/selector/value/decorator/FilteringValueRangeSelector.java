@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValueMatrix;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -38,7 +38,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Solution_> the solution type
  */
 public final class FilteringValueRangeSelector<Solution_>
-        extends AbstractCachingEnabledSelector<Solution_, ReachableValueMatrix>
+        extends AbstractCachingEnabledSelector<Solution_, ReachableValues>
         implements IterableValueSelector<Solution_> {
 
     private final IterableValueSelector<Solution_> nonReplayingValueSelector;
@@ -96,7 +96,7 @@ public final class FilteringValueRangeSelector<Solution_>
     }
 
     @Override
-    public @NonNull ReachableValueMatrix buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
+    public @NonNull ReachableValues buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
         return scoreDirector.getValueRangeManager()
                 .getReachableValeMatrix(listVariableStateSupply.getSourceVariableDescriptor());
     }
@@ -166,7 +166,7 @@ public final class FilteringValueRangeSelector<Solution_>
     private abstract class AbstractFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
         private final ListVariableStateSupply<Solution_> listVariableStateSupply;
-        private final ReachableValueMatrix reachableValueMatrix;
+        private final ReachableValues reachableValues;
         // Check if the source and destination entity range accepts the selected values 
         private final boolean checkSourceAndDestination;
         // Use the value list instead of the set, as it is required by random access iterators
@@ -185,8 +185,8 @@ public final class FilteringValueRangeSelector<Solution_>
         Set<Object> entitiesSet;
 
         AbstractFilteringValueRangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                ReachableValueMatrix reachableValueMatrix, boolean checkSourceAndDestination, boolean useValueList) {
-            this.reachableValueMatrix = Objects.requireNonNull(reachableValueMatrix);
+                ReachableValues reachableValues, boolean checkSourceAndDestination, boolean useValueList) {
+            this.reachableValues = Objects.requireNonNull(reachableValues);
             this.listVariableStateSupply = listVariableStateSupply;
             this.checkSourceAndDestination = checkSourceAndDestination;
             this.useValueList = useValueList;
@@ -194,19 +194,19 @@ public final class FilteringValueRangeSelector<Solution_>
 
         void loadValues(Object upcomingValue) {
             this.currentUpcomingValue = upcomingValue;
-            this.entitiesSet = reachableValueMatrix.extractReachableEntities(currentUpcomingValue);
+            this.entitiesSet = reachableValues.extractReachableEntities(currentUpcomingValue);
             this.valueList = null;
             this.valuesSet = null;
             if (useValueList) {
                 // Load the random access list
-                valueList = Objects.requireNonNull(reachableValueMatrix.extractReachableValuesAsList(currentUpcomingValue));
+                valueList = Objects.requireNonNull(reachableValues.extractReachableValuesAsList(currentUpcomingValue));
                 if (valueList.isEmpty()) {
                     noData();
                     return;
                 }
             } else {
                 // Load the fast access set
-                this.valuesSet = reachableValueMatrix.extractReachableValues(currentUpcomingValue);
+                this.valuesSet = reachableValues.extractReachableValues(currentUpcomingValue);
                 if (valuesSet == null || valuesSet.isEmpty()) {
                     noData();
                     return;
@@ -246,7 +246,7 @@ public final class FilteringValueRangeSelector<Solution_>
             }
             if (checkSourceAndDestination && destinationValid && currentUpcomingEntity != null) {
                 // Test if the source entity accepts the destination value
-                sourceValid = Objects.requireNonNull(reachableValueMatrix.extractReachableEntities(destinationValue))
+                sourceValid = Objects.requireNonNull(reachableValues.extractReachableEntities(destinationValue))
                         .contains(currentUpcomingEntity);
             }
             return sourceValid && destinationValid;
@@ -274,9 +274,9 @@ public final class FilteringValueRangeSelector<Solution_>
         private final Iterator<Object> valueIterator;
 
         private OriginalFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValueMatrix reachableValueMatrix,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
                 boolean checkSourceAndDestination, boolean useValueList) {
-            super(listVariableStateSupply, reachableValueMatrix, checkSourceAndDestination, useValueList);
+            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, useValueList);
             this.replayingValueIterator = replayingValueIterator;
             this.valueIterator = valueIterator;
         }
@@ -321,9 +321,9 @@ public final class FilteringValueRangeSelector<Solution_>
         private final int maxBailoutSize;
 
         private RandomFilteringValueRangeIterator(Iterator<Object> replayingValueIterator,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValueMatrix reachableValueMatrix,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
                 Random workingRandom, int maxBailoutSize, boolean checkSourceAndDestination, boolean useValueList) {
-            super(listVariableStateSupply, reachableValueMatrix, checkSourceAndDestination, useValueList);
+            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, useValueList);
             this.replayingValueIterator = replayingValueIterator;
             this.workingRandom = workingRandom;
             this.maxBailoutSize = maxBailoutSize;

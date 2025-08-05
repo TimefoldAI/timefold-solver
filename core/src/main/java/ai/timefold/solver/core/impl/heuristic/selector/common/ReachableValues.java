@@ -20,7 +20,7 @@ import org.jspecify.annotations.Nullable;
  * @see FromEntityPropertyValueRangeDescriptor
  */
 @NullMarked
-public final class ReachableValueMatrix {
+public final class ReachableValues {
 
     private final Map<Object, Set<Object>> valueToEntityMap;
     private final Map<Object, Set<Object>> valueToValueMap;
@@ -28,7 +28,7 @@ public final class ReachableValueMatrix {
     private final Map<Object, List<Object>> randomAccessValueToValueMap;
     private final @Nullable Class<?> valueClass;
 
-    public ReachableValueMatrix(Map<Object, Set<Object>> valueToEntityMap, Map<Object, Set<Object>> valueToValueMap) {
+    public ReachableValues(Map<Object, Set<Object>> valueToEntityMap, Map<Object, Set<Object>> valueToValueMap) {
         this.valueToEntityMap = valueToEntityMap;
         this.randomAccessValueToEntityMap = new IdentityHashMap<>(this.valueToEntityMap.size());
         this.valueToValueMap = valueToValueMap;

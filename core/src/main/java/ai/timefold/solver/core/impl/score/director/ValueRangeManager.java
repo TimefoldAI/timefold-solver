@@ -24,7 +24,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValueMatrix;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
@@ -60,7 +60,7 @@ public final class ValueRangeManager<Solution_> {
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
 
-    private @Nullable ReachableValueMatrix reachableValueMatrix = null;
+    private @Nullable ReachableValues reachableValues = null;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
     private @Nullable ProblemSizeStatistics cachedProblemSizeStatistics = null;
@@ -414,12 +414,12 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
-    public ReachableValueMatrix getReachableValeMatrix(ListVariableDescriptor<Solution_> listVariableDescriptor) {
-        if (reachableValueMatrix == null) {
+    public ReachableValues getReachableValeMatrix(ListVariableDescriptor<Solution_> listVariableDescriptor) {
+        if (reachableValues == null) {
             if (cachedWorkingSolution == null) {
                 throw new IllegalStateException(
                         "Impossible state: the matrix %s requested before the working solution is known."
-                                .formatted(ReachableValueMatrix.class.getSimpleName()));
+                                .formatted(ReachableValues.class.getSimpleName()));
             }
             var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
             var valueRangeDescriptor = listVariableDescriptor.getValueRangeDescriptor();
@@ -429,7 +429,7 @@ public final class ValueRangeManager<Solution_> {
             if (valuesSize > Integer.MAX_VALUE) {
                 throw new IllegalStateException(
                         "The matrix %s cannot be built for the entity %s (%s) because value range has a size (%d) which is higher than Integer.MAX_VALUE."
-                                .formatted(ReachableValueMatrix.class.getSimpleName(),
+                                .formatted(ReachableValues.class.getSimpleName(),
                                         entityDescriptor.getEntityClass().getSimpleName(),
                                         valueRangeDescriptor.getVariableDescriptor().getVariableName(), valuesSize));
             }
@@ -448,9 +448,9 @@ public final class ValueRangeManager<Solution_> {
                     }
                 }
             }
-            reachableValueMatrix = new ReachableValueMatrix(entityMatrix, valueMatrix);
+            reachableValues = new ReachableValues(entityMatrix, valueMatrix);
         }
-        return reachableValueMatrix;
+        return reachableValues;
     }
 
     private void updateEntityMatrix(Map<Object, Set<Object>> entityMatrix, Object entity, Object value, int entityListSize) {
@@ -481,7 +481,7 @@ public final class ValueRangeManager<Solution_> {
     public void reset(@Nullable Solution_ workingSolution) {
         fromSolutionMap.clear();
         fromEntityMap.clear();
-        reachableValueMatrix = null;
+        reachableValues = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
             cachedWorkingSolution = workingSolution;

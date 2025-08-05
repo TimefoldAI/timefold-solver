@@ -8,7 +8,7 @@ import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValueMatrix;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
@@ -34,7 +34,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type
  */
 public final class FilteringEntityValueRangeSelector<Solution_>
-        extends AbstractCachingEnabledSelector<Solution_, ReachableValueMatrix> implements EntitySelector<Solution_> {
+        extends AbstractCachingEnabledSelector<Solution_, ReachableValues> implements EntitySelector<Solution_> {
 
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final EntitySelector<Solution_> childEntitySelector;
@@ -75,7 +75,7 @@ public final class FilteringEntityValueRangeSelector<Solution_>
     }
 
     @Override
-    public @NonNull ReachableValueMatrix buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
+    public @NonNull ReachableValues buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
         return scoreDirector.getValueRangeManager()
                 .getReachableValeMatrix(childEntitySelector.getEntityDescriptor().getGenuineListVariableDescriptor());
     }
@@ -140,19 +140,19 @@ public final class FilteringEntityValueRangeSelector<Solution_>
     private static class OriginalFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
         private final Iterator<Object> valueIterator;
-        private final ReachableValueMatrix reachableValueMatrix;
+        private final ReachableValues reachableValues;
         private Iterator<Object> otherIterator;
 
-        private OriginalFilteringValueRangeIterator(Iterator<Object> valueIterator, ReachableValueMatrix reachableValueMatrix) {
+        private OriginalFilteringValueRangeIterator(Iterator<Object> valueIterator, ReachableValues reachableValues) {
             this.valueIterator = valueIterator;
-            this.reachableValueMatrix = Objects.requireNonNull(reachableValueMatrix);
+            this.reachableValues = Objects.requireNonNull(reachableValues);
         }
 
         private void initialize() {
             if (otherIterator != null) {
                 return;
             }
-            var allValues = reachableValueMatrix.extractReachableEntitiesAsList(Objects.requireNonNull(valueIterator.next()));
+            var allValues = reachableValues.extractReachableEntitiesAsList(Objects.requireNonNull(valueIterator.next()));
             this.otherIterator = Objects.requireNonNull(allValues).iterator();
         }
 
@@ -169,15 +169,15 @@ public final class FilteringEntityValueRangeSelector<Solution_>
     private static class EntityRandomFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
         private final Iterator<Object> valueIterator;
-        private final ReachableValueMatrix reachableValueMatrix;
+        private final ReachableValues reachableValues;
         private final Random workingRandom;
         private Object currentUpcomingValue;
         private List<Object> entityList;
 
         private EntityRandomFilteringValueRangeIterator(Iterator<Object> valueIterator,
-                ReachableValueMatrix reachableValueMatrix, Random workingRandom) {
+                ReachableValues reachableValues, Random workingRandom) {
             this.valueIterator = valueIterator;
-            this.reachableValueMatrix = Objects.requireNonNull(reachableValueMatrix);
+            this.reachableValues = Objects.requireNonNull(reachableValues);
             this.workingRandom = workingRandom;
         }
 
@@ -191,7 +191,7 @@ public final class FilteringEntityValueRangeSelector<Solution_>
 
         private void loadValues() {
             upcomingCreated = false;
-            this.entityList = reachableValueMatrix.extractReachableEntitiesAsList(currentUpcomingValue);
+            this.entityList = reachableValues.extractReachableEntitiesAsList(currentUpcomingValue);
         }
 
         @Override
