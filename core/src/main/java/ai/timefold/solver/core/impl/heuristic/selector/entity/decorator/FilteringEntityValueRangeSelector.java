@@ -152,7 +152,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
             if (otherIterator != null) {
                 return;
             }
-            var allValues = reachableValues.extractReachableEntitiesAsList(Objects.requireNonNull(valueIterator.next()));
+            var allValues = reachableValues.extractEntitiesAsList(Objects.requireNonNull(valueIterator.next()));
             this.otherIterator = Objects.requireNonNull(allValues).iterator();
         }
 
@@ -191,7 +191,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
         private void loadValues() {
             upcomingCreated = false;
-            this.entityList = reachableValues.extractReachableEntitiesAsList(currentUpcomingValue);
+            this.entityList = reachableValues.extractEntitiesAsList(currentUpcomingValue);
         }
 
         @Override

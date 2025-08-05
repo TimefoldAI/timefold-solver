@@ -189,19 +189,19 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
         void loadValues(Object upcomingValue) {
             this.currentUpcomingValue = upcomingValue;
-            this.entitiesSet = reachableValues.extractReachableEntities(currentUpcomingValue);
+            this.entitiesSet = reachableValues.extractEntities(currentUpcomingValue);
             this.valueList = null;
             this.valuesSet = null;
             if (useValueList) {
                 // Load the random access list
-                valueList = Objects.requireNonNull(reachableValues.extractReachableValuesAsList(currentUpcomingValue));
+                valueList = Objects.requireNonNull(reachableValues.extractValuesAsList(currentUpcomingValue));
                 if (valueList.isEmpty()) {
                     noData();
                     return;
                 }
             } else {
                 // Load the fast access set
-                this.valuesSet = reachableValues.extractReachableValues(currentUpcomingValue);
+                this.valuesSet = reachableValues.extractValues(currentUpcomingValue);
                 if (valuesSet == null || valuesSet.isEmpty()) {
                     noData();
                     return;
@@ -238,7 +238,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             }
             if (checkSourceAndDestination && destinationValid && currentUpcomingEntity != null) {
                 // Test if the source entity accepts the destination value
-                sourceValid = Objects.requireNonNull(reachableValues.extractReachableEntities(destinationValue))
+                sourceValid = Objects.requireNonNull(reachableValues.extractEntities(destinationValue))
                         .contains(currentUpcomingEntity);
             }
             return sourceValid && destinationValid;

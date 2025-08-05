@@ -34,11 +34,11 @@ class ReachableMatrixTest {
         var reachableValues = scoreDirector.getValueRangeManager()
                 .getReachableValeMatrix(entityDescriptor.getGenuineListVariableDescriptor());
 
-        assertThat(reachableValues.extractReachableEntities(v1)).containsExactlyInAnyOrder(a);
-        assertThat(reachableValues.extractReachableEntities(v2)).containsExactlyInAnyOrder(a, b);
-        assertThat(reachableValues.extractReachableEntities(v3)).containsExactlyInAnyOrder(a, b, c);
-        assertThat(reachableValues.extractReachableEntities(v4)).containsExactlyInAnyOrder(c);
-        assertThat(reachableValues.extractReachableEntities(v5)).containsExactlyInAnyOrder(c);
+        assertThat(reachableValues.extractEntities(v1)).containsExactlyInAnyOrder(a);
+        assertThat(reachableValues.extractEntities(v2)).containsExactlyInAnyOrder(a, b);
+        assertThat(reachableValues.extractEntities(v3)).containsExactlyInAnyOrder(a, b, c);
+        assertThat(reachableValues.extractEntities(v4)).containsExactlyInAnyOrder(c);
+        assertThat(reachableValues.extractEntities(v5)).containsExactlyInAnyOrder(c);
     }
 
     @Test
@@ -62,10 +62,10 @@ class ReachableMatrixTest {
         var reachableValues = scoreDirector.getValueRangeManager()
                 .getReachableValeMatrix(entityDescriptor.getGenuineListVariableDescriptor());
 
-        assertThat(reachableValues.extractReachableValues(v1)).containsExactlyInAnyOrder(v2, v3);
-        assertThat(reachableValues.extractReachableValues(v2)).containsExactlyInAnyOrder(v1, v3);
-        assertThat(reachableValues.extractReachableValues(v3)).containsExactlyInAnyOrder(v1, v2, v4, v5);
-        assertThat(reachableValues.extractReachableValues(v4)).containsExactlyInAnyOrder(v3, v5);
-        assertThat(reachableValues.extractReachableValues(v5)).containsExactlyInAnyOrder(v3, v4);
+        assertThat(reachableValues.extractValues(v1)).containsExactlyInAnyOrder(v2, v3);
+        assertThat(reachableValues.extractValues(v2)).containsExactlyInAnyOrder(v1, v3);
+        assertThat(reachableValues.extractValues(v3)).containsExactlyInAnyOrder(v1, v2, v4, v5);
+        assertThat(reachableValues.extractValues(v4)).containsExactlyInAnyOrder(v3, v5);
+        assertThat(reachableValues.extractValues(v5)).containsExactlyInAnyOrder(v3, v4);
     }
 }

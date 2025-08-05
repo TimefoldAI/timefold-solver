@@ -40,18 +40,18 @@ public final class ReachableValues {
     /**
      * @return all reachable values for the given value.
      */
-    public @Nullable Set<Object> extractReachableEntities(Object value) {
+    public @Nullable Set<Object> extractEntities(Object value) {
         return valueToEntityMap.get(value);
     }
 
     /**
      * @return all reachable entities for the given value.
      */
-    public @Nullable Set<Object> extractReachableValues(Object value) {
+    public @Nullable Set<Object> extractValues(Object value) {
         return valueToValueMap.get(value);
     }
 
-    public List<Object> extractReachableEntitiesAsList(Object value) {
+    public List<Object> extractEntitiesAsList(Object value) {
         var result = randomAccessValueToEntityMap.get(value);
         if (result == null) {
             var entitySet = this.valueToEntityMap.get(value);
@@ -65,7 +65,7 @@ public final class ReachableValues {
         return result;
     }
 
-    public List<Object> extractReachableValuesAsList(Object value) {
+    public List<Object> extractValuesAsList(Object value) {
         var result = randomAccessValueToValueMap.get(value);
         if (result == null) {
             var valueSet = this.valueToValueMap.get(value);
