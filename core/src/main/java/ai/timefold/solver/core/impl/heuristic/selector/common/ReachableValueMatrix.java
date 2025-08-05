@@ -31,14 +31,8 @@ public final class ReachableValueMatrix {
     public ReachableValueMatrix(Map<Object, Set<Object>> valueToEntityMap, Map<Object, Set<Object>> valueToValueMap) {
         this.valueToEntityMap = valueToEntityMap;
         this.randomAccessValueToEntityMap = new IdentityHashMap<>(this.valueToEntityMap.size());
-        //        for (var entry : this.valueToEntityMap.entrySet()) {
-        //            randomAccessValueToEntityMap.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-        //        }
         this.valueToValueMap = valueToValueMap;
         this.randomAccessValueToValueMap = new IdentityHashMap<>(this.valueToValueMap.size());
-        //        for (var entry : this.valueToValueMap.entrySet()) {
-        //            randomAccessValueToValueMap.put(entry.getKey(), new ArrayList<>(entry.getValue()));
-        //        }
         var first = valueToEntityMap.entrySet().stream().findFirst();
         this.valueClass = first.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
     }

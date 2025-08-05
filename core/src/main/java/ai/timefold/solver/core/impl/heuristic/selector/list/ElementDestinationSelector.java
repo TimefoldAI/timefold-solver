@@ -188,15 +188,6 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
                 .iterator();
     }
 
-    public Iterator<Object> endingValueIterator() {
-        if (enableEntityValueRangeFilter) {
-            // When the value range is present at the entity, we return the ending iterator from the child selector,
-            // as it does not necessarily depend on a recorded value to retrieve its values.
-            return filteringValueRangeSelector.getChildValueSelector().endingIterator(null);
-        }
-        return valueSelector.endingIterator(null);
-    }
-
     public boolean isEnableEntityValueRangeFilter() {
         return enableEntityValueRangeFilter;
     }
