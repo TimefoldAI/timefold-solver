@@ -136,8 +136,6 @@ public class TimefoldRecorder {
                 .ifPresent(solverConfig::setDaemon);
         maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::moveThreadCount)
                 .ifPresent(solverConfig::setMoveThreadCount);
-        maybeSolverRuntimeConfig.flatMap(SolverRuntimeConfig::randomSeed)
-                .ifPresent(solverConfig::setRandomSeed);
         maybeSolverRuntimeConfig.flatMap(config -> config.termination().diminishedReturns())
                 .ifPresent(diminishedReturnsConfig -> setDiminishedReturns(solverConfig, diminishedReturnsConfig));
     }

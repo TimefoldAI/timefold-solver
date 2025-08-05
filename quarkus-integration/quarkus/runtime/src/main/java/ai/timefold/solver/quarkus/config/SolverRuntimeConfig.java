@@ -43,9 +43,4 @@ public interface SolverRuntimeConfig {
      * Configuration properties that overwrite {@link TerminationConfig}.
      */
     TerminationRuntimeConfig termination();
-
-    /**
-     * Configuration of the random seed.
-     */
-    Optional<Long> randomSeed();
 }
