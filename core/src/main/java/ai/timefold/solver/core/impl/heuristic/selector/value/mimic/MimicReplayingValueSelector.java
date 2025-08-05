@@ -9,8 +9,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSele
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.SelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public class MimicReplayingValueSelector<Solution_>
         extends AbstractDemandEnabledSelector<Solution_>
@@ -31,25 +29,12 @@ public class MimicReplayingValueSelector<Solution_>
     }
 
     // ************************************************************************
-    // Lifecycle methods
+    // Worker methods
     // ************************************************************************
-
-    @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        valueMimicRecorder.solvingStarted(solverScope);
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        valueMimicRecorder.solvingEnded(solverScope);
-    }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        valueMimicRecorder.phaseStarted(phaseScope);
         // Doing this in phaseStarted instead of stepStarted due to QueuedValuePlacer compatibility
         hasRecordingCreated = false;
         recordingCreated = false;
@@ -58,29 +43,12 @@ public class MimicReplayingValueSelector<Solution_>
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
-        valueMimicRecorder.phaseEnded(phaseScope);
         // Doing this in phaseEnded instead of stepEnded due to QueuedValuePlacer compatibility
         hasRecordingCreated = false;
         hasRecording = false;
         recordingCreated = false;
         recording = null;
     }
-
-    @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        super.stepStarted(stepScope);
-        valueMimicRecorder.stepStarted(stepScope);
-    }
-
-    @Override
-    public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        super.stepEnded(stepScope);
-        valueMimicRecorder.stepEnded(stepScope);
-    }
-
-    // ************************************************************************
-    // Worker methods
-    // ************************************************************************
 
     @Override
     public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {

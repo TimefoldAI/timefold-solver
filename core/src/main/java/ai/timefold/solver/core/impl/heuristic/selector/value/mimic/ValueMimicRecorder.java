@@ -5,9 +5,8 @@ import java.util.Iterator;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
-import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 
-public interface ValueMimicRecorder<Solution_> extends PhaseLifecycleListener<Solution_> {
+public interface ValueMimicRecorder<Solution_> {
 
     /**
      * @param replayingValueSelector never null

@@ -99,16 +99,7 @@ class QueuedValuePlacerTest {
         placer.solvingEnded(solverScope);
 
         verifyPhaseLifecycle(entitySelector, 1, 2, 4);
-        // solver
-        //   1 call recorded by valueSelector
-        //   1 call recorded by replaying selector
-        // phase
-        //   2 calls recorded by valueSelector
-        //   2 calls recorded by replaying selector
-        // step
-        //   4 calls recorded by valueSelector
-        //   4 calls recorded by replaying selector
-        verifyPhaseLifecycle(valueSelector, 2, 4, 8);
+        verifyPhaseLifecycle(valueSelector, 1, 2, 4);
     }
 
     @Test

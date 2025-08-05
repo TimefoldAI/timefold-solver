@@ -6,15 +6,17 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.SelectionCacheLife
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * This is a utility selector class designed to incorporate a straightforward caching function into the selector.
  */
+@NullMarked
 public abstract class AbstractCachingEnabledSelector<Solution_, Type_> extends AbstractDemandEnabledSelector<Solution_>
         implements SelectionCacheLifecycleListener<Solution_> {
 
-    private Type_ cachedItem = null;
+    private @Nullable Type_ cachedItem = null;
     private long revision;
 
     protected AbstractCachingEnabledSelector(SelectionCacheType... selectionCacheType) {

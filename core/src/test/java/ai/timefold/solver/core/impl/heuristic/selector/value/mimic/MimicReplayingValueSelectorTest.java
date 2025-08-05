@@ -78,16 +78,7 @@ class MimicReplayingValueSelectorTest {
         recordingValueSelector.solvingEnded(solverScope);
         replayingValueSelector.solvingEnded(solverScope);
 
-        // solver
-        //   1 call recorded by recordingValueSelector
-        //   1 call recorded by replayingValueSelector
-        // phase
-        //   2 calls recorded by recordingValueSelector
-        //   2 calls recorded by replayingValueSelector
-        // step
-        //   3 calls recorded by childValueSelector
-        //   3 calls recorded by replayingValueSelector
-        verifyPhaseLifecycle(childValueSelector, 2, 4, 6);
+        verifyPhaseLifecycle(childValueSelector, 1, 2, 3);
         verify(childValueSelector, times(3)).iterator();
     }
 
