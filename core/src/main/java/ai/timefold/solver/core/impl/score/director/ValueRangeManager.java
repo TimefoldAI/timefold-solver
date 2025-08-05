@@ -453,7 +453,8 @@ public final class ValueRangeManager<Solution_> {
         return reachableValues;
     }
 
-    private static void updateEntityMap(Map<Object, Set<Object>> entityMatrix, Object entity, Object value, int entityListSize) {
+    private static void updateEntityMap(Map<Object, Set<Object>> entityMatrix, Object entity, Object value,
+            int entityListSize) {
         var entitySet = entityMatrix.get(value);
         if (entitySet == null) {
             entitySet = new LinkedHashSet<>(entityListSize);
@@ -463,7 +464,7 @@ public final class ValueRangeManager<Solution_> {
     }
 
     private static void updateValueMap(Map<Object, Set<Object>> valueMatrix, CountableValueRange<Object> range, Object value,
-                                int valueListSize) {
+            int valueListSize) {
         var reachableValues = valueMatrix.get(value);
         if (reachableValues == null) {
             reachableValues = new LinkedHashSet<>(valueListSize);
