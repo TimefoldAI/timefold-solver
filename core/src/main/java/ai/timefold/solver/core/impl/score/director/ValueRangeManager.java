@@ -443,8 +443,8 @@ public final class ValueRangeManager<Solution_> {
                 while (valuesIterator.hasNext()) {
                     var value = valuesIterator.next();
                     if (range.contains(value)) {
-                        updateEntityMatrix(entityMatrix, entity, value, entityList.size());
-                        updateValueMatrix(valueMatrix, range, value, (int) valuesSize);
+                        updateEntityMap(entityMatrix, entity, value, entityList.size());
+                        updateValueMap(valueMatrix, range, value, (int) valuesSize);
                     }
                 }
             }
@@ -453,7 +453,7 @@ public final class ValueRangeManager<Solution_> {
         return reachableValues;
     }
 
-    private void updateEntityMatrix(Map<Object, Set<Object>> entityMatrix, Object entity, Object value, int entityListSize) {
+    private static void updateEntityMap(Map<Object, Set<Object>> entityMatrix, Object entity, Object value, int entityListSize) {
         var entitySet = entityMatrix.get(value);
         if (entitySet == null) {
             entitySet = new LinkedHashSet<>(entityListSize);
@@ -462,8 +462,8 @@ public final class ValueRangeManager<Solution_> {
         entitySet.add(entity);
     }
 
-    private void updateValueMatrix(Map<Object, Set<Object>> valueMatrix, CountableValueRange<Object> range, Object value,
-            int valueListSize) {
+    private static void updateValueMap(Map<Object, Set<Object>> valueMatrix, CountableValueRange<Object> range, Object value,
+                                int valueListSize) {
         var reachableValues = valueMatrix.get(value);
         if (reachableValues == null) {
             reachableValues = new LinkedHashSet<>(valueListSize);

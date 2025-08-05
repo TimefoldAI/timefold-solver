@@ -7,16 +7,13 @@ import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
-import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-
-import org.jspecify.annotations.NonNull;
 
 /**
  * The decorator returns a list of reachable entities for a specific value.
@@ -33,13 +30,14 @@ import org.jspecify.annotations.NonNull;
  *
  * @param <Solution_> the solution type
  */
-public final class FilteringEntityValueRangeSelector<Solution_>
-        extends AbstractCachingEnabledSelector<Solution_, ReachableValues> implements EntitySelector<Solution_> {
+public final class FilteringEntityValueRangeSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
+        implements EntitySelector<Solution_> {
 
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final EntitySelector<Solution_> childEntitySelector;
     private final boolean randomSelection;
 
+    private ReachableValues reachableValues;
     private long entitiesSize;
 
     public FilteringEntityValueRangeSelector(EntitySelector<Solution_> childEntitySelector,
@@ -63,7 +61,15 @@ public final class FilteringEntityValueRangeSelector<Solution_>
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
+        this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
+                .getReachableValeMatrix(childEntitySelector.getEntityDescriptor().getGenuineListVariableDescriptor());
         this.childEntitySelector.phaseStarted(phaseScope);
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        this.reachableValues = null;
     }
 
     // ************************************************************************
@@ -72,12 +78,6 @@ public final class FilteringEntityValueRangeSelector<Solution_>
 
     public EntitySelector<Solution_> getChildEntitySelector() {
         return childEntitySelector;
-    }
-
-    @Override
-    public @NonNull ReachableValues buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
-        return scoreDirector.getValueRangeManager()
-                .getReachableValeMatrix(childEntitySelector.getEntityDescriptor().getGenuineListVariableDescriptor());
     }
 
     @Override
@@ -102,16 +102,16 @@ public final class FilteringEntityValueRangeSelector<Solution_>
 
     @Override
     public Iterator<Object> endingIterator() {
-        return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), getCachedItem());
+        return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), reachableValues);
     }
 
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            return new EntityRandomFilteringValueRangeIterator(replayingValueSelector.iterator(), getCachedItem(),
+            return new EntityRandomFilteringValueRangeIterator(replayingValueSelector.iterator(), reachableValues,
                     workingRandom);
         } else {
-            return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), getCachedItem());
+            return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), reachableValues);
         }
     }
 

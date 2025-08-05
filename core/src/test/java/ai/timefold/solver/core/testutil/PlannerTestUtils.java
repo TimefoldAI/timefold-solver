@@ -127,9 +127,7 @@ public final class PlannerTestUtils {
         scoreDirectorFactory
                 .setInitializingScoreTrend(InitializingScoreTrend.buildUniformTrend(InitializingScoreTrendLevel.ONLY_DOWN, 1));
         if (useSolution) {
-            var mockedScoreDirector =
-                    mock(InnerScoreDirector.class, AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
-            return mockedScoreDirector;
+            return mock(InnerScoreDirector.class, AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));
         } else {
             var mockedScoreDirector =
                     mock(InnerScoreDirector.class, AdditionalAnswers.delegatesTo(scoreDirectorFactory.buildScoreDirector()));

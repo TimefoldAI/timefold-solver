@@ -7,11 +7,10 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
-
-import org.jspecify.annotations.NonNull;
 
 /**
  * This is the common {@link ValueSelector} implementation.
@@ -19,12 +18,13 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 public final class FromEntityPropertyValueSelector<Solution_>
-        extends AbstractCachingEnabledSelector<Solution_, CountableValueRange<Object>>
+        extends AbstractDemandEnabledSelector<Solution_>
         implements ValueSelector<Solution_> {
 
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final boolean randomSelection;
 
+    private CountableValueRange<Object> countableValueRange;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
 
     public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean randomSelection) {
@@ -48,6 +48,18 @@ public final class FromEntityPropertyValueSelector<Solution_>
         this.scoreDirector = null;
     }
 
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        this.countableValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor);
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        this.countableValueRange = null;
+    }
+
     // ************************************************************************
     // Worker methods
     // ************************************************************************
@@ -55,11 +67,6 @@ public final class FromEntityPropertyValueSelector<Solution_>
     @Override
     public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
         return valueRangeDescriptor.getVariableDescriptor();
-    }
-
-    @Override
-    public @NonNull CountableValueRange<Object> buildCacheItem(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
-        return scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor);
     }
 
     @Override
@@ -77,7 +84,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
         if (entity == null) {
             // When the entity is null, the size of the complete list of values is returned
             // This logic aligns with the requirements for Nearby in the enterprise repository
-            return Objects.requireNonNull(getCachedItem()).getSize();
+            return Objects.requireNonNull(countableValueRange).getSize();
         } else {
             return scoreDirector.getValueRangeManager().countOnEntity(valueRangeDescriptor, entity);
         }
@@ -98,7 +105,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
         if (entity == null) {
             // When the entity is null, the complete list of values is returned
             // This logic aligns with the requirements for Nearby in the enterprise repository
-            return Objects.requireNonNull(getCachedItem()).createOriginalIterator();
+            return countableValueRange.createOriginalIterator();
         } else {
             var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity);
             return valueRange.createOriginalIterator();

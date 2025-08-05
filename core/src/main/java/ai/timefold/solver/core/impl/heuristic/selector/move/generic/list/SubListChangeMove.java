@@ -79,7 +79,6 @@ public class SubListChangeMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        // The move selector can still produce invalid moves, so we need to enable the assertion by default
         var sameEntity = destinationEntity == sourceEntity;
         if (sameEntity && destinationIndex == sourceIndex) {
             return false;
