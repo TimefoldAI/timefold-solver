@@ -288,6 +288,7 @@ public class SelectorTestUtils {
             AbstractPhaseScope<Solution_> phaseScope) {
         AbstractStepScope<Solution_> stepScope = mock(AbstractStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
+        when(stepScope.getScoreDirector()).thenAnswer(s -> phaseScope.getScoreDirector());
         listener.stepStarted(stepScope);
         return stepScope;
     }

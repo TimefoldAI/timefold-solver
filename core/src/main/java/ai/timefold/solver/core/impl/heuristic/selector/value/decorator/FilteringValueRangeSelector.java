@@ -6,7 +6,6 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 
-import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -54,7 +53,6 @@ public final class FilteringValueRangeSelector<Solution_>
     public FilteringValueRangeSelector(IterableValueSelector<Solution_> nonReplayingValueSelector,
             IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection,
             boolean checkSourceAndDestination) {
-        super(SelectionCacheType.PHASE, SelectionCacheType.STEP);
         this.nonReplayingValueSelector = nonReplayingValueSelector;
         this.replayingValueSelector = replayingValueSelector;
         this.randomSelection = randomSelection;
@@ -87,7 +85,6 @@ public final class FilteringValueRangeSelector<Solution_>
         super.phaseEnded(phaseScope);
         this.nonReplayingValueSelector.phaseEnded(phaseScope);
         this.replayingValueSelector.phaseEnded(phaseScope);
-        resetCacheItem();
     }
 
     // ************************************************************************

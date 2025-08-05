@@ -5,11 +5,9 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
-import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -30,7 +28,6 @@ public final class FromEntityPropertyValueSelector<Solution_>
     private InnerScoreDirector<Solution_, ?> scoreDirector;
 
     public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean randomSelection) {
-        super(SelectionCacheType.PHASE, SelectionCacheType.STEP);
         this.valueRangeDescriptor = valueRangeDescriptor;
         this.randomSelection = randomSelection;
     }
@@ -49,12 +46,6 @@ public final class FromEntityPropertyValueSelector<Solution_>
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
         this.scoreDirector = null;
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseEnded(phaseScope);
-        resetCacheItem();
     }
 
     // ************************************************************************

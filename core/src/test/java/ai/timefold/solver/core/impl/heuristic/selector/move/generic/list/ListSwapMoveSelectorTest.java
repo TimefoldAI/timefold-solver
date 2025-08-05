@@ -104,8 +104,8 @@ class ListSwapMoveSelectorTest {
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, filteringValueRangeSelector);
-        phaseStarted(solverScope, mimicRecordingValueSelector, filteringValueRangeSelector);
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(solverScope, moveSelector);
 
         // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,

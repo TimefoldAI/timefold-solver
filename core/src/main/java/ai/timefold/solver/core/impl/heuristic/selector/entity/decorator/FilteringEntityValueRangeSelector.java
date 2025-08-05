@@ -6,7 +6,6 @@ import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Random;
 
-import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractCachingEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValueMatrix;
@@ -45,7 +44,6 @@ public final class FilteringEntityValueRangeSelector<Solution_>
 
     public FilteringEntityValueRangeSelector(EntitySelector<Solution_> childEntitySelector,
             IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection) {
-        super(SelectionCacheType.PHASE, SelectionCacheType.STEP);
         this.replayingValueSelector = replayingValueSelector;
         this.childEntitySelector = childEntitySelector;
         this.randomSelection = randomSelection;
@@ -66,12 +64,6 @@ public final class FilteringEntityValueRangeSelector<Solution_>
         super.phaseStarted(phaseScope);
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
         this.childEntitySelector.phaseStarted(phaseScope);
-    }
-
-    @Override
-    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        super.phaseEnded(phaseScope);
-        resetCacheItem();
     }
 
     // ************************************************************************
