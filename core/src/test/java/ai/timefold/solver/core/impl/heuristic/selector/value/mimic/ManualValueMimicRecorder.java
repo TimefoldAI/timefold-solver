@@ -6,6 +6,9 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 public class ManualValueMimicRecorder<Solution_> implements ValueMimicRecorder<Solution_> {
 
@@ -18,6 +21,44 @@ public class ManualValueMimicRecorder<Solution_> implements ValueMimicRecorder<S
         this.sourceValueSelector = sourceValueSelector;
         replayingValueSelectorList = new ArrayList<>();
     }
+
+    // ************************************************************************
+    // Lifecycle methods
+    // ************************************************************************
+
+    @Override
+    public void solvingStarted(SolverScope<Solution_> solverScope) {
+        sourceValueSelector.solvingStarted(solverScope);
+    }
+
+    @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        sourceValueSelector.solvingEnded(solverScope);
+    }
+
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        sourceValueSelector.phaseStarted(phaseScope);
+    }
+
+    @Override
+    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        sourceValueSelector.stepStarted(stepScope);
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        sourceValueSelector.phaseEnded(phaseScope);
+    }
+
+    @Override
+    public void stepEnded(AbstractStepScope<Solution_> stepScope) {
+        sourceValueSelector.stepEnded(stepScope);
+    }
+
+    // ************************************************************************
+    // Worker methods
+    // ************************************************************************
 
     @Override
     public void addMimicReplayingValueSelector(MimicReplayingValueSelector<Solution_> replayingValueSelector) {
