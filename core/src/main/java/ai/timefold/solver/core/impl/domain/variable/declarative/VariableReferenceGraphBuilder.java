@@ -19,6 +19,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
     final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
     final List<EntityVariablePair<Solution_>> instanceList;
+    final Map<Object, Integer> entityToEntityId;
     final Map<EntityVariablePair<Solution_>, List<EntityVariablePair<Solution_>>> fixedEdges;
     final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
     final Map<Integer, Map<Object, EntityVariablePair<Solution_>>> variableGroupIdToInstanceMap;
@@ -32,6 +33,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
         variableReferenceToBeforeProcessor = new HashMap<>();
         variableReferenceToAfterProcessor = new HashMap<>();
         fixedEdges = new HashMap<>();
+        entityToEntityId = new IdentityHashMap<>();
         isGraphFixed = true;
     }
 
@@ -52,7 +54,21 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             instanceMap = new IdentityHashMap<>();
             variableGroupIdToInstanceMap.put(groupId, instanceMap);
         }
-        var node = new EntityVariablePair<>(entityRepresentative, variableReferences, instanceList.size());
+
+        var entityId = entityToEntityId.computeIfAbsent(entityRepresentative, ignored -> entityToEntityId.size());
+        int[] groupEntityIds = null;
+
+        if (isGroup) {
+            var groupEntities = variableReferences.get(0).groupEntities();
+            groupEntityIds = new int[groupEntities.length];
+            for (var i = 0; i < groupEntityIds.length; i++) {
+                var groupEntity = variableReferences.get(0).groupEntities()[i];
+                groupEntityIds[i] = entityToEntityId.computeIfAbsent(groupEntity, ignored -> entityToEntityId.size());
+            }
+        }
+
+        var node = new EntityVariablePair<>(entityRepresentative, variableReferences, instanceList.size(),
+                entityId, groupEntityIds);
 
         if (isGroup) {
             for (var groupEntity : variableReferences.get(0).groupEntities()) {

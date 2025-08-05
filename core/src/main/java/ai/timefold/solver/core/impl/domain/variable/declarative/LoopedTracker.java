@@ -14,14 +14,25 @@ public final class LoopedTracker {
     private static final LoopedStatus[] VALUES = LoopedStatus.values();
 
     private final DynamicIntArray looped;
+    private final int[][] entityIdToNodes;
 
-    public LoopedTracker(int nodeCount) {
+    public LoopedTracker(int nodeCount, int[][] entityIdToNodes) {
+        this.entityIdToNodes = entityIdToNodes;
         // We never fully clear the array, as that was shown to cause too much GC pressure.
         this.looped = new DynamicIntArray(nodeCount, PARTIAL);
     }
 
     public void mark(int node, LoopedStatus status) {
         looped.set(node, status.ordinal());
+    }
+
+    public boolean isEntityLooped(BaseTopologicalOrderGraph graph, int entityId) {
+        for (var entityNode : entityIdToNodes[entityId]) {
+            if (graph.isLooped(this, entityNode)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public LoopedStatus status(int node) {
