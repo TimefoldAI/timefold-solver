@@ -76,7 +76,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         this.nonReplayingValueSelector.phaseStarted(phaseScope);
         this.replayingValueSelector.phaseStarted(phaseScope);
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
-                .getReachableValeMatrix(listVariableStateSupply.getSourceVariableDescriptor());
+                .getReachableValueMatrix(listVariableStateSupply.getSourceVariableDescriptor().getValueRangeDescriptor());
         valuesSize = reachableValues.getSize();
     }
 

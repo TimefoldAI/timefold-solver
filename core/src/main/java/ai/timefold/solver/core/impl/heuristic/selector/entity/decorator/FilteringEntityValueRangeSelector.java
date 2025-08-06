@@ -62,7 +62,8 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
         super.phaseStarted(phaseScope);
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
-                .getReachableValeMatrix(childEntitySelector.getEntityDescriptor().getGenuineListVariableDescriptor());
+                .getReachableValueMatrix(
+                        childEntitySelector.getEntityDescriptor().getGenuineListVariableDescriptor().getValueRangeDescriptor());
         this.childEntitySelector.phaseStarted(phaseScope);
     }
 
