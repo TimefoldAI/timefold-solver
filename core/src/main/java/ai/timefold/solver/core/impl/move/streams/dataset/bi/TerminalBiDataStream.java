@@ -1,21 +1,22 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class TerminalUniDataStream<Solution_, A>
-        extends AbstractUniDataStream<Solution_, A>
-        implements TerminalDataStream<Solution_, UniTuple<A>, UniDataset<Solution_, A>> {
+final class TerminalBiDataStream<Solution_, A, B>
+        extends AbstractBiDataStream<Solution_, A, B>
+        implements TerminalDataStream<Solution_, BiTuple<A, B>, BiDataset<Solution_, A, B>> {
 
-    private final UniDataset<Solution_, A> dataset;
+    private final BiDataset<Solution_, A, B> dataset;
 
-    public TerminalUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent) {
+    public TerminalBiDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractBiDataStream<Solution_, A, B> parent) {
         super(dataStreamFactory, parent);
-        this.dataset = new UniDataset<>(dataStreamFactory, this);
+        this.dataset = new BiDataset<>(dataStreamFactory, this);
     }
 
     @Override
@@ -26,7 +27,7 @@ final class TerminalUniDataStream<Solution_, A>
     }
 
     @Override
-    public UniDataset<Solution_, A> getDataset() {
+    public BiDataset<Solution_, A, B> getDataset() {
         return dataset;
     }
 

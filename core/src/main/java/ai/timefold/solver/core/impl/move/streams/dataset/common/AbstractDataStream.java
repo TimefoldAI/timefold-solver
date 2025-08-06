@@ -1,8 +1,8 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.common;
 
 import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -28,7 +28,7 @@ public abstract class AbstractDataStream<Solution_>
         return dataStreamFactory.share(stream, childStreamList::add);
     }
 
-    boolean guaranteesDistinct() {
+    protected boolean guaranteesDistinct() {
         return true; // Default implementation, can be overridden by subclasses.
     }
 
