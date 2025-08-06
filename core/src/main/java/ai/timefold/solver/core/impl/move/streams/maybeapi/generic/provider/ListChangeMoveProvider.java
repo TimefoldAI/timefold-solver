@@ -36,16 +36,16 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
         };
         this.noChangeDetectionFilter = (solutionView, value, targetPosition) -> {
             var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
-            if (currentPosition.equals(targetPosition)) { // The target position is the same as the current position.
-                return false;
-            }
             if (!(currentPosition instanceof PositionInList currentPositionInList)) {
-                // The current position is unassigned, so we can assign the value.
-                return true;
+                // The current position is unassigned, which is acceptable if we can assign it to a list.
+                return targetPosition instanceof PositionInList;
             }
             if (!(targetPosition instanceof PositionInList targetPositionInList)) {
-                // The target position is unassigned, so we can unassign the value.
+                // The target position is unassigned, which is only acceptable if we can unassign the value.
                 return true;
+            }
+            if (Objects.equals(currentPositionInList, targetPositionInList)) {
+                return false; // No change in position, so no need to create a move.
             }
             if (currentPositionInList.entity() != targetPositionInList.entity()) {
                 return true; // Different entities, so we can freely change the position.
@@ -76,8 +76,10 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                 .map((solutionView, entity, value) -> {
                     if (entity == null) { // This will trigger unassignment of the value.
                         return ElementPosition.unassigned();
-                    } else if (value == null) { // This will trigger assignment of the value at the end of the list.
-                        return ElementPosition.of(entity, solutionView.countValues(variableMetaModel, entity));
+                    }
+                    var valueCount = solutionView.countValues(variableMetaModel, entity);
+                    if (value == null || valueCount == 0) { // This will trigger assignment of the value at the end of the list.
+                        return ElementPosition.of(entity, valueCount);
                     } else { // This will trigger assignment of the value immediately before this value.
                         return solutionView.getPositionOf(variableMetaModel, value);
                     }

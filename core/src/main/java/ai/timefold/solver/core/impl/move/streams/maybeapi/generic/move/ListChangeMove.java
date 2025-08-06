@@ -6,7 +6,8 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -22,6 +23,7 @@ import java.util.Objects;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+@NullMarked
 public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
@@ -30,7 +32,7 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     private final Entity_ destinationEntity;
     private final int destinationIndex;
 
-    private Value_ planningValue;
+    private @Nullable Value_ planningValue;
 
     /**
      * The move removes a planning value element from {@code sourceEntity.listVariable[sourceIndex]}
@@ -118,7 +120,7 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     // ************************************************************************
 
     @Override
-    public void execute(@NonNull MutableSolutionView<Solution_> solutionView) {
+    public void execute(MutableSolutionView<Solution_> solutionView) {
         if (sourceEntity == destinationEntity) {
             planningValue = solutionView.swapValues(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         } else {
@@ -128,14 +130,14 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     }
 
     @Override
-    public @NonNull ListChangeMove<Solution_, Entity_, Value_> rebase(@NonNull Rebaser rebaser) {
+    public ListChangeMove<Solution_, Entity_, Value_> rebase(Rebaser rebaser) {
         return new ListChangeMove<>(variableMetaModel,
-                rebaser.rebase(sourceEntity), sourceIndex,
-                rebaser.rebase(destinationEntity), destinationIndex);
+                Objects.requireNonNull(rebaser.rebase(sourceEntity)), sourceIndex,
+                Objects.requireNonNull(rebaser.rebase(destinationEntity)), destinationIndex);
     }
 
     @Override
-    public @NonNull Collection<Object> extractPlanningEntities() {
+    public Collection<Entity_> extractPlanningEntities() {
         if (sourceEntity == destinationEntity) {
             return Collections.singleton(sourceEntity);
         } else {
@@ -144,13 +146,29 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     }
 
     @Override
-    public @NonNull Collection<Object> extractPlanningValues() {
-        return Collections.singleton(planningValue);
+    public Collection<Value_> extractPlanningValues() {
+        return Collections.singleton(getMovedValue());
     }
 
     @Override
     protected List<VariableMetaModel<Solution_, ?, ?>> getVariableMetaModels() {
         return List.of(variableMetaModel);
+    }
+
+    public Entity_ getSourceEntity() {
+        return sourceEntity;
+    }
+
+    public int getSourceIndex() {
+        return sourceIndex;
+    }
+
+    public Entity_ getDestinationEntity() {
+        return destinationEntity;
+    }
+
+    public int getDestinationIndex() {
+        return destinationIndex;
     }
 
     @Override
@@ -160,7 +178,8 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
         if (!(o instanceof ListChangeMove<?, ?, ?> that))
             return false;
         return sourceIndex == that.sourceIndex && destinationIndex == that.destinationIndex
-                && Objects.equals(variableMetaModel, that.variableMetaModel) && Objects.equals(sourceEntity, that.sourceEntity)
+                && Objects.equals(variableMetaModel, that.variableMetaModel)
+                && Objects.equals(sourceEntity, that.sourceEntity)
                 && Objects.equals(destinationEntity, that.destinationEntity);
     }
 
@@ -170,7 +189,7 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return String.format("%s {%s[%d] -> %s[%d]}",
                 getMovedValue(), sourceEntity, sourceIndex, destinationEntity, destinationIndex);
     }

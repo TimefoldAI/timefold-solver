@@ -29,7 +29,12 @@ public abstract class AbstractDataStream<Solution_>
     }
 
     protected boolean guaranteesDistinct() {
-        return true; // Default implementation, can be overridden by subclasses.
+        if (parent != null) {
+            // It is generally safe to take this from the parent; if the stream disagrees, it may override.
+            return parent.guaranteesDistinct();
+        } else { // Streams need to explicitly opt-in by overriding this method.
+            return false;
+        }
     }
 
     // ************************************************************************
