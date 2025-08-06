@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.move.streams;
 
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -28,8 +29,8 @@ public final class DefaultMoveStreamFactory<Solution_>
     private final DataStreamFactory<Solution_> dataStreamFactory;
     private final DatasetSessionFactory<Solution_> datasetSessionFactory;
 
-    public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
-        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
+    public DefaultMoveStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
+        this.dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, environmentMode);
         this.datasetSessionFactory = new DatasetSessionFactory<>(dataStreamFactory);
     }
 
