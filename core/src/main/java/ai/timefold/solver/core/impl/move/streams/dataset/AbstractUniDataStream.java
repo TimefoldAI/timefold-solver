@@ -4,6 +4,7 @@ import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridg
 import ai.timefold.solver.core.impl.move.streams.dataset.joiner.BiDataJoinerComber;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataMapper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
@@ -84,6 +85,21 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         var parentBridgeB = other.shareAndAddChild(new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other));
         return dataStreamFactory.share(new IfExistsUniDataStream<>(dataStreamFactory, this, parentBridgeB, shouldExist,
                 joinerComber.mergedJoiner(), joinerComber.mergedFiltering()), childStreamList::add);
+    }
+
+    @Override
+    public <ResultA_> UniDataStream<Solution_, ResultA_> map(UniDataMapper<Solution_, A, ResultA_> mapping) {
+        return null;
+    }
+
+    @Override
+    public <ResultA_, ResultB_> BiDataStream<Solution_, ResultA_, ResultB_> map(UniDataMapper<Solution_, A, ResultA_> mappingA, UniDataMapper<Solution_, A, ResultB_> mappingB) {
+        return null;
+    }
+
+    @Override
+    public UniDataStream<Solution_, A> distinct() {
+        return null;
     }
 
     public UniDataset<Solution_, A> createDataset() {

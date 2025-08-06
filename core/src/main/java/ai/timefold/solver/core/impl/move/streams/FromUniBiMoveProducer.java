@@ -1,5 +1,15 @@
 package ai.timefold.solver.core.impl.move.streams;
 
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
@@ -7,16 +17,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.BiPredicate;
 import java.util.function.Supplier;
-
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
-import ai.timefold.solver.core.preview.api.move.Move;
-
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class FromUniBiMoveProducer<Solution_, A, B> implements InnerMoveProducer<Solution_> {
@@ -49,7 +49,7 @@ public final class FromUniBiMoveProducer<Solution_, A, B> implements InnerMovePr
 
         private final IteratorSupplier<A> aIteratorSupplier;
         private final IteratorSupplier<B> bIteratorSupplier;
-        private final Solution_ solution;
+        private final SolutionView<Solution_> solutionView;
 
         // Fields required for iteration.
         private @Nullable Move<Solution_> nextMove;
@@ -62,7 +62,7 @@ public final class FromUniBiMoveProducer<Solution_, A, B> implements InnerMovePr
             this.aIteratorSupplier = aInstance::iterator;
             var bInstance = moveStreamSession.getDatasetInstance(bDataset);
             this.bIteratorSupplier = bInstance::iterator;
-            this.solution = moveStreamSession.getWorkingSolution();
+            this.solutionView = moveStreamSession.getSolutionView();
         }
 
         public BiMoveIterator(DefaultMoveStreamSession<Solution_> moveStreamSession, Random random) {
@@ -70,7 +70,7 @@ public final class FromUniBiMoveProducer<Solution_, A, B> implements InnerMovePr
             this.aIteratorSupplier = () -> aInstance.iterator(random);
             var bInstance = moveStreamSession.getDatasetInstance(bDataset);
             this.bIteratorSupplier = () -> bInstance.iterator(random);
-            this.solution = moveStreamSession.getWorkingSolution();
+            this.solutionView = moveStreamSession.getSolutionView();
         }
 
         @Override
@@ -101,7 +101,7 @@ public final class FromUniBiMoveProducer<Solution_, A, B> implements InnerMovePr
                     // Check if this pair passes the filter...
                     if (filter.test(currentA, currentB)) {
                         // ... and create the next move.
-                        nextMove = moveConstructor.apply(solution, currentA, currentB);
+                        nextMove = moveConstructor.apply(solutionView, currentA, currentB);
                         return true;
                     }
                 }
