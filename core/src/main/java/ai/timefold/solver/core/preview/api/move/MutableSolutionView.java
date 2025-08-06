@@ -125,7 +125,7 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @return the value that was moved; null if nothing was moved
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
-    <Entity_, Value_> @Nullable Value_ moveValueInList(
+    <Entity_, Value_> @Nullable Value_ swapValues(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int sourceIndex,
             int destinationIndex);
 
