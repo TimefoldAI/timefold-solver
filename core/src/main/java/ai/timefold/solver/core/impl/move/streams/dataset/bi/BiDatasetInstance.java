@@ -1,5 +1,14 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDatasetInstance;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -7,16 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Random;
-
-import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
-import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
-import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDatasetInstance;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
-import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
-
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class BiDatasetInstance<Solution_, A, B>
@@ -33,6 +32,21 @@ public final class BiDatasetInstance<Solution_, A, B>
         var tupleList = tupleListMap.computeIfAbsent(tuple.factA, key -> new ElementAwareList<>());
         var entry = tupleList.add(tuple);
         tuple.setStore(inputStoreIndex, entry);
+    }
+
+    @Override
+    public void update(BiTuple<A, B> tuple) {
+        var actualTupleList = tuple.getStore(inputStoreIndex);
+        if (actualTupleList == null) { // The tuple was not inserted yet.
+            insert(tuple);
+            return;
+        }
+        var expectedTupleList = tupleListMap.get(tuple.factA);
+        if (actualTupleList == expectedTupleList) {
+            return; // Changing the tuple did not change the key.
+        }
+        retract(tuple);
+        insert(tuple);
     }
 
     @Override

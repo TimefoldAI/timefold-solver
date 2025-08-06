@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 import org.jspecify.annotations.NullMarked;
 
@@ -35,7 +36,27 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
         };
         this.noChangeDetectionFilter = (solutionView, value, targetPosition) -> {
             var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
-            return !currentPosition.equals(targetPosition);
+            if (currentPosition.equals(targetPosition)) { // The target position is the same as the current position.
+                return false;
+            }
+            if (!(currentPosition instanceof PositionInList currentPositionInList)) {
+                // The current position is unassigned, so we can assign the value.
+                return true;
+            }
+            if (!(targetPosition instanceof PositionInList targetPositionInList)) {
+                // The target position is unassigned, so we can unassign the value.
+                return true;
+            }
+            if (currentPositionInList.entity() != targetPositionInList.entity()) {
+                return true; // Different entities, so we can freely change the position.
+            }
+            var listLength = solutionView.countValues(variableMetaModel, currentPositionInList.entity());
+            if (listLength == 1) {
+                return false; // No need to change the position, as the value is the only one in this list.
+            }
+            // Make sure we're not moving the value past the list end.
+            // This would happen if the value was already at the end of the list.
+            return currentPositionInList.index() != listLength - 1 || targetPositionInList.index() != listLength;
         };
     }
 
