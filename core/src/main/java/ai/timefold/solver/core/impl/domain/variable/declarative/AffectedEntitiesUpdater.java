@@ -136,10 +136,10 @@ final class AffectedEntitiesUpdater<Solution_>
                 for (var i = 0; i < groupEntityIds.length; i++) {
                     var groupEntity = groupEntities[i];
                     var groupEntityId = groupEntityIds[i];
-                    updateLoopedStatusOfEntity(groupEntity, groupEntityId, loopDescriptor);
+                    anyChanged |= updateLoopedStatusOfEntity(groupEntity, groupEntityId, loopDescriptor);
                 }
             } else {
-                updateLoopedStatusOfEntity(entity, entityVariable.entityId(), loopDescriptor);
+                anyChanged |= updateLoopedStatusOfEntity(entity, entityVariable.entityId(), loopDescriptor);
             }
         }
 
@@ -150,13 +150,18 @@ final class AffectedEntitiesUpdater<Solution_>
         return anyChanged;
     }
 
-    private void updateLoopedStatusOfEntity(Object entity, int entityId,
+    private boolean updateLoopedStatusOfEntity(Object entity, int entityId,
             ShadowVariableLoopedVariableDescriptor<Solution_> loopDescriptor) {
-        var isEntityLooped = loopedTracker.isEntityLooped(graph, entityId);
-        var oldLooped = loopDescriptor.getValue(entity);
+        var oldLooped = (boolean) loopDescriptor.getValue(entity);
+        var isEntityLooped = loopedTracker.isEntityLooped(graph, entityId, oldLooped);
         if (!Objects.equals(oldLooped, isEntityLooped)) {
             changeShadowVariableAndNotify(loopDescriptor, entity, isEntityLooped);
         }
+        // We return true if the entity's loop status changed at any point;
+        // Since an entity might correspond to multiple nodes, we want all nodes
+        // for that entity to be marked as changed, not just the first node the
+        // updater encounters
+        return loopedTracker.didEntityLoopedStatusChange(entityId);
     }
 
     private boolean updateShadowVariable(boolean isLooped,
