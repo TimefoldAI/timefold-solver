@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListChangeMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListUnassignMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ListChangeMoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -18,6 +17,9 @@ import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamS
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
@@ -36,11 +38,11 @@ class ListChangeMoveProviderTest {
                 .planningListVariable();
 
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
-        var emptyEntity = solution.getEntityList().get(0);
-        var entityWithOneValue = solution.getEntityList().get(1);
+        var e1 = solution.getEntityList().get(0);
+        var e2 = solution.getEntityList().get(1);
         var unassignedValue = solution.getValueList().get(0);
-        var initiallyAssignedValue1 = solution.getValueList().get(1);
-        entityWithOneValue.getValueList().add(initiallyAssignedValue1);
+        var initiallyAssignedValue = solution.getValueList().get(1);
+        e2.getValueList().add(initiallyAssignedValue);
         solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
 
         var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataListConstraintProvider(), solution);
@@ -57,49 +59,132 @@ class ListChangeMoveProviderTest {
                 .toList();
         assertThat(moveList).hasSize(4);
 
-        var firstMove = (ListUnassignMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(0);
+        // Unassign moves are not generated, because the solution does not allow unassigned values.
+        // Assign moves are generated for all three positions in e1 and e2.
+        // Change move is generated for moving the initially assigned value from e2 to e1.
+
+        var firstMove = (ListAssignMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.getSourceEntity()).isEqualTo(entityWithOneValue);
-            softly.assertThat(firstMove.getSourceIndex()).isEqualTo(0);
+            softly.assertThat(firstMove.getDestinationEntity()).isEqualTo(e1);
+            softly.assertThat(firstMove.getDestinationIndex()).isEqualTo(0);
             softly.assertThat(firstMove.extractPlanningEntities())
-                    .containsExactly(entityWithOneValue);
+                    .containsExactly(e1);
             softly.assertThat(firstMove.extractPlanningValues())
-                    .containsExactly(initiallyAssignedValue1);
+                    .containsExactly(unassignedValue);
         });
 
-        var secondMove = (ListChangeMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(1);
+        var secondMove = (ListAssignMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.getSourceEntity()).isEqualTo(entityWithOneValue);
-            softly.assertThat(secondMove.getSourceIndex()).isEqualTo(0);
-            softly.assertThat(secondMove.getDestinationEntity()).isEqualTo(emptyEntity);
-            softly.assertThat(secondMove.getDestinationIndex()).isEqualTo(0);
+            softly.assertThat(secondMove.getDestinationEntity()).isEqualTo(e2);
+            softly.assertThat(secondMove.getDestinationIndex()).isEqualTo(1);
             softly.assertThat(secondMove.extractPlanningEntities())
-                    .containsExactly(entityWithOneValue, emptyEntity);
+                    .containsExactly(e2);
             softly.assertThat(secondMove.extractPlanningValues())
-                    .containsExactly(initiallyAssignedValue1);
+                    .containsExactly(unassignedValue);
         });
 
         var thirdMove = (ListAssignMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(2);
         assertSoftly(softly -> {
-            softly.assertThat(thirdMove.getDestinationEntity()).isEqualTo(emptyEntity);
+            softly.assertThat(thirdMove.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(thirdMove.getDestinationIndex()).isEqualTo(0);
             softly.assertThat(thirdMove.extractPlanningEntities())
-                    .containsExactly(emptyEntity);
+                    .containsExactly(e2);
             softly.assertThat(thirdMove.extractPlanningValues())
                     .containsExactly(unassignedValue);
         });
 
-        var fourthMove = (ListAssignMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(3);
+        var fourthMove = (ListChangeMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(3);
         assertSoftly(softly -> {
-            softly.assertThat(fourthMove.getDestinationEntity()).isEqualTo(entityWithOneValue);
+            softly.assertThat(fourthMove.getSourceEntity()).isEqualTo(e2);
+            softly.assertThat(fourthMove.getSourceIndex()).isEqualTo(0);
+            softly.assertThat(fourthMove.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(fourthMove.getDestinationIndex()).isEqualTo(0);
             softly.assertThat(fourthMove.extractPlanningEntities())
-                    .containsExactly(entityWithOneValue);
+                    .containsExactly(e2, e1);
             softly.assertThat(fourthMove.extractPlanningValues())
-                    .containsExactly(unassignedValue);
+                    .containsExactly(initiallyAssignedValue);
         });
     }
 
+    @Test
+    void fromEntity() {
+        var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
+        var variableMetaModel = solutionDescriptor.getMetaModel()
+                .entity(TestdataListEntityProvidingEntity.class)
+                .planningListVariable();
+
+        var solution = TestdataListEntityProvidingSolution.generateSolution();
+        var e1 = solution.getEntityList().get(0);
+        var v1 = solution.getValueList().get(0);
+        var v2 = solution.getValueList().get(1);
+        var v3 = solution.getValueList().get(2);
+        e1.getValueList().clear();
+        var e2 = solution.getEntityList().get(1);
+        var initiallyAssignedValue = e2.getValueRange().get(0);
+        e2.getValueList().add(initiallyAssignedValue);
+        solution.getEntityList().forEach(TestdataListEntityProvidingEntity::setUpShadowVariables);
+
+        var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataEntityProvidingListConstraintProvider(), solution);
+
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
+        var moveProvider = new ListChangeMoveProvider<>(variableMetaModel);
+        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
+
+        var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
+        assertThat(moveIterable).hasSize(4);
+
+        var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
+                .toList();
+        assertThat(moveList).hasSize(4);
+
+        // v1 can be moved from e2 to e1, because it's in the range for both.
+        // v2 is unassigned; it can be assigned to e1, but not to e2.
+        // v3 is unassigned; it can be assigned to e2, but not to e1.
+        //                   e2 has one value already, and therefore two possible assignments, 0 and 1.
+
+        var firstMove = (ListChangeMove<TestdataListEntityProvidingSolution, TestdataListEntityProvidingEntity, TestdataListEntityProvidingValue>) moveList.get(0);
+        assertSoftly(softly -> {
+            softly.assertThat(firstMove.getSourceEntity()).isEqualTo(e2);
+            softly.assertThat(firstMove.getSourceIndex()).isEqualTo(0);
+            softly.assertThat(firstMove.getDestinationEntity()).isEqualTo(e1);
+            softly.assertThat(firstMove.getDestinationIndex()).isEqualTo(0);
+            softly.assertThat(firstMove.extractPlanningEntities())
+                    .containsExactly(e2, e1);
+            softly.assertThat(firstMove.extractPlanningValues())
+                    .containsExactly(v1);
+        });
+
+        var secondMove = (ListAssignMove<TestdataListEntityProvidingSolution, TestdataListEntityProvidingEntity, TestdataListEntityProvidingValue>) moveList.get(1);
+        assertSoftly(softly -> {
+            softly.assertThat(secondMove.getDestinationEntity()).isEqualTo(e1);
+            softly.assertThat(secondMove.getDestinationIndex()).isEqualTo(0);
+            softly.assertThat(secondMove.extractPlanningEntities())
+                    .containsExactly(e1);
+            softly.assertThat(secondMove.extractPlanningValues())
+                    .containsExactly(v2);
+        });
+
+        var thirdMove = (ListAssignMove<TestdataListEntityProvidingSolution, TestdataListEntityProvidingEntity, TestdataListEntityProvidingValue>) moveList.get(2);
+        assertSoftly(softly -> {
+            softly.assertThat(thirdMove.getDestinationEntity()).isEqualTo(e2);
+            softly.assertThat(thirdMove.getDestinationIndex()).isEqualTo(1);
+            softly.assertThat(thirdMove.extractPlanningEntities())
+                    .containsExactly(e2);
+            softly.assertThat(thirdMove.extractPlanningValues())
+                    .containsExactly(v3);
+        });
+
+        var fourthMove = (ListAssignMove<TestdataListEntityProvidingSolution, TestdataListEntityProvidingEntity, TestdataListEntityProvidingValue>) moveList.get(3);
+        assertSoftly(softly -> {
+            softly.assertThat(fourthMove.getDestinationEntity()).isEqualTo(e2);
+            softly.assertThat(fourthMove.getDestinationIndex()).isEqualTo(0);
+            softly.assertThat(fourthMove.extractPlanningEntities())
+                    .containsExactly(e2);
+            softly.assertThat(fourthMove.extractPlanningValues())
+                    .containsExactly(v3);
+        });
+    }
 
     /*
      * @Test
@@ -393,6 +478,21 @@ class ListChangeMoveProviderTest {
 
         private Constraint alwaysPenalizingConstraint(ConstraintFactory constraintFactory) {
             return constraintFactory.forEach(TestdataListValue.class)
+                    .penalize(SimpleScore.ONE)
+                    .asConstraint("Always penalize");
+        }
+
+    }
+
+    public final class TestdataEntityProvidingListConstraintProvider implements ConstraintProvider {
+
+        @Override
+        public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
+            return new Constraint[] { alwaysPenalizingConstraint(constraintFactory) };
+        }
+
+        private Constraint alwaysPenalizingConstraint(ConstraintFactory constraintFactory) {
+            return constraintFactory.forEach(TestdataListEntityProvidingValue.class)
                     .penalize(SimpleScore.ONE)
                     .asConstraint("Always penalize");
         }

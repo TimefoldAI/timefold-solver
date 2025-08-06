@@ -1,16 +1,15 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
-import java.util.Objects;
-
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachFromSolutionUniNode;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
-
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Objects;
 
 @NullMarked
 public final class ForEachFromSolutionDataStream<Solution_, A>
@@ -34,13 +33,14 @@ public final class ForEachFromSolutionDataStream<Solution_, A>
     @Override
     public boolean equals(Object o) {
         return o instanceof ForEachFromSolutionDataStream<?, ?> that &&
+                Objects.equals(shouldIncludeNull, that.shouldIncludeNull) &&
                 Objects.equals(forEachClass, that.forEachClass) &&
                 Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(forEachClass, valueRangeDescriptor);
+        return Objects.hash(shouldIncludeNull, forEachClass, valueRangeDescriptor);
     }
 
     @Override
