@@ -1,9 +1,5 @@
 package ai.timefold.solver.core.impl.move.director;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiFunction;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
@@ -22,9 +18,12 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
-
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.function.BiFunction;
 
 @NullMarked
 public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
@@ -183,6 +182,11 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public final <Entity_, Value_> Value_ getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity) {
         return extractVariableDescriptor(variableMetaModel).getValue(entity);
+    }
+
+    @Override
+    public <Entity_, Value_> int countValues(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity) {
+        return extractVariableDescriptor(variableMetaModel).getValue(entity).size();
     }
 
     @SuppressWarnings("unchecked")

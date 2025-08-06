@@ -35,7 +35,7 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     public DefaultMoveStreamSession<Solution_> createSession(SessionContext<Solution_> context) {
         var session = datasetSessionFactory.buildSession(context);
-        return new DefaultMoveStreamSession<>(session, context.workingSolution());
+        return new DefaultMoveStreamSession<>(session, context.solutionView());
     }
 
     @Override
