@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
 import java.util.Objects;
 
@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.ForEachFromSolutionUniNode;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
@@ -19,7 +20,7 @@ public final class ForEachFromSolutionDataStream<Solution_, A>
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
 
     public ForEachFromSolutionDataStream(DataStreamFactory<Solution_> dataStreamFactory,
-            ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean includeNull) {
+                                         ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean includeNull) {
         super(dataStreamFactory, (Class<A>) valueRangeDescriptor.getVariableDescriptor().getVariablePropertyType(),
                 includeNull);
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);

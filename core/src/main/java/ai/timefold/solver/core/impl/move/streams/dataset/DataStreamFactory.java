@@ -10,7 +10,12 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.AbstractUniDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.ForEachFromSolutionDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.ForEachIncludingPinnedDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
 import java.util.Objects;
 import java.util.Set;
@@ -9,6 +9,8 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.IndexedIfExistsUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.UnindexedIfExistsUniNode;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.IfExistsDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
@@ -30,8 +32,8 @@ final class IfExistsUniDataStream<Solution_, A, B>
     private final @Nullable BiDataFilter<Solution_, A, B> filtering;
 
     public IfExistsUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parentA,
-            ForeBridgeUniDataStream<Solution_, B> parentBridgeB, boolean shouldExist, DefaultBiDataJoiner<A, B> joiner,
-            @Nullable BiDataFilter<Solution_, A, B> filtering) {
+                                 ForeBridgeUniDataStream<Solution_, B> parentBridgeB, boolean shouldExist, DefaultBiDataJoiner<A, B> joiner,
+                                 @Nullable BiDataFilter<Solution_, A, B> filtering) {
         super(dataStreamFactory);
         this.parentA = parentA;
         this.parentBridgeB = parentBridgeB;

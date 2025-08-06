@@ -1,5 +1,7 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeBiDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
@@ -30,7 +32,7 @@ public abstract class AbstractBiDataStream<Solution_, A, B> extends AbstractData
 
     @Override
     public <ResultA_> UniDataStream<Solution_, ResultA_> map(BiDataMapper<Solution_, A, B, ResultA_> mapping) {
-        var stream = shareAndAddChild(new BiMapUniDataStream<>(dataStreamFactory, this, mapping));
+        var stream = shareAndAddChild(new UniMapBiDataStream<>(dataStreamFactory, this, mapping));
         return dataStreamFactory.share(new AftBridgeUniDataStream<>(dataStreamFactory, stream), stream::setAftBridge);
     }
 

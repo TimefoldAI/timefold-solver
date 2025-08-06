@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.move.streams;
 
-import ai.timefold.solver.core.impl.move.streams.dataset.BiDataset;
-import ai.timefold.solver.core.impl.move.streams.dataset.BiDatasetInstance;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSession;
-import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
-import ai.timefold.solver.core.impl.move.streams.dataset.UniDatasetInstance;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.UniDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.UniDatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 import org.jspecify.annotations.NullMarked;

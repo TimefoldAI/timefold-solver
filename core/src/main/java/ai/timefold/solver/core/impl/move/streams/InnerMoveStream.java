@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStream;
 
 import org.jspecify.annotations.NullMarked;

@@ -1,9 +1,10 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 
@@ -16,7 +17,7 @@ final class FilterBiDataStream<Solution_, A, B>
     private final BiDataFilter<Solution_, A, B> filter;
 
     public FilterBiDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractBiDataStream<Solution_, A, B> parent,
-            BiDataFilter<Solution_, A, B> filter) {
+                              BiDataFilter<Solution_, A, B> filter) {
         super(dataStreamFactory, parent);
         this.filter = Objects.requireNonNull(filter, "The filter cannot be null.");
     }

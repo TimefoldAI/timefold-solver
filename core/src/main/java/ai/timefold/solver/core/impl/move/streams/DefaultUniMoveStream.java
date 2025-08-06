@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.move.streams;
 import java.util.Objects;
 import java.util.function.BiPredicate;
 
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractUniDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.AbstractUniDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.UniDataset;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
 import java.util.Objects;
 import java.util.Set;
@@ -8,6 +8,8 @@ import ai.timefold.solver.core.impl.bavet.bi.UnindexedJoinBiNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.JoinDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
@@ -23,8 +25,8 @@ public final class JoinBiDataStream<Solution_, A, B> extends AbstractBiDataStrea
     private final BiDataFilter<Solution_, A, B> filtering;
 
     public JoinBiDataStream(DataStreamFactory<Solution_> dataStreamFactory,
-            ForeBridgeUniDataStream<Solution_, A> leftParent, ForeBridgeUniDataStream<Solution_, B> rightParent,
-            DefaultBiDataJoiner<A, B> joiner, BiDataFilter<Solution_, A, B> filtering) {
+                            ForeBridgeUniDataStream<Solution_, A> leftParent, ForeBridgeUniDataStream<Solution_, B> rightParent,
+                            DefaultBiDataJoiner<A, B> joiner, BiDataFilter<Solution_, A, B> filtering) {
         super(dataStreamFactory);
         this.leftParent = leftParent;
         this.rightParent = rightParent;

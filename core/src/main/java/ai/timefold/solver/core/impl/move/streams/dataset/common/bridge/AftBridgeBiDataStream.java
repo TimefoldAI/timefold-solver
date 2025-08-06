@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.common.bridge;
 
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractBiDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.AbstractBiDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import org.jspecify.annotations.NullMarked;

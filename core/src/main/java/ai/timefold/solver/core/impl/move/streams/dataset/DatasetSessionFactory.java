@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 

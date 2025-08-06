@@ -1,6 +1,7 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
 import ai.timefold.solver.core.impl.bavet.uni.MapUniToUniNode;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataMapper;
@@ -17,7 +18,7 @@ final class UniMapUniDataStream<Solution_, A, NewA>
     private @Nullable AftBridgeUniDataStream<Solution_, NewA> aftStream;
 
     public UniMapUniDataStream(DataStreamFactory<Solution_> constraintFactory, AbstractUniDataStream<Solution_, A> parent,
-            UniDataMapper<Solution_, A, NewA> mappingFunction) {
+                               UniDataMapper<Solution_, A, NewA> mappingFunction) {
         super(constraintFactory, parent);
         this.mappingFunction = mappingFunction;
     }

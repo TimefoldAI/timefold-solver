@@ -1,8 +1,10 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
 import ai.timefold.solver.core.impl.bavet.bi.MapBiToUniNode;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeUniDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataMapper;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -10,14 +12,14 @@ import org.jspecify.annotations.Nullable;
 import java.util.Objects;
 
 @NullMarked
-final class BiMapUniDataStream<Solution_, A, B, NewA, NewB>
+final class UniMapBiDataStream<Solution_, A, B, NewA, NewB>
         extends AbstractUniDataStream<Solution_, NewA> {
 
     private final BiDataMapper<Solution_, A, B, NewA> mappingFunction;
     private @Nullable AftBridgeUniDataStream<Solution_, NewA> aftStream;
 
-    public BiMapUniDataStream(DataStreamFactory<Solution_> constraintFactory, AbstractBiDataStream<Solution_, A, B> parent,
-            BiDataMapper<Solution_, A, B, NewA> mappingFunction) {
+    public UniMapBiDataStream(DataStreamFactory<Solution_> constraintFactory, AbstractBiDataStream<Solution_, A, B> parent,
+                              BiDataMapper<Solution_, A, B, NewA> mappingFunction) {
         super(constraintFactory, parent);
         this.mappingFunction = mappingFunction;
     }
@@ -48,7 +50,7 @@ final class BiMapUniDataStream<Solution_, A, B, NewA, NewB>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        BiMapUniDataStream<?, ?, ?, ?, ?> that = (BiMapUniDataStream<?, ?, ?, ?, ?>) object;
+        UniMapBiDataStream<?, ?, ?, ?, ?> that = (UniMapBiDataStream<?, ?, ?, ?, ?>) object;
         return Objects.equals(parent, that.parent) &&
                 Objects.equals(mappingFunction, that.mappingFunction);
     }

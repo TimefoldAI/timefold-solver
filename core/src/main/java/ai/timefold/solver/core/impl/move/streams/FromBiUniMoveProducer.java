@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.move.streams;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.BiDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDataset;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.preview.api.move.Move;
