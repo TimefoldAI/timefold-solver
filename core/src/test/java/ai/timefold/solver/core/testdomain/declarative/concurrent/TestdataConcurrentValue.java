@@ -127,15 +127,24 @@ public class TestdataConcurrentValue {
         return null;
     }
 
-    @ShadowSources(value = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" },
+    @ShadowSources(
+            value = { "isInvalid", "concurrentValueGroup[].isInvalid", "serviceReadyTime",
+                    "concurrentValueGroup[].serviceReadyTime" },
             alignmentKey = "concurrentValueGroup")
     public LocalDateTime serviceStartTimeUpdater() {
+        if (isInvalid) {
+            throw new IllegalStateException("Value (%s) is looped when serviceStartTimeUpdater is called.".formatted(this));
+        }
         if (serviceReadyTime == null) {
             return null;
         }
         var startTime = serviceReadyTime;
         if (concurrentValueGroup != null) {
             for (var visit : concurrentValueGroup) {
+                if (visit.isInvalid) {
+                    throw new IllegalStateException(
+                            "Value (%s) is looped when serviceStartTimeUpdater is called.".formatted(visit));
+                }
                 if (visit.serviceReadyTime != null && startTime.isBefore(visit.serviceReadyTime)) {
                     startTime = visit.serviceReadyTime;
                 }

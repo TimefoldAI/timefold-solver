@@ -18,12 +18,12 @@ public final class FixedVariableReferenceGraph<Solution_>
             IntFunction<TopologicalOrderGraph> graphCreator) {
         super(outerGraph, graphCreator);
         // We don't use a bit set to store changes, so pass a one-use instance
-        graph.commitChanges(new BitSet(instanceList.size()));
+        graph.commitChanges(new BitSet(nodeList.size()));
         isFinalized = true;
 
         // Now that we know the topological order of nodes, add
         // each node to changed.
-        for (var node = 0; node < instanceList.size(); node++) {
+        for (var node = 0; node < nodeList.size(); node++) {
             changeSet.add(graph.getTopologicalOrder(node));
         }
         changedVariableNotifier = outerGraph.changedVariableNotifier;
@@ -35,7 +35,7 @@ public final class FixedVariableReferenceGraph<Solution_>
     }
 
     @Override
-    public void markChanged(@NonNull EntityVariablePair<Solution_> node) {
+    public void markChanged(@NonNull GraphNode<Solution_> node) {
         // Before the graph is finalized, ignore changes, since
         // we don't know the topological order yet
         if (isFinalized) {
@@ -47,7 +47,7 @@ public final class FixedVariableReferenceGraph<Solution_>
     public void updateChanged() {
         BitSet visited;
         if (!changeSet.isEmpty()) {
-            visited = new BitSet(instanceList.size());
+            visited = new BitSet(nodeList.size());
             visited.set(changeSet.peek().nodeId());
         } else {
             return;
@@ -57,7 +57,7 @@ public final class FixedVariableReferenceGraph<Solution_>
         // their graph (i.e. have two variables ALWAYS depend on one-another).
         while (!changeSet.isEmpty()) {
             var changedNode = changeSet.poll();
-            var entityVariable = instanceList.get(changedNode.nodeId());
+            var entityVariable = nodeList.get(changedNode.nodeId());
             var entity = entityVariable.entity();
             var shadowVariableReferences = entityVariable.variableReferences();
             for (var shadowVariableReference : shadowVariableReferences) {

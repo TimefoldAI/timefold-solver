@@ -16,7 +16,7 @@ final class AffectedEntitiesUpdater<Solution_>
 
     // From WorkingReferenceGraph.
     private final BaseTopologicalOrderGraph graph;
-    private final List<EntityVariablePair<Solution_>> instanceList; // Immutable.
+    private final List<GraphNode<Solution_>> nodeList; // Immutable.
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
 
     // Internal state; expensive to create, therefore we reuse.
@@ -24,22 +24,22 @@ final class AffectedEntitiesUpdater<Solution_>
     private final BitSet visited;
     private final PriorityQueue<BaseTopologicalOrderGraph.NodeTopologicalOrder> changeQueue;
 
-    AffectedEntitiesUpdater(BaseTopologicalOrderGraph graph, List<EntityVariablePair<Solution_>> instanceList,
-            Function<Object, List<EntityVariablePair<Solution_>>> entityVariablePairFunction,
+    AffectedEntitiesUpdater(BaseTopologicalOrderGraph graph, List<GraphNode<Solution_>> nodeList,
+            Function<Object, List<GraphNode<Solution_>>> entityToContainingNode,
             int entityCount, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
         this.graph = graph;
-        this.instanceList = instanceList;
+        this.nodeList = nodeList;
         this.changedVariableNotifier = changedVariableNotifier;
-        var instanceCount = instanceList.size();
+        var instanceCount = nodeList.size();
         this.loopedTracker = new LoopedTracker(instanceCount,
-                createNodeToEntityNodes(entityCount, instanceList, entityVariablePairFunction));
+                createNodeToEntityNodes(entityCount, nodeList, entityToContainingNode));
         this.visited = new BitSet(instanceCount);
         this.changeQueue = new PriorityQueue<>(instanceCount);
     }
 
     static <Solution_> int[][] createNodeToEntityNodes(int entityCount,
-            List<EntityVariablePair<Solution_>> instanceList,
-            Function<Object, List<EntityVariablePair<Solution_>>> entityVariablePairFunction) {
+            List<GraphNode<Solution_>> nodeList,
+            Function<Object, List<GraphNode<Solution_>>> entityToContainingNode) {
         record EntityIdPair(Object entity, int entityId) {
             @Override
             public boolean equals(Object o) {
@@ -55,12 +55,12 @@ final class AffectedEntitiesUpdater<Solution_>
         }
         int[][] out = new int[entityCount][];
         var entityToNodes = new IdentityHashMap<Integer, int[]>();
-        var entityIdPairSet = instanceList.stream()
+        var entityIdPairSet = nodeList.stream()
                 .map(node -> new EntityIdPair(node.entity(), node.entityId()))
                 .collect(Collectors.toSet());
         for (var entityIdPair : entityIdPairSet) {
             entityToNodes.put(entityIdPair.entityId(),
-                    entityVariablePairFunction.apply(entityIdPair.entity).stream().mapToInt(EntityVariablePair::graphNodeId)
+                    entityToContainingNode.apply(entityIdPair.entity).stream().mapToInt(GraphNode::graphNodeId)
                             .toArray());
         }
 
@@ -81,7 +81,7 @@ final class AffectedEntitiesUpdater<Solution_>
                 continue;
             }
             visited.set(nextNode);
-            var shadowVariable = instanceList.get(nextNode);
+            var shadowVariable = nodeList.get(nextNode);
             var isChanged = updateEntityShadowVariables(shadowVariable, graph.isLooped(loopedTracker, nextNode));
 
             if (isChanged) {
@@ -120,7 +120,7 @@ final class AffectedEntitiesUpdater<Solution_>
         changed.clear();
     }
 
-    private boolean updateEntityShadowVariables(EntityVariablePair<Solution_> entityVariable, boolean isVariableLooped) {
+    private boolean updateEntityShadowVariables(GraphNode<Solution_> entityVariable, boolean isVariableLooped) {
         var entity = entityVariable.entity();
         var shadowVariableReferences = entityVariable.variableReferences();
         var loopDescriptor = shadowVariableReferences.get(0).shadowVariableLoopedDescriptor();
