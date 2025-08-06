@@ -78,10 +78,12 @@ class ListChangeMoveTest {
         var entity1 = new TestdataListEntityProvidingEntity("e1", List.of(value1, value2), List.of(value1, value2));
         var entity2 = new TestdataListEntityProvidingEntity("e2", List.of(value1, value3), List.of(value3));
         // different entity => valid value
-        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 0, entity2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 0, entity2, 0)
+                .isMoveDoable(otherInnerScoreDirector))
                 .isTrue();
         // different entity => invalid value
-        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 1, entity2, 0).isMoveDoable(otherInnerScoreDirector))
+        assertThat(new ListChangeMove<>(otherVariableDescriptor, entity1, 1, entity2, 0)
+                .isMoveDoable(otherInnerScoreDirector))
                 .isFalse();
     }
 

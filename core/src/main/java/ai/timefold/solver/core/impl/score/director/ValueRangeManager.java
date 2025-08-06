@@ -2,8 +2,10 @@ package ai.timefold.solver.core.impl.score.director;
 
 import java.util.Collections;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
@@ -14,7 +16,6 @@ import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
@@ -23,6 +24,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
@@ -58,6 +60,7 @@ public final class ValueRangeManager<Solution_> {
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
 
+    private @Nullable ReachableValues reachableValues = null;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
     private @Nullable ProblemSizeStatistics cachedProblemSizeStatistics = null;
@@ -315,9 +318,7 @@ public final class ValueRangeManager<Solution_> {
                     }
                 }
             } else if (variableDescriptor instanceof ListVariableDescriptor<Solution_> listVariableDescriptor) {
-                var size = variableDescriptor.canExtractValueRangeFromSolution()
-                        ? countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), cachedWorkingSolution)
-                        : countOnEntity(listVariableDescriptor.getValueRangeDescriptor(), entity);
+                var size = countOnSolution(listVariableDescriptor.getValueRangeDescriptor(), cachedWorkingSolution);
                 tracker.setListTotalValueCount((int) size);
                 if (entityDescriptor.isMovable(cachedWorkingSolution, entity)) {
                     tracker.incrementListEntityCount(true);
@@ -364,11 +365,6 @@ public final class ValueRangeManager<Solution_> {
                                 BigDecimalValueRange.class.getSimpleName()));
             } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
-            } else if (extractedValueRange instanceof EmptyValueRange<?>) {
-                throw new IllegalStateException("""
-                        The @%s-annotated member (%s) on planning solution (%s) must not return an empty range.
-                        Maybe apply over-constrained planning as described in the documentation."""
-                        .formatted(ValueRangeProvider.class.getSimpleName(), valueRangeDescriptor, solution));
             } else {
                 valueRange = countableValueRange;
             }
@@ -400,11 +396,6 @@ public final class ValueRangeManager<Solution_> {
                                 BigDecimalValueRange.class.getSimpleName()));
             } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
                 valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
-            } else if (extractedValueRange instanceof EmptyValueRange<?>) {
-                throw new IllegalStateException("""
-                        The @%s-annotated member (%s) on planning entity (%s) must not return an empty range.
-                        Maybe apply over-constrained planning as described in the documentation."""
-                        .formatted(ValueRangeProvider.class.getSimpleName(), valueRangeDescriptor, entity));
             } else {
                 valueRange = countableValueRange;
             }
@@ -423,9 +414,75 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
+    public ReachableValues getReachableValeMatrix(ListVariableDescriptor<Solution_> listVariableDescriptor) {
+        if (reachableValues == null) {
+            if (cachedWorkingSolution == null) {
+                throw new IllegalStateException(
+                        "Impossible state: the matrix %s requested before the working solution is known."
+                                .formatted(ReachableValues.class.getSimpleName()));
+            }
+            var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
+            var valueRangeDescriptor = listVariableDescriptor.getValueRangeDescriptor();
+            var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
+            var allValues = getFromSolution(valueRangeDescriptor);
+            var valuesSize = allValues.getSize();
+            if (valuesSize > Integer.MAX_VALUE) {
+                throw new IllegalStateException(
+                        "The matrix %s cannot be built for the entity %s (%s) because value range has a size (%d) which is higher than Integer.MAX_VALUE."
+                                .formatted(ReachableValues.class.getSimpleName(),
+                                        entityDescriptor.getEntityClass().getSimpleName(),
+                                        valueRangeDescriptor.getVariableDescriptor().getVariableName(), valuesSize));
+            }
+            // list of entities reachable for a value
+            var entityMatrix = new IdentityHashMap<Object, Set<Object>>((int) valuesSize);
+            // list of values reachable for a value
+            var valueMatrix = new IdentityHashMap<Object, Set<Object>>((int) valuesSize);
+            for (var entity : entityList) {
+                var valuesIterator = allValues.createOriginalIterator();
+                var range = getFromEntity(valueRangeDescriptor, entity);
+                while (valuesIterator.hasNext()) {
+                    var value = valuesIterator.next();
+                    if (range.contains(value)) {
+                        updateEntityMap(entityMatrix, entity, value, entityList.size());
+                        updateValueMap(valueMatrix, range, value, (int) valuesSize);
+                    }
+                }
+            }
+            reachableValues = new ReachableValues(entityMatrix, valueMatrix);
+        }
+        return reachableValues;
+    }
+
+    private static void updateEntityMap(Map<Object, Set<Object>> entityMatrix, Object entity, Object value,
+            int entityListSize) {
+        var entitySet = entityMatrix.get(value);
+        if (entitySet == null) {
+            entitySet = new LinkedHashSet<>(entityListSize);
+            entityMatrix.put(value, entitySet);
+        }
+        entitySet.add(entity);
+    }
+
+    private static void updateValueMap(Map<Object, Set<Object>> valueMatrix, CountableValueRange<Object> range, Object value,
+            int valueListSize) {
+        var reachableValues = valueMatrix.get(value);
+        if (reachableValues == null) {
+            reachableValues = new LinkedHashSet<>(valueListSize);
+            valueMatrix.put(value, reachableValues);
+        }
+        var entityValuesIterator = range.createOriginalIterator();
+        while (entityValuesIterator.hasNext()) {
+            var entityValue = entityValuesIterator.next();
+            if (!Objects.equals(entityValue, value)) {
+                reachableValues.add(entityValue);
+            }
+        }
+    }
+
     public void reset(@Nullable Solution_ workingSolution) {
         fromSolutionMap.clear();
         fromEntityMap.clear();
+        reachableValues = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
             cachedWorkingSolution = workingSolution;

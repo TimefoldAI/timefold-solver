@@ -1,16 +1,21 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory.applyValueRangeFiltering;
+
 import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
@@ -28,13 +33,31 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
 
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
+        return buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, false, null);
+    }
+
+    public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
+            SelectionCacheType minimumCacheType, boolean randomSelection, boolean enableEntityValueRangeFilter,
+            String mimicRecorderId) {
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder);
+        if (enableEntityValueRangeFilter) {
+            if (mimicRecorderId == null) {
+                throw new IllegalStateException(
+                        "An outer value selector mimic recorder ID is needed for the destination selector %s when using entity value ranges."
+                                .formatted(config));
+            }
+            valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entitySelector.getEntityDescriptor(),
+                    mimicRecorderId, minimumCacheType, selectionOrder, randomSelection, false);
+            entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, mimicRecorderId, minimumCacheType,
+                    selectionOrder, randomSelection);
+        }
         var baseDestinationSelector =
-                new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
+                new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean(),
+                        enableEntityValueRangeFilter);
         return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector);
     }
 
@@ -73,4 +96,16 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
                 .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, destinationSelector);
     }
+
+    private EntitySelector<Solution_> applyEntityValueRangeFiltering(HeuristicConfigPolicy<Solution_> configPolicy,
+            EntitySelector<Solution_> entitySelector, String valueSelectorId, SelectionCacheType minimumCacheType,
+            SelectionOrder selectionOrder, boolean randomSelection) {
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef(valueSelectorId);
+        var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
+                .<Solution_> create(valueSelectorConfig)
+                .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
+        return new FilteringEntityValueRangeSelector<>(entitySelector, replayingValueSelector, randomSelection);
+    }
+
 }

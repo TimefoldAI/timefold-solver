@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.Optional;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -12,6 +13,7 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -45,13 +47,31 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 .<Solution_> create(destinationEntitySelectorConfig)
                 .extractEntityDescriptor(configPolicy);
 
+        var enableEntityValueRangeFilter =
+                !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
+
+        String mimicSelectorId = null;
+        if (enableEntityValueRangeFilter) {
+            var mimicSelectorConfig = Objects.requireNonNull(valueSelectorConfig);
+            if (mimicSelectorConfig.getMimicSelectorRef() == null && mimicSelectorConfig.getId() == null) {
+                var variableName = Objects.requireNonNull(mimicSelectorConfig.getVariableName());
+                // We set the id to make sure the value selector will use the mimic recorder
+                mimicSelectorId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom());
+                mimicSelectorConfig.setId(mimicSelectorId);
+            } else {
+                mimicSelectorId = mimicSelectorConfig.getMimicSelectorRef() != null ? mimicSelectorConfig.getMimicSelectorRef()
+                        : mimicSelectorConfig.getId();
+            }
+        }
+
         var sourceValueSelector = ValueSelectorFactory
                 .<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
 
         var destinationSelector = DestinationSelectorFactory
                 .<Solution_> create(destinationSelectorConfig)
-                .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection);
+                .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, enableEntityValueRangeFilter,
+                        mimicSelectorId);
 
         return new ListChangeMoveSelector<>((IterableValueSelector<Solution_>) sourceValueSelector, destinationSelector,
                 randomSelection);

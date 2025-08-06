@@ -242,8 +242,8 @@ public class SelectorTestUtils {
 
     public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
             PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector,
-            ValueSelector<Solution_> valueSelector) {
-        return solvingStarted(listener, scoreDirector, null, valueSelector);
+            Selector<Solution_>... selectors) {
+        return solvingStarted(listener, scoreDirector, null, selectors);
     }
 
     public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
@@ -254,15 +254,24 @@ public class SelectorTestUtils {
 
     public static <Solution_, Score_ extends Score<Score_>> SolverScope<Solution_> solvingStarted(
             PhaseLifecycleListener<Solution_> listener, InnerScoreDirector<Solution_, Score_> scoreDirector, Random random,
-            ValueSelector<Solution_> valueSelector) {
+            Selector<Solution_>... selectors) {
         SolverScope<Solution_> solverScope = new SolverScope<>();
         solverScope.setScoreDirector(scoreDirector);
         solverScope.setWorkingRandom(random);
         listener.solvingStarted(solverScope);
-        if (valueSelector != null) {
-            valueSelector.solvingStarted(solverScope);
+        if (selectors != null) {
+            for (var selector : selectors) {
+                selector.solvingStarted(solverScope);
+            }
         }
         return solverScope;
+    }
+
+    public static <Solution_> void phaseStarted(SolverScope<Solution_> solverScope,
+            PhaseLifecycleListener<Solution_>... listeners) {
+        for (var listener : listeners) {
+            phaseStarted(listener, solverScope);
+        }
     }
 
     public static <Solution_> AbstractPhaseScope<Solution_> phaseStarted(PhaseLifecycleListener<Solution_> listener,
@@ -270,6 +279,7 @@ public class SelectorTestUtils {
         AbstractPhaseScope<Solution_> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
         when(phaseScope.getScoreDirector()).thenAnswer(s -> solverScope.getScoreDirector());
+        when(phaseScope.getWorkingSolution()).thenAnswer(s -> solverScope.getWorkingSolution());
         listener.phaseStarted(phaseScope);
         return phaseScope;
     }
@@ -278,6 +288,7 @@ public class SelectorTestUtils {
             AbstractPhaseScope<Solution_> phaseScope) {
         AbstractStepScope<Solution_> stepScope = mock(AbstractStepScope.class);
         when(stepScope.getPhaseScope()).thenReturn(phaseScope);
+        when(stepScope.getScoreDirector()).thenAnswer(s -> phaseScope.getScoreDirector());
         listener.stepStarted(stepScope);
         return stepScope;
     }

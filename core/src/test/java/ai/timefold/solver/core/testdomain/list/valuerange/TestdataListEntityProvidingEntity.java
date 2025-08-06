@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -22,12 +23,9 @@ public class TestdataListEntityProvidingEntity extends TestdataObject {
                 .getGenuineVariableDescriptor("valueList");
     }
 
-    // Temporarily disabled
-    // @ValueRangeProvider(id = "valueRange")
+    @ValueRangeProvider(id = "valueRange")
     private final List<TestdataListEntityProvidingValue> valueRange;
-    // Temporarily disabled
-    // @PlanningListVariable(valueRangeProviderRefs = "valueRange")
-    @PlanningListVariable
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange")
     private List<TestdataListEntityProvidingValue> valueList;
 
     public TestdataListEntityProvidingEntity() {

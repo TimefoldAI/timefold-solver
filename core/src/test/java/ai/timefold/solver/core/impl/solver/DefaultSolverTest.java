@@ -152,7 +152,6 @@ import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -2146,7 +2145,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         return allMoveSelectionConfigList;
     }
 
-    @Disabled("Temporarily disabled")
     @ParameterizedTest
     @MethodSource("generateMovesForListVarEntityRangeModel")
     void solveListVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
