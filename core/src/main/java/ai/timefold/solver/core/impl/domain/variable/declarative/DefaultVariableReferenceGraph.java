@@ -19,9 +19,16 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
 
         var entityToVariableReferenceMap = new IdentityHashMap<Object, List<GraphNode<Solution_>>>();
         for (var instance : nodeList) {
-            var entity = instance.entity();
-            entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
-                    .add(instance);
+            if (instance.groupEntityIds() == null) {
+                var entity = instance.entity();
+                entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
+                        .add(instance);
+            } else {
+                for (var groupEntity : instance.variableReferences().get(0).groupEntities()) {
+                    entityToVariableReferenceMap.computeIfAbsent(groupEntity, ignored -> new ArrayList<>())
+                            .add(instance);
+                }
+            }
         }
         // Immutable optimized version of the map, now that it won't be updated anymore.
         var immutableEntityToVariableReferenceMap = mapOfListsDeepCopyOf(entityToVariableReferenceMap);
