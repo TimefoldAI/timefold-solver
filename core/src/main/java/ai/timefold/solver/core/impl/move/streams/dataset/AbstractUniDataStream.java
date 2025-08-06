@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.dataset;
 
+import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeBiDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.joiner.BiDataJoinerComber;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
@@ -8,7 +10,6 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataMapper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -31,8 +32,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     }
 
     @Override
-    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream,
-            @NonNull BiDataJoiner<A, B>... joiners) {
+    public <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B>... joiners) {
         var other = (AbstractUniDataStream<Solution_, B>) otherStream;
         var leftBridge = new ForeBridgeUniDataStream<Solution_, A>(dataStreamFactory, this);
         var rightBridge = new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other);
@@ -47,8 +47,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     }
 
     @Override
-    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull Class<B> otherClass,
-            @NonNull BiDataJoiner<A, B>... joiners) {
+    public <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass, BiDataJoiner<A, B>... joiners) {
         return join(dataStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
@@ -89,17 +88,23 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
 
     @Override
     public <ResultA_> UniDataStream<Solution_, ResultA_> map(UniDataMapper<Solution_, A, ResultA_> mapping) {
-        return null;
+        var stream = shareAndAddChild(new UniMapUniDataStream<>(dataStreamFactory, this, mapping));
+        return dataStreamFactory.share(new AftBridgeUniDataStream<>(dataStreamFactory, stream), stream::setAftBridge);
     }
 
     @Override
-    public <ResultA_, ResultB_> BiDataStream<Solution_, ResultA_, ResultB_> map(UniDataMapper<Solution_, A, ResultA_> mappingA, UniDataMapper<Solution_, A, ResultB_> mappingB) {
-        return null;
+    public <ResultA_, ResultB_> BiDataStream<Solution_, ResultA_, ResultB_> map(UniDataMapper<Solution_, A, ResultA_> mappingA,
+            UniDataMapper<Solution_, A, ResultB_> mappingB) {
+        var stream = shareAndAddChild(new UniMapBiDataStream<>(dataStreamFactory, this, mappingA, mappingB));
+        return dataStreamFactory.share(new AftBridgeBiDataStream<>(dataStreamFactory, stream), stream::setAftBridge);
     }
 
     @Override
-    public UniDataStream<Solution_, A> distinct() {
-        return null;
+    public AbstractUniDataStream<Solution_, A> distinct() {
+        if (guaranteesDistinct()) {
+            return this; // Already distinct, no need to create a new stream.
+        }
+        throw new UnsupportedOperationException();
     }
 
     public UniDataset<Solution_, A> createDataset() {
