@@ -1,12 +1,11 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
-import java.util.List;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 /**
  * Represents the meta-model of an entity.
@@ -132,12 +131,30 @@ public interface PlanningEntityMetaModel<Solution_, Entity_> {
     }
 
     /**
+     * As defined by {@link #genuineVariable()} ()},
+     * but only succeeds if the variable is a {@link PlanningVariable basic planning variable}.
+     */
+    @SuppressWarnings("unchecked")
+    default <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariable() {
+        return (PlanningVariableMetaModel<Solution_, Entity_, Value_>) genuineVariable();
+    }
+
+    /**
      * As defined by {@link #variable(String)},
      * but only succeeds if the variable is a {@link PlanningVariable basic planning variable}.
      */
     @SuppressWarnings("unchecked")
     default <Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariable(String variableName) {
         return (PlanningVariableMetaModel<Solution_, Entity_, Value_>) variable(variableName);
+    }
+
+    /**
+     * As defined by {@link #genuineVariable()},
+     * but only succeeds if the variable is a {@link PlanningListVariable planning list variable}.
+     */
+    @SuppressWarnings("unchecked")
+    default <Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariable() {
+        return (PlanningListVariableMetaModel<Solution_, Entity_, Value_>) genuineVariable();
     }
 
     /**

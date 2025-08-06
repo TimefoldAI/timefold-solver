@@ -37,7 +37,7 @@ import static org.assertj.core.api.SoftAssertions.assertSoftly;
 class ChangeMoveProviderTest {
 
     @Test
-    void fromSolutionBasicVariable() {
+    void fromSolution() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataEntity.class)
@@ -100,7 +100,7 @@ class ChangeMoveProviderTest {
     }
 
     @Test
-    void fromSolutionBasicVariableIncompleteValueRange() {
+    void fromSolutionIncompleteValueRange() {
         var solutionDescriptor = TestdataIncompleteValueRangeSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataIncompleteValueRangeEntity.class)
@@ -168,7 +168,7 @@ class ChangeMoveProviderTest {
     }
 
     @Test
-    void fromEntityBasicVariable() {
+    void fromEntity() {
         var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataEntityProvidingEntity.class)
@@ -209,7 +209,7 @@ class ChangeMoveProviderTest {
     }
 
     @Test
-    void fromEntityBasicVariableAllowsUnassigned() {
+    void fromEntityAllowsUnassigned() {
         var solutionDescriptor = TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataAllowsUnassignedEntityProvidingEntity.class)
@@ -271,7 +271,7 @@ class ChangeMoveProviderTest {
     }
 
     @Test
-    void fromSolutionBasicVariableAllowsUnassigned() {
+    void fromSolutionAllowsUnassigned() {
         var solutionDescriptor = TestdataAllowsUnassignedSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataAllowsUnassignedEntity.class)

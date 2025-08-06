@@ -5,13 +5,14 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+@NullMarked
 public final class ListUnassignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
@@ -31,29 +32,37 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
     }
 
     @Override
-    public void execute(@NonNull MutableSolutionView<Solution_> solutionView) {
+    public void execute(MutableSolutionView<Solution_> solutionView) {
         solutionView.unassignValue(variableMetaModel, movedValue, sourceEntity, sourceIndex);
     }
 
     @Override
-    public @NonNull Move<Solution_> rebase(@NonNull Rebaser rebaser) {
-        return new ListUnassignMove<>(variableMetaModel, rebaser.rebase(movedValue), rebaser.rebase(sourceEntity),
-                sourceIndex);
+    public Move<Solution_> rebase(Rebaser rebaser) {
+        return new ListUnassignMove<>(variableMetaModel, Objects.requireNonNull(rebaser.rebase(movedValue)),
+                Objects.requireNonNull(rebaser.rebase(sourceEntity)), sourceIndex);
     }
 
     @Override
-    public @NonNull Collection<?> extractPlanningEntities() {
+    public Collection<Entity_> extractPlanningEntities() {
         return Collections.singleton(sourceEntity);
     }
 
     @Override
-    public @NonNull Collection<?> extractPlanningValues() {
+    public Collection<Value_> extractPlanningValues() {
         return Collections.singleton(movedValue);
     }
 
     @Override
     protected List<VariableMetaModel<Solution_, ?, ?>> getVariableMetaModels() {
         return List.of(variableMetaModel);
+    }
+
+    public Entity_ getSourceEntity() {
+        return sourceEntity;
+    }
+
+    public int getSourceIndex() {
+        return sourceIndex;
     }
 
     @Override
@@ -72,7 +81,7 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
     }
 
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return String.format("%s {%s[%d] -> null}", movedValue, sourceEntity, sourceIndex);
     }
 }
