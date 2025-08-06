@@ -59,8 +59,9 @@ public final class ValueRangeManager<Solution_> {
     private final Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
+    private final Map<ValueRangeDescriptor<Solution_>, ReachableValues> fromReachableValuesMap =
+            new IdentityHashMap<>();
 
-    private @Nullable ReachableValues reachableValues = null;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
     private @Nullable ProblemSizeStatistics cachedProblemSizeStatistics = null;
@@ -414,15 +415,15 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
-    public ReachableValues getReachableValeMatrix(ListVariableDescriptor<Solution_> listVariableDescriptor) {
+    public ReachableValues getReachableValueMatrix(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        var reachableValues = fromReachableValuesMap.get(valueRangeDescriptor);
         if (reachableValues == null) {
             if (cachedWorkingSolution == null) {
                 throw new IllegalStateException(
                         "Impossible state: the matrix %s requested before the working solution is known."
                                 .formatted(ReachableValues.class.getSimpleName()));
             }
-            var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
-            var valueRangeDescriptor = listVariableDescriptor.getValueRangeDescriptor();
+            var entityDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor();
             var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
             var allValues = getFromSolution(valueRangeDescriptor);
             var valuesSize = allValues.getSize();
@@ -449,6 +450,7 @@ public final class ValueRangeManager<Solution_> {
                 }
             }
             reachableValues = new ReachableValues(entityMatrix, valueMatrix);
+            fromReachableValuesMap.put(valueRangeDescriptor, reachableValues);
         }
         return reachableValues;
     }
@@ -482,7 +484,7 @@ public final class ValueRangeManager<Solution_> {
     public void reset(@Nullable Solution_ workingSolution) {
         fromSolutionMap.clear();
         fromEntityMap.clear();
-        reachableValues = null;
+        fromReachableValuesMap.clear();
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
             cachedWorkingSolution = workingSolution;
