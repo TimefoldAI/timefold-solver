@@ -1,18 +1,5 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
-import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
-import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -53,10 +40,21 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedv
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
-
+import io.micrometer.core.instrument.Metrics;
 import org.junit.jupiter.api.Test;
 
-import io.micrometer.core.instrument.Metrics;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+
+import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
 
@@ -365,7 +363,8 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
     @Test
     void solveWithEntityValueRangeListVariable() {
         var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataListEntityProvidingSolution.class, TestdataListEntityProvidingEntity.class)
+                .buildSolverConfig(TestdataListEntityProvidingSolution.class, TestdataListEntityProvidingEntity.class,
+                        TestdataListEntityProvidingValue.class)
                 .withEasyScoreCalculatorClass(TestdataListEntityProvidingScoreCalculator.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
@@ -381,8 +380,10 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution).isNotNull();
         // Only one entity should provide the value list and assign the values.
-        assertThat(bestSolution.getEntityList().get(0).getValueList()).hasSameElementsAs(List.of(value1, value2));
-        assertThat(bestSolution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(value3));
+        assertThat(bestSolution.getEntityList().get(0).getValueList().stream().map(TestdataListEntityProvidingValue::getCode))
+                .hasSameElementsAs(List.of("v1", "v2"));
+        assertThat(bestSolution.getEntityList().get(1).getValueList().stream().map(TestdataListEntityProvidingValue::getCode))
+                .hasSameElementsAs(List.of("v3"));
     }
 
     @Test
