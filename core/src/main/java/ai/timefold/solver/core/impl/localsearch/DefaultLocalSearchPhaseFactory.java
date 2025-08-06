@@ -1,10 +1,5 @@
 package ai.timefold.solver.core.impl.localsearch;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
 import ai.timefold.solver.core.api.domain.entity.PinningFilter;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -49,6 +44,11 @@ import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFactory<Solution_, LocalSearchPhaseConfig> {
 
@@ -134,7 +134,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                             .formatted(moveProvidersClass, moveProviderList.size()));
         }
         var moveProvider = moveProviderList.get(0);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveRepository = new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer,
                 pickSelectionOrder() == SelectionOrder.RANDOM);

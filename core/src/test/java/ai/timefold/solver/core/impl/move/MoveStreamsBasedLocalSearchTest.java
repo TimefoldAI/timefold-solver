@@ -1,16 +1,10 @@
 package ai.timefold.solver.core.impl.move;
 
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-
-import java.util.HashSet;
-import java.util.Random;
-
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.config.localsearch.decider.acceptor.LocalSearchAcceptorConfig;
 import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchForagerConfig;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -30,9 +24,15 @@ import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
+
+import java.util.HashSet;
+import java.util.Random;
+
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 class MoveStreamsBasedLocalSearchTest {
 
@@ -95,7 +95,7 @@ class MoveStreamsBasedLocalSearchTest {
                 .genuineVariable()
                 .ensurePlanningVariable();
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var moveProducer = moveProvider.apply(moveStreamFactory);
         // Random selection otherwise LS gets stuck in an endless loop.
         return new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer, true);
