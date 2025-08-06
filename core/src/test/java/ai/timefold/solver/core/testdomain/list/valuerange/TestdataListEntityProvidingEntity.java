@@ -1,14 +1,14 @@
 package ai.timefold.solver.core.testdomain.list.valuerange;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @PlanningEntity
 public class TestdataListEntityProvidingEntity extends TestdataObject {
@@ -50,6 +50,14 @@ public class TestdataListEntityProvidingEntity extends TestdataObject {
             value.setEntity(this);
             value.setIndex(i);
         }
+    }
+
+    public TestdataListEntityProvidingEntity setUpShadowVariables() {
+        valueList.forEach(testdataListValue -> {
+            testdataListValue.setEntity(this);
+            testdataListValue.setIndex(valueList.indexOf(testdataListValue));
+        });
+        return this;
     }
 
     public List<TestdataListEntityProvidingValue> getValueRange() {

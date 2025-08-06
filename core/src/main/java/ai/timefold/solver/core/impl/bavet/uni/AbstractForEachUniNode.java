@@ -1,8 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.uni;
 
-import java.util.IdentityHashMap;
-import java.util.Map;
-
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
@@ -10,9 +7,11 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
-
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.IdentityHashMap;
+import java.util.Map;
 
 /**
  * Filtering nodes are expensive.
