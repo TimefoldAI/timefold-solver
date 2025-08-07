@@ -89,7 +89,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
             Entity_ destinationEntity, int destinationIndex) {
         if (sourceEntity == destinationEntity) {
-            return swapValues(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
+            return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
@@ -107,13 +107,13 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     @SuppressWarnings("unchecked")
     @Override
-    public final <Entity_, Value_> @Nullable Value_ swapValues(
+    public final <Entity_, Value_> @Nullable Value_ moveValueInList(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int sourceIndex,
             int destinationIndex) {
         if (sourceIndex == destinationIndex) {
             return null;
         } else if (sourceIndex > destinationIndex) { // Always start from the lower index.
-            return swapValues(variableMetaModel, entity, destinationIndex, sourceIndex);
+            return moveValueInList(variableMetaModel, entity, destinationIndex, sourceIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var toIndex = destinationIndex + 1;
