@@ -55,7 +55,7 @@ class AffectedEntitiesUpdaterTest {
 
         var result = AffectedEntitiesUpdater.createNodeToEntityNodes(3,
                 List.of(a1, b1, a2, c1, b3, b2),
-                entity -> map.get(entity));
+                map::get);
 
         assertThat(result[0]).containsExactlyInAnyOrder(0, 1);
         assertThat(result[1]).containsExactlyInAnyOrder(2, 3, 4);

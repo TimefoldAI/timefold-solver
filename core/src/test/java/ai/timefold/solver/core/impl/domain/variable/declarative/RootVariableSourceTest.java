@@ -19,6 +19,8 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -42,8 +44,6 @@ class RootVariableSourceTest {
                     .getMetaModel();
     private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel =
             planningSolutionMetaModel.entity(TestdataInvalidDeclarativeValue.class);
-    private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> isLoopedMetaModel =
-            shadowEntityMetaModel.shadowVariable("isLooped");
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> previousElementMetaModel =
             shadowEntityMetaModel.shadowVariable("previous");
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> shadowVariableMetaModel =
@@ -586,37 +586,23 @@ class RootVariableSourceTest {
     }
 
     @Test
-    void shadowVariableLoopedReferenced() {
-        var rootVariableSource = RootVariableSource.from(
+    void errorIfShadowVariableLoopedReferenced() {
+        assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
                 "isLooped",
                 DEFAULT_MEMBER_ACCESSOR_FACTORY,
-                DEFAULT_DESCRIPTOR_POLICY);
-
-        assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
-        assertThat(rootVariableSource.variableSourceReferences()).hasSize(1);
-        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.NO_PARENT);
-        var source = rootVariableSource.variableSourceReferences().get(0);
-
-        assertEmptyChainToVariableEntity(source);
-        assertThat(source.variableMetaModel()).isEqualTo(isLoopedMetaModel);
-        assertThat(source.isTopLevel()).isTrue();
-        assertThat(source.onRootEntity()).isTrue();
-        assertThat(source.isDeclarative()).isFalse();
-        assertThat(source.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
-        assertThat(source.downstreamDeclarativeVariableMetamodel()).isNull();
-
-        var entity = new TestdataInvalidDeclarativeValue("v1");
-        var result = source.targetEntityFunctionStartingFromVariableEntity().apply(entity);
-
-        assertThat(result).isSameAs(entity);
-
-        var rootVisitor = mock(Consumer.class);
-        rootVariableSource.valueEntityFunction().accept(entity, rootVisitor);
-        verify(rootVisitor).accept(entity);
-        verifyNoMoreInteractions(rootVisitor);
+                DEFAULT_DESCRIPTOR_POLICY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll(
+                        "The source path (isLooped) starting from root class (%s) accesses a @%s property (isLooped)"
+                                .formatted(TestdataInvalidDeclarativeValue.class.getCanonicalName(),
+                                        ShadowVariableLooped.class.getSimpleName()),
+                        "Supplier methods are only called when none of their dependencies are looped",
+                        "reading @%s properties are not needed since they are guaranteed to be false"
+                                .formatted(ShadowVariableLooped.class.getSimpleName()),
+                        "Maybe remove the source path (isLooped) from the @%s?".formatted(ShadowSources.class.getSimpleName()));
     }
 
     @Test
