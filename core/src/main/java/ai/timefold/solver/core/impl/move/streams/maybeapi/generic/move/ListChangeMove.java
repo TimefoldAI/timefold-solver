@@ -123,7 +123,7 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
         if (sourceEntity == destinationEntity) {
-            planningValue = solutionView.swapValues(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
+            planningValue = solutionView.moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         } else {
             planningValue = solutionView.moveValueBetweenLists(variableMetaModel, sourceEntity, sourceIndex, destinationEntity,
                     destinationIndex);

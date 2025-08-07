@@ -120,7 +120,7 @@ class MoveDirectorTest {
     }
 
     @Test
-    void swapValues() {
+    void moveValueInList() {
         var solutionMetaModel = TestdataListSolution.buildSolutionDescriptor()
                 .getMetaModel();
         var variableMetaModel = solutionMetaModel.entity(TestdataListEntity.class)
@@ -137,7 +137,7 @@ class MoveDirectorTest {
         // Swap between second and last position.
         var mockScoreDirector = (InnerScoreDirector<TestdataListSolution, ?>) mock(InnerScoreDirector.class);
         var moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
-        moveDirector.swapValues(variableMetaModel, entity, 1, 2);
+        moveDirector.moveValueInList(variableMetaModel, entity, 1, 2);
         assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
@@ -151,7 +151,7 @@ class MoveDirectorTest {
 
         // Do the same in reverse.
         moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
-        moveDirector.swapValues(variableMetaModel, entity, 2, 1);
+        moveDirector.moveValueInList(variableMetaModel, entity, 2, 1);
         assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
