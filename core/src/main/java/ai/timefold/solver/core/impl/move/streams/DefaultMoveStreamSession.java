@@ -14,7 +14,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class DefaultMoveStreamSession<Solution_>
-        implements MoveStreamSession<Solution_>, AutoCloseable {
+        implements MoveStreamSession<Solution_> {
 
     private final DatasetSession<Solution_> datasetSession;
     private final SolutionView<Solution_> solutionView;
@@ -52,8 +52,4 @@ public final class DefaultMoveStreamSession<Solution_>
         return solutionView;
     }
 
-    @Override
-    public void close() {
-        datasetSession.close();
-    }
 }

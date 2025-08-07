@@ -6,7 +6,7 @@ import java.util.Map;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
 
-public abstract class AbstractSession implements AutoCloseable {
+public abstract class AbstractSession {
 
     private final NodeNetwork nodeNetwork;
     private final Map<Class<?>, AbstractForEachUniNode<Object>[]> insertEffectiveClassToNodeArrayMap;
@@ -61,10 +61,6 @@ public abstract class AbstractSession implements AutoCloseable {
 
     public void settle() {
         nodeNetwork.settle();
-    }
-
-    @Override
-    public final void close() {
     }
 
 }

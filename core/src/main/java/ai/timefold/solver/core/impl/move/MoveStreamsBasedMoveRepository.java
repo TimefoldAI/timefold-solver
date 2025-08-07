@@ -89,7 +89,6 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         if (moveStreamSession != null) {
-            moveStreamSession.close();
             moveStreamSession = null;
         }
         phaseScope.getScoreDirector().setMoveRepository(null);
