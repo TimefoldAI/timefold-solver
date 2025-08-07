@@ -20,8 +20,8 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         permits DefaultVariableReferenceGraph, FixedVariableReferenceGraph {
 
     // These structures are immutable.
-    protected final List<EntityVariablePair<Solution_>> instanceList;
-    protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, EntityVariablePair<Solution_>>> variableReferenceToInstanceMap;
+    protected final List<GraphNode<Solution_>> nodeList;
+    protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
 
@@ -32,10 +32,10 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
 
     AbstractVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
-        instanceList = List.copyOf(outerGraph.instanceList);
-        var instanceCount = instanceList.size();
+        nodeList = List.copyOf(outerGraph.nodeList);
+        var instanceCount = nodeList.size();
         // Often the maps are a singleton; we improve performance by actually making it so.
-        variableReferenceToInstanceMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToInstanceMap);
+        variableReferenceToContainingNodeMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToContainingNodeMap);
         variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
         edgeCount = new DynamicIntArray[instanceCount];
@@ -43,11 +43,11 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
             edgeCount[i] = new DynamicIntArray(instanceCount);
         }
         graph = graphCreator.apply(instanceCount);
-        graph.withNodeData(instanceList);
+        graph.withNodeData(nodeList);
 
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         changeSet = createChangeSet(instanceCount);
-        for (var instance : instanceList) {
+        for (var instance : nodeList) {
             var entity = instance.entity();
             if (visited.add(entity)) {
                 for (var variableId : outerGraph.variableReferenceToAfterProcessor.keySet()) {
@@ -64,15 +64,15 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
 
     protected abstract ChangeSet_ createChangeSet(int instanceCount);
 
-    public @Nullable EntityVariablePair<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
-        var map = variableReferenceToInstanceMap.get(variableId);
+    public @Nullable GraphNode<Solution_> lookupOrNull(VariableMetaModel<?, ?, ?> variableId, Object entity) {
+        var map = variableReferenceToContainingNodeMap.get(variableId);
         if (map == null) {
             return null;
         }
         return map.get(entity);
     }
 
-    public void addEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
+    public void addEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
         var fromNodeId = from.graphNodeId();
         var toNodeId = to.graphNodeId();
         if (fromNodeId == toNodeId) {
@@ -87,7 +87,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         markChanged(to);
     }
 
-    public void removeEdge(@NonNull EntityVariablePair<Solution_> from, @NonNull EntityVariablePair<Solution_> to) {
+    public void removeEdge(@NonNull GraphNode<Solution_> from, @NonNull GraphNode<Solution_> to) {
         var fromNodeId = from.graphNodeId();
         var toNodeId = to.graphNodeId();
         if (fromNodeId == toNodeId) {
@@ -102,7 +102,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         markChanged(to);
     }
 
-    abstract void markChanged(EntityVariablePair<Solution_> changed);
+    abstract void markChanged(GraphNode<Solution_> changed);
 
     @Override
     public void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity) {
@@ -135,9 +135,9 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
 
     @Override
     public String toString() {
-        var edgeList = new LinkedHashMap<EntityVariablePair<Solution_>, List<EntityVariablePair<Solution_>>>();
-        graph.forEachEdge((from, to) -> edgeList.computeIfAbsent(instanceList.get(from), k -> new ArrayList<>())
-                .add(instanceList.get(to)));
+        var edgeList = new LinkedHashMap<GraphNode<Solution_>, List<GraphNode<Solution_>>>();
+        graph.forEachEdge((from, to) -> edgeList.computeIfAbsent(nodeList.get(from), k -> new ArrayList<>())
+                .add(nodeList.get(to)));
         return edgeList.entrySet()
                 .stream()
                 .map(e -> e.getKey() + "->" + e.getValue())

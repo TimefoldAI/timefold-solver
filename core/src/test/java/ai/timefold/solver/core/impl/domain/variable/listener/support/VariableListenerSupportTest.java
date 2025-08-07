@@ -18,7 +18,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import ai.timefold.solver.core.api.function.QuadConsumer;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
-import ai.timefold.solver.core.impl.domain.variable.declarative.EntityVariablePair;
+import ai.timefold.solver.core.impl.domain.variable.declarative.GraphNode;
 import ai.timefold.solver.core.impl.domain.variable.declarative.TopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableUpdaterInfo;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -175,8 +175,8 @@ class VariableListenerSupportTest {
         }
 
         @Override
-        public <Solution_> void withNodeData(List<EntityVariablePair<Solution_>> nodes) {
-            nodeToEntities = nodes.stream().map(EntityVariablePair::entity).toArray(Object[]::new);
+        public <Solution_> void withNodeData(List<GraphNode<Solution_>> nodes) {
+            nodeToEntities = nodes.stream().map(GraphNode::entity).toArray(Object[]::new);
             nodeToVariableMetamodel = nodes.stream()
                     .map(e -> e.variableReferences().stream()
                             .map(VariableUpdaterInfo::id)

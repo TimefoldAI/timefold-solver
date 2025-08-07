@@ -388,16 +388,17 @@ public record RootVariableSource<Entity_, Value_>(
         if (getAnnotation(declaringClass, memberName, PlanningVariable.class) != null) {
             return ParentVariableType.VARIABLE;
         }
+
         if (getAnnotation(declaringClass, memberName, ShadowVariableLooped.class) != null) {
             throw new IllegalArgumentException("""
                     The source path (%s) starting from root class (%s) accesses a @%s property (%s).
-                    @%s properties cannot be used as a source, since they are not guaranteed to
-                    be updated when the supplier is called. Supplier methods are only called when
-                    none of their dependencies are looped, so reading @%s properties are not needed.
+                    Supplier methods are only called when none of their dependencies are looped,
+                    so reading @%s properties are not needed since they are guaranteed to be false
+                    when the supplier is called.
                     Maybe remove the source path (%s) from the @%s?
                     """.formatted(
                     variablePath, rootClass.getCanonicalName(), ShadowVariableLooped.class.getSimpleName(),
-                    memberName, ShadowVariableLooped.class.getSimpleName(), ShadowVariableLooped.class.getSimpleName(),
+                    memberName, ShadowVariableLooped.class.getSimpleName(),
                     variablePath, ShadowSources.class.getSimpleName()));
         }
         return ParentVariableType.NO_PARENT;

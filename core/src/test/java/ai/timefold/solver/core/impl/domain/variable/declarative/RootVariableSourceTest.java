@@ -595,11 +595,14 @@ class RootVariableSourceTest {
                 DEFAULT_MEMBER_ACCESSOR_FACTORY,
                 DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContainingAll("The source path (isLooped)",
-                        "starting from root class (" + TestdataInvalidDeclarativeValue.class.getCanonicalName() + ")",
-                        "accesses a @" + ShadowVariableLooped.class.getSimpleName() + " property",
-                        "(isLooped)",
-                        "Maybe remove the source path (isLooped) from the @" + ShadowSources.class.getSimpleName());
+                .hasMessageContainingAll(
+                        "The source path (isLooped) starting from root class (%s) accesses a @%s property (isLooped)"
+                                .formatted(TestdataInvalidDeclarativeValue.class.getCanonicalName(),
+                                        ShadowVariableLooped.class.getSimpleName()),
+                        "Supplier methods are only called when none of their dependencies are looped",
+                        "reading @%s properties are not needed since they are guaranteed to be false"
+                                .formatted(ShadowVariableLooped.class.getSimpleName()),
+                        "Maybe remove the source path (isLooped) from the @%s?".formatted(ShadowSources.class.getSimpleName()));
     }
 
     @Test

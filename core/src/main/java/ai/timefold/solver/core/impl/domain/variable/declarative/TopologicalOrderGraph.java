@@ -18,7 +18,7 @@ public interface TopologicalOrderGraph extends BaseTopologicalOrderGraph {
      * @param nodes A list of entity/variable pairs, where the nth item in the list
      *        corresponds to the node with id n in the graph.
      */
-    default <Solution_> void withNodeData(List<EntityVariablePair<Solution_>> nodes) {
+    default <Solution_> void withNodeData(List<GraphNode<Solution_>> nodes) {
     }
 
     /**

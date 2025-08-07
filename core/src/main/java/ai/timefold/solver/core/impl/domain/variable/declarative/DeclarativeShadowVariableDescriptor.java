@@ -23,6 +23,8 @@ import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
+import org.jspecify.annotations.Nullable;
+
 public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
     MemberAccessor calculator;
     RootVariableSource<?, ?>[] sources;
@@ -186,6 +188,10 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     public Function<Object, Object> getAlignmentKeyMap() {
         return alignmentKeyMap;
+    }
+
+    public @Nullable String getAlignmentKeyName() {
+        return alignmentKey;
     }
 
     public RootVariableSource<?, ?>[] getSources() {

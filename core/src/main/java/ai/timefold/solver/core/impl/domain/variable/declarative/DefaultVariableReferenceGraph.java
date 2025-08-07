@@ -17,8 +17,8 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
             IntFunction<TopologicalOrderGraph> graphCreator) {
         super(outerGraph, graphCreator);
 
-        var entityToVariableReferenceMap = new IdentityHashMap<Object, List<EntityVariablePair<Solution_>>>();
-        for (var instance : instanceList) {
+        var entityToVariableReferenceMap = new IdentityHashMap<Object, List<GraphNode<Solution_>>>();
+        for (var instance : nodeList) {
             var entity = instance.entity();
             entityToVariableReferenceMap.computeIfAbsent(entity, ignored -> new ArrayList<>())
                     .add(instance);
@@ -28,8 +28,9 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         // This mutable structure is created once, and reused from there on.
         // Otherwise its internal collections were observed being re-created so often
         // that the allocation of arrays would become a major bottleneck.
-        affectedEntitiesUpdater = new AffectedEntitiesUpdater<>(graph, instanceList, immutableEntityToVariableReferenceMap::get,
-                outerGraph.changedVariableNotifier);
+        affectedEntitiesUpdater =
+                new AffectedEntitiesUpdater<>(graph, nodeList, immutableEntityToVariableReferenceMap::get,
+                        outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier);
     }
 
     @Override
@@ -38,7 +39,7 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
     }
 
     @Override
-    public void markChanged(@NonNull EntityVariablePair<Solution_> node) {
+    public void markChanged(@NonNull GraphNode<Solution_> node) {
         changeSet.set(node.graphNodeId());
     }
 
