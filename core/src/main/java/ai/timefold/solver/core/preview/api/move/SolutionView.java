@@ -44,7 +44,7 @@ public interface SolutionView<Solution_> {
             getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity);
 
     /**
-     * Reads the value of a @{@link PlanningListVariable list planning variable} and returns its length.
+     * Reads the value of a {@link PlanningListVariable list planning variable} and returns its length.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.
      * @param entity The entity whose variable is to be read.
