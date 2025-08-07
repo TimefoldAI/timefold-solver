@@ -202,7 +202,7 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solveListVarWithMoveStreams() {
+    void solveWithMoveStreamsListVar() {
         var solverConfig = new SolverConfig()
                 .withPreviewFeature(PreviewFeature.MOVE_STREAMS)
                 .withSolutionClass(TestdataListSolution.class)
@@ -213,9 +213,16 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withPhases(new LocalSearchPhaseConfig()
                         .withMoveProvidersClass(TestingListMoveProviders.class));
 
-        var solution = TestdataListSolution.generateInitializedSolution(3, 2);
+        // Both values are on the same entity; the goal of the solver is to move one of them to the other entity.
+        var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var v1 = solution.getValueList().get(0);
+        var v2 = solution.getValueList().get(1);
+        var e1 = solution.getEntityList().get(0);
+        e1.addValue(v1);
+        e1.addValue(v2);
+        solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
     }
 
@@ -2389,12 +2396,14 @@ class DefaultSolverTest extends AbstractMeterTest {
 
     @NullMarked
     public static final class TestingMoveProviders implements MoveProviders<TestdataSolution> {
+
         @Override
         public List<MoveProvider<TestdataSolution>> defineMoves(PlanningSolutionMetaModel<TestdataSolution> solutionMetaModel) {
             var variableMetamodel = solutionMetaModel.entity(TestdataEntity.class)
-                    .<TestdataValue> planningVariable("value");
+                    .<TestdataValue> planningVariable();
             return List.of(new ChangeMoveProvider<>(variableMetamodel));
         }
+
     }
 
     /**
@@ -2419,13 +2428,15 @@ class DefaultSolverTest extends AbstractMeterTest {
 
     @NullMarked
     public static final class TestingListMoveProviders implements MoveProviders<TestdataListSolution> {
+
         @Override
         public List<MoveProvider<TestdataListSolution>>
                 defineMoves(PlanningSolutionMetaModel<TestdataListSolution> solutionMetaModel) {
             var variableMetamodel = solutionMetaModel.entity(TestdataListEntity.class)
-                    .planningListVariable("valueList");
+                    .planningListVariable();
             return List.of(new ListChangeMoveProvider<>(variableMetamodel));
         }
+
     }
 
     /**
