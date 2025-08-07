@@ -33,7 +33,6 @@ public final class DatasetSessionFactory<Solution_> {
         for (var datasetInstance : buildHelper.getDatasetInstanceList()) {
             session.registerDatasetInstance(datasetInstance.getParent(), datasetInstance);
         }
-        session.initialize(context);
         return session;
     }
 

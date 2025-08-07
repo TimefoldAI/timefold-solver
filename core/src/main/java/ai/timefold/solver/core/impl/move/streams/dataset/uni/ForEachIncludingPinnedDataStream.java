@@ -3,10 +3,6 @@ package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
-import ai.timefold.solver.core.impl.bavet.uni.ForEachIncludingUnassignedUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 
 import org.jspecify.annotations.NullMarked;
@@ -19,11 +15,6 @@ public final class ForEachIncludingPinnedDataStream<Solution_, A>
     public ForEachIncludingPinnedDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
             boolean includeNull) {
         super(dataStreamFactory, forEachClass, includeNull);
-    }
-
-    @Override
-    protected AbstractForEachUniNode<A> createNodeInstance(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
-        return new ForEachIncludingUnassignedUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
     }
 
     @Override
