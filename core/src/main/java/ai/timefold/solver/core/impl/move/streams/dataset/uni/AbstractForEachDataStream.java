@@ -1,10 +1,5 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
-import static ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
-
-import java.util.Objects;
-import java.util.Set;
-
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -12,8 +7,12 @@ import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
-
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Objects;
+import java.util.Set;
+
+import static ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
 
 @NullMarked
 abstract sealed class AbstractForEachDataStream<Solution_, A>
@@ -40,14 +39,15 @@ abstract sealed class AbstractForEachDataStream<Solution_, A>
     public final void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = getNode(tupleLifecycle, outputStoreSize);
+        var node = createNodeInstance(tupleLifecycle, outputStoreSize);
         if (shouldIncludeNull && node.supports(LifecycleOperation.INSERT)) {
             node.insert(null);
         }
         buildHelper.addNode(node, this, null);
     }
 
-    protected abstract AbstractForEachUniNode<A> getNode(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize);
+    protected abstract AbstractForEachUniNode<A> createNodeInstance(TupleLifecycle<UniTuple<A>> tupleLifecycle,
+            int outputStoreSize);
 
     @Override
     public abstract boolean equals(Object o);

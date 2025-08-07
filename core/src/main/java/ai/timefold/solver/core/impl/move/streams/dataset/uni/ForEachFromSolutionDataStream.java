@@ -27,7 +27,7 @@ public final class ForEachFromSolutionDataStream<Solution_, A>
     }
 
     @Override
-    protected AbstractForEachUniNode<A> getNode(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
+    protected AbstractForEachUniNode<A> createNodeInstance(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
         return new ForEachFromSolutionUniNode<>(valueRangeDescriptor, tupleLifecycle, outputStoreSize);
     }
 
