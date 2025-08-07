@@ -22,7 +22,7 @@ public final class ForEachIncludingPinnedDataStream<Solution_, A>
     }
 
     @Override
-    protected AbstractForEachUniNode<A> getNode(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
+    protected AbstractForEachUniNode<A> createNodeInstance(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize) {
         return new ForEachIncludingUnassignedUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
     }
 
