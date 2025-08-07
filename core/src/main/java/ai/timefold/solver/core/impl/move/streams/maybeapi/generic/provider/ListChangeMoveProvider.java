@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
@@ -12,9 +14,8 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class ListChangeMoveProvider<Solution_, Entity_, Value_>
