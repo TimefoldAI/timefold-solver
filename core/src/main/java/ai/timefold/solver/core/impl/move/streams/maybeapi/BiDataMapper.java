@@ -1,12 +1,13 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi;
 
+import java.util.function.BiFunction;
+
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.function.BiFunction;
 
 /**
  * A mapping function that can be applied to {@link BiDataStream} to transform data,

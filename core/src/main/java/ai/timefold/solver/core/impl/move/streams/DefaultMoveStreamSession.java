@@ -1,15 +1,16 @@
 package ai.timefold.solver.core.impl.move.streams;
 
+import java.util.Objects;
+
+import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSession;
 import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDataset;
 import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDatasetInstance;
-import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSession;
 import ai.timefold.solver.core.impl.move.streams.dataset.uni.UniDataset;
 import ai.timefold.solver.core.impl.move.streams.dataset.uni.UniDatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class DefaultMoveStreamSession<Solution_>

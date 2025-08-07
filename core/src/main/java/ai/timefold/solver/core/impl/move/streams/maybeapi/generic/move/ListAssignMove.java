@@ -1,15 +1,16 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Objects;
+
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {

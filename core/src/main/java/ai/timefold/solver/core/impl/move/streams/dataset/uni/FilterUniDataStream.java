@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class FilterUniDataStream<Solution_, A>
@@ -16,7 +17,7 @@ final class FilterUniDataStream<Solution_, A>
     private final UniDataFilter<Solution_, A> filter;
 
     public FilterUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent,
-                               UniDataFilter<Solution_, A> filter) {
+            UniDataFilter<Solution_, A> filter) {
         super(dataStreamFactory, parent);
         this.filter = Objects.requireNonNull(filter, "The filter cannot be null.");
     }

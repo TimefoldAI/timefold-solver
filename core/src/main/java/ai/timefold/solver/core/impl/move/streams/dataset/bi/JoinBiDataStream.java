@@ -25,8 +25,8 @@ public final class JoinBiDataStream<Solution_, A, B> extends AbstractBiDataStrea
     private final BiDataFilter<Solution_, A, B> filtering;
 
     public JoinBiDataStream(DataStreamFactory<Solution_> dataStreamFactory,
-                            ForeBridgeUniDataStream<Solution_, A> leftParent, ForeBridgeUniDataStream<Solution_, B> rightParent,
-                            DefaultBiDataJoiner<A, B> joiner, BiDataFilter<Solution_, A, B> filtering) {
+            ForeBridgeUniDataStream<Solution_, A> leftParent, ForeBridgeUniDataStream<Solution_, B> rightParent,
+            DefaultBiDataJoiner<A, B> joiner, BiDataFilter<Solution_, A, B> filtering) {
         super(dataStreamFactory);
         this.leftParent = leftParent;
         this.rightParent = rightParent;

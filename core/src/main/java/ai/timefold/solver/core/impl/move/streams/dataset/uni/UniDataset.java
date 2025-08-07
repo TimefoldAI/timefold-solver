@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
+
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked

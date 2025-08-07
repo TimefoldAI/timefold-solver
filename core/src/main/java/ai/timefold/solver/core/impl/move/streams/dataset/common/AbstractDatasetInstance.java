@@ -1,12 +1,13 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.common;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.Iterator;
 import java.util.Objects;
 import java.util.Random;
+
+import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends AbstractTuple>

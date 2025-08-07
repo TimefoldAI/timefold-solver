@@ -1,5 +1,10 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
+import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.oneKeyGroupBy;
+
+import java.util.Objects;
+import java.util.function.Function;
+
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -17,13 +22,9 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataMapper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Objects;
-import java.util.function.Function;
-
-import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.oneKeyGroupBy;
 
 @NullMarked
 public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataStream<Solution_>
@@ -116,7 +117,8 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         return buildUniGroupBy(nodeConstructor);
     }
 
-    private <NewA> AbstractUniDataStream<Solution_, NewA> buildUniGroupBy(GroupNodeConstructor<UniTuple<NewA>> nodeConstructor) {
+    private <NewA> AbstractUniDataStream<Solution_, NewA>
+            buildUniGroupBy(GroupNodeConstructor<UniTuple<NewA>> nodeConstructor) {
         var stream = shareAndAddChild(new UniGroupUniDataStream<>(dataStreamFactory, this, nodeConstructor));
         return dataStreamFactory.share(new AftBridgeUniDataStream<>(dataStreamFactory, stream),
                 stream::setAftBridge);

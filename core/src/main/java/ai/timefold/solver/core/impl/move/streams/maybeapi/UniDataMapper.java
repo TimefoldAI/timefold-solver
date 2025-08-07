@@ -1,12 +1,13 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi;
 
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.util.function.BiFunction;
 import java.util.function.Function;
+
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A mapping function that can be applied to {@link UniDataStream} to transform data,

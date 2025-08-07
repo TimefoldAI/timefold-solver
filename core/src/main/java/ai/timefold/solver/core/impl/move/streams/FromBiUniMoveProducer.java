@@ -1,21 +1,22 @@
 package ai.timefold.solver.core.impl.move.streams;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
-import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDataset;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
+
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class FromBiUniMoveProducer<Solution_, A, B> implements InnerMoveProducer<Solution_> {

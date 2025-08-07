@@ -1,17 +1,18 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEqualsForDataStreams;
+
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataMapper;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+
 import org.jspecify.annotations.NullMarked;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
-
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEqualsForDataStreams;
 
 @NullMarked
 public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
@@ -180,7 +181,8 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @param <ResultA_> the type of the first fact in the resulting {@link BiDataStream}'s tuple
      * @param <ResultB_> the type of the first fact in the resulting {@link BiDataStream}'s tuple
      */
-    <ResultA_, ResultB_> BiDataStream<Solution_, ResultA_, ResultB_> map(UniDataMapper<Solution_, A, ResultA_> mappingA, UniDataMapper<Solution_, A, ResultB_> mappingB);
+    <ResultA_, ResultB_> BiDataStream<Solution_, ResultA_, ResultB_> map(UniDataMapper<Solution_, A, ResultA_> mappingA,
+            UniDataMapper<Solution_, A, ResultB_> mappingB);
 
     /**
      * Transforms the stream in such a way that all the tuples going through it are distinct.

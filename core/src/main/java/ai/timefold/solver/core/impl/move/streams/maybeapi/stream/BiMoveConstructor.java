@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 

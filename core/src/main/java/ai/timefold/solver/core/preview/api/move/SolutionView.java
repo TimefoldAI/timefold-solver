@@ -52,7 +52,8 @@ public interface SolutionView<Solution_> {
      * @throws NullPointerException if the value of the list variable is null
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
-    <Entity_, Value_> int countValues(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity);
+    <Entity_, Value_> int countValues(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity);
 
     /**
      * Reads the value of a @{@link PlanningListVariable list planning variable} of a given entity at a specific index.

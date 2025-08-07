@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeBiDataStream;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Objects;
 
 @NullMarked
 final class BiGroupBiDataStream<Solution_, A, B, NewA, NewB>

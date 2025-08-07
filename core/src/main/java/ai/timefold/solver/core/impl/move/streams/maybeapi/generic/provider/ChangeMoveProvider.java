@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class ChangeMoveProvider<Solution_, Entity_, Value_>

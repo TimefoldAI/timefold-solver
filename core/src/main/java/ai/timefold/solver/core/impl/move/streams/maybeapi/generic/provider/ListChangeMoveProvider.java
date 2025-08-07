@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
@@ -12,9 +14,8 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public class ListChangeMoveProvider<Solution_, Entity_, Value_>
@@ -29,7 +30,8 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
         this.isValueInListFilter = (solution, entity, value) -> {
             if (entity == null || value == null) {
                 // Necessary for the null to survive until the later stage,
-                // where we will use it as a marker to unassign the value.
+                // where we will use it as a special marker to either unassign the value,
+                // or move it to the end of list.
                 return true;
             }
             return solution.isValueInRange(variableMetaModel, entity, value);
@@ -71,11 +73,16 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
         // To assign or reassign a value, we need to create:
         // - A move for every unpinned value in every entity's list variable to assign the value before that position.
         // - A move for every entity to assign it to the last position in the list variable.
-        var unpinnedEntities = moveStreamFactory.enumerate(variableMetaModel.entity().type(), false);
+        var unpinnedEntities =
+                moveStreamFactory.enumerate(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
         var unpinnedValues = moveStreamFactory.enumerate(variableMetaModel.type(), true)
-                .filter((solutionView, value) -> value == null || solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
+                .filter((solutionView, value) -> value == null
+                        || solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
         var entityValuePairs = unpinnedEntities.join(unpinnedValues, DataJoiners.filtering(isValueInListFilter))
                 .map((solutionView, entity, value) -> {
+                    if (entity == null) { // Null entity means we need to unassign the value.
+                        return ElementPosition.unassigned();
+                    }
                     var valueCount = solutionView.countValues(variableMetaModel, entity);
                     if (value == null || valueCount == 0) { // This will trigger assignment of the value at the end of the list.
                         return ElementPosition.of(entity, valueCount);

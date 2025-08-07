@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeUniDataStream;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Objects;
 
 @NullMarked
 final class UniGroupUniDataStream<Solution_, A, NewA>
