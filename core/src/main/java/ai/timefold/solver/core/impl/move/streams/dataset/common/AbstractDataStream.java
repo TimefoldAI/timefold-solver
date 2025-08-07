@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.common;
 
-import ai.timefold.solver.core.impl.bavet.common.BavetStream;
-import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import ai.timefold.solver.core.impl.bavet.common.BavetStream;
+import ai.timefold.solver.core.impl.bavet.common.TupleSource;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class AbstractDataStream<Solution_>

@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.move.streams.dataset.bi;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.bavet.bi.MapBiToBiNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeBiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataMapper;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Objects;
 
 @NullMarked
 final class BiMapBiDataStream<Solution_, A, B, NewA, NewB>
@@ -19,7 +20,7 @@ final class BiMapBiDataStream<Solution_, A, B, NewA, NewB>
     private @Nullable AftBridgeBiDataStream<Solution_, NewA, NewB> aftStream;
 
     public BiMapBiDataStream(DataStreamFactory<Solution_> constraintFactory, AbstractBiDataStream<Solution_, A, B> parent,
-                             BiDataMapper<Solution_, A, B, NewA> mappingFunctionA, BiDataMapper<Solution_, A, B, NewB> mappingFunctionB) {
+            BiDataMapper<Solution_, A, B, NewA> mappingFunctionA, BiDataMapper<Solution_, A, B, NewB> mappingFunctionB) {
         super(constraintFactory, parent);
         this.mappingFunctionA = mappingFunctionA;
         this.mappingFunctionB = mappingFunctionB;

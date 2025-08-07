@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.provider;
 
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -10,22 +13,18 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSessi
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
-import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedConstraintProvider;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingConstraintProvider;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingConstraintProvider;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.incomplete.TestdataIncompleteValueRangeConstraintProvider;
 import ai.timefold.solver.core.testdomain.valuerange.incomplete.TestdataIncompleteValueRangeEntity;
 import ai.timefold.solver.core.testdomain.valuerange.incomplete.TestdataIncompleteValueRangeSolution;
+import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -34,6 +33,7 @@ import java.util.stream.StreamSupport;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+@NullMarked
 class ChangeMoveProviderTest {
 
     @Test
@@ -41,8 +41,7 @@ class ChangeMoveProviderTest {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataEntity.class)
-                .genuineVariable()
-                .ensurePlanningVariable();
+                .planningVariable();
 
         var solution = TestdataSolution.generateSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0);
@@ -51,7 +50,7 @@ class ChangeMoveProviderTest {
         secondEntity.setValue(null);
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
-        var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataConstraintProvider(), solution);
+        var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
@@ -104,8 +103,7 @@ class ChangeMoveProviderTest {
         var solutionDescriptor = TestdataIncompleteValueRangeSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataIncompleteValueRangeEntity.class)
-                .genuineVariable()
-                .ensurePlanningVariable();
+                .planningVariable();
 
         // The point of this test is to ensure that the move provider skips values that are not in the value range.
         var solution = TestdataIncompleteValueRangeSolution.generateSolution(2, 2);
@@ -119,7 +117,7 @@ class ChangeMoveProviderTest {
         var firstValue = solution.getValueList().get(0);
         var secondValue = solution.getValueList().get(1);
         var scoreDirector =
-                createScoreDirector(solutionDescriptor, new TestdataIncompleteValueRangeConstraintProvider(), solution);
+                createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
@@ -172,14 +170,13 @@ class ChangeMoveProviderTest {
         var solutionDescriptor = TestdataEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataEntityProvidingEntity.class)
-                .genuineVariable()
-                .ensurePlanningVariable();
+                .planningVariable();
 
         var solution = TestdataEntityProvidingSolution.generateSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0);
         var secondEntity = solution.getEntityList().get(1);
         var firstValue = firstEntity.getValueRange().get(0);
-        var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataEntityProvidingConstraintProvider(), solution);
+        var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
@@ -213,15 +210,14 @@ class ChangeMoveProviderTest {
         var solutionDescriptor = TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataAllowsUnassignedEntityProvidingEntity.class)
-                .genuineVariable()
-                .ensurePlanningVariable();
+                .planningVariable();
 
         var solution = TestdataAllowsUnassignedEntityProvidingSolution.generateSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0);
         var secondEntity = solution.getEntityList().get(1);
         var firstValue = firstEntity.getValueRange().get(0);
         var scoreDirector = createScoreDirector(solutionDescriptor,
-                new TestdataAllowsUnassignedEntityProvidingConstraintProvider(), solution);
+                solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
@@ -275,14 +271,14 @@ class ChangeMoveProviderTest {
         var solutionDescriptor = TestdataAllowsUnassignedSolution.buildSolutionDescriptor();
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataAllowsUnassignedEntity.class)
-                .genuineVariable()
-                .ensurePlanningVariable();
+                .planningVariable();
+
         var solution = TestdataAllowsUnassignedSolution.generateSolution(2, 2);
         var firstEntity = solution.getEntityList().get(0); // Assigned to null.
         var secondEntity = solution.getEntityList().get(1); // Assigned to secondValue.
         var firstValue = solution.getValueList().get(0); // Not assigned to any entity.
         var secondValue = solution.getValueList().get(1);
-        var scoreDirector = createScoreDirector(solutionDescriptor, new TestdataAllowsUnassignedConstraintProvider(), solution);
+        var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
@@ -360,7 +356,9 @@ class ChangeMoveProviderTest {
     }
 
     private <Solution_> InnerScoreDirector<Solution_, ?> createScoreDirector(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintProvider constraintProvider, Solution_ solution) {
+            Solution_ solution) {
+        var constraintProvider = new TestingConstraintProvider(solutionDescriptor.getMetaModel().genuineEntities()
+                .get(0).type());
         var scoreDirectorFactory =
                 new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
                         EnvironmentMode.TRACKED_FULL_ASSERT);
@@ -376,6 +374,23 @@ class ChangeMoveProviderTest {
         scoreDirector.getSolutionDescriptor().visitAll(solution, moveStreamSession::insert);
         moveStreamSession.settle();
         return moveStreamSession;
+    }
+
+    // The specifics of the constraint provider are not important for this test,
+    // as the score will never be calculated.
+    private record TestingConstraintProvider(Class<?> entityClass) implements ConstraintProvider {
+
+        @Override
+        public Constraint[] defineConstraints(ConstraintFactory constraintFactory) {
+            return new Constraint[] { alwaysPenalizingConstraint(constraintFactory) };
+        }
+
+        private Constraint alwaysPenalizingConstraint(ConstraintFactory constraintFactory) {
+            return constraintFactory.forEach(entityClass)
+                    .penalize(SimpleScore.ONE)
+                    .asConstraint("Always penalize");
+        }
+
     }
 
 }

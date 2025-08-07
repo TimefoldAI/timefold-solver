@@ -29,7 +29,7 @@ public class TestdataAllowsUnassignedValuesListEntity extends TestdataObject {
         return new TestdataAllowsUnassignedValuesListEntity(code, values).setUpShadowVariables();
     }
 
-    TestdataAllowsUnassignedValuesListEntity setUpShadowVariables() {
+    public TestdataAllowsUnassignedValuesListEntity setUpShadowVariables() {
         for (int i = 0; i < valueList.size(); i++) {
             var testdataListValue = valueList.get(i);
             testdataListValue.setEntity(this);

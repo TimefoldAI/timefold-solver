@@ -1,11 +1,12 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Represents the meta-model of an entity.
