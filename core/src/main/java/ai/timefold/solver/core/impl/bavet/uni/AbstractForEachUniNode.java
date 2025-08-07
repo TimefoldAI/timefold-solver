@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.score.director.SessionContext;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -134,15 +133,6 @@ public abstract sealed class AbstractForEachUniNode<A>
          * and its corresponding tuple needs to be removed from the node network.
          */
         RETRACT
-    }
-
-    public interface InitializableForEachNode<Solution_> extends AutoCloseable {
-
-        void initialize(SessionContext<Solution_> context);
-
-        @Override
-        void close(); // Drop the checked exception.
-
     }
 
 }

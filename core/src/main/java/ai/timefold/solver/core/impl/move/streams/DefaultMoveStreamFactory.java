@@ -1,10 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.bi.AbstractBiDataStream;
@@ -72,35 +69,14 @@ public final class DefaultMoveStreamFactory<Solution_>
     public <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
             GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             UniDataStream<Solution_, Entity_> entityDataStream) {
-        var variableDescriptor = getVariableDescriptor(variableMetaModel);
-        var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
         var includeNull =
                 variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariableMetaModel
                         ? planningVariableMetaModel.allowsUnassigned()
                         : variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariableMetaModel
                                 && planningListVariableMetaModel.allowsUnassignedValues();
-        if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-            // No need for filtering the value range; all values from solution are valid.
-            var stream = dataStreamFactory.forEachFromSolution(variableMetaModel, includeNull);
-            return entityDataStream.join(stream);
-        } else {
-            var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
-            return entityDataStream.join(stream, DataJoiners.<Solution_, Entity_, Value_> filtering(
-                    (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value)));
-        }
-    }
-
-    private static <Solution_> GenuineVariableDescriptor<Solution_>
-            getVariableDescriptor(GenuineVariableMetaModel<Solution_, ?, ?> variableMetaModel) {
-        if (variableMetaModel instanceof DefaultPlanningVariableMetaModel<Solution_, ?, ?> planningVariableMetaModel) {
-            return planningVariableMetaModel.variableDescriptor();
-        } else if (variableMetaModel instanceof DefaultPlanningListVariableMetaModel<Solution_, ?, ?> planningListVariableMetaModel) {
-            return planningListVariableMetaModel.variableDescriptor();
-        } else {
-            throw new IllegalStateException(
-                    "Impossible state: variable metamodel (%s) represents neither basic not list variable."
-                            .formatted(variableMetaModel.getClass().getSimpleName()));
-        }
+        var stream = dataStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
+        return entityDataStream.join(stream, DataJoiners.<Solution_, Entity_, Value_> filtering(
+                (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value)));
     }
 
     @Override
