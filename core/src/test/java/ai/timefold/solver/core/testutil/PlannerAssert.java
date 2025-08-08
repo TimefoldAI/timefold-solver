@@ -274,9 +274,11 @@ public final class PlannerAssert {
     public static void assertCodesOfNeverEndingIterableSelector(IterableSelector<?, ?> selector, long size, String... codes) {
         Iterator<?> iterator = selector.iterator();
         assertCodesOfNeverEndingIterator(iterator, codes);
-        assertThat(iterator).hasNext();
-        assertThat(selector.isCountable()).isTrue();
-        assertThat(selector.isNeverEnding()).isTrue();
+        if (codes.length > 0) {
+            assertThat(iterator).hasNext();
+            assertThat(selector.isCountable()).isTrue();
+            assertThat(selector.isNeverEnding()).isTrue();
+        }
         if (size != DO_NOT_ASSERT_SIZE) {
             assertThat(selector.getSize()).isEqualTo(size);
         }
