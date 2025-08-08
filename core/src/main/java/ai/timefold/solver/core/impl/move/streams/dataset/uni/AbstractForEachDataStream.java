@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
 import static ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
 
@@ -8,7 +8,9 @@ import java.util.Set;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
+import ai.timefold.solver.core.impl.bavet.uni.ForEachIncludingUnassignedUniNode;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
@@ -17,10 +19,10 @@ import org.jspecify.annotations.NullMarked;
 abstract sealed class AbstractForEachDataStream<Solution_, A>
         extends AbstractUniDataStream<Solution_, A>
         implements TupleSource
-        permits ForEachIncludingPinnedDataStream, ForEachFromSolutionDataStream {
+        permits ForEachIncludingPinnedDataStream {
 
     protected final Class<A> forEachClass;
-    private final boolean shouldIncludeNull;
+    final boolean shouldIncludeNull;
 
     protected AbstractForEachDataStream(DataStreamFactory<Solution_> dataStreamFactory, Class<A> forEachClass,
             boolean includeNull) {
@@ -38,14 +40,12 @@ abstract sealed class AbstractForEachDataStream<Solution_, A>
     public final void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = getNode(tupleLifecycle, outputStoreSize);
+        var node = new ForEachIncludingUnassignedUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
         if (shouldIncludeNull && node.supports(LifecycleOperation.INSERT)) {
             node.insert(null);
         }
         buildHelper.addNode(node, this, null);
     }
-
-    protected abstract AbstractForEachUniNode<A> getNode(TupleLifecycle<UniTuple<A>> tupleLifecycle, int outputStoreSize);
 
     @Override
     public abstract boolean equals(Object o);

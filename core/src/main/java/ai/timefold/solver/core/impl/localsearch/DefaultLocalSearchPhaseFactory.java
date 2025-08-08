@@ -134,7 +134,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                             .formatted(moveProvidersClass, moveProviderList.size()));
         }
         var moveProvider = moveProviderList.get(0);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
         var moveProducer = moveProvider.apply(moveStreamFactory);
         var moveRepository = new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer,
                 pickSelectionOrder() == SelectionOrder.RANDOM);

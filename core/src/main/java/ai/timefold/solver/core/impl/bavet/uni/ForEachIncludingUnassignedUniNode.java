@@ -7,9 +7,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public sealed class ForEachIncludingUnassignedUniNode<A>
-        extends AbstractForEachUniNode<A>
-        permits ForEachFromSolutionUniNode {
+public final class ForEachIncludingUnassignedUniNode<A>
+        extends AbstractForEachUniNode<A> {
 
     public ForEachIncludingUnassignedUniNode(Class<A> forEachClass, TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             int outputStoreSize) {

@@ -7,6 +7,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.bavet.AbstractSession;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDatasetInstance;
 
 public final class DatasetSession<Solution_> extends AbstractSession {
 

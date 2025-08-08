@@ -8,11 +8,12 @@ import java.util.Set;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.BiDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiMoveConstructor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -42,7 +43,7 @@ public final class FromBiUniMoveProducer<Solution_, A, B> implements InnerMovePr
     private final class InnerMoveIterator implements Iterator<Move<Solution_>> {
 
         private final IteratorSupplier<A, B> iteratorSupplier;
-        private final Solution_ solution;
+        private final SolutionView<Solution_> solutionView;
 
         // Fields required for iteration.
         private @Nullable Move<Solution_> nextMove;
@@ -51,13 +52,13 @@ public final class FromBiUniMoveProducer<Solution_, A, B> implements InnerMovePr
         public InnerMoveIterator(DefaultMoveStreamSession<Solution_> moveStreamSession) {
             var aInstance = moveStreamSession.getDatasetInstance(aDataset);
             this.iteratorSupplier = aInstance::iterator;
-            this.solution = moveStreamSession.getWorkingSolution();
+            this.solutionView = moveStreamSession.getSolutionView();
         }
 
         public InnerMoveIterator(DefaultMoveStreamSession<Solution_> moveStreamSession, Random random) {
             var aInstance = moveStreamSession.getDatasetInstance(aDataset);
             this.iteratorSupplier = () -> aInstance.iterator(random);
-            this.solution = moveStreamSession.getWorkingSolution();
+            this.solutionView = moveStreamSession.getSolutionView();
         }
 
         @Override
@@ -78,7 +79,7 @@ public final class FromBiUniMoveProducer<Solution_, A, B> implements InnerMovePr
             }
 
             var tuple = iterator.next();
-            nextMove = moveConstructor.apply(solution, tuple.factA, tuple.factB);
+            nextMove = moveConstructor.apply(solutionView, tuple.factA, tuple.factB);
             return true;
         }
 

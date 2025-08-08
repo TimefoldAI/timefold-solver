@@ -27,7 +27,7 @@ public class TestdataListEntity extends TestdataObject {
         return new TestdataListEntity(code, values).setUpShadowVariables();
     }
 
-    TestdataListEntity setUpShadowVariables() {
+    public TestdataListEntity setUpShadowVariables() {
         valueList.forEach(testdataListValue -> {
             testdataListValue.setEntity(this);
             testdataListValue.setIndex(valueList.indexOf(testdataListValue));
@@ -73,4 +73,5 @@ public class TestdataListEntity extends TestdataObject {
                 .filter(v -> !Objects.equals(v, value))
                 .toList();
     }
+
 }

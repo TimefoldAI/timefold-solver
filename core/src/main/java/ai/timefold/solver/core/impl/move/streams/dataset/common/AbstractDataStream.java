@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -27,6 +27,15 @@ public abstract class AbstractDataStream<Solution_>
 
     public final <Stream_ extends AbstractDataStream<Solution_>> Stream_ shareAndAddChild(Stream_ stream) {
         return dataStreamFactory.share(stream, childStreamList::add);
+    }
+
+    protected boolean guaranteesDistinct() {
+        if (parent != null) {
+            // It is generally safe to take this from the parent; if the stream disagrees, it may override.
+            return parent.guaranteesDistinct();
+        } else { // Streams need to explicitly opt-in by overriding this method.
+            return false;
+        }
     }
 
     // ************************************************************************

@@ -10,8 +10,9 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
@@ -31,23 +32,23 @@ public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMo
     }
 
     @Override
-    public void execute(@NonNull MutableSolutionView<Solution_> mutableSolutionView) {
+    public void execute(MutableSolutionView<Solution_> mutableSolutionView) {
         mutableSolutionView.assignValue(variableMetaModel, planningValue, destinationEntity, destinationIndex);
     }
 
     @Override
-    public @NonNull Move<Solution_> rebase(@NonNull Rebaser rebaser) {
-        return new ListAssignMove<>(variableMetaModel, rebaser.rebase(planningValue),
-                rebaser.rebase(destinationEntity), destinationIndex);
+    public Move<Solution_> rebase(Rebaser rebaser) {
+        return new ListAssignMove<>(variableMetaModel, Objects.requireNonNull(rebaser.rebase(planningValue)),
+                Objects.requireNonNull(rebaser.rebase(destinationEntity)), destinationIndex);
     }
 
     @Override
-    public @NonNull Collection<?> extractPlanningEntities() {
+    public Collection<Entity_> extractPlanningEntities() {
         return List.of(destinationEntity);
     }
 
     @Override
-    public @NonNull Collection<?> extractPlanningValues() {
+    public Collection<Value_> extractPlanningValues() {
         return List.of(planningValue);
     }
 
@@ -56,8 +57,20 @@ public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMo
         return List.of(variableMetaModel);
     }
 
+    public Value_ getPlanningValue() {
+        return planningValue;
+    }
+
+    public Entity_ getDestinationEntity() {
+        return destinationEntity;
+    }
+
+    public int getDestinationIndex() {
+        return destinationIndex;
+    }
+
     @Override
-    public @NonNull String toString() {
+    public String toString() {
         return String.format("%s {null -> %s[%d]}", planningValue, destinationEntity, destinationIndex);
     }
 }

@@ -44,6 +44,18 @@ public interface SolutionView<Solution_> {
             getValue(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity);
 
     /**
+     * Reads the value of a {@link PlanningListVariable list planning variable} and returns its length.
+     *
+     * @param variableMetaModel Describes the variable whose value is to be read.
+     * @param entity The entity whose variable is to be read.
+     * @return The number of values in the list variable.
+     * @throws NullPointerException if the value of the list variable is null
+     * @throws IndexOutOfBoundsException if the index is out of bounds
+     */
+    <Entity_, Value_> int countValues(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity);
+
+    /**
      * Reads the value of a @{@link PlanningListVariable list planning variable} of a given entity at a specific index.
      *
      * @param variableMetaModel Describes the variable whose value is to be read.

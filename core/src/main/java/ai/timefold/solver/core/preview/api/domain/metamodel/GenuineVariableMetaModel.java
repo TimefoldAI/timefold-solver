@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
-import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
 import org.jspecify.annotations.NullMarked;
@@ -32,26 +31,6 @@ public sealed interface GenuineVariableMetaModel<Solution_, Entity_, Value_>
     @Override
     default boolean isGenuine() {
         return true;
-    }
-
-    boolean hasValueRangeOnEntity();
-
-    default PlanningVariableMetaModel<Solution_, Entity_, Value_> ensurePlanningVariable() {
-        if (this instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariableMetaModel) {
-            return planningVariableMetaModel;
-        } else {
-            throw new IllegalStateException("Genuine variable (%s) is not @%s."
-                    .formatted(this, PlanningVariable.class.getSimpleName()));
-        }
-    }
-
-    default PlanningListVariableMetaModel<Solution_, Entity_, Value_> ensurePlanningListVariable() {
-        if (this instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariableMetaModel) {
-            return planningListVariableMetaModel;
-        } else {
-            throw new IllegalStateException("Genuine variable (%s) is not @%s."
-                    .formatted(this, PlanningListVariable.class.getSimpleName()));
-        }
     }
 
 }
