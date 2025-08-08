@@ -25,6 +25,8 @@ import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirecto
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -416,6 +418,40 @@ class ListChangeMoveSelectorTest {
     }
 
     @Test
+    void randomWithEntityValueRangeAndFiltering() {
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        var v3 = new TestdataListEntityProvidingValue("3");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v2, v1));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b));
+
+        var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
+                getEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), true);
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
+        var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
+                entityDescriptor, IgnoreBValueSelectionFilter.class, true);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
+
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(solverScope, moveSelector);
+
+        // IgnoreBValueSelectionFilter is applied to the value selector used by the destination selector,
+        // and that causes the B destination to become an invalid destination
+        assertCodesOfNeverEndingMoveSelector(moveSelector,
+                "1 {A[1]->A[1]}",
+                "3 {B[0]->A[1]}",
+                "1 {A[1]->A[1]}",
+                "1 {A[1]->A[1]}",
+                "1 {A[1]->A[0]}");
+    }
+
+    @Test
     void randomWithPinning() {
         var v1 = new TestdataPinnedWithIndexListValue("1");
         var v2 = new TestdataPinnedWithIndexListValue("2");
@@ -575,5 +611,19 @@ class ListChangeMoveSelectorTest {
                 "3 {B[0]->B[1]}",
                 "3 {B[0]->B[0]}",
                 "3 {B[0]->B[0]}");
+    }
+
+    public static class IgnoreBValueSelectionFilter
+            implements SelectionFilter<TestdataListEntityProvidingSolution, TestdataListEntityProvidingValue> {
+
+        public IgnoreBValueSelectionFilter() {
+            // Required for solver initialization
+        }
+
+        @Override
+        public boolean accept(ScoreDirector<TestdataListEntityProvidingSolution> scoreDirector,
+                TestdataListEntityProvidingValue selection) {
+            return !selection.getEntity().getCode().equals("B");
+        }
     }
 }
