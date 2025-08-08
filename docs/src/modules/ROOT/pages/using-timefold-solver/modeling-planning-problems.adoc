@@ -1150,22 +1150,21 @@ public class Job {
 
 ==== Optimizing Shadow Variables
 
-The Solver analyzes the graph formed `@ShadowVariable` to decide what is the most optimal strategy for updating them.
+Each custom Shadow Variable on each planning entity constitutes one node of a reference graph. 
+The Solver analyzes this graph to decide what is the most optimal strategy for updating these variables. 
+In general, the less variables and the less dependencies between them, the faster the processing.
 For the best performance, follow these guidelines:
 
 - Only declare custom Shadow Variables on a single entity class.
 If you have a custom Shadow Variable on another entity class that is used to group entities of another class, consider moving the shadow variable to the grouped entity class and use `alignmentKey` to avoid recomputation.
 
 - Do not use both `@PreviousElementShadowVariable` and `@NextElementShadowVariable` in your sources.
-This includes using `@PreviousElementShadowVariable` as as source in one custom Shadow Variable, and use `@NextElementShadowVariable` as a source in another custom Shadow Variable.
+This includes using `@PreviousElementShadowVariable` as a source in one custom Shadow Variable while using `@NextElementShadowVariable` as a source in another custom Shadow Variable.
 
-- Compute as much as possible with a custom Shadow Variable.
-Do not needlessly create additional custom Shadow Variables when it is possible to compute their values directly from another custom Shadow Variable.
+- Compute as much as possible within a single custom Shadow Variable supplier method.
+Do not create intermediate custom Shadow Variables when it is possible to compute the value directly from another custom Shadow Variable.
 
-[NOTE]
-====
-These are guidelines and don't necessary need to be followed; for instance, the Solver will still work correctly if you have custom Shadow Variables on multiple entity classes.
-====
+NOTE: These are tips and tricks for optimal performance and needn't be followed to the letter. The solver will work correctly even if you decide not to follow any of the advice, albeit with slightly lesser performance.
 
 === Shadow variable cloning
 
