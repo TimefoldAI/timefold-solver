@@ -1011,11 +1011,10 @@ Constraint penalizeLoopedJobs(ConstraintFactory factory) {
 
 ====
 
-[NOTE]
-====
-@ShadowSources marked methods do not need to check @ShadowVariableLooped properties, since they are only called if all their dependencies are not looped.
-====
+NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariableLooped`-annotated properties.
+These methods are only called if neither of their dependencies are looped, and therefore the value of such properties at that time is guaranteed to be `false`.
 
+[#aligningShadowVariables]
 ==== Aligning Shadow Variables
 
 `@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
@@ -1155,8 +1154,8 @@ The Solver analyzes this graph to decide what is the most optimal strategy for u
 In general, the less variables and the less dependencies between them, the faster the processing.
 For the best performance, follow these guidelines:
 
-- Only declare custom Shadow Variables on a single entity class.
-If you have a custom Shadow Variable on another entity class that is used to group entities of another class, consider moving the shadow variable to the grouped entity class and use `alignmentKey` to avoid recomputation.
+- Keep all custom Shadow Variables on the same entity class.
+If one entity is grouping another entity, you might be able to use <<aligningShadowVariables,custom Shadow Variable alignment>> to keep custom Shadow Variables on the same entity class.
 
 - Do not use both `@PreviousElementShadowVariable` and `@NextElementShadowVariable` in your sources.
 This includes using `@PreviousElementShadowVariable` as a source in one custom Shadow Variable while using `@NextElementShadowVariable` as a source in another custom Shadow Variable.
