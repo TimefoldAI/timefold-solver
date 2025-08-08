@@ -1011,13 +1011,10 @@ Constraint penalizeLoopedJobs(ConstraintFactory factory) {
 
 ====
 
-[IMPORTANT]
-====
-Do not use a @ShadowVariableLooped property in a method annotated with @ShadowSources.
-@ShadowVariableLooped properties can be updated after the @ShadowSources marked method is called, causing score corruption.
-@ShadowSources marked methods do not need to check @ShadowVariableLooped properties, since they are only called if all their dependencies are not looped.
-====
+NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariableLooped`-annotated properties.
+These methods are only called if neither of their dependencies are looped, and therefore the value of such properties at that time is guaranteed to be `false`.
 
+[#aligningShadowVariables]
 ==== Aligning Shadow Variables
 
 `@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
@@ -1149,6 +1146,24 @@ public class Job {
 }
 ----
 ====
+
+==== Optimizing Shadow Variables
+
+Each custom Shadow Variable on each planning entity constitutes one node of a reference graph. 
+The Solver analyzes this graph to decide what is the most optimal strategy for updating these variables. 
+In general, the less variables and the less dependencies between them, the faster the processing.
+For the best performance, follow these guidelines:
+
+- Keep all custom Shadow Variables on the same entity class.
+If one entity is grouping another entity, you might be able to use <<aligningShadowVariables,custom Shadow Variable alignment>> to keep custom Shadow Variables on the same entity class.
+
+- Do not use both `@PreviousElementShadowVariable` and `@NextElementShadowVariable` in your sources.
+This includes using `@PreviousElementShadowVariable` as a source in one custom Shadow Variable while using `@NextElementShadowVariable` as a source in another custom Shadow Variable.
+
+- Compute as much as possible within a single custom Shadow Variable supplier method.
+Do not create intermediate custom Shadow Variables when it is possible to compute the value directly from another custom Shadow Variable.
+
+NOTE: These are tips and tricks for optimal performance and needn't be followed to the letter. The solver will work correctly even if you decide not to follow any of the advice, albeit with slightly lesser performance.
 
 === Shadow variable cloning
 
