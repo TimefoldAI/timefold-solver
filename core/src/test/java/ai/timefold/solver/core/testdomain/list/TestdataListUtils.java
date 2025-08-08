@@ -17,6 +17,7 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -250,6 +251,16 @@ public final class TestdataListUtils {
                 .iterator()
                 .next()
                 .getGenuineVariableDescriptor("valueList");
+    }
+
+    public static <Solution_> BasicVariableDescriptor<Solution_> getBasicVariableDescriptor(
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
+        return (BasicVariableDescriptor<Solution_>) scoreDirector
+                .getSolutionDescriptor()
+                .getGenuineEntityDescriptors()
+                .iterator()
+                .next()
+                .getGenuineVariableDescriptor("value");
     }
 
     public static <Solution_> EntityDescriptor<Solution_> getEntityDescriptor(
