@@ -365,7 +365,8 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
     @Test
     void solveWithEntityValueRangeListVariable() {
         var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataListEntityProvidingSolution.class, TestdataListEntityProvidingEntity.class)
+                .buildSolverConfig(TestdataListEntityProvidingSolution.class, TestdataListEntityProvidingEntity.class,
+                        TestdataListEntityProvidingValue.class)
                 .withEasyScoreCalculatorClass(TestdataListEntityProvidingScoreCalculator.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig());
 
@@ -381,8 +382,10 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution).isNotNull();
         // Only one entity should provide the value list and assign the values.
-        assertThat(bestSolution.getEntityList().get(0).getValueList()).hasSameElementsAs(List.of(value1, value2));
-        assertThat(bestSolution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(value3));
+        assertThat(bestSolution.getEntityList().get(0).getValueList().stream().map(TestdataListEntityProvidingValue::getCode))
+                .hasSameElementsAs(List.of("v1", "v2"));
+        assertThat(bestSolution.getEntityList().get(1).getValueList().stream().map(TestdataListEntityProvidingValue::getCode))
+                .hasSameElementsAs(List.of("v3"));
     }
 
     @Test
