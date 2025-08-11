@@ -297,15 +297,12 @@ class VariableListenerSupportTest {
                 // which is the first member of the group
                 for (var element : visit.getConcurrentValueGroup()) {
                     verifyAddEdge.accept(serviceReadyTime, element, serviceStartTime, visit);
-                    // start and finish time use the same node, so no edge between them
+                    verifyAddEdge.accept(serviceStartTime, visit, serviceFinishTime, element);
                 }
             }
 
             if (visit.getPreviousValue() != null) {
-                var previousRepresentative =
-                        visit.getPreviousValue().getConcurrentValueGroup() == null ? visit.getPreviousValue()
-                                : visit.getPreviousValue().getConcurrentValueGroup().get(0);
-                verifyAddEdge.accept(serviceFinishTime, previousRepresentative, serviceReadyTime, visit);
+                verifyAddEdge.accept(serviceFinishTime, visit.getPreviousValue(), serviceReadyTime, visit);
             }
         }
         // Note: addEdge only adds an edge if it does not already exists in the graph,
