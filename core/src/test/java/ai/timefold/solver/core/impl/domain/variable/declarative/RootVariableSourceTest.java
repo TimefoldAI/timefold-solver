@@ -52,7 +52,7 @@ class RootVariableSourceTest {
             shadowEntityMetaModel.shadowVariable("dependency");
 
     private void assertChainToVariableEntity(VariableSourceReference variableSourceReference, String... expectedNames) {
-        var chain = variableSourceReference.chainToVariableEntity();
+        var chain = variableSourceReference.chainFromRootEntityToVariableEntity();
         assertThat(chain).hasSize(expectedNames.length);
 
         for (var i = 0; i < chain.size(); i++) {
@@ -61,7 +61,7 @@ class RootVariableSourceTest {
     }
 
     private void assertEmptyChainToVariableEntity(VariableSourceReference variableSourceReference) {
-        var chain = variableSourceReference.chainToVariableEntity();
+        var chain = variableSourceReference.chainFromRootEntityToVariableEntity();
         assertThat(chain).isEmpty();
     }
 
@@ -389,6 +389,53 @@ class RootVariableSourceTest {
     }
 
     @Test
+    void pathUsingBuiltinShadowAfterBuiltinShadow() {
+        var rootVariableSource = RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "previous.previous",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
+
+        assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
+        assertThat(rootVariableSource.variableSourceReferences()).hasSize(2);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.PREVIOUS);
+        var previousSource = rootVariableSource.variableSourceReferences().get(0);
+
+        assertEmptyChainToVariableEntity(previousSource);
+        assertThat(previousSource.variableMetaModel()).isEqualTo(previousElementMetaModel);
+        assertThat(previousSource.isTopLevel()).isTrue();
+        assertThat(previousSource.isBottomLevel()).isFalse();
+        assertThat(previousSource.onRootEntity()).isTrue();
+        assertThat(previousSource.isDeclarative()).isFalse();
+        assertThat(previousSource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(previousSource.downstreamDeclarativeVariableMetamodel()).isNull();
+
+        var dependencySource = rootVariableSource.variableSourceReferences().get(1);
+
+        assertChainToVariableEntity(dependencySource, "previous");
+        assertThat(dependencySource.variableMetaModel()).isEqualTo(previousElementMetaModel);
+        assertThat(dependencySource.isTopLevel()).isFalse();
+        assertThat(dependencySource.isBottomLevel()).isTrue();
+        assertThat(dependencySource.isDeclarative()).isFalse();
+        assertThat(dependencySource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(dependencySource.downstreamDeclarativeVariableMetamodel()).isNull();
+
+        var previousElement = new TestdataInvalidDeclarativeValue("previous");
+        var currentElement = new TestdataInvalidDeclarativeValue("current");
+        currentElement.setPrevious(previousElement);
+
+        var result = previousSource.targetEntityFunctionStartingFromVariableEntity().apply(currentElement);
+        assertThat(result).isSameAs(previousElement);
+
+        var rootVisitor = mock(Consumer.class);
+        rootVariableSource.valueEntityFunction().accept(currentElement, rootVisitor);
+        verify(rootVisitor).accept(previousElement);
+        verifyNoMoreInteractions(rootVisitor);
+    }
+
+    @Test
     void invalidPathMissingProperty() {
         assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,
@@ -403,22 +450,6 @@ class RootVariableSourceTest {
                         " references a member (missing)" +
                         " on class (TestdataInvalidDeclarativeValue)" +
                         " that does not exist.");
-    }
-
-    @Test
-    void invalidPathUsingBuiltinShadowAfterBuiltinShadow() {
-        assertThatCode(() -> RootVariableSource.from(
-                planningSolutionMetaModel,
-                TestdataInvalidDeclarativeValue.class,
-                "shadow",
-                "previous.previous",
-                DEFAULT_MEMBER_ACCESSOR_FACTORY,
-                DEFAULT_DESCRIPTOR_POLICY))
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The source path (previous.previous)" +
-                        " starting from root entity class (TestdataInvalidDeclarativeValue)" +
-                        " accesses a non-declarative shadow variable (previous)" +
-                        " after another non-declarative shadow variable (previous).");
     }
 
     @Test

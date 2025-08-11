@@ -11,7 +11,7 @@ import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public record VariableSourceReference(VariableMetaModel<?, ?, ?> variableMetaModel,
-        List<MemberAccessor> chainToVariableEntity,
+        List<MemberAccessor> chainFromRootEntityToVariableEntity,
         boolean onRootEntity,
         boolean isTopLevel,
         boolean isBottomLevel,

@@ -871,7 +871,7 @@ These paths must follow 1 of 3 syntactic forms:
 
 |Chained Property Path
 |"a.b.c"
-|Refers to a supplier variable reachable via chained properties. Intermediate elements must be facts or variables; the final one must be a supplier variable.
+|Refers to a supplier variable reachable via chained properties. Intermediate elements must be facts or variables; the final one must be a variable.
 
 |Collection Element Access
 |"collectionVar[].varName"

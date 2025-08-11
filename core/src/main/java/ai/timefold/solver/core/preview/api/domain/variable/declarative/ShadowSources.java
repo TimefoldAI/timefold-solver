@@ -24,12 +24,12 @@ public @interface ShadowSources {
      * "variableName", for referring any variable on the same planning entity.
      * </li>
      * <li>
-     * A list of names seperated by ".", such as "variableOrFact.fact.entity.supplierVariable",
-     * for referencing a supplier variable accessible from the planning entity.
+     * A list of names seperated by ".", such as "variableOrFact.fact.entity.variable",
+     * for referencing a variable accessible from the planning entity.
      * The first property may be a fact or any non-supplier variable; the remaining properties before the end
-     * must be facts, and the final property must be a supplier variable.
-     * For the path "a.b", it refers to the supplier variable "b"
-     * on the property/variable "a" of the planning entity.
+     * must be facts, and the final property must be a variable.
+     * For the path "a.b", it refers to the variable "b"
+     * on the property/variable "a" on the planning entity.
      * In general, if you access a variable in your method using a chain like {@code a.b.c}, that
      * chain should be included as a source.
      * </li>

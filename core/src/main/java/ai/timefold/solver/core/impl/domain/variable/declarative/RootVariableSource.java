@@ -167,7 +167,7 @@ public record RootVariableSource<Entity_, Value_>(
         for (var i = 0; i < chainStartingFromSourceVariableList.size(); i++) {
             var chainStartingFromSourceVariable = chainStartingFromSourceVariableList.get(i);
             var newSourceReference =
-                    createVariableSourceReferenceFromChain(variablePath, variableSourceReferences, listMemberAccessors,
+                    createVariableSourceReferenceFromChain(listMemberAccessors,
                             solutionMetaModel,
                             rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
                             chainToVariable,
@@ -247,7 +247,6 @@ public record RootVariableSource<Entity_, Value_>(
     }
 
     private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(
-            String variablePath, List<VariableSourceReference> variableSourceReferences,
             List<MemberAccessor> listMemberAccessors,
             PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass, String targetVariableName, List<MemberAccessor> afterChain,
@@ -266,20 +265,6 @@ public record RootVariableSource<Entity_, Value_>(
                             .variable(maybeDownstreamVariable.getName());
         }
         var isDeclarative = isDeclarativeShadowVariable(variableMemberAccessor);
-        if (!isDeclarative) {
-            for (var previousVariableSourceReference : variableSourceReferences) {
-                if (!previousVariableSourceReference.isDeclarative()) {
-                    throw new IllegalArgumentException(
-                            """
-                                    The source path (%s) starting from root entity class (%s) \
-                                    accesses a non-declarative shadow variable (%s) \
-                                    after another non-declarative shadow variable (%s)."""
-                                    .formatted(
-                                            variablePath, rootEntityClass.getSimpleName(), variableMemberAccessor.getName(),
-                                            previousVariableSourceReference.variableMetaModel().name()));
-                }
-            }
-        }
 
         return new VariableSourceReference(
                 solutionMetaModel.entity(variableMemberAccessor.getDeclaringClass()).variable(variableMemberAccessor.getName()),
