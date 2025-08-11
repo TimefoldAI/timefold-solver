@@ -18,8 +18,7 @@ public record VariableUpdaterInfo<Solution_>(
         @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator,
-        @Nullable Object[] groupEntities,
-        boolean isGroupAligned) {
+        @Nullable Object[] groupEntities) {
 
     public VariableUpdaterInfo(VariableMetaModel<Solution_, ?, ?> id,
             int groupId,
@@ -27,39 +26,21 @@ public record VariableUpdaterInfo<Solution_>(
             @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor,
             MemberAccessor memberAccessor,
             Function<Object, Object> calculator) {
-        // isGroupAligned defaults to true, so we can just check it instead of checking
-        // if groupEntities is null before determining what updateIfChanged to call
-        this(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor, calculator, null, true);
+        this(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor, calculator, null);
     }
 
     public VariableUpdaterInfo<Solution_> withGroupId(int groupId) {
         return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor,
-                calculator, groupEntities, isGroupAligned);
+                calculator, groupEntities);
     }
 
-    public VariableUpdaterInfo<Solution_> withGroupEntities(Object[] groupEntities, boolean isGroupAligned) {
+    public VariableUpdaterInfo<Solution_> withGroupEntities(Object[] groupEntities) {
         return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor,
-                calculator, groupEntities, isGroupAligned);
+                calculator, groupEntities);
     }
 
     public boolean updateIfChanged(Object entity, ChangedVariableNotifier<Solution_> changedVariableNotifier) {
-        if (isGroupAligned) {
-            return updateIfChanged(entity, calculator.apply(entity), changedVariableNotifier);
-        } else {
-            var anyChanged = false;
-            for (var groupEntity : groupEntities) {
-                var oldValue = variableDescriptor.getValue(groupEntity);
-                var newValue = calculator.apply(groupEntity);
-
-                if (!Objects.equals(oldValue, newValue)) {
-                    changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, groupEntity);
-                    variableDescriptor.setValue(groupEntity, newValue);
-                    changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, groupEntity);
-                    anyChanged = true;
-                }
-            }
-            return anyChanged;
-        }
+        return updateIfChanged(entity, calculator.apply(entity), changedVariableNotifier);
     }
 
     public boolean updateIfChanged(Object entity, @Nullable Object newValue,
