@@ -266,25 +266,21 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         }
     }
 
-    private class OriginalFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
+    private abstract class AbstractUpcomingValueRangeIterator extends AbstractFilteringValueRangeIterator {
         // The value iterator that only replays the current selected value
-        private final Iterator<Object> replayingValueIterator;
+        final Iterator<Object> replayingValueIterator;
         // The value iterator returns all possible values based on the outer selector settings.
-        // However,
-        // it may include invalid values that need to be filtered out.
-        // This iterator must be used to ensure that all positions are included in the CH phase.
-        // This does not apply to the LS phase.
-        private final Iterator<Object> valueIterator;
+        final Iterator<Object> valueIterator;
 
-        private OriginalFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
+        private AbstractUpcomingValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
                 ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
-                boolean checkSourceAndDestination) {
-            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, false);
+                boolean checkSourceAndDestination, boolean useValueList) {
+            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, useValueList);
             this.replayingValueIterator = replayingValueIterator;
             this.valueIterator = valueIterator;
         }
 
-        private void initialize() {
+        void initialize() {
             if (initialized) {
                 return;
             }
@@ -298,6 +294,16 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             } else {
                 noData();
             }
+        }
+    }
+
+    private class OriginalFilteringValueRangeIterator extends AbstractUpcomingValueRangeIterator {
+
+        private OriginalFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
+                boolean checkSourceAndDestination) {
+            super(replayingValueIterator, valueIterator, listVariableStateSupply, reachableValues, checkSourceAndDestination,
+                    false);
         }
 
         @Override
@@ -317,36 +323,15 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         }
     }
 
-    private class RandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
-        // The value iterator that only replays the current selected value
-        private final Iterator<Object> replayingValueIterator;
-        // The value iterator returns all possible values based on the outer selector settings.
-        private final Iterator<Object> valueIterator;
+    private class RandomFilteringValueRangeIterator extends AbstractUpcomingValueRangeIterator {
         private final int maxBailoutSize;
 
         private RandomFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
                 ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
                 int maxBailoutSize, boolean checkSourceAndDestination) {
-            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, false);
-            this.replayingValueIterator = replayingValueIterator;
-            this.valueIterator = valueIterator;
+            super(replayingValueIterator, valueIterator, listVariableStateSupply, reachableValues, checkSourceAndDestination,
+                    false);
             this.maxBailoutSize = maxBailoutSize;
-        }
-
-        private void initialize() {
-            if (initialized) {
-                return;
-            }
-            if (replayingValueIterator.hasNext()) {
-                var upcomingValue = replayingValueIterator.next();
-                if (!valueIterator.hasNext()) {
-                    noData();
-                } else {
-                    loadValues(Objects.requireNonNull(upcomingValue));
-                }
-            } else {
-                noData();
-            }
         }
 
         @Override
