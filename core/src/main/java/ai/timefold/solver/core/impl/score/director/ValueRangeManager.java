@@ -59,8 +59,7 @@ public final class ValueRangeManager<Solution_> {
     private final Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
     private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
             new IdentityHashMap<>();
-    private final Map<ValueRangeDescriptor<Solution_>, ReachableValues> fromReachableValuesMap =
-            new IdentityHashMap<>();
+    private @Nullable ReachableValues reachableValues = null;
 
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
@@ -415,24 +414,22 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
-    public ReachableValues getReachableValueMatrix(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
-        var reachableValues = fromReachableValuesMap.get(valueRangeDescriptor);
+    public ReachableValues getReachableValues(ListVariableDescriptor<Solution_> listVariableDescriptor) {
         if (reachableValues == null) {
             if (cachedWorkingSolution == null) {
                 throw new IllegalStateException(
-                        "Impossible state: the matrix %s requested before the working solution is known."
-                                .formatted(ReachableValues.class.getSimpleName()));
+                        "Impossible state: value reachability requested before the working solution is known.");
             }
-            var entityDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor();
+            var entityDescriptor = listVariableDescriptor.getEntityDescriptor();
             var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
-            var allValues = getFromSolution(valueRangeDescriptor);
+            var allValues = getFromSolution(listVariableDescriptor.getValueRangeDescriptor());
             var valuesSize = allValues.getSize();
             if (valuesSize > Integer.MAX_VALUE) {
                 throw new IllegalStateException(
                         "The matrix %s cannot be built for the entity %s (%s) because value range has a size (%d) which is higher than Integer.MAX_VALUE."
                                 .formatted(ReachableValues.class.getSimpleName(),
                                         entityDescriptor.getEntityClass().getSimpleName(),
-                                        valueRangeDescriptor.getVariableDescriptor().getVariableName(), valuesSize));
+                                        listVariableDescriptor.getVariableName(), valuesSize));
             }
             // list of entities reachable for a value
             var entityMatrix = new IdentityHashMap<Object, Set<Object>>((int) valuesSize);
@@ -440,7 +437,7 @@ public final class ValueRangeManager<Solution_> {
             var valueMatrix = new IdentityHashMap<Object, Set<Object>>((int) valuesSize);
             for (var entity : entityList) {
                 var valuesIterator = allValues.createOriginalIterator();
-                var range = getFromEntity(valueRangeDescriptor, entity);
+                var range = getFromEntity(listVariableDescriptor.getValueRangeDescriptor(), entity);
                 while (valuesIterator.hasNext()) {
                     var value = valuesIterator.next();
                     if (range.contains(value)) {
@@ -450,7 +447,6 @@ public final class ValueRangeManager<Solution_> {
                 }
             }
             reachableValues = new ReachableValues(entityMatrix, valueMatrix);
-            fromReachableValuesMap.put(valueRangeDescriptor, reachableValues);
         }
         return reachableValues;
     }
@@ -484,7 +480,7 @@ public final class ValueRangeManager<Solution_> {
     public void reset(@Nullable Solution_ workingSolution) {
         fromSolutionMap.clear();
         fromEntityMap.clear();
-        fromReachableValuesMap.clear();
+        reachableValues = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
             cachedWorkingSolution = workingSolution;

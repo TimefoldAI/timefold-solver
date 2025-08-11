@@ -32,7 +32,7 @@ class ReachableMatrixTest {
         var solutionDescriptor = scoreDirector.getSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
         var reachableValues = scoreDirector.getValueRangeManager()
-                .getReachableValueMatrix(entityDescriptor.getGenuineListVariableDescriptor().getValueRangeDescriptor());
+                .getReachableValues(entityDescriptor.getGenuineListVariableDescriptor());
 
         assertThat(reachableValues.extractEntities(v1)).containsExactlyInAnyOrder(a);
         assertThat(reachableValues.extractEntities(v2)).containsExactlyInAnyOrder(a, b);
@@ -60,7 +60,7 @@ class ReachableMatrixTest {
         var solutionDescriptor = scoreDirector.getSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
         var reachableValues = scoreDirector.getValueRangeManager()
-                .getReachableValueMatrix(entityDescriptor.getGenuineListVariableDescriptor().getValueRangeDescriptor());
+                .getReachableValues(entityDescriptor.getGenuineListVariableDescriptor());
 
         assertThat(reachableValues.extractValues(v1)).containsExactlyInAnyOrder(v2, v3);
         assertThat(reachableValues.extractValues(v2)).containsExactlyInAnyOrder(v1, v3);
