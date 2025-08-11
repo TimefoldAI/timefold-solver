@@ -5,7 +5,6 @@ import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.one
 import java.util.Objects;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping0CollectorUniNode;
@@ -100,13 +99,13 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     }
 
     /**
-     * Convert the {@link UniConstraintStream} to a different {@link UniConstraintStream},
+     * Convert the {@link UniDataStream} to a different {@link UniDataStream},
      * containing the set of tuples resulting from applying the group key mapping function
      * on all tuples of the original stream.
      * Neither tuple of the new stream {@link Objects#equals(Object, Object)} any other.
      *
      * @param groupKeyMapping mapping function to convert each element in the stream to a different element
-     * @param <GroupKey_> the type of a fact in the destination {@link UniConstraintStream}'s tuple;
+     * @param <GroupKey_> the type of a fact in the destination {@link UniDataStream}'s tuple;
      *        must honor {@link Object#hashCode() the general contract of hashCode}.
      */
     protected <GroupKey_> AbstractUniDataStream<Solution_, GroupKey_> groupBy(Function<A, GroupKey_> groupKeyMapping) {

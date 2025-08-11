@@ -142,7 +142,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * <li>Bijectivity.
      * No two input tuples should map to the same output tuple,
      * or to tuples that are {@link Object#equals(Object) equal}.
-     * Not following this recommendation creates a constraint stream with duplicate tuples,
+     * Not following this recommendation creates a data stream with duplicate tuples,
      * and may force you to use {@link #distinct()} later, which comes at a performance cost.</li>
      * <li>Immutable data carriers.
      * The objects returned by the mapping function should be identified by their contents and nothing else.
@@ -153,13 +153,13 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * </ul>
      *
      * <p>
-     * Simple example: assuming a constraint stream of tuples of {@code Person}s
+     * Simple example: assuming a data stream of tuples of {@code Person}s
      * {@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30)]},
      * calling {@code map(Person::getAge)} on such stream will produce a stream of {@link Integer}s
      * {@code [20, 25, 30]},
      *
      * <p>
-     * Example with a non-bijective mapping function: assuming a constraint stream of tuples of {@code Person}s
+     * Example with a non-bijective mapping function: assuming a data stream of tuples of {@code Person}s
      * {@code [Ann(age = 20), Beth(age = 25), Cathy(age = 30), David(age = 30), Eric(age = 20)]},
      * calling {@code map(Person::getAge)} on such stream will produce a stream of {@link Integer}s
      * {@code [20, 25, 30, 30, 20]}.
@@ -189,7 +189,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * (No two tuples will {@link Object#equals(Object) equal}.)
      *
      * <p>
-     * By default, tuples going through a constraint stream are distinct.
+     * By default, tuples going through a data stream are distinct.
      * However, operations such as {@link #map(UniDataMapper)} may create a stream which breaks that promise.
      * By calling this method on such a stream,
      * duplicate copies of the same tuple will be omitted at a performance cost.

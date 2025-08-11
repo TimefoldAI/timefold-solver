@@ -20,9 +20,9 @@ final class BiMapUniDataStream<Solution_, A, NewA, NewB>
     private final UniDataMapper<Solution_, A, NewB> mappingFunctionB;
     private @Nullable AftBridgeBiDataStream<Solution_, NewA, NewB> aftStream;
 
-    public BiMapUniDataStream(DataStreamFactory<Solution_> constraintFactory, AbstractUniDataStream<Solution_, A> parent,
+    public BiMapUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent,
             UniDataMapper<Solution_, A, NewA> mappingFunctionA, UniDataMapper<Solution_, A, NewB> mappingFunctionB) {
-        super(constraintFactory, parent);
+        super(dataStreamFactory, parent);
         this.mappingFunctionA = mappingFunctionA;
         this.mappingFunctionB = mappingFunctionB;
     }

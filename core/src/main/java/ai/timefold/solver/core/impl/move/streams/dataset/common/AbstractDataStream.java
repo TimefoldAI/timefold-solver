@@ -42,12 +42,13 @@ public abstract class AbstractDataStream<Solution_>
     // Node creation
     // ************************************************************************
 
-    public void collectActiveDataStreams(Set<AbstractDataStream<Solution_>> constraintStreamSet) {
+    public void collectActiveDataStreams(Set<AbstractDataStream<Solution_>> dataStreamSet) {
         if (parent == null) { // Maybe a join/ifExists/forEach forgot to override this?
-            throw new IllegalStateException("Impossible state: the stream (" + this + ") does not have a parent.");
+            throw new IllegalStateException("Impossible state: the stream (%s) does not have a parent."
+                    .formatted(this));
         }
-        parent.collectActiveDataStreams(constraintStreamSet);
-        constraintStreamSet.add(this);
+        parent.collectActiveDataStreams(dataStreamSet);
+        dataStreamSet.add(this);
     }
 
     /**

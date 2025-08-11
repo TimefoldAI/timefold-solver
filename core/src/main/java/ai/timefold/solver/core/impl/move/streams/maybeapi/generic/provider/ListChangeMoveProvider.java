@@ -14,16 +14,35 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
+/**
+ * For each unassigned value, creates a move to assign it to some position of some list variable.
+ * For each assigned value that is not pinned, creates:
+ * 
+ * <ul>
+ * <li>A move to unassign it.</li>
+ * <li>A move to reassign it to another position if assigned.</li>
+ * </ul>
+ * 
+ * To assign or reassign a value, creates:
+ * 
+ * <ul>
+ * <li>A move for every unpinned value in every entity's list variable to assign the value before that position.</li>
+ * <li>A move for every entity to assign it to the last position in the list variable.</li>
+ * </ul>
+ *
+ * This is a generic move provider that works with any list variable;
+ * user-defined change move providers needn't be this complex, as they understand the specifics of the domain.
+ */
 @NullMarked
 public class ListChangeMoveProvider<Solution_, Entity_, Value_>
         implements MoveProvider<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final BiDataFilter<Solution_, Entity_, Value_> isValueInListFilter;
-    private final BiDataFilter<Solution_, Value_, ElementPosition> validChangeFilter;
 
     public ListChangeMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
@@ -36,51 +55,23 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
             }
             return solution.isValueInRange(variableMetaModel, entity, value);
         };
-        this.validChangeFilter = (solutionView, value, targetPosition) -> {
-            var currentPosition = solutionView.getPositionOf(variableMetaModel, value);
-            if (currentPosition.equals(targetPosition)) { // No change needed.
-                return false;
-            }
-            if (currentPosition instanceof UnassignedElement) {
-                // Only assign the value if the target entity will accept it.
-                var targetPositionInList = targetPosition.ensureAssigned();
-                return solutionView.isValueInRange(variableMetaModel, targetPositionInList.entity(), value);
-            } else {
-                if (!(targetPosition instanceof PositionInList targetPositionInList)) { // Unassigning a value.
-                    return true;
-                }
-                var currentPositionInList = currentPosition.ensureAssigned();
-                if (currentPositionInList.entity() == targetPositionInList.entity()) {
-                    var valueCount = solutionView.countValues(variableMetaModel, currentPositionInList.entity());
-                    if (valueCount == 1) {
-                        return false; // The value is already in the list, and it is the only one.
-                    } else if (targetPositionInList.index() == valueCount) {
-                        // The value is already in the list, and we are trying to move it past the end of the list.
-                        return false;
-                    } else { // Same list, same position; ignore.
-                        return currentPositionInList.index() != targetPositionInList.index();
-                    }
-                } else { // We can move freely between entities, assuming the target entity accepts the value.
-                    return solutionView.isValueInRange(variableMetaModel, targetPositionInList.entity(), value);
-                }
-            }
-        };
     }
 
     @Override
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
-        // For each unassigned value, we need to create a move to assign it to some position of some list variable.
-        // For each assigned value that is not pinned, we need to create:
-        // - A move to unassign it.
-        // - A move to reassign it to another position if assigned.
-        // To assign or reassign a value, we need to create:
-        // - A move for every unpinned value in every entity's list variable to assign the value before that position.
-        // - A move for every entity to assign it to the last position in the list variable.
+        // Stream with unpinned entities;
+        // includes null if the variable allows unassigned values.
         var unpinnedEntities =
                 moveStreamFactory.enumerate(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
+        // Stream with unpinned values, which are assigned to any list variable;
+        // always includes null so that we can later create a position at the end of the list,
+        // i.e. with no value after it.
         var unpinnedValues = moveStreamFactory.enumerate(variableMetaModel.type(), true)
                 .filter((solutionView, value) -> value == null
                         || solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
+        // Joins the two previous streams to create pairs of (entity, value),
+        // eliminating values which do not match that entity's value range.
+        // It maps these pairs to expected target positions in that entity's list variable.
         var entityValuePairs = unpinnedEntities.join(unpinnedValues, DataJoiners.filtering(isValueInListFilter))
                 .map((solutionView, entity, value) -> {
                     if (entity == null) { // Null entity means we need to unassign the value.
@@ -94,8 +85,12 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                     }
                 })
                 .distinct();
+        // Finally the stream of these positions is joined with the stream of all existing values,
+        // filtering out those which would not result in a valid move.
         var dataStream = moveStreamFactory.enumerate(variableMetaModel.type(), false)
-                .join(entityValuePairs, DataJoiners.filtering(validChangeFilter));
+                .join(entityValuePairs, DataJoiners.filtering(this::isValidChange));
+        // When picking from this stream, we decide what kind of move we need to create,
+        // based on whether the value is assigned or unassigned.
         return moveStreamFactory.pick(dataStream)
                 .asMove((solutionView, value, targetPosition) -> {
                     var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
@@ -113,6 +108,38 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                     return new ListChangeMove<>(variableMetaModel, currentElementPosition.entity(),
                             currentElementPosition.index(), targetElementPosition.entity(), targetElementPosition.index());
                 });
+    }
+
+    private boolean isValidChange(SolutionView<Solution_> solutionView, Value_ value, ElementPosition targetPosition) {
+        var currentPosition = solutionView.getPositionOf(variableMetaModel, value);
+        if (currentPosition.equals(targetPosition)) { // No change needed.
+            return false;
+        }
+
+        if (currentPosition instanceof UnassignedElement) { // Only assign the value if the target entity will accept it.
+            var targetPositionInList = targetPosition.ensureAssigned();
+            return solutionView.isValueInRange(variableMetaModel, targetPositionInList.entity(), value);
+        }
+
+        if (!(targetPosition instanceof PositionInList targetPositionInList)) { // Unassigning a value.
+            return true;
+        }
+
+        var currentPositionInList = currentPosition.ensureAssigned();
+        if (currentPositionInList.entity() == targetPositionInList.entity()) { // The value is already in the list.
+
+            var valueCount = solutionView.countValues(variableMetaModel, currentPositionInList.entity());
+            if (valueCount == 1) { // The value is the only value in the list; no change.
+                return false;
+            } else if (targetPositionInList.index() == valueCount) { // Trying to move the value past the end of the list.
+                return false;
+            } else { // Same list, same position; ignore.
+                return currentPositionInList.index() != targetPositionInList.index();
+            }
+        }
+
+        // We can move freely between entities, assuming the target entity accepts the value.
+        return solutionView.isValueInRange(variableMetaModel, targetPositionInList.entity(), value);
     }
 
 }

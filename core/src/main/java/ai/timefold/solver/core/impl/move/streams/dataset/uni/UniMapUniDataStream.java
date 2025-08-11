@@ -18,9 +18,9 @@ final class UniMapUniDataStream<Solution_, A, NewA>
     private final UniDataMapper<Solution_, A, NewA> mappingFunction;
     private @Nullable AftBridgeUniDataStream<Solution_, NewA> aftStream;
 
-    public UniMapUniDataStream(DataStreamFactory<Solution_> constraintFactory, AbstractUniDataStream<Solution_, A> parent,
+    public UniMapUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractUniDataStream<Solution_, A> parent,
             UniDataMapper<Solution_, A, NewA> mappingFunction) {
-        super(constraintFactory, parent);
+        super(dataStreamFactory, parent);
         this.mappingFunction = mappingFunction;
     }
 

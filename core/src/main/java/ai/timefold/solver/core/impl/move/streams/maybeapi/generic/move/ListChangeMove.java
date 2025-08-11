@@ -174,14 +174,12 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof ListChangeMove<?, ?, ?> that))
-            return false;
-        return sourceIndex == that.sourceIndex && destinationIndex == that.destinationIndex
-                && Objects.equals(variableMetaModel, that.variableMetaModel)
-                && Objects.equals(sourceEntity, that.sourceEntity)
-                && Objects.equals(destinationEntity, that.destinationEntity);
+        return o instanceof ListChangeMove<?, ?, ?> other
+                && Objects.equals(variableMetaModel, other.variableMetaModel)
+                && Objects.equals(sourceEntity, other.sourceEntity)
+                && sourceIndex == other.sourceIndex
+                && Objects.equals(destinationEntity, other.destinationEntity)
+                && destinationIndex == other.destinationIndex;
     }
 
     @Override

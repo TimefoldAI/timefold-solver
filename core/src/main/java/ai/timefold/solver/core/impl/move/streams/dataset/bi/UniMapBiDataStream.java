@@ -13,15 +13,15 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class UniMapBiDataStream<Solution_, A, B, NewA, NewB>
+final class UniMapBiDataStream<Solution_, A, B, NewA>
         extends AbstractUniDataStream<Solution_, NewA> {
 
     private final BiDataMapper<Solution_, A, B, NewA> mappingFunction;
     private @Nullable AftBridgeUniDataStream<Solution_, NewA> aftStream;
 
-    public UniMapBiDataStream(DataStreamFactory<Solution_> constraintFactory, AbstractBiDataStream<Solution_, A, B> parent,
+    public UniMapBiDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractBiDataStream<Solution_, A, B> parent,
             BiDataMapper<Solution_, A, B, NewA> mappingFunction) {
-        super(constraintFactory, parent);
+        super(dataStreamFactory, parent);
         this.mappingFunction = mappingFunction;
     }
 
@@ -51,7 +51,7 @@ final class UniMapBiDataStream<Solution_, A, B, NewA, NewB>
             return true;
         if (object == null || getClass() != object.getClass())
             return false;
-        UniMapBiDataStream<?, ?, ?, ?, ?> that = (UniMapBiDataStream<?, ?, ?, ?, ?>) object;
+        UniMapBiDataStream<?, ?, ?, ?> that = (UniMapBiDataStream<?, ?, ?, ?>) object;
         return Objects.equals(parent, that.parent) &&
                 Objects.equals(mappingFunction, that.mappingFunction);
     }
@@ -63,7 +63,7 @@ final class UniMapBiDataStream<Solution_, A, B, NewA, NewB>
 
     @Override
     public String toString() {
-        return "BiMap()";
+        return "UniMap()";
     }
 
 }
