@@ -1395,11 +1395,6 @@ A `ValueRangeProvider` on the planning entity consumes more memory than `ValueRa
 ====
 A `ValueRangeProvider` on the planning entity is not currently compatible with a <<chainedPlanningVariable,chained>> variable.
 ====
-[WARNING]
-====
-A `ValueRangeProvider` on the planning entity is not compatible with a <<planningListVariable,list variable>>.
-====
-
 
 [#referencingValueRangeProviders]
 ==== Referencing ``ValueRangeProvider``s
