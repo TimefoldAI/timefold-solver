@@ -100,19 +100,20 @@ class ListSwapMoveSelectorTest {
         var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
                 getEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), false);
 
-        var filteringValueRangeSelector = getFilteringValueRangeSelector(mimicRecordingValueSelector, false, true);
+        var filteringValueRangeSelector =
+                getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, false, true, false);
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(solverScope, moveSelector);
 
-        // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
-                "1 {A[1]} <-> 2 {A[0]}",
-                "2 {A[0]} <-> 1 {A[1]}",
-                "2 {A[0]} <-> 3 {B[0]}",
-                "3 {B[0]} <-> 2 {A[0]}");
+                "1 {A[1]} <-> 2 {A[0]}", // A is the only valid entity for v1
+                "2 {A[0]} <-> 1 {A[1]}", // A and B accepts v2 and v1 is reachable by v2
+                "2 {A[0]} <-> 3 {B[0]}", // A and B accepts v2 and v3 is reachable by v2
+                "3 {B[0]} <-> 2 {A[0]}" // A and B accepts v3 and v2 is reachable by v3
+        );
     }
 
     @Test
@@ -178,14 +179,14 @@ class ListSwapMoveSelectorTest {
         var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
                 getPinnedEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), false);
 
-        var filteringValueRangeSelector = getFilteringValueRangeSelector(mimicRecordingValueSelector, false, true);
+        var filteringValueRangeSelector =
+                getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, false, true, false);
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(solverScope, moveSelector);
 
-        // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
                 "1 {A[1]} <-> 3 {C[0]}",
                 "3 {C[0]} <-> 1 {A[1]}");
@@ -253,14 +254,14 @@ class ListSwapMoveSelectorTest {
         var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
                 getAllowsUnassignedvaluesEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), false);
 
-        var filteringValueRangeSelector = getFilteringValueRangeSelector(mimicRecordingValueSelector, false, true);
+        var filteringValueRangeSelector =
+                getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, false, true, false);
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(solverScope, moveSelector);
 
-        // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertAllCodesOfMoveSelectorWithoutSize(moveSelector,
                 "1 {A[1]} <-> 2 {A[0]}",
                 "2 {A[0]} <-> 1 {A[1]}");
@@ -319,20 +320,82 @@ class ListSwapMoveSelectorTest {
         var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
                 getEntityRangeListVariableDescriptor(scoreDirector), v2, v1, v3, v1, v3, v2, v1, v3, v1, v3);
 
-        var filteringValueRangeSelector = getFilteringValueRangeSelector(mimicRecordingValueSelector, true, true);
+        var iterableValueRangeSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v2, v1,
+                v3, v1, v3, v2, v1, v3, v1, v3);
+
+        var filteringValueRangeSelector =
+                getFilteringValueRangeSelector(mimicRecordingValueSelector, iterableValueRangeSelector, true, true, true);
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(solverScope, moveSelector);
 
-        // Not testing size; filtering selector doesn't and can't report correct size unless iterating over all values.
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "2 {A[0]} <-> 3 {B[0]}",
                 "1 {A[1]} <-> 2 {A[0]}",
                 "3 {B[0]} <-> 2 {A[0]}",
                 "1 {A[1]} <-> 2 {A[0]}",
                 "3 {B[0]} <-> 2 {A[0]}");
+    }
+
+    @Test
+    void randomWithEntityValueRangeAndFiltering() {
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        var v3 = new TestdataListEntityProvidingValue("3");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2, v3), List.of(v2, v1));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b));
+
+        var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        // This test validates a path in the FilteringValueRangeSelector that does not use the OptimizedRandomFilteringValueRangeIterator
+        {
+            // The mimic recorder selector returns v2
+            var mimicRecordingValueSelector =
+                    getMimicRecordingIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v2, v2);
+
+            // The nonReplaying selector returns only v3
+            var iterableValueRangeSelector =
+                    mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3, v3, v3, v3);
+
+            // Since OptimizedRandomFilteringValueRangeIterator is not used, the values from iterableValueRangeSelector must be accounted
+            var filteringValueRangeSelector =
+                    getFilteringValueRangeSelector(mimicRecordingValueSelector, iterableValueRangeSelector, true, true, false);
+
+            var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+
+            var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+            phaseStarted(solverScope, moveSelector);
+
+            // Generate one move for v2
+            assertCodesOfNeverEndingMoveSelector(moveSelector,
+                    "2 {A[0]} <-> 3 {B[0]}");
+        }
+        {
+            // The mimic recorder selector returns v1
+            var mimicRecordingValueSelector =
+                    getMimicRecordingIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
+
+            // The value selector will return only v1 and nonReplaying selector will return the value v3, which is assigned to B
+            // Selecting v1 will result in no valid destination because B does not accept v1
+            var iterableValueRangeSelector =
+                    mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3, v3, v3, v3);
+
+            // Since OptimizedRandomFilteringValueRangeIterator is not used, the values from iterableValueRangeSelector must be accounted
+            var filteringValueRangeSelector =
+                    getFilteringValueRangeSelector(mimicRecordingValueSelector, iterableValueRangeSelector, true, true, false);
+
+            var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+
+            var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+            phaseStarted(solverScope, moveSelector);
+
+            assertCodesOfNeverEndingMoveSelector(moveSelector);
+        }
     }
 
     @Test
@@ -393,7 +456,8 @@ class ListSwapMoveSelectorTest {
         var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
                 getPinnedEntityRangeListVariableDescriptor(scoreDirector), v3, v1, v4, v1);
 
-        var filteringValueRangeSelector = getFilteringValueRangeSelector(mimicRecordingValueSelector, true, true);
+        var filteringValueRangeSelector =
+                getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, true, true, true);
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
 
@@ -463,7 +527,8 @@ class ListSwapMoveSelectorTest {
         var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
                 getAllowsUnassignedvaluesEntityRangeListVariableDescriptor(scoreDirector), v3, v1, v2, v4, v1);
 
-        var filteringValueRangeSelector = getFilteringValueRangeSelector(mimicRecordingValueSelector, true, true);
+        var filteringValueRangeSelector =
+                getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, true, true, true);
 
         var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
 

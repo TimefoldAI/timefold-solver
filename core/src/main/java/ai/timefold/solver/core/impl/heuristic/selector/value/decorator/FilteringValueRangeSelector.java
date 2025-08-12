@@ -76,7 +76,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         this.nonReplayingValueSelector.phaseStarted(phaseScope);
         this.replayingValueSelector.phaseStarted(phaseScope);
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
-                .getReachableValeMatrix(listVariableStateSupply.getSourceVariableDescriptor());
+                .getReachableValues(listVariableStateSupply.getSourceVariableDescriptor());
         valuesSize = reachableValues.getSize();
     }
 
@@ -129,20 +129,31 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            return new RandomFilteringValueRangeIterator(replayingValueSelector.iterator(), listVariableStateSupply,
-                    reachableValues, workingRandom, (int) getSize(), checkSourceAndDestination, true);
+            // If the nonReplayingValueSelector does not have any additional configuration,
+            // we can bypass it and only use reachable values,
+            // which helps optimize the number of evaluations.
+            // However, if the nonReplayingValueSelector includes custom configurations,
+            // such as filtering,
+            // we will first evaluate its values and then filter out those that are not reachable.
+            if (nonReplayingValueSelector instanceof IterableFromEntityPropertyValueSelector<Solution_>) {
+                return new OptimizedRandomFilteringValueRangeIterator(replayingValueSelector.iterator(),
+                        listVariableStateSupply,
+                        reachableValues, workingRandom, (int) getSize(), checkSourceAndDestination);
+            } else {
+                return new RandomFilteringValueRangeIterator(replayingValueSelector.iterator(),
+                        nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, (int) getSize(),
+                        checkSourceAndDestination);
+            }
         } else {
             return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(),
-                    nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, checkSourceAndDestination,
-                    false);
+                    nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, checkSourceAndDestination);
         }
     }
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
         return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(),
-                nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, checkSourceAndDestination,
-                false);
+                nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, checkSourceAndDestination);
     }
 
     @Override
@@ -255,17 +266,13 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         }
     }
 
-    private class OriginalFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
+    private abstract class AbstractUpcomingValueRangeIterator extends AbstractFilteringValueRangeIterator {
         // The value iterator that only replays the current selected value
-        private final Iterator<Object> replayingValueIterator;
-        // The value iterator returns all possible values based on its settings.
-        // However,
-        // it may include invalid values that need to be filtered out.
-        // This iterator must be used to ensure that all positions are included in the CH phase.
-        // This does not apply to the LS phase.
-        private final Iterator<Object> valueIterator;
+        final Iterator<Object> replayingValueIterator;
+        // The value iterator returns all possible values based on the outer selector settings.
+        final Iterator<Object> valueIterator;
 
-        private OriginalFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
+        private AbstractUpcomingValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
                 ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
                 boolean checkSourceAndDestination, boolean useValueList) {
             super(listVariableStateSupply, reachableValues, checkSourceAndDestination, useValueList);
@@ -273,7 +280,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             this.valueIterator = valueIterator;
         }
 
-        private void initialize() {
+        void initialize() {
             if (initialized) {
                 return;
             }
@@ -287,6 +294,16 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             } else {
                 noData();
             }
+        }
+    }
+
+    private class OriginalFilteringValueRangeIterator extends AbstractUpcomingValueRangeIterator {
+
+        private OriginalFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
+                boolean checkSourceAndDestination) {
+            super(replayingValueIterator, valueIterator, listVariableStateSupply, reachableValues, checkSourceAndDestination,
+                    false);
         }
 
         @Override
@@ -306,16 +323,51 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         }
     }
 
-    private class RandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
+    private class RandomFilteringValueRangeIterator extends AbstractUpcomingValueRangeIterator {
+        private final int maxBailoutSize;
+
+        private RandomFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
+                int maxBailoutSize, boolean checkSourceAndDestination) {
+            super(replayingValueIterator, valueIterator, listVariableStateSupply, reachableValues, checkSourceAndDestination,
+                    false);
+            this.maxBailoutSize = maxBailoutSize;
+        }
+
+        @Override
+        protected Object createUpcomingSelection() {
+            initialize();
+            if (!hasData) {
+                return noUpcomingSelection();
+            }
+            Object next;
+            var bailoutSize = maxBailoutSize;
+            do {
+                if (bailoutSize <= 0 || !valueIterator.hasNext()) {
+                    return noUpcomingSelection();
+                }
+                bailoutSize--;
+                next = valueIterator.next();
+            } while (!isValueOrEntityReachable(next));
+            return next;
+        }
+    }
+
+    /**
+     * The optimized iterator only traverses reachable values from the current selection.
+     * Unlike {@link RandomFilteringValueRangeIterator},
+     * it does not use an outer iterator to filter out non-reachable values.
+     */
+    private class OptimizedRandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
 
         private final Iterator<Object> replayingValueIterator;
         private final Random workingRandom;
         private final int maxBailoutSize;
 
-        private RandomFilteringValueRangeIterator(Iterator<Object> replayingValueIterator,
+        private OptimizedRandomFilteringValueRangeIterator(Iterator<Object> replayingValueIterator,
                 ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
-                Random workingRandom, int maxBailoutSize, boolean checkSourceAndDestination, boolean useValueList) {
-            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, useValueList);
+                Random workingRandom, int maxBailoutSize, boolean checkSourceAndDestination) {
+            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, true);
             this.replayingValueIterator = replayingValueIterator;
             this.workingRandom = workingRandom;
             this.maxBailoutSize = maxBailoutSize;
