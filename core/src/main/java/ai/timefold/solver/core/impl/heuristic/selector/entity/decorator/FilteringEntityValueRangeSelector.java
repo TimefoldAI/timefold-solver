@@ -1,10 +1,12 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Random;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
@@ -37,6 +39,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
     private final EntitySelector<Solution_> childEntitySelector;
     private final boolean randomSelection;
 
+    private Object replayedValue;
     private ReachableValues reachableValues;
     private long entitiesSize;
 
@@ -100,18 +103,30 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
         return childEntitySelector.isNeverEnding();
     }
 
+    /**
+     * The expected replayed value corresponds to the selected value when the replaying selector has the next value.
+     * Once it is selected, it will be reused until a new value is replayed by the recorder selector.
+     */
+    private Object selectReplayedValue() {
+        var iterator = replayingValueSelector.iterator();
+        if (iterator.hasNext()) {
+            replayedValue = iterator.next();
+        }
+        return replayedValue;
+    }
+
     @Override
     public Iterator<Object> endingIterator() {
-        return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), reachableValues);
+        // The ending iterator returns all values from the child iterator and ignores the reachable values
+        return getChildEntitySelector().endingIterator();
     }
 
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            return new EntityRandomFilteringValueRangeIterator(replayingValueSelector.iterator(), reachableValues,
-                    workingRandom);
+            return new RandomFilteringValueRangeIterator(this::selectReplayedValue, reachableValues, workingRandom);
         } else {
-            return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(), reachableValues);
+            return new OriginalFilteringValueRangeIterator(this::selectReplayedValue, reachableValues);
         }
     }
 
@@ -139,44 +154,50 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
     private static class OriginalFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
-        private final Iterator<Object> valueIterator;
+        private final Supplier<Object> upcomingValueSupplier;
         private final ReachableValues reachableValues;
-        private Iterator<Object> otherIterator;
+        private Iterator<Object> valueIterator;
 
-        private OriginalFilteringValueRangeIterator(Iterator<Object> valueIterator, ReachableValues reachableValues) {
-            this.valueIterator = valueIterator;
+        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues) {
             this.reachableValues = Objects.requireNonNull(reachableValues);
+            this.upcomingValueSupplier = Objects.requireNonNull(upcomingValueSupplier);
         }
 
         private void initialize() {
-            if (otherIterator != null) {
+            if (valueIterator != null) {
                 return;
             }
-            var allValues = reachableValues.extractEntitiesAsList(Objects.requireNonNull(valueIterator.next()));
-            this.otherIterator = Objects.requireNonNull(allValues).iterator();
+            var currentUpcomingValue = upcomingValueSupplier.get();
+            if (currentUpcomingValue == null) {
+                valueIterator = Collections.emptyIterator();
+            } else {
+                var allValues = Objects.requireNonNull(reachableValues)
+                        .extractEntitiesAsList(Objects.requireNonNull(currentUpcomingValue));
+                this.valueIterator = Objects.requireNonNull(allValues).iterator();
+            }
         }
 
         @Override
         protected Object createUpcomingSelection() {
             initialize();
-            if (!otherIterator.hasNext()) {
+            if (!valueIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return otherIterator.next();
+            return valueIterator.next();
         }
     }
 
-    private static class EntityRandomFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
+    private static class RandomFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
-        private final Iterator<Object> valueIterator;
+        private final Supplier<Object> upcomingValueSupplier;
         private final ReachableValues reachableValues;
         private final Random workingRandom;
         private Object currentUpcomingValue;
         private List<Object> entityList;
 
-        private EntityRandomFilteringValueRangeIterator(Iterator<Object> valueIterator,
-                ReachableValues reachableValues, Random workingRandom) {
-            this.valueIterator = valueIterator;
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+                Random workingRandom) {
+            this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.workingRandom = workingRandom;
         }
@@ -185,8 +206,12 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
             if (entityList != null) {
                 return;
             }
-            this.currentUpcomingValue = Objects.requireNonNull(valueIterator.next());
-            loadValues();
+            currentUpcomingValue = upcomingValueSupplier.get();
+            if (currentUpcomingValue == null) {
+                entityList = Collections.emptyList();
+            } else {
+                loadValues();
+            }
         }
 
         private void loadValues() {
@@ -196,14 +221,14 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
         @Override
         public boolean hasNext() {
-            if (valueIterator.hasNext() && currentUpcomingValue != null) {
-                var updatedUpcomingValue = valueIterator.next();
+            if (currentUpcomingValue != null) {
+                var updatedUpcomingValue = upcomingValueSupplier.get();
                 if (updatedUpcomingValue != currentUpcomingValue) {
                     // The iterator is reused in the ElementPositionRandomIterator,
                     // even if the value has changed.
                     // Therefore,
                     // we need to update the value list to ensure it is consistent.
-                    this.currentUpcomingValue = updatedUpcomingValue;
+                    currentUpcomingValue = updatedUpcomingValue;
                     loadValues();
                 }
             }

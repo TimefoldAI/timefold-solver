@@ -12,6 +12,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -24,12 +25,15 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.CachingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SelectedCountLimitEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ShufflingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicRecordingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 
 public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<Solution_, EntitySelectorConfig> {
@@ -64,16 +68,23 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         }
     }
 
+    public EntitySelector<Solution_> buildEntitySelector(HeuristicConfigPolicy<Solution_> configPolicy,
+            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
+        return buildEntitySelector(configPolicy, minimumCacheType, inheritedSelectionOrder, null);
+    }
+
     /**
      * @param configPolicy never null
      * @param minimumCacheType never null, If caching is used (different from {@link SelectionCacheType#JUST_IN_TIME}),
      *        then it should be at least this {@link SelectionCacheType} because an ancestor already uses such caching
      *        and less would be pointless.
      * @param inheritedSelectionOrder never null
+     * @param entityValueRangeRecorderId the recorder id to be used to create a replaying selector when enabling entity value
+     *        range
      * @return never null
      */
     public EntitySelector<Solution_> buildEntitySelector(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder) {
+            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder, String entityValueRangeRecorderId) {
         if (config.getMimicSelectorRef() != null) {
             return buildMimicReplaying(configPolicy);
         }
@@ -95,12 +106,14 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         var baseSelectionCacheType = SelectionCacheType.max(minimumCacheType, resolvedCacheType);
         var entitySelector = buildBaseEntitySelector(entityDescriptor, baseSelectionCacheType,
                 baseRandomSelection);
+        var instanceCache = configPolicy.getClassInstanceCache();
+        entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, entityValueRangeRecorderId,
+                minimumCacheType, inheritedSelectionOrder, baseRandomSelection);
         if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection
             entitySelector = applyNearbySelection(configPolicy, nearbySelectionConfig, minimumCacheType,
                     resolvedSelectionOrder, entitySelector);
         }
-        var instanceCache = configPolicy.getClassInstanceCache();
         entitySelector = applyFiltering(entitySelector, instanceCache);
         entitySelector = applySorting(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
@@ -165,6 +178,20 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
 
     private boolean hasFiltering(EntityDescriptor<Solution_> entityDescriptor) {
         return config.getFilterClass() != null || entityDescriptor.hasEffectiveMovableEntityFilter();
+    }
+
+    private EntitySelector<Solution_> applyEntityValueRangeFiltering(HeuristicConfigPolicy<Solution_> configPolicy,
+            EntitySelector<Solution_> entitySelector, String entityValueRangeRecorderId, SelectionCacheType minimumCacheType,
+            SelectionOrder selectionOrder, boolean randomSelection) {
+        if (entityValueRangeRecorderId == null) {
+            return entitySelector;
+        }
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withMimicSelectorRef(entityValueRangeRecorderId);
+        var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
+                .<Solution_> create(valueSelectorConfig)
+                .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
+        return new FilteringEntityValueRangeSelector<>(entitySelector, replayingValueSelector, randomSelection);
     }
 
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
