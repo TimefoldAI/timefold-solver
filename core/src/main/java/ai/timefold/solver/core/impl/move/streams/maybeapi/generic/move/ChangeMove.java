@@ -1,19 +1,17 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
-
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -34,15 +32,16 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
         this.toPlanningValue = toPlanningValue;
     }
 
-    protected @Nullable Value_ readValue(SolutionView<Solution_> solutionView) {
+    protected @Nullable Value_ getValue() {
         if (currentValue == null) {
-            currentValue = solutionView.getValue(variableMetaModel, entity);
+            currentValue = getVariableDescriptor(variableMetaModel).getValue(entity);
         }
         return currentValue;
     }
 
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
+        getValue(); // Cache the current value if not already cached.
         solutionView.changeVariable(variableMetaModel, entity, toPlanningValue);
     }
 
@@ -82,8 +81,7 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
 
     @Override
     public String toString() {
-        var oldValue = currentValue == null ? getVariableDescriptor(variableMetaModel).getValue(entity) : currentValue;
-        return entity + " {" + oldValue + " -> " + toPlanningValue + "}";
+        return entity + " {" + getValue() + " -> " + toPlanningValue + "}";
     }
 
 }
