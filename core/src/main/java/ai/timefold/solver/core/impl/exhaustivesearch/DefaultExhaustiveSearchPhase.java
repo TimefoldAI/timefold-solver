@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.move.generic.CompositeMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.CompositeMove;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -166,6 +166,10 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
         restoreMoveList.addAll(oldMoveList);
         Collections.reverse(newMoveList);
         restoreMoveList.addAll(newMoveList);
+        if (restoreMoveList.isEmpty()) {
+            // No moves to restore, so the working solution is already correct
+            return;
+        }
         var compositeMove = CompositeMove.buildMove(restoreMoveList);
         phaseScope.getScoreDirector().executeMove(compositeMove);
         var startingStepScore = stepScope.<Score_> getStartingStepScore();
