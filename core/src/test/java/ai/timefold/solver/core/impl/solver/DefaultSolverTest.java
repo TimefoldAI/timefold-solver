@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BooleanSupplier;
 import java.util.stream.IntStream;
 
@@ -81,6 +82,7 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ListChangeMoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProviders;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
@@ -90,7 +92,6 @@ import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -151,6 +152,7 @@ import org.assertj.core.api.Assertions;
 import org.assertj.core.api.SoftAssertions;
 import org.assertj.core.api.junit.jupiter.SoftAssertionsExtension;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -193,10 +195,35 @@ class DefaultSolverTest extends AbstractMeterTest {
 
         var solution = TestdataSolution.generateSolution(3, 2);
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
+    }
+
+    @Test
+    void solveWithMoveStreamsListVar() {
+        var solverConfig = new SolverConfig()
+                .withPreviewFeature(PreviewFeature.MOVE_STREAMS)
+                .withSolutionClass(TestdataListSolution.class)
+                .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
+                .withEasyScoreCalculatorClass(TestingListEasyScoreCalculator.class)
+                .withTerminationConfig(new TerminationConfig()
+                        .withBestScoreLimit("0")) // Should get there quickly.
+                .withPhases(new LocalSearchPhaseConfig()
+                        .withMoveProvidersClass(TestingListMoveProviders.class));
+
+        // Both values are on the same entity; the goal of the solver is to move one of them to the other entity.
+        var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
+        var v1 = solution.getValueList().get(0);
+        var v2 = solution.getValueList().get(1);
+        var e1 = solution.getEntityList().get(0);
+        e1.addValue(v1);
+        e1.addValue(v2);
+        solution.getEntityList().forEach(TestdataListEntity::setUpShadowVariables);
+
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
+        assertThat(solution).isNotNull();
     }
 
     @Test
@@ -2367,14 +2394,16 @@ class DefaultSolverTest extends AbstractMeterTest {
         }
     }
 
+    @NullMarked
     public static final class TestingMoveProviders implements MoveProviders<TestdataSolution> {
+
         @Override
         public List<MoveProvider<TestdataSolution>> defineMoves(PlanningSolutionMetaModel<TestdataSolution> solutionMetaModel) {
             var variableMetamodel = solutionMetaModel.entity(TestdataEntity.class)
-                    .<TestdataValue> genuineVariable("value");
-            return List.of(new ChangeMoveProvider<>(
-                    (PlanningVariableMetaModel<TestdataSolution, TestdataEntity, TestdataValue>) variableMetamodel));
+                    .<TestdataValue> planningVariable();
+            return List.of(new ChangeMoveProvider<>(variableMetamodel));
         }
+
     }
 
     /**
@@ -2393,6 +2422,40 @@ class DefaultSolverTest extends AbstractMeterTest {
                 }
             });
             return SimpleScore.of(-valueSet.size());
+        }
+
+    }
+
+    @NullMarked
+    public static final class TestingListMoveProviders implements MoveProviders<TestdataListSolution> {
+
+        @Override
+        public List<MoveProvider<TestdataListSolution>>
+                defineMoves(PlanningSolutionMetaModel<TestdataListSolution> solutionMetaModel) {
+            var variableMetamodel = solutionMetaModel.entity(TestdataListEntity.class)
+                    .planningListVariable();
+            return List.of(new ListChangeMoveProvider<>(variableMetamodel));
+        }
+
+    }
+
+    /**
+     * Penalizes the number of values in the list, exponentially.
+     * Only penalizes is length of the list is greater than 1.
+     */
+    public static final class TestingListEasyScoreCalculator implements EasyScoreCalculator<TestdataListSolution, SimpleScore> {
+
+        @Override
+        public @NonNull SimpleScore calculateScore(@NonNull TestdataListSolution testdataSolution) {
+            var sum = new LongAdder();
+            testdataSolution.getEntityList().forEach(e -> {
+                var size = e.getValueList().size();
+                if (size > 1) {
+                    var penalty = Math.pow(size - 1, 2);
+                    sum.add((long) penalty);
+                }
+            });
+            return SimpleScore.of(-sum.intValue());
         }
 
     }

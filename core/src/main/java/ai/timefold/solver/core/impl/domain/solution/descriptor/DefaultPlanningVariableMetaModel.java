@@ -28,11 +28,6 @@ public record DefaultPlanningVariableMetaModel<Solution_, Entity_, Value_>(
     }
 
     @Override
-    public boolean hasValueRangeOnEntity() {
-        return !variableDescriptor.canExtractValueRangeFromSolution();
-    }
-
-    @Override
     public boolean allowsUnassigned() {
         return variableDescriptor.allowsUnassigned();
     }

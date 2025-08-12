@@ -185,6 +185,12 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         return extractVariableDescriptor(variableMetaModel).getValue(entity);
     }
 
+    @Override
+    public <Entity_, Value_> int countValues(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity) {
+        return extractVariableDescriptor(variableMetaModel).getValue(entity).size();
+    }
+
     @SuppressWarnings("unchecked")
     @Override
     public final <Entity_, Value_> Value_ getValueAtIndex(

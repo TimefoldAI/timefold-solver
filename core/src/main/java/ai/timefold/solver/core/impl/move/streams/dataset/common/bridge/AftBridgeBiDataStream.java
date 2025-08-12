@@ -4,18 +4,18 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.AbstractBiDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
-import ai.timefold.solver.core.impl.move.streams.dataset.uni.AbstractUniDataStream;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class AftBridgeUniDataStream<Solution_, A>
-        extends AbstractUniDataStream<Solution_, A>
+public final class AftBridgeBiDataStream<Solution_, A, B>
+        extends AbstractBiDataStream<Solution_, A, B>
         implements TupleSource {
 
-    public AftBridgeUniDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
+    public AftBridgeBiDataStream(DataStreamFactory<Solution_> dataStreamFactory, AbstractDataStream<Solution_> parent) {
         super(dataStreamFactory, parent);
     }
 
@@ -26,7 +26,7 @@ public final class AftBridgeUniDataStream<Solution_, A>
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof AftBridgeUniDataStream<?, ?> that && Objects.equals(parent, that.parent);
+        return o instanceof AftBridgeBiDataStream<?, ?, ?> that && Objects.equals(parent, that.parent);
     }
 
     @Override

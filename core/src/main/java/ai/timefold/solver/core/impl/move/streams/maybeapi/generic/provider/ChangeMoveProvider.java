@@ -9,7 +9,6 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFacto
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class ChangeMoveProvider<Solution_, Entity_, Value_>
@@ -25,12 +24,12 @@ public class ChangeMoveProvider<Solution_, Entity_, Value_>
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
         var dataStream = moveStreamFactory.enumerateEntityValuePairs(variableMetaModel)
                 .filter((solutionView, entity, value) -> {
-                    @Nullable
                     Value_ currentValue = solutionView.getValue(variableMetaModel, Objects.requireNonNull(entity));
                     return !Objects.equals(currentValue, value);
                 });
         return moveStreamFactory.pick(dataStream)
-                .asMove((solution, entity, value) -> new ChangeMove<>(variableMetaModel, entity, value));
+                .asMove((solution, entity, value) -> new ChangeMove<>(variableMetaModel, Objects.requireNonNull(entity),
+                        value));
     }
 
 }

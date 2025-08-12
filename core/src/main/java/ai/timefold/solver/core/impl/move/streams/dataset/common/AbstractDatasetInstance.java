@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.common;
 
 import java.util.Iterator;
 import java.util.Objects;
@@ -23,11 +23,6 @@ public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends Abstract
 
     public AbstractDataset<Solution_, Tuple_> getParent() {
         return parent;
-    }
-
-    @Override
-    public void update(Tuple_ tuple) {
-        // No need to do anything.
     }
 
     public abstract Iterator<Tuple_> iterator();

@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.AbstractUniDataStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -21,130 +23,130 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachBasicVariable() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor());
+        var dataStreamFactory =
+                new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniDataStream<TestdataSolution, TestdataEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataEntity.class, false))
                 .createDataset();
 
         var solution = TestdataSolution.generateSolution(2, 2);
-        try (var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            var entity1 = solution.getEntityList().get(0);
-            var entity2 = solution.getEntityList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(entity1, entity2);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(entity1, entity2);
 
-            // Make incremental changes.
-            var entity3 = new TestdataEntity("entity3", solution.getValueList().get(0));
-            datasetSession.insert(entity3);
-            datasetSession.retract(entity2);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity3 = new TestdataEntity("entity3", solution.getValueList().get(0));
+        datasetSession.insert(entity3);
+        datasetSession.retract(entity2);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(entity1, entity3);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(entity1, entity3);
     }
 
     @Test
     void forEachBasicVariableIncludingNull() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor());
+        var dataStreamFactory =
+                new DataStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniDataStream<TestdataSolution, TestdataEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataEntity.class, true))
                 .createDataset();
 
         var solution = TestdataSolution.generateSolution(2, 2);
-        try (var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = UniDatasetStreamTest.createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            var entity1 = solution.getEntityList().get(0);
-            var entity2 = solution.getEntityList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, entity1, entity2);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, entity1, entity2);
 
-            // Make incremental changes.
-            var entity3 = new TestdataEntity("entity3", solution.getValueList().get(0));
-            datasetSession.insert(entity3);
-            datasetSession.retract(entity2);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity3 = new TestdataEntity("entity3", solution.getValueList().get(0));
+        datasetSession.insert(entity3);
+        datasetSession.retract(entity2);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, entity1, entity3);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, entity1, entity3);
     }
 
     @Test
     void forEachListVariable() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor());
+        var dataStreamFactory =
+                new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniDataStream<TestdataListSolution, TestdataListEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataListEntity.class, false))
                 .createDataset();
 
         var solution = TestdataListSolution.generateInitializedSolution(2, 2);
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            var entity1 = solution.getEntityList().get(0);
-            var entity2 = solution.getEntityList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(entity1, entity2);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(entity1, entity2);
 
-            // Make incremental changes.
-            var entity3 = new TestdataListEntity("entity3");
-            datasetSession.insert(entity3);
-            datasetSession.retract(entity2);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity3 = new TestdataListEntity("entity3");
+        datasetSession.insert(entity3);
+        datasetSession.retract(entity2);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(entity1, entity3);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(entity1, entity3);
     }
 
     @Test
     void forEachListVariableIncludingNull() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor());
+        var dataStreamFactory =
+                new DataStreamFactory<>(TestdataListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniDataStream<TestdataListSolution, TestdataListEntity>) dataStreamFactory
                 .forEachNonDiscriminating(TestdataListEntity.class, true))
                 .createDataset();
 
         var solution = TestdataListSolution.generateInitializedSolution(2, 2);
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            var entity1 = solution.getEntityList().get(0);
-            var entity2 = solution.getEntityList().get(1);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, entity1, entity2);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, entity1, entity2);
 
-            // Make incremental changes.
-            var entity3 = new TestdataListEntity("entity3");
-            datasetSession.insert(entity3);
-            datasetSession.retract(entity2);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity3 = new TestdataListEntity("entity3");
+        datasetSession.insert(entity3);
+        datasetSession.retract(entity2);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, entity1, entity3);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, entity1, entity3);
     }
 
     private static <Solution_> DatasetSession<Solution_> createSession(DataStreamFactory<Solution_> dataStreamFactory,
@@ -165,7 +167,8 @@ class UniDatasetStreamTest {
 
     @Test
     void forEachListVariableIncludingPinned() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
+                EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, false))
@@ -184,31 +187,31 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(fullyPinnedEntity, partiallyPinnedEntity, unpinnedEntity);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(fullyPinnedEntity, partiallyPinnedEntity, unpinnedEntity);
 
-            // Make incremental changes.
-            var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
-            entity4.setPinned(true);
-            datasetSession.insert(entity4);
-            datasetSession.retract(partiallyPinnedEntity);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
+        entity4.setPinned(true);
+        datasetSession.insert(entity4);
+        datasetSession.retract(partiallyPinnedEntity);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(fullyPinnedEntity, unpinnedEntity, entity4);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(fullyPinnedEntity, unpinnedEntity, entity4);
     }
 
     @Test
     void forEachListVariableIncludingPinnedAndNull() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
+                EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, true))
@@ -227,31 +230,31 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, fullyPinnedEntity, partiallyPinnedEntity, unpinnedEntity);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, fullyPinnedEntity, partiallyPinnedEntity, unpinnedEntity);
 
-            // Make incremental changes.
-            var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
-            entity4.setPinned(true);
-            datasetSession.insert(entity4);
-            datasetSession.retract(partiallyPinnedEntity);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
+        entity4.setPinned(true);
+        datasetSession.insert(entity4);
+        datasetSession.retract(partiallyPinnedEntity);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, fullyPinnedEntity, unpinnedEntity, entity4);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, fullyPinnedEntity, unpinnedEntity, entity4);
     }
 
     @Test
     void forEachListVariableExcludingPinned() { // Entities with planningPin true will be skipped.
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
+                EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, false))
@@ -271,31 +274,31 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(partiallyPinnedEntity, unpinnedEntity);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(partiallyPinnedEntity, unpinnedEntity);
 
-            // Make incremental changes.
-            var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
-            entity4.setPinned(true);
-            datasetSession.insert(entity4);
-            datasetSession.retract(partiallyPinnedEntity);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
+        entity4.setPinned(true);
+        datasetSession.insert(entity4);
+        datasetSession.retract(partiallyPinnedEntity);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(unpinnedEntity);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(unpinnedEntity);
     }
 
     @Test
     void forEachListVariableExcludingPinnedIncludingNull() { // Entities with planningPin true will be skipped.
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
+                EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, true))
@@ -315,31 +318,31 @@ class UniDatasetStreamTest {
         unpinnedEntity.setPinned(false);
         unpinnedEntity.setPlanningPinToIndex(0);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, partiallyPinnedEntity, unpinnedEntity);
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, partiallyPinnedEntity, unpinnedEntity);
 
-            // Make incremental changes.
-            var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
-            entity4.setPinned(true);
-            datasetSession.insert(entity4);
-            datasetSession.retract(partiallyPinnedEntity);
-            datasetSession.settle();
+        // Make incremental changes.
+        var entity4 = new TestdataPinnedWithIndexListEntity("entity4");
+        entity4.setPinned(true);
+        datasetSession.insert(entity4);
+        datasetSession.retract(partiallyPinnedEntity);
+        datasetSession.settle();
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, unpinnedEntity);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, unpinnedEntity);
     }
 
     @Test
     void forEachListVariableIncludingPinnedValues() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
+                EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, false))
@@ -368,19 +371,19 @@ class UniDatasetStreamTest {
         // Properly set shadow variables based on the changes above.
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(value1, value2, value3, value4, unassignedValue);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(value1, value2, value3, value4, unassignedValue);
     }
 
     @Test
     void forEachListVariableIncludingPinnedValuesAndNull() {
-        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor());
+        var dataStreamFactory = new DataStreamFactory<>(TestdataPinnedWithIndexListSolution.buildSolutionDescriptor(),
+                EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, true))
@@ -409,20 +412,19 @@ class UniDatasetStreamTest {
         // Properly set shadow variables based on the changes above.
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, value1, value2, value3, value4, unassignedValue);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, value1, value2, value3, value4, unassignedValue);
     }
 
     @Test
     void forEachListVariableExcludingPinnedValues() {
         var solutionDescriptor = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor();
-        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
+        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListValue.class, false))
@@ -454,20 +456,19 @@ class UniDatasetStreamTest {
         // Properly set shadow variables based on the changes above.
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(value2, value3, value4);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(value2, value3, value4);
     }
 
     @Test
     void forEachListVariableExcludingPinnedValuesIncludingNull() {
         var solutionDescriptor = TestdataPinnedWithIndexListSolution.buildSolutionDescriptor();
-        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor);
+        var dataStreamFactory = new DataStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
         var uniDataset =
                 ((AbstractUniDataStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) dataStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListValue.class, true))
@@ -499,14 +500,13 @@ class UniDatasetStreamTest {
         // Properly set shadow variables based on the changes above.
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
-        try (var datasetSession = createSession(dataStreamFactory, solution)) {
-            var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var datasetSession = createSession(dataStreamFactory, solution);
+        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
 
-            assertThat(uniDatasetInstance.iterator())
-                    .toIterable()
-                    .map(t -> t.factA)
-                    .containsExactly(null, value2, value3, value4);
-        }
+        assertThat(uniDatasetInstance.iterator())
+                .toIterable()
+                .map(t -> t.factA)
+                .containsExactly(null, value2, value3, value4);
     }
 
 }

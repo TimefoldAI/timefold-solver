@@ -13,7 +13,7 @@ public class TestdataListEntityProvidingSolution {
 
     public static SolutionDescriptor<TestdataListEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataListEntityProvidingSolution.class,
-                TestdataListEntityProvidingEntity.class);
+                TestdataListEntityProvidingEntity.class, TestdataListEntityProvidingValue.class);
     }
 
     public static TestdataListEntityProvidingSolution generateSolution() {
@@ -38,6 +38,14 @@ public class TestdataListEntityProvidingSolution {
 
     public void setEntityList(List<TestdataListEntityProvidingEntity> entityList) {
         this.entityList = entityList;
+    }
+
+    @PlanningEntityCollectionProperty
+    public List<TestdataListEntityProvidingValue> getValueList() {
+        return entityList.stream()
+                .flatMap(entity -> entity.getValueRange().stream())
+                .distinct()
+                .toList();
     }
 
     @PlanningScore

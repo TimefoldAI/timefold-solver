@@ -1,9 +1,11 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
 import java.util.Iterator;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDatasetInstance;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
@@ -23,6 +25,11 @@ public final class UniDatasetInstance<Solution_, A>
     public void insert(UniTuple<A> tuple) {
         var entry = tupleList.add(tuple);
         tuple.setStore(inputStoreIndex, entry);
+    }
+
+    @Override
+    public void update(UniTuple<A> tuple) {
+        // No need to do anything.
     }
 
     @Override

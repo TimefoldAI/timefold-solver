@@ -1,13 +1,27 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.uni;
 
+import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.oneKeyGroupBy;
+
+import java.util.Objects;
+import java.util.function.Function;
+
+import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
+import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
+import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping0CollectorUniNode;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.JoinBiDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeBiDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.AftBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.bridge.ForeBridgeUniDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.joiner.BiDataJoinerComber;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataMapper;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.BiDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
+import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -30,8 +44,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     }
 
     @Override
-    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull UniDataStream<Solution_, B> otherStream,
-            @NonNull BiDataJoiner<A, B>... joiners) {
+    public <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B>... joiners) {
         var other = (AbstractUniDataStream<Solution_, B>) otherStream;
         var leftBridge = new ForeBridgeUniDataStream<Solution_, A>(dataStreamFactory, this);
         var rightBridge = new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other);
@@ -46,8 +59,7 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
     }
 
     @Override
-    public @NonNull <B> BiDataStream<Solution_, A, B> join(@NonNull Class<B> otherClass,
-            @NonNull BiDataJoiner<A, B>... joiners) {
+    public <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass, BiDataJoiner<A, B>... joiners) {
         return join(dataStreamFactory.forEachNonDiscriminating(otherClass, false), joiners);
     }
 
@@ -84,6 +96,52 @@ public abstract class AbstractUniDataStream<Solution_, A> extends AbstractDataSt
         var parentBridgeB = other.shareAndAddChild(new ForeBridgeUniDataStream<Solution_, B>(dataStreamFactory, other));
         return dataStreamFactory.share(new IfExistsUniDataStream<>(dataStreamFactory, this, parentBridgeB, shouldExist,
                 joinerComber.mergedJoiner(), joinerComber.mergedFiltering()), childStreamList::add);
+    }
+
+    /**
+     * Convert the {@link UniDataStream} to a different {@link UniDataStream},
+     * containing the set of tuples resulting from applying the group key mapping function
+     * on all tuples of the original stream.
+     * Neither tuple of the new stream {@link Objects#equals(Object, Object)} any other.
+     *
+     * @param groupKeyMapping mapping function to convert each element in the stream to a different element
+     * @param <GroupKey_> the type of a fact in the destination {@link UniDataStream}'s tuple;
+     *        must honor {@link Object#hashCode() the general contract of hashCode}.
+     */
+    protected <GroupKey_> AbstractUniDataStream<Solution_, GroupKey_> groupBy(Function<A, GroupKey_> groupKeyMapping) {
+        // We do not expose this on the API, as this operation is not yet needed in any of the moves.
+        // The groupBy API will need revisiting if exposed as a feature of Move Streams, do not expose as is.
+        GroupNodeConstructor<UniTuple<GroupKey_>> nodeConstructor =
+                oneKeyGroupBy(groupKeyMapping, Group1Mapping0CollectorUniNode::new);
+        return buildUniGroupBy(nodeConstructor);
+    }
+
+    private <NewA> AbstractUniDataStream<Solution_, NewA>
+            buildUniGroupBy(GroupNodeConstructor<UniTuple<NewA>> nodeConstructor) {
+        var stream = shareAndAddChild(new UniGroupUniDataStream<>(dataStreamFactory, this, nodeConstructor));
+        return dataStreamFactory.share(new AftBridgeUniDataStream<>(dataStreamFactory, stream),
+                stream::setAftBridge);
+    }
+
+    @Override
+    public <ResultA_> UniDataStream<Solution_, ResultA_> map(UniDataMapper<Solution_, A, ResultA_> mapping) {
+        var stream = shareAndAddChild(new UniMapUniDataStream<>(dataStreamFactory, this, mapping));
+        return dataStreamFactory.share(new AftBridgeUniDataStream<>(dataStreamFactory, stream), stream::setAftBridge);
+    }
+
+    @Override
+    public <ResultA_, ResultB_> BiDataStream<Solution_, ResultA_, ResultB_> map(UniDataMapper<Solution_, A, ResultA_> mappingA,
+            UniDataMapper<Solution_, A, ResultB_> mappingB) {
+        var stream = shareAndAddChild(new BiMapUniDataStream<>(dataStreamFactory, this, mappingA, mappingB));
+        return dataStreamFactory.share(new AftBridgeBiDataStream<>(dataStreamFactory, stream), stream::setAftBridge);
+    }
+
+    @Override
+    public AbstractUniDataStream<Solution_, A> distinct() {
+        if (guaranteesDistinct()) {
+            return this; // Already distinct, no need to create a new stream.
+        }
+        return groupBy(ConstantLambdaUtils.identity());
     }
 
     public UniDataset<Solution_, A> createDataset() {

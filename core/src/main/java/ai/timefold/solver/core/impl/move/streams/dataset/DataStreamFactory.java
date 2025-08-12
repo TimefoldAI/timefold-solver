@@ -8,13 +8,16 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
+import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataset;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.TerminalDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.AbstractUniDataStream;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.ForEachIncludingPinnedDataStream;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.UniDataStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
-import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -22,10 +25,12 @@ import org.jspecify.annotations.NullMarked;
 public final class DataStreamFactory<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
+    private final EnvironmentMode environmentMode;
     private final Map<AbstractDataStream<Solution_>, AbstractDataStream<Solution_>> sharingStreamMap = new HashMap<>(256);
 
-    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor) {
+    public DataStreamFactory(SolutionDescriptor<Solution_> solutionDescriptor, EnvironmentMode environmentMode) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
+        this.environmentMode = Objects.requireNonNull(environmentMode);
     }
 
     public <A> UniDataStream<Solution_, A> forEachNonDiscriminating(Class<A> sourceClass, boolean includeNull) {
@@ -60,14 +65,6 @@ public final class DataStreamFactory<Solution_> {
                 .ifNotExists(parentEntityDescriptor.getEntityClass(),
                         DataJoiners.filtering(listVariableDescriptor.getEntityContainsPinnedValuePredicate()));
         return share((AbstractUniDataStream<Solution_, A>) stream);
-    }
-
-    @SuppressWarnings("unchecked")
-    public <A> UniDataStream<Solution_, A> forEachFromSolution(GenuineVariableMetaModel<Solution_, ?, A> variableMetaModel,
-            boolean includeNull) {
-        var variableDescriptor = ((InnerGenuineVariableMetaModel<Solution_>) variableMetaModel).variableDescriptor();
-        return share(new ForEachFromSolutionDataStream<>(this, variableDescriptor.getValueRangeDescriptor(),
-                includeNull));
     }
 
     public <A> void assertValidForEachType(Class<A> fromType) {
@@ -124,6 +121,10 @@ public final class DataStreamFactory<Solution_> {
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
         return solutionDescriptor;
+    }
+
+    public EnvironmentMode getEnvironmentMode() {
+        return environmentMode;
     }
 
     @SuppressWarnings("unchecked")

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.dataset;
+package ai.timefold.solver.core.impl.move.streams.dataset.common;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,7 +6,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.bavet.common.BavetStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -29,16 +29,26 @@ public abstract class AbstractDataStream<Solution_>
         return dataStreamFactory.share(stream, childStreamList::add);
     }
 
+    protected boolean guaranteesDistinct() {
+        if (parent != null) {
+            // It is generally safe to take this from the parent; if the stream disagrees, it may override.
+            return parent.guaranteesDistinct();
+        } else { // Streams need to explicitly opt-in by overriding this method.
+            return false;
+        }
+    }
+
     // ************************************************************************
     // Node creation
     // ************************************************************************
 
-    public void collectActiveDataStreams(Set<AbstractDataStream<Solution_>> constraintStreamSet) {
+    public void collectActiveDataStreams(Set<AbstractDataStream<Solution_>> dataStreamSet) {
         if (parent == null) { // Maybe a join/ifExists/forEach forgot to override this?
-            throw new IllegalStateException("Impossible state: the stream (" + this + ") does not have a parent.");
+            throw new IllegalStateException("Impossible state: the stream (%s) does not have a parent."
+                    .formatted(this));
         }
-        parent.collectActiveDataStreams(constraintStreamSet);
-        constraintStreamSet.add(this);
+        parent.collectActiveDataStreams(dataStreamSet);
+        dataStreamSet.add(this);
     }
 
     /**

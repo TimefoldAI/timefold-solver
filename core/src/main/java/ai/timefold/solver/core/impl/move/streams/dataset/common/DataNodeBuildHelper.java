@@ -9,8 +9,6 @@ import java.util.Set;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDataStream;
-import ai.timefold.solver.core.impl.move.streams.dataset.AbstractDatasetInstance;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 
 import org.jspecify.annotations.NullMarked;

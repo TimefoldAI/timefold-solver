@@ -2,25 +2,26 @@ package ai.timefold.solver.core.impl.move.streams;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.move.streams.dataset.BiDataset;
-import ai.timefold.solver.core.impl.move.streams.dataset.BiDatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.dataset.DatasetSession;
-import ai.timefold.solver.core.impl.move.streams.dataset.UniDataset;
-import ai.timefold.solver.core.impl.move.streams.dataset.UniDatasetInstance;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.bi.BiDatasetInstance;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.UniDataset;
+import ai.timefold.solver.core.impl.move.streams.dataset.uni.UniDatasetInstance;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
+import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public final class DefaultMoveStreamSession<Solution_>
-        implements MoveStreamSession<Solution_>, AutoCloseable {
+        implements MoveStreamSession<Solution_> {
 
     private final DatasetSession<Solution_> datasetSession;
-    private final Solution_ workingSolution;
+    private final SolutionView<Solution_> solutionView;
 
-    public DefaultMoveStreamSession(DatasetSession<Solution_> datasetSession, Solution_ workingSolution) {
+    public DefaultMoveStreamSession(DatasetSession<Solution_> datasetSession, SolutionView<Solution_> solutionView) {
         this.datasetSession = Objects.requireNonNull(datasetSession);
-        this.workingSolution = Objects.requireNonNull(workingSolution);
+        this.solutionView = Objects.requireNonNull(solutionView);
     }
 
     public <A> UniDatasetInstance<Solution_, A> getDatasetInstance(UniDataset<Solution_, A> dataset) {
@@ -47,12 +48,8 @@ public final class DefaultMoveStreamSession<Solution_>
         datasetSession.settle();
     }
 
-    public Solution_ getWorkingSolution() {
-        return workingSolution;
+    public SolutionView<Solution_> getSolutionView() {
+        return solutionView;
     }
 
-    @Override
-    public void close() {
-        datasetSession.close();
-    }
 }
