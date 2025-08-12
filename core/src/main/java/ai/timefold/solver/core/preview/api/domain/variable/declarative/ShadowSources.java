@@ -15,7 +15,8 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ShadowSources {
     /**
-     * The paths to variables the method uses to compute the value of a {@link ShadowVariable#supplierName() supplier variable}.
+     * The paths to variables the method uses to compute the value of a {@link ShadowVariable#supplierName() declarative shadow
+     * variable}.
      * <p>
      * Each path is a {@link String} that is one of the following three forms:
      *
@@ -26,7 +27,7 @@ public @interface ShadowSources {
      * <li>
      * A list of names seperated by ".", such as "variableOrFact.fact.entity.variable",
      * for referencing a variable accessible from the planning entity.
-     * The first property may be a fact or any non-supplier variable; the remaining properties before the end
+     * The first property may be a fact or any non-declarative variable; the remaining properties before the end
      * must be facts, and the final property must be a variable.
      * For the path "a.b", it refers to the variable "b"
      * on the property/variable "a" on the planning entity.
@@ -87,9 +88,9 @@ public @interface ShadowSources {
      * 
      * The value {@code { "previous.endTime", "entity", "dependencies[].endTime") }} is used
      * for {@link ShadowSources} since it accesses
-     * the end time supplier variable of its previous element variable ("previous.endTime"),
+     * the end time declarative shadow variable of its previous element variable ("previous.endTime"),
      * a fact on its inverse relation variable ("entity"),
-     * and the end time supplier variable on each element in its dependencies ("dependencies[].endTime").
+     * and the end time declarative shadow variable on each element in its dependencies ("dependencies[].endTime").
      * <p>
      * 
      * @return A non-empty list of variables the supplier method accesses.
