@@ -79,7 +79,8 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         if (valueRangeDescriptorList.size() == 1) {
             valueRangeDescriptor = valueRangeDescriptorList.get(0);
         } else {
-            valueRangeDescriptor = new CompositeValueRangeDescriptor<>(this, valueRangeDescriptorList);
+            valueRangeDescriptor = new CompositeValueRangeDescriptor<>(descriptorPolicy.reserveValueRangeId(), this,
+                    valueRangeDescriptorList);
         }
     }
 
@@ -148,9 +149,11 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     private ValueRangeDescriptor<Solution_> buildValueRangeDescriptor(DescriptorPolicy descriptorPolicy,
             MemberAccessor valueRangeProviderMemberAccessor) {
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            return new FromSolutionPropertyValueRangeDescriptor<>(this, valueRangeProviderMemberAccessor);
+            return new FromSolutionPropertyValueRangeDescriptor<>(descriptorPolicy.reserveValueRangeId(), this,
+                    valueRangeProviderMemberAccessor);
         } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            return new FromEntityPropertyValueRangeDescriptor<>(this, valueRangeProviderMemberAccessor);
+            return new FromEntityPropertyValueRangeDescriptor<>(descriptorPolicy.reserveValueRangeId(), this,
+                    valueRangeProviderMemberAccessor);
         } else {
             throw new IllegalStateException("Impossible state: member accessor (%s) is not a value range provider."
                     .formatted(valueRangeProviderMemberAccessor));

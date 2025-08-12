@@ -143,7 +143,6 @@ public class SolutionDescriptor<Solution_> {
 
         solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
         solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
-        var ordinal = 0;
         // Before iterating over the entity classes, we need to read the inheritance chain,
         // add all parent and child classes, and sort them.
         var updatedEntityClassList = new ArrayList<>(entityClassList);
@@ -154,7 +153,8 @@ public class SolutionDescriptor<Solution_> {
             updatedEntityClassList.addAll(filteredInheritedEntityClasses);
         }
         for (var entityClass : sortEntityClassList(updatedEntityClassList)) {
-            var entityDescriptor = new EntityDescriptor<>(ordinal++, solutionDescriptor, entityClass);
+            var entityDescriptor =
+                    new EntityDescriptor<>(descriptorPolicy.reserveEntityId(), solutionDescriptor, entityClass);
             solutionDescriptor.addEntityDescriptor(entityDescriptor);
             entityDescriptor.processAnnotations(descriptorPolicy);
         }
@@ -164,6 +164,9 @@ public class SolutionDescriptor<Solution_> {
             solutionDescriptor.constraintWeightSupplier.initialize(solutionDescriptor,
                     descriptorPolicy.getMemberAccessorFactory(), descriptorPolicy.getDomainAccessType());
         }
+        // Update the reserved ordinal IDs for the entities along with their corresponding value ranges
+        // These ordinal IDs are used for quick access and to eliminate the need for hash lookups
+        solutionDescriptor.processOrdinalIds(descriptorPolicy);
         return solutionDescriptor;
     }
 
@@ -266,6 +269,9 @@ public class SolutionDescriptor<Solution_> {
     private DomainAccessType domainAccessType;
     private AutoDiscoverMemberType autoDiscoverMemberType;
     private LookUpStrategyResolver lookUpStrategyResolver;
+
+    private int maxEntityOrdinal = 0;
+    private int maxValueRangeOrdinal = 0;
 
     /**
      * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
@@ -634,6 +640,11 @@ public class SolutionDescriptor<Solution_> {
         } else {
             throw new IllegalStateException("Impossible situation with annotationClass (" + annotationClass + ").");
         }
+    }
+
+    private void processOrdinalIds(DescriptorPolicy descriptorPolicy) {
+        this.maxEntityOrdinal = descriptorPolicy.getEntityIdCount();
+        this.maxValueRangeOrdinal = descriptorPolicy.getValueRangeIdCount();
     }
 
     private void assertNoFieldAndGetterDuplicationOrConflict(
@@ -1284,6 +1295,20 @@ public class SolutionDescriptor<Solution_> {
      */
     public <Score_ extends Score<Score_>> void setScore(Solution_ solution, Score_ score) {
         this.<Score_> getScoreDescriptor().setScore(solution, score);
+    }
+
+    /**
+     * Return the count of entity descriptors that are registered by the solution descriptor.
+     */
+    public int countEntityDescriptor() {
+        return maxEntityOrdinal;
+    }
+
+    /**
+     * Return the count of value range descriptors that are registered by the solution descriptor.
+     */
+    public int countValueRangeDescriptor() {
+        return maxValueRangeOrdinal;
     }
 
     public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {

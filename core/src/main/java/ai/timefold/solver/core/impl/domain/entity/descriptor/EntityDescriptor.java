@@ -99,7 +99,7 @@ public class EntityDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
-    private final int ordinal;
+    private final int ordinalId;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Class<?> entityClass;
     private final List<Class<?>> declaredInheritedEntityClassList = new ArrayList<>();
@@ -147,8 +147,8 @@ public class EntityDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public EntityDescriptor(int ordinal, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
-        this.ordinal = ordinal;
+    public EntityDescriptor(int ordinalId, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
+        this.ordinalId = ordinalId;
         SolutionDescriptor.assertMutable(entityClass, "entityClass");
         this.solutionDescriptor = solutionDescriptor;
         this.entityClass = entityClass;
@@ -170,8 +170,8 @@ public class EntityDescriptor<Solution_> {
      *
      * @return zero or higher
      */
-    public int getOrdinal() {
-        return ordinal;
+    public int getOrdinalId() {
+        return ordinalId;
     }
 
     /**

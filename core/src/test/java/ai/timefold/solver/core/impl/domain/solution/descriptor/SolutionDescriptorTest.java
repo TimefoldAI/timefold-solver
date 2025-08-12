@@ -6,9 +6,14 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
 import static org.assertj.core.api.Assertions.assertThatIllegalStateException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
@@ -31,6 +36,7 @@ import ai.timefold.solver.core.testdomain.invalid.entityannotatedasproblemfact.T
 import ai.timefold.solver.core.testdomain.invalid.multivar.TestdataInvalidMultiVarSolution;
 import ai.timefold.solver.core.testdomain.invalid.nosolution.TestdataNoSolution;
 import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigurationSolution;
+import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataNoProblemFactPropertySolution;
@@ -420,5 +426,20 @@ class SolutionDescriptorTest {
                         "supplierMethod (calculateEndTime) that does not exist",
                         "inside its declaring class (ai.timefold.solver.core.testdomain.declarative.missing.TestdataDeclarativeMissingSupplierValue).",
                         "Maybe you misspelled the supplierMethod name?");
+    }
+
+    @Test
+    void testOrdinalId() {
+        var solutionDescriptor = TestdataMixedMultiEntitySolution.buildSolutionDescriptor();
+        assertThat(solutionDescriptor.countEntityDescriptor()).isEqualTo(2);
+        assertThat(solutionDescriptor.getEntityDescriptors().stream().map(EntityDescriptor::getOrdinalId))
+                .hasSameElementsAs(List.of(0, 1));
+        assertThat(solutionDescriptor.countValueRangeDescriptor()).isEqualTo(3);
+        var allIds = new ArrayList<Integer>();
+        allIds.addAll(solutionDescriptor.getBasicVariableDescriptorList().stream()
+                .map(BasicVariableDescriptor::getValueRangeDescriptor).mapToInt(ValueRangeDescriptor::getOrdinalId).boxed()
+                .toList());
+        allIds.add(solutionDescriptor.getListVariableDescriptor().getValueRangeDescriptor().getOrdinalId());
+        assertThat(allIds).containsExactlyInAnyOrder(0, 1, 2);
     }
 }

@@ -30,6 +30,8 @@ public class DescriptorPolicy {
     private Set<PreviewFeature> enabledPreviewFeatureSet = EnumSet.noneOf(PreviewFeature.class);
     @Nullable
     private MemberAccessorFactory memberAccessorFactory;
+    private int entityOrdinalCount = 0;
+    private int valueRangeOrdinalCount = 0;
 
     public void addFromSolutionValueRangeProvider(MemberAccessor memberAccessor) {
         String id = extractValueRangeProviderId(memberAccessor);
@@ -155,4 +157,19 @@ public class DescriptorPolicy {
         return valueRangeProviderIds;
     }
 
+    public int reserveEntityId() {
+        return entityOrdinalCount++;
+    }
+
+    public int getEntityIdCount() {
+        return entityOrdinalCount;
+    }
+
+    public int reserveValueRangeId() {
+        return valueRangeOrdinalCount++;
+    }
+
+    public int getValueRangeIdCount() {
+        return valueRangeOrdinalCount;
+    }
 }
