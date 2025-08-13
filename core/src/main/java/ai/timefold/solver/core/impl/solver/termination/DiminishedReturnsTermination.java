@@ -22,8 +22,8 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     private final double minimumImprovementRatio;
 
     private boolean isGracePeriodActive;
-    boolean locked = true;
-    long gracePeriodStartTimeNanos;
+    private boolean isGracePeriodStarted = false;
+    private long gracePeriodStartTimeNanos;
     private double gracePeriodSoftestImprovementDouble;
 
     private final DiminishedReturnsScoreRingBuffer<Score_> scoresByTime;
@@ -98,7 +98,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     private void resetGracePeriod(long currentTime, InnerScore<Score_> startingScore) {
         gracePeriodStartTimeNanos = currentTime;
         isGracePeriodActive = true;
-        locked = false;
+        isGracePeriodStarted = true;
 
         // Remove all entries in the map since grace is reset
         scoresByTime.clear();
@@ -108,7 +108,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     }
 
     public boolean isTerminated(long currentTime, InnerScore<Score_> endScore) {
-        if (locked) {
+        if (!isGracePeriodStarted) {
             return false;
         }
         if (isGracePeriodActive) {
@@ -170,7 +170,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        locked = true;
+        isGracePeriodStarted = false;
     }
 
     @Override
@@ -182,7 +182,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         // We reset the count only when the first step begins,
         // as all necessary resources are loaded, and the phase is ready for execution
-        if (locked) {
+        if (!isGracePeriodStarted) {
             start(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
         }
     }
@@ -197,6 +197,14 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     public boolean isApplicableTo(Class<? extends AbstractPhaseScope> phaseScopeClass) {
         return !(phaseScopeClass == ConstructionHeuristicPhaseScope.class
                 || phaseScopeClass == CustomPhaseScope.class);
+    }
+
+    boolean isGracePeriodStarted() {
+        return isGracePeriodStarted;
+    }
+
+    long getGracePeriodStartTimeNanos() {
+        return gracePeriodStartTimeNanos;
     }
 
     @Override

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.time.Clock;
+import java.time.Duration;
 
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
@@ -15,6 +16,7 @@ import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testutil.MockClock;
 
 import org.junit.jupiter.api.Test;
 
@@ -145,25 +147,24 @@ class UnimprovedTimeMillisSpentTerminationTest {
         var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
         var stepScope = mock(AbstractStepScope.class);
 
-        Clock clock = mock(Clock.class);
+        var clock = new MockClock(Clock.systemUTC());
 
         var termination = new UnimprovedTimeMillisSpentTermination<TestdataSolution>(1000L, clock);
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
 
         // The termination is not started yet
-        assertThat(termination.locked).isTrue();
-        doReturn(10000L).when(clock).millis();
+        clock.tick(Duration.ofMillis(10000L));
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
 
         // The counter is started
         termination.stepStarted(stepScope);
-        doReturn(10500L).when(clock).millis();
-        doReturn(10000L).when(phaseScope).getPhaseBestSolutionTimeMillis();
+        clock.tick(Duration.ofMillis(500L));
+        doReturn(clock.millis()).when(phaseScope).getPhaseBestSolutionTimeMillis();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
 
         // Timeout
-        doReturn(12000L).when(clock).millis();
+        clock.tick(Duration.ofMillis(1100L));
         assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
     }
 }

@@ -231,7 +231,7 @@ class DiminishedReturnsTerminationTest {
         // The goal is to verify termination after a long initialization,
         // ensuring the termination does not occur until all necessary resources,
         // such as distance matrices, are fully loaded.
-        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 1);
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(1_000, 1);
         var score = InnerScore.withUnassignedCount(SimpleScore.ZERO, 1);
 
         // Start the phase, but it does not trigger the counter yet
@@ -240,28 +240,31 @@ class DiminishedReturnsTerminationTest {
         termination.phaseStarted(phaseScope);
 
         // The termination is not started yet
-        assertThat(termination.locked).isTrue();
-        assertThat(termination.isTerminated(termination.gracePeriodStartTimeNanos + 50 * NANOS_PER_MILLISECOND, score)).isFalse();
-
+        assertThat(termination.isGracePeriodStarted()).isFalse();
+        assertThat(termination.isTerminated(termination.getGracePeriodStartTimeNanos() + 50_000 * NANOS_PER_MILLISECOND, score))
+                .isFalse();
 
         // The first step is starting and all required resources are loaded
         var firstStepScope = mock(AbstractStepScope.class);
         doReturn(phaseScope).when(firstStepScope).getPhaseScope();
         termination.stepStarted(firstStepScope);
-        assertThat(termination.locked).isFalse();
+        assertThat(termination.isGracePeriodStarted()).isTrue();
+        assertThat(termination.isTerminated(termination.getGracePeriodStartTimeNanos(), score)).isFalse();
         // It can be terminated after the first step started
-        assertThat(termination.isTerminated(termination.gracePeriodStartTimeNanos + 11 * NANOS_PER_MILLISECOND, score)).isTrue();
+        assertThat(termination.isTerminated(termination.getGracePeriodStartTimeNanos() + 2_000 * NANOS_PER_MILLISECOND, score))
+                .isTrue();
         termination.stepEnded(firstStepScope);
 
         // Second step
         var secondStepScope = mock(AbstractStepScope.class);
         doReturn(phaseScope).when(secondStepScope).getPhaseScope();
-        var currentTime = termination.gracePeriodStartTimeNanos;
-        termination.stepStarted(secondStepScope);
         // The second step does not start the timer again
-        assertThat(termination.gracePeriodStartTimeNanos).isEqualTo(currentTime);
+        var currentTime = termination.getGracePeriodStartTimeNanos();
+        termination.stepStarted(secondStepScope);
+        assertThat(termination.getGracePeriodStartTimeNanos()).isEqualTo(currentTime);
         termination.stepEnded(secondStepScope);
+
         // Timeout
-        assertThat(termination.isTerminated(termination.gracePeriodStartTimeNanos + 11 * NANOS_PER_MILLISECOND, score)).isTrue();
+        assertThat(termination.isTerminated(currentTime + 11_000 * NANOS_PER_MILLISECOND, score)).isTrue();
     }
 }

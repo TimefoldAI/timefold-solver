@@ -19,7 +19,7 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
     private final long unimprovedTimeMillisSpentLimit;
     private final Clock clock;
 
-    boolean locked = true;
+    private boolean isCounterStarted = false;
     private boolean currentPhaseSendsBestSolutionEvents = false;
     private long phaseStartedTimeMillis = -1L;
 
@@ -58,9 +58,9 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         // We reset the count only when the first step begins,
         // as all necessary resources are loaded, and the phase is ready for execution
-        if (locked) {
+        if (!isCounterStarted) {
             phaseStartedTimeMillis = clock.millis();
-            locked = false;
+            isCounterStarted = true;
         }
     }
 
@@ -72,7 +72,7 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
-        if (locked) {
+        if (!isCounterStarted) {
             return false;
         }
         var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
