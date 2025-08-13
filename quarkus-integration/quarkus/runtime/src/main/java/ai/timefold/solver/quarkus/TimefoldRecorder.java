@@ -29,9 +29,9 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class TimefoldRecorder {
-    final TimefoldRuntimeConfig timefoldRuntimeConfig;
+    final RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig;
 
-    public TimefoldRecorder(final TimefoldRuntimeConfig timefoldRuntimeConfig) {
+    public TimefoldRecorder(final RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig) {
         this.timefoldRuntimeConfig = timefoldRuntimeConfig;
     }
 
@@ -57,7 +57,7 @@ public class TimefoldRecorder {
     }
 
     public void assertNoUnmatchedRuntimeProperties(Set<String> names) {
-        assertNoUnmatchedProperties(names, timefoldRuntimeConfig.solver().keySet());
+        assertNoUnmatchedProperties(names, timefoldRuntimeConfig.getValue().solver().keySet());
     }
 
     public Supplier<SolverConfig> solverConfigSupplier(final String solverName,
@@ -112,7 +112,7 @@ public class TimefoldRecorder {
     }
 
     private void updateSolverConfigWithRuntimeProperties(String solverName, SolverConfig solverConfig) {
-        updateSolverConfigWithRuntimeProperties(solverConfig, timefoldRuntimeConfig
+        updateSolverConfigWithRuntimeProperties(solverConfig, timefoldRuntimeConfig.getValue()
                 .getSolverRuntimeConfig(solverName).orElse(null));
     }
 
@@ -163,7 +163,8 @@ public class TimefoldRecorder {
     }
 
     private void updateSolverManagerConfigWithRuntimeProperties(SolverManagerConfig solverManagerConfig) {
-        timefoldRuntimeConfig.solverManager().parallelSolverCount().ifPresent(solverManagerConfig::setParallelSolverCount);
+        timefoldRuntimeConfig.getValue().solverManager().parallelSolverCount()
+                .ifPresent(solverManagerConfig::setParallelSolverCount);
     }
 
 }
