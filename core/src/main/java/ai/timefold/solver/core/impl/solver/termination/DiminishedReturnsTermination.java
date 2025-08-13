@@ -22,7 +22,8 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     private final double minimumImprovementRatio;
 
     private boolean isGracePeriodActive;
-    private long gracePeriodStartTimeNanos;
+    boolean locked = true;
+    long gracePeriodStartTimeNanos;
     private double gracePeriodSoftestImprovementDouble;
 
     private final DiminishedReturnsScoreRingBuffer<Score_> scoresByTime;
@@ -97,6 +98,7 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     private void resetGracePeriod(long currentTime, InnerScore<Score_> startingScore) {
         gracePeriodStartTimeNanos = currentTime;
         isGracePeriodActive = true;
+        locked = false;
 
         // Remove all entries in the map since grace is reset
         scoresByTime.clear();
@@ -106,6 +108,9 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
     }
 
     public boolean isTerminated(long currentTime, InnerScore<Score_> endScore) {
+        if (locked) {
+            return false;
+        }
         if (isGracePeriodActive) {
             // first score in scoresByTime = first score in grace period window
             var endpointDiff = softImprovementOrNaNForHarderChange(scoresByTime.peekFirst(), endScore);
@@ -165,12 +170,19 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        start(System.nanoTime(), phaseScope.getBestScore());
+        locked = true;
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         scoresByTime.clear();
+    }
+
+    @Override
+    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        if (locked) {
+            start(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
+        }
     }
 
     @Override

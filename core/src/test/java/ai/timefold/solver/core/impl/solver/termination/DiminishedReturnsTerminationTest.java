@@ -2,9 +2,13 @@ package ai.timefold.solver.core.impl.solver.termination;
 
 import static ai.timefold.solver.core.impl.solver.termination.DiminishedReturnsTermination.NANOS_PER_MILLISECOND;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 
 import org.junit.jupiter.api.Test;
@@ -220,5 +224,44 @@ class DiminishedReturnsTerminationTest {
 
         // These will compare as 1 - 0 = 1, 1 / 2 < 2, so terminate
         assertThat(termination.isTerminated(20 * NANOS_PER_MILLISECOND, score)).isTrue();
+    }
+
+    @Test
+    void testGracePeriodAndLongInitializationPeriod() {
+        // The goal is to verify termination after a long initialization,
+        // ensuring the termination does not occur until all necessary resources,
+        // such as distance matrices, are fully loaded.
+        var termination = new DiminishedReturnsTermination<Object, SimpleScore>(10, 1);
+        var score = InnerScore.withUnassignedCount(SimpleScore.ZERO, 1);
+
+        // Start the phase, but it does not trigger the counter yet
+        var phaseScope = mock(AbstractPhaseScope.class);
+        doReturn(score).when(phaseScope).getBestScore();
+        termination.phaseStarted(phaseScope);
+
+        // The termination is not started yet
+        assertThat(termination.locked).isTrue();
+        assertThat(termination.isTerminated(termination.gracePeriodStartTimeNanos + 50 * NANOS_PER_MILLISECOND, score)).isFalse();
+
+
+        // The first step is starting and all required resources are loaded
+        var firstStepScope = mock(AbstractStepScope.class);
+        doReturn(phaseScope).when(firstStepScope).getPhaseScope();
+        termination.stepStarted(firstStepScope);
+        assertThat(termination.locked).isFalse();
+        // It can be terminated after the first step started
+        assertThat(termination.isTerminated(termination.gracePeriodStartTimeNanos + 11 * NANOS_PER_MILLISECOND, score)).isTrue();
+        termination.stepEnded(firstStepScope);
+
+        // Second step
+        var secondStepScope = mock(AbstractStepScope.class);
+        doReturn(phaseScope).when(secondStepScope).getPhaseScope();
+        var currentTime = termination.gracePeriodStartTimeNanos;
+        termination.stepStarted(secondStepScope);
+        // The second step does not start the timer again
+        assertThat(termination.gracePeriodStartTimeNanos).isEqualTo(currentTime);
+        termination.stepEnded(secondStepScope);
+        // Timeout
+        assertThat(termination.isTerminated(termination.gracePeriodStartTimeNanos + 11 * NANOS_PER_MILLISECOND, score)).isTrue();
     }
 }
