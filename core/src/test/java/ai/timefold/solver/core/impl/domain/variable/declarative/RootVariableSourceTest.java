@@ -52,7 +52,7 @@ class RootVariableSourceTest {
             shadowEntityMetaModel.shadowVariable("dependency");
 
     private void assertChainToVariableEntity(VariableSourceReference variableSourceReference, String... expectedNames) {
-        var chain = variableSourceReference.chainToVariableEntity();
+        var chain = variableSourceReference.chainFromRootEntityToVariableEntity();
         assertThat(chain).hasSize(expectedNames.length);
 
         for (var i = 0; i < chain.size(); i++) {
@@ -61,7 +61,7 @@ class RootVariableSourceTest {
     }
 
     private void assertEmptyChainToVariableEntity(VariableSourceReference variableSourceReference) {
-        var chain = variableSourceReference.chainToVariableEntity();
+        var chain = variableSourceReference.chainFromRootEntityToVariableEntity();
         assertThat(chain).isEmpty();
     }
 
@@ -389,6 +389,102 @@ class RootVariableSourceTest {
     }
 
     @Test
+    void pathUsingBuiltinShadowAfterBuiltinShadow() {
+        var rootVariableSource = RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "previous.previous",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
+
+        assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
+        assertThat(rootVariableSource.variableSourceReferences()).hasSize(2);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.PREVIOUS);
+        var previousSource = rootVariableSource.variableSourceReferences().get(0);
+
+        assertEmptyChainToVariableEntity(previousSource);
+        assertThat(previousSource.variableMetaModel()).isEqualTo(previousElementMetaModel);
+        assertThat(previousSource.isTopLevel()).isTrue();
+        assertThat(previousSource.isBottomLevel()).isFalse();
+        assertThat(previousSource.onRootEntity()).isTrue();
+        assertThat(previousSource.isDeclarative()).isFalse();
+        assertThat(previousSource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(previousSource.downstreamDeclarativeVariableMetamodel()).isNull();
+
+        var dependencySource = rootVariableSource.variableSourceReferences().get(1);
+
+        assertChainToVariableEntity(dependencySource, "previous");
+        assertThat(dependencySource.variableMetaModel()).isEqualTo(previousElementMetaModel);
+        assertThat(dependencySource.isTopLevel()).isFalse();
+        assertThat(dependencySource.isBottomLevel()).isTrue();
+        assertThat(dependencySource.isDeclarative()).isFalse();
+        assertThat(dependencySource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(dependencySource.downstreamDeclarativeVariableMetamodel()).isNull();
+
+        var previousElement = new TestdataInvalidDeclarativeValue("previous");
+        var currentElement = new TestdataInvalidDeclarativeValue("current");
+        currentElement.setPrevious(previousElement);
+
+        var result = previousSource.targetEntityFunctionStartingFromVariableEntity().apply(currentElement);
+        assertThat(result).isSameAs(previousElement);
+
+        var rootVisitor = mock(Consumer.class);
+        rootVariableSource.valueEntityFunction().accept(currentElement, rootVisitor);
+        verify(rootVisitor).accept(previousElement);
+        verifyNoMoreInteractions(rootVisitor);
+    }
+
+    @Test
+    void pathUsingBuiltinShadowAfterBuiltinShadowAfterFact() {
+        var rootVariableSource = RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "fact.previous.previous",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY);
+
+        assertThat(rootVariableSource.rootEntity()).isEqualTo(TestdataInvalidDeclarativeValue.class);
+        assertThat(rootVariableSource.variableSourceReferences()).hasSize(2);
+        assertThat(rootVariableSource.parentVariableType()).isEqualTo(ParentVariableType.INDIRECT);
+        var previousSource = rootVariableSource.variableSourceReferences().get(0);
+
+        assertChainToVariableEntity(previousSource, "fact");
+        assertThat(previousSource.variableMetaModel()).isEqualTo(previousElementMetaModel);
+        assertThat(previousSource.isTopLevel()).isTrue();
+        assertThat(previousSource.isBottomLevel()).isFalse();
+        assertThat(previousSource.onRootEntity()).isFalse();
+        assertThat(previousSource.isDeclarative()).isFalse();
+        assertThat(previousSource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(previousSource.downstreamDeclarativeVariableMetamodel()).isNull();
+
+        var dependencySource = rootVariableSource.variableSourceReferences().get(1);
+
+        assertChainToVariableEntity(dependencySource, "fact", "previous");
+        assertThat(dependencySource.variableMetaModel()).isEqualTo(previousElementMetaModel);
+        assertThat(dependencySource.isTopLevel()).isFalse();
+        assertThat(dependencySource.isBottomLevel()).isTrue();
+        assertThat(dependencySource.isDeclarative()).isFalse();
+        assertThat(dependencySource.targetVariableMetamodel()).isEqualTo(shadowVariableMetaModel);
+        assertThat(dependencySource.downstreamDeclarativeVariableMetamodel()).isNull();
+
+        var previousElement = new TestdataInvalidDeclarativeValue("previous");
+        var currentElement = new TestdataInvalidDeclarativeValue("current");
+        var factElement = new TestdataInvalidDeclarativeValue("fact");
+        currentElement.setFact(factElement);
+        factElement.setPrevious(previousElement);
+
+        var result = previousSource.targetEntityFunctionStartingFromVariableEntity().apply(factElement);
+        assertThat(result).isSameAs(previousElement);
+
+        var rootVisitor = mock(Consumer.class);
+        rootVariableSource.valueEntityFunction().accept(currentElement, rootVisitor);
+        verify(rootVisitor).accept(previousElement);
+        verifyNoMoreInteractions(rootVisitor);
+    }
+
+    @Test
     void invalidPathMissingProperty() {
         assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,
@@ -406,19 +502,33 @@ class RootVariableSourceTest {
     }
 
     @Test
-    void invalidPathUsingBuiltinShadowAfterBuiltinShadow() {
+    void invalidPathTooManyVariables() {
         assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
-                "previous.previous",
+                "previous.previous.previous",
                 DEFAULT_MEMBER_ACCESSOR_FACTORY,
                 DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("The source path (previous.previous)" +
-                        " starting from root entity class (TestdataInvalidDeclarativeValue)" +
-                        " accesses a non-declarative shadow variable (previous)" +
-                        " after another non-declarative shadow variable (previous).");
+                .hasMessageContaining("The source path (previous.previous.previous)" +
+                        " starting from root class (%s)".formatted(TestdataInvalidDeclarativeValue.class.getCanonicalName()) +
+                        " references (3) variables while a maximum of 2 is allowed.");
+    }
+
+    @Test
+    void invalidPathTooVariableIndirectAfterVariable() {
+        assertThatCode(() -> RootVariableSource.from(
+                planningSolutionMetaModel,
+                TestdataInvalidDeclarativeValue.class,
+                "shadow",
+                "previous.fact.previous",
+                DEFAULT_MEMBER_ACCESSOR_FACTORY,
+                DEFAULT_DESCRIPTOR_POLICY))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("The source path (previous.fact.previous)",
+                        " starting from root class (%s)".formatted(TestdataInvalidDeclarativeValue.class.getCanonicalName()),
+                        " has a non-declarative variable (previous) accessed via a fact after another variable.");
     }
 
     @Test

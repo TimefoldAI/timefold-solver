@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.declarative;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -395,6 +396,9 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             DeclarativeShadowVariableDescriptor<Solution_> declarativeShadowVariable,
             VariableMetaModel<Solution_, ?, ?> fromVariableId) {
         for (var source : declarativeShadowVariable.getSources()) {
+            var parentVariableList = new ArrayList<VariableSourceReference>();
+            var parentInverseFunctionList = new ArrayList<Function<Object, Collection<Object>>>();
+            var parentIsOnRootEntity = false;
             for (var sourcePart : source.variableSourceReferences()) {
                 var toVariableId = sourcePart.variableMetaModel();
 
@@ -412,27 +416,59 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                         graph.markChanged(changed);
                                     }
                                 });
+                        parentInverseFunctionList.add(Collections::singletonList);
+                        parentIsOnRootEntity = true;
                     } else {
-                        // Need to create an inverse set from source to target
-                        var inverseMap = new IdentityHashMap<Object, List<Object>>();
-                        var visitor = source.getEntityVisitor(sourcePart.chainToVariableEntity());
-                        for (var rootEntity : entities) {
-                            if (declarativeShadowVariable.getEntityDescriptor().getEntityClass().isInstance(rootEntity)) {
-                                visitor.accept(rootEntity, shadowEntity -> inverseMap
-                                        .computeIfAbsent(shadowEntity, ignored -> new ArrayList<>()).add(rootEntity));
+                        Function<Object, Collection<Object>> inverseFunction;
+
+                        if (parentVariableList.isEmpty()) {
+                            // Need to create an inverse set from source to target
+                            var inverseMap = new IdentityHashMap<Object, List<Object>>();
+
+                            var visitor = source.getEntityVisitor(sourcePart.chainFromRootEntityToVariableEntity());
+                            for (var rootEntity : entities) {
+                                if (declarativeShadowVariable.getEntityDescriptor().getEntityClass().isInstance(rootEntity)) {
+                                    visitor.accept(rootEntity, shadowEntity -> inverseMap
+                                            .computeIfAbsent(shadowEntity, ignored -> new ArrayList<>())
+                                            .add(rootEntity));
+                                }
+                            }
+                            inverseFunction = entity -> inverseMap.getOrDefault(entity, Collections.emptyList());
+                        } else {
+                            var parentIndex = parentVariableList.size() - 1;
+                            var parentVariable = parentVariableList.get(parentIndex).variableMetaModel();
+                            var inverseSupply = variableReferenceGraphBuilder.changedVariableNotifier
+                                    .getCollectionInverseVariableSupply(parentVariable);
+
+                            if (parentIsOnRootEntity) {
+                                inverseFunction = (Function) inverseSupply::getInverseCollection;
+                            } else {
+                                inverseFunction = entity -> {
+                                    var inverses = inverseSupply.getInverseCollection(entity);
+                                    var parentInverseFunction = parentInverseFunctionList.get(parentIndex);
+                                    var out = new ArrayList<>(inverses.size());
+                                    for (var inverse : inverses) {
+                                        out.addAll(parentInverseFunction.apply(inverse));
+                                    }
+                                    return out;
+                                };
                             }
                         }
+
                         variableReferenceGraphBuilder.addAfterProcessor(GraphChangeType.NO_CHANGE, toVariableId,
                                 (graph, entity) -> {
-                                    for (var item : inverseMap.getOrDefault(entity, Collections.emptyList())) {
+                                    for (var item : inverseFunction.apply(entity)) {
                                         var changed = graph.lookupOrNull(fromVariableId, item);
                                         if (changed != null) {
                                             graph.markChanged(changed);
                                         }
                                     }
                                 });
+                        parentInverseFunctionList.add(inverseFunction);
+                        parentIsOnRootEntity = false;
                     }
                 }
+                parentVariableList.add(sourcePart);
             }
         }
     }

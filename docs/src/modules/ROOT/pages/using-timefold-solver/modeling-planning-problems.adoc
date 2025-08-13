@@ -871,7 +871,7 @@ These paths must follow 1 of 3 syntactic forms:
 
 |Chained Property Path
 |"a.b.c"
-|Refers to a supplier variable reachable via chained properties. Intermediate elements must be facts or variables; the final one must be a supplier variable.
+|Refers to a variable reachable via chained properties. Intermediate elements must be facts or variables; the final one must be a variable.
 
 |Collection Element Access
 |"collectionVar[].varName"
@@ -962,7 +962,7 @@ public class Job {
 In certain cases, shadow variables may form an infinite loop.
 When this occurs, the solver detects the cycle, breaks the loop, and assigns `null` to the involved shadow variables.
 
-A supplier variable is considered part of a _loop_ if:
+A declarative shadow variable is considered part of a _loop_ if:
 
 - It directly or indirectly depends on itself.
 For example, if variable `a` depends on `b` and `b` depends on `a`, both are in a loop.
