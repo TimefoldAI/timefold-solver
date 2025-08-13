@@ -180,6 +180,8 @@ final class DiminishedReturnsTermination<Solution_, Score_ extends Score<Score_>
 
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        // We reset the count only when the first step begins,
+        // as all necessary resources are loaded, and the phase is ready for execution
         if (locked) {
             start(System.nanoTime(), stepScope.getPhaseScope().getBestScore());
         }
