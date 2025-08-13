@@ -84,6 +84,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 .stream()
                 .map(Object::getClass)
                 .distinct()
+                .filter(clazz -> clazz.isAnnotationPresent(PlanningEntity.class))
                 .toArray(Class[]::new);
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(enabledPreviewFeatures, solutionClass,
                 entityClassArray);

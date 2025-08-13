@@ -6,6 +6,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
@@ -26,15 +27,20 @@ public class TestdataBasicVarSolution {
     @ValueRangeProvider
     List<TestdataBasicVarValue> values;
 
+    @ProblemFactCollectionProperty
+    List<Object> problemFacts;
+
     @PlanningScore
     HardSoftScore score;
 
     public TestdataBasicVarSolution() {
     }
 
-    public TestdataBasicVarSolution(List<TestdataBasicVarEntity> entities, List<TestdataBasicVarValue> values) {
+    public TestdataBasicVarSolution(List<TestdataBasicVarEntity> entities, List<TestdataBasicVarValue> values,
+            List<Object> problemFacts) {
         this.values = values;
         this.entities = entities;
+        this.problemFacts = problemFacts;
     }
 
     public List<TestdataBasicVarValue> getValues() {
@@ -54,6 +60,14 @@ public class TestdataBasicVarSolution {
         this.entities = entities;
     }
 
+    public List<Object> getProblemFacts() {
+        return problemFacts;
+    }
+
+    public void setProblemFacts(List<Object> problemFacts) {
+        this.problemFacts = problemFacts;
+    }
+
     public HardSoftScore getScore() {
         return score;
     }
@@ -67,6 +81,7 @@ public class TestdataBasicVarSolution {
         return "TestdataBasicVarSolution{" +
                 "entities=" + entities +
                 ", values=" + values +
+                ", problemFacts=" + problemFacts +
                 ", score=" + score +
                 '}';
     }
