@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -26,7 +26,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
@@ -58,8 +57,8 @@ import org.jspecify.annotations.Nullable;
 public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final List<CountableValueRange<?>> fromSolutionList;
-    private final Map<Object, List<CountableValueRange<?>>> fromEntityMap =
+    private final CountableValueRange<?>[] fromSolutionList;
+    private final Map<Object, CountableValueRange<?>[]> fromEntityMap =
             new IdentityHashMap<>();
     private @Nullable ReachableValues reachableValues = null;
 
@@ -82,7 +81,7 @@ public final class ValueRangeManager<Solution_> {
      */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.fromSolutionList = CollectionUtils.newNullList(solutionDescriptor.getValueRangeDescriptorCount());
+        this.fromSolutionList = new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()];
     }
 
     public SolutionInitializationStatistics getInitializationStatistics() {
@@ -357,7 +356,7 @@ public final class ValueRangeManager<Solution_> {
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {
-        var valueRange = fromSolutionList.get(valueRangeDescriptor.getOrdinal());
+        var valueRange = fromSolutionList[valueRangeDescriptor.getOrdinal()];
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
@@ -371,7 +370,7 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            fromSolutionList.set(valueRangeDescriptor.getOrdinal(), valueRange);
+            fromSolutionList[valueRangeDescriptor.getOrdinal()] = valueRange;
         }
         return (CountableValueRange<T>) valueRange;
     }
@@ -388,8 +387,8 @@ public final class ValueRangeManager<Solution_> {
         }
         var valueRangeList =
                 fromEntityMap.computeIfAbsent(entity,
-                        e -> CollectionUtils.newNullList(solutionDescriptor.getValueRangeDescriptorCount()));
-        var valueRange = valueRangeList.get(valueRangeDescriptor.getOrdinal());
+                        e -> new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()]);
+        var valueRange = valueRangeList[valueRangeDescriptor.getOrdinal()];
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange =
                     valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
@@ -404,7 +403,7 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            valueRangeList.set(valueRangeDescriptor.getOrdinal(), valueRange);
+            valueRangeList[valueRangeDescriptor.getOrdinal()] = valueRange;
         }
         return (CountableValueRange<T>) valueRange;
     }
@@ -483,9 +482,7 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
-        var size = fromSolutionList.size();
-        fromSolutionList.clear();
-        fromSolutionList.addAll(CollectionUtils.newNullList(size));
+        Arrays.fill(fromSolutionList, null);
         fromEntityMap.clear();
         reachableValues = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.

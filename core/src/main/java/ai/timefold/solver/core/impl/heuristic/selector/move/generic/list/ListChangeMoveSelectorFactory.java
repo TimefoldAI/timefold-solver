@@ -69,7 +69,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
         }
         if (enableEntityValueRangeFilter && entityValueRangeRecorderId == null) {
             throw new IllegalStateException(
-                    "When enabling entity value range, the origin value selector ID is required for the destination selector %s."
+                    "Impossible state: when enabling entity value range, the origin value selector ID is required for the destination selector %s."
                             .formatted(destinationSelectorConfig));
         }
 
