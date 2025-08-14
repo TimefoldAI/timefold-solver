@@ -134,7 +134,7 @@ jobs:
         shell: bash
         run: mvn -B -DskipJMH clean verify
       - name: Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
           paths: "**/TEST-*.xml"
           show: "fail"
@@ -194,7 +194,7 @@ jobs:
         shell: bash
         run: mvn -B clean verify
       - name: Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
           paths: "**/TEST-*.xml"
           show: "fail"

@@ -46,7 +46,7 @@ jobs:
         run: mvn -B verify
 
       - name: Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
           paths: "**/TEST-*.xml"
           show: "fail"
@@ -68,7 +68,7 @@ jobs:
         run: mvn -Dfull -B verify
 
       - name: Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
           paths: "**/TEST-*.xml"
           show: "fail"
@@ -96,7 +96,7 @@ jobs:
           cd spring-integration
           mvn -B verify
       - name: Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
           paths: "**/TEST-*.xml"
           show: "fail"
@@ -123,7 +123,7 @@ jobs:
           cd spring-integration
           mvn -B verify
       - name: Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
           paths: "**/TEST-*.xml"
           show: "fail"
@@ -167,7 +167,7 @@ jobs:
           mvn -B -Dnative verify
 
       - name: Test Summary
-        uses: test-summary/action@v2
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
           paths: "**/TEST-*.xml"
           show: "fail"
