@@ -49,6 +49,8 @@ jobs:
         uses: test-summary/action@v2
         with:
           paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
   java_full:
     name: "Java Solver (with flag -Dfull)"
     runs-on: ubuntu-latest
@@ -69,6 +71,8 @@ jobs:
         uses: test-summary/action@v2
         with:
           paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
 
   spring_boot_3_3_x:
     name: "Spring Boot 3.3.x"
@@ -95,6 +99,8 @@ jobs:
         uses: test-summary/action@v2
         with:
           paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
   spring_boot_3_4_x:
     name: "Spring Boot 3.4.x"
     runs-on: ubuntu-latest
@@ -120,6 +126,8 @@ jobs:
         uses: test-summary/action@v2
         with:
           paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
 
   native:
     name: "Native Image"
@@ -147,7 +155,6 @@ jobs:
         with:
           java-version: ${{matrix.java-version}}
           distribution: 'graalvm-community'
-          components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: 'maven'
 
@@ -163,3 +170,5 @@ jobs:
         uses: test-summary/action@v2
         with:
           paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
