@@ -87,7 +87,7 @@ import org.slf4j.LoggerFactory;
  * @param <Solution_> the solution type, the class with the {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution}
  *        annotation
  */
-public class SolutionDescriptor<Solution_> {
+public final class SolutionDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolutionDescriptor.class);
     private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(-1, null, PlanningEntity.class);
@@ -153,9 +153,7 @@ public class SolutionDescriptor<Solution_> {
             updatedEntityClassList.addAll(filteredInheritedEntityClasses);
         }
         for (var entityClass : sortEntityClassList(updatedEntityClassList)) {
-            var entityDescriptor =
-                    new EntityDescriptor<>(descriptorPolicy.reserveEntityId(), solutionDescriptor, entityClass);
-            solutionDescriptor.addEntityDescriptor(entityDescriptor);
+            var entityDescriptor = descriptorPolicy.buildEntityDescriptor(solutionDescriptor, entityClass);
             entityDescriptor.processAnnotations(descriptorPolicy);
         }
         solutionDescriptor.afterAnnotationsProcessed(descriptorPolicy);
@@ -164,9 +162,6 @@ public class SolutionDescriptor<Solution_> {
             solutionDescriptor.constraintWeightSupplier.initialize(solutionDescriptor,
                     descriptorPolicy.getMemberAccessorFactory(), descriptorPolicy.getDomainAccessType());
         }
-        // Update the reserved ordinal IDs for the entities along with their corresponding value ranges
-        // These ordinal IDs are used for quick access and to eliminate the need for hash lookups
-        solutionDescriptor.processOrdinalIds(descriptorPolicy);
         return solutionDescriptor;
     }
 
@@ -269,9 +264,6 @@ public class SolutionDescriptor<Solution_> {
     private DomainAccessType domainAccessType;
     private AutoDiscoverMemberType autoDiscoverMemberType;
     private LookUpStrategyResolver lookUpStrategyResolver;
-
-    private int maxEntityOrdinal = 0;
-    private int maxValueRangeOrdinal = 0;
 
     /**
      * @deprecated {@link ConstraintConfiguration} was replaced by {@link ConstraintWeightOverrides}.
@@ -457,7 +449,7 @@ public class SolutionDescriptor<Solution_> {
         } else if (annotationClass.equals(PlanningScore.class)) {
             if (scoreDescriptor == null) {
                 // Bottom class wins. Bottom classes are parsed first due to ConfigUtil.getAllAnnotatedLineageClasses().
-                scoreDescriptor = ScoreDescriptor.buildScoreDescriptor(descriptorPolicy, member, solutionClass);
+                scoreDescriptor = descriptorPolicy.buildScoreDescriptor(member, solutionClass);
             } else {
                 scoreDescriptor.failFastOnDuplicateMember(descriptorPolicy, member, solutionClass);
             }
@@ -640,11 +632,6 @@ public class SolutionDescriptor<Solution_> {
         } else {
             throw new IllegalStateException("Impossible situation with annotationClass (" + annotationClass + ").");
         }
-    }
-
-    private void processOrdinalIds(DescriptorPolicy descriptorPolicy) {
-        this.maxEntityOrdinal = descriptorPolicy.getEntityIdCount();
-        this.maxValueRangeOrdinal = descriptorPolicy.getValueRangeIdCount();
     }
 
     private void assertNoFieldAndGetterDuplicationOrConflict(
@@ -1224,6 +1211,14 @@ public class SolutionDescriptor<Solution_> {
         return out;
     }
 
+    public int getValueRangeDescriptorCount() {
+        var count = 0;
+        for (var entityDescriptor : entityDescriptorMap.values()) {
+            count += entityDescriptor.getValueRangeCount();
+        }
+        return count;
+    }
+
     public List<DeclarativeShadowVariableDescriptor<Solution_>> getDeclarativeShadowVariableDescriptors() {
         var out = new HashSet<DeclarativeShadowVariableDescriptor<Solution_>>();
         for (var entityDescriptor : entityDescriptorMap.values()) {
@@ -1295,20 +1290,6 @@ public class SolutionDescriptor<Solution_> {
      */
     public <Score_ extends Score<Score_>> void setScore(Solution_ solution, Score_ score) {
         this.<Score_> getScoreDescriptor().setScore(solution, score);
-    }
-
-    /**
-     * Return the count of entity descriptors that are registered by the solution descriptor.
-     */
-    public int countEntityDescriptor() {
-        return maxEntityOrdinal;
-    }
-
-    /**
-     * Return the count of value range descriptors that are registered by the solution descriptor.
-     */
-    public int countValueRangeDescriptor() {
-        return maxValueRangeOrdinal;
     }
 
     public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {

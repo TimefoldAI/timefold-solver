@@ -18,9 +18,9 @@ import org.jspecify.annotations.NullMarked;
 public final class FromEntityPropertyValueRangeDescriptor<Solution_>
         extends AbstractFromPropertyValueRangeDescriptor<Solution_> {
 
-    public FromEntityPropertyValueRangeDescriptor(int ordinalId, GenuineVariableDescriptor<Solution_> variableDescriptor,
+    public FromEntityPropertyValueRangeDescriptor(int ordinal, GenuineVariableDescriptor<Solution_> variableDescriptor,
             MemberAccessor memberAccessor) {
-        super(ordinalId, variableDescriptor, memberAccessor);
+        super(ordinal, variableDescriptor, memberAccessor);
     }
 
     @Override

@@ -82,7 +82,7 @@ public final class ValueRangeManager<Solution_> {
      */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.fromSolutionList = CollectionUtils.newNullList(solutionDescriptor.countValueRangeDescriptor());
+        this.fromSolutionList = CollectionUtils.newNullList(solutionDescriptor.getValueRangeDescriptorCount());
     }
 
     public SolutionInitializationStatistics getInitializationStatistics() {
@@ -357,7 +357,7 @@ public final class ValueRangeManager<Solution_> {
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {
-        var valueRange = fromSolutionList.get(valueRangeDescriptor.getOrdinalId());
+        var valueRange = fromSolutionList.get(valueRangeDescriptor.getOrdinal());
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
@@ -371,7 +371,7 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            fromSolutionList.set(valueRangeDescriptor.getOrdinalId(), valueRange);
+            fromSolutionList.set(valueRangeDescriptor.getOrdinal(), valueRange);
         }
         return (CountableValueRange<T>) valueRange;
     }
@@ -388,8 +388,8 @@ public final class ValueRangeManager<Solution_> {
         }
         var valueRangeList =
                 fromEntityMap.computeIfAbsent(entity,
-                        e -> CollectionUtils.newNullList(solutionDescriptor.countValueRangeDescriptor()));
-        CountableValueRange<?> valueRange = valueRangeList.get(valueRangeDescriptor.getOrdinalId());
+                        e -> CollectionUtils.newNullList(solutionDescriptor.getValueRangeDescriptorCount()));
+        var valueRange = valueRangeList.get(valueRangeDescriptor.getOrdinal());
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange =
                     valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
@@ -404,7 +404,7 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            valueRangeList.set(valueRangeDescriptor.getOrdinalId(), valueRange);
+            valueRangeList.set(valueRangeDescriptor.getOrdinal(), valueRange);
         }
         return (CountableValueRange<T>) valueRange;
     }
@@ -483,8 +483,9 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
+        var size = fromSolutionList.size();
         fromSolutionList.clear();
-        fromSolutionList.addAll(CollectionUtils.newNullList(solutionDescriptor.countValueRangeDescriptor()));
+        fromSolutionList.addAll(CollectionUtils.newNullList(size));
         fromEntityMap.clear();
         reachableValues = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.

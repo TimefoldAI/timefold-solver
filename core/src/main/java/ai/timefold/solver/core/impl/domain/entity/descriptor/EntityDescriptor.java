@@ -45,6 +45,7 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.CompositeValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.anchor.AnchorShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
@@ -99,7 +100,7 @@ public class EntityDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
 
-    private final int ordinalId;
+    private final int ordinal;
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final Class<?> entityClass;
     private final List<Class<?>> declaredInheritedEntityClassList = new ArrayList<>();
@@ -147,8 +148,8 @@ public class EntityDescriptor<Solution_> {
     // Constructors and simple getters/setters
     // ************************************************************************
 
-    public EntityDescriptor(int ordinalId, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
-        this.ordinalId = ordinalId;
+    public EntityDescriptor(int ordinal, SolutionDescriptor<Solution_> solutionDescriptor, Class<?> entityClass) {
+        this.ordinal = ordinal;
         SolutionDescriptor.assertMutable(entityClass, "entityClass");
         this.solutionDescriptor = solutionDescriptor;
         this.entityClass = entityClass;
@@ -170,8 +171,8 @@ public class EntityDescriptor<Solution_> {
      *
      * @return zero or higher
      */
-    public int getOrdinalId() {
-        return ordinalId;
+    public int getOrdinal() {
+        return ordinal;
     }
 
     /**
@@ -321,8 +322,7 @@ public class EntityDescriptor<Solution_> {
         if (((AnnotatedElement) member).isAnnotationPresent(ValueRangeProvider.class)) {
             var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
                     FIELD_OR_READ_METHOD, ValueRangeProvider.class, descriptorPolicy.getDomainAccessType());
-            descriptorPolicy.addFromEntityValueRangeProvider(
-                    memberAccessor);
+            descriptorPolicy.addFromEntityValueRangeProvider(memberAccessor);
         }
     }
 
@@ -738,6 +738,20 @@ public class EntityDescriptor<Solution_> {
 
     public long getGenuineVariableCount() {
         return effectiveGenuineVariableDescriptorList.size();
+    }
+
+    public int getValueRangeCount() {
+        var count = 0;
+        for (var genuineVariableDescriptor : effectiveGenuineVariableDescriptorList) {
+            if (genuineVariableDescriptor
+                    .getValueRangeDescriptor() instanceof CompositeValueRangeDescriptor<Solution_> compositeValueRangeDescriptor) {
+                // sum the child descriptors size
+                // and add one more unit to the composite descriptor itself at the end of the iter
+                count += compositeValueRangeDescriptor.getValueRangeCount();
+            }
+            count++;
+        }
+        return count;
     }
 
     public Collection<ShadowVariableDescriptor<Solution_>> getShadowVariableDescriptors() {

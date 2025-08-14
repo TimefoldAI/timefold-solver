@@ -14,17 +14,17 @@ public abstract sealed class AbstractValueRangeDescriptor<Solution_>
         implements ValueRangeDescriptor<Solution_>
         permits AbstractFromPropertyValueRangeDescriptor, CompositeValueRangeDescriptor {
 
-    private final int ordinalId;
+    private final int ordinal;
     protected final GenuineVariableDescriptor<Solution_> variableDescriptor;
 
-    protected AbstractValueRangeDescriptor(int ordinalId, GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        this.ordinalId = ordinalId;
+    protected AbstractValueRangeDescriptor(int ordinal, GenuineVariableDescriptor<Solution_> variableDescriptor) {
+        this.ordinal = ordinal;
         this.variableDescriptor = variableDescriptor;
     }
 
     @Override
-    public int getOrdinalId() {
-        return ordinalId;
+    public int getOrdinal() {
+        return ordinal;
     }
 
     @Override

@@ -22,9 +22,9 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
     private final boolean canExtractValueRangeFromSolution;
     private final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
 
-    public CompositeValueRangeDescriptor(int ordinalId, GenuineVariableDescriptor<Solution_> variableDescriptor,
+    public CompositeValueRangeDescriptor(int ordinal, GenuineVariableDescriptor<Solution_> variableDescriptor,
             List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
-        super(ordinalId, variableDescriptor);
+        super(ordinal, variableDescriptor);
         this.childValueRangeDescriptorList = childValueRangeDescriptorList;
         var canExtractFromSolution = true;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
@@ -38,6 +38,10 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
             canExtractFromSolution = canExtractFromSolution && valueRangeDescriptor.canExtractValueRangeFromSolution();
         }
         this.canExtractValueRangeFromSolution = canExtractFromSolution;
+    }
+
+    public int getValueRangeCount() {
+        return childValueRangeDescriptorList.size();
     }
 
     @Override

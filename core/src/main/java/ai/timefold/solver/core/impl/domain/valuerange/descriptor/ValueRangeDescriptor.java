@@ -15,8 +15,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public sealed interface ValueRangeDescriptor<Solution_>
-        permits AbstractValueRangeDescriptor {
+public sealed interface ValueRangeDescriptor<Solution_> permits AbstractValueRangeDescriptor {
 
     /**
      * A number unique within a {@link SolutionDescriptor}, increasing sequentially from zero.
@@ -24,7 +23,7 @@ public sealed interface ValueRangeDescriptor<Solution_>
      *
      * @return zero or higher
      */
-    int getOrdinalId();
+    int getOrdinal();
 
     /**
      * @return never null

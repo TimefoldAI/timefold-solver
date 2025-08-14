@@ -431,15 +431,14 @@ class SolutionDescriptorTest {
     @Test
     void testOrdinalId() {
         var solutionDescriptor = TestdataMixedMultiEntitySolution.buildSolutionDescriptor();
-        assertThat(solutionDescriptor.countEntityDescriptor()).isEqualTo(2);
-        assertThat(solutionDescriptor.getEntityDescriptors().stream().map(EntityDescriptor::getOrdinalId))
+        assertThat(solutionDescriptor.getEntityDescriptors().stream().map(EntityDescriptor::getOrdinal))
                 .hasSameElementsAs(List.of(0, 1));
-        assertThat(solutionDescriptor.countValueRangeDescriptor()).isEqualTo(3);
         var allIds = new ArrayList<Integer>();
+        assertThat(solutionDescriptor.getValueRangeDescriptorCount()).isEqualTo(3);
         allIds.addAll(solutionDescriptor.getBasicVariableDescriptorList().stream()
-                .map(BasicVariableDescriptor::getValueRangeDescriptor).mapToInt(ValueRangeDescriptor::getOrdinalId).boxed()
+                .map(BasicVariableDescriptor::getValueRangeDescriptor).mapToInt(ValueRangeDescriptor::getOrdinal).boxed()
                 .toList());
-        allIds.add(solutionDescriptor.getListVariableDescriptor().getValueRangeDescriptor().getOrdinalId());
+        allIds.add(solutionDescriptor.getListVariableDescriptor().getValueRangeDescriptor().getOrdinal());
         assertThat(allIds).containsExactlyInAnyOrder(0, 1, 2);
     }
 }
