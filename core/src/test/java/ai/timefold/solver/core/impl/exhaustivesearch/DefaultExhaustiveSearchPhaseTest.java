@@ -46,7 +46,6 @@ import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAll
 import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.micrometer.core.instrument.Metrics;
@@ -196,7 +195,6 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
 
     @Test
     void solveCustomMetrics() {
-        Assertions.fail();
         var meterRegistry = new TestMeterRegistry();
         Metrics.addRegistry(meterRegistry);
 

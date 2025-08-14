@@ -133,6 +133,12 @@ jobs:
         working-directory: ./timefold-solver-benchmarks
         shell: bash
         run: mvn -B -DskipJMH clean verify
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
   enterprise-java:
     needs: approval_required
     name: Enterprise Edition (Java)
@@ -187,6 +193,12 @@ jobs:
         working-directory: ./timefold-solver-enterprise
         shell: bash
         run: mvn -B clean verify
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
 
   build_documentation:
     runs-on: ubuntu-latest

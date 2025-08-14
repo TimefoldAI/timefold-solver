@@ -68,3 +68,9 @@ jobs:
         working-directory: ./timefold-quickstarts
         shell: bash
         run: mvn -B clean verify
+      - name: Test Summary
+        uses: test-summary/action@v2
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
