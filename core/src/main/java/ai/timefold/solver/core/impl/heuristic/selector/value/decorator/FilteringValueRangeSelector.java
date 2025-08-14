@@ -154,8 +154,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
-        // The ending iterator returns all values from the child iterator and ignores the reachable values
-        return getChildValueSelector().endingIterator(entity);
+        return new OriginalFilteringValueRangeIterator(this::selectReplayedValue, reachableValues, listVariableStateSupply,
+                checkSourceAndDestination);
     }
 
     @Override
