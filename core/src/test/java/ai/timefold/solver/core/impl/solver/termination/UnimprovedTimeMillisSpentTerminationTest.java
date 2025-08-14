@@ -8,12 +8,15 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.time.Clock;
+import java.time.Duration;
 
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testutil.MockClock;
 
 import org.junit.jupiter.api.Test;
 
@@ -49,13 +52,16 @@ class UnimprovedTimeMillisSpentTerminationTest {
 
     @Test
     void phaseTermination() {
-        SolverScope<TestdataSolution> solverScope = new SolverScope<>();
-        AbstractPhaseScope<TestdataSolution> phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
-        Clock clock = mock(Clock.class);
+        var solverScope = new SolverScope<TestdataSolution>();
+        var phaseScope = spy(new LocalSearchPhaseScope<TestdataSolution>(solverScope, 0));
+        var stepScope = mock(AbstractStepScope.class);
 
-        UniversalTermination<TestdataSolution> termination = new UnimprovedTimeMillisSpentTermination<>(1000L, clock);
+        var clock = mock(Clock.class);
+
+        var termination = new UnimprovedTimeMillisSpentTermination<TestdataSolution>(1000L, clock);
         termination.solvingStarted(solverScope);
         termination.phaseStarted(phaseScope);
+        termination.stepStarted(stepScope);
 
         doReturn(1000L).when(clock).millis();
         doReturn(500L).when(phaseScope).getPhaseBestSolutionTimeMillis();
@@ -130,5 +136,35 @@ class UnimprovedTimeMillisSpentTerminationTest {
         doReturn(1000L).when(phaseScope).getPhaseBestSolutionTimeMillis();
         assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
         assertThat(termination.calculatePhaseTimeGradient(phaseScope)).isEqualTo(0.0, withPrecision(0.0));
+    }
+
+    @Test
+    void phaseTerminationAndLongInitializationPeriod() {
+        // The goal is to verify termination after a long initialization,
+        // ensuring the termination does not occur until all necessary resources,
+        // such as distance matrices, are fully loaded.
+        var solverScope = new SolverScope<TestdataSolution>();
+        var phaseScope = spy(new LocalSearchPhaseScope<>(solverScope, 0));
+        var stepScope = mock(AbstractStepScope.class);
+
+        var clock = new MockClock(Clock.systemUTC());
+
+        var termination = new UnimprovedTimeMillisSpentTermination<TestdataSolution>(1000L, clock);
+        termination.solvingStarted(solverScope);
+        termination.phaseStarted(phaseScope);
+
+        // The termination is not started yet
+        clock.tick(Duration.ofMillis(10000L));
+        assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
+
+        // The counter is started
+        termination.stepStarted(stepScope);
+        clock.tick(Duration.ofMillis(500L));
+        doReturn(clock.millis()).when(phaseScope).getPhaseBestSolutionTimeMillis();
+        assertThat(termination.isPhaseTerminated(phaseScope)).isFalse();
+
+        // Timeout
+        clock.tick(Duration.ofMillis(1100L));
+        assertThat(termination.isPhaseTerminated(phaseScope)).isTrue();
     }
 }

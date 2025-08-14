@@ -5,6 +5,7 @@ import java.time.Clock;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.phase.custom.scope.CustomPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.thread.ChildThreadType;
 
@@ -18,6 +19,7 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
     private final long unimprovedTimeMillisSpentLimit;
     private final Clock clock;
 
+    private boolean isCounterStarted = false;
     private boolean currentPhaseSendsBestSolutionEvents = false;
     private long phaseStartedTimeMillis = -1L;
 
@@ -50,7 +52,16 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
          * and resetting the counter to zero when the next phase starts.
          */
         currentPhaseSendsBestSolutionEvents = phaseScope.isPhaseSendingBestSolutionEvents();
-        phaseStartedTimeMillis = clock.millis();
+    }
+
+    @Override
+    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        // We reset the count only when the first step begins,
+        // as all necessary resources are loaded, and the phase is ready for execution
+        if (!isCounterStarted) {
+            phaseStartedTimeMillis = clock.millis();
+            isCounterStarted = true;
+        }
     }
 
     @Override
@@ -61,6 +72,9 @@ final class UnimprovedTimeMillisSpentTermination<Solution_>
 
     @Override
     public boolean isPhaseTerminated(AbstractPhaseScope<Solution_> phaseScope) {
+        if (!isCounterStarted) {
+            return false;
+        }
         var bestSolutionTimeMillis = phaseScope.getPhaseBestSolutionTimeMillis();
         return isTerminated(bestSolutionTimeMillis);
     }
