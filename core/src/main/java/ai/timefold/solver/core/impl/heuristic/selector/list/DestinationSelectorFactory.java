@@ -40,7 +40,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                 minimumCacheType, selectionOrder, entityValueRangeRecorderId);
         var baseDestinationSelector =
                 new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
-        return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector);
+        return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector,
+                entityValueRangeRecorderId != null);
     }
 
     private IterableValueSelector<Solution_> buildIterableValueSelector(
@@ -72,14 +73,34 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
     }
 
     private DestinationSelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, SelectionOrder resolvedSelectionOrder,
-            ElementDestinationSelector<Solution_> destinationSelector) {
+            SelectionCacheType minimumCacheType, SelectionOrder selectionOrder,
+            ElementDestinationSelector<Solution_> destinationSelector, boolean enableEntityValueRange) {
         NearbySelectionConfig nearbySelectionConfig = config.getNearbySelectionConfig();
         if (nearbySelectionConfig == null) {
             return destinationSelector;
         }
-        return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
-                .applyNearbySelection(config, configPolicy, minimumCacheType, resolvedSelectionOrder, destinationSelector);
+        // The nearby selector will implement its own logic to filter out unreachable elements.
+        // It requires the child selectors to not be FilteringEntityValueRangeSelector or FilteringValueRangeSelector,
+        // as it needs to iterate over all available values to construct the distance matrix.
+        if (enableEntityValueRange) {
+            var entitySelector =
+                    EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
+                            .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
+            var valueSelector = ValueSelectorFactory
+                    .<Solution_> create(Objects.requireNonNull(config.getValueSelectorConfig()))
+                    .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType,
+                            selectionOrder, configPolicy.isReinitializeVariableFilterEnabled(),
+                            ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED, null, false);
+            var updatedDestinationSelector =
+                    new ElementDestinationSelector<>(entitySelector, (IterableValueSelector<Solution_>) valueSelector,
+                            selectionOrder.toRandomSelectionBoolean());
+            return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
+                    .applyNearbySelection(config, configPolicy, minimumCacheType, selectionOrder,
+                            updatedDestinationSelector);
+        } else {
+            return TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.NEARBY_SELECTION)
+                    .applyNearbySelection(config, configPolicy, minimumCacheType, selectionOrder, destinationSelector);
+        }
     }
 
 }

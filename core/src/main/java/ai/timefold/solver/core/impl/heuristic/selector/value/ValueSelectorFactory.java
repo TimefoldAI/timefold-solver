@@ -126,13 +126,16 @@ public class ValueSelectorFactory<Solution_>
                 buildBaseValueSelector(variableDescriptor, SelectionCacheType.max(minimumCacheType, resolvedCacheType),
                         randomSelection);
         var instanceCache = configPolicy.getClassInstanceCache();
-        valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entityDescriptor, minimumCacheType,
-                inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId,
-                assertBothSides);
         if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
             valueSelector = applyNearbySelection(configPolicy, entityDescriptor, minimumCacheType,
                     resolvedSelectionOrder, valueSelector);
+        } else {
+            // The nearby selector will implement its own logic to filter out unreachable elements.
+            // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
+            // otherwise, we would end up applying the filtering logic twice.
+            valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entityDescriptor, minimumCacheType,
+                    inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId, assertBothSides);
         }
         valueSelector = applyFiltering(valueSelector, instanceCache);
         valueSelector = applyInitializedChainedValueFilter(configPolicy, variableDescriptor, valueSelector);
