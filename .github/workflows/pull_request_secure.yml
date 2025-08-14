@@ -4,6 +4,9 @@
 # or that there is explicit approval for their jobs to run.
 name: Secured Workflow
 
+env:
+  NODE_OPTIONS: "--max_old_space_size=4096"
+
 on:
   push:
     branches: [ main ]
