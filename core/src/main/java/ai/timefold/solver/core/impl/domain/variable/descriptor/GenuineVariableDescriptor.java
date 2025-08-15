@@ -17,8 +17,6 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.CompositeValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
@@ -79,7 +77,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         if (valueRangeDescriptorList.size() == 1) {
             valueRangeDescriptor = valueRangeDescriptorList.get(0);
         } else {
-            valueRangeDescriptor = new CompositeValueRangeDescriptor<>(this, valueRangeDescriptorList);
+            valueRangeDescriptor = descriptorPolicy.buildCompositeValueRangeDescriptor(this, valueRangeDescriptorList);
         }
     }
 
@@ -148,9 +146,9 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     private ValueRangeDescriptor<Solution_> buildValueRangeDescriptor(DescriptorPolicy descriptorPolicy,
             MemberAccessor valueRangeProviderMemberAccessor) {
         if (descriptorPolicy.isFromSolutionValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            return new FromSolutionPropertyValueRangeDescriptor<>(this, valueRangeProviderMemberAccessor);
+            return descriptorPolicy.buildFromSolutionPropertyValueRangeDescriptor(this, valueRangeProviderMemberAccessor);
         } else if (descriptorPolicy.isFromEntityValueRangeProvider(valueRangeProviderMemberAccessor)) {
-            return new FromEntityPropertyValueRangeDescriptor<>(this, valueRangeProviderMemberAccessor);
+            return descriptorPolicy.buildFromEntityPropertyValueRangeDescriptor(this, valueRangeProviderMemberAccessor);
         } else {
             throw new IllegalStateException("Impossible state: member accessor (%s) is not a value range provider."
                     .formatted(valueRangeProviderMemberAccessor));

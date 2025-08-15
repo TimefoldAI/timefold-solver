@@ -35,9 +35,9 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
     // Field related to the generic type of the value range, e.g., List<String> -> String
     private final boolean isGenericTypeImmutable;
 
-    protected AbstractFromPropertyValueRangeDescriptor(GenuineVariableDescriptor<Solution_> variableDescriptor,
+    protected AbstractFromPropertyValueRangeDescriptor(int ordinalId, GenuineVariableDescriptor<Solution_> variableDescriptor,
             MemberAccessor memberAccessor) {
-        super(variableDescriptor);
+        super(ordinalId, variableDescriptor);
         this.memberAccessor = memberAccessor;
         ValueRangeProvider valueRangeProviderAnnotation = memberAccessor.getAnnotation(ValueRangeProvider.class);
         if (valueRangeProviderAnnotation == null) {

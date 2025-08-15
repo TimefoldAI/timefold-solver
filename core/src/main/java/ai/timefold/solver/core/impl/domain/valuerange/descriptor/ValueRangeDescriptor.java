@@ -4,6 +4,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -14,8 +15,15 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public sealed interface ValueRangeDescriptor<Solution_>
-        permits AbstractValueRangeDescriptor {
+public sealed interface ValueRangeDescriptor<Solution_> permits AbstractValueRangeDescriptor {
+
+    /**
+     * A number unique within a {@link SolutionDescriptor}, increasing sequentially from zero.
+     * Used for indexing in arrays to avoid object hash lookups in maps.
+     *
+     * @return zero or higher
+     */
+    int getOrdinal();
 
     /**
      * @return never null

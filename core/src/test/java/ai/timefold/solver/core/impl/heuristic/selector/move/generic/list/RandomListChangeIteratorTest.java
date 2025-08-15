@@ -41,7 +41,7 @@ class RandomListChangeIteratorTest {
         var destinationValueSelector =
                 mockIterableValueSelector(listVariableDescriptor, v2, v3);
         var entitySelector = mockEntitySelector(b, a, c);
-        var destinationSelector = new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true, false);
+        var destinationSelector = new ElementDestinationSelector<>(entitySelector, destinationValueSelector, true);
 
         var random = new TestRandom(3, 0, 1);
         solvingStarted(destinationSelector, scoreDirector, random);

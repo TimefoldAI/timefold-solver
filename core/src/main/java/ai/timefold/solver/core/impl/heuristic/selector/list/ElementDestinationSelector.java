@@ -15,9 +15,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
@@ -44,28 +42,16 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     private final EntitySelector<Solution_> entitySelector;
     private final IterableValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
-    private final boolean enableEntityValueRangeFilter;
-
-    private final FilteringEntityValueRangeSelector<Solution_> filteringEntityValueRangeSelector;
-    private final FilteringValueRangeSelector<Solution_> filteringValueRangeSelector;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
-    public ElementDestinationSelector(EntitySelector<Solution_> entitySelector,
-            IterableValueSelector<Solution_> valueSelector, boolean randomSelection, boolean enableEntityValueRangeFilter) {
+    public ElementDestinationSelector(EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
+            boolean randomSelection) {
         this.listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         this.entitySelector = entitySelector;
         var selector = filterPinnedListPlanningVariableValuesWithIndex(valueSelector, this::getListVariableStateSupply);
         this.valueSelector = listVariableDescriptor.allowsUnassignedValues() ? filterUnassignedValues(selector) : selector;
         this.randomSelection = randomSelection;
-        this.enableEntityValueRangeFilter = enableEntityValueRangeFilter;
-        if (enableEntityValueRangeFilter) {
-            filteringEntityValueRangeSelector = (FilteringEntityValueRangeSelector<Solution_>) entitySelector;
-            filteringValueRangeSelector = (FilteringValueRangeSelector<Solution_>) valueSelector;
-        } else {
-            filteringEntityValueRangeSelector = null;
-            filteringValueRangeSelector = null;
-        }
         phaseLifecycleSupport.addEventListener(this.entitySelector);
         phaseLifecycleSupport.addEventListener(this.valueSelector);
     }
@@ -171,25 +157,12 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     }
 
     public Iterator<Object> endingIterator() {
-        Iterator<Object> entityIterator;
-        Iterator<Object> valueIterator;
-        if (enableEntityValueRangeFilter) {
-            // When the value range is present at the entity, we return the ending iterator from the child selector,
-            // as it does not necessarily depend on a recorded value to retrieve its values.`
-            entityIterator = filteringEntityValueRangeSelector.getChildEntitySelector().endingIterator();
-            valueIterator = filteringValueRangeSelector.getChildValueSelector().endingIterator(null);
-        } else {
-            entityIterator = entitySelector.endingIterator();
-            valueIterator = valueSelector.endingIterator(null);
-        }
         return Stream.concat(
-                StreamSupport.stream(Spliterators.spliterator(entityIterator, entitySelector.getSize(), 0), false),
-                StreamSupport.stream(Spliterators.spliterator(valueIterator, valueSelector.getSize(), 0), false))
+                StreamSupport.stream(Spliterators.spliterator(entitySelector.endingIterator(), entitySelector.getSize(), 0),
+                        false),
+                StreamSupport.stream(Spliterators.spliterator(valueSelector.endingIterator(null), valueSelector.getSize(), 0),
+                        false))
                 .iterator();
-    }
-
-    public boolean isEnableEntityValueRangeFilter() {
-        return enableEntityValueRangeFilter;
     }
 
     @Override

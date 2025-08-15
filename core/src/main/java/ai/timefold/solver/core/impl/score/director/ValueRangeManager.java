@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.director;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
@@ -56,8 +57,8 @@ import org.jspecify.annotations.Nullable;
 public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>> fromSolutionMap = new IdentityHashMap<>();
-    private final Map<Object, Map<ValueRangeDescriptor<Solution_>, CountableValueRange<?>>> fromEntityMap =
+    private final CountableValueRange<?>[] fromSolution;
+    private final Map<Object, CountableValueRange<?>[]> fromEntityMap =
             new IdentityHashMap<>();
     private @Nullable ReachableValues reachableValues = null;
 
@@ -80,6 +81,7 @@ public final class ValueRangeManager<Solution_> {
      */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
+        this.fromSolution = new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()];
     }
 
     public SolutionInitializationStatistics getInitializationStatistics() {
@@ -354,7 +356,7 @@ public final class ValueRangeManager<Solution_> {
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {
-        var valueRange = fromSolutionMap.get(valueRangeDescriptor);
+        var valueRange = fromSolution[valueRangeDescriptor.getOrdinal()];
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
@@ -368,7 +370,7 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            fromSolutionMap.put(valueRangeDescriptor, valueRange);
+            fromSolution[valueRangeDescriptor.getOrdinal()] = valueRange;
         }
         return (CountableValueRange<T>) valueRange;
     }
@@ -383,8 +385,10 @@ public final class ValueRangeManager<Solution_> {
                     "Impossible state: value range (%s) on planning entity (%s) requested before the working solution is known."
                             .formatted(valueRangeDescriptor, entity));
         }
-        var valueRangeMap = fromEntityMap.computeIfAbsent(entity, e -> new IdentityHashMap<>());
-        var valueRange = valueRangeMap.get(valueRangeDescriptor);
+        var valueRangeList =
+                fromEntityMap.computeIfAbsent(entity,
+                        e -> new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()]);
+        var valueRange = valueRangeList[valueRangeDescriptor.getOrdinal()];
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange =
                     valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
@@ -399,7 +403,7 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            valueRangeMap.put(valueRangeDescriptor, valueRange);
+            valueRangeList[valueRangeDescriptor.getOrdinal()] = valueRange;
         }
         return (CountableValueRange<T>) valueRange;
     }
@@ -478,7 +482,7 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
-        fromSolutionMap.clear();
+        Arrays.fill(fromSolution, null);
         fromEntityMap.clear();
         reachableValues = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.

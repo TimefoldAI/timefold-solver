@@ -47,21 +47,30 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 .<Solution_> create(destinationEntitySelectorConfig)
                 .extractEntityDescriptor(configPolicy);
 
+        // When enabling entity value range filtering,
+        // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector and FilteringValueRangeSelector
+        // to replay the selected value and return only reachable values.
         var enableEntityValueRangeFilter =
                 !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
-
-        String mimicSelectorId = null;
+        // A null ID means to turn off the entity value range filtering
+        String entityValueRangeRecorderId = null;
         if (enableEntityValueRangeFilter) {
             var mimicSelectorConfig = Objects.requireNonNull(valueSelectorConfig);
             if (mimicSelectorConfig.getMimicSelectorRef() == null && mimicSelectorConfig.getId() == null) {
                 var variableName = Objects.requireNonNull(mimicSelectorConfig.getVariableName());
                 // We set the id to make sure the value selector will use the mimic recorder
-                mimicSelectorId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom());
-                mimicSelectorConfig.setId(mimicSelectorId);
+                entityValueRangeRecorderId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom());
+                mimicSelectorConfig.setId(entityValueRangeRecorderId);
             } else {
-                mimicSelectorId = mimicSelectorConfig.getMimicSelectorRef() != null ? mimicSelectorConfig.getMimicSelectorRef()
-                        : mimicSelectorConfig.getId();
+                entityValueRangeRecorderId =
+                        mimicSelectorConfig.getMimicSelectorRef() != null ? mimicSelectorConfig.getMimicSelectorRef()
+                                : mimicSelectorConfig.getId();
             }
+        }
+        if (enableEntityValueRangeFilter && entityValueRangeRecorderId == null) {
+            throw new IllegalStateException(
+                    "Impossible state: when enabling entity value range, the origin value selector ID is required for the destination selector %s."
+                            .formatted(destinationSelectorConfig));
         }
 
         var sourceValueSelector = ValueSelectorFactory
@@ -70,8 +79,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
 
         var destinationSelector = DestinationSelectorFactory
                 .<Solution_> create(destinationSelectorConfig)
-                .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, enableEntityValueRangeFilter,
-                        mimicSelectorId);
+                .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, entityValueRangeRecorderId);
 
         return new ListChangeMoveSelector<>((IterableValueSelector<Solution_>) sourceValueSelector, destinationSelector,
                 randomSelection);

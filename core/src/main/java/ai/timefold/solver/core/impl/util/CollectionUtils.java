@@ -11,6 +11,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 public final class CollectionUtils {
 
@@ -123,6 +124,12 @@ public final class CollectionUtils {
     public static <K, V> Map<K, V> newLinkedHashMap(int size) {
         return new LinkedHashMap<>(calculateCapacityForDefaultLoadFactor(size));
 
+    }
+
+    public static <T> List<T> newNullList(int size) {
+        return new ArrayList<>(Stream.<T> generate(() -> null)
+                .limit(size)
+                .toList());
     }
 
     private CollectionUtils() {

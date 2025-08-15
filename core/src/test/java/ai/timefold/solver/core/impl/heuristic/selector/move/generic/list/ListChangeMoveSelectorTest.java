@@ -445,10 +445,10 @@ class ListChangeMoveSelectorTest {
         // and that causes the B destination to become an invalid destination
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[1]}",
-                "3 {B[0]->A[1]}",
+                "3 {B[0]->B[0]}",
                 "1 {A[1]->A[1]}",
-                "1 {A[1]->A[1]}",
-                "1 {A[1]->A[0]}");
+                "3 {B[0]->B[0]}",
+                "3 {B[0]->B[0]}");
     }
 
     @Test

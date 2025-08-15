@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic.list;
 
-import static ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory.applyValueRangeFiltering;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -39,28 +37,28 @@ public class ListSwapMoveSelectorFactory<Solution_>
                 Objects.requireNonNullElseGet(config.getSecondaryValueSelectorConfig(), valueSelectorConfig::copyConfig);
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entityDescriptor = getTheOnlyEntityDescriptorWithListVariable(configPolicy.getSolutionDescriptor());
+        // When enabling entity value range filtering,
+        // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector and FilteringValueRangeSelector
+        // to replay the selected value and return only reachable values.
         var enableEntityValueRangeFilter =
                 !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
-        String mimicSelectorId = null;
+        // A null ID means to turn off the entity value range filtering
+        String entityValueRangeRecorderId = null;
         if (enableEntityValueRangeFilter) {
             if (valueSelectorConfig.getId() == null && valueSelectorConfig.getMimicSelectorRef() == null) {
                 var variableName = Objects.requireNonNull(valueSelectorConfig.getVariableName());
                 // We set the id to make sure the value selector will use the mimic recorder
-                mimicSelectorId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom());
-                valueSelectorConfig.setId(mimicSelectorId);
+                entityValueRangeRecorderId = ConfigUtils.addRandomSuffix(variableName, configPolicy.getRandom());
+                valueSelectorConfig.setId(entityValueRangeRecorderId);
             } else {
-                mimicSelectorId = valueSelectorConfig.getId() != null ? valueSelectorConfig.getId()
+                entityValueRangeRecorderId = valueSelectorConfig.getId() != null ? valueSelectorConfig.getId()
                         : valueSelectorConfig.getMimicSelectorRef();
             }
         }
-        var leftValueSelector = buildIterableValueSelector(configPolicy,
-                entityDescriptor, valueSelectorConfig, minimumCacheType, selectionOrder);
+        var leftValueSelector = buildIterableValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
+                minimumCacheType, selectionOrder, null);
         var rightValueSelector = buildIterableValueSelector(configPolicy, entityDescriptor,
-                secondaryValueSelectorConfig, minimumCacheType, selectionOrder);
-        if (enableEntityValueRangeFilter) {
-            rightValueSelector = applyValueRangeFiltering(configPolicy, rightValueSelector, entityDescriptor, mimicSelectorId,
-                    minimumCacheType, selectionOrder, randomSelection, true);
-        }
+                secondaryValueSelectorConfig, minimumCacheType, selectionOrder, entityValueRangeRecorderId);
         var variableDescriptor = leftValueSelector.getVariableDescriptor();
         // This may be redundant but emphasizes that the ListSwapMove is not designed to swap elements
         // on multiple list variables, unlike the SwapMove, which swaps all (basic) variables between left and right entities.
@@ -76,14 +74,16 @@ public class ListSwapMoveSelectorFactory<Solution_>
                 randomSelection);
     }
 
-    private IterableValueSelector<Solution_> buildIterableValueSelector(
-            HeuristicConfigPolicy<Solution_> configPolicy,
-            EntityDescriptor<Solution_> entityDescriptor,
-            ValueSelectorConfig valueSelectorConfig,
-            SelectionCacheType minimumCacheType,
-            SelectionOrder inheritedSelectionOrder) {
+    private IterableValueSelector<Solution_> buildIterableValueSelector(HeuristicConfigPolicy<Solution_> configPolicy,
+            EntityDescriptor<Solution_> entityDescriptor, ValueSelectorConfig valueSelectorConfig,
+            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder,
+            String entityValueRangeRecorderId) {
+        // Swap moves require asserting both sides,
+        // which means checking if the left and right entities accept the swapped values
         var valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
-                .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder);
+                .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder,
+                        configPolicy.isReinitializeVariableFilterEnabled(), ValueSelectorFactory.ListValueFilteringType.NONE,
+                        entityValueRangeRecorderId, true);
         return (IterableValueSelector<Solution_>) valueSelector;
     }
 
