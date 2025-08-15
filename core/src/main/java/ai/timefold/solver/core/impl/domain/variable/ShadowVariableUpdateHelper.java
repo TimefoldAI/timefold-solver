@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -80,13 +81,10 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         var solutionClass = (Class<Solution_>) solution.getClass();
         var initialSolutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
                 enabledPreviewFeatures, solutionClass);
-        var entityClassArray = initialSolutionDescriptor.getAllEntitiesAndProblemFacts(solution)
-                .stream()
-                .map(Object::getClass)
-                .distinct()
-                .toArray(Class[]::new);
+        var entityClassSet = new LinkedHashSet<Class<?>>();
+        initialSolutionDescriptor.visitAllEntities(solution, entity -> entityClassSet.add(entity.getClass()));
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(enabledPreviewFeatures, solutionClass,
-                entityClassArray);
+                entityClassSet.toArray(new Class<?>[0]));
         try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
             // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
