@@ -6,12 +6,10 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 
 public final class ScoreDescriptor<Score_ extends Score<Score_>> {
 
-    private final int ordinal;
     // Used to obtain default @PlanningScore attribute values from a score member that was auto-discovered,
     // as if it had an empty @PlanningScore annotation on it.
     @PlanningScore
@@ -20,20 +18,9 @@ public final class ScoreDescriptor<Score_ extends Score<Score_>> {
     private final MemberAccessor scoreMemberAccessor;
     private final ScoreDefinition<Score_> scoreDefinition;
 
-    public ScoreDescriptor(int ordinal, MemberAccessor scoreMemberAccessor, ScoreDefinition<Score_> scoreDefinition) {
-        this.ordinal = ordinal;
+    public ScoreDescriptor(MemberAccessor scoreMemberAccessor, ScoreDefinition<Score_> scoreDefinition) {
         this.scoreMemberAccessor = scoreMemberAccessor;
         this.scoreDefinition = scoreDefinition;
-    }
-
-    /**
-     * A number unique within a {@link SolutionDescriptor}, increasing sequentially from zero.
-     * Used for indexing in arrays to avoid object hash lookups in maps.
-     *
-     * @return zero or higher
-     */
-    public int getOrdinal() {
-        return ordinal;
     }
 
     public ScoreDefinition<Score_> getScoreDefinition() {

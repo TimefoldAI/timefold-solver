@@ -57,7 +57,7 @@ import org.jspecify.annotations.Nullable;
 public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final CountableValueRange<?>[] fromSolutionList;
+    private final CountableValueRange<?>[] fromSolution;
     private final Map<Object, CountableValueRange<?>[]> fromEntityMap =
             new IdentityHashMap<>();
     private @Nullable ReachableValues reachableValues = null;
@@ -81,7 +81,7 @@ public final class ValueRangeManager<Solution_> {
      */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.fromSolutionList = new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()];
+        this.fromSolution = new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()];
     }
 
     public SolutionInitializationStatistics getInitializationStatistics() {
@@ -356,7 +356,7 @@ public final class ValueRangeManager<Solution_> {
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {
-        var valueRange = fromSolutionList[valueRangeDescriptor.getOrdinal()];
+        var valueRange = fromSolution[valueRangeDescriptor.getOrdinal()];
         if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
@@ -370,7 +370,7 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            fromSolutionList[valueRangeDescriptor.getOrdinal()] = valueRange;
+            fromSolution[valueRangeDescriptor.getOrdinal()] = valueRange;
         }
         return (CountableValueRange<T>) valueRange;
     }
@@ -482,7 +482,7 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
-        Arrays.fill(fromSolutionList, null);
+        Arrays.fill(fromSolution, null);
         fromEntityMap.clear();
         reachableValues = null;
         // We only update the cached solution if it is not null; null means to only reset the maps.

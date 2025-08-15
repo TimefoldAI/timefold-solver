@@ -72,7 +72,6 @@ public class DescriptorPolicy {
     @Nullable
     private MemberAccessorFactory memberAccessorFactory;
     private int entityDescriptorCount = 0;
-    private int scoreDescriptorCount = 0;
     private int valueRangeDescriptorCount = 0;
 
     public <Solution_> EntityDescriptor<Solution_> buildEntityDescriptor(SolutionDescriptor<Solution_> solutionDescriptor,
@@ -88,7 +87,7 @@ public class DescriptorPolicy {
         PlanningScore annotation = extractPlanningScoreAnnotation(scoreMemberAccessor);
         ScoreDefinition<Score_> scoreDefinition =
                 buildScoreDefinition(solutionClass, scoreMemberAccessor, scoreType, annotation);
-        return new ScoreDescriptor<>(scoreDescriptorCount++, scoreMemberAccessor, scoreDefinition);
+        return new ScoreDescriptor<>(scoreMemberAccessor, scoreDefinition);
     }
 
     public <Solution_> CompositeValueRangeDescriptor<Solution_> buildCompositeValueRangeDescriptor(
@@ -115,17 +114,18 @@ public class DescriptorPolicy {
             Class<?> solutionClass) {
         Class<?> memberType = scoreMemberAccessor.getType();
         if (!Score.class.isAssignableFrom(memberType)) {
-            throw new IllegalStateException("The solutionClass (" + solutionClass
-                    + ") has a @" + PlanningScore.class.getSimpleName()
-                    + " annotated member (" + scoreMemberAccessor + ") that does not return a subtype of Score.");
+            throw new IllegalStateException(
+                    "The solutionClass (%s) has a @%s annotated member (%s) that does not return a subtype of Score."
+                            .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor));
         }
         if (memberType == Score.class) {
-            throw new IllegalStateException("The solutionClass (" + solutionClass
-                    + ") has a @" + PlanningScore.class.getSimpleName()
-                    + " annotated member (" + scoreMemberAccessor
-                    + ") that doesn't return a non-abstract " + Score.class.getSimpleName() + " class.\n"
-                    + "Maybe make it return " + HardSoftScore.class.getSimpleName()
-                    + " or another specific " + Score.class.getSimpleName() + " implementation.");
+            throw new IllegalStateException(
+                    """
+                            The solutionClass (%s) has a @%s annotated member (%s) that doesn't return a non-abstract %s class.
+                            Maybe make it return %s or another specific %s implementation."""
+                            .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor,
+                                    Score.class.getSimpleName(), HardSoftScore.class.getSimpleName(),
+                                    Score.class.getSimpleName()));
         }
         return (Class<Score_>) memberType;
     }
@@ -153,12 +153,10 @@ public class DescriptorPolicy {
         if (!Objects.equals(scoreDefinitionClass, PlanningScore.NullScoreDefinition.class)) {
             if (bendableHardLevelsSize != PlanningScore.NO_LEVEL_SIZE
                     || bendableSoftLevelsSize != PlanningScore.NO_LEVEL_SIZE) {
-                throw new IllegalArgumentException("The solutionClass (" + solutionClass
-                        + ") has a @" + PlanningScore.class.getSimpleName()
-                        + " annotated member (" + scoreMemberAccessor
-                        + ") that has a scoreDefinition (" + scoreDefinitionClass
-                        + ") that must not have a bendableHardLevelsSize (" + bendableHardLevelsSize
-                        + ") or a bendableSoftLevelsSize (" + bendableSoftLevelsSize + ").");
+                throw new IllegalArgumentException(
+                        "The solutionClass (%s) has a @%s annotated member (%s) that has a scoreDefinition (%s) that must not have a bendableHardLevelsSize (%d) or a bendableSoftLevelsSize (%d)."
+                                .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor,
+                                        scoreDefinitionClass, bendableHardLevelsSize, bendableSoftLevelsSize));
             }
             return ConfigUtils.newInstance(() -> scoreMemberAccessor + " with @" + PlanningScore.class.getSimpleName(),
                     "scoreDefinitionClass", scoreDefinitionClass);
@@ -166,12 +164,10 @@ public class DescriptorPolicy {
         if (!IBendableScore.class.isAssignableFrom(scoreType)) {
             if (bendableHardLevelsSize != PlanningScore.NO_LEVEL_SIZE
                     || bendableSoftLevelsSize != PlanningScore.NO_LEVEL_SIZE) {
-                throw new IllegalArgumentException("The solutionClass (" + solutionClass
-                        + ") has a @" + PlanningScore.class.getSimpleName()
-                        + " annotated member (" + scoreMemberAccessor
-                        + ") that returns a scoreType (" + scoreType
-                        + ") that must not have a bendableHardLevelsSize (" + bendableHardLevelsSize
-                        + ") or a bendableSoftLevelsSize (" + bendableSoftLevelsSize + ").");
+                throw new IllegalArgumentException(
+                        "The solutionClass (%s) has a @%s annotated member (%s) that returns a scoreType (%s) that must not have a bendableHardLevelsSize (%d) or a bendableSoftLevelsSize (%d)."
+                                .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,
+                                        bendableHardLevelsSize, bendableSoftLevelsSize));
             }
             if (scoreType.equals(SimpleScore.class)) {
                 return (ScoreDefinition_) new SimpleScoreDefinition();
@@ -192,24 +188,20 @@ public class DescriptorPolicy {
             } else if (scoreType.equals(HardMediumSoftBigDecimalScore.class)) {
                 return (ScoreDefinition_) new HardMediumSoftBigDecimalScoreDefinition();
             } else {
-                throw new IllegalArgumentException("The solutionClass (" + solutionClass
-                        + ") has a @" + PlanningScore.class.getSimpleName()
-                        + " annotated member (" + scoreMemberAccessor
-                        + ") that returns a scoreType (" + scoreType
-                        + ") that is not recognized as a default " + Score.class.getSimpleName() + " implementation.\n"
-                        + "  If you intend to use a custom implementation,"
-                        + " maybe set a scoreDefinition in the @" + PlanningScore.class.getSimpleName()
-                        + " annotation.");
+                throw new IllegalArgumentException(
+                        """
+                                The solutionClass (%s) has a @%s annotated member (%s) that returns a scoreType (%s) that is not recognized as a default %s implementation.
+                                  If you intend to use a custom implementation, maybe set a scoreDefinition in the @%s annotation."""
+                                .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,
+                                        Score.class.getSimpleName(), PlanningScore.class.getSimpleName()));
             }
         } else {
             if (bendableHardLevelsSize == PlanningScore.NO_LEVEL_SIZE
                     || bendableSoftLevelsSize == PlanningScore.NO_LEVEL_SIZE) {
-                throw new IllegalArgumentException("The solutionClass (" + solutionClass
-                        + ") has a @" + PlanningScore.class.getSimpleName()
-                        + " annotated member (" + scoreMemberAccessor
-                        + ") that returns a scoreType (" + scoreType
-                        + ") that must have a bendableHardLevelsSize (" + bendableHardLevelsSize
-                        + ") and a bendableSoftLevelsSize (" + bendableSoftLevelsSize + ").");
+                throw new IllegalArgumentException(
+                        "The solutionClass (%s) has a @%s annotated member (%s) that returns a scoreType (%s) that must have a bendableHardLevelsSize (%d) and a bendableSoftLevelsSize (%d)."
+                                .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,
+                                        bendableHardLevelsSize, bendableSoftLevelsSize));
             }
             if (scoreType.equals(BendableScore.class)) {
                 return (ScoreDefinition_) new BendableScoreDefinition(bendableHardLevelsSize, bendableSoftLevelsSize);
@@ -220,13 +212,12 @@ public class DescriptorPolicy {
                 return (ScoreDefinition_) new BendableBigDecimalScoreDefinition(bendableHardLevelsSize,
                         bendableSoftLevelsSize);
             } else {
-                throw new IllegalArgumentException("The solutionClass (" + solutionClass
-                        + ") has a @" + PlanningScore.class.getSimpleName()
-                        + " annotated member (" + scoreMemberAccessor
-                        + ") that returns a bendable scoreType (" + scoreType
-                        + ") that is not recognized as a default " + Score.class.getSimpleName() + " implementation.\n"
-                        + "  If you intend to use a custom implementation,"
-                        + " maybe set a scoreDefinition in the annotation.");
+                throw new IllegalArgumentException(
+                        """
+                                The solutionClass (%s) has a @%s annotated member (%s) that returns a bendable scoreType (%s) that is not recognized as a default %s implementation.
+                                  If you intend to use a custom implementation, maybe set a scoreDefinition in the annotation."""
+                                .formatted(solutionClass, PlanningScore.class.getSimpleName(), scoreMemberAccessor, scoreType,
+                                        Score.class.getSimpleName()));
             }
         }
     }
@@ -343,15 +334,13 @@ public class DescriptorPolicy {
     private void validateUniqueValueRangeProviderId(String id, MemberAccessor memberAccessor) {
         MemberAccessor duplicate = fromSolutionValueRangeProviderMap.get(id);
         if (duplicate != null) {
-            throw new IllegalStateException("2 members (" + duplicate + ", " + memberAccessor
-                    + ") with a @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotation must not have the same id (" + id + ").");
+            throw new IllegalStateException("2 members (%s, %s) with a @%s annotation must not have the same id (%s)."
+                    .formatted(duplicate, memberAccessor, ValueRangeProvider.class.getSimpleName(), id));
         }
         duplicate = fromEntityValueRangeProviderMap.get(id);
         if (duplicate != null) {
-            throw new IllegalStateException("2 members (" + duplicate + ", " + memberAccessor
-                    + ") with a @" + ValueRangeProvider.class.getSimpleName()
-                    + " annotation must not have the same id (" + id + ").");
+            throw new IllegalStateException("2 members (%s, %s) with a @%s annotation must not have the same id (%s)."
+                    .formatted(duplicate, memberAccessor, ValueRangeProvider.class.getSimpleName(), id));
         }
     }
 

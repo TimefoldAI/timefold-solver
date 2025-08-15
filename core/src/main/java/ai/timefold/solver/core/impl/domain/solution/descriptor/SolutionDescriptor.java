@@ -84,7 +84,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @param <Solution_> the solution type, the class with the {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution}
+ * @param <Solution_> the solution type, the class with the {@link PlanningSolution}
  *        annotation
  */
 public final class SolutionDescriptor<Solution_> {
