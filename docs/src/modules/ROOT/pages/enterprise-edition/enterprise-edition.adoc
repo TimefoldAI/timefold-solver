@@ -10,7 +10,7 @@ These features are essential to scale out to huge datasets.
 
 Unlike Timefold Solver Community Edition, the Enterprise Edition is not open-source.
 You are allowed to use Timefold Solver Enterprise Edition for evaluation and development.
-Please contact https://timefold.ai/contact[contact Timefold]
+Please https://timefold.ai/contact[contact Timefold]
 to obtain the credentials necessary to start your evaluation.
 
 TIP: Looking for quicker time-to-value? Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required. Just plug into our API and start optimizing immediately.
