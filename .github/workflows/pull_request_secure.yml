@@ -4,6 +4,9 @@
 # or that there is explicit approval for their jobs to run.
 name: Secured Workflow
 
+env:
+  NODE_OPTIONS: "--max_old_space_size=4096"
+
 on:
   push:
     branches: [ main ]
@@ -133,6 +136,12 @@ jobs:
         working-directory: ./timefold-solver-benchmarks
         shell: bash
         run: mvn -B -DskipJMH clean verify
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
   enterprise-java:
     needs: approval_required
     name: Enterprise Edition (Java)
@@ -187,6 +196,12 @@ jobs:
         working-directory: ./timefold-solver-enterprise
         shell: bash
         run: mvn -B clean verify
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
 
   build_documentation:
     runs-on: ubuntu-latest
