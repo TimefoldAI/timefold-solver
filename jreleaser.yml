@@ -10,6 +10,8 @@ catalog:
   github:
     active: ALWAYS
     attestationName: 'timefold-solver-{{projectVersion}}'
+    excludes:
+      - '**/*.asc'
 
 release:
   github:
