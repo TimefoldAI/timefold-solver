@@ -27,10 +27,11 @@
   </licenses>
 
   <properties>
-    <version.javadoc.plugin>3.11.3</version.javadoc.plugin>
+    <version.javadoc.plugin>3.11.2</version.javadoc.plugin> <!-- Keeping on 3.11.2 as 3.11.3 was causing intermitted failures in Github Actions. -->
     <version.rewrite.plugin>6.16.0</version.rewrite.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
     <version.resources.plugin>3.3.1</version.resources.plugin>
+    <version.cyclonedx.plugin>2.9.1</version.cyclonedx.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
     <sonar.sources>.</sonar.sources>
     <sonar.tests>.</sonar.tests>
@@ -95,6 +96,11 @@
             <legacyMode>true</legacyMode>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>org.cyclonedx</groupId>
+          <artifactId>cyclonedx-maven-plugin</artifactId>
+          <version>${version.cyclonedx.plugin}</version>
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>
@@ -141,14 +147,29 @@
               </execution>
             </executions>
           </plugin>
+          <plugin>
+            <groupId>org.cyclonedx</groupId>
+            <artifactId>cyclonedx-maven-plugin</artifactId>
+            <executions>
+              <execution>
+                <phase>package</phase>
+                <goals>
+                  <goal>makeAggregateBom</goal>
+                </goals>
+                <configuration>
+                  <excludeTestProject>true</excludeTestProject>
+                </configuration>
+              </execution>
+            </executions>
+          </plugin>
         </plugins>
       </build>
     </profile>
     <profile>
       <!--
-        Migration to Timefold 9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.* packages.
-        Timefold 8 remains compatible with Quarkus 2, Spring Boot 2 and javax.* packages.
-        Both Timefold 8 and 9 are functionally equal and will be released simultaneously.
+        Migration to Timefold 0.9 involves upgrading to Quarkus 3, Spring Boot 3 and migrating to jakarta.* packages.
+        Timefold 0.8 remains compatible with Quarkus 2, Spring Boot 2 and javax.* packages.
+        Both Timefold 0.8 and 0.9 are functionally equal.
       -->
       <id>8-to-9-migration</id>
       <activation>
