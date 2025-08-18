@@ -91,7 +91,7 @@ public final class SolutionDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolutionDescriptor.class);
     private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(-1, null, PlanningEntity.class);
-    protected static final Class[] ANNOTATED_MEMBERS_CLASSES = {
+    private static final Class[] ANNOTATED_MEMBERS_CLASSES = {
             ProblemFactCollectionProperty.class,
             ValueRangeProvider.class,
             PlanningEntityCollectionProperty.class,
