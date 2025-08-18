@@ -1,5 +1,8 @@
 name: "Base Workflow"
 
+env:
+  NODE_OPTIONS: "--max_old_space_size=4096"
+
 on:
   push:
     branches: [main]
@@ -44,6 +47,14 @@ jobs:
 
       - name: Build and test timefold-solver
         run: mvn -B verify
+
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
+        
   # Exists to check long-running goals, such as docs.
   # Tests are skipped as there is plenty of CI that runs them.
   java_full:
@@ -83,6 +94,12 @@ jobs:
         run: |
           cd spring-integration
           mvn -B verify
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
   spring_boot_3_4_x:
     name: "Spring Boot 3.4.x"
     runs-on: ubuntu-latest
@@ -104,6 +121,12 @@ jobs:
         run: |
           cd spring-integration
           mvn -B verify
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
 
   native:
     name: "Native Image"
@@ -131,7 +154,6 @@ jobs:
         with:
           java-version: ${{matrix.java-version}}
           distribution: 'graalvm-community'
-          components: 'native-image'
           github-token: ${{ secrets.GITHUB_TOKEN }}
           cache: 'maven'
 
@@ -142,3 +164,10 @@ jobs:
         run: |
           cd ${{matrix.module}}
           mvn -B -Dnative verify
+
+      - name: Test Summary
+        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
+        with:
+          paths: "**/TEST-*.xml"
+          show: "fail"
+        if: always()
