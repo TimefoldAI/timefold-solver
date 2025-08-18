@@ -23,7 +23,7 @@ import org.jspecify.annotations.Nullable;
 public final class ValueRangeCache<Value_>
         implements Iterable<Value_> {
 
-    private final List<Value_> valuesWithFastRandomAccess;
+    private List<Value_> valuesWithFastRandomAccess;
     private final Set<Value_> valuesWithFastLookup;
 
     private ValueRangeCache(int size, Set<Value_> emptyCacheSet) {
@@ -70,6 +70,10 @@ public final class ValueRangeCache<Value_>
      */
     public Iterator<Value_> iterator(Random workingRandom) {
         return new CachedListRandomIterator<>(valuesWithFastRandomAccess, workingRandom);
+    }
+
+    public void sort() {
+        valuesWithFastRandomAccess = valuesWithFastRandomAccess.stream().sorted().toList();
     }
 
     public enum Builder {

@@ -8,6 +8,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -80,6 +81,9 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         this.replayingValueSelector.phaseStarted(phaseScope);
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
                 .getReachableValues(listVariableStateSupply.getSourceVariableDescriptor());
+        if (phaseScope instanceof ConstructionHeuristicPhaseScope) {
+            this.reachableValues.enableSort();
+        }
         valuesSize = reachableValues.getSize();
     }
 
