@@ -8,7 +8,6 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
@@ -67,9 +66,6 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
                 .getReachableValues(phaseScope.getScoreDirector().getSolutionDescriptor().getListVariableDescriptor());
-        if (phaseScope instanceof ConstructionHeuristicPhaseScope) {
-            this.reachableValues.enableSort();
-        }
         this.childEntitySelector.phaseStarted(phaseScope);
     }
 

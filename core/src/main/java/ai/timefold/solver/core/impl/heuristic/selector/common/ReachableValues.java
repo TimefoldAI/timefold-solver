@@ -7,8 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 
@@ -24,7 +22,6 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ReachableValues {
 
-    private boolean enableSort = false;
     private final Map<Object, Set<Object>> valueToEntityMap;
     private final Map<Object, Set<Object>> valueToValueMap;
     private final Map<Object, List<Object>> randomAccessValueToEntityMap;
@@ -44,24 +41,14 @@ public final class ReachableValues {
      * @return all reachable values for the given value.
      */
     public @Nullable Set<Object> extractEntities(Object value) {
-        var result = valueToEntityMap.get(value);
-        if (enableSort && !(result instanceof SortedSet<Object>)) {
-            result = new TreeSet<>(result);
-            valueToEntityMap.put(value, result);
-        }
-        return result;
+        return valueToEntityMap.get(value);
     }
 
     /**
      * @return all reachable entities for the given value.
      */
     public @Nullable Set<Object> extractValues(Object value) {
-        var result = valueToValueMap.get(value);
-        if (enableSort && !(result instanceof SortedSet<Object>)) {
-            result = new TreeSet<>(result);
-            valueToValueMap.put(value, result);
-        }
-        return result;
+        return valueToValueMap.get(value);
     }
 
     public List<Object> extractEntitiesAsList(Object value) {
@@ -70,9 +57,6 @@ public final class ReachableValues {
             var entitySet = this.valueToEntityMap.get(value);
             if (entitySet != null) {
                 result = new ArrayList<>(entitySet);
-                if (enableSort) {
-                    result = result.stream().sorted().toList();
-                }
             } else {
                 result = Collections.emptyList();
             }
@@ -87,9 +71,6 @@ public final class ReachableValues {
             var valueSet = this.valueToValueMap.get(value);
             if (valueSet != null) {
                 result = new ArrayList<>(valueSet);
-                if (enableSort) {
-                    result = result.stream().sorted().toList();
-                }
             } else {
                 result = Collections.emptyList();
             }
@@ -107,10 +88,6 @@ public final class ReachableValues {
             return false;
         }
         return Objects.requireNonNull(value).getClass().equals(valueClass);
-    }
-
-    public void enableSort() {
-        this.enableSort = true;
     }
 
 }
