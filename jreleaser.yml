@@ -6,24 +6,28 @@ signing:
   active: ALWAYS
   armored: true
 
+catalog:
+  github:
+    active: ALWAYS
+    attestationName: 'timefold-solver-{{projectVersion}}'
+
 release:
   github:
     commitAuthor:
       name: "Timefold Release Bot"
       email: "release@timefold.ai"
-    releaseName: "Timefold Solver Community Edition {{projectVersion}}"
+    releaseName: "Timefold Solver {{projectVersion}}"
     draft: true
     overwrite: false
     sign: true
     milestone:
       close: true
-      name: "v{{projectVersion}}"
     changelog:
       formatted: ALWAYS
       preset: "conventional-commits"
       contentTemplate: ".github/workflows/release-changelog-template.md"
       contributors:
-        format: "- {{contributorName}}{{#contributorUsernameAsLink}} ({{.}}){{/contributorUsernameAsLink}}"
+        format: '- {{contributorName}} ({{contributorUsernameAsLink}})'
       hide:
         uncategorized: true
         categories:
@@ -35,7 +39,7 @@ release:
 deploy:
   maven:
     mavenCentral:
-      timefold:
+      timefold-solver:
         active: ALWAYS
         url: https://central.sonatype.com/api/v1/publisher
         authorization: BASIC
@@ -45,10 +49,6 @@ deploy:
         stagingRepositories:
           - "target/staging-deploy"
         artifactOverrides:
-          - groupId: ai.timefold.solver
-            artifactId: timefold-solver-core
-            sourceJar: false
-            javadocJar: false
           - groupId: ai.timefold.solver
             artifactId: timefold-solver-spring-boot-starter
             sourceJar: false
