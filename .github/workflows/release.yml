@@ -103,4 +103,11 @@ jobs:
         uses: actions/attest-build-provenance@v1
         with:
           subject-path: |
-            ${{ ARTIFACTS }}
+      - id: set-artifacts-output
+        run: echo "ARTIFACTS=$(cat out/jreleaser/catalogs/github/timefold-solver-${{ github.event.inputs.version }})" >> $GITHUB_OUTPUT
+
+      - name: Attestations
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: |
+            ${{ steps.set-artifacts-output.outputs.ARTIFACTS }}
