@@ -34,6 +34,7 @@ jobs:
       contents: write  # IMPORTANT: required for action to create release branch
       pull-requests: write # IMPORTANT: so release PR can be created
       id-token: write  # IMPORTANT: mandatory for trusted publishing
+      attestations: write  # IMPORTANT: mandatory for attestations
     steps:
       - name: Checkout timefold-solver
         uses: actions/checkout@v5
@@ -56,12 +57,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
           cache: 'maven'
-
-      # Need Maven 3.9.0+ to recognize MAVEN_ARGS.
-      - name: Set up Maven
-        uses: stCarolas/setup-maven@d6af6abeda15e98926a57b5aa970a96bb37f97d1 # v5
-        with:
-          maven-version: 3.9.3
 
       # We skip tests in dry run, to make the process faster.
       # Technically, this goes against the main reason for doing a dry run; to eliminate potential problems.
@@ -96,3 +91,12 @@ jobs:
           path: |
             out/jreleaser/trace.log
             out/jreleaser/output.properties
+
+      - id: set-artifacts-output
+        run: echo "ARTIFACTS=$(cat out/jreleaser/catalogs/github/timefold-solver-${{ github.event.inputs.version }})" >> $GITHUB_OUTPUT
+
+      - name: Attestations
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: |
+            ${{ steps.set-artifacts-output.outputs.ARTIFACTS }}
