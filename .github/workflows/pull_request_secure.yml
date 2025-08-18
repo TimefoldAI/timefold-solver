@@ -66,7 +66,7 @@ jobs:
       # Clone timefold-solver
       # No need to check for stale repo, as Github merges the main repo into the fork automatically.
       - name: Checkout timefold-solver
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ./timefold-solver
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
@@ -86,7 +86,7 @@ jobs:
       # Clone timefold-solver-enterprise
       - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
         id: checkout-solver-enterprise
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         continue-on-error: true
         with:
           repository: TimefoldAI/timefold-solver-enterprise
@@ -96,7 +96,7 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
         if: steps.checkout-solver-enterprise.outcome != 'success'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: TimefoldAI/timefold-solver-enterprise
           ref: main
@@ -113,7 +113,7 @@ jobs:
       - name: Checkout timefold-solver-benchmarks (PR) # Checkout the PR branch first, if it exists
         if: github.head_ref # Only true if this is a PR.
         id: checkout-solver-benchmarks-pr
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         continue-on-error: true
         with:
           repository: TimefoldAI/timefold-solver-benchmarks
@@ -122,7 +122,7 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Checkout timefold-solver-benchmarks (main) # Checkout the main branch if the PR branch does not exist
         if: ${{ steps.checkout-solver-benchmarks-pr.outcome != 'success' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: TimefoldAI/timefold-solver-benchmarks
           ref: main
@@ -145,7 +145,7 @@ jobs:
       # Clone timefold-solver
       # No need to check for stale repo, as Github merges the main repo into the fork automatically.
       - name: Checkout timefold-solver
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           path: ./timefold-solver
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
@@ -154,7 +154,7 @@ jobs:
       # Need to check for stale repo, since Github is not aware of the build chain and therefore doesn't automate it.
       - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
         id: checkout-solver-enterprise
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         continue-on-error: true
         with:
           repository: TimefoldAI/timefold-solver-enterprise
@@ -164,7 +164,7 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Checkout timefold-solver-enterprise (main) # Checkout the main branch if the PR branch does not exist
         if: steps.checkout-solver-enterprise.outcome != 'success'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: TimefoldAI/timefold-solver-enterprise
           ref: main
@@ -200,7 +200,7 @@ jobs:
     steps:
       - name: Checkout frontend
         id: checkout-frontend
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: TimefoldAI/frontend
           token: ${{ secrets.JRELEASER_GITHUB_TOKEN }} # Safe; only used to clone the repo and not stored in the fork.
@@ -214,7 +214,7 @@ jobs:
           cache: pnpm
 
       - name: Checkout timefold-solver
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: "${{ github.event.pull_request.head.repo.owner.login || 'TimefoldAI' }}/timefold-solver"
           ref: ${{ github.event.pull_request.head.sha || 'main' }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
@@ -269,7 +269,7 @@ jobs:
     name: SonarCloud
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
