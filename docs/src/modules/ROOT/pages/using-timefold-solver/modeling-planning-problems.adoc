@@ -956,21 +956,20 @@ public class Job {
 |Accesses `endTime` of each element in the `dependencies` collection.
 |===
 
-
-==== Detecting Loops in Shadow Variables
+==== Detecting Inconsistencies in Shadow Variables
 
 In certain cases, shadow variables may form an infinite loop.
 When this occurs, the solver detects the cycle, breaks the loop, and assigns `null` to the involved shadow variables.
 
-A declarative shadow variable is considered part of a _loop_ if:
+A declarative shadow variable is considered  _inconsistent_ if:
 
 - It directly or indirectly depends on itself.
 For example, if variable `a` depends on `b` and `b` depends on `a`, both are in a loop.
-- It depends on another variable that is already part of a loop.
+- It depends on another variable that is inconsistent.
 For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
 
-To detect whether an entity has been affected by a shadow variable loop, annotate a boolean field with `@ShadowVariableLooped`.
-The solver will set this field to true if the entity is part of a loop.
+To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
+The solver will set this field to true if the entity has any inconsistent shadow variables.
 
 [tabs]
 ====
@@ -980,18 +979,17 @@ Java::
 ----
 @PlanningEntity
 public class Job {
-    @ShadowVariableLooped
-    boolean looped;
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
 
-    public boolean isLooped() {
-        return looped;
+    public boolean isInconsistent() {
+        return isInconsistent;
     }
 }
 ----
 ====
 
-This property (`looped` in the example above) is typically used in a constraint filter to penalize looped entities via a hard constraint,
-since PlanningSolution instances containing loops are generally considered invalid.
+This property (`isInconsistent` in the example above) is typically used in a constraint filter to penalize entities with inconsistent shadow variables via a hard constraint, since PlanningSolution instances containing inconsistent shadow variables are generally considered invalid.
 
 [tabs]
 ====
@@ -1000,19 +998,19 @@ Java::
 [source,java,options="nowrap"]
 ----
 //Example constraint
-Constraint penalizeLoopedJobs(ConstraintFactory factory) {
+Constraint penalizeInconsistentJobs(ConstraintFactory factory) {
     return factory.forEach(Job.class)
-            .filter(job -> job.isLooped())
+            .filter(job -> job.isInconsistent())
             .penalize(HardSoftScore.ONE_HARD)
-            .asConstraint("Job has looped shadow variables.");
+            .asConstraint("Job has inconsistent shadow variables.");
 }
 ----
 
 
 ====
 
-NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariableLooped`-annotated properties.
-These methods are only called if neither of their dependencies are looped, and therefore the value of such properties at that time is guaranteed to be `false`.
+NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariablesInconsistent`-annotated properties.
+These methods are only called if none of their shadow variables are inconsistent, and therefore the value of such properties at that time is guaranteed to be `false`.
 
 [#aligningShadowVariables]
 ==== Aligning Shadow Variables

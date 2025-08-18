@@ -224,9 +224,9 @@ class ConcurrentValuesShadowVariableTest {
         SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, entity1, entity2, entity3, valueA1, valueA2,
                 valueB1, valueB2, valueB3, valueC);
 
-        // Everything is invalid/null, since no values are prior to the looped
+        // Everything is invalid/null, since no values are prior to the inconsistent
         // groups.
-        // C is invalid, since it is after the concurrent loop
+        // C is inconsistent, since it is after the concurrent loop
         assertInvalid(valueA1, valueA2, valueB1, valueB2, valueB3, valueC);
 
         // Third test:
@@ -309,7 +309,7 @@ class ConcurrentValuesShadowVariableTest {
         for (var value : values) {
             assertThat(value.getServiceStartTime()).isEqualTo(BASE_START_TIME.plus(duration));
             assertThat(value.getServiceFinishTime()).isEqualTo(BASE_START_TIME.plus(duration).plusMinutes(30L));
-            assertThat(value.isInvalid()).isFalse();
+            assertThat(value.isInconsistent()).isFalse();
         }
     }
 
@@ -317,7 +317,7 @@ class ConcurrentValuesShadowVariableTest {
         for (var value : values) {
             assertThat(value.getServiceStartTime()).isNull();
             assertThat(value.getServiceFinishTime()).isNull();
-            assertThat(value.isInvalid()).isTrue();
+            assertThat(value.isInconsistent()).isTrue();
         }
     }
 

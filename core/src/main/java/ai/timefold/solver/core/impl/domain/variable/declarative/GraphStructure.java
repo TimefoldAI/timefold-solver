@@ -33,7 +33,7 @@ public enum GraphStructure {
      * a different entity is previous. This allows us
      * to use a successor function to find affected entities.
      * Since there is at most a single parent node, such a graph
-     * cannot be looped.
+     * cannot be inconsistent.
      */
     SINGLE_DIRECTIONAL_PARENT,
 

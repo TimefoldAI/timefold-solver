@@ -68,10 +68,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final boolean lookUpEnabled;
     private final LookUpManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
-    private final boolean expectShadowVariablesInCorrectState;
     protected final Factory_ scoreDirectorFactory;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
+
+    private boolean expectShadowVariablesInCorrectState;
 
     private long workingEntityListRevision = 0L;
     private int workingGenuineEntityCount = 0;
@@ -157,6 +158,16 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     @Override
     public boolean expectShadowVariablesInCorrectState() {
         return expectShadowVariablesInCorrectState;
+    }
+
+    @Override
+    public void enableShadowVariablesInCorrectStateChecks() {
+        expectShadowVariablesInCorrectState = true;
+    }
+
+    @Override
+    public void disableShadowVariablesInCorrectStateChecks() {
+        expectShadowVariablesInCorrectState = false;
     }
 
     @Override

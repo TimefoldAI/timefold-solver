@@ -15,9 +15,9 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 /**
  * Specifies that a boolean property (or field) of a {@link PlanningEntity}
  * tracks if any of its {@link ShadowVariable#supplierName() supplier variables}
- * are looped.
+ * are inconsistent.
  * <p>
- * A supplier variable is looped if:
+ * A supplier variable is inconsistent if:
  * <ul>
  * <li>
  * One of its source variables include it as a source (for example,
@@ -30,18 +30,18 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
  * </ul>
  * <p>
  * Should be used in a filter for a hard {@link Constraint} to penalize
- * looped entities, since {@link PlanningSolution} with looped entities are
+ * inconsistent entities, since {@link PlanningSolution} with inconsistent entities are
  * typically not valid.
  * <p>
  * Important:
- * Do not use a {@link ShadowVariableLooped} property in a method annotated
- * with {@link ShadowSources}. {@link ShadowVariableLooped} properties can
+ * Do not use a {@link ShadowVariablesInconsistent} property in a method annotated
+ * with {@link ShadowSources}. {@link ShadowVariablesInconsistent} properties can
  * be updated after the {@link ShadowSources} marked method is called, causing
  * score corruption. {@link ShadowSources} marked methods do not need to check
- * {@link ShadowVariableLooped} properties, since they are only called if all
+ * {@link ShadowVariablesInconsistent} properties, since they are only called if all
  * their dependencies are not looped.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
-public @interface ShadowVariableLooped {
+public @interface ShadowVariablesInconsistent {
 }

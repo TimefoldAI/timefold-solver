@@ -16,12 +16,12 @@ public class TestdataConcurrentAssertionConstraintProvider implements Constraint
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
                 constraintFactory.forEach(TestdataConcurrentValue.class)
-                        .filter(TestdataConcurrentValue::getExpectedInvalid)
+                        .filter(TestdataConcurrentValue::getExpectedInconsistent)
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Invalid visit"),
 
                 constraintFactory.forEach(TestdataConcurrentValue.class)
-                        .filter(visit -> !visit.getExpectedInvalid() && visit.isAssigned())
+                        .filter(visit -> !visit.getExpectedInconsistent() && visit.isAssigned())
                         .penalize(HardSoftScore.ONE_SOFT, visit -> (int) Duration
                                 .between(BASE_START_TIME,
                                         visit.getExpectedServiceFinishTime())

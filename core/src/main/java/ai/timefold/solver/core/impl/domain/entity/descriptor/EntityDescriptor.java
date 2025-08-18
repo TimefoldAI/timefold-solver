@@ -52,7 +52,7 @@ import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableD
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.PiggybackShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.declarative.ShadowVariableLoopedVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ShadowVariablesInconsistentVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -70,7 +70,7 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -95,7 +95,7 @@ public class EntityDescriptor<Solution_> {
             PiggybackShadowVariable.class,
             CustomShadowVariable.class,
             CascadingUpdateShadowVariable.class,
-            ShadowVariableLooped.class
+            ShadowVariablesInconsistent.class
     };
 
     private static final Logger LOGGER = LoggerFactory.getLogger(EntityDescriptor.class);
@@ -107,7 +107,7 @@ public class EntityDescriptor<Solution_> {
     private final Predicate<Object> isInitializedPredicate;
     private final List<MemberAccessor> declaredPlanningPinIndexMemberAccessorList = new ArrayList<>();
     @Nullable
-    private ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor;
+    private ShadowVariablesInconsistentVariableDescriptor<Solution_> shadowVariablesInconsistentDescriptor;
 
     private Predicate<Object> hasNoNullVariablesBasicVar;
     private Predicate<Object> hasNoNullVariablesListVar;
@@ -427,10 +427,10 @@ public class EntityDescriptor<Solution_> {
                 declaredCascadingUpdateShadowVariableDecriptorMap.put(variableDescriptor.getTargetMethodName(),
                         variableDescriptor);
             }
-        } else if (variableAnnotationClass.equals(ShadowVariableLooped.class)) {
-            var variableDescriptor = new ShadowVariableLoopedVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
+        } else if (variableAnnotationClass.equals(ShadowVariablesInconsistent.class)) {
+            var variableDescriptor = new ShadowVariablesInconsistentVariableDescriptor<>(nextVariableDescriptorOrdinal, this,
                     memberAccessor);
-            shadowVariableLoopedDescriptor = variableDescriptor;
+            shadowVariablesInconsistentDescriptor = variableDescriptor;
             declaredShadowVariableDescriptorMap.put(memberName, variableDescriptor);
         } else if (variableAnnotationClass.equals(PiggybackShadowVariable.class)) {
             var variableDescriptor =
@@ -678,8 +678,8 @@ public class EntityDescriptor<Solution_> {
         return effectiveGenuineVariableDescriptorMap.get(variableName);
     }
 
-    public @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> getShadowVariableLoopedDescriptor() {
-        return shadowVariableLoopedDescriptor;
+    public @Nullable ShadowVariablesInconsistentVariableDescriptor<Solution_> getShadowVariablesInconsistentDescriptor() {
+        return shadowVariablesInconsistentDescriptor;
     }
 
     public boolean hasBothGenuineListAndBasicVariables() {

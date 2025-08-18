@@ -99,9 +99,9 @@ class DependencyValuesShadowVariableTest {
 
         // Tests the move [A, B] -> [C, A, B].
         // Since C depends on A and B, this is an invalid solution,
-        // and C.startTime/C.endTime remains null and C.isLooped is true.
+        // and C.startTime/C.endTime remains null and C.isInconsistent is true.
         // When the move is undone, C.startTime/C.endTime remains null,
-        // and C.isLooped is false.
+        // and C.isInconsistent is false.
         moveAsserter.assertMoveAndUndo(schedule, new ListAssignMove<>(
                 (PlanningListVariableMetaModel<TestdataDependencySolution, ? super TestdataDependencyEntity, ? super TestdataDependencyValue>) solutionDescriptor
                         .getListVariableDescriptor().getVariableMetaModel(),

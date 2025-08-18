@@ -13,13 +13,13 @@ public class TestdataQuarkusSupplierVariableListConstraintProvider implements Co
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
                 factory.forEach(TestdataQuarkusSupplierVariableListValue.class)
-                        .filter(value -> !value.isLooped())
+                        .filter(value -> !value.isInconsistent())
                         .penalize(SimpleScore.ONE, TestdataQuarkusSupplierVariableListValue::getStartTime)
                         .asConstraint("Minimize start time"),
                 factory.forEach(TestdataQuarkusSupplierVariableListValue.class)
-                        .filter(TestdataQuarkusSupplierVariableListValue::isLooped)
+                        .filter(TestdataQuarkusSupplierVariableListValue::isInconsistent)
                         .penalize(SimpleScore.of(1000))
-                        .asConstraint("Looped")
+                        .asConstraint("Inconsistent")
         };
     }
 

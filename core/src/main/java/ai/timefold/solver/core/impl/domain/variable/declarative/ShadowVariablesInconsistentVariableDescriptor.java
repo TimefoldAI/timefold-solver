@@ -15,10 +15,10 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWithSources;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
-public class ShadowVariableLoopedVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
-    public ShadowVariableLoopedVariableDescriptor(int ordinal,
+public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends ShadowVariableDescriptor<Solution_> {
+    public ShadowVariablesInconsistentVariableDescriptor(int ordinal,
             EntityDescriptor<Solution_> entityDescriptor,
             MemberAccessor variableMemberAccessor) {
         super(ordinal, entityDescriptor, variableMemberAccessor);
@@ -33,7 +33,7 @@ public class ShadowVariableLoopedVariableDescriptor<Solution_> extends ShadowVar
                             Maybe enable declarative shadow variables in your %s?
                             """
                             .formatted(variableMemberAccessor.getName(), entityDescriptor.getEntityClass().getName(),
-                                    ShadowVariableLooped.class.getSimpleName(), SolverConfig.class.getSimpleName()));
+                                    ShadowVariablesInconsistent.class.getSimpleName(), SolverConfig.class.getSimpleName()));
         }
     }
 

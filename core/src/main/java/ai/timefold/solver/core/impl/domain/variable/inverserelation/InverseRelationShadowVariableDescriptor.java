@@ -183,6 +183,10 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
         }
     }
 
+    public boolean isSingleton() {
+        return singleton;
+    }
+
     @Override
     public boolean isListVariableSource() {
         return sourceVariableDescriptor instanceof ListVariableDescriptor<Solution_>;

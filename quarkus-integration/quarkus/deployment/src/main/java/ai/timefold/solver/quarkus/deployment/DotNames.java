@@ -40,7 +40,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.jboss.jandex.DotName;
 
@@ -84,7 +84,7 @@ public final class DotNames {
     static final DotName PIGGYBACK_SHADOW_VARIABLE = DotName.createSimple(PiggybackShadowVariable.class.getName());
     static final DotName PREVIOUS_ELEMENT_SHADOW_VARIABLE = DotName.createSimple(PreviousElementShadowVariable.class.getName());
     static final DotName SHADOW_VARIABLE = DotName.createSimple(ShadowVariable.class.getName());
-    static final DotName SHADOW_VARIABLE_LOOPED = DotName.createSimple(ShadowVariableLooped.class.getName());
+    static final DotName SHADOW_VARIABLES_INCONSISTENT = DotName.createSimple(ShadowVariablesInconsistent.class.getName());
     static final DotName CASCADING_UPDATE_SHADOW_VARIABLE =
             DotName.createSimple(CascadingUpdateShadowVariable.class.getName());
     static final DotName SHADOW_SOURCES = DotName.createSimple(ShadowSources.class.getName());
@@ -111,7 +111,7 @@ public final class DotNames {
             PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
-            SHADOW_VARIABLE_LOOPED,
+            SHADOW_VARIABLES_INCONSISTENT,
             CASCADING_UPDATE_SHADOW_VARIABLE
     };
 
@@ -138,7 +138,7 @@ public final class DotNames {
             PIGGYBACK_SHADOW_VARIABLE,
             PREVIOUS_ELEMENT_SHADOW_VARIABLE,
             SHADOW_VARIABLE,
-            SHADOW_VARIABLE_LOOPED,
+            SHADOW_VARIABLES_INCONSISTENT,
             CASCADING_UPDATE_SHADOW_VARIABLE
     };
 

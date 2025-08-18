@@ -17,7 +17,7 @@ public class TestdataConcurrentEasyScoreCalculator implements EasyScoreCalculato
 
         for (var visit : routePlan.values) {
             if (visit.isAssigned()) {
-                if (visit.isInvalid()) {
+                if (visit.isInconsistent()) {
                     hardScore--;
                 } else {
                     softScore -= (int) Duration

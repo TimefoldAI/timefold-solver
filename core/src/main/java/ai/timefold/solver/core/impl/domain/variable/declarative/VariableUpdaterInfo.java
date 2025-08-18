@@ -15,7 +15,7 @@ public record VariableUpdaterInfo<Solution_>(
         VariableMetaModel<Solution_, ?, ?> id,
         int groupId,
         DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
-        @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor,
+        @Nullable ShadowVariablesInconsistentVariableDescriptor<Solution_> shadowVariablesInconsistentDescriptor,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator,
         @Nullable Object[] groupEntities) {
@@ -23,19 +23,19 @@ public record VariableUpdaterInfo<Solution_>(
     public VariableUpdaterInfo(VariableMetaModel<Solution_, ?, ?> id,
             int groupId,
             DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
-            @Nullable ShadowVariableLoopedVariableDescriptor<Solution_> shadowVariableLoopedDescriptor,
+            @Nullable ShadowVariablesInconsistentVariableDescriptor<Solution_> shadowVariablesInconsistentDescriptor,
             MemberAccessor memberAccessor,
             Function<Object, Object> calculator) {
-        this(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor, calculator, null);
+        this(id, groupId, variableDescriptor, shadowVariablesInconsistentDescriptor, memberAccessor, calculator, null);
     }
 
     public VariableUpdaterInfo<Solution_> withGroupId(int groupId) {
-        return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor,
+        return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariablesInconsistentDescriptor, memberAccessor,
                 calculator, groupEntities);
     }
 
     public VariableUpdaterInfo<Solution_> withGroupEntities(Object[] groupEntities) {
-        return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariableLoopedDescriptor, memberAccessor,
+        return new VariableUpdaterInfo<>(id, groupId, variableDescriptor, shadowVariablesInconsistentDescriptor, memberAccessor,
                 calculator, groupEntities);
     }
 

@@ -6,7 +6,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataQuarkusSupplierVariableListValue {
@@ -20,8 +20,8 @@ public class TestdataQuarkusSupplierVariableListValue {
     @ShadowVariable(supplierName = "startTimeSupplier")
     private Integer startTime;
 
-    @ShadowVariableLooped
-    private boolean looped;
+    @ShadowVariablesInconsistent
+    private boolean isInconsistent;
 
     public TestdataQuarkusSupplierVariableListValue() {
     }
@@ -43,12 +43,12 @@ public class TestdataQuarkusSupplierVariableListValue {
         this.startTime = startTime;
     }
 
-    public boolean isLooped() {
-        return looped;
+    public boolean isInconsistent() {
+        return isInconsistent;
     }
 
-    public void setLooped(boolean looped) {
-        this.looped = looped;
+    public void setInconsistent(boolean inconsistent) {
+        this.isInconsistent = inconsistent;
     }
 
     @ShadowSources({ "previous.startTime", "dependencies[].startTime" })

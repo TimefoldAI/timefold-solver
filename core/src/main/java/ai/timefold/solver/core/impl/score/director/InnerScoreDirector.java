@@ -210,6 +210,16 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     boolean expectShadowVariablesInCorrectState();
 
     /**
+     * Disables the checks controlled by {@link #expectShadowVariablesInCorrectState()}.
+     */
+    void disableShadowVariablesInCorrectStateChecks();
+
+    /**
+     * Enables the checks controlled by {@link #expectShadowVariablesInCorrectState()}.
+     */
+    void enableShadowVariablesInCorrectStateChecks();
+
+    /**
      * @return never null
      */
     ScoreDirectorFactory<Solution_, Score_> getScoreDirectorFactory();

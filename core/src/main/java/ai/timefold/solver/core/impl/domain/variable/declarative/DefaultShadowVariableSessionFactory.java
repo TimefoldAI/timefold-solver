@@ -263,7 +263,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         declarativeShadowVariableDescriptor.getVariableMetaModel(),
                         updaterKey,
                         declarativeShadowVariableDescriptor,
-                        declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariableLoopedDescriptor(),
+                        declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariablesInconsistentDescriptor(),
                         declarativeShadowVariableDescriptor.getMemberAccessor(),
                         declarativeShadowVariableDescriptor.getCalculator()::executeGetter);
                 if (declarativeShadowVariableDescriptor.getAlignmentKeyMap() != null) {
@@ -354,7 +354,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                                 variableId,
                                 variableIdToUpdaters.getNextId(),
                                 declarativeShadowVariableDescriptor,
-                                declarativeShadowVariableDescriptor.getEntityDescriptor().getShadowVariableLoopedDescriptor(),
+                                declarativeShadowVariableDescriptor.getEntityDescriptor()
+                                        .getShadowVariablesInconsistentDescriptor(),
                                 declarativeShadowVariableDescriptor.getMemberAccessor(),
                                 declarativeShadowVariableDescriptor.getCalculator()::executeGetter)));
     }

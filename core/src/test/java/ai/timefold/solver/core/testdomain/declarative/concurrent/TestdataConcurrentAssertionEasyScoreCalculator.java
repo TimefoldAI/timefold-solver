@@ -18,7 +18,7 @@ public class TestdataConcurrentAssertionEasyScoreCalculator
 
         for (var visit : routePlan.values) {
             if (visit.isAssigned()) {
-                if (visit.getExpectedInvalid()) {
+                if (visit.getExpectedInconsistent()) {
                     hardScore--;
                 } else {
                     softScore -= (int) Duration
