@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -48,7 +49,7 @@ class ShadowVariableUpdateTest {
         var value1 = new TestdataBasicVarValue("c1", Duration.ZERO);
         var entity1 = new TestdataBasicVarEntity("v1", value1);
         value1.setEntityList(null);
-        var solution = new TestdataBasicVarSolution(List.of(entity1), List.of(value1));
+        var solution = new TestdataBasicVarSolution(List.of(entity1), List.of(value1), Collections.emptyList());
         Assertions
                 .assertThatCode(
                         () -> SolutionManager.updateShadowVariables(TestdataBasicVarSolution.class, entity1, value1))
@@ -108,6 +109,7 @@ class ShadowVariableUpdateTest {
         var solution = new TestdataBasicVarSolution();
         solution.setEntities(List.of(entity1, entity2, entity3));
         solution.setValues(List.of(value1, value2));
+        solution.setProblemFacts(List.of(1, "Data", new Object()));
         SolutionManager.updateShadowVariables(solution);
         assertThat(value1.getEntityList()).containsExactly(entity1, entity3);
         assertThat(value2.getEntityList()).containsExactly(entity2);

@@ -37,7 +37,7 @@ jobs:
             java-version: 24
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-java@v4
         with:
@@ -54,12 +54,15 @@ jobs:
           paths: "**/TEST-*.xml"
           show: "fail"
         if: always()
+        
+  # Exists to check long-running goals, such as docs.
+  # Tests are skipped as there is plenty of CI that runs them.
   java_full:
-    name: "Java Solver (with flag -Dfull)"
+    name: "Java Solver (with flag -Dfull, no tests)"
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: actions/setup-java@v4
         with:
@@ -67,22 +70,15 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
-      - name: Build and test timefold-solver using flag -Dfull
-        run: mvn -Dfull -B verify
-
-      - name: Test Summary
-        uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
-        with:
-          paths: "**/TEST-*.xml"
-          show: "fail"
-        if: always()
+      - name: Build timefold-solver using flag -Dfull
+        run: mvn -DskipTests -Dfull -B verify
 
   spring_boot_3_3_x:
     name: "Spring Boot 3.3.x"
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-java@v4
         with:
           java-version: 21 # Latest LTS if not Ubuntu
@@ -109,7 +105,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: actions/setup-java@v4
         with:
           java-version: 21 # Latest LTS if not Ubuntu
@@ -152,7 +148,7 @@ jobs:
             java-version: 17
     timeout-minutes: 120
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - uses: graalvm/setup-graalvm@7f488cf82a3629ee755e4e97342c01d6bed318fa # v1
         with:

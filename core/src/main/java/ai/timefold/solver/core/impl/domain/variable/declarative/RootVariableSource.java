@@ -75,6 +75,7 @@ public record RootVariableSource<Entity_, Value_>(
         List<MemberAccessor> listMemberAccessors = new ArrayList<>();
         var hasListMemberAccessor = false;
         List<List<MemberAccessor>> chainStartingFromSourceVariableList = new ArrayList<>();
+        List<Integer> factCountAfterSourceVariableToNextVariableList = new ArrayList<>();
         boolean isAfterVariable = false;
         Class<?> currentEntity = rootEntityClass;
         var factCountSinceLastVariable = 0;
@@ -101,6 +102,7 @@ public record RootVariableSource<Entity_, Value_>(
                                 descriptorPolicy);
                 listMemberAccessors.add(memberAccessor);
                 chainToVariable = new ArrayList<>();
+
                 factCountSinceLastVariable = 0;
 
                 currentEntity = ConfigUtils.extractGenericTypeParameterOrFail(ShadowSources.class.getSimpleName(),
@@ -129,6 +131,7 @@ public record RootVariableSource<Entity_, Value_>(
                     chainStartingFromSourceVariable.add(memberAccessor);
                     chainStartingFromSourceVariableList.add(chainStartingFromSourceVariable);
 
+                    factCountAfterSourceVariableToNextVariableList.add(factCountSinceLastVariable);
                     isAfterVariable = true;
                     factCountSinceLastVariable = 0;
 
@@ -167,10 +170,11 @@ public record RootVariableSource<Entity_, Value_>(
         for (var i = 0; i < chainStartingFromSourceVariableList.size(); i++) {
             var chainStartingFromSourceVariable = chainStartingFromSourceVariableList.get(i);
             var newSourceReference =
-                    createVariableSourceReferenceFromChain(variablePath, variableSourceReferences, listMemberAccessors,
+                    createVariableSourceReferenceFromChain(variablePath,
+                            listMemberAccessors,
                             solutionMetaModel,
                             rootEntityClass, targetVariableName, chainStartingFromSourceVariable,
-                            chainToVariable,
+                            chainToVariable, factCountAfterSourceVariableToNextVariableList.get(i),
                             i == 0,
                             i == chainStartingFromSourceVariableList.size() - 1);
             variableSourceReferences.add(newSourceReference);
@@ -202,6 +206,13 @@ public record RootVariableSource<Entity_, Value_>(
             // Child variable is accessed from a fact from the parent,
             // so it is an indirect variable.
             parentVariableType = ParentVariableType.INDIRECT;
+        }
+
+        if (variableSourceReferences.size() > 2) {
+            throw new IllegalArgumentException("""
+                    The source path (%s) starting from root class (%s) \
+                    references (%d) variables while a maximum of 2 is allowed."
+                    """.formatted(variablePath, rootEntityClass.getCanonicalName(), variableSourceReferences.size()));
         }
 
         return new RootVariableSource<>(rootEntityClass,
@@ -247,11 +258,12 @@ public record RootVariableSource<Entity_, Value_>(
     }
 
     private static <Entity_> @NonNull VariableSourceReference createVariableSourceReferenceFromChain(
-            String variablePath, List<VariableSourceReference> variableSourceReferences,
+            String variablePath,
             List<MemberAccessor> listMemberAccessors,
             PlanningSolutionMetaModel<?> solutionMetaModel,
             Class<? extends Entity_> rootEntityClass, String targetVariableName, List<MemberAccessor> afterChain,
-            List<MemberAccessor> chainToVariable, boolean isTopLevel, boolean isBottomLevel) {
+            List<MemberAccessor> chainToVariable, int factCountTillNextVariable,
+            boolean isTopLevel, boolean isBottomLevel) {
         var variableMemberAccessor = afterChain.get(0);
         var sourceVariablePath = new VariablePath(variableMemberAccessor.getDeclaringClass(),
                 variableMemberAccessor.getName(),
@@ -266,19 +278,14 @@ public record RootVariableSource<Entity_, Value_>(
                             .variable(maybeDownstreamVariable.getName());
         }
         var isDeclarative = isDeclarativeShadowVariable(variableMemberAccessor);
-        if (!isDeclarative) {
-            for (var previousVariableSourceReference : variableSourceReferences) {
-                if (!previousVariableSourceReference.isDeclarative()) {
-                    throw new IllegalArgumentException(
-                            """
-                                    The source path (%s) starting from root entity class (%s) \
-                                    accesses a non-declarative shadow variable (%s) \
-                                    after another non-declarative shadow variable (%s)."""
-                                    .formatted(
-                                            variablePath, rootEntityClass.getSimpleName(), variableMemberAccessor.getName(),
-                                            previousVariableSourceReference.variableMetaModel().name()));
-                }
-            }
+
+        if (!isDeclarative && !isTopLevel && factCountTillNextVariable != 0) {
+            throw new IllegalArgumentException(
+                    """
+                            The source path (%s) starting from root class (%s) \
+                            has a non-declarative variable (%s) accessed via a fact after another variable."
+                            """.formatted(variablePath, rootEntityClass.getCanonicalName(),
+                            variableMemberAccessor.getName()));
         }
 
         return new VariableSourceReference(

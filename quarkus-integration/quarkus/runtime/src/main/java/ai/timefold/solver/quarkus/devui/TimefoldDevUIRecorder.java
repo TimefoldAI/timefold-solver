@@ -18,9 +18,9 @@ import io.quarkus.runtime.annotations.Recorder;
 
 @Recorder
 public class TimefoldDevUIRecorder {
-    final TimefoldRuntimeConfig timefoldRuntimeConfig;
+    final RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig;
 
-    public TimefoldDevUIRecorder(final TimefoldRuntimeConfig timefoldRuntimeConfig) {
+    public TimefoldDevUIRecorder(final RuntimeValue<TimefoldRuntimeConfig> timefoldRuntimeConfig) {
         this.timefoldRuntimeConfig = timefoldRuntimeConfig;
     }
 
@@ -55,6 +55,6 @@ public class TimefoldDevUIRecorder {
 
     private void updateSolverConfigWithRuntimeProperties(String solverName, SolverConfig solverConfig) {
         TimefoldRecorder.updateSolverConfigWithRuntimeProperties(solverConfig,
-                timefoldRuntimeConfig.getSolverRuntimeConfig(solverName).orElse(null));
+                timefoldRuntimeConfig.getValue().getSolverRuntimeConfig(solverName).orElse(null));
     }
 }
