@@ -17,7 +17,6 @@ import java.util.Set;
 import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -41,7 +40,6 @@ import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.LinkedIdentityHashSet;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -231,45 +229,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             notifiable.resetWorkingSolution();
         }
 
-        if (scoreDirector.expectShadowVariablesInCorrectState()) {
-            var solutionDescriptor = scoreDirector.getSolutionDescriptor();
-            solutionDescriptor.visitAllEntities(scoreDirector.getWorkingSolution(),
-                    entity -> {
-                        var entityDescriptors = solutionDescriptor.getEntityDescriptors();
-
-                        for (var entityDescriptor : entityDescriptors) {
-                            if (!entityDescriptor.getEntityClass().isInstance(entity)) {
-                                continue;
-                            }
-                            var inconsistentShadowVariablesDescriptor =
-                                    entityDescriptor.getShadowVariablesInconsistentDescriptor();
-                            if (inconsistentShadowVariablesDescriptor != null
-                                    && inconsistentShadowVariablesDescriptor.getValue(entity) == null) {
-                                throw new IllegalStateException(
-                                        """
-                                                Shadow variables update is disabled, but the entity (%s) has a null @%s annotated field (%s).
-                                                Maybe enable shadow variable updates?
-                                                """
-                                                .formatted(entity, ShadowVariablesInconsistent.class.getSimpleName(),
-                                                        inconsistentShadowVariablesDescriptor.getVariableName()));
-                            }
-
-                            var shadowVariableDescriptors = entityDescriptor.getShadowVariableDescriptors();
-                            for (var shadowVariableDescriptor : shadowVariableDescriptors) {
-                                if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseDescriptor) {
-                                    if (inverseDescriptor.isSingleton()) {
-                                        assertSingletonInverseDescriptor(inverseDescriptor, scoreDirector.getWorkingSolution(),
-                                                entity);
-                                    } else {
-                                        assertCollectionInverseDescriptor(inverseDescriptor, scoreDirector.getWorkingSolution(),
-                                                entity);
-                                    }
-                                }
-                            }
-                        }
-                    });
-        }
-
         if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()) {
             var shadowVariableSessionFactory = new DefaultShadowVariableSessionFactory<>(
                     scoreDirector.getSolutionDescriptor(),
@@ -277,85 +236,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     shadowVariableGraphCreator);
             shadowVariableSession = shadowVariableSessionFactory.forSolution(scoreDirector.getWorkingSolution());
             triggerVariableListenersInNotificationQueues();
-        }
-    }
-
-    private void assertSingletonInverseDescriptor(InverseRelationShadowVariableDescriptor<Solution_> inverseDescriptor,
-            Solution_ workingSolution, Object shadowEntity) {
-        var inverse = inverseDescriptor.getValue(shadowEntity);
-        var sourceDescriptor = inverseDescriptor.getSourceVariableDescriptorList().get(0);
-        if (sourceDescriptor.isListVariable()) {
-            return; // ExternalizedListInverseVariableProcessor asserts this in setInverseAsserted
-        }
-        if (inverse == null) {
-            scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution, maybeSourceEntity -> {
-                if (sourceDescriptor.getEntityDescriptor().getEntityClass().isInstance(maybeSourceEntity)) {
-                    var sourceValue = sourceDescriptor.getValue(maybeSourceEntity);
-                    if (sourceValue == shadowEntity) {
-                        throw new IllegalStateException("""
-                                The entity (%s) has a @%s that is null, but there is a source entity (%s) that point to it.
-                                Verify the consistency of your input solution.
-                                """.formatted(shadowEntity, InverseRelationShadowVariable.class.getSimpleName(),
-                                maybeSourceEntity));
-                    }
-                }
-            });
-        } else {
-            var sourceValue = sourceDescriptor.getValue(inverse);
-            if (sourceValue != shadowEntity) {
-                throw new IllegalStateException(
-                        """
-                                The entity (%s) has a @%s that points to a source entity (%s) but that source entity points to (%s) instead.
-                                Verify the consistency of your input solution.
-                                """
-                                .formatted(shadowEntity, InverseRelationShadowVariable.class.getSimpleName(), inverse,
-                                        sourceValue));
-            }
-        }
-    }
-
-    private void assertCollectionInverseDescriptor(InverseRelationShadowVariableDescriptor<Solution_> inverseDescriptor,
-            Solution_ workingSolution, Object shadowEntity) {
-        var inverseCollection = (Collection<?>) inverseDescriptor.getValue(shadowEntity);
-        var sourceDescriptor = inverseDescriptor.getSourceVariableDescriptorList().get(0);
-        if (inverseCollection == null) {
-            throw new IllegalStateException("""
-                    The entity (%s) has a collection @%s that is null.
-                    Verify the consistency of your input solution.
-                    """.formatted(shadowEntity, InverseRelationShadowVariable.class.getSimpleName()));
-        } else {
-            for (var source : inverseCollection) {
-                var sourceValue = sourceDescriptor.getValue(source);
-                if (sourceValue != shadowEntity) {
-                    throw new IllegalStateException(
-                            """
-                                    The entity (%s) has a collection @%s (%s) that points to a source entity (%s) but that source entity points to (%s) instead.
-                                    Verify the consistency of your input solution.
-                                    """
-                                    .formatted(shadowEntity, InverseRelationShadowVariable.class.getSimpleName(),
-                                            inverseCollection,
-                                            source, sourceValue));
-                }
-            }
-
-            scoreDirector.getSolutionDescriptor().visitAllEntities(workingSolution, maybeSourceEntity -> {
-                if (sourceDescriptor.getEntityDescriptor().getEntityClass().isInstance(maybeSourceEntity)) {
-                    if (inverseCollection.contains(maybeSourceEntity)) {
-                        return;
-                    }
-                    var sourceValue = sourceDescriptor.getValue(maybeSourceEntity);
-                    if (sourceValue == shadowEntity) {
-                        throw new IllegalStateException(
-                                """
-                                        The entity (%s) has a collection @%s (%s), but it is missing a source entity that point to it (%s).
-                                        Verify the consistency of your input solution.
-                                        """
-                                        .formatted(shadowEntity, InverseRelationShadowVariable.class.getSimpleName(),
-                                                inverseCollection,
-                                                maybeSourceEntity));
-                    }
-                }
-            });
         }
     }
 

@@ -180,7 +180,7 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         var solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
         var errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
-        solverScope.setBestSolution(Objects.requireNonNull(problem, "The problem must not be null."));
+        solverScope.setInitialSolution(Objects.requireNonNull(problem, "The problem must not be null."));
         solverScope.setSolver(this);
         outerSolvingStarted(solverScope);
         var restartSolver = true;

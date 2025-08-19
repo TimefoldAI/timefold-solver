@@ -477,7 +477,7 @@ public class SolutionManagerTest {
                 "The entity (v1)",
                 "has a collection @" + InverseRelationShadowVariable.class.getSimpleName(),
                 "([e1])",
-                "but it is missing a source entity that point to it (e2)");
+                "that does not match the actual inverse set ([e1, e2])");
     }
 
     @ParameterizedTest
@@ -515,8 +515,7 @@ public class SolutionManagerTest {
                 "The entity (v2)",
                 "has a collection @" + InverseRelationShadowVariable.class.getSimpleName(),
                 "([e3, e1])",
-                "that points to a source entity (e1)",
-                "but that source entity points to (v1) instead");
+                "that does not match the actual inverse set ([e3])");
     }
 
     @ParameterizedTest

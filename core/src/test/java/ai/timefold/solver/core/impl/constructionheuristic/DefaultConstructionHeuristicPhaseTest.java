@@ -104,7 +104,9 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                 new TestdataEntity("e3", v3)));
 
         var solution = PlannerTestUtils.solve(solverConfig, inputProblem, false);
-        assertThat(inputProblem).isSameAs(solution);
+        // Although the solution has not changed, it is a clone since the initial solution
+        // may have stale shadow variables.
+        assertThat(inputProblem).isNotSameAs(solution);
     }
 
     @Test

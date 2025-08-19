@@ -161,16 +161,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public void enableShadowVariablesInCorrectStateChecks() {
-        expectShadowVariablesInCorrectState = true;
-    }
-
-    @Override
-    public void disableShadowVariablesInCorrectStateChecks() {
-        expectShadowVariablesInCorrectState = false;
-    }
-
-    @Override
     public @NonNull Solution_ getWorkingSolution() {
         return workingSolution;
     }
@@ -261,7 +251,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (entityAndFactVisitor != null) {
             solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
         }
-        Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
+        Consumer<Object> entityValidator = scoreDirectorFactory.getEntityValidator(this);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
         setWorkingEntityListDirty(workingSolution);
         // This visits all the entities.
@@ -274,6 +264,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (moveRepository != null) {
             moveRepository.initialize(new SessionContext<>(this));
         }
+    }
+
+    /**
+     * Note: Initial Solution may have stale shadow variables!
+     *
+     * @param initialSolution the initial solution
+     */
+    @Override
+    public void setInitialSolution(Solution_ initialSolution) {
+        var originalShouldAssert = expectShadowVariablesInCorrectState;
+        expectShadowVariablesInCorrectState = false;
+        setWorkingSolution(initialSolution);
+        forceTriggerVariableListeners();
+        expectShadowVariablesInCorrectState = originalShouldAssert;
     }
 
     @Override

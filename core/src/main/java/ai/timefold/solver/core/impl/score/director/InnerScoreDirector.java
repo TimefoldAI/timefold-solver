@@ -85,6 +85,14 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     /**
      * The {@link PlanningSolution working solution} must never be the same instance as the
+     * {@link PlanningSolution initial solution}, it should be a clone with all shadow variables updated.
+     *
+     * @param initialSolution never null
+     */
+    void setInitialSolution(Solution_ initialSolution);
+
+    /**
+     * The {@link PlanningSolution working solution} must never be the same instance as the
      * {@link PlanningSolution best solution}, it should be a (un)changed clone.
      *
      * @param workingSolution never null
@@ -208,16 +216,6 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * @return false if the fail-fast on shadow variables should not be triggered
      */
     boolean expectShadowVariablesInCorrectState();
-
-    /**
-     * Disables the checks controlled by {@link #expectShadowVariablesInCorrectState()}.
-     */
-    void disableShadowVariablesInCorrectStateChecks();
-
-    /**
-     * Enables the checks controlled by {@link #expectShadowVariablesInCorrectState()}.
-     */
-    void enableShadowVariablesInCorrectStateChecks();
 
     /**
      * @return never null

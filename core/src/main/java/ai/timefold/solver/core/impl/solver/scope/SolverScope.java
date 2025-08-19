@@ -332,12 +332,15 @@ public class SolverScope<Solution_> {
 
     public void setWorkingSolutionFromBestSolution() {
         // The workingSolution must never be the same instance as the bestSolution.
-        scoreDirector.disableShadowVariablesInCorrectStateChecks();
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
-        // The best solution might have some stale shadow variables, so
-        // update all shadow variables
-        scoreDirector.forceTriggerVariableListeners();
-        scoreDirector.enableShadowVariablesInCorrectStateChecks();
+    }
+
+    public void setInitialSolution(Solution_ initialSolution) {
+        // The workingSolution must never be the same instance as the bestSolution.
+        scoreDirector.setInitialSolution(scoreDirector.cloneSolution(initialSolution));
+
+        // Set the best solution to the solution with shadow variable updated!
+        setBestSolution(scoreDirector.cloneSolution(scoreDirector.getWorkingSolution()));
     }
 
     public SolverScope<Solution_> createChildThreadSolverScope(ChildThreadType childThreadType) {
