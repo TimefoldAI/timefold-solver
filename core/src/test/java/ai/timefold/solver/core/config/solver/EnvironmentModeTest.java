@@ -159,7 +159,7 @@ class EnvironmentModeTest {
                 v2.setEntities(new ArrayList<>(List.of(e2)));
                 assertThatNoException()
                         .isThrownBy(() -> PlannerTestUtils.solve(solverConfig,
-                                new CorruptedUndoShadowSolution(List.of(e1, e2), List.of(v1, v2)), false));
+                                new CorruptedUndoShadowSolution(List.of(e1, e2), List.of(v1, v2)), true));
             }
         }
     }

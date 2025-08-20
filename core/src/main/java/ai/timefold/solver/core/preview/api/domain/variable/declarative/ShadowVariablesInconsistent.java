@@ -24,7 +24,7 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
  * `a` depends on `b` and `b` depends on `a`).
  * </li>
  * <li>
- * One of its source variables is looped (for example,
+ * One of its source variables is inconsistent (for example,
  * `c` depends on `a`, which depends on `b`, and `b` depends on `a`).
  * </li>
  * </ul>
@@ -39,7 +39,7 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
  * be updated after the {@link ShadowSources} marked method is called, causing
  * score corruption. {@link ShadowSources} marked methods do not need to check
  * {@link ShadowVariablesInconsistent} properties, since they are only called if all
- * their dependencies are not looped.
+ * their dependencies are consistent.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)

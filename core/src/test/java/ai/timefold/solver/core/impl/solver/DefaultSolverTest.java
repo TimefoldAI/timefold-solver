@@ -954,7 +954,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
@@ -979,7 +979,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setChainedAnchorList(Arrays.asList(new TestdataChainedAnchor("v1"), new TestdataChainedAnchor("v2")));
         solution.setChainedEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isNotNull();
     }
@@ -994,7 +994,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setValueList(Collections.emptyList());
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isNotNull();
     }
@@ -1013,7 +1013,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setEntityList(Arrays.asList(new TestdataPinnedEntity("e1", v1, true, false),
                 new TestdataPinnedEntity("e2", v2, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
@@ -1251,7 +1251,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setEntityList(List.of(entity));
         solution.setValueList(List.of(value1));
 
-        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, false);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
     }
 

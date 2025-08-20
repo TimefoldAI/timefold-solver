@@ -399,7 +399,7 @@ public record RootVariableSource<Entity_, Value_>(
         if (getAnnotation(declaringClass, memberName, ShadowVariablesInconsistent.class) != null) {
             throw new IllegalArgumentException("""
                     The source path (%s) starting from root class (%s) accesses a @%s property (%s).
-                    Supplier methods are only called when none of their dependencies are inconsistent,
+                    Supplier methods are only called when all of their dependencies are consistent,
                     so reading @%s properties are not needed since they are guaranteed to be false
                     when the supplier is called.
                     Maybe remove the source path (%s) from the @%s?

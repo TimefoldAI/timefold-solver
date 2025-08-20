@@ -120,13 +120,13 @@ final class AffectedEntitiesUpdater<Solution_>
         changed.clear();
     }
 
-    private boolean updateEntityShadowVariables(GraphNode<Solution_> entityVariable, boolean isVariableLooped) {
+    private boolean updateEntityShadowVariables(GraphNode<Solution_> entityVariable, boolean isVariableInconsistent) {
         var entity = entityVariable.entity();
         var shadowVariableReferences = entityVariable.variableReferences();
-        var loopDescriptor = shadowVariableReferences.get(0).shadowVariablesInconsistentDescriptor();
+        var inconsistentDescriptor = shadowVariableReferences.get(0).shadowVariablesInconsistentDescriptor();
         var anyChanged = false;
 
-        if (loopDescriptor != null) {
+        if (inconsistentDescriptor != null) {
             // Do not need to update anyChanged here; the graph already marked
             // all nodes whose looped status changed for us
             var groupEntities = shadowVariableReferences.get(0).groupEntities();
@@ -136,15 +136,15 @@ final class AffectedEntitiesUpdater<Solution_>
                 for (var i = 0; i < groupEntityIds.length; i++) {
                     var groupEntity = groupEntities[i];
                     var groupEntityId = groupEntityIds[i];
-                    anyChanged |= updateLoopedStatusOfEntity(groupEntity, groupEntityId, loopDescriptor);
+                    anyChanged |= updateLoopedStatusOfEntity(groupEntity, groupEntityId, inconsistentDescriptor);
                 }
             } else {
-                anyChanged |= updateLoopedStatusOfEntity(entity, entityVariable.entityId(), loopDescriptor);
+                anyChanged |= updateLoopedStatusOfEntity(entity, entityVariable.entityId(), inconsistentDescriptor);
             }
         }
 
         for (var shadowVariableReference : shadowVariableReferences) {
-            anyChanged |= updateShadowVariable(isVariableLooped, shadowVariableReference, entity);
+            anyChanged |= updateShadowVariable(isVariableInconsistent, shadowVariableReference, entity);
         }
 
         return anyChanged;

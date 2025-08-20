@@ -251,7 +251,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (entityAndFactVisitor != null) {
             solutionDescriptor.visitAllProblemFacts(workingSolution, entityAndFactVisitor);
         }
-        Consumer<Object> entityValidator = scoreDirectorFactory.getEntityValidator(this);
+        Consumer<Object> entityValidator = entity -> scoreDirectorFactory.validateEntity(this, entity);
         entityAndFactVisitor = entityAndFactVisitor == null ? entityValidator : entityAndFactVisitor.andThen(entityValidator);
         setWorkingEntityListDirty(workingSolution);
         // This visits all the entities.

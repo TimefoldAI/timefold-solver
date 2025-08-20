@@ -709,7 +709,7 @@ class RootVariableSourceTest {
                         "The source path (isInconsistent) starting from root class (%s) accesses a @%s property (isInconsistent)"
                                 .formatted(TestdataInvalidDeclarativeValue.class.getCanonicalName(),
                                         ShadowVariablesInconsistent.class.getSimpleName()),
-                        "Supplier methods are only called when none of their dependencies are inconsistent",
+                        "Supplier methods are only called when all of their dependencies are consistent",
                         "reading @%s properties are not needed since they are guaranteed to be false"
                                 .formatted(ShadowVariablesInconsistent.class.getSimpleName()),
                         "Maybe remove the source path (isInconsistent) from the @%s?"

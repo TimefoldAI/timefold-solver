@@ -58,7 +58,7 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
                 new TestdataEntity("e2", v2),
                 new TestdataEntity("e3", v1)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
+        solution = PlannerTestUtils.solve(solverConfig, solution, true); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         var solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -190,7 +190,7 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
                 new TestdataPinnedEntity("e2", v2, true, false),
                 new TestdataPinnedEntity("e3", v3, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
+        solution = PlannerTestUtils.solve(solverConfig, solution, true); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         var solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -220,7 +220,7 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
                 new TestdataPinnedAllowsUnassignedEntity("e2", v2, true, false),
                 new TestdataPinnedAllowsUnassignedEntity("e3", null, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false); // No change will be made.
+        solution = PlannerTestUtils.solve(solverConfig, solution, true); // No change will be made.
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
@@ -260,7 +260,7 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }
@@ -283,7 +283,7 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
                 new TestdataEntity("e2", v2),
                 new TestdataEntity("e3", v1)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
+        solution = PlannerTestUtils.solve(solverConfig, solution, true); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         var solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -314,7 +314,7 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
                 new TestdataPinnedEntity("e2", v2, true, false),
                 new TestdataPinnedEntity("e3", v3, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false); // TODO incentive it to change something
+        solution = PlannerTestUtils.solve(solverConfig, solution, true); // TODO incentive it to change something
         assertThat(solution).isNotNull();
         var solvedE1 = solution.getEntityList().get(0);
         assertCode("e1", solvedE1);
@@ -342,7 +342,7 @@ class DefaultLocalSearchPhaseTest extends AbstractMeterTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }
