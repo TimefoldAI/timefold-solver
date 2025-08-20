@@ -84,14 +84,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @param <Solution_> the solution type, the class with the {@link ai.timefold.solver.core.api.domain.solution.PlanningSolution}
+ * @param <Solution_> the solution type, the class with the {@link PlanningSolution}
  *        annotation
  */
-public class SolutionDescriptor<Solution_> {
+public final class SolutionDescriptor<Solution_> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(SolutionDescriptor.class);
     private static final EntityDescriptor<?> NULL_ENTITY_DESCRIPTOR = new EntityDescriptor<>(-1, null, PlanningEntity.class);
-    protected static final Class[] ANNOTATED_MEMBERS_CLASSES = {
+    private static final Class[] ANNOTATED_MEMBERS_CLASSES = {
             ProblemFactCollectionProperty.class,
             ValueRangeProvider.class,
             PlanningEntityCollectionProperty.class,
@@ -143,7 +143,6 @@ public class SolutionDescriptor<Solution_> {
 
         solutionDescriptor.processUnannotatedFieldsAndMethods(descriptorPolicy);
         solutionDescriptor.processAnnotations(descriptorPolicy, entityClassList);
-        var ordinal = 0;
         // Before iterating over the entity classes, we need to read the inheritance chain,
         // add all parent and child classes, and sort them.
         var updatedEntityClassList = new ArrayList<>(entityClassList);
@@ -154,8 +153,7 @@ public class SolutionDescriptor<Solution_> {
             updatedEntityClassList.addAll(filteredInheritedEntityClasses);
         }
         for (var entityClass : sortEntityClassList(updatedEntityClassList)) {
-            var entityDescriptor = new EntityDescriptor<>(ordinal++, solutionDescriptor, entityClass);
-            solutionDescriptor.addEntityDescriptor(entityDescriptor);
+            var entityDescriptor = descriptorPolicy.buildEntityDescriptor(solutionDescriptor, entityClass);
             entityDescriptor.processAnnotations(descriptorPolicy);
         }
         solutionDescriptor.afterAnnotationsProcessed(descriptorPolicy);
@@ -451,7 +449,7 @@ public class SolutionDescriptor<Solution_> {
         } else if (annotationClass.equals(PlanningScore.class)) {
             if (scoreDescriptor == null) {
                 // Bottom class wins. Bottom classes are parsed first due to ConfigUtil.getAllAnnotatedLineageClasses().
-                scoreDescriptor = ScoreDescriptor.buildScoreDescriptor(descriptorPolicy, member, solutionClass);
+                scoreDescriptor = descriptorPolicy.buildScoreDescriptor(member, solutionClass);
             } else {
                 scoreDescriptor.failFastOnDuplicateMember(descriptorPolicy, member, solutionClass);
             }
@@ -1211,6 +1209,14 @@ public class SolutionDescriptor<Solution_> {
             out.addAll(entityDescriptor.getShadowVariableDescriptors());
         }
         return out;
+    }
+
+    public int getValueRangeDescriptorCount() {
+        var count = 0;
+        for (var entityDescriptor : entityDescriptorMap.values()) {
+            count += entityDescriptor.getValueRangeCount();
+        }
+        return count;
     }
 
     public List<DeclarativeShadowVariableDescriptor<Solution_>> getDeclarativeShadowVariableDescriptors() {

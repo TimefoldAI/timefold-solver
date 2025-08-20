@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
 import java.util.Iterator;
 
-import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
@@ -112,7 +111,7 @@ public final class IterableFromEntityPropertyValueSelector<Solution_> extends Ab
 
     @Override
     public Iterator<Object> iterator() {
-        var valueRange = (CountableValueRange<Object>) innerScoreDirector.getValueRangeManager()
+        var valueRange = innerScoreDirector.getValueRangeManager()
                 .getFromSolution(valueRangeDescriptor, innerScoreDirector.getWorkingSolution());
         if (randomSelection) {
             return valueRange.createRandomIterator(workingRandom);

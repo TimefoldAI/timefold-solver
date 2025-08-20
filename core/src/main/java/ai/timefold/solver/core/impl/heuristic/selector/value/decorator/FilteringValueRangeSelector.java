@@ -1,10 +1,12 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
@@ -42,6 +44,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final boolean randomSelection;
 
+    private Object replayedValue = null;
     private long valuesSize;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
     private ReachableValues reachableValues;
@@ -126,34 +129,33 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         return iterator();
     }
 
+    /**
+     * The expected replayed value corresponds to the selected value when the replaying selector has the next value.
+     * Once it is selected, it will be reused until a new value is replayed by the recorder selector.
+     */
+    private Object selectReplayedValue() {
+        var iterator = replayingValueSelector.iterator();
+        if (iterator.hasNext()) {
+            replayedValue = iterator.next();
+        }
+        return replayedValue;
+    }
+
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            // If the nonReplayingValueSelector does not have any additional configuration,
-            // we can bypass it and only use reachable values,
-            // which helps optimize the number of evaluations.
-            // However, if the nonReplayingValueSelector includes custom configurations,
-            // such as filtering,
-            // we will first evaluate its values and then filter out those that are not reachable.
-            if (nonReplayingValueSelector instanceof IterableFromEntityPropertyValueSelector<Solution_>) {
-                return new OptimizedRandomFilteringValueRangeIterator(replayingValueSelector.iterator(),
-                        listVariableStateSupply,
-                        reachableValues, workingRandom, (int) getSize(), checkSourceAndDestination);
-            } else {
-                return new RandomFilteringValueRangeIterator(replayingValueSelector.iterator(),
-                        nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, (int) getSize(),
-                        checkSourceAndDestination);
-            }
+            return new RandomFilteringValueRangeIterator(this::selectReplayedValue, reachableValues, listVariableStateSupply,
+                    workingRandom, (int) getSize(), checkSourceAndDestination);
         } else {
-            return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(),
-                    nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, checkSourceAndDestination);
+            return new OriginalFilteringValueRangeIterator(this::selectReplayedValue, reachableValues, listVariableStateSupply,
+                    checkSourceAndDestination);
         }
     }
 
     @Override
     public Iterator<Object> endingIterator(Object entity) {
-        return new OriginalFilteringValueRangeIterator(replayingValueSelector.iterator(),
-                nonReplayingValueSelector.iterator(), listVariableStateSupply, reachableValues, checkSourceAndDestination);
+        return new OriginalFilteringValueRangeIterator(this::selectReplayedValue, reachableValues, listVariableStateSupply,
+                checkSourceAndDestination);
     }
 
     @Override
@@ -190,16 +192,20 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         @Nullable
         Set<Object> entitiesSet;
 
-        AbstractFilteringValueRangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                ReachableValues reachableValues, boolean checkSourceAndDestination, boolean useValueList) {
+        AbstractFilteringValueRangeIterator(ReachableValues reachableValues,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, boolean checkSourceAndDestination,
+                boolean useValueList) {
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.listVariableStateSupply = listVariableStateSupply;
             this.checkSourceAndDestination = checkSourceAndDestination;
             this.useValueList = useValueList;
         }
 
-        void loadValues(Object upcomingValue) {
-            this.currentUpcomingValue = upcomingValue;
+        void loadValues() {
+            if (currentUpcomingValue == null) {
+                noData();
+                return;
+            }
             this.entitiesSet = reachableValues.extractEntities(currentUpcomingValue);
             this.valueList = null;
             this.valuesSet = null;
@@ -226,6 +232,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
                     currentUpcomingEntity = positionInList.entity();
                 }
             }
+            upcomingCreated = false;
             this.hasData = true;
             this.initialized = true;
         }
@@ -239,71 +246,45 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             this.initialized = true;
         }
 
-        boolean isEntityReachable(Object destinationValue) {
-            var destinationValid = true;
+        boolean isReachable(Object destinationValue) {
             var sourceValid = true;
-            // Test if the destination entity accepts the selected value
+            var destinationValid = true;
+            // Test if the source accepts the destination entity
             var assignedDestinationPosition = listVariableStateSupply.getElementPosition(destinationValue);
             if (assignedDestinationPosition instanceof PositionInList elementPosition) {
-                destinationValid = entitiesSet.contains(elementPosition.entity());
+                sourceValid = entitiesSet.contains(elementPosition.entity());
             }
-            if (checkSourceAndDestination && destinationValid && currentUpcomingEntity != null) {
-                // Test if the source entity accepts the destination value
-                sourceValid = Objects.requireNonNull(reachableValues.extractEntities(destinationValue))
+            if (checkSourceAndDestination && sourceValid && currentUpcomingEntity != null) {
+                // Test if the destination accepts the source entity
+                destinationValid = Objects.requireNonNull(reachableValues.extractEntities(destinationValue))
                         .contains(currentUpcomingEntity);
             }
             return sourceValid && destinationValid;
         }
-
-        boolean isValueOrEntityReachable(Object destinationValue) {
-            // Test if the source accepts the destination value
-            // It is unnecessary to check if the destination accepts the upcoming value,
-            // as it is assumed that the related value selector will only return values reachable from the currently selected value
-            if (!valuesSet.contains(destinationValue)) {
-                return false;
-            }
-            return isEntityReachable(destinationValue);
-        }
     }
 
-    private abstract class AbstractUpcomingValueRangeIterator extends AbstractFilteringValueRangeIterator {
-        // The value iterator that only replays the current selected value
-        final Iterator<Object> replayingValueIterator;
-        // The value iterator returns all possible values based on the outer selector settings.
-        final Iterator<Object> valueIterator;
+    private class OriginalFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
+        private final Supplier<Object> upcomingValueSupplier;
+        // The value iterator returns all reachable values
+        private Iterator<Object> valueIterator;
 
-        private AbstractUpcomingValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
-                boolean checkSourceAndDestination, boolean useValueList) {
-            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, useValueList);
-            this.replayingValueIterator = replayingValueIterator;
-            this.valueIterator = valueIterator;
+        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, boolean checkSourceAndDestination) {
+            super(reachableValues, listVariableStateSupply, checkSourceAndDestination, false);
+            this.upcomingValueSupplier = upcomingValueSupplier;
         }
 
         void initialize() {
             if (initialized) {
                 return;
             }
-            if (replayingValueIterator.hasNext()) {
-                var upcomingValue = replayingValueIterator.next();
-                if (!valueIterator.hasNext()) {
-                    noData();
-                } else {
-                    loadValues(Objects.requireNonNull(upcomingValue));
-                }
+            this.currentUpcomingValue = upcomingValueSupplier.get();
+            loadValues();
+            if (hasData) {
+                valueIterator = Objects.requireNonNull(valuesSet).iterator();
             } else {
-                noData();
+                valueIterator = Collections.emptyIterator();
             }
-        }
-    }
-
-    private class OriginalFilteringValueRangeIterator extends AbstractUpcomingValueRangeIterator {
-
-        private OriginalFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
-                boolean checkSourceAndDestination) {
-            super(replayingValueIterator, valueIterator, listVariableStateSupply, reachableValues, checkSourceAndDestination,
-                    false);
         }
 
         @Override
@@ -318,57 +299,22 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
                     return noUpcomingSelection();
                 }
                 next = valueIterator.next();
-            } while (!isValueOrEntityReachable(next));
+            } while (!isReachable(next));
             return next;
         }
     }
 
-    private class RandomFilteringValueRangeIterator extends AbstractUpcomingValueRangeIterator {
-        private final int maxBailoutSize;
+    private class RandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
 
-        private RandomFilteringValueRangeIterator(Iterator<Object> replayingValueIterator, Iterator<Object> valueIterator,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
-                int maxBailoutSize, boolean checkSourceAndDestination) {
-            super(replayingValueIterator, valueIterator, listVariableStateSupply, reachableValues, checkSourceAndDestination,
-                    false);
-            this.maxBailoutSize = maxBailoutSize;
-        }
-
-        @Override
-        protected Object createUpcomingSelection() {
-            initialize();
-            if (!hasData) {
-                return noUpcomingSelection();
-            }
-            Object next;
-            var bailoutSize = maxBailoutSize;
-            do {
-                if (bailoutSize <= 0 || !valueIterator.hasNext()) {
-                    return noUpcomingSelection();
-                }
-                bailoutSize--;
-                next = valueIterator.next();
-            } while (!isValueOrEntityReachable(next));
-            return next;
-        }
-    }
-
-    /**
-     * The optimized iterator only traverses reachable values from the current selection.
-     * Unlike {@link RandomFilteringValueRangeIterator},
-     * it does not use an outer iterator to filter out non-reachable values.
-     */
-    private class OptimizedRandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
-
-        private final Iterator<Object> replayingValueIterator;
+        private final Supplier<Object> upcomingValueSupplier;
         private final Random workingRandom;
         private final int maxBailoutSize;
 
-        private OptimizedRandomFilteringValueRangeIterator(Iterator<Object> replayingValueIterator,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, ReachableValues reachableValues,
-                Random workingRandom, int maxBailoutSize, boolean checkSourceAndDestination) {
-            super(listVariableStateSupply, reachableValues, checkSourceAndDestination, true);
-            this.replayingValueIterator = replayingValueIterator;
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, Random workingRandom, int maxBailoutSize,
+                boolean checkSourceAndDestination) {
+            super(reachableValues, listVariableStateSupply, checkSourceAndDestination, true);
+            this.upcomingValueSupplier = upcomingValueSupplier;
             this.workingRandom = workingRandom;
             this.maxBailoutSize = maxBailoutSize;
         }
@@ -377,20 +323,22 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             if (initialized) {
                 return;
             }
-            loadValues(Objects.requireNonNull(replayingValueIterator.next()));
+            this.currentUpcomingValue = upcomingValueSupplier.get();
+            loadValues();
         }
 
         @Override
         public boolean hasNext() {
-            if (replayingValueIterator.hasNext() && currentUpcomingValue != null) {
-                var updatedUpcomingValue = replayingValueIterator.next();
+            if (currentUpcomingValue != null) {
+                var updatedUpcomingValue = upcomingValueSupplier.get();
                 if (updatedUpcomingValue != currentUpcomingValue) {
                     // The iterator may be reused
                     // like in the ElementPositionRandomIterator,
                     // even if the entity has changed.
                     // Therefore,
                     // we need to update the value list to ensure it is consistent.
-                    loadValues(updatedUpcomingValue);
+                    this.currentUpcomingValue = updatedUpcomingValue;
+                    loadValues();
                 }
             }
             return super.hasNext();
@@ -411,7 +359,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
                 bailoutSize--;
                 var index = workingRandom.nextInt(valueList.size());
                 next = valueList.get(index);
-            } while (!isEntityReachable(next));
+            } while (!isReachable(next));
             return next;
         }
 
