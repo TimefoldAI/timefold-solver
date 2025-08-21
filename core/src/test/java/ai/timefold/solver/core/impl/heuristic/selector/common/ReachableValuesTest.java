@@ -11,7 +11,7 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 
 import org.junit.jupiter.api.Test;
 
-class ReachableMatrixTest {
+class ReachableValuesTest {
 
     @Test
     void testReachableEntities() {
@@ -34,11 +34,18 @@ class ReachableMatrixTest {
         var reachableValues = scoreDirector.getValueRangeManager()
                 .getReachableValues(entityDescriptor.getGenuineListVariableDescriptor());
 
-        assertThat(reachableValues.extractEntities(v1)).containsExactlyInAnyOrder(a);
-        assertThat(reachableValues.extractEntities(v2)).containsExactlyInAnyOrder(a, b);
-        assertThat(reachableValues.extractEntities(v3)).containsExactlyInAnyOrder(a, b, c);
-        assertThat(reachableValues.extractEntities(v4)).containsExactlyInAnyOrder(c);
-        assertThat(reachableValues.extractEntities(v5)).containsExactlyInAnyOrder(c);
+        assertThat(reachableValues.extractEntitiesAsList(v1)).containsExactlyInAnyOrder(a);
+        assertThat(reachableValues.extractEntitiesAsList(v2)).containsExactlyInAnyOrder(a, b);
+        assertThat(reachableValues.extractEntitiesAsList(v3)).containsExactlyInAnyOrder(a, b, c);
+        assertThat(reachableValues.extractEntitiesAsList(v4)).containsExactlyInAnyOrder(c);
+        assertThat(reachableValues.extractEntitiesAsList(v5)).containsExactlyInAnyOrder(c);
+
+        assertThat(reachableValues.isEntityReachable(v1, a)).isTrue();
+        assertThat(reachableValues.isEntityReachable(v1, b)).isFalse();
+        assertThat(reachableValues.isEntityReachable(v1, c)).isFalse();
+
+        assertThat(reachableValues.matchesValueClass(v1)).isTrue();
+        assertThat(reachableValues.matchesValueClass(a)).isFalse();
     }
 
     @Test
@@ -62,10 +69,15 @@ class ReachableMatrixTest {
         var reachableValues = scoreDirector.getValueRangeManager()
                 .getReachableValues(entityDescriptor.getGenuineListVariableDescriptor());
 
-        assertThat(reachableValues.extractValues(v1)).containsExactlyInAnyOrder(v2, v3);
-        assertThat(reachableValues.extractValues(v2)).containsExactlyInAnyOrder(v1, v3);
-        assertThat(reachableValues.extractValues(v3)).containsExactlyInAnyOrder(v1, v2, v4, v5);
-        assertThat(reachableValues.extractValues(v4)).containsExactlyInAnyOrder(v3, v5);
-        assertThat(reachableValues.extractValues(v5)).containsExactlyInAnyOrder(v3, v4);
+        assertThat(reachableValues.extractValuesAsList(v1)).containsExactlyInAnyOrder(v2, v3);
+        assertThat(reachableValues.extractValuesAsList(v2)).containsExactlyInAnyOrder(v1, v3);
+        assertThat(reachableValues.extractValuesAsList(v3)).containsExactlyInAnyOrder(v1, v2, v4, v5);
+        assertThat(reachableValues.extractValuesAsList(v4)).containsExactlyInAnyOrder(v3, v5);
+        assertThat(reachableValues.extractValuesAsList(v5)).containsExactlyInAnyOrder(v3, v4);
+
+        // Only origin
+        assertThat(reachableValues.isValueReachable(v1, v2)).isTrue();
+        assertThat(reachableValues.isValueReachable(v1, v3)).isTrue();
+        assertThat(reachableValues.isValueReachable(v1, v5)).isFalse();
     }
 }
