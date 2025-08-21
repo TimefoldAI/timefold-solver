@@ -24,34 +24,19 @@ public final class ReachableValues {
 
     private final Map<Object, ReachableItemValue> values;
     private final @Nullable Class<?> valueClass;
-    private final boolean acceptsNullValue;
-    private @Nullable ReachableItemValue firstCachedObject;
-    private @Nullable ReachableItemValue secondCachedObject;
+    private @Nullable ReachableItemValue cachedObject;
 
-    public ReachableValues(Map<Object, ReachableItemValue> values, boolean acceptsNullValue) {
+    public ReachableValues(Map<Object, ReachableItemValue> values) {
         this.values = values;
-        this.acceptsNullValue = acceptsNullValue;
         var firstValue = values.entrySet().stream().findFirst();
         this.valueClass = firstValue.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
     }
 
     private @Nullable ReachableItemValue fetchItemValue(Object value) {
-        ReachableItemValue selected = null;
-        if (firstCachedObject != null && firstCachedObject.value == value) {
-            selected = firstCachedObject;
-        } else if (secondCachedObject != null && secondCachedObject.value == value) {
-            selected = secondCachedObject;
-            // The most recently used item is moved to the first position.
-            // The goal is to try to keep recently used items in the cache.
-            secondCachedObject = firstCachedObject;
-            firstCachedObject = selected;
+        if (cachedObject == null || value != cachedObject.value) {
+            cachedObject = values.get(value);
         }
-        if (selected == null) {
-            selected = values.get(value);
-            secondCachedObject = firstCachedObject;
-            firstCachedObject = selected;
-        }
-        return selected;
+        return cachedObject;
     }
 
     public List<Object> extractEntitiesAsList(Object value) {
@@ -85,13 +70,10 @@ public final class ReachableValues {
         return originItemValue.entitySet.contains(entity);
     }
 
-    public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
+    public boolean isValueReachable(Object origin, Object otherValue) {
         var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
         if (originItemValue == null) {
             return false;
-        }
-        if (otherValue == null) {
-            return acceptsNullValue;
         }
         return originItemValue.valueSet.contains(Objects.requireNonNull(otherValue));
     }

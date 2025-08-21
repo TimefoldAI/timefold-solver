@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 class ReachableValuesTest {
 
     @Test
-    void testReachableValuesByEntity() {
+    void testReachableEntities() {
         var v1 = new TestdataListEntityProvidingValue("V1");
         var v2 = new TestdataListEntityProvidingValue("V2");
         var v3 = new TestdataListEntityProvidingValue("V3");
@@ -52,7 +52,7 @@ class ReachableValuesTest {
     }
 
     @Test
-    void testReachableValuesByValue() {
+    void testReachableValues() {
         var v1 = new TestdataListEntityProvidingValue("V1");
         var v2 = new TestdataListEntityProvidingValue("V2");
         var v3 = new TestdataListEntityProvidingValue("V3");
