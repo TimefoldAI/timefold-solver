@@ -53,9 +53,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public void setWorkingSolution(Solution_ workingSolution) {
+    public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
         session = scoreDirectorFactory.newSession(workingSolution, constraintMatchPolicy, derived);
-        super.setWorkingSolution(workingSolution, session::insert);
+        super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, session::insert);
     }
 
     @Override
@@ -179,7 +179,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     /**
      * Exposed for debugging purposes, so that we can hook into it from tests and while reproducing issues.
      * 
-     * @return null before first {@link #setWorkingSolution(Object)} or after {@link #close()}.
+     * @return null before first {@link #setWorkingSolutionWithoutUpdatingShadows(Object)} or after {@link #close()}.
      */
     @SuppressWarnings("unused")
     public BavetConstraintSession<Score_> getSession() {

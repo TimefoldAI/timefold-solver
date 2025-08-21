@@ -38,7 +38,8 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
         try (var scoreDirector = scoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
-            scoreDirector.setWorkingSolution(getSolution());
+            // Users use settingAllShadowVariables to set shadow variables
+            scoreDirector.setWorkingSolutionWithoutUpdatingShadows(getSolution());
             // When models include custom listeners,
             // the notification queue may no longer be empty
             // because the shadow variable might be linked to a source

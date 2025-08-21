@@ -26,8 +26,8 @@ public final class MoveAssertScoreDirector<Solution_, Score_ extends Score<Score
     }
 
     @Override
-    public void setWorkingSolution(Solution_ workingSolution) {
-        super.setWorkingSolution(workingSolution, ignored -> {
+    public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
+        super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, ignored -> {
         });
     }
 

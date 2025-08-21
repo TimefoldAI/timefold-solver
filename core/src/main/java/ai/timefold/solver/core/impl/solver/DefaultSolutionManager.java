@@ -71,14 +71,15 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
                 .withExpectShadowVariablesInCorrectState(!isShadowVariableUpdateEnabled)
                 .build()) {
             nonNullSolution = cloneSolution ? scoreDirector.cloneSolution(nonNullSolution) : nonNullSolution;
-            scoreDirector.setWorkingSolution(nonNullSolution);
+            if (isShadowVariableUpdateEnabled) {
+                scoreDirector.setWorkingSolution(nonNullSolution);
+            } else {
+                scoreDirector.setWorkingSolutionWithoutUpdatingShadows(nonNullSolution);
+            }
             if (constraintMatchPolicy.isEnabled() && !scoreDirector.getConstraintMatchPolicy().isEnabled()) {
                 throw new IllegalStateException("""
                         Requested constraint matching but score director doesn't support it.
                         Maybe use Constraint Streams instead of Easy or Incremental score calculator?""");
-            }
-            if (isShadowVariableUpdateEnabled) {
-                scoreDirector.forceTriggerVariableListeners();
             }
             if (solutionUpdatePolicy.isScoreUpdateEnabled()) {
                 scoreDirector.calculateScore();

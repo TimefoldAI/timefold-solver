@@ -87,9 +87,9 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * The {@link PlanningSolution working solution} must never be the same instance as the
      * {@link PlanningSolution initial solution}, it should be a clone with all shadow variables updated.
      *
-     * @param initialSolution never null
+     * @param workingSolution never null
      */
-    void setInitialSolution(Solution_ initialSolution);
+    void setWorkingSolution(Solution_ workingSolution);
 
     /**
      * The {@link PlanningSolution working solution} must never be the same instance as the
@@ -97,7 +97,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      *
      * @param workingSolution never null
      */
-    void setWorkingSolution(Solution_ workingSolution);
+    void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution);
 
     /**
      * Different phases may need different move repositories,

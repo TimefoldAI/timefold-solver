@@ -52,8 +52,8 @@ public final class EasyScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public void setWorkingSolution(Solution_ workingSolution) {
-        super.setWorkingSolution(workingSolution, null);
+    public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
+        super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, null);
     }
 
     /**

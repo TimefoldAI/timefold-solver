@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Implementation note: Extending classes should follow these guidelines:
  * <ul>
- * <li>{@link #setWorkingSolution(Object)} should delegate to {@link #setWorkingSolution(Object, Consumer)}</li>
+ * <li>{@link #setWorkingSolutionWithoutUpdatingShadows(Object)} should delegate to
+ * {@link #setWorkingSolutionWithoutUpdatingShadows(Object, Consumer)}</li>
  * <li>before* method: last statement should be a call to the super method</li>
  * <li>after* method: first statement should be a call to the super method</li>
  * </ul>
@@ -228,7 +229,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * @param workingSolution the working solution to set
      * @param entityAndFactVisitor maybe null; a function to apply to all problem facts and problem entities
      */
-    protected void setWorkingSolution(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
+    protected void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
         this.workingSolution = requireNonNull(workingSolution);
         var solutionDescriptor = getSolutionDescriptor();
 
@@ -269,13 +270,13 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     /**
      * Note: Initial Solution may have stale shadow variables!
      *
-     * @param initialSolution the initial solution
+     * @param workingSolution the initial solution
      */
     @Override
-    public void setInitialSolution(Solution_ initialSolution) {
+    public final void setWorkingSolution(Solution_ workingSolution) {
         var originalShouldAssert = expectShadowVariablesInCorrectState;
         expectShadowVariablesInCorrectState = false;
-        setWorkingSolution(initialSolution);
+        setWorkingSolutionWithoutUpdatingShadows(workingSolution);
         forceTriggerVariableListeners();
         expectShadowVariablesInCorrectState = originalShouldAssert;
     }
@@ -419,7 +420,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     .withLookUpEnabled(true)
                     .withConstraintMatchPolicy(constraintMatchPolicy)
                     .buildDerived();
-            childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
+            childThreadScoreDirector.setWorkingSolutionWithoutUpdatingShadows(cloneWorkingSolution());
             return childThreadScoreDirector;
         } else {
             throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
