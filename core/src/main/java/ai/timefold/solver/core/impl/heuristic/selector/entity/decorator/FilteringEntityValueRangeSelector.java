@@ -170,8 +170,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
             if (currentUpcomingValue == null) {
                 valueIterator = Collections.emptyIterator();
             } else {
-                var allValues = Objects.requireNonNull(reachableValues)
-                        .extractEntitiesAsList(Objects.requireNonNull(currentUpcomingValue));
+                var allValues = reachableValues.extractEntitiesAsList(Objects.requireNonNull(currentUpcomingValue));
                 this.valueIterator = Objects.requireNonNull(allValues).iterator();
             }
         }
