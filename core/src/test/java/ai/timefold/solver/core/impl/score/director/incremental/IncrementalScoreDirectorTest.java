@@ -73,9 +73,6 @@ class IncrementalScoreDirectorTest {
             inOrder.verify(incrementalScoreCalculator, times(1)).afterVariableChanged(a3, "chainedObject");
             inOrder.verify(incrementalScoreCalculator, times(1)).beforeVariableChanged(b1, "nextEntity");
             inOrder.verify(incrementalScoreCalculator, times(1)).afterVariableChanged(b1, "nextEntity");
-            // Note: Anchor was not updated with scoreDirector.setWorkingSolutionWithoutUpdatingShadows, despite the fact a change is expected
-            // In scoreDirector.setWorkingSolutionWithoutUpdatingShadows, a3.anchor is null and should be changed to b0 (but no event is triggered; a3.anchor remained null!).
-            // in scoreDirector.setWorkingSolution, a3.anchor is a0 and is changed to b0.
             inOrder.verify(incrementalScoreCalculator, times(1)).beforeVariableChanged(a3, "anchor");
             inOrder.verify(incrementalScoreCalculator, times(1)).afterVariableChanged(a3, "anchor");
             inOrder.verifyNoMoreInteractions();

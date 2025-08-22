@@ -84,18 +84,18 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     /**
-     * The {@link PlanningSolution working solution} must never be the same instance as the
-     * {@link PlanningSolution initial solution}, it should be a clone with all shadow variables updated.
+     * Sets the {@link PlanningSolution working solution} of the {@link ScoreDirector}
+     * to the given {@link PlanningSolution solution}, and force updates all the shadow variables on the given solution.
      *
-     * @param workingSolution never null
+     * @param workingSolution never null, must never be the same instance as the best solution.
      */
     void setWorkingSolution(Solution_ workingSolution);
 
     /**
-     * The {@link PlanningSolution working solution} must never be the same instance as the
-     * {@link PlanningSolution best solution}, it should be a (un)changed clone.
+     * Sets the {@link PlanningSolution working solution} of the {@link ScoreDirector}
+     * to the given {@link PlanningSolution solution}, without updating any of the shadow variables on the given solution.
      *
-     * @param workingSolution never null
+     * @param workingSolution never null, must never be the same instance as the best solution.
      */
     void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution);
 

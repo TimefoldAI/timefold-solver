@@ -87,8 +87,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 entityClassSet.toArray(new Class<?>[0]));
         try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
             // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
-            scoreDirector.setWorkingSolutionWithoutUpdatingShadows(solution);
-            scoreDirector.forceTriggerVariableListeners();
+            scoreDirector.setWorkingSolution(solution);
         }
     }
 

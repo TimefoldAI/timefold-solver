@@ -340,7 +340,7 @@ public class SolverScope<Solution_> {
         // The workingSolution must never be the same instance as the bestSolution.
         scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(initialSolution));
 
-        // Set the best solution to the solution with shadow variable updated!
+        // Set the best solution to the solution with shadow variable updated.
         setBestSolution(scoreDirector.cloneSolution(scoreDirector.getWorkingSolution()));
     }
 
