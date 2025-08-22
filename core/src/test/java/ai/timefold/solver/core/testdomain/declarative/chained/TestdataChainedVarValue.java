@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataChainedVarValue {
@@ -22,7 +22,7 @@ public class TestdataChainedVarValue {
     @ShadowVariable(supplierName = "calculateEndTime")
     LocalDateTime endTime;
 
-    @ShadowVariableLooped
+    @ShadowVariablesInconsistent
     boolean isInvalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "previous")

@@ -54,7 +54,8 @@ import org.slf4j.LoggerFactory;
  * <p>
  * Implementation note: Extending classes should follow these guidelines:
  * <ul>
- * <li>{@link #setWorkingSolution(Object)} should delegate to {@link #setWorkingSolution(Object, Consumer)}</li>
+ * <li>{@link #setWorkingSolutionWithoutUpdatingShadows(Object)} should delegate to
+ * {@link #setWorkingSolutionWithoutUpdatingShadows(Object, Consumer)}</li>
  * <li>before* method: last statement should be a call to the super method</li>
  * <li>after* method: first statement should be a call to the super method</li>
  * </ul>
@@ -68,10 +69,11 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final boolean lookUpEnabled;
     private final LookUpManager lookUpManager;
     protected final ConstraintMatchPolicy constraintMatchPolicy;
-    private final boolean expectShadowVariablesInCorrectState;
     protected final Factory_ scoreDirectorFactory;
     private final VariableDescriptorCache<Solution_> variableDescriptorCache;
     protected final VariableListenerSupport<Solution_> variableListenerSupport;
+
+    private boolean expectShadowVariablesInCorrectState;
 
     private long workingEntityListRevision = 0L;
     private int workingGenuineEntityCount = 0;
@@ -227,7 +229,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * @param workingSolution the working solution to set
      * @param entityAndFactVisitor maybe null; a function to apply to all problem facts and problem entities
      */
-    protected void setWorkingSolution(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
+    protected void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution, Consumer<Object> entityAndFactVisitor) {
         this.workingSolution = requireNonNull(workingSolution);
         var solutionDescriptor = getSolutionDescriptor();
 
@@ -263,6 +265,20 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (moveRepository != null) {
             moveRepository.initialize(new SessionContext<>(this));
         }
+    }
+
+    /**
+     * Note: Initial Solution may have stale shadow variables!
+     *
+     * @param workingSolution the initial solution
+     */
+    @Override
+    public final void setWorkingSolution(Solution_ workingSolution) {
+        var originalShouldAssert = expectShadowVariablesInCorrectState;
+        expectShadowVariablesInCorrectState = false;
+        setWorkingSolutionWithoutUpdatingShadows(workingSolution);
+        forceTriggerVariableListeners();
+        expectShadowVariablesInCorrectState = originalShouldAssert;
     }
 
     @Override
@@ -404,7 +420,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     .withLookUpEnabled(true)
                     .withConstraintMatchPolicy(constraintMatchPolicy)
                     .buildDerived();
-            childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
+            childThreadScoreDirector.setWorkingSolutionWithoutUpdatingShadows(cloneWorkingSolution());
             return childThreadScoreDirector;
         } else {
             throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");

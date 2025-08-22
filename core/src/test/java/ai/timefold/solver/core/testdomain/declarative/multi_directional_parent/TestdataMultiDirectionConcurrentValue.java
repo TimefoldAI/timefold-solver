@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataMultiDirectionConcurrentValue {
@@ -42,7 +42,7 @@ public class TestdataMultiDirectionConcurrentValue {
 
     List<TestdataMultiDirectionConcurrentValue> concurrentValueGroup;
 
-    @ShadowVariableLooped
+    @ShadowVariablesInconsistent
     boolean isInvalid;
 
     public TestdataMultiDirectionConcurrentValue() {

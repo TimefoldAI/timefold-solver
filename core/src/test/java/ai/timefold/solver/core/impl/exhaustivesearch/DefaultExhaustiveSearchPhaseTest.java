@@ -277,7 +277,7 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
                 new TestdataPinnedAllowsUnassignedEntity("e2", v2, true, false),
                 new TestdataPinnedAllowsUnassignedEntity("e3", null, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false); // No change will be made.
+        solution = PlannerTestUtils.solve(solverConfig, solution, true); // No change will be made, but shadows will be updated.
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
@@ -315,7 +315,7 @@ class DefaultExhaustiveSearchPhaseTest extends AbstractMeterTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }

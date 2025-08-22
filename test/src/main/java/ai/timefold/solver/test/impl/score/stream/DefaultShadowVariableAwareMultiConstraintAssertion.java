@@ -32,7 +32,6 @@ public final class DefaultShadowVariableAwareMultiConstraintAssertion<Solution_,
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             scoreDirector.setWorkingSolution(solution);
-            scoreDirector.forceTriggerVariableListeners();
             update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),
                     scoreDirector.getIndictmentMap());
             toggleInitialized();

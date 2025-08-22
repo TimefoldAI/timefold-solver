@@ -17,7 +17,7 @@ import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataConcurrentValue {
@@ -50,8 +50,8 @@ public class TestdataConcurrentValue {
 
     List<TestdataConcurrentValue> concurrentValueGroup;
 
-    @ShadowVariableLooped
-    boolean isInvalid;
+    @ShadowVariablesInconsistent
+    Boolean isInconsistent;
 
     public TestdataConcurrentValue() {
     }
@@ -131,8 +131,9 @@ public class TestdataConcurrentValue {
             value = { "serviceReadyTime", "concurrentValueGroup[].serviceReadyTime" },
             alignmentKey = "concurrentValueGroup")
     public LocalDateTime serviceStartTimeUpdater() {
-        if (isInvalid) {
-            throw new IllegalStateException("Value (%s) is looped when serviceStartTimeUpdater is called.".formatted(this));
+        if (isInconsistent) {
+            throw new IllegalStateException(
+                    "Value (%s) is inconsistent when serviceStartTimeUpdater is called.".formatted(this));
         }
         if (serviceReadyTime == null) {
             return null;
@@ -140,9 +141,9 @@ public class TestdataConcurrentValue {
         var startTime = serviceReadyTime;
         if (concurrentValueGroup != null) {
             for (var visit : concurrentValueGroup) {
-                if (visit.isInvalid) {
+                if (visit.isInconsistent) {
                     throw new IllegalStateException(
-                            "Value (%s) is looped when serviceStartTimeUpdater is called.".formatted(visit));
+                            "Value (%s) is inconsistent when serviceStartTimeUpdater is called.".formatted(visit));
                 }
                 if (visit.serviceReadyTime != null && startTime.isBefore(visit.serviceReadyTime)) {
                     startTime = visit.serviceReadyTime;
@@ -184,24 +185,24 @@ public class TestdataConcurrentValue {
         this.concurrentValueGroup = concurrentValueGroup;
     }
 
-    public boolean isInvalid() {
-        return isInvalid;
+    public Boolean isInconsistent() {
+        return isInconsistent;
     }
 
-    public void setInvalid(boolean invalid) {
-        isInvalid = invalid;
+    public void setInconsistent(Boolean inconsistent) {
+        isInconsistent = inconsistent;
     }
 
-    public boolean getExpectedInvalid() {
-        return getExpectedInvalid(new IdentityHashMap<>());
+    public boolean getExpectedInconsistent() {
+        return getExpectedInconsistent(new IdentityHashMap<>());
     }
 
-    boolean getExpectedInvalid(Map<TestdataConcurrentValue, Boolean> cache) {
+    boolean getExpectedInconsistent(Map<TestdataConcurrentValue, Boolean> cache) {
         if (cache.containsKey(this)) {
             return cache.get(this);
         }
         cache.put(this, true);
-        if (previousValue != null && previousValue.getExpectedInvalid(cache)) {
+        if (previousValue != null && previousValue.getExpectedInconsistent(cache)) {
             return true;
         }
         if (concurrentValueGroup != null) {
@@ -210,7 +211,7 @@ public class TestdataConcurrentValue {
                 if (visit.entity != null && !vehicles.add(visit.entity)) {
                     return true;
                 }
-                if (visit != this && visit.previousValue != null && visit.previousValue.getExpectedInvalid(cache)) {
+                if (visit != this && visit.previousValue != null && visit.previousValue.getExpectedInconsistent(cache)) {
                     return true;
                 }
             }
@@ -232,7 +233,7 @@ public class TestdataConcurrentValue {
     }
 
     public LocalDateTime getExpectedServiceReadyTime(TimeCache cache) {
-        if (getExpectedInvalid()) {
+        if (getExpectedInconsistent()) {
             return null;
         }
         if (cache.readyTimeCache.containsKey(this)) {
@@ -260,7 +261,7 @@ public class TestdataConcurrentValue {
     }
 
     public LocalDateTime getExpectedServiceStartTime(TimeCache cache) {
-        if (getExpectedInvalid()) {
+        if (getExpectedInconsistent()) {
             return null;
         }
         if (cache.startTimeCache.containsKey(this)) {
@@ -285,7 +286,7 @@ public class TestdataConcurrentValue {
     }
 
     public LocalDateTime getExpectedServiceFinishTime(TimeCache cache) {
-        if (getExpectedInvalid()) {
+        if (getExpectedInconsistent()) {
             return null;
         }
         if (cache.endTimeCache.containsKey(this)) {

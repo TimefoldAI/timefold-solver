@@ -88,7 +88,6 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
             // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
             scoreDirector.setWorkingSolution(solution);
-            scoreDirector.forceTriggerVariableListeners();
         }
     }
 
@@ -361,8 +360,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
         }
 
         @Override
-        public void setWorkingSolution(Solution_ workingSolution) {
-            super.setWorkingSolution(workingSolution, ignore -> {
+        public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
+            super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, ignore -> {
             });
         }
 

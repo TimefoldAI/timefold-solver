@@ -103,8 +103,10 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                 new TestdataEntity("e2", v2),
                 new TestdataEntity("e3", v3)));
 
-        var solution = PlannerTestUtils.solve(solverConfig, inputProblem, false);
-        assertThat(inputProblem).isSameAs(solution);
+        var solution = PlannerTestUtils.solve(solverConfig, inputProblem, true);
+        // Although the solution has not changed, it is a clone since the initial solution
+        // may have stale shadow variables.
+        assertThat(inputProblem).isNotSameAs(solution);
     }
 
     @Test
@@ -228,7 +230,7 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
                 new TestdataPinnedAllowsUnassignedEntity("e2", v2, true, false),
                 new TestdataPinnedAllowsUnassignedEntity("e3", null, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false); // No change will be made.
+        solution = PlannerTestUtils.solve(solverConfig, solution, true); // No change will be made, but shadow variables will be updated.
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
@@ -266,7 +268,7 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         solution.setValueList(Arrays.asList(v1, v2, v3));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList()).isEmpty();
     }
@@ -325,7 +327,7 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         solution.setEntityList(List.of(entity));
         solution.setValueList(Arrays.asList(value1, value2, value3, value4));
 
-        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, false);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertSoftly(softly -> {
             softly.assertThat(bestSolution.getScore())
                     .isEqualTo(SimpleScore.of(-2)); // Length of the entity's value list.

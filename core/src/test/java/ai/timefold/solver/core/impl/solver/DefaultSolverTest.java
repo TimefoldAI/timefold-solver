@@ -102,6 +102,10 @@ import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedBro
 import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedGreenEntity;
 import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntityAnchor;
 import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntitySolution;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentConstraintProvider;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -141,6 +145,10 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
@@ -946,7 +954,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
@@ -971,7 +979,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setChainedAnchorList(Arrays.asList(new TestdataChainedAnchor("v1"), new TestdataChainedAnchor("v2")));
         solution.setChainedEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isNotNull();
     }
@@ -986,7 +994,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setValueList(Collections.emptyList());
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isNotNull();
     }
@@ -1005,7 +1013,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setEntityList(Arrays.asList(new TestdataPinnedEntity("e1", v1, true, false),
                 new TestdataPinnedEntity("e2", v2, false, true)));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, false);
+        solution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isEqualTo(SimpleScore.ZERO);
     }
@@ -1243,7 +1251,7 @@ class DefaultSolverTest extends AbstractMeterTest {
         solution.setEntityList(List.of(entity));
         solution.setValueList(List.of(value1));
 
-        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, false);
+        var bestSolution = PlannerTestUtils.solve(solverConfig, solution, true);
         assertThat(bestSolution.getScore()).isEqualTo(SimpleScore.of(1));
     }
 
@@ -1968,6 +1976,77 @@ class DefaultSolverTest extends AbstractMeterTest {
         assertThat(solution.getEntityList().get(1).getSecondBasicValue()).isNotNull();
         assertThat(solution.getEntityList().get(1).getValueList()).hasSize(1);
         assertThat(solution.getEntityList().get(1).getValueList()).hasSameElementsAs(List.of(problem.getValueList().get(3)));
+    }
+
+    @Test
+    void solveStaleBuiltinShadows() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataInverseRelationSolution.class, TestdataInverseRelationEntity.class, TestdataInverseRelationValue.class)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataInverseRelationConstraintProvider.class);
+
+        var problem = new TestdataInverseRelationSolution();
+        var e1 = new TestdataInverseRelationEntity("e1");
+        var e2 = new TestdataInverseRelationEntity("e2");
+
+        var v1 = new TestdataInverseRelationValue("v1");
+        var v2 = new TestdataInverseRelationValue("v2");
+
+        e1.setValue(v1);
+        e2.setValue(v1);
+
+        problem.setEntityList(List.of(e1, e2));
+        problem.setValueList(List.of(v1, v2));
+
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        assertThat(solution.getEntityList().get(0).getValue().getCode()).isEqualTo("v1");
+        assertThat(solution.getEntityList().get(1).getValue().getCode()).isEqualTo("v2");
+
+        assertThat(solution.getScore()).isEqualTo(SimpleScore.of(-2));
+    }
+
+    @Test
+    void solveStaleDeclarativeShadows() {
+        // Solver config
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
+                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
+                .withEasyScoreCalculatorClass(null)
+                .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class);
+
+        var e1 = new TestdataConcurrentEntity("e1");
+        var e2 = new TestdataConcurrentEntity("e2");
+
+        var a1 = new TestdataConcurrentValue("a1");
+        var a2 = new TestdataConcurrentValue("a2");
+        var b1 = new TestdataConcurrentValue("b1");
+        var b2 = new TestdataConcurrentValue("b2");
+
+        a1.setConcurrentValueGroup(List.of(a1, a2));
+        a2.setConcurrentValueGroup(List.of(a1, a2));
+
+        b1.setConcurrentValueGroup(List.of(b1, b2));
+        b2.setConcurrentValueGroup(List.of(b1, b2));
+
+        e1.setValues(List.of(a1, b1));
+        e2.setValues(List.of(b2, a2));
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        var problem = new TestdataConcurrentSolution();
+
+        problem.setEntities(entities);
+        problem.setValues(values);
+
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+
+        assertThat(solution.getEntities().get(0).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a1", "b1");
+        assertThat(solution.getEntities().get(1).getValues()).map(TestdataConcurrentValue::getId).containsExactly("a2", "b2");
+
+        assertThat(solution.getScore()).isEqualTo(HardSoftScore.of(0, -240));
     }
 
     private static List<MoveSelectorConfig> generateMovesForMixedModel() {

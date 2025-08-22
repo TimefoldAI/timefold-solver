@@ -12,7 +12,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 /*
  *  Should have one of every annotation, even annotations that
@@ -41,8 +41,8 @@ public class TestDataKitchenSinkEntity {
     @ShadowVariable(supplierName = "copyStringVariable")
     private String declarativeShadowVariable;
 
-    @ShadowVariableLooped
-    private boolean shadowVariableLooped;
+    @ShadowVariablesInconsistent
+    private boolean isInconsistent;
 
     @PiggybackShadowVariable(shadowVariableName = "shadow2")
     private String piggybackShadow;

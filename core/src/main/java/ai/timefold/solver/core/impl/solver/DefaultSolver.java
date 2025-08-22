@@ -180,9 +180,10 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         var solveLengthTimer = Metrics.more().longTaskTimer(SolverMetric.SOLVE_DURATION.getMeterId());
         var errorCounter = Metrics.counter(SolverMetric.ERROR_COUNT.getMeterId());
 
-        solverScope.setBestSolution(Objects.requireNonNull(problem, "The problem must not be null."));
+        solverScope.setInitialSolution(Objects.requireNonNull(problem, "The problem must not be null."));
         solverScope.setSolver(this);
         outerSolvingStarted(solverScope);
+
         var restartSolver = true;
         while (restartSolver) {
             var sample = solveLengthTimer.start();
@@ -223,6 +224,10 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         var startingSolverCount = solverScope.getStartingSolverCount() + 1;
         solverScope.setStartingSolverCount(startingSolverCount);
         registerSolverSpecificMetrics();
+
+        // Update the best solution, since problem's shadows and score were updated
+        bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
+
         logger.info("Solving {}: time spent ({}), best score ({}), "
                 + "environment mode ({}), move thread count ({}), random ({}).",
                 (startingSolverCount == 1 ? "started" : "restarted"),

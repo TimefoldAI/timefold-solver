@@ -67,6 +67,12 @@ public interface ScoreManager<Solution_, Score_ extends Score<Score_>> {
 
     /**
      * Calculates the {@link Score} of a {@link PlanningSolution} and updates its {@link PlanningScore} member.
+     * <p>
+     * It is equivalent to calling {@link #update(Object, SolutionUpdatePolicy)}
+     * with {@link SolutionUpdatePolicy#UPDATE_SCORE_ONLY}.
+     * This policy doesn't update shadow variables, which carries a performance advantage
+     * but also brings additional limitations.
+     * Please review the {@link SolutionUpdatePolicy} documentation for details.
      *
      * @param solution never null
      */
@@ -77,7 +83,7 @@ public interface ScoreManager<Solution_, Score_ extends Score<Score_>> {
      * constraints or planning entities cause that score quality.
      * In case of an {@link Score#isFeasible() infeasible} solution, this can help diagnose the cause of that.
      * <p>
-     * Do not parse this string.
+     * Don't parse this string.
      * Instead, to provide this information in a UI or a service, use {@link #explainScore(Object)}
      * to retrieve {@link ScoreExplanation#getConstraintMatchTotalMap()} and {@link ScoreExplanation#getIndictmentMap()}
      * and convert those into a domain specific API.
@@ -92,6 +98,12 @@ public interface ScoreManager<Solution_, Score_ extends Score<Score_>> {
     /**
      * Calculates and retrieves {@link ConstraintMatchTotal}s and {@link Indictment}s necessary for describing the
      * quality of a particular solution.
+     * <p>
+     * It is equivalent to calling {@link #explain(Object, SolutionUpdatePolicy)}
+     * with {@link SolutionUpdatePolicy#UPDATE_SCORE_ONLY}.
+     * This policy doesn't update shadow variables, which carries a performance advantage
+     * but also brings additional limitations.
+     * Please review the {@link SolutionUpdatePolicy} documentation for details.
      *
      * @param solution never null
      * @return never null

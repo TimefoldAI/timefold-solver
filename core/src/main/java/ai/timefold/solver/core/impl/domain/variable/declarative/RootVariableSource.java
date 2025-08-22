@@ -23,7 +23,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -396,16 +396,16 @@ public record RootVariableSource<Entity_, Value_>(
             return ParentVariableType.VARIABLE;
         }
 
-        if (getAnnotation(declaringClass, memberName, ShadowVariableLooped.class) != null) {
+        if (getAnnotation(declaringClass, memberName, ShadowVariablesInconsistent.class) != null) {
             throw new IllegalArgumentException("""
                     The source path (%s) starting from root class (%s) accesses a @%s property (%s).
-                    Supplier methods are only called when none of their dependencies are looped,
+                    Supplier methods are only called when all of their dependencies are consistent,
                     so reading @%s properties are not needed since they are guaranteed to be false
                     when the supplier is called.
                     Maybe remove the source path (%s) from the @%s?
                     """.formatted(
-                    variablePath, rootClass.getCanonicalName(), ShadowVariableLooped.class.getSimpleName(),
-                    memberName, ShadowVariableLooped.class.getSimpleName(),
+                    variablePath, rootClass.getCanonicalName(), ShadowVariablesInconsistent.class.getSimpleName(),
+                    memberName, ShadowVariablesInconsistent.class.getSimpleName(),
                     variablePath, ShadowSources.class.getSimpleName()));
         }
         return ParentVariableType.NO_PARENT;

@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.apache.commons.lang3.ObjectUtils;
 
@@ -27,7 +27,7 @@ public class TestdataDependencyValue {
     @ShadowVariable(supplierName = "calculateEndTime")
     LocalDateTime endTime;
 
-    @ShadowVariableLooped
+    @ShadowVariablesInconsistent
     boolean isInvalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "values")

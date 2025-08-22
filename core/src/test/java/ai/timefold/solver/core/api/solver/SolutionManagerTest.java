@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.api.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -9,8 +10,10 @@ import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
+import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -23,6 +26,10 @@ import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChaine
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedObject;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentConstraintProvider;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListCMAIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
@@ -38,6 +45,10 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedEntity;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
+import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
@@ -59,6 +70,12 @@ public class SolutionManagerTest {
                     .withScoreDirectorFactory(
                             new ScoreDirectorFactoryConfig().withIncrementalScoreCalculatorClass(
                                     TestdataShadowedIncrementalScoreCalculator.class)));
+    public static final SolverFactory<TestdataConcurrentSolution> SOLVER_FACTORY_DECLARATIVE_SHADOW = SolverFactory.create(
+            new SolverConfig()
+                    .withSolutionClass(TestdataConcurrentSolution.class)
+                    .withEntityClasses(TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
+                    .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class)
+                    .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES));
     public static final SolverFactory<TestdataAllowsUnassignedSolution> SOLVER_FACTORY_UNASSIGNED = SolverFactory.create(
             new SolverConfig()
                     .withSolutionClass(TestdataAllowsUnassignedSolution.class)
@@ -99,6 +116,11 @@ public class SolutionManagerTest {
                     .withSolutionClass(TestdataSolution.class)
                     .withEntityClasses(TestdataEntity.class)
                     .withConstraintProviderClass(TestdataConstraintProvider.class));
+    public static final SolverFactory<TestdataInverseRelationSolution> SOLVER_FACTORY_INVERSE_RELATION = SolverFactory.create(
+            new SolverConfig()
+                    .withSolutionClass(TestdataInverseRelationSolution.class)
+                    .withEntityClasses(TestdataInverseRelationEntity.class, TestdataInverseRelationValue.class)
+                    .withConstraintProviderClass(TestdataInverseRelationConstraintProvider.class));
 
     @ParameterizedTest
     @EnumSource(SolutionManagerSource.class)
@@ -260,6 +282,128 @@ public class SolutionManagerTest {
             softly.assertThat(solution.getScore()).isNotNull();
             softly.assertThat(solution.getEntityList().get(0).getFirstShadow()).isNull();
         });
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateOnlyScoreDeclarativeShadows(SolutionManagerSource SolutionManagerSource) {
+        var solution = new TestdataConcurrentSolution();
+        var e1 = new TestdataConcurrentEntity("e1");
+        var e2 = new TestdataConcurrentEntity("e2");
+
+        var a1 = new TestdataConcurrentValue("a1");
+        var a2 = new TestdataConcurrentValue("a2");
+        var b1 = new TestdataConcurrentValue("b1");
+        var b2 = new TestdataConcurrentValue("b2");
+
+        var groupA = List.of(a1, a2);
+        var groupB = List.of(b1, b2);
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        a1.setConcurrentValueGroup(groupA);
+        a2.setConcurrentValueGroup(groupA);
+
+        b1.setConcurrentValueGroup(groupB);
+        b2.setConcurrentValueGroup(groupB);
+
+        e1.setValues(List.of(a1, b1));
+        e2.setValues(List.of(b2, a2));
+
+        b1.setPreviousValue(a1);
+        a2.setPreviousValue(b2);
+
+        a1.setNextValue(b1);
+        b2.setNextValue(a2);
+
+        a1.setIndex(0);
+        a2.setIndex(1);
+
+        b1.setIndex(1);
+        b2.setIndex(0);
+
+        a1.setEntity(e1);
+        b1.setEntity(e1);
+        a2.setEntity(e2);
+        b2.setEntity(e2);
+
+        a1.setInconsistent(true);
+        a2.setInconsistent(true);
+        b1.setInconsistent(true);
+        b2.setInconsistent(true);
+
+        solution.setEntities(entities);
+        solution.setValues(values);
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_DECLARATIVE_SHADOW);
+        var score = solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
+        assertThat(score).isEqualTo(HardSoftScore.ofHard(-4));
+        assertThat(solution.getScore()).isEqualTo(HardSoftScore.ofHard(-4));
+    }
+
+    @ParameterizedTest
+    @EnumSource(SolutionManagerSource.class)
+    void updateOnlyScoreFailsIfListVariableInconsistent(SolutionManagerSource SolutionManagerSource) {
+        var solution = new TestdataConcurrentSolution();
+        var e1 = new TestdataConcurrentEntity("e1");
+        var e2 = new TestdataConcurrentEntity("e2");
+
+        var a1 = new TestdataConcurrentValue("a1");
+        var a2 = new TestdataConcurrentValue("a2");
+        var b1 = new TestdataConcurrentValue("b1");
+        var b2 = new TestdataConcurrentValue("b2");
+
+        var groupA = List.of(a1, a2);
+        var groupB = List.of(b1, b2);
+
+        var entities = List.of(e1, e2);
+        var values = List.of(a1, a2, b1, b2);
+
+        a1.setConcurrentValueGroup(groupA);
+        a2.setConcurrentValueGroup(groupA);
+
+        b1.setConcurrentValueGroup(groupB);
+        b2.setConcurrentValueGroup(groupB);
+
+        e1.setValues(List.of(a1, b1));
+        e2.setValues(List.of(b2, a2));
+
+        b1.setPreviousValue(a1);
+        a2.setPreviousValue(b2);
+
+        a1.setNextValue(b1);
+        b2.setNextValue(a2);
+
+        a1.setIndex(0);
+        a2.setIndex(1);
+
+        b1.setIndex(1);
+        b2.setIndex(0);
+
+        a1.setEntity(e1);
+        b1.setEntity(e2);
+        a2.setEntity(e2);
+        b2.setEntity(e2);
+
+        a1.setInconsistent(true);
+        a2.setInconsistent(true);
+        b1.setInconsistent(true);
+        b2.setInconsistent(true);
+
+        solution.setEntities(entities);
+        solution.setValues(values);
+
+        var solutionManager = SolutionManagerSource.createSolutionManager(SOLVER_FACTORY_DECLARATIVE_SHADOW);
+        assertThat(solutionManager).isNotNull();
+        assertThatCode(() -> {
+            solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
+        }).hasMessageContainingAll(
+                "The entity (e1)" +
+                        " has a list variable (values)" +
+                        " and one of its elements (e1 -> a1 -> b1)" +
+                        " which has a shadow variable (entity)" +
+                        " has an oldInverseEntity (e2) which is not that entity.");
     }
 
     @ParameterizedTest

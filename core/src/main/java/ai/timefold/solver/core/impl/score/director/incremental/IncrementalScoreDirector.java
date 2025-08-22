@@ -55,8 +55,8 @@ public final class IncrementalScoreDirector<Solution_, Score_ extends Score<Scor
     // ************************************************************************
 
     @Override
-    public void setWorkingSolution(Solution_ workingSolution) {
-        super.setWorkingSolution(workingSolution, null);
+    public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
+        super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, null);
         if (incrementalScoreCalculator instanceof ConstraintMatchAwareIncrementalScoreCalculator) {
             ((ConstraintMatchAwareIncrementalScoreCalculator<Solution_, ?>) incrementalScoreCalculator)
                     .resetWorkingSolution(workingSolution, getConstraintMatchPolicy().isEnabled());

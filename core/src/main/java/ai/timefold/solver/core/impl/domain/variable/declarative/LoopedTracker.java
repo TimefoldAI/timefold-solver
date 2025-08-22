@@ -7,6 +7,7 @@ import java.util.Arrays;
 import ai.timefold.solver.core.impl.util.DynamicIntArray;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class LoopedTracker {
@@ -21,11 +22,11 @@ public final class LoopedTracker {
     // Needed so we can update all nodes in a cycle or depended on a cycle
     // (only nodes that formed a cycle get marked as changed by the graph;
     // their dependents don't)
-    private final boolean[] entityLoopedStatusChanged;
+    private final boolean[] entityInconsistentStatusChanged;
 
     public LoopedTracker(int nodeCount, int[][] entityIdToNodes) {
         this.entityIdToNodes = entityIdToNodes;
-        this.entityLoopedStatusChanged = new boolean[entityIdToNodes.length];
+        this.entityInconsistentStatusChanged = new boolean[entityIdToNodes.length];
         // We never fully clear the array, as that was shown to cause too much GC pressure.
         this.looped = new DynamicIntArray(nodeCount, PARTIAL);
     }
@@ -34,23 +35,24 @@ public final class LoopedTracker {
         looped.set(node, status.ordinal());
     }
 
-    public boolean isEntityLooped(BaseTopologicalOrderGraph graph, int entityId, boolean wasEntityLooped) {
+    public boolean isEntityInconsistent(BaseTopologicalOrderGraph graph, int entityId,
+            @Nullable Boolean wasEntityInconsistent) {
         for (var entityNode : entityIdToNodes[entityId]) {
             if (graph.isLooped(this, entityNode)) {
-                if (!wasEntityLooped) {
-                    entityLoopedStatusChanged[entityId] = true;
+                if (wasEntityInconsistent == null || !wasEntityInconsistent) {
+                    entityInconsistentStatusChanged[entityId] = true;
                 }
                 return true;
             }
         }
-        if (wasEntityLooped) {
-            entityLoopedStatusChanged[entityId] = true;
+        if (wasEntityInconsistent == null || wasEntityInconsistent) {
+            entityInconsistentStatusChanged[entityId] = true;
         }
         return false;
     }
 
-    public boolean didEntityLoopedStatusChange(int entityId) {
-        return entityLoopedStatusChanged[entityId];
+    public boolean didEntityInconsistentStatusChange(int entityId) {
+        return entityInconsistentStatusChanged[entityId];
     }
 
     public LoopedStatus status(int node) {
@@ -60,7 +62,7 @@ public final class LoopedTracker {
     }
 
     public void clear() {
-        Arrays.fill(entityLoopedStatusChanged, false);
+        Arrays.fill(entityInconsistentStatusChanged, false);
         looped.clear();
     }
 

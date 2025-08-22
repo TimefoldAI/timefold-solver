@@ -31,10 +31,12 @@ public enum SolutionUpdatePolicy {
     /**
      * Calculates the score based on the entities in the solution,
      * and writes it back to the solution.
-     * Does not trigger shadow variables;
-     * if score calculation requires shadow variable values,
-     * {@link NullPointerException} is likely to be thrown.
-     * To avoid this, use {@link #UPDATE_ALL} instead.
+     * Does not update shadow variables,
+     * making the user responsible for ensuring that all shadow variables are mutually consistent.
+     * Otherwise the results of the computation are undefined,
+     * and may range from the wrong score being computed to runtime exceptions being thrown.
+     * To avoid this issue, use {@link #UPDATE_ALL} instead,
+     * which will update shadow variables to their correct values first.
      */
     UPDATE_SCORE_ONLY(true, false),
     /**

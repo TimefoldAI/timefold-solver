@@ -73,6 +73,8 @@ class IncrementalScoreDirectorTest {
             inOrder.verify(incrementalScoreCalculator, times(1)).afterVariableChanged(a3, "chainedObject");
             inOrder.verify(incrementalScoreCalculator, times(1)).beforeVariableChanged(b1, "nextEntity");
             inOrder.verify(incrementalScoreCalculator, times(1)).afterVariableChanged(b1, "nextEntity");
+            inOrder.verify(incrementalScoreCalculator, times(1)).beforeVariableChanged(a3, "anchor");
+            inOrder.verify(incrementalScoreCalculator, times(1)).afterVariableChanged(a3, "anchor");
             inOrder.verifyNoMoreInteractions();
         }
     }

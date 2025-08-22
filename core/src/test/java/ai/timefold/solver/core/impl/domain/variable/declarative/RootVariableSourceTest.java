@@ -20,7 +20,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaMo
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariableLooped;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -696,23 +696,24 @@ class RootVariableSourceTest {
     }
 
     @Test
-    void errorIfShadowVariableLoopedReferenced() {
+    void errorIfShadowVariablesInconsistentReferenced() {
         assertThatCode(() -> RootVariableSource.from(
                 planningSolutionMetaModel,
                 TestdataInvalidDeclarativeValue.class,
                 "shadow",
-                "isLooped",
+                "isInconsistent",
                 DEFAULT_MEMBER_ACCESSOR_FACTORY,
                 DEFAULT_DESCRIPTOR_POLICY))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContainingAll(
-                        "The source path (isLooped) starting from root class (%s) accesses a @%s property (isLooped)"
+                        "The source path (isInconsistent) starting from root class (%s) accesses a @%s property (isInconsistent)"
                                 .formatted(TestdataInvalidDeclarativeValue.class.getCanonicalName(),
-                                        ShadowVariableLooped.class.getSimpleName()),
-                        "Supplier methods are only called when none of their dependencies are looped",
+                                        ShadowVariablesInconsistent.class.getSimpleName()),
+                        "Supplier methods are only called when all of their dependencies are consistent",
                         "reading @%s properties are not needed since they are guaranteed to be false"
-                                .formatted(ShadowVariableLooped.class.getSimpleName()),
-                        "Maybe remove the source path (isLooped) from the @%s?".formatted(ShadowSources.class.getSimpleName()));
+                                .formatted(ShadowVariablesInconsistent.class.getSimpleName()),
+                        "Maybe remove the source path (isInconsistent) from the @%s?"
+                                .formatted(ShadowSources.class.getSimpleName()));
     }
 
     @Test
