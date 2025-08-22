@@ -471,17 +471,6 @@ public final class ValueRangeManager<Solution_> {
         return item;
     }
 
-    private static void updateMap(ReachableItemValue item, Object entity, Object value, CountableValueRange<Object> range) {
-        item.addEntity(entity);
-        var iterator = range.createOriginalIterator();
-        while (iterator.hasNext()) {
-            var iteratorValue = iterator.next();
-            if (!Objects.equals(iteratorValue, value)) {
-                item.addValue(iteratorValue);
-            }
-        }
-    }
-
     public void reset(@Nullable Solution_ workingSolution) {
         Arrays.fill(fromSolution, null);
         Arrays.fill(reachableValues, null);
