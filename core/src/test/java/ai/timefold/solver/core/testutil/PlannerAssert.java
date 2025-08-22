@@ -307,6 +307,10 @@ public final class PlannerAssert {
         assertAllCodesOfIterableSelector(moveSelector, DO_NOT_ASSERT_SIZE, codes);
     }
 
+    public static void assertIterableSelectorWithoutSize(IterableSelector<?, ?> selector, String... codes) {
+        assertAllCodesOfIterableSelector(selector, DO_NOT_ASSERT_SIZE, codes);
+    }
+
     public static void assertCodesOfNeverEndingIterableSelectorWithoutSize(IterableSelector<?, ?> selector, String... codes) {
         assertCodesOfNeverEndingIterableSelector(selector, DO_NOT_ASSERT_SIZE, codes);
     }
