@@ -57,7 +57,7 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
                     var leftValueRange =
                             extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
                     if (!leftValueRange.contains(rightValue)) {
-                        return false;
+                        throw new IllegalStateException("Impossible state: no valid move generated.");
                     }
                 }
             }
