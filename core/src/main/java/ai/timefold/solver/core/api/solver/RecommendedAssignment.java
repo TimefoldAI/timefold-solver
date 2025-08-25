@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -26,13 +26,14 @@ import org.jspecify.annotations.Nullable;
  * @param <Proposition_> the generic type of the proposition as returned by the proposition function
  * @param <Score_> the generic type of the score
  */
+@NullMarked
 public interface RecommendedAssignment<Proposition_, Score_ extends Score<Score_>> {
 
     /**
      * Returns the proposition as returned by the proposition function.
      * This is the actual assignment recommended to the user.
      *
-     * @return null if proposition function required null
+     * @return null if proposition function returned null
      */
     @Nullable
     Proposition_ proposition();
@@ -50,7 +51,6 @@ public interface RecommendedAssignment<Proposition_, Score_ extends Score<Score_
      * @return {@code fittedScoreAnalysis - originalScoreAnalysis} as defined by
      *         {@link ScoreAnalysis#diff(ScoreAnalysis)}
      */
-    @NonNull
     ScoreAnalysis<Score_> scoreAnalysisDiff();
 
 }

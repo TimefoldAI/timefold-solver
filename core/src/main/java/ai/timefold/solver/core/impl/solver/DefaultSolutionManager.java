@@ -25,12 +25,13 @@ import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamS
 import ai.timefold.solver.core.impl.util.MutableReference;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
+@NullMarked
 public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_>>
         implements SolutionManager<Solution_, Score_> {
 
@@ -51,7 +52,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public @Nullable Score_ update(@NonNull Solution_ solution, @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
+    public Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy) {
         if (solutionUpdatePolicy == SolutionUpdatePolicy.NO_UPDATE) {
             throw new IllegalArgumentException("Can not call " + this.getClass().getSimpleName()
                     + ".update() with this solutionUpdatePolicy (" + solutionUpdatePolicy + ").");
@@ -90,8 +91,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
 
     @SuppressWarnings("unchecked")
     @Override
-    public @NonNull ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution,
-            @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
+    public ScoreExplanation<Solution_, Score_> explain(Solution_ solution,
+            SolutionUpdatePolicy solutionUpdatePolicy) {
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var explanation = callScoreDirector(solution, solutionUpdatePolicy, DefaultScoreExplanation::new,
                 ConstraintMatchPolicy.ENABLED, false);
@@ -101,10 +102,10 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
 
     private void assertFreshScore(Solution_ solution, Score_ currentScore, Score_ calculatedScore,
             SolutionUpdatePolicy solutionUpdatePolicy) {
-        if (!solutionUpdatePolicy.isScoreUpdateEnabled() && currentScore != null) {
-            // Score update is not enabled and score is not null; this means the score is supposed to be valid.
+        if (!solutionUpdatePolicy.isScoreUpdateEnabled()) {
+            // Score update is not enabled; this means the score is supposed to be valid.
             // Yet it is different from a freshly calculated score, suggesting previous score corruption.
-            if (!calculatedScore.equals(currentScore)) {
+            if (!Objects.equals(currentScore, calculatedScore)) {
                 throw new IllegalStateException("""
                         Current score (%s) and freshly calculated score (%s) for solution (%s) do not match.
                         Maybe run %s environment mode to check for score corruptions.
@@ -119,8 +120,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
 
     @SuppressWarnings("unchecked")
     @Override
-    public @NonNull ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy,
-            @NonNull SolutionUpdatePolicy solutionUpdatePolicy) {
+    public ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
+            SolutionUpdatePolicy solutionUpdatePolicy) {
         Objects.requireNonNull(fetchPolicy, "fetchPolicy");
         var currentScore = (Score_) scoreDirectorFactory.getSolutionDescriptor().getScore(solution);
         var analysis = callScoreDirector(solution, solutionUpdatePolicy,
@@ -131,16 +132,16 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     }
 
     @Override
-    public @NonNull PlanningSolutionDiff<Solution_> diff(@NonNull Solution_ oldSolution, @NonNull Solution_ newSolution) {
+    public PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution) {
         solverFactory.ensurePreviewFeature(PreviewFeature.PLANNING_SOLUTION_DIFF);
         return solverFactory.getSolutionDescriptor()
                 .diff(oldSolution, newSolution);
     }
 
     @Override
-    public @NonNull <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(@NonNull Solution_ solution,
-            @NonNull In_ evaluatedEntityOrElement, @NonNull Function<In_, Out_> propositionFunction,
-            @NonNull ScoreAnalysisFetchPolicy fetchPolicy) {
+    public <In_, Out_> List<RecommendedAssignment<Out_, Score_>> recommendAssignment(Solution_ solution,
+            In_ evaluatedEntityOrElement, Function<In_, @Nullable Out_> propositionFunction,
+            ScoreAnalysisFetchPolicy fetchPolicy) {
         var assigner = new Assigner<Solution_, Score_, RecommendedAssignment<Out_, Score_>, In_, Out_>(solverFactory,
                 propositionFunction, DefaultRecommendedAssignment::new, fetchPolicy, solution, evaluatedEntityOrElement);
         return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
@@ -149,7 +150,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
 
     @Override
     public <In_, Out_> List<RecommendedFit<Out_, Score_>> recommendFit(Solution_ solution, In_ fittedEntityOrElement,
-            Function<In_, Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
+            Function<In_, @Nullable Out_> propositionFunction, ScoreAnalysisFetchPolicy fetchPolicy) {
         var assigner = new Assigner<Solution_, Score_, RecommendedFit<Out_, Score_>, In_, Out_>(solverFactory,
                 propositionFunction, DefaultRecommendedFit::new, fetchPolicy, solution, fittedEntityOrElement);
         return callScoreDirector(solution, SolutionUpdatePolicy.UPDATE_ALL, assigner, ConstraintMatchPolicy.match(fetchPolicy),
@@ -184,7 +185,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
      * @param solution Will be used to read constraint weights, which determine the final node network.
      * @return A string representing the node network in Graphviz DOT language.
      */
-    public @NonNull String visualizeNodeNetwork(@NonNull Solution_ solution) {
+    public @Nullable String visualizeNodeNetwork(Solution_ solution) {
         if (scoreDirectorFactory instanceof BavetConstraintStreamScoreDirectorFactory<Solution_, ?> bavetScoreDirectorFactory) {
             var result = new MutableReference<String>(null);
             bavetScoreDirectorFactory.newSession(solution, ConstraintMatchPolicy.ENABLED, false, result::setValue);

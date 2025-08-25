@@ -2,26 +2,30 @@ package ai.timefold.solver.core.impl.util;
 
 import java.util.Objects;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public final class MutableReference<Value_> {
 
-    private Value_ value;
+    private @Nullable Value_ value;
 
-    public MutableReference(Value_ value) {
+    public MutableReference(@Nullable Value_ value) {
         this.value = value;
     }
 
-    public Value_ getValue() {
+    public @Nullable Value_ getValue() {
         return value;
     }
 
-    public void setValue(Value_ value) {
+    public void setValue(@Nullable Value_ value) {
         this.value = value;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof MutableReference<?> other) {
-            return value.equals(other.value);
+            return Objects.equals(value, other.value);
         }
         return false;
     }
@@ -33,7 +37,7 @@ public final class MutableReference<Value_> {
 
     @Override
     public String toString() {
-        return value.toString();
+        return value == null ? "null" : value.toString();
     }
 
 }

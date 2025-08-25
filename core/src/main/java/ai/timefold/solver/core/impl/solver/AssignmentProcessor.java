@@ -25,21 +25,25 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.move.Move;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recommendation_, In_, Out_>
         implements Function<InnerScoreDirector<Solution_, Score_>, List<Recommendation_>> {
 
     private final DefaultSolverFactory<Solution_> solverFactory;
-    private final Function<In_, Out_> valueResultFunction;
+    private final Function<In_, @Nullable Out_> propositionFunction;
     private final RecommendationConstructor<Score_, Recommendation_, Out_> recommendationConstructor;
     private final ScoreAnalysisFetchPolicy fetchPolicy;
     private final ScoreAnalysis<Score_> originalScoreAnalysis;
     private final In_ clonedElement;
 
-    public AssignmentProcessor(DefaultSolverFactory<Solution_> solverFactory, Function<In_, Out_> valueResultFunction,
+    public AssignmentProcessor(DefaultSolverFactory<Solution_> solverFactory, Function<In_, @Nullable Out_> propositionFunction,
             RecommendationConstructor<Score_, Recommendation_, Out_> recommendationConstructor,
             ScoreAnalysisFetchPolicy fetchPolicy, In_ clonedElement, ScoreAnalysis<Score_> originalScoreAnalysis) {
         this.solverFactory = Objects.requireNonNull(solverFactory);
-        this.valueResultFunction = valueResultFunction;
+        this.propositionFunction = Objects.requireNonNull(propositionFunction);
         this.recommendationConstructor = Objects.requireNonNull(recommendationConstructor);
         this.fetchPolicy = Objects.requireNonNull(fetchPolicy);
         this.originalScoreAnalysis = Objects.requireNonNull(originalScoreAnalysis);
@@ -56,14 +60,14 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor != null) {
             var demand = listVariableDescriptor.getStateDemand();
-            var listVariableStateSupply = supplyManager.demand(demand);
-            var elementPosition = listVariableStateSupply.getElementPosition(clonedElement);
-            if (elementPosition instanceof PositionInList positionInList) { // Unassign the cloned element.
-                var entity = positionInList.entity();
-                var index = positionInList.index();
-                wrapAndExecute(moveDirector, new ListUnassignMove<>(listVariableDescriptor, entity, index));
+            try (var listVariableStateSupply = supplyManager.demand(demand)) {
+                var elementPosition = listVariableStateSupply.getElementPosition(clonedElement);
+                if (elementPosition instanceof PositionInList positionInList) { // Unassign the cloned element.
+                    var entity = positionInList.entity();
+                    var index = positionInList.index();
+                    wrapAndExecute(moveDirector, new ListUnassignMove<>(listVariableDescriptor, entity, index));
+                }
             }
-            supplyManager.cancel(demand);
         } else {
             var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(clonedElement.getClass());
             for (var variableDescriptor : entityDescriptor.getGenuineVariableDescriptorList()) {
@@ -111,7 +115,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
             var recommendedAssignmentList = new ArrayList<Recommendation_>();
             var moveIndex = 0L;
             for (var move : placement) {
-                recommendedAssignmentList.add(execute(scoreDirector, move, moveIndex, clonedElement, valueResultFunction));
+                recommendedAssignmentList.add(execute(scoreDirector, move, moveIndex, clonedElement, propositionFunction));
                 moveIndex++;
             }
             recommendedAssignmentList.sort(null);
@@ -152,13 +156,13 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
     }
 
     private Recommendation_ execute(InnerScoreDirector<Solution_, Score_> scoreDirector, Move<Solution_> move, long moveIndex,
-            In_ clonedElement, Function<In_, Out_> propositionFunction) {
+            In_ clonedElement, Function<In_, @Nullable Out_> propositionFunction) {
         return scoreDirector.getMoveDirector().executeTemporary(move,
                 (moveDirector, score) -> {
                     var newScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy);
                     var newScoreDifference = newScoreAnalysis.diff(originalScoreAnalysis);
-                    var result = propositionFunction.apply(clonedElement);
-                    return recommendationConstructor.apply(moveIndex, result, newScoreDifference);
+                    return recommendationConstructor.apply(moveIndex, propositionFunction.apply(clonedElement),
+                            newScoreDifference);
                 });
     }
 

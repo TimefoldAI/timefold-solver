@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.domain.variable.ShadowVariableUpdateHelper;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -34,6 +34,7 @@ import org.jspecify.annotations.Nullable;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Score_> the actual score type
  */
+@NullMarked
 public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
 
     // ************************************************************************
@@ -46,8 +47,8 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
      * @param <Score_> the actual score type
      */
-    static <Solution_, Score_ extends Score<Score_>> @NonNull SolutionManager<Solution_, Score_> create(
-            @NonNull SolverFactory<Solution_> solverFactory) {
+    static <Solution_, Score_ extends Score<Score_>> SolutionManager<Solution_, Score_>
+            create(SolverFactory<Solution_> solverFactory) {
         return new DefaultSolutionManager<>(solverFactory);
     }
 
@@ -58,8 +59,8 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * @param <Score_> the actual score type
      * @param <ProblemId_> the ID type of a submitted problem, such as {@link Long} or {@link UUID}
      */
-    static <Solution_, Score_ extends Score<Score_>, ProblemId_> @NonNull SolutionManager<Solution_, Score_> create(
-            @NonNull SolverManager<Solution_, ProblemId_> solverManager) {
+    static <Solution_, Score_ extends Score<Score_>, ProblemId_> SolutionManager<Solution_, Score_>
+            create(SolverManager<Solution_, ProblemId_> solverManager) {
         return new DefaultSolutionManager<>(solverManager);
     }
 
@@ -72,7 +73,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
      *
      */
-    default @Nullable Score_ update(@NonNull Solution_ solution) {
+    default @Nullable Score_ update(Solution_ solution) {
         return update(solution, UPDATE_ALL);
     }
 
@@ -86,7 +87,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *      variables
      */
     @Nullable
-    Score_ update(@NonNull Solution_ solution, @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
+    Score_ update(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
      * This method updates all shadow variables at the entity level,
@@ -100,11 +101,8 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * @param solutionClass the solution class
      * @param entities all entities to be updated
      */
-    static <Solution_> void updateShadowVariables(@NonNull Class<Solution_> solutionClass,
-            @NonNull Object... entities) {
-        Objects.requireNonNull(solutionClass);
-        Objects.requireNonNull(entities);
-        if (entities.length == 0) {
+    static <Solution_> void updateShadowVariables(Class<Solution_> solutionClass, Object... entities) {
+        if (Objects.requireNonNull(entities).length == 0) {
             throw new IllegalArgumentException("The entity array cannot be empty.");
         }
         ShadowVariableUpdateHelper.<Solution_> create().updateShadowVariables(solutionClass, entities);
@@ -116,8 +114,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *
      * @param solution the solution
      */
-    static <Solution_> void updateShadowVariables(@NonNull Solution_ solution) {
-        Objects.requireNonNull(solution);
+    static <Solution_> void updateShadowVariables(Solution_ solution) {
         ShadowVariableUpdateHelper.<Solution_> create().updateShadowVariables(solution);
     }
 
@@ -125,7 +122,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * As defined by {@link #explain(Object, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
      */
-    default @NonNull ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution) {
+    default ScoreExplanation<Solution_, Score_> explain(Solution_ solution) {
         return explain(solution, UPDATE_ALL);
     }
 
@@ -139,15 +136,13 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *         calculator, such as {@link EasyScoreCalculator}.
      * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
      */
-    @NonNull
-    ScoreExplanation<Solution_, Score_> explain(@NonNull Solution_ solution,
-            @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
+    ScoreExplanation<Solution_, Score_> explain(Solution_ solution, SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
      * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL} and {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      */
-    default @NonNull ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution) {
+    default ScoreAnalysis<Score_> analyze(Solution_ solution) {
         return analyze(solution, FETCH_ALL, UPDATE_ALL);
     }
 
@@ -155,7 +150,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      * As defined by {@link #analyze(Object, ScoreAnalysisFetchPolicy, SolutionUpdatePolicy)},
      * using {@link SolutionUpdatePolicy#UPDATE_ALL}.
      */
-    default @NonNull ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy) {
+    default ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy) {
         return analyze(solution, fetchPolicy, UPDATE_ALL);
     }
 
@@ -170,9 +165,8 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *         calculator, such as {@link EasyScoreCalculator}.
      * @see SolutionUpdatePolicy Description of individual policies with respect to performance trade-offs.
      */
-    @NonNull
-    ScoreAnalysis<Score_> analyze(@NonNull Solution_ solution, @NonNull ScoreAnalysisFetchPolicy fetchPolicy,
-            @NonNull SolutionUpdatePolicy solutionUpdatePolicy);
+    ScoreAnalysis<Score_> analyze(Solution_ solution, ScoreAnalysisFetchPolicy fetchPolicy,
+            SolutionUpdatePolicy solutionUpdatePolicy);
 
     /**
      * Compute a difference between two solutions.
@@ -198,16 +192,15 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *         Entities that are present in both solutions will be marked as changed if their variables differ,
      *         according to the equality rules described above.
      */
-    @NonNull
-    PlanningSolutionDiff<Solution_> diff(@NonNull Solution_ oldSolution, @NonNull Solution_ newSolution);
+    PlanningSolutionDiff<Solution_> diff(Solution_ oldSolution, Solution_ newSolution);
 
     /**
      * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
      * with {@link ScoreAnalysisFetchPolicy#FETCH_ALL}.
      */
-    default <EntityOrElement_, Proposition_> @NonNull List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
-            @NonNull Solution_ solution, EntityOrElement_ evaluatedEntityOrElement,
-            @NonNull Function<EntityOrElement_, @NonNull Proposition_> propositionFunction) {
+    default <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
+            Solution_ solution, EntityOrElement_ evaluatedEntityOrElement,
+            Function<EntityOrElement_, @Nullable Proposition_> propositionFunction) {
         return recommendAssignment(solution, evaluatedEntityOrElement, propositionFunction, FETCH_ALL);
     }
 
@@ -307,10 +300,9 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      *         designed to be JSON-friendly, see {@link RecommendedAssignment} Javadoc for more.
      * @see PlanningEntity More information about genuine and shadow planning entities.
      */
-    <EntityOrElement_, Proposition_> @NonNull List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(
-            @NonNull Solution_ solution, @NonNull EntityOrElement_ evaluatedEntityOrElement,
-            @NonNull Function<EntityOrElement_, Proposition_> propositionFunction,
-            @NonNull ScoreAnalysisFetchPolicy fetchPolicy);
+    <EntityOrElement_, Proposition_> List<RecommendedAssignment<Proposition_, Score_>> recommendAssignment(Solution_ solution,
+            EntityOrElement_ evaluatedEntityOrElement, Function<EntityOrElement_, @Nullable Proposition_> propositionFunction,
+            ScoreAnalysisFetchPolicy fetchPolicy);
 
     /**
      * As defined by {@link #recommendAssignment(Object, Object, Function, ScoreAnalysisFetchPolicy)},
@@ -320,7 +312,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      */
     @Deprecated(forRemoval = true, since = "1.15.0")
     default <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
-            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction) {
+            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, @Nullable Proposition_> propositionFunction) {
         return recommendFit(solution, fittedEntityOrElement, propositionFunction, FETCH_ALL);
     }
 
@@ -331,7 +323,7 @@ public interface SolutionManager<Solution_, Score_ extends Score<Score_>> {
      */
     @Deprecated(forRemoval = true, since = "1.15.0")
     <EntityOrElement_, Proposition_> List<RecommendedFit<Proposition_, Score_>> recommendFit(Solution_ solution,
-            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, Proposition_> propositionFunction,
+            EntityOrElement_ fittedEntityOrElement, Function<EntityOrElement_, @Nullable Proposition_> propositionFunction,
             ScoreAnalysisFetchPolicy fetchPolicy);
 
 }
