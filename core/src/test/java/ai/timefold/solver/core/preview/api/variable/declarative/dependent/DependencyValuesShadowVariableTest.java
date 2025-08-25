@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.preview.api.variable.declarative.dependent;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 import java.time.Duration;
@@ -106,5 +107,41 @@ class DependencyValuesShadowVariableTest {
                 (PlanningListVariableMetaModel<TestdataDependencySolution, ? super TestdataDependencyEntity, ? super TestdataDependencyValue>) solutionDescriptor
                         .getListVariableDescriptor().getVariableMetaModel(),
                 valueC, entityA, 0));
+    }
+
+    @Test
+    void failsIfTwoValuesDependOnEachOther() {
+        var baseTime = LocalDateTime.ofEpochSecond(0, 0, ZoneOffset.UTC);
+        var entityA = new TestdataDependencyEntity(baseTime);
+
+        var valueA = new TestdataDependencyValue("Value A", Duration.ofMinutes(30));
+        var valueB = new TestdataDependencyValue("Value B", Duration.ofMinutes(10));
+        var valueC = new TestdataDependencyValue("Value C", Duration.ofMinutes(50));
+
+        valueB.setDependencies(List.of(valueC));
+        valueC.setDependencies(List.of(valueB));
+
+        var schedule = new TestdataDependencySolution(
+                List.of(entityA),
+                List.of(valueA, valueB, valueC));
+
+        var solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataDependencySolution.class)
+                .withEntityClasses(TestdataDependencyEntity.class, TestdataDependencyValue.class)
+                .withConstraintProviderClass(TestdataDependencyConstraintProvider.class)
+                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
+                .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
+                .withTerminationConfig(new TerminationConfig()
+                        .withMoveCountLimit(1_000L));
+
+        var solverFactory = SolverFactory.<TestdataDependencySolution> create(solverConfig);
+        var solver = solverFactory.buildSolver();
+        assertThatCode(() -> solver.solve(schedule)).isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll("There are fixed dependency loops in the graph for variables",
+                        "startTime",
+                        "endTime",
+                        "Value B",
+                        "Value C")
+                .hasMessageNotContaining("Value A");
     }
 }

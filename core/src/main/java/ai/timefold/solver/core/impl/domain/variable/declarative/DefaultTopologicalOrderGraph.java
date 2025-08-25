@@ -39,6 +39,25 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         return componentMap.get(node);
     }
 
+    List<List<Integer>> getLoopedComponentList() {
+        var out = new ArrayList<List<Integer>>();
+        var visited = new HashSet<Integer>();
+        for (var component : componentMap.values()) {
+            if (component.size() < 2) {
+                // all looped components have at least 2 members.
+                // non-looped components have exactly one member.
+                continue;
+            }
+            if (visited.contains(component.get(0))) {
+                // already visited this component
+                continue;
+            }
+            visited.addAll(component);
+            out.add(component);
+        }
+        return out;
+    }
+
     @Override
     public void addEdge(int fromNode, int toNode) {
         forwardEdges[fromNode].add(toNode);
