@@ -75,7 +75,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
 
       - name: Setup Temurin 17 and Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'
@@ -183,7 +183,7 @@ jobs:
 
       # Build and test
       - name: Setup Temurin 17 and Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -289,7 +289,7 @@ jobs:
           fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
       - name: Set up JDK 17
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: 17
           distribution: 'temurin'

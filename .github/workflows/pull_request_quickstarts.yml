@@ -58,7 +58,7 @@ jobs:
 
       # Build and test
       - name: Setup Temurin 21 and Maven
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           java-version: '21'
           distribution: 'temurin'

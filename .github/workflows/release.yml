@@ -52,7 +52,7 @@ jobs:
           git config user.email "release@timefold.ai"
           git checkout -b $RELEASE_BRANCH_NAME
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
