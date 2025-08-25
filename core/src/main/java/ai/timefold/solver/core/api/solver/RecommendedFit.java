@@ -5,6 +5,8 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Represents the result of the Recommended Fit API,
  * see {@link SolutionManager#recommendFit(Object, Object, Function)}.
@@ -23,6 +25,7 @@ import ai.timefold.solver.core.api.score.analysis.ScoreAnalysis;
  * @deprecated Prefer {@link RecommendedAssignment} instead.
  */
 @Deprecated(forRemoval = true, since = "1.15.0")
+@NullMarked
 public interface RecommendedFit<Proposition_, Score_ extends Score<Score_>>
         extends RecommendedAssignment<Proposition_, Score_> {
 

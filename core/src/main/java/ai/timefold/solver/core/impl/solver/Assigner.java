@@ -8,6 +8,10 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.ScoreAnalysisFetchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 final class Assigner<Solution_, Score_ extends Score<Score_>, Recommendation_, In_, Out_>
         implements Function<InnerScoreDirector<Solution_, Score_>, List<Recommendation_>> {
 
@@ -18,7 +22,7 @@ final class Assigner<Solution_, Score_ extends Score<Score_>, Recommendation_, I
     private final Solution_ originalSolution;
     private final In_ originalElement;
 
-    public Assigner(DefaultSolverFactory<Solution_> solverFactory, Function<In_, Out_> propositionFunction,
+    public Assigner(DefaultSolverFactory<Solution_> solverFactory, Function<In_, @Nullable Out_> propositionFunction,
             RecommendationConstructor<Score_, Recommendation_, Out_> recommendationConstructor,
             ScoreAnalysisFetchPolicy fetchPolicy, Solution_ originalSolution, In_ originalElement) {
         this.solverFactory = Objects.requireNonNull(solverFactory);
@@ -41,7 +45,7 @@ final class Assigner<Solution_, Score_ extends Score<Score_>, Recommendation_, I
                     .formatted(originalSolution, uninitializedCount));
         }
         var originalScoreAnalysis = scoreDirector.buildScoreAnalysis(fetchPolicy);
-        var clonedElement = scoreDirector.lookUpWorkingObject(originalElement);
+        var clonedElement = Objects.requireNonNull(scoreDirector.lookUpWorkingObject(originalElement));
         var processor = new AssignmentProcessor<>(solverFactory, propositionFunction, recommendationConstructor, fetchPolicy,
                 clonedElement, originalScoreAnalysis);
         return processor.apply(scoreDirector);
