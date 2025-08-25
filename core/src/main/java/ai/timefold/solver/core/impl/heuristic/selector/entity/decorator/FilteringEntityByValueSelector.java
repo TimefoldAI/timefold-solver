@@ -21,10 +21,12 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * The decorator returns a list of reachable entities for a specific value.
  * It enables the creation of a filtering tier when using entity value selectors,
  * ensuring only valid and reachable entities are returned.
- *
+ * <p>
+ * The decorator can only be applied to list variables.
+ * <p>
  * e1 = entity_range[v1, v2, v3]
  * e2 = entity_range[v1, v4]
- *
+ * <p>
  * v1 = [e1, e2]
  * v2 = [e1]
  * v3 = [e1]
@@ -32,7 +34,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  *
  * @param <Solution_> the solution type
  */
-public final class FilteringEntityValueRangeSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
+public final class FilteringEntityByValueSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
         implements EntitySelector<Solution_> {
 
     private final IterableValueSelector<Solution_> replayingValueSelector;
@@ -43,7 +45,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
     private ReachableValues reachableValues;
     private long entitiesSize;
 
-    public FilteringEntityValueRangeSelector(EntitySelector<Solution_> childEntitySelector,
+    public FilteringEntityByValueSelector(EntitySelector<Solution_> childEntitySelector,
             IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection) {
         this.replayingValueSelector = replayingValueSelector;
         this.childEntitySelector = childEntitySelector;
@@ -65,7 +67,9 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
         super.phaseStarted(phaseScope);
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
-                .getReachableValues(phaseScope.getScoreDirector().getSolutionDescriptor().getListVariableDescriptor());
+                .getReachableValues(Objects.requireNonNull(
+                        phaseScope.getScoreDirector().getSolutionDescriptor().getListVariableDescriptor(),
+                        "Impossible state: the list variable cannot be null."));
         this.childEntitySelector.phaseStarted(phaseScope);
     }
 
@@ -141,7 +145,7 @@ public final class FilteringEntityValueRangeSelector<Solution_> extends Abstract
 
     @Override
     public boolean equals(Object other) {
-        return other instanceof FilteringEntityValueRangeSelector<?> that
+        return other instanceof FilteringEntityByValueSelector<?> that
                 && Objects.equals(childEntitySelector, that.childEntitySelector)
                 && Objects.equals(replayingValueSelector, that.replayingValueSelector);
     }
