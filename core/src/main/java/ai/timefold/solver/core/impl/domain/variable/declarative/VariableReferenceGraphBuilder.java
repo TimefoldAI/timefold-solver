@@ -160,14 +160,13 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             for (var loopedComponent : loopedComponents) {
                 loopedComponent.stream()
                         .map(nodeList::get)
-                        .forEach(node -> {
-                            node.variableReferences().stream()
-                                    .map(VariableUpdaterInfo::id)
-                                    .forEach(loopedVariables::add);
-                        });
+                        .forEach(
+                                node -> node.variableReferences().stream()
+                                        .map(VariableUpdaterInfo::id)
+                                        .forEach(loopedVariables::add));
             }
 
-            var out = new StringBuilder("There are fixed dependency loops in the graph for variables %s:\n"
+            var out = new StringBuilder("There are fixed dependency loops in the graph for variables %s:%n"
                     .formatted(loopedVariables));
             for (var i = 0; i < Math.min(loopedComponents.size(), limit); i++) {
                 out.append(
