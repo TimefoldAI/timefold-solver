@@ -10,6 +10,7 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ValueRangeRecorderId;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
@@ -35,7 +36,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
             SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId) {
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
-                .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder, entityValueRangeRecorderId);
+                .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
+                        new ValueRangeRecorderId(entityValueRangeRecorderId, false));
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
                 minimumCacheType, selectionOrder, entityValueRangeRecorderId);
         var baseDestinationSelector =
