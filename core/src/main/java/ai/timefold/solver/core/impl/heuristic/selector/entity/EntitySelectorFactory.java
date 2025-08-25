@@ -17,6 +17,7 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ValueRangeRecorderId;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
@@ -24,6 +25,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.CachingEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
@@ -79,12 +81,13 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
      *        then it should be at least this {@link SelectionCacheType} because an ancestor already uses such caching
      *        and less would be pointless.
      * @param inheritedSelectionOrder never null
-     * @param entityValueRangeRecorderId the recorder id to be used to create a replaying selector when enabling entity value
+     * @param valueRangeRecorderId the recorder id to be used to create a replaying selector when enabling entity value
      *        range
      * @return never null
      */
     public EntitySelector<Solution_> buildEntitySelector(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder, String entityValueRangeRecorderId) {
+            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder,
+            ValueRangeRecorderId valueRangeRecorderId) {
         if (config.getMimicSelectorRef() != null) {
             return buildMimicReplaying(configPolicy);
         }
@@ -115,7 +118,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             // The nearby selector will implement its own logic to filter out unreachable elements.
             // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
             // otherwise, we would end up applying the filtering logic twice.
-            entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, entityValueRangeRecorderId,
+            entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, valueRangeRecorderId,
                     minimumCacheType, inheritedSelectionOrder, baseRandomSelection);
         }
         entitySelector = applyFiltering(entitySelector, instanceCache);
@@ -140,7 +143,12 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                     "The entitySelectorConfig (%s) with mimicSelectorRef (%s) has another property that is not null."
                             .formatted(config, config.getMimicSelectorRef()));
         }
-        var entityMimicRecorder = configPolicy.getEntityMimicRecorder(config.getMimicSelectorRef());
+        return buildMimicReplaying(configPolicy, config.getMimicSelectorRef());
+    }
+
+    private MimicReplayingEntitySelector<Solution_> buildMimicReplaying(HeuristicConfigPolicy<Solution_> configPolicy,
+            String id) {
+        var entityMimicRecorder = configPolicy.getEntityMimicRecorder(id);
         if (entityMimicRecorder == null) {
             throw new IllegalArgumentException(
                     "The entitySelectorConfig (%s) has a mimicSelectorRef (%s) for which no entitySelector with that id exists (in its solver phase)."
@@ -185,17 +193,23 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
     }
 
     private EntitySelector<Solution_> applyEntityValueRangeFiltering(HeuristicConfigPolicy<Solution_> configPolicy,
-            EntitySelector<Solution_> entitySelector, String entityValueRangeRecorderId, SelectionCacheType minimumCacheType,
+            EntitySelector<Solution_> entitySelector, ValueRangeRecorderId valueRangeRecorderId,
+            SelectionCacheType minimumCacheType,
             SelectionOrder selectionOrder, boolean randomSelection) {
-        if (entityValueRangeRecorderId == null) {
+        if (valueRangeRecorderId == null || valueRangeRecorderId.recorderId() == null) {
             return entitySelector;
         }
-        var valueSelectorConfig = new ValueSelectorConfig()
-                .withMimicSelectorRef(entityValueRangeRecorderId);
-        var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
-                .<Solution_> create(valueSelectorConfig)
-                .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
-        return new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, randomSelection);
+        if (valueRangeRecorderId.basicVariable()) {
+            var replayingEntitySelector = buildMimicReplaying(configPolicy, valueRangeRecorderId.recorderId());
+            return new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, randomSelection);
+        } else {
+            var valueSelectorConfig = new ValueSelectorConfig()
+                    .withMimicSelectorRef(valueRangeRecorderId.recorderId());
+            var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
+                    .<Solution_> create(valueSelectorConfig)
+                    .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
+            return new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, randomSelection);
+        }
     }
 
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,

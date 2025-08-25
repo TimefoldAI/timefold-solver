@@ -12,9 +12,11 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMov
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ValueRangeRecorderId;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -37,15 +39,36 @@ public class SwapMoveSelectorFactory<Solution_>
         var entitySelectorConfig =
                 Objects.requireNonNullElseGet(config.getEntitySelectorConfig(), EntitySelectorConfig::new);
         var secondaryEntitySelectorConfig =
-                Objects.requireNonNullElse(config.getSecondaryEntitySelectorConfig(), entitySelectorConfig);
+                Objects.requireNonNullElseGet(config.getSecondaryEntitySelectorConfig(), entitySelectorConfig::copyConfig);
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
+        // When enabling entity value range filtering,
+        // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector
+        // to replay the selected value and return only reachable values.
+        var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
+        var enableEntityValueRangeFilter = entityDescriptor.getSolutionDescriptor().getBasicVariableDescriptorList()
+                .stream()
+                .anyMatch(v -> !v.canExtractValueRangeFromSolution());
+        // A null ID means to turn off the entity value range filtering
+        String entityRecorderId = null;
+        if (enableEntityValueRangeFilter) {
+            if (entitySelectorConfig.getId() == null && entitySelectorConfig.getMimicSelectorRef() == null) {
+                var entityName = Objects.requireNonNull(entityDescriptor.getEntityClass().getSimpleName());
+                // We set the id to make sure the value selector will use the mimic recorder
+                entityRecorderId = ConfigUtils.addRandomSuffix(entityName, configPolicy.getRandom());
+                entitySelectorConfig.setId(entityRecorderId);
+            } else {
+                entityRecorderId = entitySelectorConfig.getId() != null ? entitySelectorConfig.getId()
+                        : entitySelectorConfig.getMimicSelectorRef();
+            }
+        }
+
         var leftEntitySelector =
                 EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
                         .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
         var rightEntitySelector =
                 EntitySelectorFactory.<Solution_> create(secondaryEntitySelectorConfig)
-                        .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder);
-        var entityDescriptor = leftEntitySelector.getEntityDescriptor();
+                        .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
+                                new ValueRangeRecorderId(entityRecorderId, true));
         var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
 
         return new SwapMoveSelector<>(leftEntitySelector, rightEntitySelector, variableDescriptorList,

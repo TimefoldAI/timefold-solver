@@ -32,7 +32,6 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * <code>
  *
  * e1 = entity_range[v1, v2, v3]
- *
  * e2 = entity_range[v1, v4]
  *
  * v1 = [e1, e2]
