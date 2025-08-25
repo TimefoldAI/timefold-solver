@@ -1,15 +1,20 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 import org.jspecify.annotations.NonNull;
 
@@ -112,6 +117,7 @@ public final class VariableReferenceGraphBuilder<Solution_> {
     }
 
     public VariableReferenceGraph build(IntFunction<TopologicalOrderGraph> graphCreator) {
+        assertNoFixedLoops();
         if (nodeList.isEmpty()) {
             return EmptyVariableReferenceGraph.INSTANCE;
         }
@@ -127,6 +133,97 @@ public final class VariableReferenceGraphBuilder<Solution_> {
             throw new IllegalArgumentException();
         }
         return out;
+    }
+
+    private void assertNoFixedLoops() {
+        var graph = new DefaultTopologicalOrderGraph(nodeList.size());
+        for (var fixedEdge : fixedEdges.entrySet()) {
+            var fromNodeId = fixedEdge.getKey().graphNodeId();
+            for (var toNode : fixedEdge.getValue()) {
+                var toNodeId = toNode.graphNodeId();
+                graph.addEdge(fromNodeId, toNodeId);
+            }
+        }
+
+        var changedBitSet = new BitSet();
+        graph.commitChanges(changedBitSet);
+
+        if (changedBitSet.cardinality() != 0) {
+            // At least one node's loop status has changed,
+            // and since the empty graph has no loops, that
+            // mean there is at least one fixed loop in the graph.
+            var loopedComponents = graph.getLoopedComponentList();
+            var limit = 3;
+            var isLimited = loopedComponents.size() > limit;
+            var loopedVariables = new LinkedHashSet<VariableMetaModel<?, ?, ?>>();
+
+            for (var loopedComponent : loopedComponents) {
+                loopedComponent.stream()
+                        .map(nodeList::get)
+                        .forEach(node -> {
+                            node.variableReferences().stream()
+                                    .map(VariableUpdaterInfo::id)
+                                    .forEach(loopedVariables::add);
+                        });
+            }
+
+            var out = new StringBuilder("There are fixed dependency loops in the graph for variables %s:\n"
+                    .formatted(loopedVariables));
+            for (var i = 0; i < Math.min(loopedComponents.size(), limit); i++) {
+                out.append(
+                        loopedComponents.get(i)
+                                .stream()
+                                .map(nodeList::get)
+                                .map(GraphNode::toString)
+                                .collect(Collectors.joining(", ",
+                                        "- [",
+                                        "]\n")));
+            }
+            if (isLimited) {
+                out.append("- ...(");
+                out.append(loopedComponents.size() - limit);
+                out.append(" more)\n");
+            }
+            out.append("""
+
+                    Fixed dependency loops indicate a problem in either the input problem or in the @%s of the looped @%s.
+                    If a downstream variable depends on an upstream variable, the upstream variable cannot depend on the
+                    downstream variable on the same entity. As such, a model that looks like this is invalid:
+
+                    entity1:variable1 (source)-> entity1:variable2 (source)-> entity1:variable1
+                    In code, this situation looks like this:
+
+                        @ShadowSources("variable2")
+                        String variable1Supplier() { /* ... */ }
+
+                        @ShadowSources("variable1")
+                        String variable2Supplier() { /* ... */ }
+
+                    This applies even if the upstream variable is reached indirectly:
+
+                    entity1:variable1 (fact)-> entity2:variable1 (fact)-> entity1:variable1
+                    In code, this situation looks like this:
+
+                        @PlanningEntity
+                        public class Entity {
+                            Entity fact;
+
+                            @ShadowSources("fact.variable1")
+                            String variable1Supplier() { /* ... */ }
+                            // ...
+                        }
+
+                        Entity a = new Entity();
+                        Entity b = new Entity();
+                        a.setFact(b);
+                        b.setFact(a);
+                        // a depends on b, and b depends on a, which is invalid.
+
+                    Maybe check none of your @%s form a loop on the same entity.
+                    """.formatted(ShadowSources.class.getSimpleName(), ShadowVariable.class.getSimpleName(),
+                    ShadowSources.class.getSimpleName()));
+            throw new IllegalArgumentException(out.toString());
+        }
     }
 
 }
