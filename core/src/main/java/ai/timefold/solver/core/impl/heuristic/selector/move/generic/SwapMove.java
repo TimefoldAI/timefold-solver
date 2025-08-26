@@ -42,6 +42,9 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
+        if (leftEntity == rightEntity) {
+            return false;
+        }
         var movable = false;
         for (var variableDescriptor : variableDescriptorList) {
             var leftValue = variableDescriptor.getValue(leftEntity);
@@ -57,7 +60,7 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
                     var leftValueRange =
                             extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
                     if (!leftValueRange.contains(rightValue)) {
-                        throw new IllegalStateException("Impossible state: no valid move generated.");
+                        return false;
                     }
                 }
             }
