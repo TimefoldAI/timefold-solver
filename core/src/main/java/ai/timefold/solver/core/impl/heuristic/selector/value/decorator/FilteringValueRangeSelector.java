@@ -207,6 +207,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             }
             currentUpcomingValue = upcomingValue;
             currentUpcomingEntity = null;
+            currentUpcomingList = null;
             if (checkSourceAndDestination) {
                 // Load the current assigned entity of the selected value
                 var position = listVariableStateSupply.getElementPosition(currentUpcomingValue);
@@ -313,7 +314,19 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
                     loadValues(updatedUpcomingValue);
                 }
             }
-            return super.hasNext();
+            var hasNext = super.hasNext();
+            if (!hasNext && checkSourceAndDestination && currentUpcomingList != null && !currentUpcomingList.isEmpty()) {
+                // The checkSourceAndDestination flag is only enabled by swap moves,
+                // and the following assumption applies:
+                // if a valid move is not found with the given bailout size,
+                // we can still use the iterator as long as the currentUpcomingList is not empty
+                this.upcomingCreated = true;
+                this.hasUpcomingSelection = true;
+                // We assigned the same value to the left side, which will result in a non-doable move
+                this.upcomingSelection = currentUpcomingValue;
+                return true;
+            }
+            return hasNext;
         }
 
         @Override
