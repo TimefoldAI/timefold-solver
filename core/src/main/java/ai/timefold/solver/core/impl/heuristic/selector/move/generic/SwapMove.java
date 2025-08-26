@@ -55,12 +55,12 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
                     var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
                     var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, rightEntity);
                     if (!rightValueRange.contains(leftValue)) {
-                        return false;
+                        throw new IllegalStateException("Impossible state: invalide swap move");
                     }
                     var leftValueRange =
                             extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
                     if (!leftValueRange.contains(rightValue)) {
-                        return false;
+                        throw new IllegalStateException("Impossible state: invalide swap move");
                     }
                 }
             }
