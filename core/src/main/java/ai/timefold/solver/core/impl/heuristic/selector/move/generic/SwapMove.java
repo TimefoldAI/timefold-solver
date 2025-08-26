@@ -45,27 +45,14 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
         if (leftEntity == rightEntity) {
             return false;
         }
-        var movable = false;
         for (var variableDescriptor : variableDescriptorList) {
             var leftValue = variableDescriptor.getValue(leftEntity);
             var rightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(leftValue, rightValue)) {
-                movable = true;
-                if (!variableDescriptor.canExtractValueRangeFromSolution()) {
-                    var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-                    var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, rightEntity);
-                    if (!rightValueRange.contains(leftValue)) {
-                        throw new IllegalStateException("Impossible state: invalide swap move");
-                    }
-                    var leftValueRange =
-                            extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
-                    if (!leftValueRange.contains(rightValue)) {
-                        throw new IllegalStateException("Impossible state: invalide swap move");
-                    }
-                }
+                return true;
             }
         }
-        return movable;
+        return false;
     }
 
     @Override
