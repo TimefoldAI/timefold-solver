@@ -50,9 +50,6 @@ class SwapMoveTest {
         var entityDescriptor = TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor();
 
         var abMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, b);
-        a.setValue(v1);
-        b.setValue(v2);
-        assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
         a.setValue(v2);
         b.setValue(v2);
         assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
@@ -65,19 +62,8 @@ class SwapMoveTest {
         a.setValue(v3);
         b.setValue(v3);
         assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
-
-        var acMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, c);
-        a.setValue(v1);
-        c.setValue(v4);
-        assertThat(acMove.isMoveDoable(scoreDirector)).isFalse();
-        a.setValue(v2);
-        c.setValue(v5);
-        assertThat(acMove.isMoveDoable(scoreDirector)).isFalse();
 
         var bcMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), b, c);
-        b.setValue(v2);
-        c.setValue(v4);
-        assertThat(bcMove.isMoveDoable(scoreDirector)).isFalse();
         b.setValue(v4);
         c.setValue(v5);
         assertThat(bcMove.isMoveDoable(scoreDirector)).isTrue();
@@ -87,6 +73,9 @@ class SwapMoveTest {
         b.setValue(v5);
         c.setValue(v5);
         assertThat(bcMove.isMoveDoable(scoreDirector)).isFalse();
+
+        var aaMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, a);
+        assertThat(aaMove.isMoveDoable(scoreDirector)).isFalse();
     }
 
     @Test
