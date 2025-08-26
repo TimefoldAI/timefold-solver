@@ -442,20 +442,21 @@ public final class ValueRangeManager<Solution_> {
                 var range = getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
                 while (valuesIterator.hasNext()) {
                     var value = valuesIterator.next();
-                    if (range.contains(value)) {
+                    if (value != null && range.contains(value)) {
                         var item = initReachableMap(reachableValuesMap, value, entityList.size(), (int) valuesSize);
                         item.addEntity(entity);
                         var iterator = range.createOriginalIterator();
                         while (iterator.hasNext()) {
                             var iteratorValue = iterator.next();
-                            if (!Objects.equals(iteratorValue, value)) {
+                            if (iteratorValue != null && !Objects.equals(iteratorValue, value)) {
                                 item.addValue(iteratorValue);
                             }
                         }
                     }
                 }
             }
-            values = new ReachableValues(reachableValuesMap);
+            values = new ReachableValues(reachableValuesMap,
+                    variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
         }
         return values;

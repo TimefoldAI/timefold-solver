@@ -24,10 +24,12 @@ public final class ReachableValues {
 
     private final Map<Object, ReachableItemValue> values;
     private final @Nullable Class<?> valueClass;
+    private final boolean acceptsNullValue;
     private @Nullable ReachableItemValue cachedObject;
 
-    public ReachableValues(Map<Object, ReachableItemValue> values) {
+    public ReachableValues(Map<Object, ReachableItemValue> values, boolean acceptsNullValue) {
         this.values = values;
+        this.acceptsNullValue = acceptsNullValue;
         var firstValue = values.entrySet().stream().findFirst();
         this.valueClass = firstValue.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
     }
@@ -70,10 +72,13 @@ public final class ReachableValues {
         return originItemValue.entitySet.contains(entity);
     }
 
-    public boolean isValueReachable(Object origin, Object otherValue) {
+    public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
         var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
         if (originItemValue == null) {
             return false;
+        }
+        if (otherValue == null) {
+            return acceptsNullValue;
         }
         return originItemValue.valueSet.contains(Objects.requireNonNull(otherValue));
     }
