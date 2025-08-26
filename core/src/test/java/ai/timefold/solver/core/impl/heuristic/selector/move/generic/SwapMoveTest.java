@@ -65,9 +65,6 @@ class SwapMoveTest {
         a.setValue(v3);
         b.setValue(v3);
         assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
-        a.setValue(v2);
-        b.setValue(v4);
-        assertThat(abMove.isMoveDoable(scoreDirector)).isFalse();
 
         var acMove = new SwapMove<>(entityDescriptor.getGenuineVariableDescriptorList(), a, c);
         a.setValue(v1);

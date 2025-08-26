@@ -208,7 +208,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         private final List<ReachableValues> reachableValueList;
         Type entityIterator;
         private boolean initialized = false;
-        private ReplayedEntity replayedEntity;
+        ReplayedEntity replayedEntity;
 
         private AbstractFilteringValueRangeIterator(Supplier<ReplayedEntity> upcomingEntitySupplier,
                 Function<Object, List<Object>> extractAssignedValuesFunction, Type entityIterator,
@@ -217,6 +217,16 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             this.extractAssignedValuesFunction = extractAssignedValuesFunction;
             this.entityIterator = entityIterator;
             this.reachableValueList = reachableValueList;
+        }
+
+        void checkReplayedEntity() {
+            var updatedReplayedEntity = upcomingEntitySupplier.get();
+            if (replayedEntity == null || replayedEntity.entity() != updatedReplayedEntity.entity()) {
+                replayedEntity = updatedReplayedEntity;
+            }
+            if (replayedEntity == null) {
+                entityIterator = (Type) Collections.emptyListIterator();
+            }
         }
 
         void initialize() {
@@ -328,6 +338,22 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 List<ReachableValues> reachableValueList, int maxBailoutSize) {
             super(upcomingEntitySupplier, extractAssignedValuesFunction, entityIterator, reachableValueList);
             this.maxBailoutSize = maxBailoutSize;
+        }
+
+        @Override
+        public boolean hasNext() {
+            checkReplayedEntity();
+            var hasNext = super.hasNext();
+            if (!hasNext && entityIterator.hasNext()) {
+                // If a valid move is not found with the given bailout size,
+                // we can still use the iterator as long as the entityIterator has not been exhausted
+                this.upcomingCreated = true;
+                this.hasUpcomingSelection = true;
+                // We assigned the same entity to the left side, which will result in a non-doable move
+                this.upcomingSelection = replayedEntity.entity();
+                return true;
+            }
+            return hasNext;
         }
 
         @Override

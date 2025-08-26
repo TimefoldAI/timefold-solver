@@ -7,7 +7,6 @@ import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getEntit
 import static ai.timefold.solver.core.testutil.PlannerAssert.DO_NOT_ASSERT_SIZE;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterableSelector;
-import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertIterableSelectorWithoutSize;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
@@ -522,7 +521,7 @@ class SwapMoveSelectorTest {
         // select left A, select right C
         random.reset(0, 2, 0, 2);
         scoreDirector.setWorkingSolution(solution);
-        assertEmptyNeverEndingIterableSelector(moveSelector, DO_NOT_ASSERT_SIZE);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, DO_NOT_ASSERT_SIZE);
     }
 
 }
