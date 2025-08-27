@@ -5,10 +5,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 
@@ -23,6 +24,8 @@ import org.jspecify.annotations.Nullable;
  * An undo move is simply created by flipping the source and destination entity+index.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Entity_> the entity type, the class with the {@link PlanningEntity} annotation
+ * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
 public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
@@ -152,7 +155,7 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
     }
 
     @Override
-    protected List<VariableMetaModel<Solution_, ?, ?>> getVariableMetaModels() {
+    public List<PlanningListVariableMetaModel<Solution_, Entity_, Value_>> variableMetaModels() {
         return List.of(variableMetaModel);
     }
 

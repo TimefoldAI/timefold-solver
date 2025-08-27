@@ -1,24 +1,19 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
-
 import org.jspecify.annotations.NullMarked;
+
+import java.util.List;
 
 @NullMarked
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {
@@ -26,9 +21,8 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
     private static final char OPENING_PARENTHESES = '(';
     private static final char CLOSING_PARENTHESES = ')';
 
-    @Override
     public final String describe() {
-        var metaModels = getVariableMetaModels();
+        var metaModels = variableMetaModels();
         var substring = switch (metaModels.size()) {
             case 0 -> "";
             case 1 -> OPENING_PARENTHESES + getVariableDescriptor(metaModels.get(0)).getSimpleEntityAndVariableName()
@@ -37,7 +31,7 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
                 var stringBuilder = new StringBuilder()
                         .append(OPENING_PARENTHESES);
                 var first = true;
-                for (var variableMetaModel : getVariableMetaModels()) {
+                for (var variableMetaModel : metaModels) {
                     if (first) {
                         first = false;
                     } else {
@@ -54,9 +48,7 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
     public abstract String toString();
 
-    protected List<VariableMetaModel<Solution_, ?, ?>> getVariableMetaModels() {
-        return Collections.emptyList();
-    }
+    public abstract List<? extends GenuineVariableMetaModel<Solution_, ?, ?>> variableMetaModels();
 
     @SuppressWarnings("unchecked")
     protected static <Solution_> VariableDescriptor<Solution_>
@@ -72,22 +64,6 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
     protected static <Solution_> ListVariableDescriptor<Solution_>
             getVariableDescriptor(PlanningListVariableMetaModel<Solution_, ?, ?> variableMetaModel) {
         return ((DefaultPlanningListVariableMetaModel<Solution_, ?, ?>) variableMetaModel).variableDescriptor();
-    }
-
-    public static <E> List<E> rebaseList(List<E> externalObjectList, ScoreDirector<?> destinationScoreDirector) {
-        var rebasedObjectList = new ArrayList<E>(externalObjectList.size());
-        for (var entity : externalObjectList) {
-            rebasedObjectList.add(destinationScoreDirector.lookUpWorkingObject(entity));
-        }
-        return rebasedObjectList;
-    }
-
-    public static <E> Set<E> rebaseSet(Set<E> externalObjectSet, ScoreDirector<?> destinationScoreDirector) {
-        var rebasedObjectSet = new LinkedHashSet<E>(externalObjectSet.size());
-        for (var entity : externalObjectSet) {
-            rebasedObjectSet.add(destinationScoreDirector.lookUpWorkingObject(entity));
-        }
-        return rebasedObjectSet;
     }
 
 }
