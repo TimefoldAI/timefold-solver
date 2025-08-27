@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
@@ -39,8 +38,7 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     @Override
     public Move<Solution_> rebase(Rebaser rebaser) {
-        return new ListUnassignMove<>(variableMetaModel, Objects.requireNonNull(rebaser.rebase(movedValue)),
-                Objects.requireNonNull(rebaser.rebase(sourceEntity)), sourceIndex);
+        return new ListUnassignMove<>(variableMetaModel, rebaser.rebase(movedValue), rebaser.rebase(sourceEntity), sourceIndex);
     }
 
     @Override
@@ -54,8 +52,8 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
     }
 
     @Override
-    protected List<VariableMetaModel<Solution_, ?, ?>> getVariableMetaModels() {
-        return List.of(variableMetaModel);
+    public List<PlanningListVariableMetaModel<Solution_, Entity_, Value_>> variableMetaModels() {
+        return Collections.singletonList(variableMetaModel);
     }
 
     public Entity_ getSourceEntity() {
@@ -68,12 +66,10 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (!(o instanceof ListUnassignMove<?, ?, ?> that))
-            return false;
-        return sourceIndex == that.sourceIndex && Objects.equals(variableMetaModel, that.variableMetaModel)
-                && Objects.equals(sourceEntity, that.sourceEntity);
+        return o instanceof ListUnassignMove<?, ?, ?> other
+                && Objects.equals(variableMetaModel, other.variableMetaModel)
+                && Objects.equals(sourceEntity, other.sourceEntity)
+                && sourceIndex == other.sourceIndex;
     }
 
     @Override

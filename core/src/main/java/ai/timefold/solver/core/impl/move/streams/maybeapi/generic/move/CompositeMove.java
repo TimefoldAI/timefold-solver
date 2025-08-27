@@ -1,18 +1,20 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
 
-import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.util.CollectionUtils;
-import ai.timefold.solver.core.preview.api.move.Move;
-import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
-import ai.timefold.solver.core.preview.api.move.Rebaser;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A CompositeMove is composed out of multiple other moves.
@@ -81,7 +83,7 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Collection<?> extractPlanningValues() {
+    public Collection<@Nullable Object> extractPlanningValues() {
         Set<Object> values = CollectionUtils.newLinkedHashSet(moves.length * 2);
         for (Move<Solution_> move : moves) {
             values.addAll(move.extractPlanningValues());
@@ -100,7 +102,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof CompositeMove<?> that && Objects.deepEquals(moves, that.moves);
+        return o instanceof CompositeMove<?> that
+                && Objects.deepEquals(moves, that.moves);
     }
 
     @Override
