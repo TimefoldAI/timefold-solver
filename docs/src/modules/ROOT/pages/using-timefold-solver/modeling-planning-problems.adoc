@@ -959,7 +959,100 @@ public class Job {
 ==== Detecting Inconsistencies in Shadow Variables
 
 In certain cases, shadow variables may form an infinite loop.
-When this occurs, the solver detects the cycle, breaks the loop, and assigns `null` to the involved shadow variables.
+There are three ways a loop can form:
+
+- Source-induced, when two declarative shadow variables' sources refer to each other:
++
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Entity {
+    @ShadowVariable(supplierName="variable1Supplier")
+    String variable1;
+
+    @ShadowVariable(supplierName="variable2Supplier")
+    String variable2;
+
+    // ...
+
+    @ShadowSources("variable2")
+    String variable1Supplier() { /* ... */ }
+
+    @ShadowSources("variable1")
+    String variable2Supplier() { /* ... */ }
+}
+----
+====
+
+- Fact-induced, when a shadow variable has itself as a direct or transitive dependency via a fact:
++
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Entity {
+  Entity dependency;
+
+  @ShadowVariable(supplierName="variableSupplier")
+  String variable;
+
+  @ShadowSources("dependency.variable")
+  String variableSupplier() { /* ... */ }
+  // ...
+}
+
+Entity a = new Entity();
+Entity b = new Entity();
+a.setDependency(b);
+b.setDependency(a);
+// a depends on b, and b depends on a, which is invalid.
+----
+====
+
+- Variable-induced, when a shadow variable has itself as a direct or transitive dependency via a variable:
++
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Entity {
+  Entity dependency;
+
+  @PreviousElementShadowVariable(/* ... */)
+  Entity previous;
+
+  @ShadowVariable(supplierName="variableSupplier")
+  String variable;
+
+  @ShadowSources({"previous.variable", "dependency.variable"})
+  String variable1Supplier() { /* ... */ }
+  // ...
+}
+
+Entity a = new Entity();
+Entity b = new Entity();
+b.setDependency(a);
+a.setPrevious(b);
+// b depends on a via a fact, and a depends on b via a variable
+// The solver can break this loop by moving a after b.
+----
+====
+
+[IMPORTANT]
+====
+Source-induced and fact-induced loops cannot be broken by the solver, and represents an issue in either the input problem or the domain model.
+The solver will fail-fast if it detects a source-induced or fact-induced loop.
+====
 
 A declarative shadow variable is considered  _inconsistent_ if:
 
@@ -967,6 +1060,8 @@ A declarative shadow variable is considered  _inconsistent_ if:
 For example, if variable `a` depends on `b` and `b` depends on `a`, both are in a loop.
 - It depends on another variable that is inconsistent.
 For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
+
+When a declarative shadow variable is inconsistent, it will be set to `null`.
 
 To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
 The solver will set this field to true if the entity has any inconsistent shadow variables.
