@@ -1,17 +1,18 @@
 package ai.timefold.solver.core.preview.api.move;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
@@ -123,8 +124,8 @@ public interface Move<Solution_> {
 
     /**
      * TODO this probably needs a better API,
-     *  as move implementations are now expected to be primarily produced by users
-     *  and the solver is thus expected to encounter custom moves significantly more.
+     * as move implementations are now expected to be primarily produced by users
+     * and the solver is thus expected to encounter custom moves significantly more.
      *
      * Describes the move type for statistical purposes.
      * For example, a move which changes a variable "computer" on a class "Process" could be described as
