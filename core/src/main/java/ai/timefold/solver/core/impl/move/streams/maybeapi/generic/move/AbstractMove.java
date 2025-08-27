@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
 
+import java.util.List;
+
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerVariableMetaModel;
@@ -11,9 +13,8 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public abstract class AbstractMove<Solution_> implements Move<Solution_> {

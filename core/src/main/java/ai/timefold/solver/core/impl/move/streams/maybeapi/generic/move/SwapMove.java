@@ -77,8 +77,16 @@ public final class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> 
         var cachedValues = getCachedValues();
         for (var i = 0; i < cachedValues.size(); i += 2) {
             var variableMetaModel = variableMetaModelList.get(i);
-            solutionView.changeVariable(variableMetaModel, leftEntity, cachedValues.get(i + 1));
-            solutionView.changeVariable(variableMetaModel, rightEntity, cachedValues.get(i));
+            var oldLeftValue = cachedValues.get(i);
+            var oldRightValue = cachedValues.get(i + 1);
+            if (Objects.equals(oldLeftValue, oldRightValue)
+                    && solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
+                    && solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)) {
+                // No change needed, skip it.
+                continue;
+            }
+            solutionView.changeVariable(variableMetaModel, leftEntity, oldRightValue);
+            solutionView.changeVariable(variableMetaModel, rightEntity, oldLeftValue);
         }
     }
 
