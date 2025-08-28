@@ -46,9 +46,9 @@ public class ListSwapMoveProvider<Solution_, Entity_, Value_>
                         && solutionView.isValueInRange(variableMetaModel, leftPosition.entity(), rightPosition.value()));
         // Finally pick the moves.
         return moveStreamFactory.pick(result)
-                .asMove((solutionView, leftPosition, rightPositon) -> new ListSwapMove<>(variableMetaModel,
+                .asMove((solutionView, leftPosition, rightPosition) -> new ListSwapMove<>(variableMetaModel,
                         leftPosition.entity(), leftPosition.index(),
-                        rightPositon.entity(), rightPositon.index()));
+                        rightPosition.entity(), rightPosition.index()));
     }
 
     private record FullElementPosition<Entity_, Value_>(Value_ value, Entity_ entity, int index) {
