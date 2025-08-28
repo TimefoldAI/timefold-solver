@@ -69,11 +69,11 @@ public interface ConstraintFactory {
 
     /**
      * As defined by {@link #forEach(Class)},
-     * but including filtered entities that match the supplied {@link ForEachInclude includes}.
+     * but including filtered entities that match the supplied {@link ForEachFilteringCriteria includes}.
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      */
-    <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass, ForEachInclude... includes);
+    <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass, ForEachFilteringCriteria... includes);
 
     /**
      * As defined by {@link #forEachIncludingUnassigned(Class)}.
@@ -94,7 +94,7 @@ public interface ConstraintFactory {
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      *
-     * @deprecated Use {@link #forEachIncluding(Class)} with {@link ForEachInclude#UNASSIGNED} instead.
+     * @deprecated Use {@link #forEachIncluding(Class)} with {@link ForEachFilteringCriteria#INCLUDE_UNASSIGNED} instead.
      */
     @Deprecated(forRemoval = true, since = "1.26.0")
     <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass);

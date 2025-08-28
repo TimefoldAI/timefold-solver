@@ -8,7 +8,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import ai.timefold.solver.core.api.score.stream.ForEachInclude;
+import ai.timefold.solver.core.api.score.stream.ForEachFilteringCriteria;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -119,7 +119,7 @@ public final class BavetConstraintFactory<Solution_>
             // The list variable element doesn't have the @InverseRelationShadowVariable annotation.
             // We don't want the users to be forced to implement it in quickstarts,
             // so we'll do this expensive thing instead.
-            return forEachIncluding(sourceClass, ForEachInclude.UNASSIGNED)
+            return forEachIncluding(sourceClass, ForEachFilteringCriteria.INCLUDE_UNASSIGNED)
                     .ifExists((Class) entityClass,
                             Joiners.filtering(listVariableDescriptor.getInListPredicate()));
         } else { // We have the inverse relation variable, so we can read its value directly.
@@ -129,7 +129,8 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass, ForEachInclude... includes) {
+    public <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass,
+            ForEachFilteringCriteria... includes) {
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) {
@@ -148,14 +149,15 @@ public final class BavetConstraintFactory<Solution_>
                     .formatted(entityClass.getCanonicalName(), sourceClass.getCanonicalName()));
         }
         var shadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
-        var includeSet = (includes.length == 0) ? EnumSet.noneOf(ForEachInclude.class) : EnumSet.copyOf(List.of(includes));
-        if (shadowDescriptor == null && !includeSet.contains(ForEachInclude.UNASSIGNED)) {
+        var includeSet =
+                (includes.length == 0) ? EnumSet.noneOf(ForEachFilteringCriteria.class) : EnumSet.copyOf(List.of(includes));
+        if (shadowDescriptor == null && !includeSet.contains(ForEachFilteringCriteria.INCLUDE_UNASSIGNED)) {
             // The list variable element doesn't have the @InverseRelationShadowVariable annotation,
             // and we are not including unassigned elements.
             // We don't want the users to be forced to implement it in quickstarts,
             // so we'll do this expensive thing instead.
-            includeSet.add(ForEachInclude.UNASSIGNED);
-            return forEachIncluding(sourceClass, includeSet.toArray(ForEachInclude[]::new))
+            includeSet.add(ForEachFilteringCriteria.INCLUDE_UNASSIGNED);
+            return forEachIncluding(sourceClass, includeSet.toArray(ForEachFilteringCriteria[]::new))
                     .ifExists((Class) entityClass,
                             Joiners.filtering(listVariableDescriptor.getInListPredicate()));
         } else { // We have the inverse relation variable, so we can read its value directly.
@@ -166,7 +168,7 @@ public final class BavetConstraintFactory<Solution_>
 
     @Override
     public <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass) {
-        return forEachIncluding(sourceClass, ForEachInclude.UNASSIGNED);
+        return forEachIncluding(sourceClass, ForEachFilteringCriteria.INCLUDE_UNASSIGNED);
     }
 
     @Override
