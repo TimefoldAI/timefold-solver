@@ -99,6 +99,7 @@ public interface Move<Solution_> {
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
      * @return Each entity only once.
+     *         TODO convert to SequencedCollection when on Java 21.
      */
     default Collection<?> extractPlanningEntities() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
@@ -114,21 +115,28 @@ public interface Move<Solution_> {
      * The returned {@link Collection} is recommended to be in a stable order.
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
-     * @return Each value only once.
+     * @return Each value only once. May contain null.
+     *         TODO convert to SequencedCollection when on Java 21.
      */
     default Collection<?> extractPlanningValues() {
         throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
     }
 
     /**
+     * TODO this probably needs a better API,
+     * as move implementations are now expected to be primarily produced by users
+     * and the solver is thus expected to encounter custom moves significantly more.
+     *
      * Describes the move type for statistical purposes.
      * For example, a move which changes a variable "computer" on a class "Process" could be described as
      * "ChangeMove(Process.computer)".
      * <p>
      * The format is not formalized.
-     * Never parse the {@link String} returned by this method.
+     * Never parse the {@link String} returned by this method,
+     * it is only intended to be used by the solver.
      *
      * @return Non-empty {@link String} that describes the move type.
+     *
      */
     default String describe() {
         return getClass().getSimpleName();

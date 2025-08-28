@@ -20,12 +20,23 @@ public class TestdataMultiVarSolution extends TestdataObject {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataMultiVarSolution.class, TestdataMultiVarEntity.class);
     }
 
+    public static TestdataMultiVarSolution generateSolution(int entityListSize, int valueListSize, int otherValueListSize) {
+        return generateSolution(entityListSize, valueListSize, otherValueListSize, true);
+    }
+
     public static TestdataMultiVarSolution generateUninitializedSolution(int entityListSize, int valueListSize) {
+        return generateSolution(entityListSize, valueListSize, valueListSize, false);
+    }
+
+    private static TestdataMultiVarSolution generateSolution(int entityListSize, int valueListSize, int otherValueListSize,
+            boolean initialize) {
         var solution = new TestdataMultiVarSolution();
         var valueList = new ArrayList<TestdataValue>(valueListSize);
-        var otherValueList = new ArrayList<TestdataOtherValue>(valueListSize);
+        var otherValueList = new ArrayList<TestdataOtherValue>(otherValueListSize);
         for (int i = 0; i < valueListSize; i++) {
             valueList.add(new TestdataValue("Generated Value " + i));
+        }
+        for (int i = 0; i < otherValueListSize; i++) {
             otherValueList.add(new TestdataOtherValue("Generated Other Value " + i));
         }
         solution.setValueList(valueList);
@@ -33,6 +44,11 @@ public class TestdataMultiVarSolution extends TestdataObject {
         var entityList = new ArrayList<TestdataMultiVarEntity>(entityListSize);
         for (int i = 0; i < entityListSize; i++) {
             var entity = new TestdataMultiVarEntity("Entity " + i);
+            if (initialize) {
+                entity.setPrimaryValue(valueList.get(i % valueListSize));
+                entity.setSecondaryValue(valueList.get((i + 1) % valueListSize));
+                entity.setTertiaryValueAllowedUnassigned(otherValueList.get(i % otherValueList.size()));
+            }
             entityList.add(entity);
         }
         solution.setMultiVarEntityList(entityList);

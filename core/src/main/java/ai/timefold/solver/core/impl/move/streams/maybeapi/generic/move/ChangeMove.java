@@ -5,18 +5,20 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
-import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Entity_> the entity type, the class with the {@link PlanningEntity} annotation
+ * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
 public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
@@ -34,15 +36,16 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
         this.toPlanningValue = toPlanningValue;
     }
 
-    protected @Nullable Value_ readValue(SolutionView<Solution_> solutionView) {
+    protected @Nullable Value_ getValue() {
         if (currentValue == null) {
-            currentValue = solutionView.getValue(variableMetaModel, entity);
+            currentValue = getVariableDescriptor(variableMetaModel).getValue(entity);
         }
         return currentValue;
     }
 
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
+        getValue(); // Cache the current value if not already cached.
         solutionView.changeVariable(variableMetaModel, entity, toPlanningValue);
     }
 
@@ -63,16 +66,16 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
     }
 
     @Override
-    protected List<VariableMetaModel<Solution_, ?, ?>> getVariableMetaModels() {
-        return List.of(variableMetaModel);
+    public List<PlanningVariableMetaModel<Solution_, Entity_, Value_>> variableMetaModels() {
+        return Collections.singletonList(variableMetaModel);
     }
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ChangeMove<?, ?, ?> that &&
-                Objects.equals(variableMetaModel, that.variableMetaModel) &&
-                Objects.equals(entity, that.entity) &&
-                Objects.equals(toPlanningValue, that.toPlanningValue);
+        return o instanceof ChangeMove<?, ?, ?> other
+                && Objects.equals(variableMetaModel, other.variableMetaModel)
+                && Objects.equals(entity, other.entity)
+                && Objects.equals(toPlanningValue, other.toPlanningValue);
     }
 
     @Override
@@ -82,8 +85,7 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
 
     @Override
     public String toString() {
-        var oldValue = currentValue == null ? getVariableDescriptor(variableMetaModel).getValue(entity) : currentValue;
-        return entity + " {" + oldValue + " -> " + toPlanningValue + "}";
+        return entity + " {" + getValue() + " -> " + toPlanningValue + "}";
     }
 
 }

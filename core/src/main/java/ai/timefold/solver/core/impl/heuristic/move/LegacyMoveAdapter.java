@@ -5,7 +5,6 @@ import java.util.Collection;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
-import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
@@ -14,7 +13,7 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Adapts {@link ai.timefold.solver.core.impl.heuristic.move.Move} a legacy move)
+ * Adapts {@link ai.timefold.solver.core.impl.heuristic.move.Move a legacy move}
  * to {@link Move a new move}.
  * Once the move selector framework is removed, this may be removed as well.
  * 
@@ -30,11 +29,9 @@ public record LegacyMoveAdapter<Solution_>(
      * A move is only doable if:
      * 
      * <ul>
-     * <li>It is a new {@link Move} and not a {@link NoChangeMove}</li>
-     * <li>It is a legacy move and its {@link AbstractMove#isMoveDoable(ScoreDirector)} return false.</li>
+     * <li>It is a new {@link Move}.</li>
+     * <li>It is a legacy move and its {@link AbstractMove#isMoveDoable(ScoreDirector)} return {@code true}.</li>
      * </ul>
-     * 
-     * New moves are doable by default.
      * 
      * @param moveDirector never null
      * @param move never null
@@ -44,7 +41,7 @@ public record LegacyMoveAdapter<Solution_>(
         if (move instanceof LegacyMoveAdapter<Solution_> legacyMoveAdapter) {
             return legacyMoveAdapter.isMoveDoable(moveDirector);
         } else {
-            return !(move instanceof NoChangeMove<Solution_>);
+            return true; // New moves are always doable.
         }
     }
 
