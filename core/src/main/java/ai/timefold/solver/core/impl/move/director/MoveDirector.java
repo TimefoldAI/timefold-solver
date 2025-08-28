@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.move.director;
 
+import java.util.Objects;
+import java.util.function.BiFunction;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningListVariableMetaModel;
@@ -18,12 +21,9 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariable
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-
-import java.util.List;
-import java.util.Objects;
-import java.util.function.BiFunction;
 
 @NullMarked
 public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
@@ -85,20 +85,22 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     @SuppressWarnings("unchecked")
     public final <Entity_, Value_> @Nullable Value_ moveValueBetweenLists(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity, int leftIndex,
-            Entity_ rightEntity, int rightIndex) {
-        if (leftEntity == rightEntity) {
-            return moveValueInList(variableMetaModel, leftEntity, leftIndex, rightIndex);
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
+            Entity_ destinationEntity, int destinationIndex) {
+        if (sourceEntity == destinationEntity) {
+            return moveValueInList(variableMetaModel, sourceEntity, sourceIndex, destinationIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, rightEntity, rightIndex,
-                rightIndex);
-        var element = (Value_) variableDescriptor.removeElement(leftEntity, leftIndex);
-        variableDescriptor.addElement(rightEntity, rightIndex, element);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, rightEntity, rightIndex,
-                rightIndex + 1);
+
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex + 1);
+        var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, sourceIndex);
+
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex);
+        variableDescriptor.addElement(destinationEntity, destinationIndex, element);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, destinationEntity, destinationIndex,
+                destinationIndex + 1);
 
         return element;
     }
@@ -106,21 +108,57 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     @SuppressWarnings("unchecked")
     @Override
     public final <Entity_, Value_> @Nullable Value_ moveValueInList(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, int sourceIndex,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
             int destinationIndex) {
         if (sourceIndex == destinationIndex) {
             return null;
         } else if (sourceIndex > destinationIndex) { // Always start from the lower index.
-            return moveValueInList(variableMetaModel, entity, destinationIndex, sourceIndex);
+            return moveValueInList(variableMetaModel, sourceEntity, destinationIndex, sourceIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
         var toIndex = destinationIndex + 1;
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
-        var variable = (List<Value_>) variableDescriptor.getValue(entity);
-        var value = variable.remove(sourceIndex);
-        variable.add(destinationIndex, value);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, sourceIndex, toIndex);
-        return value;
+
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, toIndex);
+        var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
+        variableDescriptor.addElement(sourceEntity, destinationIndex, element);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, toIndex);
+
+        return element;
+    }
+
+    @Override
+    public <Entity_, Value_> void swapValuesBetweenLists(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity, int leftIndex,
+            Entity_ rightEntity, int rightIndex) {
+        if (leftEntity == rightEntity) {
+            swapValuesInList(variableMetaModel, leftEntity, leftIndex, rightIndex);
+        } else {
+            var variableDescriptor = extractVariableDescriptor(variableMetaModel);
+            externalScoreDirector.beforeListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
+            externalScoreDirector.beforeListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
+            var oldLeftElement = variableDescriptor.setElement(leftEntity, leftIndex,
+                    variableDescriptor.getElement(rightEntity, rightIndex));
+            variableDescriptor.setElement(rightEntity, rightIndex, oldLeftElement);
+            externalScoreDirector.afterListVariableChanged(variableDescriptor, leftEntity, leftIndex, leftIndex + 1);
+            externalScoreDirector.afterListVariableChanged(variableDescriptor, rightEntity, rightIndex, rightIndex + 1);
+        }
+    }
+
+    @Override
+    public <Entity_, Value_> void swapValuesInList(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, int leftIndex, int rightIndex) {
+        if (leftIndex == rightIndex) {
+            // Do nothing.
+        } else if (leftIndex > rightIndex) { // Always start from the lower index.
+            swapValuesInList(variableMetaModel, entity, rightIndex, leftIndex);
+        } else {
+            var variableDescriptor = extractVariableDescriptor(variableMetaModel);
+            externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, leftIndex, rightIndex + 1);
+            var oldLeftElement =
+                    variableDescriptor.setElement(entity, leftIndex, variableDescriptor.getElement(entity, rightIndex));
+            variableDescriptor.setElement(entity, rightIndex, oldLeftElement);
+            externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, leftIndex, rightIndex + 1);
+        }
     }
 
     @Override
