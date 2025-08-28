@@ -94,7 +94,8 @@ public interface ConstraintFactory {
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      *
-     * @deprecated Use {@link #forEachIncluding(Class)} with {@link ForEachFilteringCriteria#INCLUDE_UNASSIGNED} instead.
+     * @deprecated Use {@link #forEachIncluding(Class, ForEachFilteringCriteria...)} with
+     *             {@link ForEachFilteringCriteria#INCLUDE_UNASSIGNED} instead.
      */
     @Deprecated(forRemoval = true, since = "1.26.0")
     <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass);
