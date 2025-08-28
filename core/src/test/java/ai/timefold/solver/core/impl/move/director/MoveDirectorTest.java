@@ -240,7 +240,7 @@ class MoveDirectorTest {
 
         // Swap between second and last position.
         moveDirector = new MoveDirector<>(mockScoreDirector).ephemeral();
-        moveDirector.swapValuesInList(variableMetaModel, entity, 1, 2);
+        moveDirector.swapValuesInList(variableMetaModel, entity, 2, 1); // Intentionally testing reverse order.
         assertThat(entity.getValueList()).containsExactly(expectedValue1, expectedValue3, expectedValue2);
         verify(mockScoreDirector).beforeListVariableChanged(variableDescriptor, entity, 1, 3);
         verify(mockScoreDirector).afterListVariableChanged(variableDescriptor, entity, 1, 3);
