@@ -373,8 +373,7 @@ class SwapMoveSelectorTest {
         // only e3 is reachable by e1
         scoreDirector.setWorkingSolution(solution);
         // select left A, select right C
-        // select left A, select right B
-        random.reset(0, 2, 0, 1, 0, 2);
+        random.reset(0, 0, 0, 0);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
 
         // e1(v1), e2(v3) and e3(v4)
@@ -384,8 +383,7 @@ class SwapMoveSelectorTest {
         e2.setValue(v3);
         e3.setValue(v4);
         // select left A, select right C
-        // select left A, select right C
-        random.reset(0, 2, 0, 2);
+        random.reset(0, 0, 0, 0);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
     }
@@ -490,9 +488,9 @@ class SwapMoveSelectorTest {
         // e1(null, null) and e2(null, null)
         // we assume that any entity is reachable if they share at least one common value in the range
         scoreDirector.setWorkingSolution(solution);
-        // select left A, select right B
         // select left A, select right C
-        random.reset(0, 1, 0, 2, 0, 2);
+        // select left B, select right C
+        random.reset(0, 0, 1, 0, 0, 0);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C", "B<->C");
 
         // e1(v1, v1), e2(v3, v3) and e3(v4, v4)
@@ -505,8 +503,7 @@ class SwapMoveSelectorTest {
         e3.setValue(v4);
         e3.setSecondValue(v4);
         // select left A, select right C
-        // select left A, select right C
-        random.reset(0, 2, 0, 2);
+        random.reset(0, 0, 0, 0);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
 
@@ -519,7 +516,7 @@ class SwapMoveSelectorTest {
         e3.setValue(v4);
         e3.setSecondValue(v3);
         // select left A, select right C
-        random.reset(0, 2, 0, 2);
+        random.reset(0, 0, 0, 0);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, DO_NOT_ASSERT_SIZE);
     }
