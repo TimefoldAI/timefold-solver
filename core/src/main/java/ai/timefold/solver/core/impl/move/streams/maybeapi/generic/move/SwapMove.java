@@ -76,7 +76,7 @@ public final class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> 
     public void execute(MutableSolutionView<Solution_> solutionView) {
         var cachedValues = getCachedValues();
         for (var i = 0; i < cachedValues.size(); i += 2) {
-            var variableMetaModel = variableMetaModelList.get(i);
+            var variableMetaModel = variableMetaModelList.get(i / 2);
             var oldLeftValue = cachedValues.get(i);
             var oldRightValue = cachedValues.get(i + 1);
             if (Objects.equals(oldLeftValue, oldRightValue)
