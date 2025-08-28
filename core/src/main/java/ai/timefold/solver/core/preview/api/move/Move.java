@@ -136,7 +136,7 @@ public interface Move<Solution_> {
      * it is only intended to be used by the solver.
      *
      * @return Non-empty {@link String} that describes the move type.
-     * 
+     *
      */
     default String describe() {
         return getClass().getSimpleName();
