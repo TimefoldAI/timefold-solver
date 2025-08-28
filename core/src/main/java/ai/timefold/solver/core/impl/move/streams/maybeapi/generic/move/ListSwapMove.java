@@ -126,11 +126,7 @@ public final class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove
 
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
-        if (leftEntity == rightEntity) {
-            solutionView.moveValueInList(variableMetaModel, leftEntity, leftIndex, rightIndex);
-        } else {
-            solutionView.moveValueBetweenLists(variableMetaModel, leftEntity, leftIndex, rightEntity, rightIndex);
-        }
+        solutionView.swapValuesBetweenLists(variableMetaModel, leftEntity, leftIndex, rightEntity, rightIndex);
     }
 
     @Override
