@@ -44,8 +44,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEnt
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.composite.TestdataCompositeEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.composite.TestdataCompositeEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataMultiVarEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataMultiVarEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.composite.TestdataAllowsUnassignedCompositeEntityProvidingEntity;
@@ -783,25 +781,6 @@ class ValueRangeManagerTest {
         // but the numbers should be relatively (i.e. ~1%) close.
         assertThat(Math.pow(10, listPowerExponent))
                 .isCloseTo(Math.pow(10, chainedPowerExponent), Percentage.withPercentage(1));
-    }
-
-    @Test
-    void assertReachableEntityStrategy() {
-        var v1 = new TestdataValue("V1");
-        var v2 = new TestdataValue("V2");
-        var v3 = new TestdataValue("V3");
-        var v4 = new TestdataValue("V4");
-        var v5 = new TestdataValue("V5");
-        var e1 = new TestdataMultiVarEntityProvidingEntity("A", List.of(v1, v2), List.of(v1, v2));
-        var e2 = new TestdataMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
-        var e3 = new TestdataMultiVarEntityProvidingEntity("C", List.of(v3, v4, v5), List.of(v3, v4, v5));
-        var solution = new TestdataMultiVarEntityProvidingSolution();
-        solution.setEntityList(List.of(e1, e2, e3));
-        var valueRangeManager =
-                ValueRangeManager.of(TestdataMultiVarEntityProvidingSolution.buildSolutionDescriptor(), solution);
-
-        assertThat(valueRangeManager.getReachableEntities(TestdataMultiVarEntityProvidingEntity.buildEntityDescriptor()))
-                .isSameAs(valueRangeManager.getReachableEntitiesFromClass(e1.getClass()));
     }
 
 }

@@ -242,7 +242,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             currentUpcomingList = reachableValues.extractValuesAsList(currentUpcomingValue);
             processUpcomingValue(currentUpcomingValue, currentUpcomingList);
             upcomingCreated = false;
-            this.hasData = true;
+            this.hasData = !currentUpcomingList.isEmpty();
             this.initialized = true;
         }
 
