@@ -25,7 +25,8 @@ public final class ReachableValues {
     private final Map<Object, ReachableItemValue> values;
     private final @Nullable Class<?> valueClass;
     private final boolean acceptsNullValue;
-    private @Nullable ReachableItemValue cachedObject;
+    private @Nullable ReachableItemValue firstCachedObject;
+    private @Nullable ReachableItemValue secondCachedObject;
 
     public ReachableValues(Map<Object, ReachableItemValue> values, boolean acceptsNullValue) {
         this.values = values;
@@ -35,10 +36,22 @@ public final class ReachableValues {
     }
 
     private @Nullable ReachableItemValue fetchItemValue(Object value) {
-        if (cachedObject == null || value != cachedObject.value) {
-            cachedObject = values.get(value);
+        ReachableItemValue selected = null;
+        if (firstCachedObject != null && firstCachedObject.value == value) {
+            selected = firstCachedObject;
+        } else if (secondCachedObject != null && secondCachedObject.value == value) {
+            selected = secondCachedObject;
+            // The most recently used item is moved to the first position.
+            // The goal is to try to keep recently used items in the cache.
+            secondCachedObject = firstCachedObject;
+            firstCachedObject = selected;
         }
-        return cachedObject;
+        if (selected == null) {
+            selected = values.get(value);
+            secondCachedObject = firstCachedObject;
+            firstCachedObject = selected;
+        }
+        return selected;
     }
 
     public List<Object> extractEntitiesAsList(Object value) {
