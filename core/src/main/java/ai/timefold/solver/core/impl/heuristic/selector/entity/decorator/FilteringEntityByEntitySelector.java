@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -178,7 +178,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                         "Impossible state: childEntitySelector must provide a never ending approach.");
             }
             return new RandomFilteringValueRangeIterator(this::selectReplayedEntity, this::extractAssignedValues,
-                    reachableValues);
+                    reachableValues, workingRandom);
         } else {
             return new OriginalFilteringValueRangeIterator(this::selectReplayedEntity, this::extractAssignedValues, 0,
                     reachableValues);
@@ -222,14 +222,12 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private record ReplayedEntity(Object entity, Object[] assignedValues, List<Object> reachableEntities) {
     }
 
-    private abstract static class AbstractFilteringValueRangeIterator<Type extends Iterator<Object>>
-            extends UpcomingSelectionListIterator<Object> {
+    private abstract static class AbstractFilteringValueRangeIterator extends UpcomingSelectionListIterator<Object> {
         private final Supplier<ReplayedEntity> upcomingEntitySupplier;
         private final Function<Object, Object[]> extractAssignedValuesFunction;
         private final ReachableValues[] reachableValues;
-        private Type entityIterator;
         private boolean initialized = false;
-        ReplayedEntity replayedEntity;
+        private ReplayedEntity replayedEntity;
 
         private AbstractFilteringValueRangeIterator(Supplier<ReplayedEntity> upcomingEntitySupplier,
                 Function<Object, Object[]> extractAssignedValuesFunction, ReachableValues[] reachableValues) {
@@ -238,29 +236,23 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             this.reachableValues = reachableValues;
         }
 
-        void checkReplayedEntity() {
-            var updatedReplayedEntity = upcomingEntitySupplier.get();
-            if (replayedEntity == null || replayedEntity.entity() != updatedReplayedEntity.entity()) {
-                replayedEntity = updatedReplayedEntity;
-            }
-            entityIterator = fetchEntityIterator(replayedEntity);
-        }
-
-        abstract Type fetchEntityIterator(ReplayedEntity entity);
-
         void initialize() {
             if (initialized) {
                 return;
             }
-            var currentUpcomingEntity = upcomingEntitySupplier.get();
-            if (currentUpcomingEntity == null) {
-                this.replayedEntity = null;
-            } else {
-                replayedEntity = currentUpcomingEntity;
-            }
-            entityIterator = fetchEntityIterator(replayedEntity);
+            checkReplayedEntity();
             initialized = true;
         }
+
+        void checkReplayedEntity() {
+            var updatedReplayedEntity = upcomingEntitySupplier.get();
+            if (replayedEntity == null || replayedEntity.entity() != updatedReplayedEntity.entity()) {
+                replayedEntity = updatedReplayedEntity;
+                processReplayedEntityChange(replayedEntity);
+            }
+        }
+
+        abstract void processReplayedEntityChange(ReplayedEntity replayedEntity);
 
         /**
          * The other entity is reachable if it accepts all assigned values from the replayed entity, and vice versa.
@@ -293,125 +285,121 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             var otherValueAccepted = replayedValue == null || reachableValues.isEntityReachable(replayedValue, otherEntity);
             return replayedValueAccepted && otherValueAccepted;
         }
+    }
 
-        abstract Object createPreviousSelection(Type entityIterator);
+    private static class OriginalFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
 
-        /**
-         * @param counter current number of iterations.
-         * @return true if the iterator should stop; otherwise, it should continue.
-         */
-        abstract boolean stopEarlier(int counter);
+        private final int startIndex;
+        private int currentIndex;
+        private List<Object> reachableEntityList = null;
+
+        private OriginalFilteringValueRangeIterator(Supplier<ReplayedEntity> upcomingEntitySupplier,
+                Function<Object, Object[]> extractAssignedValuesFunction, int startIndex,
+                ReachableValues[] reachableValueList) {
+            super(upcomingEntitySupplier, extractAssignedValuesFunction, reachableValueList);
+            this.startIndex = startIndex;
+            this.currentIndex = startIndex;
+        }
+
+        @Override
+        void processReplayedEntityChange(ReplayedEntity replayedEntity) {
+            this.reachableEntityList = replayedEntity.reachableEntities().subList(startIndex, replayedEntity.reachableEntities().size());
+            this.currentIndex = startIndex;
+        }
 
         @Override
         protected Object createUpcomingSelection() {
             initialize();
-            if (!entityIterator.hasNext()) {
+            if (reachableEntityList == null || currentIndex >= reachableEntityList.size()) {
                 return noUpcomingSelection();
             }
-            int counter = 0;
             do {
-                // For random selection, the entity iterator is expected to return a random sequence of values
-                var entity = entityIterator.next();
+                var entity = reachableEntityList.get(currentIndex++);
                 if (isReachable(entity)) {
                     return entity;
                 }
-            } while (entityIterator.hasNext() && !stopEarlier(++counter));
+            } while (currentIndex < reachableEntityList.size());
             return noUpcomingSelection();
         }
 
         @Override
         protected Object createPreviousSelection() {
-            return createPreviousSelection(entityIterator);
-        }
-    }
-
-    private static class OriginalFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator<ListIterator<Object>> {
-
-        private final int index;
-
-        private OriginalFilteringValueRangeIterator(Supplier<ReplayedEntity> upcomingEntitySupplier,
-                Function<Object, Object[]> extractAssignedValuesFunction, int index, ReachableValues[] reachableValueList) {
-            super(upcomingEntitySupplier, extractAssignedValuesFunction, reachableValueList);
-            this.index = index;
-        }
-
-        @Override
-        protected Object createPreviousSelection(ListIterator<Object> entityIterator) {
             initialize();
-            if (!entityIterator.hasPrevious()) {
+            if (reachableEntityList == null || currentIndex <= 0) {
                 return noUpcomingSelection();
             }
-            int counter = 0;
             do {
-                var entity = entityIterator.previous();
+                var entity = reachableEntityList.get(currentIndex--);
                 if (isReachable(entity)) {
                     return entity;
                 }
-            } while (entityIterator.hasPrevious() && !stopEarlier(++counter));
+            } while (currentIndex > 0);
             return noUpcomingSelection();
-        }
-
-        @Override
-        boolean stopEarlier(int currentCount) {
-            return false;
-        }
-
-        @Override
-        ListIterator<Object> fetchEntityIterator(ReplayedEntity entity) {
-            if (entity == null) {
-                return Collections.emptyListIterator();
-            }
-            return replayedEntity.reachableEntities().listIterator(index);
         }
     }
 
-    private static class RandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator<Iterator<Object>> {
+    private static class RandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
 
-        private int bailoutSize = 1;
+        private final Random workingRandom;
+        private int maxBailoutSize = 1;
+        private Object replayedEntity;
+        private List<Object> reachableEntityList = null;
 
         private RandomFilteringValueRangeIterator(Supplier<ReplayedEntity> upcomingEntitySupplier,
-                Function<Object, Object[]> extractAssignedValuesFunction, ReachableValues[] reachableValues) {
+                Function<Object, Object[]> extractAssignedValuesFunction, ReachableValues[] reachableValues,
+                Random workingRandom) {
             super(upcomingEntitySupplier, extractAssignedValuesFunction, reachableValues);
+            this.workingRandom = workingRandom;
+        }
+
+        @Override
+        void processReplayedEntityChange(ReplayedEntity replayedEntity) {
+            this.replayedEntity = replayedEntity.entity();
+            this.reachableEntityList = replayedEntity.reachableEntities();
+            // The maximum number of attempts is equal to 10% of the number of available entities.
+            // We won't spend too much time trying to generate a single move for the current selection.
+            // If we are unable to generate, the move iterator can still be used in later iterations.
+            this.maxBailoutSize = (int) Math.max(1, replayedEntity.reachableEntities().size() * 0.1);
         }
 
         @Override
         public boolean hasNext() {
             checkReplayedEntity();
             var hasNext = super.hasNext();
-            if (!hasNext && replayedEntity.reachableEntities().size() > 1) {
+            if (!hasNext && reachableEntityList != null && !reachableEntityList.isEmpty()) {
                 // If a valid move is not found with the given bailout size,
-                // we can still use the iterator as long as the entityIterator has not been exhausted
+                // we can still use the iterator as long as the entity list is not empty
                 this.upcomingCreated = true;
                 this.hasUpcomingSelection = true;
                 // We assigned the same entity from the left side, which will result in a non-doable move
-                this.upcomingSelection = replayedEntity.entity();
+                this.upcomingSelection = replayedEntity;
                 return true;
             }
             return hasNext;
         }
 
         @Override
-        Object createPreviousSelection(Iterator<Object> entityIterator) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        boolean stopEarlier(int currentCount) {
-
-            return currentCount > bailoutSize;
-        }
-
-        @Override
-        Iterator<Object> fetchEntityIterator(ReplayedEntity entity) {
-            if (entity == null) {
-                bailoutSize = 0;
-                return Collections.emptyIterator();
+        protected Object createUpcomingSelection() {
+            initialize();
+            if (reachableEntityList == null) {
+                return noUpcomingSelection();
             }
-            // The maximum number of attempts is equal to 1% of the number of available entities.
-            // We won't spend too much time trying to generate a single move for the current selection.
-            // If we are unable to generate, the move iterator can still be used in later iterations.
-            this.bailoutSize = (int) Math.max(1, replayedEntity.reachableEntities().size() * 0.01);
-            return replayedEntity.reachableEntities().iterator();
+            Object next;
+            var bailoutSize = maxBailoutSize;
+            do {
+                bailoutSize--;
+                var index = workingRandom.nextInt(Objects.requireNonNull(reachableEntityList).size());
+                next = reachableEntityList.get(index);
+                if (isReachable(next)) {
+                    return next;
+                }
+            } while (bailoutSize > 0);
+            return noUpcomingSelection();
+        }
+
+        @Override
+        protected Object createPreviousSelection() {
+            throw new UnsupportedOperationException();
         }
     }
 }
