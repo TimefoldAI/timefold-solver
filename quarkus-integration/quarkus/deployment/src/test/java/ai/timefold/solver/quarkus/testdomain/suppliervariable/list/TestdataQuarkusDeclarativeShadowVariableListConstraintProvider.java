@@ -4,20 +4,20 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.ForEachInclude;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataQuarkusSupplierVariableListConstraintProvider implements ConstraintProvider {
+public class TestdataQuarkusDeclarativeShadowVariableListConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
-                factory.forEach(TestdataQuarkusSupplierVariableListValue.class)
-                        .filter(value -> !value.isInconsistent())
-                        .penalize(SimpleScore.ONE, TestdataQuarkusSupplierVariableListValue::getStartTime)
+                factory.forEach(TestdataQuarkusDeclarativeShadowVariableListValue.class)
+                        .penalize(SimpleScore.ONE, TestdataQuarkusDeclarativeShadowVariableListValue::getStartTime)
                         .asConstraint("Minimize start time"),
-                factory.forEach(TestdataQuarkusSupplierVariableListValue.class)
-                        .filter(TestdataQuarkusSupplierVariableListValue::isInconsistent)
+                factory.forEachIncluding(TestdataQuarkusDeclarativeShadowVariableListValue.class, ForEachInclude.INCONSISTENT)
+                        .filter(TestdataQuarkusDeclarativeShadowVariableListValue::isInconsistent)
                         .penalize(SimpleScore.of(1000))
                         .asConstraint("Inconsistent")
         };

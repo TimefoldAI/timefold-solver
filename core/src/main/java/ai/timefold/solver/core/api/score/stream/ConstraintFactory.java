@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.jspecify.annotations.NonNull;
 
@@ -39,7 +40,8 @@ public interface ConstraintFactory {
      * <p>
      * If the sourceClass is a {@link PlanningEntity}, then it is automatically
      * {@link UniConstraintStream#filter(Predicate) filtered} to only contain entities
-     * for which each genuine {@link PlanningVariable} (of the sourceClass or a superclass thereof) has a non-null value.
+     * that are {@link ShadowVariablesInconsistent consistent}
+     * and for which each genuine {@link PlanningVariable} (of the sourceClass or a superclass thereof) has a non-null value.
      * <p>
      * If the sourceClass is a shadow entity (an entity without any genuine planning variables),
      * and if there exists a genuine {@link PlanningEntity} with a {@link PlanningListVariable}
@@ -66,6 +68,14 @@ public interface ConstraintFactory {
     <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass);
 
     /**
+     * As defined by {@link #forEach(Class)},
+     * but including filtered entities that match the supplied {@link ForEachInclude includes}.
+     *
+     * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
+     */
+    <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass, ForEachInclude... includes);
+
+    /**
      * As defined by {@link #forEachIncludingUnassigned(Class)}.
      *
      * @deprecated Use {@link #forEachIncludingUnassigned(Class)} instead.
@@ -83,7 +93,10 @@ public interface ConstraintFactory {
      * (for {@link PlanningListVariable#allowsUnassignedValues()}).
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
+     *
+     * @deprecated Use {@link #forEachIncluding(Class)} with {@link ForEachInclude#UNASSIGNED} instead.
      */
+    @Deprecated(forRemoval = true, since = "1.26.0")
     <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass);
 
     /**

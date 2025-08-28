@@ -14,6 +14,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,6 +40,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.score.stream.ForEachInclude;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -109,8 +111,6 @@ public class EntityDescriptor<Solution_> {
     @Nullable
     private ShadowVariablesInconsistentVariableDescriptor<Solution_> shadowVariablesInconsistentDescriptor;
 
-    private Predicate<Object> hasNoNullVariablesBasicVar;
-    private Predicate<Object> hasNoNullVariablesListVar;
     // Only declared movable filter, excludes inherited and descending movable filters
     private MovableFilter<Solution_> declaredMovableEntityFilter;
     private SelectionSorter<Solution_, Object> decreasingDifficultySorter;
@@ -140,6 +140,8 @@ public class EntityDescriptor<Solution_> {
                 var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
                 return !moveDirector.isPinned(this, entity);
             };
+    private final Map<EnumSet<ForEachInclude>, Predicate<Object>> forEachIncludesToPredicateBasicVarMap = new LinkedHashMap<>();
+    private final Map<EnumSet<ForEachInclude>, Predicate<Object>> forEachIncludesToPredicateListVarMap = new LinkedHashMap<>();
 
     // Caches the metamodel
     private PlanningEntityMetaModel<Solution_, ?> entityMetaModel = null;
@@ -179,7 +181,7 @@ public class EntityDescriptor<Solution_> {
      * Using entityDescriptor::isInitialized directly breaks node sharing
      * because it creates multiple instances of this {@link Predicate}.
      *
-     * @deprecated Prefer {@link #getHasNoNullVariablesPredicateListVar()}.
+     * @deprecated Prefer {@link #getForEachFilterPredicateIncludingListVar(ForEachInclude...)} ()}.
      * @return never null, always the same {@link Predicate} instance to {@link #isInitialized(Object)}
      */
     @Deprecated(forRemoval = true)
@@ -187,35 +189,21 @@ public class EntityDescriptor<Solution_> {
         return isInitializedPredicate;
     }
 
-    public <A> Predicate<A> getHasNoNullVariablesPredicateBasicVar() {
-        if (hasNoNullVariablesBasicVar == null) {
-            hasNoNullVariablesBasicVar = this::hasNoNullVariables;
-        }
-        return (Predicate<A>) hasNoNullVariablesBasicVar;
+    public <A> Predicate<A> getForEachFilterPredicateIncludingBasicVar(ForEachInclude... includes) {
+        var includeSet = (includes.length == 0) ? EnumSet.noneOf(ForEachInclude.class) : EnumSet.copyOf(List.of(includes));
+        return (Predicate<A>) forEachIncludesToPredicateBasicVarMap.computeIfAbsent(includeSet,
+                this::forEachIncludingPredicateBasicVarSupplier);
     }
 
-    public <A> Predicate<A> getHasNoNullVariablesPredicateListVar() {
+    public <A> Predicate<A> getForEachFilterPredicateIncludingListVar(ForEachInclude... includes) {
         /*
          * This code depends on all entity descriptors and solution descriptor to be fully initialized.
          * For absolute safety, we only construct the predicate the first time it is requested.
          * That will be during the building of the score director, when the descriptors are already set in stone.
          */
-        if (hasNoNullVariablesListVar == null) {
-            var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-            if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(entityClass)) {
-                throw new IllegalStateException(
-                        "Impossible state: method called without an applicable list variable descriptor.");
-            }
-            var applicableShadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
-            if (applicableShadowDescriptor == null) {
-                throw new IllegalStateException(
-                        "Impossible state: method called without an applicable list variable descriptor.");
-            }
-
-            hasNoNullVariablesListVar = getHasNoNullVariablesPredicateBasicVar()
-                    .and(entity -> applicableShadowDescriptor.getValue(entity) != null);
-        }
-        return (Predicate<A>) hasNoNullVariablesListVar;
+        var includeSet = (includes.length == 0) ? EnumSet.noneOf(ForEachInclude.class) : EnumSet.copyOf(List.of(includes));
+        return (Predicate<A>) forEachIncludesToPredicateListVarMap.computeIfAbsent(includeSet,
+                this::forEachIncludingPredicateListVarSupplier);
     }
 
     // ************************************************************************
@@ -911,6 +899,74 @@ public class EntityDescriptor<Solution_> {
                 yield true;
             }
         };
+    }
+
+    private Predicate<Object> forEachIncludingPredicateBasicVarSupplier(EnumSet<ForEachInclude> includeSet) {
+        // TODO: Use a supply for this?
+        final var inconsistentDescriptor = this.getShadowVariablesInconsistentDescriptor();
+        final Predicate<Object> isUnassignedPredicate = this::hasNoNullVariables;
+        final Predicate<Object> isInconsistentPredicate = (inconsistentDescriptor == null) ? ignored -> true
+                : entity -> Boolean.FALSE.equals(inconsistentDescriptor.getValue(entity));
+
+        if (includeSet.isEmpty()) {
+            return entity -> isUnassignedPredicate.test(entity) && isInconsistentPredicate.test(entity);
+        }
+
+        var excludeToPredicate = Map.of(
+                ForEachInclude.UNASSIGNED, isUnassignedPredicate,
+                ForEachInclude.INCONSISTENT, isInconsistentPredicate);
+
+        return getForEachPredicateIncluding(includeSet, excludeToPredicate);
+    }
+
+    private Predicate<Object> forEachIncludingPredicateListVarSupplier(EnumSet<ForEachInclude> includeSet) {
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(entityClass)) {
+            throw new IllegalStateException(
+                    "Impossible state: method called without an applicable list variable descriptor.");
+        }
+        var applicableShadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
+        if (applicableShadowDescriptor == null && !includeSet.contains(ForEachInclude.UNASSIGNED)) {
+            throw new IllegalStateException(
+                    "Impossible state: method called without an applicable list variable descriptor.");
+        }
+
+        // This predicate is only used when includeSet does not contain ForEachInclude.UNASSIGNED
+        // so applicableShadowDescriptor cannot be null.
+        final Predicate<Object> isUnassignedPredicate = getForEachFilterPredicateIncludingBasicVar(EnumSet.complementOf(
+                EnumSet.of(ForEachInclude.UNASSIGNED)).toArray(ForEachInclude[]::new))
+                .and(entity -> applicableShadowDescriptor.getValue(entity) != null);
+        final Predicate<Object> isInconsistentPredicate = getForEachFilterPredicateIncludingBasicVar(
+                EnumSet.complementOf(
+                        EnumSet.of(ForEachInclude.INCONSISTENT)).toArray(ForEachInclude[]::new));
+
+        var excludeToPredicate = Map.of(
+                ForEachInclude.UNASSIGNED, isUnassignedPredicate,
+                ForEachInclude.INCONSISTENT, isInconsistentPredicate);
+
+        return getForEachPredicateIncluding(includeSet, excludeToPredicate);
+    }
+
+    private Predicate<Object> getForEachPredicateIncluding(EnumSet<ForEachInclude> includeSet,
+            Map<ForEachInclude, Predicate<Object>> excludeToPredicateMap) {
+        // We want the complement of includeSet, since the given filters
+        // are to exclude the given elements.
+        var excludeSet = EnumSet.complementOf(includeSet);
+        if (excludeSet.isEmpty()) {
+            return entity -> true;
+        }
+
+        return excludeSet.stream()
+                .map(exclude -> {
+                    var predicate = excludeToPredicateMap.get(exclude);
+                    if (predicate == null) {
+                        throw new IllegalStateException(
+                                "Missing predicate for %s %s.".formatted(ForEachInclude.class.getSimpleName(), exclude));
+                    }
+                    return predicate;
+                })
+                .reduce(Predicate::and)
+                .orElseThrow();
     }
 
     public int countReinitializableVariables(Object entity) {

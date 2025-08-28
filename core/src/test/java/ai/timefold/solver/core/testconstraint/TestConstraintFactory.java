@@ -3,6 +3,7 @@ package ai.timefold.solver.core.testconstraint;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.ForEachInclude;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
@@ -30,6 +31,11 @@ public final class TestConstraintFactory<Solution_, Score_ extends Score<Score_>
 
     @Override
     public <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass, ForEachInclude... includes) {
         throw new UnsupportedOperationException();
     }
 

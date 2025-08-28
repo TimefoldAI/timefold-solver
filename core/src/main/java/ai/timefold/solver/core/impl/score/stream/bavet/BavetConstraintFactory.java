@@ -1,11 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
+import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import ai.timefold.solver.core.api.score.stream.ForEachInclude;
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -104,7 +107,7 @@ public final class BavetConstraintFactory<Solution_>
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
             // No applicable list variable; don't need to check inverse relationships.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    entityDescriptor.getHasNoNullVariablesPredicateBasicVar(), RetrievalSemantics.STANDARD));
+                    entityDescriptor.getForEachFilterPredicateIncludingBasicVar(), RetrievalSemantics.STANDARD));
         }
         var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
         if (entityClass == sourceClass) {
@@ -116,19 +119,54 @@ public final class BavetConstraintFactory<Solution_>
             // The list variable element doesn't have the @InverseRelationShadowVariable annotation.
             // We don't want the users to be forced to implement it in quickstarts,
             // so we'll do this expensive thing instead.
-            return forEachIncludingUnassigned(sourceClass)
+            return forEachIncluding(sourceClass, ForEachInclude.UNASSIGNED)
                     .ifExists((Class) entityClass,
                             Joiners.filtering(listVariableDescriptor.getInListPredicate()));
         } else { // We have the inverse relation variable, so we can read its value directly.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    entityDescriptor.getHasNoNullVariablesPredicateListVar(), RetrievalSemantics.STANDARD));
+                    entityDescriptor.getForEachFilterPredicateIncludingListVar(), RetrievalSemantics.STANDARD));
+        }
+    }
+
+    @Override
+    public <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass, ForEachInclude... includes) {
+        assertValidFromType(sourceClass);
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
+        if (entityDescriptor == null) {
+            // Not genuine or shadow entity; no need for filtering.
+            return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
+        }
+        var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
+        if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
+            // No applicable list variable; don't need to check inverse relationships.
+            return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
+                    entityDescriptor.getForEachFilterPredicateIncludingBasicVar(includes), RetrievalSemantics.STANDARD));
+        }
+        var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
+        if (entityClass == sourceClass) {
+            throw new IllegalStateException("Impossible state: entityClass (%s) and sourceClass (%s) are the same."
+                    .formatted(entityClass.getCanonicalName(), sourceClass.getCanonicalName()));
+        }
+        var shadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
+        var includeSet = (includes.length == 0) ? EnumSet.noneOf(ForEachInclude.class) : EnumSet.copyOf(List.of(includes));
+        if (shadowDescriptor == null && !includeSet.contains(ForEachInclude.UNASSIGNED)) {
+            // The list variable element doesn't have the @InverseRelationShadowVariable annotation,
+            // and we are not including unassigned elements.
+            // We don't want the users to be forced to implement it in quickstarts,
+            // so we'll do this expensive thing instead.
+            includeSet.add(ForEachInclude.UNASSIGNED);
+            return forEachIncluding(sourceClass, includeSet.toArray(ForEachInclude[]::new))
+                    .ifExists((Class) entityClass,
+                            Joiners.filtering(listVariableDescriptor.getInListPredicate()));
+        } else { // We have the inverse relation variable, so we can read its value directly.
+            return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
+                    entityDescriptor.getForEachFilterPredicateIncludingListVar(includes), RetrievalSemantics.STANDARD));
         }
     }
 
     @Override
     public <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass) {
-        assertValidFromType(sourceClass);
-        return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
+        return forEachIncluding(sourceClass, ForEachInclude.UNASSIGNED);
     }
 
     @Override
