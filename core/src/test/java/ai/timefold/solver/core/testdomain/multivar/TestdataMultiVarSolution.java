@@ -32,7 +32,7 @@ public class TestdataMultiVarSolution extends TestdataObject {
             boolean initialize) {
         var solution = new TestdataMultiVarSolution();
         var valueList = new ArrayList<TestdataValue>(valueListSize);
-        var otherValueList = new ArrayList<TestdataOtherValue>(valueListSize);
+        var otherValueList = new ArrayList<TestdataOtherValue>(otherValueListSize);
         for (int i = 0; i < valueListSize; i++) {
             valueList.add(new TestdataValue("Generated Value " + i));
         }
