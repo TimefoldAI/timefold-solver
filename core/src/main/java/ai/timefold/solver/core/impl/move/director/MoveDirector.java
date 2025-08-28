@@ -112,16 +112,15 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
             int destinationIndex) {
         if (sourceIndex == destinationIndex) {
             return null;
-        } else if (sourceIndex > destinationIndex) { // Always start from the lower index.
-            return moveValueInList(variableMetaModel, sourceEntity, destinationIndex, sourceIndex);
         }
         var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-        var toIndex = destinationIndex + 1;
+        var fromIndex = Math.min(sourceIndex, destinationIndex);
+        var toIndex = Math.max(sourceIndex, destinationIndex) + 1;
 
-        externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, toIndex);
-        var element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
+        Value_ element = (Value_) variableDescriptor.removeElement(sourceEntity, sourceIndex);
         variableDescriptor.addElement(sourceEntity, destinationIndex, element);
-        externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, sourceIndex, toIndex);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, sourceEntity, fromIndex, toIndex);
 
         return element;
     }
