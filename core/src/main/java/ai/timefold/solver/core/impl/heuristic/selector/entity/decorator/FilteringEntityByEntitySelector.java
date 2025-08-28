@@ -28,7 +28,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * e2 = entity_range[v1, v4]
  * e3 = entity_range[v4, v5]
  * <p>
- * By default, one entity can only be reached by another if they share at least one common value within the range.
+ * By default, one entity can be reached by another if assigned values are null.
  * When values are assigned, both sides must accept these values.
  * <p>
  * e1 = [e2]
@@ -37,9 +37,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * <p>
  * 1. e1(null) and e2(null) - they are reachable
  * <p>
- * 2. e1(null) and e3(null) - they are not reachable
- * <p>
- * 3. e1(v2) and e2(v1) - they are not reachable
+ * 2. e1(v2) and e2(v1) - they are not reachable
  * e1: e1 accepts v1 and e2 is reachable
  * e2: e2 does not accept v2 and e1 is not reachable
  *
@@ -56,7 +54,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
     private ReachableValues[] reachableValues;
     private ValueRangeManager<Solution_> valueRangeManager;
-    private long entitiesSize;
+    private List<Object> allEntities;
 
     public FilteringEntityByEntitySelector(EntitySelector<Solution_> childEntitySelector,
             EntitySelector<Solution_> replayingEntitySelector, boolean randomSelection) {
@@ -86,7 +84,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             throw new IllegalStateException("Impossible state: no basic variable found for the entity %s."
                     .formatted(childEntitySelector.getEntityDescriptor().getEntityClass()));
         }
-        this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
+        this.allEntities = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution());
         this.basicVariableDescriptors = basicVariableList.toArray(new BasicVariableDescriptor[0]);
         this.valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
         this.reachableValues = basicVariableList.stream()
@@ -126,7 +124,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
     @Override
     public long getSize() {
-        return entitiesSize;
+        return allEntities.size();
     }
 
     @Override
@@ -148,9 +146,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         if (iterator.hasNext()) {
             var entity = iterator.next();
             if (replayedEntity == null || entity != replayedEntity.entity()) {
-                var reachableEntityList = valueRangeManager.getReachableEntities(replayingEntitySelector.getEntityDescriptor())
-                        .extractEntitiesAsList(entity);
-                this.replayedEntity = new ReplayedEntity(entity, extractAssignedValues(entity), reachableEntityList);
+                this.replayedEntity = new ReplayedEntity(entity, extractAssignedValues(entity), allEntities);
             }
         }
         return replayedEntity;
@@ -303,7 +299,8 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         @Override
         void processReplayedEntityChange(ReplayedEntity replayedEntity) {
-            this.reachableEntityList = replayedEntity.reachableEntities().subList(startIndex, replayedEntity.reachableEntities().size());
+            this.reachableEntityList =
+                    replayedEntity.reachableEntities().subList(startIndex, replayedEntity.reachableEntities().size());
             this.currentIndex = startIndex;
         }
 
