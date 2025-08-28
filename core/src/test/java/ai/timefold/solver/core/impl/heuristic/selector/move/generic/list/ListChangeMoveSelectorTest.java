@@ -413,8 +413,8 @@ class ListChangeMoveSelectorTest {
                 "1 {A[1]->A[1]}",
                 "3 {B[0]->B[0]}",
                 "1 {A[1]->A[1]}",
-                "3 {B[0]->B[0]}",
-                "3 {B[0]->B[0]}");
+                "3 {B[0]->B[1]}",
+                "3 {B[0]->B[1]}");
     }
 
     @Test
@@ -447,8 +447,8 @@ class ListChangeMoveSelectorTest {
                 "1 {A[1]->A[1]}",
                 "3 {B[0]->B[0]}",
                 "1 {A[1]->A[1]}",
-                "3 {B[0]->B[0]}",
-                "3 {B[0]->B[0]}");
+                "3 {B[0]->B[1]}",
+                "2 {A[0]->B[0]}");
     }
 
     @Test
@@ -608,8 +608,8 @@ class ListChangeMoveSelectorTest {
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[0]}",
                 "3 {B[0]->B[1]}",
+                "1 {A[1]->A[0]}",
                 "3 {B[0]->B[1]}",
-                "3 {B[0]->B[0]}",
                 "3 {B[0]->B[0]}");
     }
 
