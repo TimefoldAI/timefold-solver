@@ -92,20 +92,4 @@ public class SwapMoveProvider<Solution_, Entity_>
                         rightEntity));
     }
 
-    private record UniquePair<Entity_>(Entity_ first, Entity_ second) {
-
-        @Override
-        public boolean equals(Object o) {
-            return o instanceof UniquePair<?> other &&
-                    ((first == other.first && second == other.second) || (first == other.second && second == other.first));
-        }
-
-        @Override
-        public int hashCode() { // Same value regardless of order, while minimizing collisions.
-            var firstHash = Objects.hashCode(first);
-            var secondHash = Objects.hashCode(second);
-            return firstHash + secondHash + (firstHash * secondHash * 31);
-        }
-    }
-
 }

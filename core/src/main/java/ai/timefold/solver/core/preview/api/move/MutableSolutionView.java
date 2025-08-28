@@ -104,16 +104,16 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * Moves a value from one entity's {@link PlanningListVariable planning list variable} to another.
      *
      * @param variableMetaModel Describes the variable to be changed.
-     * @param sourceEntity The first entity whose variable value is to be changed.
-     * @param sourceIndex >= 0
-     * @param destinationEntity The second entity whose variable value is to be changed.
-     * @param destinationIndex >= 0
+     * @param leftEntity The first entity whose variable value is to be changed.
+     * @param leftIndex >= 0
+     * @param rightEntity The second entity whose variable value is to be changed.
+     * @param rightIndex >= 0
      * @return the value that was moved; null if nothing was moved
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     <Entity_, Value_> @Nullable Value_ moveValueBetweenLists(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity, int sourceIndex,
-            Entity_ destinationEntity, int destinationIndex);
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity, int leftIndex,
+            Entity_ rightEntity, int rightIndex);
 
     /**
      * Moves a value within one entity's {@link PlanningListVariable planning list variable}.
