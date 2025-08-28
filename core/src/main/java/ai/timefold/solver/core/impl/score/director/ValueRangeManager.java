@@ -25,6 +25,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableEntities;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.ReachableItemValue;
 import ai.timefold.solver.core.impl.util.MathUtils;
@@ -60,6 +61,7 @@ public final class ValueRangeManager<Solution_> {
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final CountableValueRange<?>[] fromSolution;
     private final ReachableValues[] reachableValues;
+    private final ReachableEntities<Solution_>[] reachableEntities;
     private final Map<Object, CountableValueRange<?>[]> fromEntityMap =
             new IdentityHashMap<>();
 
@@ -84,6 +86,7 @@ public final class ValueRangeManager<Solution_> {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.fromSolution = new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()];
         this.reachableValues = new ReachableValues[solutionDescriptor.getValueRangeDescriptorCount()];
+        this.reachableEntities = new ReachableEntities[solutionDescriptor.getGenuineEntityDescriptors().size()];
     }
 
     public SolutionInitializationStatistics getInitializationStatistics() {
@@ -474,9 +477,30 @@ public final class ValueRangeManager<Solution_> {
         return item;
     }
 
+    public ReachableEntities<Solution_> getReachableEntities(EntityDescriptor<Solution_> entityDescriptor) {
+        var item = this.reachableEntities[entityDescriptor.getOrdinal()];
+        if (item == null) {
+            if (cachedWorkingSolution == null) {
+                throw new IllegalStateException(
+                        "Impossible state: entity reachability requested before the working solution is known.");
+            }
+            item = new ReachableEntities<>(entityDescriptor, entityDescriptor.extractEntities(cachedWorkingSolution), this);
+            this.reachableEntities[entityDescriptor.getOrdinal()] = item;
+        }
+        return item;
+    }
+
+    /**
+     * Differs from {@link #getReachableEntities(EntityDescriptor)} as the entity descriptor is deduced from the entity type.
+     */
+    public ReachableEntities<Solution_> getReachableEntitiesFromClass(Class<?> entityClass) {
+        return getReachableEntities(solutionDescriptor.findEntityDescriptorOrFail(entityClass));
+    }
+
     public void reset(@Nullable Solution_ workingSolution) {
         Arrays.fill(fromSolution, null);
         Arrays.fill(reachableValues, null);
+        Arrays.fill(reachableEntities, null);
         fromEntityMap.clear();
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {

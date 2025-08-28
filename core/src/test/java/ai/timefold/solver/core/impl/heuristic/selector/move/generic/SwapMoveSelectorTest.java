@@ -317,12 +317,12 @@ class SwapMoveSelectorTest {
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
 
-        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
 
-        // we assume that any entity is reachable from any other entity if the assigned values are null
+        // we assume that any entity is reachable if they share at least one common value in the range
         scoreDirector.setWorkingSolution(solution);
-        assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
+        assertIterableSelectorWithoutSize(moveSelector, "A<->C", "B<->C", "C<->A", "C<->B");
 
         // e1(v1) can swap with e3(v4)
         // e1(v1) cannot swap with e2(v3) because e1 does not accept v3
@@ -370,12 +370,12 @@ class SwapMoveSelectorTest {
         var expectedSize = (long) solution.getEntityList().size() * solution.getEntityList().size();
 
         // e1(null) and e2(null)
-        // all entities are reachable from e1 because their values are null
+        // only e3 is reachable by e1
         scoreDirector.setWorkingSolution(solution);
-        // select left A, select right B
         // select left A, select right C
-        random.reset(0, 1, 0, 2, 0, 2);
-        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->B", "A<->C");
+        // select left A, select right B
+        random.reset(0, 2, 0, 1, 0, 2);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
 
         // e1(v1), e2(v3) and e3(v4)
         // e1 does not accepts v3 and e2 does not accepts v1
@@ -419,9 +419,9 @@ class SwapMoveSelectorTest {
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(moveSelector, solverScope);
 
-        // we assume that any entity is reachable from any other entity if the assigned values are null
+        // we assume that any entity is reachable if they share at least one common value in the range
         scoreDirector.setWorkingSolution(solution);
-        assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
+        assertIterableSelectorWithoutSize(moveSelector, "A<->C", "B<->C", "C<->A", "C<->B");
 
         // e1(v1) cannot swap with e2(v3) because e1 does not accept v3
         // e1(v1) can swap with e3(v4)
@@ -488,12 +488,12 @@ class SwapMoveSelectorTest {
         var expectedSize = (long) solution.getEntityList().size() * solution.getEntityList().size();
 
         // e1(null, null) and e2(null, null)
-        // all entities are reachable from e1 because their values are null
+        // we assume that any entity is reachable if they share at least one common value in the range
         scoreDirector.setWorkingSolution(solution);
         // select left A, select right B
         // select left A, select right C
         random.reset(0, 1, 0, 2, 0, 2);
-        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->B", "A<->C");
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C", "B<->C");
 
         // e1(v1, v1), e2(v3, v3) and e3(v4, v4)
         // e1 does not accepts v3 and e2 does not accepts v1
