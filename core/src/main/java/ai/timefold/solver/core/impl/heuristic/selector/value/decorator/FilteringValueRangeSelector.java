@@ -323,10 +323,10 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         void processUpcomingValue(Object upcomingValue, List<Object> upcomingList) {
             this.replayedValue = upcomingValue;
             this.reachableValueList = upcomingList;
-            // The maximum number of attempts is equal to 10% of the number of available values.
+            // The maximum number of attempts is equal to 20% of the number of available values.
             // We won't spend too much time trying to generate a single move for the current selection.
             // If we are unable to generate, the move iterator can still be used in later iterations.
-            this.maxBailoutSize = (int) Math.max(1, upcomingList.size() * 0.1);
+            this.maxBailoutSize = (int) Math.max(1, upcomingList.size() * 0.2);
         }
 
         @Override
