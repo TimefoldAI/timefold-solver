@@ -40,7 +40,7 @@ public abstract class AbstractOriginalSwapIterator<Solution_, Move_ extends Move
 
     @Override
     protected Move_ createUpcomingSelection() {
-        if (!rightSubSelectionIterator.hasNext()) {
+        while (!rightSubSelectionIterator.hasNext()) {
             if (!leftSubSelectionIterator.hasNext()) {
                 return noUpcomingSelection();
             }
@@ -48,9 +48,6 @@ public abstract class AbstractOriginalSwapIterator<Solution_, Move_ extends Move
 
             if (!leftEqualsRight) {
                 rightSubSelectionIterator = rightSubSelector.listIterator();
-                if (!rightSubSelectionIterator.hasNext()) {
-                    return noUpcomingSelection();
-                }
             } else {
                 // Select A-B, A-C, B-C. Do not select B-A, C-A, C-B. Do not select A-A, B-B, C-C.
                 if (!leftSubSelectionIterator.hasNext()) {
