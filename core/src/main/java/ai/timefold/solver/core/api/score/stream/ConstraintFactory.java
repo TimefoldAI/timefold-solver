@@ -68,14 +68,6 @@ public interface ConstraintFactory {
     <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass);
 
     /**
-     * As defined by {@link #forEach(Class)},
-     * but including filtered entities that match the supplied {@link ForEachFilteringCriteria includes}.
-     *
-     * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
-     */
-    <A> @NonNull UniConstraintStream<A> forEachIncluding(@NonNull Class<A> sourceClass, ForEachFilteringCriteria... includes);
-
-    /**
      * As defined by {@link #forEachIncludingUnassigned(Class)}.
      *
      * @deprecated Use {@link #forEachIncludingUnassigned(Class)} instead.
@@ -93,12 +85,20 @@ public interface ConstraintFactory {
      * (for {@link PlanningListVariable#allowsUnassignedValues()}).
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
-     *
-     * @deprecated Use {@link #forEachIncluding(Class, ForEachFilteringCriteria...)} with
-     *             {@link ForEachFilteringCriteria#INCLUDE_UNASSIGNED} instead.
      */
-    @Deprecated(forRemoval = true, since = "1.26.0")
     <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass);
+
+    /**
+     * As defined by {@link #forEach(Class)},
+     * but without any filtering of {@link ShadowVariablesInconsistent inconsistent} or unassigned {@link PlanningEntity
+     * planning entities}
+     * (for {@link PlanningVariable#allowsUnassigned()})
+     * or shadow entities not assigned to any applicable list variable
+     * (for {@link PlanningListVariable#allowsUnassignedValues()}).
+     *
+     * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
+     */
+    <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass);
 
     /**
      * Create a new {@link BiConstraintStream} for every unique combination of A and another A with a higher {@link PlanningId}.

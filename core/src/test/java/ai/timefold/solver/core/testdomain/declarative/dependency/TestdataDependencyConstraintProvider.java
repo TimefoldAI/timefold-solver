@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ForEachFilteringCriteria;
 
 import org.jspecify.annotations.NonNull;
 
@@ -14,7 +13,7 @@ public class TestdataDependencyConstraintProvider implements ConstraintProvider 
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                constraintFactory.forEachIncluding(TestdataDependencyValue.class, ForEachFilteringCriteria.INCLUDE_INCONSISTENT)
+                constraintFactory.forEachUnfiltered(TestdataDependencyValue.class)
                         .filter(TestdataDependencyValue::isInvalid)
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Invalid task"),

@@ -1253,6 +1253,54 @@ public abstract class AbstractUniConstraintStreamTest
     }
 
     @TestTemplate
+    public void forEachIncludingUnassigned_excludeInconsistentEntities() {
+        var solution = new TestdataDependencySimpleSolution();
+        var dependency = new TestdataDependencyValue("v1", Duration.ofHours(1));
+        var dependent = new TestdataDependencyValue("v2", Duration.ofHours(2));
+        dependent.setDependencies(List.of(dependency));
+
+        solution.setValues(List.of(dependency, dependent));
+        var e1 = new TestdataDependencyEntity();
+        var e2 = new TestdataDependencyEntity();
+
+        solution.setEntities(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataDependencySimpleSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataDependencySimpleSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEachIncludingUnassigned(TestdataDependencyValue.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(dependency),
+                assertMatch(dependent));
+
+        // Incremental
+        scoreDirector.beforeListVariableChanged(e1, "values", 0, 0);
+        e1.setValues(List.of(dependent, dependency));
+        scoreDirector.afterListVariableChanged(e1, "values", 0, 2);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector);
+
+        scoreDirector.beforeListVariableChanged(e1, "values", 0, 1);
+        e1.setValues(List.of(dependent));
+        scoreDirector.afterListVariableChanged(e1, "values", 0, 1);
+
+        scoreDirector.beforeListVariableChanged(e2, "values", 0, 0);
+        e1.setValues(List.of(dependency));
+        scoreDirector.afterListVariableChanged(e2, "values", 0, 1);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(dependency),
+                assertMatch(dependent));
+
+    }
+
+    @TestTemplate
     public void forEach_excludeInconsistentEntities() {
         var solution = new TestdataDependencySimpleSolution();
         var dependency = new TestdataDependencyValue("v1", Duration.ofHours(1));
@@ -1298,6 +1346,56 @@ public abstract class AbstractUniConstraintStreamTest
         assertScore(scoreDirector,
                 assertMatch(dependency),
                 assertMatch(dependent));
+    }
+
+    @TestTemplate
+    public void forEachUnfiltered_includeUnassignedAndInconsistentEntities() {
+        var solution = new TestdataDependencySimpleSolution();
+        var dependency = new TestdataDependencyValue("v1", Duration.ofHours(1));
+        var dependent = new TestdataDependencyValue("v2", Duration.ofHours(2));
+        dependent.setDependencies(List.of(dependency));
+
+        solution.setValues(List.of(dependency, dependent));
+        var e1 = new TestdataDependencyEntity();
+        var e2 = new TestdataDependencyEntity();
+
+        solution.setEntities(List.of(e1, e2));
+
+        InnerScoreDirector<TestdataDependencySimpleSolution, SimpleScore> scoreDirector = buildScoreDirector(
+                TestdataDependencySimpleSolution.buildSolutionDescriptor(),
+                factory -> new Constraint[] {
+                        factory.forEachUnfiltered(TestdataDependencyValue.class)
+                                .penalize(SimpleScore.ONE)
+                                .asConstraint(TEST_CONSTRAINT_NAME)
+                });
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(dependency),
+                assertMatch(dependent));
+
+        // Incremental
+        scoreDirector.beforeListVariableChanged(e1, "values", 0, 0);
+        e1.setValues(List.of(dependent, dependency));
+        scoreDirector.afterListVariableChanged(e1, "values", 0, 2);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(dependency),
+                assertMatch(dependent));
+
+        scoreDirector.beforeListVariableChanged(e1, "values", 0, 1);
+        e1.setValues(List.of(dependent));
+        scoreDirector.afterListVariableChanged(e1, "values", 0, 1);
+
+        scoreDirector.beforeListVariableChanged(e2, "values", 0, 0);
+        e1.setValues(List.of(dependency));
+        scoreDirector.afterListVariableChanged(e2, "values", 0, 1);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(dependency),
+                assertMatch(dependent));
+
     }
 
     @TestTemplate

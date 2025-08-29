@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
-import ai.timefold.solver.core.api.score.stream.ForEachFilteringCriteria;
 
 import org.jspecify.annotations.NonNull;
 
@@ -16,7 +15,7 @@ public class TestdataConcurrentConstraintProvider implements ConstraintProvider 
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                constraintFactory.forEachIncluding(TestdataConcurrentValue.class, ForEachFilteringCriteria.INCLUDE_INCONSISTENT)
+                constraintFactory.forEachUnfiltered(TestdataConcurrentValue.class)
                         .filter(TestdataConcurrentValue::isInconsistent)
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Invalid visit"),
