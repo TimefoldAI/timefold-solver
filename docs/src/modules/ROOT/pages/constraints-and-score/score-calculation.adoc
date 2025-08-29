@@ -263,12 +263,29 @@ This constraint stream penalizes each known and initialized instance of `Shift`.
 The `.forEach(T)` building block selects every `T` instance that
 is in a xref:using-timefold-solver/modeling-planning-problems.adoc#problemFacts[problem fact collection]
 or a xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitiesOfASolution[planning entity collection]
+that is xref:using-timefold-solver/modeling-planning-problems.adoc#detectingInconsistencies[consistent]
 and has no `null` genuine planning variables.
 
 To include instances with a `null` xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[genuine planning variable],
 or planning values
 not assigned to any xref:using-timefold-solver/modeling-planning-problems.adoc#planningListVariable[planning list variable],
 replace the `forEach()` building block by `forEachIncludingUnassigned()`:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    private Constraint penalizeAllConsistentShifts(ConstraintFactory factory) {
+        return factory.forEachIncludingUnassigned(Shift.class)
+                .penalize(HardSoftScore.ONE_SOFT)
+                .asConstraint("A shift");
+    }
+----
+====
+
+To include inconsistent and unassigned instances, replace the `forEach()` building block by `forEachUnfiltered()`:
 
 [tabs]
 ====

@@ -17,10 +17,11 @@ public class TestdataConcurrentAssertionEasyScoreCalculator
         var softScore = 0;
 
         for (var visit : routePlan.values) {
+            if (visit.getExpectedInconsistent()) {
+                hardScore--;
+            }
             if (visit.isAssigned()) {
-                if (visit.getExpectedInconsistent()) {
-                    hardScore--;
-                } else {
+                if (!visit.getExpectedInconsistent()) {
                     softScore -= (int) Duration
                             .between(BASE_START_TIME, visit.getExpectedServiceFinishTime())
                             .toMinutes();

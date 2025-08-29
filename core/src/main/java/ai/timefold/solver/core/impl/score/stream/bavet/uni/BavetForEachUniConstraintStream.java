@@ -9,8 +9,8 @@ import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.bavet.uni.ForEachExcludingUnassignedUniNode;
-import ai.timefold.solver.core.impl.bavet.uni.ForEachIncludingUnassignedUniNode;
+import ai.timefold.solver.core.impl.bavet.uni.ForEachFilteredUniNode;
+import ai.timefold.solver.core.impl.bavet.uni.ForEachUnfilteredUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
@@ -50,8 +50,8 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = filter == null ? new ForEachIncludingUnassignedUniNode<>(forEachClass, tupleLifecycle, outputStoreSize)
-                : new ForEachExcludingUnassignedUniNode<>(forEachClass, filter, tupleLifecycle, outputStoreSize);
+        var node = filter == null ? new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle, outputStoreSize)
+                : new ForEachFilteredUniNode<>(forEachClass, filter, tupleLifecycle, outputStoreSize);
         buildHelper.addNode(node, this, null);
     }
 

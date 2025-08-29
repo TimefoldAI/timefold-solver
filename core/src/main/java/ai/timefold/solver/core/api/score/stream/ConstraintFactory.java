@@ -13,6 +13,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.jspecify.annotations.NonNull;
 
@@ -39,7 +40,8 @@ public interface ConstraintFactory {
      * <p>
      * If the sourceClass is a {@link PlanningEntity}, then it is automatically
      * {@link UniConstraintStream#filter(Predicate) filtered} to only contain entities
-     * for which each genuine {@link PlanningVariable} (of the sourceClass or a superclass thereof) has a non-null value.
+     * that are {@link ShadowVariablesInconsistent consistent}
+     * and for which each genuine {@link PlanningVariable} (of the sourceClass or a superclass thereof) has a non-null value.
      * <p>
      * If the sourceClass is a shadow entity (an entity without any genuine planning variables),
      * and if there exists a genuine {@link PlanningEntity} with a {@link PlanningListVariable}
@@ -85,6 +87,18 @@ public interface ConstraintFactory {
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      */
     <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass);
+
+    /**
+     * As defined by {@link #forEach(Class)},
+     * but without any filtering of {@link ShadowVariablesInconsistent inconsistent} or unassigned {@link PlanningEntity
+     * planning entities}
+     * (for {@link PlanningVariable#allowsUnassigned()})
+     * or shadow entities not assigned to any applicable list variable
+     * (for {@link PlanningListVariable#allowsUnassignedValues()}).
+     *
+     * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
+     */
+    <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass);
 
     /**
      * Create a new {@link BiConstraintStream} for every unique combination of A and another A with a higher {@link PlanningId}.

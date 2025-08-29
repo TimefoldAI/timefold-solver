@@ -8,7 +8,7 @@ import java.util.Set;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.bavet.uni.ForEachIncludingUnassignedUniNode;
+import ai.timefold.solver.core.impl.bavet.uni.ForEachUnfilteredUniNode;
 import ai.timefold.solver.core.impl.move.streams.dataset.DataStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.AbstractDataStream;
 import ai.timefold.solver.core.impl.move.streams.dataset.common.DataNodeBuildHelper;
@@ -40,7 +40,7 @@ abstract sealed class AbstractForEachDataStream<Solution_, A>
     public final void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var outputStoreSize = buildHelper.extractTupleStoreSize(this);
-        var node = new ForEachIncludingUnassignedUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
+        var node = new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle, outputStoreSize);
         if (shouldIncludeNull && node.supports(LifecycleOperation.INSERT)) {
             node.insert(null);
         }

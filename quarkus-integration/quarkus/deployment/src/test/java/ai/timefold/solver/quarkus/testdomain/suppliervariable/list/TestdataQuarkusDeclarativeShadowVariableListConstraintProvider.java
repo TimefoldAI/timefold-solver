@@ -7,17 +7,16 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 
 import org.jspecify.annotations.NonNull;
 
-public class TestdataQuarkusSupplierVariableListConstraintProvider implements ConstraintProvider {
+public class TestdataQuarkusDeclarativeShadowVariableListConstraintProvider implements ConstraintProvider {
 
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory factory) {
         return new Constraint[] {
-                factory.forEach(TestdataQuarkusSupplierVariableListValue.class)
-                        .filter(value -> !value.isInconsistent())
-                        .penalize(SimpleScore.ONE, TestdataQuarkusSupplierVariableListValue::getStartTime)
+                factory.forEach(TestdataQuarkusDeclarativeShadowVariableListValue.class)
+                        .penalize(SimpleScore.ONE, TestdataQuarkusDeclarativeShadowVariableListValue::getStartTime)
                         .asConstraint("Minimize start time"),
-                factory.forEach(TestdataQuarkusSupplierVariableListValue.class)
-                        .filter(TestdataQuarkusSupplierVariableListValue::isInconsistent)
+                factory.forEachUnfiltered(TestdataQuarkusDeclarativeShadowVariableListValue.class)
+                        .filter(TestdataQuarkusDeclarativeShadowVariableListValue::isInconsistent)
                         .penalize(SimpleScore.of(1000))
                         .asConstraint("Inconsistent")
         };

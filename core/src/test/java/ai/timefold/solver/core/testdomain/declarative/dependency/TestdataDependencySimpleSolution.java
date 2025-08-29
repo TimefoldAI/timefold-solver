@@ -7,15 +7,19 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
+/**
+ * Exists solely to be used in Constraint Steam tests, which require the score type
+ * to be SimpleScore
+ */
 @PlanningSolution
-public class TestdataDependencySolution {
-    public static SolutionDescriptor<TestdataDependencySolution> buildSolutionDescriptor() {
+public class TestdataDependencySimpleSolution {
+    public static SolutionDescriptor<TestdataDependencySimpleSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
-                TestdataDependencySolution.class, TestdataDependencyEntity.class, TestdataDependencyValue.class);
+                TestdataDependencySimpleSolution.class, TestdataDependencyEntity.class, TestdataDependencyValue.class);
     }
 
     @PlanningEntityCollectionProperty
@@ -26,12 +30,12 @@ public class TestdataDependencySolution {
     List<TestdataDependencyValue> values;
 
     @PlanningScore
-    HardSoftScore score;
+    SimpleScore score;
 
-    public TestdataDependencySolution() {
+    public TestdataDependencySimpleSolution() {
     }
 
-    public TestdataDependencySolution(List<TestdataDependencyEntity> entities, List<TestdataDependencyValue> values) {
+    public TestdataDependencySimpleSolution(List<TestdataDependencyEntity> entities, List<TestdataDependencyValue> values) {
         this.values = values;
         this.entities = entities;
     }
@@ -53,11 +57,11 @@ public class TestdataDependencySolution {
         this.entities = entities;
     }
 
-    public HardSoftScore getScore() {
+    public SimpleScore getScore() {
         return score;
     }
 
-    public void setScore(HardSoftScore score) {
+    public void setScore(SimpleScore score) {
         this.score = score;
     }
 

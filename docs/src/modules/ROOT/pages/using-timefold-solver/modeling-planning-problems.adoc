@@ -956,6 +956,7 @@ public class Job {
 |Accesses `endTime` of each element in the `dependencies` collection.
 |===
 
+[#detectingInconsistencies]
 ==== Detecting Inconsistencies in Shadow Variables
 
 In certain cases, shadow variables may form an infinite loop.
@@ -1084,6 +1085,9 @@ public class Job {
 ----
 ====
 
+NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariablesInconsistent`-annotated properties.
+These methods are only called if none of their shadow variables are inconsistent, and therefore the value of such properties at that time is guaranteed to be `false`.
+
 This property (`isInconsistent` in the example above) is typically used in a constraint filter to penalize entities with inconsistent shadow variables via a hard constraint, since PlanningSolution instances containing inconsistent shadow variables are generally considered invalid.
 
 [tabs]
@@ -1094,18 +1098,15 @@ Java::
 ----
 //Example constraint
 Constraint penalizeInconsistentJobs(ConstraintFactory factory) {
-    return factory.forEach(Job.class)
+    return factory.forEachUnfiltered(Job.class)
             .filter(job -> job.isInconsistent())
             .penalize(HardSoftScore.ONE_HARD)
             .asConstraint("Job has inconsistent shadow variables.");
 }
 ----
-
-
 ====
 
-NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariablesInconsistent`-annotated properties.
-These methods are only called if none of their shadow variables are inconsistent, and therefore the value of such properties at that time is guaranteed to be `false`.
+IMPORTANT: Since `forEach` filters out inconsistent entities, you must use `forEachUnfiltered` to penalize inconsistent entities.
 
 [#aligningShadowVariables]
 ==== Aligning Shadow Variables
