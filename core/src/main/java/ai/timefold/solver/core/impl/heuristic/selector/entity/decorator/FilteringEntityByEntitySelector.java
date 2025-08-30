@@ -1,13 +1,16 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
+import java.util.Random;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionListIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -48,13 +51,14 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
     private Object replayedEntity;
     private BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
+    private ReachableValues[] reachableValues;
     private ValueRangeManager<Solution_> valueRangeManager;
-    private int entitiesSize;
+    private List<Object> allEntities;
 
     public FilteringEntityByEntitySelector(EntitySelector<Solution_> childEntitySelector,
             EntitySelector<Solution_> replayingEntitySelector, boolean randomSelection) {
-        this.childEntitySelector = childEntitySelector;
         this.replayingEntitySelector = replayingEntitySelector;
+        this.childEntitySelector = childEntitySelector;
         this.randomSelection = randomSelection;
     }
 
@@ -79,9 +83,12 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             throw new IllegalStateException("Impossible state: no basic variable found for the entity %s."
                     .formatted(childEntitySelector.getEntityDescriptor().getEntityClass()));
         }
-        this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
+        this.allEntities = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution());
         this.basicVariableDescriptors = basicVariableList.toArray(new BasicVariableDescriptor[0]);
         this.valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
+        this.reachableValues = basicVariableList.stream()
+                .map(valueRangeManager::getReachableValues)
+                .toArray(ReachableValues[]::new);
         this.childEntitySelector.phaseStarted(phaseScope);
     }
 
@@ -98,6 +105,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         this.replayedEntity = null;
         this.valueRangeManager = null;
         this.basicVariableDescriptors = null;
+        this.reachableValues = null;
     }
 
     // ************************************************************************
@@ -115,7 +123,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
     @Override
     public long getSize() {
-        return entitiesSize;
+        return allEntities.size();
     }
 
     @Override
@@ -145,8 +153,8 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
     @Override
     public Iterator<Object> endingIterator() {
-        return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.listIterator(),
-                basicVariableDescriptors, valueRangeManager);
+        return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities, basicVariableDescriptors, 0,
+                reachableValues);
     }
 
     @Override
@@ -156,23 +164,19 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 throw new IllegalArgumentException(
                         "Impossible state: childEntitySelector must provide a never ending approach.");
             }
-            // The maximum number of attempts is equal to 20% of the number of available entities.
-            // We won't spend too much time trying to generate a single move for the current selection.
-            // If we are unable to generate, the move iterator can still be used in later iterations.
-            var maxBailoutSize = (int) Math.max(1, entitiesSize * 0.2);
-            return new RandomFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
-                    basicVariableDescriptors, valueRangeManager, maxBailoutSize);
+            return new RandomFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities, basicVariableDescriptors,
+                    reachableValues, workingRandom);
         } else {
-            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.listIterator(),
-                    basicVariableDescriptors, valueRangeManager);
+            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities, basicVariableDescriptors,
+                    0, reachableValues);
         }
     }
 
     @Override
     public ListIterator<Object> listIterator() {
         if (!randomSelection) {
-            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.listIterator(),
-                    basicVariableDescriptors, valueRangeManager);
+            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities, basicVariableDescriptors,
+                    0, reachableValues);
         } else {
             throw new IllegalStateException("The selector (%s) does not support a ListIterator with randomSelection (%s)."
                     .formatted(this, randomSelection));
@@ -182,8 +186,8 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     @Override
     public ListIterator<Object> listIterator(int index) {
         if (!randomSelection) {
-            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity,
-                    childEntitySelector.listIterator(index), basicVariableDescriptors, valueRangeManager);
+            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities, basicVariableDescriptors,
+                    index, reachableValues);
         } else {
             throw new IllegalStateException("The selector (%s) does not support a ListIterator with randomSelection (%s)."
                     .formatted(this, randomSelection));
@@ -205,15 +209,15 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private abstract static class AbstractFilteringValueRangeIterator<Solution_> extends UpcomingSelectionListIterator<Object> {
         private final Supplier<Object> upcomingEntitySupplier;
         private final BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
-        private final ValueRangeManager<Solution_> valueRangeManager;
+        private final ReachableValues[] reachableValues;
         private boolean initialized = false;
         private Object replayedEntity;
 
         private AbstractFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
-                BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, ValueRangeManager<Solution_> valueRangeManager) {
+                BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, ReachableValues[] reachableValues) {
             this.upcomingEntitySupplier = upcomingEntitySupplier;
             this.basicVariableDescriptors = basicVariableDescriptors;
-            this.valueRangeManager = valueRangeManager;
+            this.reachableValues = reachableValues;
         }
 
         void initialize() {
@@ -228,12 +232,11 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             var updatedReplayedEntity = upcomingEntitySupplier.get();
             if (replayedEntity == null || replayedEntity != updatedReplayedEntity) {
                 replayedEntity = updatedReplayedEntity;
+                processReplayedEntityChange(replayedEntity);
             }
         }
 
-        Object currentReplayedEntity() {
-            return replayedEntity;
-        }
+        abstract void processReplayedEntityChange(Object replayedEntity);
 
         /**
          * The other entity is reachable if it accepts all assigned values from the replayed entity, and vice versa.
@@ -244,11 +247,15 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 return false;
             }
 
-            if (basicVariableDescriptors.length == 1) {
-                return isReachable(replayedEntity, otherEntity, basicVariableDescriptors[0], valueRangeManager);
+            if (reachableValues.length == 1) {
+                return isReachable(replayedEntity, basicVariableDescriptors[0].getValue(replayedEntity), otherEntity,
+                        basicVariableDescriptors[0].getValue(otherEntity), reachableValues[0]);
             } else {
-                for (BasicVariableDescriptor<Solution_> basicVariableDescriptor : basicVariableDescriptors) {
-                    if (!isReachable(replayedEntity, otherEntity, basicVariableDescriptor, valueRangeManager)) {
+                for (var i = 0; i < basicVariableDescriptors.length; i++) {
+                    var basicVariableDescriptor = basicVariableDescriptors[i];
+                    var replayedValue = basicVariableDescriptor.getValue(replayedEntity);
+                    var otherValue = basicVariableDescriptor.getValue(otherEntity);
+                    if (!isReachable(replayedEntity, replayedValue, otherEntity, otherValue, this.reachableValues[i])) {
                         return false;
                     }
                 }
@@ -256,80 +263,100 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return true;
         }
 
-        private boolean isReachable(Object replayedEntity, Object otherEntity,
-                BasicVariableDescriptor<Solution_> variableDescriptor, ValueRangeManager<Solution_> valueRangeManager) {
-            var otherValue = variableDescriptor.getValue(otherEntity);
-            var replayedValueAccepted = otherValue == null || valueRangeManager
-                    .getFromEntity(variableDescriptor.getValueRangeDescriptor(), replayedEntity).contains(otherValue);
-            if (!replayedValueAccepted) {
-                return false;
-            }
-            var replayedValue = variableDescriptor.getValue(replayedEntity);
-            return replayedValue == null || valueRangeManager
-                    .getFromEntity(variableDescriptor.getValueRangeDescriptor(), otherEntity).contains(replayedValue);
+        private boolean isReachable(Object replayedEntity, Object replayedValue, Object otherEntity, Object otherValue,
+                ReachableValues reachableValues) {
+            var replayedValueAccepted = otherValue == null || reachableValues.isEntityReachable(otherValue, replayedEntity);
+            var otherValueAccepted = replayedValue == null || reachableValues.isEntityReachable(replayedValue, otherEntity);
+            return replayedValueAccepted && otherValueAccepted;
         }
     }
 
     private static class OriginalFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_> {
 
-        private final ListIterator<Object> entityIterator;
+        private final int startIndex;
+        private int currentIndex;
+        private List<Object> reachableEntityList = null;
 
-        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
-                ListIterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
-                ValueRangeManager<Solution_> valueRangeManager) {
-            super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
-            this.entityIterator = entityIterator;
+        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier, List<Object> allEntities,
+                BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, int startIndex,
+                ReachableValues[] reachableValueList) {
+            super(upcomingEntitySupplier, basicVariableDescriptors, reachableValueList);
+            this.startIndex = startIndex;
+            this.currentIndex = startIndex;
+            this.reachableEntityList = Objects.requireNonNull(allEntities).subList(startIndex, allEntities.size());
+        }
+
+        @Override
+        void processReplayedEntityChange(Object replayedEntity) {
+            this.currentIndex = startIndex;
         }
 
         @Override
         protected Object createUpcomingSelection() {
             initialize();
-            while (entityIterator.hasNext()) {
-                var entity = entityIterator.next();
+            if (currentIndex >= reachableEntityList.size()) {
+                return noUpcomingSelection();
+            }
+            do {
+                var entity = reachableEntityList.get(currentIndex++);
                 if (isReachable(entity)) {
                     return entity;
                 }
-            }
+            } while (currentIndex < reachableEntityList.size());
             return noUpcomingSelection();
         }
 
         @Override
         protected Object createPreviousSelection() {
             initialize();
-            while (entityIterator.hasPrevious()) {
-                var entity = entityIterator.previous();
+            if (currentIndex <= 0) {
+                return noUpcomingSelection();
+            }
+            do {
+                var entity = reachableEntityList.get(currentIndex--);
                 if (isReachable(entity)) {
                     return entity;
                 }
-            }
+            } while (currentIndex > 0);
             return noUpcomingSelection();
         }
     }
 
     private static class RandomFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_> {
 
-        private final Iterator<Object> entityIterator;
-        private final int maxBailoutSize;
+        private final Random workingRandom;
+        private final List<Object> reachableEntityList;
+        private int maxBailoutSize = 1;
+        private Object replayedEntity;
 
-        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier, Iterator<Object> entityIterator,
-                BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, ValueRangeManager<Solution_> valueRangeManager,
-                int maxBailoutSize) {
-            super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
-            this.entityIterator = entityIterator;
-            this.maxBailoutSize = maxBailoutSize;
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier, List<Object> allEntities,
+                BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, ReachableValues[] reachableValues,
+                Random workingRandom) {
+            super(upcomingEntitySupplier, basicVariableDescriptors, reachableValues);
+            this.reachableEntityList = Objects.requireNonNull(allEntities);
+            this.workingRandom = workingRandom;
+        }
+
+        @Override
+        void processReplayedEntityChange(Object replayedEntity) {
+            this.replayedEntity = replayedEntity;
+            // The maximum number of attempts is equal to 20% of the number of available entities.
+            // We won't spend too much time trying to generate a single move for the current selection.
+            // If we are unable to generate, the move iterator can still be used in later iterations.
+            this.maxBailoutSize = (int) Math.max(1, reachableEntityList.size() * 0.2);
         }
 
         @Override
         public boolean hasNext() {
             checkReplayedEntity();
             var hasNext = super.hasNext();
-            if (!hasNext && entityIterator.hasNext()) {
+            if (!hasNext && !reachableEntityList.isEmpty()) {
                 // If a valid move is not found with the given bailout size,
-                // we can still use the iterator as long as the entity iterator is not exhausted
+                // we can still use the iterator as long as the entity list is not empty
                 this.upcomingCreated = true;
                 this.hasUpcomingSelection = true;
                 // We assigned the same entity from the left side, which will result in a non-doable move
-                this.upcomingSelection = currentReplayedEntity();
+                this.upcomingSelection = replayedEntity;
                 return true;
             }
             return hasNext;
@@ -338,12 +365,15 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         @Override
         protected Object createUpcomingSelection() {
             initialize();
+            if (reachableEntityList.isEmpty()) {
+                return noUpcomingSelection();
+            }
             Object next;
             var bailoutSize = maxBailoutSize;
             do {
                 bailoutSize--;
-                // We expect the entity iterator to apply a never-ending random selection approach
-                next = entityIterator.next();
+                var index = workingRandom.nextInt(Objects.requireNonNull(reachableEntityList).size());
+                next = reachableEntityList.get(index);
                 if (isReachable(next)) {
                     return next;
                 }
