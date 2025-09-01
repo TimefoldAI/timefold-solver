@@ -21,12 +21,27 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMov
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelectorWithoutSize;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
+import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
@@ -75,7 +90,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(c, 1),
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1)),
-                false);
+                false, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -129,7 +144,7 @@ class ListChangeMoveSelectorTest {
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
         var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
                 entityDescriptor, false);
-        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, destinationSelector);
         phaseStarted(solverScope, mimicRecordingValueSelector, destinationSelector);
@@ -170,7 +185,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(c, 1),
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1)),
-                false);
+                false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -223,7 +238,7 @@ class ListChangeMoveSelectorTest {
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListPinnedEntityProvidingEntity.class);
         var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
                 entityDescriptor, false);
-        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(solverScope, moveSelector);
@@ -263,7 +278,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1),
                         ElementPosition.unassigned()),
-                false);
+                false, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -323,7 +338,7 @@ class ListChangeMoveSelectorTest {
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListUnassignedEntityProvidingEntity.class);
         var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
                 entityDescriptor, false);
-        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, mimicRecordingValueSelector, destinationSelector);
         phaseStarted(solverScope, mimicRecordingValueSelector, destinationSelector);
@@ -365,7 +380,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 0),
                         ElementPosition.of(a, 1),
                         ElementPosition.of(a, 2)),
-                true);
+                true, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -404,7 +419,7 @@ class ListChangeMoveSelectorTest {
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
         var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
                 entityDescriptor, true);
-        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(solverScope, moveSelector);
@@ -436,7 +451,7 @@ class ListChangeMoveSelectorTest {
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListEntityProvidingEntity.class);
         var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
                 entityDescriptor, IgnoreBValueSelectionFilter.class, true);
-        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(solverScope, moveSelector);
@@ -478,7 +493,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1),
                         ElementPosition.of(c, 0)),
-                true);
+                true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -528,7 +543,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 2),
                         ElementPosition.of(a, 1),
                         ElementPosition.of(c, 0)),
-                true);
+                true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0), iterablePropertySelector);
         phaseStarted(moveSelector, solverScope);
@@ -566,7 +581,7 @@ class ListChangeMoveSelectorTest {
                         ElementPosition.of(a, 1),
                         ElementPosition.of(a, 2),
                         ElementPosition.unassigned()),
-                true);
+                true, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -599,7 +614,7 @@ class ListChangeMoveSelectorTest {
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataListUnassignedEntityProvidingEntity.class);
         var destinationSelector = getEntityValueRangeDestinationSelector(mimicRecordingValueSelector, solutionDescriptor,
                 entityDescriptor, true);
-        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true);
+        var moveSelector = new ListChangeMoveSelector<>(mimicRecordingValueSelector, destinationSelector, true, true);
 
         var solverScope =
                 solvingStarted(moveSelector, scoreDirector, new Random(0));
@@ -611,6 +626,57 @@ class ListChangeMoveSelectorTest {
                 "3 {B[0]->B[1]}",
                 "3 {B[0]->B[1]}",
                 "3 {B[0]->B[1]}");
+    }
+
+    @Test
+    void notValueRangeFiltering() {
+        var swapMoveConfig = new ListChangeMoveSelectorConfig()
+                .withFilterClass(DummyValueRangeFiltering.class);
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataListUnassignedEntityProvidingSolution>()
+                .withSolutionDescriptor(TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor())
+                .withClassInstanceCache(ClassInstanceCache.create())
+                .withRandom(new Random(0))
+                .build();
+        var moveSelector = (FilteringMoveSelector<TestdataListUnassignedEntityProvidingSolution>) MoveSelectorFactory
+                .<TestdataListUnassignedEntityProvidingSolution> create(swapMoveConfig)
+                .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM, true);
+
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var a = new TestdataListUnassignedEntityProvidingEntity("A", List.of(v1, v2), List.of(v2));
+        var b = new TestdataListUnassignedEntityProvidingEntity("B", List.of(v2), List.of(v1));
+        var solution = new TestdataListUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b));
+
+        var scoreDirector = mockScoreDirector(TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        scoreDirector.setWorkingSolution(solution);
+        phaseStarted(moveSelector, solverScope);
+        var move = (ListChangeMove<TestdataListUnassignedEntityProvidingSolution>) moveSelector.iterator().next();
+        var valueRangeManager = mock(ValueRangeManager.class);
+        doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();
+        var valueRangeCache = mock(CountableValueRange.class);
+        doReturn(valueRangeCache).when(valueRangeManager).getFromEntity(any(), any());
+        assertThat(move).isNotNull();
+        move.isMoveDoable(scoreDirector);
+        // When enabling move filtering, FilteringValueRangeSelector is not created and ReachableValues is not requested
+        // The CountableValueRange::contains must be called to determine if the generated move is feasible
+        verify(valueRangeCache, times(1)).contains(any());
+    }
+
+    public static class DummyValueRangeFiltering
+            implements
+            SelectionFilter<TestdataListUnassignedEntityProvidingSolution, ListChangeMove<TestdataListUnassignedEntityProvidingSolution>> {
+
+        public DummyValueRangeFiltering() {
+            // Required for initialization
+        }
+
+        @Override
+        public boolean accept(ScoreDirector<TestdataListUnassignedEntityProvidingSolution> scoreDirector,
+                ListChangeMove<TestdataListUnassignedEntityProvidingSolution> selection) {
+            return true;
+        }
     }
 
     public static class IgnoreBValueSelectionFilter

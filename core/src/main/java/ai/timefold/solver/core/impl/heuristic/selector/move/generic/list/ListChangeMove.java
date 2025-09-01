@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -29,8 +30,15 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
     private final int sourceIndex;
     private final Object destinationEntity;
     private final int destinationIndex;
+    private final boolean checkValueRange;
 
     private Object planningValue;
+
+    public ListChangeMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex,
+            Object destinationEntity, int destinationIndex) {
+        // We don't enable the value range validation by default
+        this(variableDescriptor, sourceEntity, sourceIndex, destinationEntity, destinationIndex, false);
+    }
 
     /**
      * The move removes a planning value element from {@code sourceEntity.listVariable[sourceIndex]}
@@ -87,14 +95,16 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
      * @param sourceIndex index in sourceEntity's list variable from which a planning value will be removed
      * @param destinationEntity planning entity instance to which a planning value will be moved, for example "Bob"
      * @param destinationIndex index in destinationEntity's list variable where the moved planning value will be inserted
+     * @param checkValueRange flag that enables the value-range validation
      */
     public ListChangeMove(ListVariableDescriptor<Solution_> variableDescriptor, Object sourceEntity, int sourceIndex,
-            Object destinationEntity, int destinationIndex) {
+            Object destinationEntity, int destinationIndex, boolean checkValueRange) {
         this.variableDescriptor = variableDescriptor;
         this.sourceEntity = sourceEntity;
         this.sourceIndex = sourceIndex;
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
+        this.checkValueRange = checkValueRange;
     }
 
     public Object getSourceEntity() {
@@ -130,8 +140,20 @@ public class ListChangeMove<Solution_> extends AbstractMove<Solution_> {
         // Do not use Object#equals on user-provided domain objects. Relying on user's implementation of Object#equals
         // opens the opportunity to shoot themselves in the foot if different entities can be equal.
         var sameEntity = destinationEntity == sourceEntity;
-        return !sameEntity
+        var doable = !sameEntity
                 || (destinationIndex != sourceIndex && destinationIndex != variableDescriptor.getListSize(sourceEntity));
+        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution() || !checkValueRange) {
+            return doable;
+        }
+        // When the source and destination are different,
+        // and the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming value
+        var value = variableDescriptor.getElement(sourceEntity, sourceIndex);
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        return valueRangeManager
+                .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
+                .contains(value);
     }
 
     @Override

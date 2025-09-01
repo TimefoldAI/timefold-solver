@@ -7,6 +7,7 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
@@ -15,13 +16,21 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
     private final Object planningValue;
     private final Object destinationEntity;
     private final int destinationIndex;
+    private final boolean checkValueRange;
 
     public ListAssignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object planningValue, Object destinationEntity,
             int destinationIndex) {
+        // We don't enable the value range validation by default
+        this(variableDescriptor, planningValue, destinationEntity, destinationIndex, false);
+    }
+
+    public ListAssignMove(ListVariableDescriptor<Solution_> variableDescriptor, Object planningValue, Object destinationEntity,
+            int destinationIndex, boolean checkValueRange) {
         this.variableDescriptor = variableDescriptor;
         this.planningValue = planningValue;
         this.destinationEntity = destinationEntity;
         this.destinationIndex = destinationIndex;
+        this.checkValueRange = checkValueRange;
     }
 
     public Object getDestinationEntity() {
@@ -48,7 +57,17 @@ public final class ListAssignMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        return destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
+        var doable = destinationIndex >= 0 && variableDescriptor.getListSize(destinationEntity) >= destinationIndex;
+        if (!doable || variableDescriptor.canExtractValueRangeFromSolution() || !checkValueRange) {
+            return doable;
+        }
+        // When the value range is located at the entity,
+        // we need to check if the destination's value range accepts the upcoming value
+        ValueRangeManager<Solution_> valueRangeManager =
+                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
+        return valueRangeManager
+                .getFromEntity(variableDescriptor.getValueRangeDescriptor(), destinationEntity)
+                .contains(planningValue);
     }
 
     @Override

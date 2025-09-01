@@ -50,8 +50,17 @@ public class ListChangeMoveSelectorFactory<Solution_>
         // When enabling entity value range filtering,
         // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector and FilteringValueRangeSelector
         // to replay the selected value and return only reachable values.
+        // Experiments have shown that if the move configuration includes a custom filter,
+        // the advantages of using value-range filtering nodes are outweighed by the cost
+        // of applying the filter afterward.
+        // The value-range filtering nodes perform lookup operations
+        // to ensure entity reachability before move filtering,
+        // which can lead to unnecessary overhead if the move can still be filtered out by the root move filter.
         var enableEntityValueRangeFilter =
-                !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
+                // No filtering
+                config.getFilterClass() == null
+                        // Using entity value-range
+                        && !entityDescriptor.getGenuineListVariableDescriptor().canExtractValueRangeFromSolution();
         // A null ID means to turn off the entity value range filtering
         String entityValueRangeRecorderId = null;
         if (enableEntityValueRangeFilter) {
@@ -82,7 +91,7 @@ public class ListChangeMoveSelectorFactory<Solution_>
                 .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, entityValueRangeRecorderId);
 
         return new ListChangeMoveSelector<>((IterableValueSelector<Solution_>) sourceValueSelector, destinationSelector,
-                randomSelection);
+                randomSelection, !enableEntityValueRangeFilter);
     }
 
     @Override
