@@ -1241,3 +1241,58 @@ All the input reports which are being merged should have been generated with the
 Using reports from different Timefold Solver major or minor versions are not guaranteed to succeed and deliver correct information,
 because the benchmark report data structure often changes.
 ====
+
+==== Using the Benchmark Aggregator programmatically
+
+For automated or integrated workflows, you can use the `BenchmarkAggregator.aggregate()` method directly to create aggregated reports programmatically. This approach is particularly useful in CI/CD pipelines, data science analytics, research studies, or when you need a comprehensive view of multiple benchmark runs as part of a larger application workflow.
+
+[source,java,options="nowrap"]
+----
+public File aggregateBenchmarks() {
+    // Load benchmark configuration
+    PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromXmlResource("benchmarkConfig.xml");
+    File benchmarkDirectory = benchmarkConfig.getBenchmarkDirectory();
+    if (!benchmarkDirectory.exists() || !benchmarkDirectory.isDirectory()) {
+        throw new IllegalArgumentException("Benchmark directory does not exist: " + benchmarkDirectory);
+    }
+
+    // Read all existing benchmark results from the directory
+    BenchmarkResultIO benchmarkResultIO = new BenchmarkResultIO();
+    List<PlannerBenchmarkResult> plannerBenchmarkResults =
+            benchmarkResultIO.readPlannerBenchmarkResultList(benchmarkDirectory);
+
+    if (plannerBenchmarkResults.isEmpty()) {
+        throw new IllegalArgumentException("No benchmark results found in directory: " + benchmarkDirectory);
+    }
+
+    // Collect all single benchmark results and preserve solver names
+    List<SingleBenchmarkResult> allSingleBenchmarkResults = new ArrayList<>();
+    Map<SolverBenchmarkResult, String> solverBenchmarkResultNameMap = new HashMap<>();
+
+    for (PlannerBenchmarkResult plannerResult : plannerBenchmarkResults) {
+        for (SolverBenchmarkResult solverResult : plannerResult.getSolverBenchmarkResultList()) {
+            allSingleBenchmarkResults.addAll(solverResult.getSingleBenchmarkResultList());
+            solverBenchmarkResultNameMap.put(solverResult, solverResult.getName());
+        }
+    }
+
+    // Create and configure the benchmark aggregator
+    BenchmarkAggregator aggregator = new BenchmarkAggregator();
+    aggregator.setBenchmarkDirectory(benchmarkDirectory);
+    aggregator.setBenchmarkReportConfig(benchmarkConfig.getBenchmarkReportConfig());
+
+    // Perform the aggregation - returns HTML report file
+    return aggregator.aggregate(allSingleBenchmarkResults, solverBenchmarkResultNameMap);
+}
+----
+
+The `BenchmarkAggregator.aggregate()` method takes two parameters:
+
+* `allSingleBenchmarkResults`: A list of **SingleBenchmarkResult** objects from all the benchmarks you want to aggregate
+* `solverBenchmarkResultNameMap`: A map that preserves the original solver names of **SolverBenchmarkResult** for proper identification in the aggregated report
+
+The method returns a `File` pointing to the generated HTML overview report that contains the aggregated benchmark results.
+
+NOTE: All the input reports which are being merged should have been generated with the same Timefold Solver version as the `BenchmarkAggregator`.
+Using reports from different Timefold Solver major or minor versions are not guaranteed to succeed and deliver correct information,
+because the benchmark report data structure might change.
