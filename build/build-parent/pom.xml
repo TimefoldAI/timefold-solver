@@ -48,7 +48,7 @@
     <version.jar.plugin>3.4.2</version.jar.plugin>
     <version.jaxb2.plugin>3.3.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
-    <version.sonar.plugin>5.1.0.4751</version.sonar.plugin>
+    <version.sonar.plugin>5.2.0.4988</version.sonar.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
     <version.spotless.plugin>2.46.1</version.spotless.plugin>
     <version.surefire.plugin>3.5.3</version.surefire.plugin>
