@@ -16,11 +16,27 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMov
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
+import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
+import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
+import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -62,7 +78,7 @@ class ListSwapMoveSelectorTest {
         var moveSelector = new ListSwapMoveSelector<>(
                 mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
                 mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
-                false);
+                false, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -105,7 +121,7 @@ class ListSwapMoveSelectorTest {
         var filteringValueRangeSelector =
                 getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, false, true, false);
 
-        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(solverScope, moveSelector);
@@ -138,7 +154,7 @@ class ListSwapMoveSelectorTest {
         var moveSelector = new ListSwapMoveSelector<>(
                 mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
                 mockIterableValueSelector(listVariableDescriptor, v3, v1, v2),
-                false);
+                false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -184,7 +200,7 @@ class ListSwapMoveSelectorTest {
         var filteringValueRangeSelector =
                 getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, false, true, false);
 
-        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(solverScope, moveSelector);
@@ -214,7 +230,7 @@ class ListSwapMoveSelectorTest {
         var moveSelector = new ListSwapMoveSelector<>(
                 mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v4),
                 mockIterableValueSelector(listVariableDescriptor, v4, v3, v2, v1),
-                false);
+                false, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -259,7 +275,7 @@ class ListSwapMoveSelectorTest {
         var filteringValueRangeSelector =
                 getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, false, true, false);
 
-        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false);
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(solverScope, moveSelector);
@@ -290,7 +306,7 @@ class ListSwapMoveSelectorTest {
                 // to be never ending, so they must not be exhausted after the last asserted code.
                 mockIterableValueSelector(listVariableDescriptor, v2, v3, v2, v3, v2, v3, v1, v1, v1, v1),
                 mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v1, v2, v3, v1, v2, v3, v1),
-                true);
+                true, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -328,7 +344,7 @@ class ListSwapMoveSelectorTest {
         var filteringValueRangeSelector =
                 getFilteringValueRangeSelector(mimicRecordingValueSelector, iterableValueRangeSelector, true, true, true);
 
-        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(solverScope, moveSelector);
@@ -368,7 +384,7 @@ class ListSwapMoveSelectorTest {
             var filteringValueRangeSelector =
                     getFilteringValueRangeSelector(mimicRecordingValueSelector, iterableValueRangeSelector, true, true, false);
 
-            var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+            var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true, true);
 
             var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
             phaseStarted(solverScope, moveSelector);
@@ -391,7 +407,7 @@ class ListSwapMoveSelectorTest {
             var filteringValueRangeSelector =
                     getFilteringValueRangeSelector(mimicRecordingValueSelector, iterableValueRangeSelector, true, true, false);
 
-            var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+            var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true, true);
 
             var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
             phaseStarted(solverScope, moveSelector);
@@ -422,7 +438,7 @@ class ListSwapMoveSelectorTest {
                 // to be never ending, so they must not be exhausted after the last asserted code.
                 mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v1, v2, v3, v1, v2, v3),
                 mockIterableValueSelector(listVariableDescriptor, v1, v3, v2, v1, v3, v2, v1, v3, v2),
-                true);
+                true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -461,7 +477,7 @@ class ListSwapMoveSelectorTest {
         var filteringValueRangeSelector =
                 getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, true, true, true);
 
-        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(solverScope, moveSelector);
@@ -494,7 +510,7 @@ class ListSwapMoveSelectorTest {
                 // to be never ending, so they must not be exhausted after the last asserted code.
                 mockIterableValueSelector(listVariableDescriptor, v2, v3, v4, v2, v3, v4, v2, v3, v4, v1, v1, v1, v1),
                 mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v4, v1, v2, v3, v4, v1, v2, v3, v1, v4),
-                true);
+                true, true);
 
         solvingStarted(moveSelector, scoreDirector);
 
@@ -532,7 +548,7 @@ class ListSwapMoveSelectorTest {
         var filteringValueRangeSelector =
                 getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, true, true, true);
 
-        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(solverScope, moveSelector);
@@ -563,7 +579,7 @@ class ListSwapMoveSelectorTest {
         var filteringValueRangeSelector =
                 getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, true, true, false);
 
-        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(solverScope, moveSelector);
@@ -572,5 +588,57 @@ class ListSwapMoveSelectorTest {
         var iterator = moveSelector.iterator();
         assertThat(iterator.hasNext()).isTrue();
         assertThat(iterator.next()).isSameAs(NoChangeMove.getInstance());
+    }
+
+    @Test
+    void notValueRangeFiltering() {
+        var swapMoveConfig = new ListSwapMoveSelectorConfig()
+                .withFilterClass(DummyValueRangeFiltering.class);
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataListUnassignedEntityProvidingSolution>()
+                .withSolutionDescriptor(TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor())
+                .withClassInstanceCache(ClassInstanceCache.create())
+                .withRandom(new Random(0))
+                .build();
+        var moveSelector = (FilteringMoveSelector<TestdataListUnassignedEntityProvidingSolution>) MoveSelectorFactory
+                .<TestdataListUnassignedEntityProvidingSolution> create(swapMoveConfig)
+                .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM, true);
+
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var a = new TestdataListUnassignedEntityProvidingEntity("A", List.of(v1, v2), List.of(v2));
+        var b = new TestdataListUnassignedEntityProvidingEntity("B", List.of(v2), List.of(v1));
+        var solution = new TestdataListUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b));
+
+        var scoreDirector = mockScoreDirector(TestdataListUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        scoreDirector.setWorkingSolution(solution);
+        phaseStarted(moveSelector, solverScope);
+        var move = (ListSwapMove<TestdataListUnassignedEntityProvidingSolution>) moveSelector.iterator().next();
+        var valueRangeManager = mock(ValueRangeManager.class);
+        doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();
+        var valueRangeCache = mock(CountableValueRange.class);
+        doReturn(valueRangeCache).when(valueRangeManager).getFromEntity(any(), any());
+        doReturn(true).when(valueRangeCache).contains(any());
+        assertThat(move).isNotNull();
+        move.isMoveDoable(scoreDirector);
+        // When enabling move filtering, FilteringValueRangeSelector is not created and ReachableValues is not requested
+        // The CountableValueRange::contains must be called to determine if the generated move is feasible
+        verify(valueRangeCache, times(2)).contains(any());
+    }
+
+    public static class DummyValueRangeFiltering
+            implements
+            SelectionFilter<TestdataListUnassignedEntityProvidingSolution, ListSwapMove<TestdataListUnassignedEntityProvidingSolution>> {
+
+        public DummyValueRangeFiltering() {
+            // Required for initialization
+        }
+
+        @Override
+        public boolean accept(ScoreDirector<TestdataListUnassignedEntityProvidingSolution> scoreDirector,
+                ListSwapMove<TestdataListUnassignedEntityProvidingSolution> selection) {
+            return true;
+        }
     }
 }
