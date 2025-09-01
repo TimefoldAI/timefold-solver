@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -12,7 +13,6 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
-import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -170,7 +170,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     }
 
     @NullMarked
-    private abstract class AbstractFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
+    private abstract class AbstractFilteringValueRangeIterator implements Iterator<Object> {
         private final Supplier<Object> upcomingValueSupplier;
         private final ListVariableStateSupply<Solution_> listVariableStateSupply;
         private final ReachableValues reachableValues;
@@ -241,7 +241,6 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             }
             currentUpcomingList = reachableValues.extractValuesAsList(currentUpcomingValue);
             processUpcomingValue(currentUpcomingValue, currentUpcomingList);
-            upcomingCreated = false;
             this.hasData = !currentUpcomingList.isEmpty();
             this.initialized = true;
         }
@@ -277,6 +276,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private class OriginalFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
         // The value iterator returns all reachable values
         private Iterator<Object> reachableValueIterator;
+        private Object selected = null;
 
         private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
                 ListVariableStateSupply<Solution_> listVariableStateSupply, boolean checkSourceAndDestination) {
@@ -286,22 +286,38 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         @Override
         void processUpcomingValue(Object upcomingValue, List<Object> upcomingList) {
             reachableValueIterator = Objects.requireNonNull(upcomingList).iterator();
+            this.selected = null;
         }
 
         @Override
-        protected Object createUpcomingSelection() {
-            initialize();
-            if (hasNoData()) {
-                return noUpcomingSelection();
+        public boolean hasNext() {
+            this.selected = pickNext();
+            return selected != null;
+        }
+
+        private Object pickNext() {
+            if (selected != null) {
+                throw new IllegalStateException("The next value has already been picked.");
             }
-            Object next;
-            do {
-                if (!reachableValueIterator.hasNext()) {
-                    return noUpcomingSelection();
+            initialize();
+            this.selected = null;
+            while (reachableValueIterator.hasNext()) {
+                var value = reachableValueIterator.next();
+                if (isReachable(value)) {
+                    return value;
                 }
-                next = reachableValueIterator.next();
-            } while (!isReachable(next));
-            return next;
+            }
+            return null;
+        }
+
+        @Override
+        public Object next() {
+            if (selected == null) {
+                throw new NoSuchElementException();
+            }
+            var result = selected;
+            this.selected = null;
+            return result;
         }
     }
 
@@ -329,24 +345,13 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         @Override
         public boolean hasNext() {
             checkUpcomingValue();
-            var hasNext = super.hasNext();
-            if (!hasNext && reachableValueList != null && !reachableValueList.isEmpty()) {
-                // if a valid move is not found with the given bailout size,
-                // we can still use the iterator as long as the currentUpcomingList is not empty
-                this.upcomingCreated = true;
-                this.hasUpcomingSelection = true;
-                // We assigned the same value to the left side, which will result in a non-doable move
-                this.upcomingSelection = replayedValue;
-                return true;
-            }
-            return hasNext;
+            return reachableValues != null && !reachableValueList.isEmpty();
         }
 
         @Override
-        protected Object createUpcomingSelection() {
-            initialize();
+        public Object next() {
             if (hasNoData()) {
-                return noUpcomingSelection();
+                throw new NoSuchElementException();
             }
             Object next;
             var bailoutSize = maxBailoutSize;
@@ -358,9 +363,10 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
                     return next;
                 }
             } while (bailoutSize > 0);
-            return noUpcomingSelection();
+            // if a valid move is not found with the given bailout size,
+            // we assign the same value to the left side, which will result in a non-doable move
+            return replayedValue;
         }
-
     }
 
 }

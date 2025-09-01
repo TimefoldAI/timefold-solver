@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
@@ -189,7 +190,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         }
     }
 
-    private static class RandomFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
+    private static class RandomFilteringValueRangeIterator implements Iterator<Object> {
 
         private final Supplier<Object> upcomingValueSupplier;
         private final ReachableValues reachableValues;
@@ -217,31 +218,19 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         }
 
         private void loadValues() {
-            upcomingCreated = false;
             this.entityList = reachableValues.extractEntitiesAsList(currentUpcomingValue);
         }
 
         @Override
         public boolean hasNext() {
-            if (currentUpcomingValue != null) {
-                var updatedUpcomingValue = upcomingValueSupplier.get();
-                if (updatedUpcomingValue != currentUpcomingValue) {
-                    // The iterator is reused in the ElementPositionRandomIterator,
-                    // even if the value has changed.
-                    // Therefore,
-                    // we need to update the value list to ensure it is consistent.
-                    currentUpcomingValue = updatedUpcomingValue;
-                    loadValues();
-                }
-            }
-            return super.hasNext();
+            initialize();
+            return entityList != null && !entityList.isEmpty();
         }
 
         @Override
-        protected Object createUpcomingSelection() {
-            initialize();
+        public Object next() {
             if (entityList.isEmpty()) {
-                return noUpcomingSelection();
+                throw new NoSuchElementException();
             }
             var index = workingRandom.nextInt(entityList.size());
             return entityList.get(index);
