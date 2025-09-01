@@ -321,7 +321,7 @@ class SwapMoveSelectorTest {
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
 
-        // we assume that any entity is reachable if they share at least one common value in the range
+        // We assume that any entity is reachable if its assigned values are null or if it can be reached by the inverse entities
         scoreDirector.setWorkingSolution(solution);
         assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
 
@@ -420,7 +420,7 @@ class SwapMoveSelectorTest {
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(moveSelector, solverScope);
 
-        // we assume that any entity is reachable if they share at least one common value in the range
+        // We assume that any entity is reachable if its assigned values are null or if it can be reached by the inverse entities
         scoreDirector.setWorkingSolution(solution);
         assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
 

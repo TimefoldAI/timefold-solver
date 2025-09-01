@@ -157,7 +157,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                         "Impossible state: childEntitySelector must provide a never ending approach.");
             }
             return new RandomFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
-                    basicVariableDescriptors, valueRangeManager);
+                    basicVariableDescriptors, valueRangeManager, (int) childEntitySelector.getSize());
         } else {
             return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.listIterator(),
                     basicVariableDescriptors, valueRangeManager);
@@ -305,11 +305,14 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private static class RandomFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_> {
 
         private final Iterator<Object> entityIterator;
+        private final int maxBailoutSize;
 
         private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier, Iterator<Object> entityIterator,
-                BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, ValueRangeManager<Solution_> valueRangeManager) {
+                BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, ValueRangeManager<Solution_> valueRangeManager,
+                int maxBailoutSize) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
             this.entityIterator = entityIterator;
+            this.maxBailoutSize = maxBailoutSize;
         }
 
         @Override
@@ -331,12 +334,19 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         @Override
         protected Object createUpcomingSelection() {
             initialize();
-            Object next;
-            // We expect the entity iterator to apply a never-ending random selection approach
-            next = entityIterator.next();
-            if (isReachable(next)) {
-                return next;
+            if (!entityIterator.hasNext()) {
+                return noUpcomingSelection();
             }
+            Object next;
+            var bailoutSize = maxBailoutSize;
+            do {
+                bailoutSize--;
+                // We expect the entity iterator to apply a never-ending random selection approach
+                next = entityIterator.next();
+                if (isReachable(next)) {
+                    return next;
+                }
+            } while (bailoutSize > 0);
             return noUpcomingSelection();
         }
 
