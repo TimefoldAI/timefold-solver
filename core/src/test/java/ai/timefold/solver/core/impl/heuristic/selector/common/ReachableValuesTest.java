@@ -37,41 +37,16 @@ class ReachableValuesTest {
         var reachableValues = scoreDirector.getValueRangeManager()
                 .getReachableValues(entityDescriptor.getGenuineListVariableDescriptor());
 
-        var iterator = reachableValues.getOriginalEntityIterator(reachableValues.getValueOrdinal(v1));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(a));
-        assertThat(iterator.hasNext()).isFalse();
+        assertThat(reachableValues.extractEntitiesAsList(v1)).containsExactlyInAnyOrder(a);
+        assertThat(reachableValues.extractEntitiesAsList(v2)).containsExactlyInAnyOrder(a, b);
+        assertThat(reachableValues.extractEntitiesAsList(v3)).containsExactlyInAnyOrder(a, b, c);
+        assertThat(reachableValues.extractEntitiesAsList(v4)).containsExactlyInAnyOrder(c);
+        assertThat(reachableValues.extractEntitiesAsList(v5)).containsExactlyInAnyOrder(c);
 
-        iterator = reachableValues.getOriginalEntityIterator(reachableValues.getValueOrdinal(v2));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(a));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(b));
-        assertThat(iterator.hasNext()).isFalse();
+        assertThat(reachableValues.isEntityReachable(v1, a)).isTrue();
+        assertThat(reachableValues.isEntityReachable(v1, b)).isFalse();
+        assertThat(reachableValues.isEntityReachable(v1, c)).isFalse();
 
-        iterator = reachableValues.getOriginalEntityIterator(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(a));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(b));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(c));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalEntityIterator(reachableValues.getValueOrdinal(v4));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(c));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalEntityIterator(reachableValues.getValueOrdinal(v5));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getEntityOrdinal(c));
-        assertThat(iterator.hasNext()).isFalse();
-
-        // Only origin
-        assertThat(reachableValues.isEntityReachable(reachableValues.getValueOrdinal(v1), reachableValues.getEntityOrdinal(a)))
-                .isTrue();
-        assertThat(reachableValues.isEntityReachable(reachableValues.getValueOrdinal(v1), reachableValues.getEntityOrdinal(b)))
-                .isFalse();
-        assertThat(reachableValues.isEntityReachable(reachableValues.getValueOrdinal(v1), reachableValues.getEntityOrdinal(c)))
-                .isFalse();
         assertThat(reachableValues.matchesValueClass(v1)).isTrue();
         assertThat(reachableValues.matchesValueClass(a)).isFalse();
     }
@@ -97,51 +72,19 @@ class ReachableValuesTest {
         var reachableValues = scoreDirector.getValueRangeManager()
                 .getReachableValues(entityDescriptor.getGenuineListVariableDescriptor());
 
-        var iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v1));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v2));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v2));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v1));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v1));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v2));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v4));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v5));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v4));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v5));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v5));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v4));
-        assertThat(iterator.hasNext()).isFalse();
+        assertThat(reachableValues.extractValuesAsList(v1)).containsExactlyInAnyOrder(v2, v3);
+        assertThat(reachableValues.extractValuesAsList(v2)).containsExactlyInAnyOrder(v1, v3);
+        assertThat(reachableValues.extractValuesAsList(v3)).containsExactlyInAnyOrder(v1, v2, v4, v5);
+        assertThat(reachableValues.extractValuesAsList(v4)).containsExactlyInAnyOrder(v3, v5);
+        assertThat(reachableValues.extractValuesAsList(v5)).containsExactlyInAnyOrder(v3, v4);
 
         // Only origin
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v2)))
-                .isTrue();
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v3)))
-                .isTrue();
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v4)))
-                .isFalse();
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v5)))
-                .isFalse();
+        assertThat(reachableValues.isValueReachable(v1, v2)).isTrue();
+        assertThat(reachableValues.isValueReachable(v1, v3)).isTrue();
+        assertThat(reachableValues.isValueReachable(v1, v5)).isFalse();
 
         // Null value is not accepted because the setting allowUnassigned is false
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), -1))
-                .isFalse();
+        assertThat(reachableValues.isValueReachable(v1, null)).isFalse();
     }
 
     @Test
@@ -165,49 +108,18 @@ class ReachableValuesTest {
         var reachableValues = scoreDirector.getValueRangeManager()
                 .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0));
 
-        var iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v1));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v2));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v2));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v1));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v1));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v2));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v4));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v5));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v4));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v5));
-        assertThat(iterator.hasNext()).isFalse();
-
-        iterator = reachableValues.getOriginalValueIterator(reachableValues.getValueOrdinal(v5));
-        assertThat(iterator.hasNext()).isTrue();
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v3));
-        assertThat(iterator.next()).isEqualTo(reachableValues.getValueOrdinal(v4));
-        assertThat(iterator.hasNext()).isFalse();
+        assertThat(reachableValues.extractValuesAsList(v1)).containsExactlyInAnyOrder(v2, v3);
+        assertThat(reachableValues.extractValuesAsList(v2)).containsExactlyInAnyOrder(v1, v3);
+        assertThat(reachableValues.extractValuesAsList(v3)).containsExactlyInAnyOrder(v1, v2, v4, v5);
+        assertThat(reachableValues.extractValuesAsList(v4)).containsExactlyInAnyOrder(v3, v5);
+        assertThat(reachableValues.extractValuesAsList(v5)).containsExactlyInAnyOrder(v3, v4);
 
         // Only origin
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v2)))
-                .isTrue();
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v3)))
-                .isTrue();
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v4)))
-                .isFalse();
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), reachableValues.getValueOrdinal(v5)))
-                .isFalse();
+        assertThat(reachableValues.isValueReachable(v1, v2)).isTrue();
+        assertThat(reachableValues.isValueReachable(v1, v3)).isTrue();
+        assertThat(reachableValues.isValueReachable(v1, v5)).isFalse();
 
         // Null value is not accepted because the setting allowUnassigned is false
-        assertThat(reachableValues.isValueReachable(reachableValues.getValueOrdinal(v1), -1)).isTrue();
+        assertThat(reachableValues.isValueReachable(v1, null)).isTrue();
     }
 }

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 import java.util.Objects;
 import java.util.Random;
@@ -40,7 +41,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private final EntitySelector<Solution_> childEntitySelector;
     private final boolean randomSelection;
 
-    private int replayedValueOrdinal = -1;
+    private Object replayedValue;
     private ReachableValues reachableValues;
     private long entitiesSize;
 
@@ -110,12 +111,12 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
      * The expected replayed value corresponds to the selected value when the replaying selector has the next value.
      * Once it is selected, it will be reused until a new value is replayed by the recorder selector.
      */
-    private Integer selectReplayedValue() {
+    private Object selectReplayedValue() {
         var iterator = replayingValueSelector.iterator();
         if (iterator.hasNext()) {
-            replayedValueOrdinal = reachableValues.getValueOrdinal(iterator.next());
+            replayedValue = iterator.next();
         }
-        return replayedValueOrdinal;
+        return replayedValue;
     }
 
     @Override
@@ -156,47 +157,47 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
     private static class OriginalFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
-        private final Supplier<Integer> upcomingValueSupplier;
+        private final Supplier<Object> upcomingValueSupplier;
         private final ReachableValues reachableValues;
-        private Iterator<Integer> entityIterator;
+        private Iterator<Object> valueIterator;
 
-        private OriginalFilteringValueRangeIterator(Supplier<Integer> upcomingValueSupplier, ReachableValues reachableValues) {
+        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues) {
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.upcomingValueSupplier = Objects.requireNonNull(upcomingValueSupplier);
         }
 
         private void initialize() {
-            if (entityIterator != null) {
+            if (valueIterator != null) {
                 return;
             }
-            var currentUpcomingValueOrdinal = upcomingValueSupplier.get();
-            if (currentUpcomingValueOrdinal == -1) {
-                entityIterator = Collections.emptyIterator();
+            var currentUpcomingValue = upcomingValueSupplier.get();
+            if (currentUpcomingValue == null) {
+                valueIterator = Collections.emptyIterator();
             } else {
-                this.entityIterator =
-                        reachableValues.getOriginalEntityIterator(Objects.requireNonNull(currentUpcomingValueOrdinal));
+                var allValues = reachableValues.extractEntitiesAsList(Objects.requireNonNull(currentUpcomingValue));
+                this.valueIterator = Objects.requireNonNull(allValues).iterator();
             }
         }
 
         @Override
         protected Object createUpcomingSelection() {
             initialize();
-            if (!entityIterator.hasNext()) {
+            if (!valueIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return reachableValues.getEntity(entityIterator.next());
+            return valueIterator.next();
         }
     }
 
     private static class RandomFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
-        private final Supplier<Integer> upcomingValueSupplier;
+        private final Supplier<Object> upcomingValueSupplier;
         private final ReachableValues reachableValues;
         private final Random workingRandom;
-        private int currentUpcomingValueOrdinal = -1;
-        private Iterator<Integer> entityIterator;
+        private Object currentUpcomingValue;
+        private List<Object> entityList;
 
-        private RandomFilteringValueRangeIterator(Supplier<Integer> upcomingValueSupplier, ReachableValues reachableValues,
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
                 Random workingRandom) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
@@ -204,12 +205,12 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         }
 
         private void initialize() {
-            if (entityIterator != null) {
+            if (entityList != null) {
                 return;
             }
-            currentUpcomingValueOrdinal = upcomingValueSupplier.get();
-            if (currentUpcomingValueOrdinal == -1) {
-                entityIterator = Collections.emptyIterator();
+            currentUpcomingValue = upcomingValueSupplier.get();
+            if (currentUpcomingValue == null) {
+                entityList = Collections.emptyList();
             } else {
                 loadValues();
             }
@@ -217,19 +218,19 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
         private void loadValues() {
             upcomingCreated = false;
-            this.entityIterator = reachableValues.getRandomEntityIterator(currentUpcomingValueOrdinal, workingRandom);
+            this.entityList = reachableValues.extractEntitiesAsList(currentUpcomingValue);
         }
 
         @Override
         public boolean hasNext() {
-            if (currentUpcomingValueOrdinal != -1) {
+            if (currentUpcomingValue != null) {
                 var updatedUpcomingValue = upcomingValueSupplier.get();
-                if (!updatedUpcomingValue.equals(currentUpcomingValueOrdinal)) {
+                if (updatedUpcomingValue != currentUpcomingValue) {
                     // The iterator is reused in the ElementPositionRandomIterator,
                     // even if the value has changed.
                     // Therefore,
                     // we need to update the value list to ensure it is consistent.
-                    currentUpcomingValueOrdinal = updatedUpcomingValue;
+                    currentUpcomingValue = updatedUpcomingValue;
                     loadValues();
                 }
             }
@@ -239,10 +240,11 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         @Override
         protected Object createUpcomingSelection() {
             initialize();
-            if (!entityIterator.hasNext()) {
+            if (entityList.isEmpty()) {
                 return noUpcomingSelection();
             }
-            return reachableValues.getEntity(entityIterator.next());
+            var index = workingRandom.nextInt(entityList.size());
+            return entityList.get(index);
         }
     }
 
