@@ -22,7 +22,8 @@ public class ChainedSwapMove<Solution_> extends SwapMove<Solution_> {
 
     public ChainedSwapMove(List<GenuineVariableDescriptor<Solution_>> variableDescriptorList,
             List<SingletonInverseVariableSupply> inverseVariableSupplyList, Object leftEntity, Object rightEntity) {
-        super(variableDescriptorList, leftEntity, rightEntity);
+        // We enable the value-range validation for chained moves
+        super(variableDescriptorList, leftEntity, rightEntity, true);
         oldLeftTrailingEntityList = new ArrayList<>(inverseVariableSupplyList.size());
         oldRightTrailingEntityList = new ArrayList<>(inverseVariableSupplyList.size());
         for (SingletonInverseVariableSupply inverseVariableSupply : inverseVariableSupplyList) {
@@ -35,7 +36,8 @@ public class ChainedSwapMove<Solution_> extends SwapMove<Solution_> {
     public ChainedSwapMove(List<GenuineVariableDescriptor<Solution_>> genuineVariableDescriptors,
             Object leftEntity, Object rightEntity,
             List<Object> oldLeftTrailingEntityList, List<Object> oldRightTrailingEntityList) {
-        super(genuineVariableDescriptors, leftEntity, rightEntity);
+        // We enable the value-range validation for chained moves
+        super(genuineVariableDescriptors, leftEntity, rightEntity, true);
         this.oldLeftTrailingEntityList = oldLeftTrailingEntityList;
         this.oldRightTrailingEntityList = oldRightTrailingEntityList;
     }
