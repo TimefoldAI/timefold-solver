@@ -323,7 +323,7 @@ class SwapMoveSelectorTest {
 
         // we assume that any entity is reachable if they share at least one common value in the range
         scoreDirector.setWorkingSolution(solution);
-        assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
+        assertIterableSelectorWithoutSize(moveSelector, "A<->C", "B<->C", "C<->A", "C<->B");
 
         // e1(v1) can swap with e3(v4)
         // e1(v1) cannot swap with e2(v3) because e1 does not accept v3
@@ -374,9 +374,9 @@ class SwapMoveSelectorTest {
         // only e3 is reachable by e1
         scoreDirector.setWorkingSolution(solution);
         // select left A, select right C
-        // select left A, select right B
-        random.reset(0, 2, 0, 1, 0, 2);
-        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
+        // select left C, select right A
+        random.reset(0, 0, 2, 0, 0, 0);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C", "C<->A");
 
         // e1(v1), e2(v3) and e3(v4)
         // e1 does not accepts v3 and e2 does not accepts v1
@@ -386,7 +386,7 @@ class SwapMoveSelectorTest {
         e3.setValue(v4);
         // select left A, select right C
         // select left A, select right C
-        random.reset(0, 2, 0, 2);
+        random.reset(0, 0, 0, 0);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
     }
@@ -422,7 +422,7 @@ class SwapMoveSelectorTest {
 
         // we assume that any entity is reachable if they share at least one common value in the range
         scoreDirector.setWorkingSolution(solution);
-        assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
+        assertIterableSelectorWithoutSize(moveSelector, "A<->C", "B<->C", "C<->A", "C<->B");
 
         // e1(v1) cannot swap with e2(v3) because e1 does not accept v3
         // e1(v1) can swap with e3(v4)
@@ -491,10 +491,9 @@ class SwapMoveSelectorTest {
         // e1(null, null) and e2(null, null)
         // we assume that any entity is reachable if they share at least one common value in the range
         scoreDirector.setWorkingSolution(solution);
-        // select left A, select right B
         // select left A, select right C
-        random.reset(0, 1, 0, 2, 0, 2);
-        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->B", "A<->C");
+        random.reset(0, 0, 0, 0);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
 
         // e1(v1, v1), e2(v3, v3) and e3(v4, v4)
         // e1 does not accepts v3 and e2 does not accepts v1
@@ -506,8 +505,7 @@ class SwapMoveSelectorTest {
         e3.setValue(v4);
         e3.setSecondValue(v4);
         // select left A, select right C
-        // select left A, select right C
-        random.reset(0, 2, 0, 2);
+        random.reset(0, 0, 0, 0);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
 
@@ -531,7 +529,7 @@ class SwapMoveSelectorTest {
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
         // Each entity has a different value, which makes impossible to do swaps
-        var e1 = new TestdataEntityProvidingEntity("A", List.of(v1), v1);
+        var e1 = new TestdataEntityProvidingEntity("A", List.of(v1, v3), v1);
         var e2 = new TestdataEntityProvidingEntity("B", List.of(v2), v2);
         var e3 = new TestdataEntityProvidingEntity("C", List.of(v3), v3);
         var solution = new TestdataEntityProvidingSolution("s1");

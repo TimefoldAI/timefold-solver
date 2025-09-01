@@ -72,7 +72,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private long entitiesSize;
 
     public FilteringEntityByValueSelector(EntitySelector<Solution_> childEntitySelector,
-            IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection) {
+                                          IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection) {
         this.replayingValueSelector = replayingValueSelector;
         this.childEntitySelector = childEntitySelector;
         this.randomSelection = randomSelection;
@@ -224,7 +224,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         private List<Object> entityList;
 
         private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
-                Random workingRandom) {
+                                                  Random workingRandom) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.workingRandom = workingRandom;
