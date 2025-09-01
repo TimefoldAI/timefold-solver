@@ -21,15 +21,17 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> leftValueIterator;
     private final IterableValueSelector<Solution_> rightValueSelector;
+    private final boolean checkValueRange;
     private Iterator<Object> rightValueIterator;
     private Object upcomingLeftValue;
 
     public OriginalListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector) {
+                                    IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector, boolean checkValueRange) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;
         this.rightValueIterator = Collections.emptyIterator();
+        this.checkValueRange = checkValueRange;
     }
 
     @Override
@@ -43,11 +45,11 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         }
 
         var upcomingRightValue = rightValueIterator.next();
-        return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
+        return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue, checkValueRange);
     }
 
     static <Solution_> Move<Solution_> buildSwapMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            Object upcomingLeftValue, Object upcomingRightValue) {
+                                                     Object upcomingLeftValue, Object upcomingRightValue, boolean checkValueRange) {
         if (upcomingLeftValue == upcomingRightValue) {
             return NoChangeMove.getInstance();
         }
@@ -70,13 +72,13 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
             var unassignMove =
                     new ListUnassignMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index());
             var assignMove = new ListAssignMove<>(listVariableDescriptor, upcomingRightValue, leftDestination.entity(),
-                    leftDestination.index());
+                    leftDestination.index(), checkValueRange);
             return CompositeMove.buildMove(unassignMove, assignMove);
         } else {
             var leftDestination = upcomingLeft.ensureAssigned();
             var rightDestination = upcomingRight.ensureAssigned();
             return new ListSwapMove<>(listVariableDescriptor, leftDestination.entity(), leftDestination.index(),
-                    rightDestination.entity(), rightDestination.index());
+                    rightDestination.entity(), rightDestination.index(), checkValueRange);
         }
     }
 }

@@ -17,17 +17,18 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     private final IterableValueSelector<Solution_> leftValueSelector;
     private final IterableValueSelector<Solution_> rightValueSelector;
     private final boolean randomSelection;
+    private final boolean checkValueRange;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     public ListSwapMoveSelector(IterableValueSelector<Solution_> leftValueSelector,
-            IterableValueSelector<Solution_> rightValueSelector, boolean randomSelection) {
+            IterableValueSelector<Solution_> rightValueSelector, boolean randomSelection, boolean checkValueRange) {
         this.leftValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(leftValueSelector, this::getListVariableStateSupply);
         this.rightValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(rightValueSelector, this::getListVariableStateSupply);
         this.randomSelection = randomSelection;
-
+        this.checkValueRange = checkValueRange;
         phaseLifecycleSupport.addEventListener(this.leftValueSelector);
         phaseLifecycleSupport.addEventListener(this.rightValueSelector);
     }
@@ -54,9 +55,11 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     @Override
     public Iterator<Move<Solution_>> iterator() {
         if (randomSelection) {
-            return new RandomListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector);
+            return new RandomListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector,
+                    checkValueRange);
         } else {
-            return new OriginalListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector);
+            return new OriginalListSwapIterator<>(listVariableStateSupply, leftValueSelector, rightValueSelector,
+                    checkValueRange);
         }
     }
 

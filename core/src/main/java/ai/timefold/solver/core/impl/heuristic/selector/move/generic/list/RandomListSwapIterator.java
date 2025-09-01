@@ -18,13 +18,15 @@ public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator
     private final ListVariableStateSupply<Solution_> listVariableStateSupply;
     private final Iterator<Object> leftValueIterator;
     private final Iterator<Object> rightValueIterator;
+    private final boolean checkValueRange;
 
     public RandomListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            IterableValueSelector<Solution_> leftValueSelector,
-            IterableValueSelector<Solution_> rightValueSelector) {
+            IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector,
+            boolean checkValueRange) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueIterator = rightValueSelector.iterator();
+        this.checkValueRange = checkValueRange;
     }
 
     @Override
@@ -38,6 +40,6 @@ public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator
             return noUpcomingSelection();
         }
         var upcomingRightValue = rightValueIterator.next();
-        return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
+        return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue, checkValueRange);
     }
 }

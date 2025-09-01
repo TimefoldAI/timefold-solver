@@ -38,7 +38,7 @@ class RandomListSwapIteratorTest {
         RandomListSwapIterator<TestdataListSolution> randomListSwapIterator = new RandomListSwapIterator<>(
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 mockIterableValueSelector(listVariableDescriptor, v1, v1, v1, v3),
-                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v1));
+                mockIterableValueSelector(listVariableDescriptor, v1, v2, v3, v1), false);
 
         assertCodesOfIterator(randomListSwapIterator,
                 "No change",
