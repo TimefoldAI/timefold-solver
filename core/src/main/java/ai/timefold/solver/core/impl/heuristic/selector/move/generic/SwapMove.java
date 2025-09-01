@@ -30,7 +30,7 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
     }
 
     public SwapMove(List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, Object leftEntity, Object rightEntity,
-            boolean checkValueRange) {
+                    boolean checkValueRange) {
         this.variableDescriptorList = variableDescriptorList;
         this.leftEntity = leftEntity;
         this.rightEntity = rightEntity;
