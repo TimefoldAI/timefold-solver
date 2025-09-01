@@ -43,7 +43,8 @@ class OriginalListChangeIteratorTest {
                 scoreDirector.getSupplyManager().demand(listVariableDescriptor.getStateDemand()),
                 valueSelector,
                 new ElementDestinationSelector<>(mockEntitySelector(entities.toArray(TestdataListEntity[]::new)), valueSelector,
-                        false), true);
+                        false),
+                true);
 
         assertThat(listChangeIterator).isExhausted();
     }

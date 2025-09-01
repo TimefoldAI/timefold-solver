@@ -26,7 +26,8 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     private Object upcomingLeftValue;
 
     public OriginalListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                                    IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector, boolean checkValueRange) {
+            IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector,
+            boolean checkValueRange) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;
@@ -49,7 +50,7 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
     }
 
     static <Solution_> Move<Solution_> buildSwapMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-                                                     Object upcomingLeftValue, Object upcomingRightValue, boolean checkValueRange) {
+            Object upcomingLeftValue, Object upcomingRightValue, boolean checkValueRange) {
         if (upcomingLeftValue == upcomingRightValue) {
             return NoChangeMove.getInstance();
         }
