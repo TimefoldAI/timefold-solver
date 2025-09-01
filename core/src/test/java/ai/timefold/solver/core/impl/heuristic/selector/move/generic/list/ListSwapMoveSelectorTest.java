@@ -335,9 +335,9 @@ class ListSwapMoveSelectorTest {
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "2 {A[0]} <-> 3 {B[0]}",
-                "No change",
-                "No change",
-                "No change",
+                "1 {A[1]} <-> 2 {A[0]}",
+                "3 {B[0]} <-> 2 {A[0]}",
+                "1 {A[1]} <-> 2 {A[0]}",
                 "3 {B[0]} <-> 2 {A[0]}");
     }
 
@@ -538,10 +538,10 @@ class ListSwapMoveSelectorTest {
         phaseStarted(solverScope, moveSelector);
 
         assertCodesOfNeverEndingMoveSelector(moveSelector,
-                "No change",
-                "No change",
-                "2 {A[0]} <-> 3 {B[0]}",
-                "No change");
+                "3 {B[0]} <-> 2 {A[0]}",
+                "1 {A[1]->null}+4 {null->A[1]}",
+                "2 {A[0]->null}+4 {null->A[0]}",
+                "1 {A[1]->null}+4 {null->A[1]}");
     }
 
     @Test
