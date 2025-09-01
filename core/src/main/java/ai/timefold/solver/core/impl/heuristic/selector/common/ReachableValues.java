@@ -1,11 +1,12 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
-import java.util.BitSet;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.Objects;
-import java.util.Random;
+import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 
@@ -21,167 +22,111 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ReachableValues {
 
+    private final Map<Object, ReachableItemValue> values;
     private final @Nullable Class<?> valueClass;
     private final boolean acceptsNullValue;
-    private final Map<Object, Integer> valuesIndex;
-    private final ReachableItemValue[] values;
-    private final Map<Object, Integer> entitiesIndex;
-    private final ReachableItemEntity[] entities;
-    private int cachedEntityOrdinal = -1;
-    private @Nullable Object cachedEntity = null;
-    private @Nullable ReachableItemValue cachedValue = null;
+    private @Nullable ReachableItemValue firstCachedObject;
+    private @Nullable ReachableItemValue secondCachedObject;
 
-    public ReachableValues(@Nullable Class<?> valueClass, boolean acceptsNullValue, Map<Object, Integer> valuesIndex,
-            ReachableItemValue[] values, Map<Object, Integer> entitiesIndex, ReachableItemEntity[] entities) {
-        this.valueClass = valueClass;
-        this.acceptsNullValue = acceptsNullValue;
-        this.valuesIndex = valuesIndex;
+    public ReachableValues(Map<Object, ReachableItemValue> values, boolean acceptsNullValue) {
         this.values = values;
-        this.entitiesIndex = entitiesIndex;
-        this.entities = entities;
+        this.acceptsNullValue = acceptsNullValue;
+        var firstValue = values.entrySet().stream().findFirst();
+        this.valueClass = firstValue.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
     }
 
-    public int getValueOrdinal(Object value) {
-        if (cachedValue == null || cachedValue.value() != value) {
-            var index = valuesIndex.get(value);
-            if (index == null) {
-                return -1;
-            }
-            cachedValue = values[index];
+    private @Nullable ReachableItemValue fetchItemValue(Object value) {
+        ReachableItemValue selected = null;
+        if (firstCachedObject != null && firstCachedObject.value == value) {
+            selected = firstCachedObject;
+        } else if (secondCachedObject != null && secondCachedObject.value == value) {
+            selected = secondCachedObject;
+            // The most recently used item is moved to the first position.
+            // The goal is to try to keep recently used items in the cache.
+            secondCachedObject = firstCachedObject;
+            firstCachedObject = selected;
         }
-        return cachedValue.ordinal();
-    }
-
-    public int getEntityOrdinal(Object entity) {
-        if (cachedEntityOrdinal == -1 || cachedEntity != entity) {
-            this.cachedEntity = entity;
-            this.cachedEntityOrdinal = entitiesIndex.get(entity);
+        if (selected == null) {
+            selected = values.get(value);
+            secondCachedObject = firstCachedObject;
+            firstCachedObject = selected;
         }
-        return cachedEntityOrdinal;
+        return selected;
     }
 
-    public Object getEntity(int ordinal) {
-        return entities[ordinal].entity();
+    public List<Object> extractEntitiesAsList(Object value) {
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
+        }
+        return itemValue.randomAccessEntityList;
     }
 
-    public Object getValue(int ordinal) {
-        return values[ordinal].value();
-    }
-
-    public Iterator<Integer> getOriginalEntityIterator(int valueOrdinal) {
-        var reachableEntities = values[valueOrdinal].reachableEntities.stream().boxed().toArray(Integer[]::new);
-        return new OriginalIterator(reachableEntities);
-    }
-
-    public Iterator<Integer> getRandomEntityIterator(int valueOrdinal, Random workingRandom) {
-        var reachableEntities = values[valueOrdinal].reachableEntities.stream().boxed().toArray(Integer[]::new);
-        return new RandomIterator(reachableEntities, workingRandom);
-    }
-
-    public Iterator<Integer> getOriginalValueIterator(int valueOrdinal) {
-        var reachableEntities = values[valueOrdinal].reachableValues.stream().boxed().toArray(Integer[]::new);
-        return new OriginalIterator(reachableEntities);
-    }
-
-    public Iterator<Integer> getRandomValueIterator(int valueOrdinal, Random workingRandom) {
-        var reachableEntities = values[valueOrdinal].reachableValues.stream().boxed().toArray(Integer[]::new);
-        return new RandomIterator(reachableEntities, workingRandom);
+    public List<Object> extractValuesAsList(Object value) {
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
+        }
+        return itemValue.randomAccessValueList;
     }
 
     public int getSize() {
-        return values.length;
+        return values.size();
     }
 
-    public boolean isEntityReachable(int valueOrdinal, @Nullable Integer entityOrdinal) {
-        if (entityOrdinal == null || entityOrdinal == -1) {
+    public boolean isEntityReachable(Object origin, @Nullable Object entity) {
+        if (entity == null) {
             return true;
         }
-        return values[valueOrdinal].reachableEntities.get(entityOrdinal);
-    }
-
-    public boolean isValueReachable(int valueOrdinal, @Nullable Integer otherValueOrdinal) {
-        if (otherValueOrdinal == null || otherValueOrdinal == -1) {
-            return acceptsNullValue;
-        }
-        return values[valueOrdinal].reachableValues.get(otherValueOrdinal);
-    }
-
-    public boolean isEntityToEntityReachable(int entityOrdinal, int otherEntityOrdinal) {
-        return entities[entityOrdinal].reachableValues.intersects(entities[otherEntityOrdinal].reachableValues());
-    }
-
-    public boolean entityContains(int entityOrdinal, @Nullable Integer valueOrdinal) {
-        if (valueOrdinal == null || valueOrdinal == -1) {
+        var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
+        if (originItemValue == null) {
             return false;
         }
-        return entities[entityOrdinal].reachableValues().get(valueOrdinal);
+        return originItemValue.entitySet.contains(entity);
+    }
+
+    public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
+        var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
+        if (originItemValue == null) {
+            return false;
+        }
+        if (otherValue == null) {
+            return acceptsNullValue;
+        }
+        return originItemValue.valueSet.contains(Objects.requireNonNull(otherValue));
     }
 
     public boolean matchesValueClass(Object value) {
-        return valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
+        return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
     }
 
     @NullMarked
-    public record ReachableItemValue(int ordinal, Object value, BitSet reachableEntities, BitSet reachableValues) {
+    public static final class ReachableItemValue {
+        private final Object value;
+        private final Set<Object> entitySet;
+        private final Set<Object> valueSet;
+        private final List<Object> randomAccessEntityList;
+        private final List<Object> randomAccessValueList;
 
-        public void addEntity(int entityOrdinal) {
-            reachableEntities.set(entityOrdinal);
+        public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
+            this.value = value;
+            this.entitySet = new LinkedHashSet<>(entityListSize);
+            this.randomAccessEntityList = new ArrayList<>(entityListSize);
+            this.valueSet = new LinkedHashSet<>(valueListSize);
+            this.randomAccessValueList = new ArrayList<>(valueListSize);
         }
 
-        public void addValue(int valueOrdinal) {
-            reachableValues.set(valueOrdinal);
-        }
-    }
-
-    @NullMarked
-    public record ReachableItemEntity(int ordinal, Object entity, BitSet reachableValues) {
-
-        public void addValue(int valueOrdinal) {
-            reachableValues.set(valueOrdinal);
-        }
-    }
-
-    private static class OriginalIterator implements Iterator<Integer> {
-
-        private final Integer[] reachableOrdinalValues;
-        private int index;
-
-        OriginalIterator(Integer[] reachableOrdinalValues) {
-            this.reachableOrdinalValues = reachableOrdinalValues;
-            this.index = 0;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return index < reachableOrdinalValues.length;
-        }
-
-        @Override
-        public Integer next() {
-            if (index >= reachableOrdinalValues.length) {
-                throw new NoSuchElementException();
+        public void addEntity(Object entity) {
+            if (entitySet.add(entity)) {
+                randomAccessEntityList.add(entity);
             }
-            return reachableOrdinalValues[index++];
+        }
+
+        public void addValue(Object value) {
+            if (valueSet.add(value)) {
+                randomAccessValueList.add(value);
+            }
         }
     }
 
-    private static class RandomIterator implements Iterator<Integer> {
-        private final Integer[] reachableOrdinalValues;
-        private final Random workingRandom;
-
-        private RandomIterator(Integer[] allReachableEntitiese, Random workingRandom) {
-            this.reachableOrdinalValues = allReachableEntitiese;
-            this.workingRandom = workingRandom;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return reachableOrdinalValues.length > 0;
-        }
-
-        @Override
-        public Integer next() {
-            return reachableOrdinalValues[workingRandom.nextInt(reachableOrdinalValues.length)];
-        }
-    }
 }
