@@ -44,10 +44,20 @@ public class SwapMoveSelectorFactory<Solution_>
         // When enabling entity value range filtering,
         // the recorder ID from the origin selector is required for FilteringEntityValueRangeSelector
         // to replay the selected value and return only reachable values.
+        // Experiments have shown that if the move configuration includes a custom filter,
+        // the advantages of using value-range filtering nodes are outweighed by the cost
+        // of applying the filter afterward.
+        // The value-range filtering nodes perform lookup operations
+        // to ensure entity reachability before move filtering,
+        // which can lead to unnecessary overhead if the move can still be filtered out by the root move filter.
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
-        var enableEntityValueRangeFilter = entityDescriptor.getSolutionDescriptor().getBasicVariableDescriptorList()
-                .stream()
-                .anyMatch(v -> !v.canExtractValueRangeFromSolution());
+        var enableEntityValueRangeFilter =
+                // No move filtering
+                config.getFilterClass() == null
+                        // At least one basic variable using entity value-range
+                        && entityDescriptor.getSolutionDescriptor().getBasicVariableDescriptorList()
+                                .stream()
+                                .anyMatch(v -> !v.canExtractValueRangeFromSolution());
         // A null ID means to turn off the entity value range filtering
         String entityRecorderId = null;
         if (enableEntityValueRangeFilter) {
@@ -72,7 +82,7 @@ public class SwapMoveSelectorFactory<Solution_>
         var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
 
         return new SwapMoveSelector<>(leftEntitySelector, rightEntitySelector, variableDescriptorList,
-                randomSelection);
+                randomSelection, !enableEntityValueRangeFilter);
     }
 
     @Override

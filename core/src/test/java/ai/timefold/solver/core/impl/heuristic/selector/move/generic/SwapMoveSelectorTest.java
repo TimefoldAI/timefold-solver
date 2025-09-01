@@ -11,22 +11,34 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertIterableSelec
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSelectorConfig;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicRecordingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.solver.ClassInstanceCache;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -46,7 +58,7 @@ class SwapMoveSelectorTest {
                 new TestdataEntity("a"), new TestdataEntity("b"), new TestdataEntity("c"), new TestdataEntity("d"));
 
         SwapMoveSelector moveSelector = new SwapMoveSelector(entitySelector, entitySelector,
-                entitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+                entitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false, true);
 
         SolverScope solverScope = mock(SolverScope.class);
         moveSelector.solvingStarted(solverScope);
@@ -103,7 +115,7 @@ class SwapMoveSelectorTest {
         EntitySelector entitySelector = SelectorTestUtils.mockEntitySelector(TestdataEntity.buildEntityDescriptor());
 
         SwapMoveSelector moveSelector = new SwapMoveSelector(entitySelector, entitySelector,
-                entitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+                entitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false, true);
 
         SolverScope solverScope = mock(SolverScope.class);
         moveSelector.solvingStarted(solverScope);
@@ -166,7 +178,7 @@ class SwapMoveSelectorTest {
                 new TestdataEntity("x"), new TestdataEntity("y"), new TestdataEntity("z"));
 
         SwapMoveSelector moveSelector = new SwapMoveSelector(leftEntitySelector, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false, true);
 
         SolverScope solverScope = mock(SolverScope.class);
         moveSelector.solvingStarted(solverScope);
@@ -239,7 +251,7 @@ class SwapMoveSelectorTest {
         EntitySelector rightEntitySelector = SelectorTestUtils.mockEntitySelector(entityDescriptor);
 
         SwapMoveSelector moveSelector = new SwapMoveSelector(leftEntitySelector, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false, true);
 
         SolverScope solverScope = mock(SolverScope.class);
         moveSelector.solvingStarted(solverScope);
@@ -316,7 +328,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
@@ -363,7 +375,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true, true);
 
         var random = new TestRandom(0);
         var solverScope = solvingStarted(moveSelector, scoreDirector, random);
@@ -415,7 +427,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(moveSelector, solverScope);
@@ -481,7 +493,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true, true);
 
         var random = new TestRandom(0);
         var solverScope = solvingStarted(moveSelector, scoreDirector, random);
@@ -549,7 +561,7 @@ class SwapMoveSelectorTest {
                 new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true, true);
 
         var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
         phaseStarted(moveSelector, solverScope);
@@ -560,5 +572,59 @@ class SwapMoveSelectorTest {
         assertThat(iterator.hasNext()).isTrue();
         var swapMove = (SwapMove<TestdataEntityProvidingSolution>) iterator.next();
         assertThat(swapMove.getLeftEntity()).isSameAs(swapMove.getRightEntity());
+    }
+
+    @Test
+    void notValueRangeFiltering() {
+        var swapMoveConfig = new SwapMoveSelectorConfig()
+                .withEntitySelectorConfig(new EntitySelectorConfig().withEntityClass(TestdataEntityProvidingEntity.class))
+                .withEntitySelectorConfig(new EntitySelectorConfig().withEntityClass(TestdataEntityProvidingEntity.class))
+                .withFilterClass(DummyValueRangeFiltering.class);
+        var configPolicy = new HeuristicConfigPolicy.Builder<TestdataEntityProvidingSolution>()
+                .withSolutionDescriptor(TestdataEntityProvidingSolution.buildSolutionDescriptor())
+                .withClassInstanceCache(ClassInstanceCache.create())
+                .withRandom(new Random(0))
+                .build();
+        var moveSelector = (FilteringMoveSelector<TestdataEntityProvidingSolution>) MoveSelectorFactory
+                .<TestdataEntityProvidingSolution> create(swapMoveConfig)
+                .buildMoveSelector(configPolicy, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM, true);
+
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var e1 = new TestdataEntityProvidingEntity("A", List.of(v1, v2), v1);
+        var e2 = new TestdataEntityProvidingEntity("B", List.of(v1, v2), v2);
+        var e3 = new TestdataEntityProvidingEntity("C", List.of(v1, v2), v1);
+        var solution = new TestdataEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var phaseScope = mock(AbstractPhaseScope.class);
+        var scoreDirector = mockScoreDirector(TestdataEntityProvidingSolution.buildSolutionDescriptor());
+        when(phaseScope.getScoreDirector()).thenReturn(scoreDirector);
+        when(phaseScope.getWorkingSolution()).thenReturn(solution);
+        scoreDirector.setWorkingSolution(solution);
+        solvingStarted(moveSelector, scoreDirector, new Random(0));
+        moveSelector.phaseStarted(phaseScope);
+        // When enabling move filtering, FilteringEntityByEntitySelector is not created and ValueRangeManager is not requested
+        verify(scoreDirector, times(0)).getValueRangeManager();
+
+        // Verify that the value-range validation flag is activated.
+        // The value range manager must be called to determine if the generated move is feasible
+        var move = (SwapMove<TestdataEntityProvidingSolution>) moveSelector.iterator().next();
+        assertThat(move).isNotNull();
+        verify(scoreDirector, atLeastOnce()).getValueRangeManager();
+    }
+
+    public static class DummyValueRangeFiltering
+            implements SelectionFilter<TestdataEntityProvidingSolution, SwapMove<TestdataEntityProvidingSolution>> {
+
+        public DummyValueRangeFiltering() {
+            // Required for initialization
+        }
+
+        @Override
+        public boolean accept(ScoreDirector<TestdataEntityProvidingSolution> scoreDirector,
+                SwapMove<TestdataEntityProvidingSolution> selection) {
+            return true;
+        }
     }
 }
