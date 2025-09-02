@@ -60,7 +60,7 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param variableMetaModel Describes the variable to be changed.
      * @param entity The entity whose element is to be removed from a list variable.
      * @param index The index in entity's list variable which contains the value to be removed;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      *        All values after the index are shifted to the left.
      * @return the removed value
      * @throws IllegalArgumentException if the index is out of bounds
@@ -84,11 +84,11 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param variableMetaModel Describes the variable to be changed.
      * @param sourceEntity The entity from which the value will be removed.
      * @param sourceIndex The index in the source entity's list variable which contains the value to be moved;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      *        All values after the index are shifted to the left.
      * @param destinationEntity The entity to which the value will be added.
      * @param destinationIndex The index in the destination entity's list variable to which the value will be moved;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      *        All values at or after the index are shifted to the right.
      * @return the value that was moved; null if nothing was moved
      * @throws IndexOutOfBoundsException if the index is out of bounds
@@ -103,10 +103,10 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param variableMetaModel Describes the variable to be changed.
      * @param sourceEntity The entity whose variable value is to be changed.
      * @param sourceIndex The index in the source entity's list variable which contains the value to be moved;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      *        All values after the index are shifted to the left.
      * @param destinationIndex The index in the source entity's list variable to which the value will be moved;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      *        All values at or after the index are shifted to the right.
      * @return the value that was moved; null if nothing was moved
      * @throws IndexOutOfBoundsException if the index is out of bounds
@@ -121,10 +121,10 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param variableMetaModel Describes the variable to be changed.
      * @param leftEntity The first entity whose variable value is to be swapped.
      * @param leftIndex The index in the left entity's list variable which contains the value to be swapped;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      * @param rightEntity The second entity whose variable value is to be swapped.
      * @param rightIndex The index in the right entity's list variable which contains the other value to be swapped;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     <Entity_, Value_> void swapValuesBetweenLists(
@@ -137,9 +137,9 @@ public interface MutableSolutionView<Solution_> extends SolutionView<Solution_> 
      * @param variableMetaModel Describes the variable to be changed.
      * @param entity The entity whose variable values are to be swapped.
      * @param leftIndex The index in the entity's list variable which contains the value to be swapped;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      * @param rightIndex The index in the entity's list variable which contains the other value to be swapped;
-     *        >= 0 and < list size.
+     *        Acceptable values range from zero to one less than list size.
      * @throws IndexOutOfBoundsException if the index is out of bounds
      */
     <Entity_, Value_> void swapValuesInList(
