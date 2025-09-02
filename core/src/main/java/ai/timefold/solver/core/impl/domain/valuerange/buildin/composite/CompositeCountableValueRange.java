@@ -36,6 +36,7 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
             childValueRange.createOriginalIterator().forEachRemaining(cache::add);
         }
         this.isValueImmutable = isValueImmutable;
+        this.cache.sort();
     }
 
     @Override
