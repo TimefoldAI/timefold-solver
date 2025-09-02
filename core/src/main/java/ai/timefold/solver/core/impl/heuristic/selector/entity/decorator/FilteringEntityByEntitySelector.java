@@ -10,6 +10,9 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
@@ -17,26 +20,42 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * The decorator returns a list of reachable entities for a specific entity.
- * It enables the creation of a filtering tier when using entity selectors,
+ * It enables the creation of a filtering tier when using entity-provided value ranges,
  * ensuring only valid and reachable entities are returned.
+ * An entity is considered reachable to another entity
+ * if the assigned values exist within their respective entity value ranges.
+ * <p>
+ * The decorator can only be applied to basic variables.
+ * <code>
  * <p>
  * e1 = entity_range[v1, v2, v3]
+ * <p>
  * e2 = entity_range[v1, v4]
- * e3 = entity_range[v4, v5]
  * <p>
- * By default, one entity can be reached by another if assigned values are null.
- * When values are assigned, both sides must accept these values.
+ * e3 = entity_range[v1, v4, v5]
  * <p>
- * e1 = [e2]
- * e2 = [e1, e3]
- * e3 = [e2]
+ * </code>
  * <p>
- * 1. e1(null) and e2(null) - they are reachable
+ * Let's consider the following use-cases:
+ * <ol>
+ * <li>e1(null) <-> e2(null): e2 is reachable by e1 because both assigned values are null.</li>
+ * <li>e1(v2) <-> e2(v1): e2 is not reachable by e1 because its value range does not accept v2.</li>
+ * <li>e2(v1) <-> e3(v4): e3 is reachable by e2 because e2 accepts v4 and e3 accepts v1.</li>
+ * </ol>
  * <p>
- * 2. e1(v2) and e2(v1) - they are not reachable
- * e1: e1 accepts v1 and e2 is reachable
- * e2: e2 does not accept v2 and e1 is not reachable
- *
+ * This node is currently used by the {@link SwapMoveSelector} selector.
+ * To explain its functionality, let's consider how moves are generated for the basic swap type.
+ * Initially, the swap move selector employs a left entity selector to choose one entity.
+ * Then, it uses a right entity selector to select another entity, with the goal of swapping their values.
+ * <p>
+ * Based on the previously described process and the current goal of this node,
+ * we can observe that once an entity is selected using the left selector,
+ * the right node can filter out all non-reachable entities and generate a valid move.
+ * A move is considered valid only if both entities accept each other's values.
+ * The filtering process of invalid entities allows the solver to explore the solution space more efficiently.
+ * 
+ * @see SwapMoveSelectorFactory
+ * @see EntitySelectorFactory
  * @param <Solution_> the solution type
  */
 public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
@@ -104,10 +123,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     // Worker methods
     // ************************************************************************
 
-    public EntitySelector<Solution_> getChildEntitySelector() {
-        return childEntitySelector;
-    }
-
     @Override
     public EntityDescriptor<Solution_> getEntityDescriptor() {
         return childEntitySelector.getEntityDescriptor();
@@ -135,10 +150,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private Object selectReplayedEntity() {
         var iterator = replayingEntitySelector.iterator();
         if (iterator.hasNext()) {
-            var entity = iterator.next();
-            if (replayedEntity == null || entity != replayedEntity) {
-                this.replayedEntity = entity;
-            }
+            this.replayedEntity = iterator.next();
         }
         return replayedEntity;
     }
@@ -154,7 +166,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         if (randomSelection) {
             if (!childEntitySelector.isNeverEnding()) {
                 throw new IllegalArgumentException(
-                        "Impossible state: childEntitySelector must provide a never ending approach.");
+                        "Impossible state: childEntitySelector must provide a never-ending approach.");
             }
             return new RandomFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
                     basicVariableDescriptors, valueRangeManager, (int) childEntitySelector.getSize());
@@ -221,10 +233,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         void checkReplayedEntity() {
-            var updatedReplayedEntity = upcomingEntitySupplier.get();
-            if (replayedEntity == null || replayedEntity != updatedReplayedEntity) {
-                replayedEntity = updatedReplayedEntity;
-            }
+            replayedEntity = upcomingEntitySupplier.get();
         }
 
         Object currentReplayedEntity() {
@@ -239,14 +248,9 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 // Same entity cannot be swapped
                 return false;
             }
-
-            if (basicVariableDescriptors.length == 1) {
-                return isReachable(replayedEntity, otherEntity, basicVariableDescriptors[0], valueRangeManager);
-            } else {
-                for (BasicVariableDescriptor<Solution_> basicVariableDescriptor : basicVariableDescriptors) {
-                    if (!isReachable(replayedEntity, otherEntity, basicVariableDescriptor, valueRangeManager)) {
-                        return false;
-                    }
+            for (var basicVariableDescriptor : basicVariableDescriptors) {
+                if (!isReachable(replayedEntity, otherEntity, basicVariableDescriptor, valueRangeManager)) {
+                    return false;
                 }
             }
             return true;
@@ -337,32 +341,32 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         @Override
         public Object previous() {
-            return pickSelected();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public int nextIndex() {
-            return entityIterator.nextIndex();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public int previousIndex() {
-            return entityIterator.previousIndex();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void remove() {
-            entityIterator.remove();
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void set(Object o) {
-            entityIterator.set(o);
+            throw new UnsupportedOperationException();
         }
 
         @Override
         public void add(Object o) {
-            entityIterator.add(o);
+            throw new UnsupportedOperationException();
         }
     }
 
@@ -387,8 +391,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         @Override
         public Object next() {
-            initialize();
-            if (!entityIterator.hasNext()) {
+            if (!hasNext()) {
                 // If no reachable entity is found, we return the currently selected entity,
                 // which will result in a non-doable move
                 return currentReplayedEntity();

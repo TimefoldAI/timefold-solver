@@ -13,7 +13,13 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
+import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwapMoveSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListSwapMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactory;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -25,15 +31,42 @@ import org.jspecify.annotations.Nullable;
  * The decorator returns a list of reachable values for a specific value.
  * It enables the creation of a filtering tier when using entity-provided value ranges,
  * ensuring only valid and reachable values are returned.
+ * A value is considered reachable to another value if both exist within their respective entity value ranges.
+ * <p>
+ * The decorator can only be applied to list variables.
+ * <p>
+ * <code>
  * <p>
  * e1 = entity_range[v1, v2, v3]
+ * <p>
  * e2 = entity_range[v1, v4]
  * <p>
  * v1 = [v2, v3, v4]
+ * <p>
  * v2 = [v1, v3]
+ * <p>
  * v3 = [v1, v2]
+ * <p>
  * v4 = [v1]
- * 
+ * <p>
+ * </code>
+ * <p>
+ * This node is currently used by the {@link ListChangeMoveSelector} and {@link ListSwapMoveSelector} selectors.
+ * To illustrate its usage, let’s assume how moves are generated for the list swap type.
+ * Initially, the swap move selector used a left value selector to choose a value.
+ * After that, it uses a right value selector to choose another value to swap them.
+ * <p>
+ * Based on the previously described process and the current goal of this node,
+ * we can observe that once a value is selected using the left value selector,
+ * the right node can filter out all non-reachable values and generate a valid move.
+ * A move is considered valid only if both entities accept each other's values.
+ * The filtering process of invalid values allows the solver to explore the solution space more efficiently.
+ *
+ * @see ListChangeMoveSelectorFactory
+ * @see DestinationSelectorFactory
+ * @see ListSwapMoveSelectorFactory
+ * @see ValueSelectorFactory
+ *
  * @param <Solution_> the solution type
  */
 public final class FilteringValueRangeSelector<Solution_> extends AbstractDemandEnabledSelector<Solution_>
