@@ -22,11 +22,11 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaMo
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedBaseValue;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedSubclassValue;
-import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeEntity;
-import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeSolution;
-import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeValue;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedBaseValue;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedSubclassValue;
+import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeEntity;
+import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeSolution;
+import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeValue;
 
 import org.junit.jupiter.api.Test;
 

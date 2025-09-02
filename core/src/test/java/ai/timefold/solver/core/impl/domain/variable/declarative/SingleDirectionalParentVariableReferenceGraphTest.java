@@ -7,9 +7,9 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.testdomain.declarative.counting.TestdataCountingEntity;
-import ai.timefold.solver.core.testdomain.declarative.counting.TestdataCountingSolution;
-import ai.timefold.solver.core.testdomain.declarative.counting.TestdataCountingValue;
+import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingEntity;
+import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingSolution;
+import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingValue;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

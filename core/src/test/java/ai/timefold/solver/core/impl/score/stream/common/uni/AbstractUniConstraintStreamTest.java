@@ -45,9 +45,6 @@ import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupp
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencyEntity;
-import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencySimpleSolution;
-import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencyValue;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedBaseEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
@@ -68,6 +65,9 @@ import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishExtra;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySimpleSolution;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 

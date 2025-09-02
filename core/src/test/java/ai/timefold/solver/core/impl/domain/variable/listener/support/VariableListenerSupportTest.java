@@ -35,9 +35,9 @@ import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.shadow.order.TestdataShadowVariableOrderEntity;
 
 import org.junit.jupiter.api.Test;

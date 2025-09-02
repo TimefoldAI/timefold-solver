@@ -20,7 +20,6 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.collection.TestdataArrayBasedSolution;
 import ai.timefold.solver.core.testdomain.collection.TestdataSetBasedSolution;
-import ai.timefold.solver.core.testdomain.declarative.missing.TestdataDeclarativeMissingSupplierSolution;
 import ai.timefold.solver.core.testdomain.immutable.enumeration.TestdataEnumSolution;
 import ai.timefold.solver.core.testdomain.immutable.record.TestdataRecordSolution;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
@@ -39,6 +38,7 @@ import ai.timefold.solver.core.testdomain.invalid.variablemap.TestdataMapConfigu
 import ai.timefold.solver.core.testdomain.mixed.multientity.TestdataMixedMultiEntitySolution;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericEntity;
 import ai.timefold.solver.core.testdomain.reflect.generic.TestdataGenericSolution;
+import ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierSolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataNoProblemFactPropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataProblemFactPropertySolution;
 import ai.timefold.solver.core.testdomain.solutionproperties.TestdataReadMethodProblemFactCollectionPropertySolution;
@@ -424,7 +424,7 @@ class SolutionDescriptorTest {
         assertThatCode(TestdataDeclarativeMissingSupplierSolution::buildSolutionDescriptor)
                 .hasMessageContainingAll("@ShadowVariable (endTime)",
                         "supplierMethod (calculateEndTime) that does not exist",
-                        "inside its declaring class (ai.timefold.solver.core.testdomain.declarative.missing.TestdataDeclarativeMissingSupplierValue).",
+                        "inside its declaring class (ai.timefold.solver.core.testdomain.shadow.missing.TestdataDeclarativeMissingSupplierValue).",
                         "Maybe you misspelled the supplierMethod name?");
     }
 
