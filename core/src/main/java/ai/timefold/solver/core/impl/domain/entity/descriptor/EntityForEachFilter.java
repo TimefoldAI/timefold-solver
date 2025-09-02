@@ -75,7 +75,7 @@ public class EntityForEachFilter {
                 return ignored -> {
                     throw new IllegalStateException("""
                             Impossible state: assigned predicate for list variable value should not be used
-                            when there no inverse relation shadow variable descriptor
+                            when there is no inverse relation shadow variable descriptor.
                             """);
                 };
             }
