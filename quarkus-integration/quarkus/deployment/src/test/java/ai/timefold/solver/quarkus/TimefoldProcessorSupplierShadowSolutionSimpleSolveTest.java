@@ -10,9 +10,9 @@ import java.util.concurrent.ExecutionException;
 import jakarta.inject.Inject;
 
 import ai.timefold.solver.core.api.solver.SolverManager;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.simple.TestdataQuarkusSupplierVariableSimpleConstraintProvider;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.simple.TestdataQuarkusSupplierVariableSimpleEntity;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.simple.TestdataQuarkusSupplierVariableSimpleSolution;
+import ai.timefold.solver.quarkus.testdomain.declarative.simple.TestdataQuarkusSupplierVariableSimpleConstraintProvider;
+import ai.timefold.solver.quarkus.testdomain.declarative.simple.TestdataQuarkusSupplierVariableSimpleEntity;
+import ai.timefold.solver.quarkus.testdomain.declarative.simple.TestdataQuarkusSupplierVariableSimpleSolution;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;

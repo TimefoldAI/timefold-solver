@@ -16,15 +16,15 @@ import org.jspecify.annotations.Nullable;
 /**
  * Filtering nodes are expensive.
  * Considering that most streams start with a nullity check on genuine planning variables,
- * it makes sense to create a specialized version of the node for this case ({@link ForEachExcludingUnassignedUniNode}),
- * as opposed to forcing an extra filter node on the generic case ({@link ForEachIncludingUnassignedUniNode}).
+ * it makes sense to create a specialized version of the node for this case ({@link ForEachFilteredUniNode}),
+ * as opposed to forcing an extra filter node on the generic case ({@link ForEachUnfilteredUniNode}).
  *
  * @param <A>
  */
 @NullMarked
 public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
-        permits ForEachExcludingUnassignedUniNode, ForEachIncludingUnassignedUniNode {
+        permits ForEachFilteredUniNode, ForEachUnfilteredUniNode {
 
     private final Class<A> forEachClass;
     private final int outputStoreSize;

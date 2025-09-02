@@ -13,6 +13,7 @@ import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
@@ -92,8 +93,8 @@ public final class BavetConstraintFactory<Solution_>
     // from
     // ************************************************************************
 
-    @Override
-    public <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass) {
+    private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
+            ForEachFilteringCriteria criteria) {
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) {
@@ -104,7 +105,8 @@ public final class BavetConstraintFactory<Solution_>
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
             // No applicable list variable; don't need to check inverse relationships.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    entityDescriptor.getHasNoNullVariablesPredicateBasicVar(), RetrievalSemantics.STANDARD));
+                    criteria.getFilterForEntityDescriptor(entityDescriptor),
+                    RetrievalSemantics.STANDARD));
         }
         var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
         if (entityClass == sourceClass) {
@@ -112,23 +114,33 @@ public final class BavetConstraintFactory<Solution_>
                     .formatted(entityClass.getCanonicalName(), sourceClass.getCanonicalName()));
         }
         var shadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
-        if (shadowDescriptor == null) {
-            // The list variable element doesn't have the @InverseRelationShadowVariable annotation.
+        if (shadowDescriptor == null && criteria == ForEachFilteringCriteria.ASSIGNED_AND_CONSISTENT) {
+            // The list variable element doesn't have the @InverseRelationShadowVariable annotation,
+            // and we are not including unassigned elements.
             // We don't want the users to be forced to implement it in quickstarts,
             // so we'll do this expensive thing instead.
-            return forEachIncludingUnassigned(sourceClass)
+            return forEachForCriteria(sourceClass, ForEachFilteringCriteria.CONSISTENT)
                     .ifExists((Class) entityClass,
                             Joiners.filtering(listVariableDescriptor.getInListPredicate()));
         } else { // We have the inverse relation variable, so we can read its value directly.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    entityDescriptor.getHasNoNullVariablesPredicateListVar(), RetrievalSemantics.STANDARD));
+                    criteria.getFilterForEntityDescriptor(entityDescriptor), RetrievalSemantics.STANDARD));
         }
     }
 
     @Override
+    public <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass) {
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ASSIGNED_AND_CONSISTENT);
+    }
+
+    @Override
     public <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass) {
-        assertValidFromType(sourceClass);
-        return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.CONSISTENT);
+    }
+
+    @Override
+    public <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass) {
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL);
     }
 
     @Override

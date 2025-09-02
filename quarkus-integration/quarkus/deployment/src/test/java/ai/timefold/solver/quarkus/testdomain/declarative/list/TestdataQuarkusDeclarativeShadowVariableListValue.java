@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdomain.suppliervariable.list;
+package ai.timefold.solver.quarkus.testdomain.declarative.list;
 
 import java.util.List;
 
@@ -9,13 +9,13 @@ import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSou
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 @PlanningEntity
-public class TestdataQuarkusSupplierVariableListValue {
+public class TestdataQuarkusDeclarativeShadowVariableListValue {
     String name;
 
-    private List<TestdataQuarkusSupplierVariableListValue> dependencies;
+    private List<TestdataQuarkusDeclarativeShadowVariableListValue> dependencies;
 
     @PreviousElementShadowVariable(sourceVariableName = "values")
-    private TestdataQuarkusSupplierVariableListValue previous;
+    private TestdataQuarkusDeclarativeShadowVariableListValue previous;
 
     @ShadowVariable(supplierName = "startTimeSupplier")
     private Integer startTime;
@@ -23,14 +23,15 @@ public class TestdataQuarkusSupplierVariableListValue {
     @ShadowVariablesInconsistent
     private boolean isInconsistent;
 
-    public TestdataQuarkusSupplierVariableListValue() {
+    public TestdataQuarkusDeclarativeShadowVariableListValue() {
     }
 
-    public TestdataQuarkusSupplierVariableListValue(String name) {
+    public TestdataQuarkusDeclarativeShadowVariableListValue(String name) {
         this.name = name;
     }
 
-    public TestdataQuarkusSupplierVariableListValue(String name, List<TestdataQuarkusSupplierVariableListValue> dependencies) {
+    public TestdataQuarkusDeclarativeShadowVariableListValue(String name,
+            List<TestdataQuarkusDeclarativeShadowVariableListValue> dependencies) {
         this.name = name;
         this.dependencies = dependencies;
     }

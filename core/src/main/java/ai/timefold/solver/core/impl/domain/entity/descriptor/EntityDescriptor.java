@@ -109,8 +109,6 @@ public class EntityDescriptor<Solution_> {
     @Nullable
     private ShadowVariablesInconsistentVariableDescriptor<Solution_> shadowVariablesInconsistentDescriptor;
 
-    private Predicate<Object> hasNoNullVariablesBasicVar;
-    private Predicate<Object> hasNoNullVariablesListVar;
     // Only declared movable filter, excludes inherited and descending movable filters
     private MovableFilter<Solution_> declaredMovableEntityFilter;
     private SelectionSorter<Solution_, Object> decreasingDifficultySorter;
@@ -143,6 +141,9 @@ public class EntityDescriptor<Solution_> {
 
     // Caches the metamodel
     private PlanningEntityMetaModel<Solution_, ?> entityMetaModel = null;
+
+    // Caches the for each predicates
+    private EntityForEachFilter entityForEachFilter = null;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -179,7 +180,7 @@ public class EntityDescriptor<Solution_> {
      * Using entityDescriptor::isInitialized directly breaks node sharing
      * because it creates multiple instances of this {@link Predicate}.
      *
-     * @deprecated Prefer {@link #getHasNoNullVariablesPredicateListVar()}.
+     * @deprecated Prefer {@link #getEntityForEachFilter()} ()}.
      * @return never null, always the same {@link Predicate} instance to {@link #isInitialized(Object)}
      */
     @Deprecated(forRemoval = true)
@@ -187,35 +188,11 @@ public class EntityDescriptor<Solution_> {
         return isInitializedPredicate;
     }
 
-    public <A> Predicate<A> getHasNoNullVariablesPredicateBasicVar() {
-        if (hasNoNullVariablesBasicVar == null) {
-            hasNoNullVariablesBasicVar = this::hasNoNullVariables;
+    public EntityForEachFilter getEntityForEachFilter() {
+        if (entityForEachFilter == null) {
+            entityForEachFilter = new EntityForEachFilter(this);
         }
-        return (Predicate<A>) hasNoNullVariablesBasicVar;
-    }
-
-    public <A> Predicate<A> getHasNoNullVariablesPredicateListVar() {
-        /*
-         * This code depends on all entity descriptors and solution descriptor to be fully initialized.
-         * For absolute safety, we only construct the predicate the first time it is requested.
-         * That will be during the building of the score director, when the descriptors are already set in stone.
-         */
-        if (hasNoNullVariablesListVar == null) {
-            var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
-            if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(entityClass)) {
-                throw new IllegalStateException(
-                        "Impossible state: method called without an applicable list variable descriptor.");
-            }
-            var applicableShadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
-            if (applicableShadowDescriptor == null) {
-                throw new IllegalStateException(
-                        "Impossible state: method called without an applicable list variable descriptor.");
-            }
-
-            hasNoNullVariablesListVar = getHasNoNullVariablesPredicateBasicVar()
-                    .and(entity -> applicableShadowDescriptor.getValue(entity) != null);
-        }
-        return (Predicate<A>) hasNoNullVariablesListVar;
+        return entityForEachFilter;
     }
 
     // ************************************************************************

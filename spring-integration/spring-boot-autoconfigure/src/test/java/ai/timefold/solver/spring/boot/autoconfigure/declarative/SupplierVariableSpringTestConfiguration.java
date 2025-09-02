@@ -1,7 +1,7 @@
-package ai.timefold.solver.spring.boot.autoconfigure.suppliervariable;
+package ai.timefold.solver.spring.boot.autoconfigure.declarative;
 
-import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.constraints.TestdataSpringSupplierVariableConstraintProvider;
-import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.domain.TestdataSpringSupplierVariableSolution;
+import ai.timefold.solver.spring.boot.autoconfigure.declarative.constraints.TestdataSpringSupplierVariableConstraintProvider;
+import ai.timefold.solver.spring.boot.autoconfigure.declarative.domain.TestdataSpringSupplierVariableSolution;
 
 import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.boot.autoconfigure.domain.EntityScan;

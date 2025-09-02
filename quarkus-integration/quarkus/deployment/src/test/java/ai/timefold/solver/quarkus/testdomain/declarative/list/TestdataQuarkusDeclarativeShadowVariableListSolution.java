@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdomain.suppliervariable.list;
+package ai.timefold.solver.quarkus.testdomain.declarative.list;
 
 import java.util.List;
 
@@ -9,29 +9,29 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 
 @PlanningSolution
-public class TestdataQuarkusSupplierVariableListSolution {
+public class TestdataQuarkusDeclarativeShadowVariableListSolution {
 
-    private List<TestdataQuarkusSupplierVariableListValue> valueList;
-    private List<TestdataQuarkusSupplierVariableListEntity> entityList;
+    private List<TestdataQuarkusDeclarativeShadowVariableListValue> valueList;
+    private List<TestdataQuarkusDeclarativeShadowVariableListEntity> entityList;
 
     private SimpleScore score;
 
     @ValueRangeProvider
     @PlanningEntityCollectionProperty
-    public List<TestdataQuarkusSupplierVariableListValue> getValueList() {
+    public List<TestdataQuarkusDeclarativeShadowVariableListValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataQuarkusSupplierVariableListValue> valueList) {
+    public void setValueList(List<TestdataQuarkusDeclarativeShadowVariableListValue> valueList) {
         this.valueList = valueList;
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataQuarkusSupplierVariableListEntity> getEntityList() {
+    public List<TestdataQuarkusDeclarativeShadowVariableListEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataQuarkusSupplierVariableListEntity> entityList) {
+    public void setEntityList(List<TestdataQuarkusDeclarativeShadowVariableListEntity> entityList) {
         this.entityList = entityList;
     }
 

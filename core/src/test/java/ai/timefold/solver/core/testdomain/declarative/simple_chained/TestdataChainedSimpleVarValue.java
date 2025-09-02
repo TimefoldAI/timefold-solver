@@ -6,6 +6,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataChainedSimpleVarValue {
@@ -15,6 +16,10 @@ public class TestdataChainedSimpleVarValue {
     TestdataChainedSimpleVarEntity next;
 
     Duration duration;
+
+    // TODO: Remove me when supplier present
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
 
     @ShadowVariable(supplierName = "updateCumulativeDurationInDays")
     int cumulativeDurationInDays;

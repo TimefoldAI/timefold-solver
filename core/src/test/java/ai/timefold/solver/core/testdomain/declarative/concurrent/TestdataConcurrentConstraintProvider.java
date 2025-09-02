@@ -15,13 +15,13 @@ public class TestdataConcurrentConstraintProvider implements ConstraintProvider 
     @Override
     public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
         return new Constraint[] {
-                constraintFactory.forEach(TestdataConcurrentValue.class)
+                constraintFactory.forEachUnfiltered(TestdataConcurrentValue.class)
                         .filter(TestdataConcurrentValue::isInconsistent)
                         .penalize(HardSoftScore.ONE_HARD)
                         .asConstraint("Invalid visit"),
 
                 constraintFactory.forEach(TestdataConcurrentValue.class)
-                        .filter(visit -> !visit.isInconsistent() && visit.isAssigned())
+                        .filter(TestdataConcurrentValue::isAssigned)
                         .penalize(HardSoftScore.ONE_SOFT, visit -> (int) Duration
                                 .between(BASE_START_TIME, visit.getServiceFinishTime())
                                 .toMinutes())

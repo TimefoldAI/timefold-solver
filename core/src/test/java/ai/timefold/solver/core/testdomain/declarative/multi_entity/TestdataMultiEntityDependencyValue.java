@@ -21,6 +21,10 @@ public class TestdataMultiEntityDependencyValue {
     @PreviousElementShadowVariable(sourceVariableName = "values")
     TestdataMultiEntityDependencyValue previousValue;
 
+    // TODO: Remove me when supplier present
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
+
     @ShadowVariable(supplierName = "calculateStartTime")
     LocalDateTime startTime;
 

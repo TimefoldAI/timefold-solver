@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdomain.suppliervariable.missing;
+package ai.timefold.solver.quarkus.testdomain.declarative.missing;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;

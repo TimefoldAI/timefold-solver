@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdomain.suppliervariable.list;
+package ai.timefold.solver.quarkus.testdomain.declarative.list;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,17 +7,17 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 @PlanningEntity
-public class TestdataQuarkusSupplierVariableListEntity {
+public class TestdataQuarkusDeclarativeShadowVariableListEntity {
     String name;
 
     @PlanningListVariable
-    List<TestdataQuarkusSupplierVariableListValue> values;
+    List<TestdataQuarkusDeclarativeShadowVariableListValue> values;
 
-    public TestdataQuarkusSupplierVariableListEntity() {
+    public TestdataQuarkusDeclarativeShadowVariableListEntity() {
         this.values = new ArrayList<>();
     }
 
-    public TestdataQuarkusSupplierVariableListEntity(String name) {
+    public TestdataQuarkusDeclarativeShadowVariableListEntity(String name) {
         this.name = name;
         this.values = new ArrayList<>();
     }

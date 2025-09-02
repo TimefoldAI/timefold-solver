@@ -1,4 +1,4 @@
-package ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.domain;
+package ai.timefold.solver.spring.boot.autoconfigure.declarative.domain;
 
 import java.util.List;
 

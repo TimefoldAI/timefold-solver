@@ -22,6 +22,10 @@ public class TestdataMultiDirectionConcurrentValue {
     @InverseRelationShadowVariable(sourceVariableName = "values")
     TestdataMultiDirectionConcurrentEntity entity;
 
+    // TODO: Remove me when supplier present
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
+
     @ShadowVariable(supplierName = "serviceReadyTimeUpdater")
     LocalDateTime serviceReadyTime;
 
