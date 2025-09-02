@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdomain.suppliervariable.simple;
+package ai.timefold.solver.quarkus.testdomain.declarative.simple;
 
 import java.util.List;
 

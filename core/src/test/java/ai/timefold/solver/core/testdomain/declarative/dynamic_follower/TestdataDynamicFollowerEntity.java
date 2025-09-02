@@ -4,6 +4,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -11,6 +12,10 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 public class TestdataDynamicFollowerEntity extends TestdataObject implements TestdataDynamicHasValue {
     @PlanningVariable
     TestdataDynamicLeaderEntity leader;
+
+    // TODO: Remove me when supplier present
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
 
     @ShadowVariable(supplierName = "valueSupplier")
     TestdataValue value;

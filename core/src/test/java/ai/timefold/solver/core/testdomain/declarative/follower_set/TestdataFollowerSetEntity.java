@@ -5,6 +5,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.declarative.follower.TestdataHasValue;
@@ -13,6 +14,10 @@ import ai.timefold.solver.core.testdomain.declarative.follower.TestdataLeaderEnt
 @PlanningEntity
 public class TestdataFollowerSetEntity extends TestdataObject implements TestdataHasValue {
     List<TestdataLeaderEntity> leaders;
+
+    // TODO: Remove me when supplier present
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
 
     @ShadowVariable(supplierName = "valueSupplier")
     TestdataValue value;

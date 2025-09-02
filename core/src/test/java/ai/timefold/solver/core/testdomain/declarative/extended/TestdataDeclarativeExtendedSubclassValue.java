@@ -3,10 +3,15 @@ package ai.timefold.solver.core.testdomain.declarative.extended;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataDeclarativeExtendedSubclassValue extends TestdataDeclarativeExtendedBaseValue {
     String codeSum;
+
+    // TODO: Remove me when supplier present
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
 
     public TestdataDeclarativeExtendedSubclassValue() {
         super();

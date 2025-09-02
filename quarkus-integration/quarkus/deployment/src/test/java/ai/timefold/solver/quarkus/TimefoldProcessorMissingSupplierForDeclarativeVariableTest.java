@@ -4,10 +4,10 @@ package ai.timefold.solver.quarkus;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.missing.TestdataQuarkusDeclarativeMissingSupplierEasyScoreCalculator;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.missing.TestdataQuarkusDeclarativeMissingSupplierEntity;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.missing.TestdataQuarkusDeclarativeMissingSupplierSolution;
-import ai.timefold.solver.quarkus.testdomain.suppliervariable.missing.TestdataQuarkusDeclarativeMissingSupplierValue;
+import ai.timefold.solver.quarkus.testdomain.declarative.missing.TestdataQuarkusDeclarativeMissingSupplierEasyScoreCalculator;
+import ai.timefold.solver.quarkus.testdomain.declarative.missing.TestdataQuarkusDeclarativeMissingSupplierEntity;
+import ai.timefold.solver.quarkus.testdomain.declarative.missing.TestdataQuarkusDeclarativeMissingSupplierSolution;
+import ai.timefold.solver.quarkus.testdomain.declarative.missing.TestdataQuarkusDeclarativeMissingSupplierValue;
 
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
@@ -31,7 +31,7 @@ class TimefoldProcessorMissingSupplierForDeclarativeVariableTest {
                     .hasMessageContainingAll(
                             "@ShadowVariable (endTime)",
                             "supplierMethod (calculateEndTime) that does not exist",
-                            "inside its declaring class (ai.timefold.solver.quarkus.testdomain.suppliervariable.missing.TestdataQuarkusDeclarativeMissingSupplierValue).",
+                            "inside its declaring class (ai.timefold.solver.quarkus.testdomain.declarative.missing.TestdataQuarkusDeclarativeMissingSupplierValue).",
                             "Maybe you misspelled the supplierMethod name?"));
 
     @Test

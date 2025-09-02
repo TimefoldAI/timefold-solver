@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet;
 
-import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -95,8 +93,8 @@ public final class BavetConstraintFactory<Solution_>
     // from
     // ************************************************************************
 
-    public <A> @NonNull UniConstraintStream<A> forEachUnfilteringSpecified(@NonNull Class<A> sourceClass,
-            ForEachFilteringCriteria... includes) {
+    private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
+            ForEachFilteringCriteria criteria) {
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) {
@@ -107,7 +105,8 @@ public final class BavetConstraintFactory<Solution_>
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
             // No applicable list variable; don't need to check inverse relationships.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    entityDescriptor.getForEachFilterPredicateIncludingBasicVar(includes), RetrievalSemantics.STANDARD));
+                    criteria.getFilterForEntityDescriptor(entityDescriptor),
+                    RetrievalSemantics.STANDARD));
         }
         var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
         if (entityClass == sourceClass) {
@@ -115,37 +114,33 @@ public final class BavetConstraintFactory<Solution_>
                     .formatted(entityClass.getCanonicalName(), sourceClass.getCanonicalName()));
         }
         var shadowDescriptor = listVariableDescriptor.getInverseRelationShadowVariableDescriptor();
-        var includeSet =
-                (includes.length == 0) ? EnumSet.noneOf(ForEachFilteringCriteria.class) : EnumSet.copyOf(List.of(includes));
-        if (shadowDescriptor == null && !includeSet.contains(ForEachFilteringCriteria.INCLUDE_UNASSIGNED)) {
+        if (shadowDescriptor == null && criteria == ForEachFilteringCriteria.ASSIGNED_AND_CONSISTENT) {
             // The list variable element doesn't have the @InverseRelationShadowVariable annotation,
             // and we are not including unassigned elements.
             // We don't want the users to be forced to implement it in quickstarts,
             // so we'll do this expensive thing instead.
-            includeSet.add(ForEachFilteringCriteria.INCLUDE_UNASSIGNED);
-            return forEachUnfilteringSpecified(sourceClass, includeSet.toArray(ForEachFilteringCriteria[]::new))
+            return forEachForCriteria(sourceClass, ForEachFilteringCriteria.CONSISTENT)
                     .ifExists((Class) entityClass,
                             Joiners.filtering(listVariableDescriptor.getInListPredicate()));
         } else { // We have the inverse relation variable, so we can read its value directly.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    entityDescriptor.getForEachFilterPredicateIncludingListVar(includes), RetrievalSemantics.STANDARD));
+                    criteria.getFilterForEntityDescriptor(entityDescriptor), RetrievalSemantics.STANDARD));
         }
     }
 
     @Override
     public <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass) {
-        return forEachUnfilteringSpecified(sourceClass);
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ASSIGNED_AND_CONSISTENT);
     }
 
     @Override
     public <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass) {
-        return forEachUnfilteringSpecified(sourceClass, ForEachFilteringCriteria.INCLUDE_UNASSIGNED);
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.CONSISTENT);
     }
 
     @Override
     public <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass) {
-        return forEachUnfilteringSpecified(sourceClass, ForEachFilteringCriteria.INCLUDE_UNASSIGNED,
-                ForEachFilteringCriteria.INCLUDE_INCONSISTENT);
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL);
     }
 
     @Override

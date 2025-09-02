@@ -294,7 +294,7 @@ Java::
 [source,java,options="nowrap"]
 ----
     private Constraint penalizeAllShifts(ConstraintFactory factory) {
-        return factory.forEachIncludingUnassigned(Shift.class)
+        return factory.forEachUnfiltered(Shift.class)
                 .penalize(HardSoftScore.ONE_SOFT)
                 .asConstraint("A shift");
     }

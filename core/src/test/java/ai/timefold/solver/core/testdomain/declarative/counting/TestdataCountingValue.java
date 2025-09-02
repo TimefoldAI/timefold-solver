@@ -5,6 +5,7 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
+import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
@@ -14,6 +15,10 @@ public class TestdataCountingValue extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "values")
     TestdataCountingEntity entity;
+
+    // TODO: Remove me when supplier present
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
 
     @ShadowVariable(supplierName = "countSupplier")
     Integer count;

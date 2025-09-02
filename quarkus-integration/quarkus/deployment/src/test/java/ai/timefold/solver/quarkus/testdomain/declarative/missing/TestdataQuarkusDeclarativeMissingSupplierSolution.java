@@ -1,4 +1,4 @@
-package ai.timefold.solver.quarkus.testdomain.suppliervariable.missing;
+package ai.timefold.solver.quarkus.testdomain.declarative.missing;
 
 import java.util.List;
 

@@ -42,6 +42,9 @@ import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChain
 import ai.timefold.solver.spring.boot.autoconfigure.chained.domain.TestdataChainedSpringSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.config.SolverProperty;
 import ai.timefold.solver.spring.boot.autoconfigure.config.TimefoldProperties;
+import ai.timefold.solver.spring.boot.autoconfigure.declarative.SupplierVariableSpringTestConfiguration;
+import ai.timefold.solver.spring.boot.autoconfigure.declarative.domain.TestdataSpringSupplierVariableEntity;
+import ai.timefold.solver.spring.boot.autoconfigure.declarative.domain.TestdataSpringSupplierVariableSolution;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleConstraintProviderSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleEasyScoreConstraintSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleIncrementalScoreConstraintSpringTestConfiguration;
@@ -65,9 +68,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.NormalSpringTestConfi
 import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
-import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.SupplierVariableSpringTestConfiguration;
-import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.domain.TestdataSpringSupplierVariableEntity;
-import ai.timefold.solver.spring.boot.autoconfigure.suppliervariable.domain.TestdataSpringSupplierVariableSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.assertj.core.api.AssertionsForClassTypes;
