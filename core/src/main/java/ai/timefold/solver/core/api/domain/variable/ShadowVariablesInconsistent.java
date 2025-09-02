@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.domain.variable.declarative;
+package ai.timefold.solver.core.api.domain.variable;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -9,7 +9,6 @@ import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 
 /**

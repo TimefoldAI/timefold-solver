@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.dependent;
+package ai.timefold.solver.core.testdomain.declarative.dependency;
 
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -7,21 +7,15 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
 import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencyConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencyEntity;
-import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencySolution;
-import ai.timefold.solver.core.testdomain.declarative.dependency.TestdataDependencyValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -58,7 +52,6 @@ class DependencyValuesShadowVariableTest {
                 .withSolutionClass(TestdataDependencySolution.class)
                 .withEntityClasses(TestdataDependencyEntity.class, TestdataDependencyValue.class)
                 .withConstraintProviderClass(TestdataDependencyConstraintProvider.class)
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1_000L));
@@ -94,7 +87,7 @@ class DependencyValuesShadowVariableTest {
         entityA.getValues().add(valueB);
         entityA.getValues().add(valueA);
 
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
                 TestdataDependencySolution.class, TestdataDependencyEntity.class, TestdataDependencyValue.class);
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
 
@@ -129,7 +122,6 @@ class DependencyValuesShadowVariableTest {
                 .withSolutionClass(TestdataDependencySolution.class)
                 .withEntityClasses(TestdataDependencyEntity.class, TestdataDependencyValue.class)
                 .withConstraintProviderClass(TestdataDependencyConstraintProvider.class)
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1_000L));

@@ -960,7 +960,6 @@ class TimefoldSolverAutoConfigurationTest {
         supplierVariableContextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .withPropertyValues(
-                        "timefold.solver.enabled-preview-features=DECLARATIVE_SHADOW_VARIABLES",
                         "timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
                     SolverManager<TestdataSpringSupplierVariableSolution, Long> solverManager =
@@ -980,7 +979,6 @@ class TimefoldSolverAutoConfigurationTest {
         assertThatCode(() -> missingSupplierVariableContextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .withPropertyValues(
-                        "timefold.solver.enabled-preview-features=DECLARATIVE_SHADOW_VARIABLES",
                         "timefold.solver.termination.best-score-limit=0")
                 .run(context -> {
                     context.getBean(SolverFactory.class);

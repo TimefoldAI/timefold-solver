@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.simple_list;
+package ai.timefold.solver.core.testdomain.declarative.simple_list;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,14 +6,9 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclarativeSimpleListConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclarativeSimpleListEntity;
-import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclarativeSimpleListSolution;
-import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclarativeSimpleListValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +19,6 @@ class SimpleListTest {
                 .withSolutionClass(TestdataDeclarativeSimpleListSolution.class)
                 .withEntityClasses(TestdataDeclarativeSimpleListEntity.class, TestdataDeclarativeSimpleListValue.class)
                 .withConstraintProviderClass(TestdataDeclarativeSimpleListConstraintProvider.class)
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
                 .withTerminationConfig(new TerminationConfig().withBestScoreLimit("-344"));
 

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.concurrent;
+package ai.timefold.solver.core.testdomain.declarative.concurrent;
 
 import static ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue.BASE_START_TIME;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -10,14 +10,8 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentAssertionEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -340,7 +334,6 @@ class ConcurrentValuesShadowVariableTest {
 
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withSolutionClass(TestdataConcurrentSolution.class)
                 .withEntityClasses(TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()
@@ -386,7 +379,6 @@ class ConcurrentValuesShadowVariableTest {
 
         var solverConfig = new SolverConfig()
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withSolutionClass(TestdataConcurrentSolution.class)
                 .withEntityClasses(TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
                 .withScoreDirectorFactory(new ScoreDirectorFactoryConfig()

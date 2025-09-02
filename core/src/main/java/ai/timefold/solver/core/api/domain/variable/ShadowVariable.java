@@ -10,7 +10,6 @@ import java.lang.annotation.Target;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable.List;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 /**
  * Specifies that a bean property (or a field) is a custom shadow variable of 1 or more source variables.

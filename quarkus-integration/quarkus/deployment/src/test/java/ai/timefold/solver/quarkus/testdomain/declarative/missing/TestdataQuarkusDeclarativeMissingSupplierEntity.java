@@ -2,8 +2,8 @@ package ai.timefold.solver.quarkus.testdomain.declarative.missing;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 @PlanningEntity
 public class TestdataQuarkusDeclarativeMissingSupplierEntity {

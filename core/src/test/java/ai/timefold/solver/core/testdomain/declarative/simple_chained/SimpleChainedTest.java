@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.simple_chained;
+package ai.timefold.solver.core.testdomain.declarative.simple_chained;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,13 +7,8 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.testdomain.declarative.simple_chained.TestdataChainedSimpleVarConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.simple_chained.TestdataChainedSimpleVarEntity;
-import ai.timefold.solver.core.testdomain.declarative.simple_chained.TestdataChainedSimpleVarSolution;
-import ai.timefold.solver.core.testdomain.declarative.simple_chained.TestdataChainedSimpleVarValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -24,7 +19,6 @@ class SimpleChainedTest {
                 .withSolutionClass(TestdataChainedSimpleVarSolution.class)
                 .withEntityClasses(TestdataChainedSimpleVarEntity.class, TestdataChainedSimpleVarValue.class)
                 .withConstraintProviderClass(TestdataChainedSimpleVarConstraintProvider.class)
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
                 .withTerminationConfig(new TerminationConfig().withBestScoreLimit("-48"));
 

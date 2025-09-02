@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.extended_values;
+package ai.timefold.solver.core.testdomain.declarative.extended;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -7,14 +7,8 @@ import java.util.List;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedBaseValue;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedEntity;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedSolution;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedSubclassValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +17,6 @@ class DeclarativeShadowVariablesExtendedValuesTest {
     @Test
     void extendedValues() {
         var solverConfig = new SolverConfig()
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withSolutionClass(TestdataDeclarativeExtendedSolution.class)
                 .withEntityClasses(TestdataDeclarativeExtendedEntity.class,

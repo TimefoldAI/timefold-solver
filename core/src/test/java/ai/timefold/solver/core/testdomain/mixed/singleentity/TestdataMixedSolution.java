@@ -1,10 +1,7 @@
 package ai.timefold.solver.core.testdomain.mixed.singleentity;
 
-import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -17,7 +14,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 public class TestdataMixedSolution {
 
     public static SolutionDescriptor<TestdataMixedSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(Set.of(DECLARATIVE_SHADOW_VARIABLES), TestdataMixedSolution.class,
+        return SolutionDescriptor.buildSolutionDescriptor(TestdataMixedSolution.class,
                 TestdataMixedEntity.class, TestdataMixedValue.class, TestdataMixedOtherValue.class);
     }
 

@@ -1,11 +1,9 @@
-package ai.timefold.solver.core.preview.api.domain.variable.declarative;
+package ai.timefold.solver.core.api.domain.variable;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 /**
  * Specifies the paths to variables that a method referenced by {@link ShadowVariable#supplierName()}

@@ -3,14 +3,12 @@ package ai.timefold.solver.core.testdomain.declarative.follower;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -18,7 +16,7 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 @PlanningSolution
 public class TestdataFollowerSolution extends TestdataObject {
     public static SolutionDescriptor<TestdataFollowerSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+        return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataFollowerSolution.class, TestdataLeaderEntity.class, TestdataFollowerEntity.class);
     }
 

@@ -1,21 +1,18 @@
 package ai.timefold.solver.core.testdomain.declarative.multi_entity;
 
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
 public class TestdataMultiEntityDependencySolution {
     public static SolutionDescriptor<TestdataMultiEntityDependencySolution> buildDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+        return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataMultiEntityDependencySolution.class,
                 TestdataMultiEntityDependencyEntity.class,
                 TestdataMultiEntityDependencyValue.class);
@@ -44,7 +41,7 @@ public class TestdataMultiEntityDependencySolution {
     }
 
     public static SolutionDescriptor<TestdataMultiEntityDependencySolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+        return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataMultiEntityDependencySolution.class, TestdataMultiEntityDependencyEntity.class,
                 TestdataMultiEntityDependencyValue.class);
     }

@@ -1,21 +1,19 @@
 package ai.timefold.solver.core.testdomain.declarative.counting;
 
 import java.util.List;
-import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningSolution
 public class TestdataCountingSolution extends TestdataObject {
     public static SolutionDescriptor<TestdataCountingSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(Set.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+        return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataCountingSolution.class, TestdataCountingEntity.class, TestdataCountingValue.class);
     }
 

@@ -25,7 +25,6 @@ import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultShadowVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -80,13 +79,11 @@ public final class ShadowVariableUpdateHelper<Solution_> {
 
     @SuppressWarnings("unchecked")
     public void updateShadowVariables(Solution_ solution) {
-        var enabledPreviewFeatures = EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES);
         var solutionClass = (Class<Solution_>) Objects.requireNonNull(solution).getClass();
-        var initialSolutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
-                enabledPreviewFeatures, solutionClass);
+        var initialSolutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass);
         var entityClassSet = new LinkedHashSet<Class<?>>();
         initialSolutionDescriptor.visitAllEntities(solution, entity -> entityClassSet.add(entity.getClass()));
-        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(enabledPreviewFeatures, solutionClass,
+        var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(solutionClass,
                 entityClassSet.toArray(new Class<?>[0]));
         try (var scoreDirector = new InternalScoreDirector.Builder<>(solutionDescriptor).build()) {
             // When we have a solution, we can reuse the logic from VariableListenerSupport to update all variable types
@@ -99,8 +96,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 .filter(clazz -> clazz.isAnnotationPresent(PlanningEntity.class))
                 .distinct().toList();
         var solutionDescriptor =
-                SolutionDescriptor.buildSolutionDescriptor(EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
-                        Objects.requireNonNull(solutionClass),
+                SolutionDescriptor.buildSolutionDescriptor(Objects.requireNonNull(solutionClass),
                         entityClassList.toArray(new Class<?>[0]));
         var customShadowVariableDescriptorList = solutionDescriptor.getAllShadowVariableDescriptors().stream()
                 .filter(CustomShadowVariableDescriptor.class::isInstance)

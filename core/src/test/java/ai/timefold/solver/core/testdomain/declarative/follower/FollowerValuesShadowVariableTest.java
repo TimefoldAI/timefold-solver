@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.preview.api.variable.declarative.follower;
+package ai.timefold.solver.core.testdomain.declarative.follower;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -6,17 +6,12 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMove;
 import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.declarative.follower.TestdataFollowerConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.follower.TestdataFollowerEntity;
-import ai.timefold.solver.core.testdomain.declarative.follower.TestdataFollowerSolution;
-import ai.timefold.solver.core.testdomain.declarative.follower.TestdataLeaderEntity;
 
 import org.junit.jupiter.api.Test;
 
@@ -29,7 +24,6 @@ class FollowerValuesShadowVariableTest {
                 .withSolutionClass(TestdataFollowerSolution.class)
                 .withEntityClasses(TestdataLeaderEntity.class, TestdataFollowerEntity.class)
                 .withConstraintProviderClass(TestdataFollowerConstraintProvider.class)
-                .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)
                 .withEnvironmentMode(EnvironmentMode.FULL_ASSERT)
                 .withTerminationConfig(new TerminationConfig()
                         .withMoveCountLimit(1_000L));

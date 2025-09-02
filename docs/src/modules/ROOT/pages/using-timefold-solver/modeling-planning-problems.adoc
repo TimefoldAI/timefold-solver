@@ -804,12 +804,6 @@ Java::
 Declarative shadow variables are the simplest way to calculate shadow variables.
 This approach allows access to all the fields and methods of the declaring class.
 
-[IMPORTANT]
-====
-This feature is currently available as a xref:/upgrading-timefold-solver/backwards-compatibility.adoc#previewFeatures[preview feature].
-It may be subject to change and must be enabled in the solver configuration by setting: `<enablePreviewFeature>DECLARATIVE_SHADOW_VARIABLES</enablePreviewFeature>`
-====
-
 To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specify the name of a supplier method.
 Annotate the supplier method with `@ShadowSources`, listing all the planning variables (genuine or shadow) it depends on.
 
