@@ -11,19 +11,20 @@ import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class ListUnassignMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    private final Value_ movedValue;
     private final Entity_ sourceEntity;
     private final int sourceIndex;
 
-    public ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value,
-            Entity_ sourceEntity, int sourceIndex) {
+    private @Nullable Value_ unassignedValue;
+
+    public ListUnassignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
+            int sourceIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.movedValue = Objects.requireNonNull(value);
         this.sourceEntity = Objects.requireNonNull(sourceEntity);
         if (sourceIndex < 0) {
             throw new IllegalArgumentException("The sourceIndex (" + sourceIndex + ") must be greater than or equal to 0.");
@@ -33,12 +34,12 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
-        solutionView.unassignValue(variableMetaModel, movedValue, sourceEntity, sourceIndex);
+        unassignedValue = solutionView.unassignValue(variableMetaModel, sourceEntity, sourceIndex);
     }
 
     @Override
     public Move<Solution_> rebase(Rebaser rebaser) {
-        return new ListUnassignMove<>(variableMetaModel, rebaser.rebase(movedValue), rebaser.rebase(sourceEntity), sourceIndex);
+        return new ListUnassignMove<>(variableMetaModel, rebaser.rebase(sourceEntity), sourceIndex);
     }
 
     @Override
@@ -48,7 +49,15 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     @Override
     public Collection<Value_> extractPlanningValues() {
-        return Collections.singleton(movedValue);
+        return Collections.singleton(getUnassignedValue());
+    }
+
+    private Value_ getUnassignedValue() {
+        if (unassignedValue == null) {
+            unassignedValue =
+                    Objects.requireNonNull(getVariableDescriptor(variableMetaModel).getElement(sourceEntity, sourceIndex));
+        }
+        return unassignedValue;
     }
 
     @Override
@@ -79,6 +88,6 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
 
     @Override
     public String toString() {
-        return String.format("%s {%s[%d] -> null}", movedValue, sourceEntity, sourceIndex);
+        return String.format("%s {%s[%d] -> null}", getUnassignedValue(), sourceEntity, sourceIndex);
     }
 }

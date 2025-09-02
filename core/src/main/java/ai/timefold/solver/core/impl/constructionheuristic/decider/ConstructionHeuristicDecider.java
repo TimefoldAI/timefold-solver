@@ -89,9 +89,9 @@ public class ConstructionHeuristicDecider<Solution_> {
         var terminatedPrematurely = false;
         while (moveIterator.hasNext()) {
             var move = moveIterator.next();
-            var moveDirector = stepScope.getMoveDirector();
             var allowedNonDoableMove = isAllowedNonDoableMove(move);
             if (!allowedNonDoableMove) {
+                var moveDirector = stepScope.getMoveDirector();
                 if (!LegacyMoveAdapter.isDoable(moveDirector, move)) {
                     // Construction Heuristic should not do non-doable moves, but in some cases, it has to.
                     // Specifically:

@@ -74,11 +74,15 @@ public class SwapMoveProvider<Solution_, Entity_>
                                 var variableDescriptor = defaultVariableMetaModel.variableDescriptor();
                                 var oldLeftValue = variableDescriptor.getValue(leftEntity);
                                 var oldRightValue = variableDescriptor.getValue(rightEntity);
-                                if (!Objects.equals(oldLeftValue, oldRightValue)
-                                        && solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
+                                if (Objects.equals(oldLeftValue, oldRightValue)) {
+                                    continue;
+                                }
+                                if (solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
                                         && solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)) {
                                     change = true;
-                                    break;
+                                } else {
+                                    // One of the swaps falls out of range, skip this pair altogether.
+                                    return false;
                                 }
                             }
                             return change;

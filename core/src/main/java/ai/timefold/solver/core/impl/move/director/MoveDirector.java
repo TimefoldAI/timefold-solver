@@ -63,7 +63,25 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     }
 
     @Override
-    public final <Entity_, Value_> void unassignValue(
+    public <Entity_, Value_> void unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Value_ value) {
+        var locationInList = getPositionOf(variableMetaModel, value)
+                .ensureAssigned(() -> """
+                        The value (%s) is not assigned to a list variable.
+                        This may indicate score corruption or a problem with the move's implementation."""
+                        .formatted(value));
+        unassignValue(variableMetaModel, value, locationInList.entity(), locationInList.index());
+    }
+
+    @Override
+    public <Entity_, Value_> Value_ unassignValue(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            Entity_ entity, int index) {
+        var value = getValueAtIndex(variableMetaModel, entity, index);
+        unassignValue(variableMetaModel, value, entity, index);
+        return value;
+    }
+
+    private <Entity_, Value_> void unassignValue(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ movedValue, Entity_ entity,
             int index) {
         var variableDescriptor =
@@ -147,17 +165,18 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     public <Entity_, Value_> void swapValuesInList(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Entity_ entity, int leftIndex, int rightIndex) {
         if (leftIndex == rightIndex) {
-            // Do nothing.
-        } else if (leftIndex > rightIndex) { // Always start from the lower index.
-            swapValuesInList(variableMetaModel, entity, rightIndex, leftIndex);
-        } else {
-            var variableDescriptor = extractVariableDescriptor(variableMetaModel);
-            externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, leftIndex, rightIndex + 1);
-            var oldLeftElement =
-                    variableDescriptor.setElement(entity, leftIndex, variableDescriptor.getElement(entity, rightIndex));
-            variableDescriptor.setElement(entity, rightIndex, oldLeftElement);
-            externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, leftIndex, rightIndex + 1);
+            return;
         }
+
+        var variableDescriptor = extractVariableDescriptor(variableMetaModel);
+        var fromIndex = Math.min(leftIndex, rightIndex);
+        var toIndex = Math.max(leftIndex, rightIndex) + 1;
+
+        externalScoreDirector.beforeListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
+        var oldLeftElement =
+                variableDescriptor.setElement(entity, leftIndex, variableDescriptor.getElement(entity, rightIndex));
+        variableDescriptor.setElement(entity, rightIndex, oldLeftElement);
+        externalScoreDirector.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
     }
 
     @Override

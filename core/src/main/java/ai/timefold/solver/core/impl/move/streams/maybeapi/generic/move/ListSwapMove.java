@@ -6,8 +6,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
+import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
@@ -18,13 +20,14 @@ import org.jspecify.annotations.Nullable;
 /**
  * Swaps two elements of a {@link PlanningListVariable list variable}.
  * Each element is identified by an entity instance and an index in that entity's list variable.
- * The swap move has two sides called left and right. The element at {@code leftIndex} in {@code leftEntity}'s list variable
+ * The swap move has two sides called left and right.
+ * The element at {@code leftIndex} in {@code leftEntity}'s list variable
  * is replaced by the element at {@code rightIndex} in {@code rightEntity}'s list variable and vice versa.
  * Left and right entity can be the same instance.
- * <p>
- * An undo move is created by flipping the left and right-hand entity and index.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
+ * @param <Entity_> the entity type, the class with the {@link PlanningEntity} annotation
+ * @param <Value_> the variable type, the type of the property with the {@link PlanningVariable} annotation
  */
 @NullMarked
 public final class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove<Solution_> {

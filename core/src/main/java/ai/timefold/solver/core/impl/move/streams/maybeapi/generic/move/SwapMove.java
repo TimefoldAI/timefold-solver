@@ -8,6 +8,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
@@ -16,6 +17,17 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
+ * Swaps values of {@link PlanningVariable} between two different {@link PlanningEntity} instances.
+ * Requires to specify a (sub)set of variables to swap values of,
+ * all of which must belong to the same entity class.
+ *
+ * <p>
+ * Only provide entities whose values can be swapped;
+ * for example, if one of the values is not in the value range of the other entity's variable,
+ * then swapping would lead to an invalid solution.
+ * This move will skip that swap,
+ * but it is more efficient to not propose it in the first place.
+ * 
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Entity_> the entity type, the class with the {@link PlanningEntity} annotation
  */
