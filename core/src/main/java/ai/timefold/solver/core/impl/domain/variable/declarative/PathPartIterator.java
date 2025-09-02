@@ -6,8 +6,8 @@ import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 class PathPartIterator implements Iterator<PathPart> {
     private final Class<?> rootEntity;

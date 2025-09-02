@@ -3,7 +3,7 @@ package ai.timefold.solver.spring.boot.autoconfigure.missingsuppliervariable.dom
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataSpringMissingSupplierVariableEntity {

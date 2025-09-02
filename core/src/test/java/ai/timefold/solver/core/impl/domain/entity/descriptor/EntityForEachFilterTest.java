@@ -9,18 +9,18 @@ import java.util.List;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.declarative.basic.TestdataBasicVarEntity;
-import ai.timefold.solver.core.testdomain.declarative.basic.TestdataBasicVarSolution;
-import ai.timefold.solver.core.testdomain.declarative.basic.TestdataBasicVarValue;
-import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclarativeSimpleListEntity;
-import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclarativeSimpleListSolution;
-import ai.timefold.solver.core.testdomain.declarative.simple_list.TestdataDeclarativeSimpleListValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNoShadowsListValue;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarEntity;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarSolution;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarValue;
+import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListEntity;
+import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListSolution;
+import ai.timefold.solver.core.testdomain.shadow.simple_list.TestdataDeclarativeSimpleListValue;
 
 import org.junit.jupiter.api.Test;
 

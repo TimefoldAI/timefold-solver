@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.solver;
 
 import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY;
 import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE;
-import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.fail;
@@ -102,10 +101,6 @@ import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedBro
 import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedGreenEntity;
 import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntityAnchor;
 import ai.timefold.solver.core.testdomain.chained.multientity.TestdataChainedMultiEntitySolution;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -145,6 +140,10 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
@@ -1563,7 +1562,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig)
                 .withEasyScoreCalculatorClass(DummySimpleScoreEasyScoreCalculator.class);
 
@@ -1723,7 +1721,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhaseList(Collections.emptyList())
                 .withTerminationConfig(new TerminationConfig().withStepCountLimit(16))
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
@@ -1795,7 +1792,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
                         new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
@@ -1819,7 +1815,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
                         new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
@@ -1852,7 +1847,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
                         new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
@@ -1885,7 +1879,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
                         new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))))
@@ -2012,7 +2005,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         // Solver config
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataConcurrentSolution.class, TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withEasyScoreCalculatorClass(null)
                 .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class);
 
@@ -2100,7 +2092,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
                         new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("valueList"))),
@@ -2299,7 +2290,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(localSearchConfig)
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
         var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
@@ -2320,7 +2310,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
                 TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
                 TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(localSearchConfig)
                 .withEasyScoreCalculatorClass(TestdataMixedEasyScoreCalculator.class);
         var problem = TestdataMixedSolution.generateUninitializedSolution(2, 2, 2);
@@ -2337,7 +2326,6 @@ class DefaultSolverTest extends AbstractMeterTest {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataMixedMultiEntitySolution.class, TestdataMixedMultiEntityFirstEntity.class,
                         TestdataMixedMultiEntitySecondEntity.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES)
                 .withPhases(localSearchConfig)
                 .withEasyScoreCalculatorClass(TestdataMixedEntityEasyScoreCalculator.class);
         var problem = TestdataMixedMultiEntitySolution.generateUninitializedSolution(2, 2, 2);

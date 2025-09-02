@@ -10,9 +10,9 @@ import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 
 /*
  *  Should have one of every annotation, even annotations that

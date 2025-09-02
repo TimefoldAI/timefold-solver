@@ -8,27 +8,25 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.EnumSet;
 import java.util.List;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.config.solver.PreviewFeature;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ShadowVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedBaseValue;
-import ai.timefold.solver.core.testdomain.declarative.extended.TestdataDeclarativeExtendedSubclassValue;
-import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeEntity;
-import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeSolution;
-import ai.timefold.solver.core.testdomain.declarative.invalid.TestdataInvalidDeclarativeValue;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedBaseValue;
+import ai.timefold.solver.core.testdomain.shadow.extended.TestdataDeclarativeExtendedSubclassValue;
+import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeEntity;
+import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeSolution;
+import ai.timefold.solver.core.testdomain.shadow.invalid.TestdataInvalidDeclarativeValue;
 
 import org.junit.jupiter.api.Test;
 
@@ -38,7 +36,7 @@ class RootVariableSourceTest {
     private static final DescriptorPolicy DEFAULT_DESCRIPTOR_POLICY = new DescriptorPolicy();
 
     private final PlanningSolutionMetaModel<TestdataInvalidDeclarativeSolution> planningSolutionMetaModel =
-            SolutionDescriptor.buildSolutionDescriptor(EnumSet.of(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES),
+            SolutionDescriptor.buildSolutionDescriptor(
                     TestdataInvalidDeclarativeSolution.class, TestdataInvalidDeclarativeEntity.class,
                     TestdataInvalidDeclarativeValue.class)
                     .getMetaModel();

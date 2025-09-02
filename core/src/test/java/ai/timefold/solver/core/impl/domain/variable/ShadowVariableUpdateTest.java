@@ -9,12 +9,12 @@ import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.solver.SolutionManager;
-import ai.timefold.solver.core.testdomain.declarative.basic.TestdataBasicVarEntity;
-import ai.timefold.solver.core.testdomain.declarative.basic.TestdataBasicVarSolution;
-import ai.timefold.solver.core.testdomain.declarative.basic.TestdataBasicVarValue;
-import ai.timefold.solver.core.testdomain.declarative.chained.TestdataChainedVarEntity;
-import ai.timefold.solver.core.testdomain.declarative.chained.TestdataChainedVarSolution;
-import ai.timefold.solver.core.testdomain.declarative.chained.TestdataChainedVarValue;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarEntity;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarSolution;
+import ai.timefold.solver.core.testdomain.shadow.basic.TestdataBasicVarValue;
+import ai.timefold.solver.core.testdomain.shadow.chained.TestdataChainedVarEntity;
+import ai.timefold.solver.core.testdomain.shadow.chained.TestdataChainedVarSolution;
+import ai.timefold.solver.core.testdomain.shadow.chained.TestdataChainedVarValue;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullEntity;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;

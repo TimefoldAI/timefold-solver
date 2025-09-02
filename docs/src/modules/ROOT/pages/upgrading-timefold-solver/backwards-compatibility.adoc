@@ -38,7 +38,6 @@ Preview features need to be activated in the solverConfig.xml file.
 ----
 <solver xmlns="https://timefold.ai/xsd/solver">
   <enablePreviewFeature>DIVERSIFIED_LATE_ACCEPTANCE</enablePreviewFeature>
-  <enablePreviewFeature>DECLARATIVE_SHADOW_VARIABLES</enablePreviewFeature>
   <enablePreviewFeature>PLANNING_SOLUTION_DIFF</enablePreviewFeature>
 </solver>
 ----
@@ -46,7 +45,6 @@ Preview features need to be activated in the solverConfig.xml file.
 Preview features often live in the `preview.api` package, and they are:
 
 - xref:optimization-algorithms/local-search.adoc#diversifiedLateAcceptance[Diversified Late Acceptance] acceptor
-- xref:using-timefold-solver/modeling-planning-problems.adoc#declarativeShadowVariable[Declarative Shadow Variables]
 - xref:constraints-and-score/understanding-the-score.adoc#solutionDiff[Solution diff API]
 in the `ai.timefold.solver.core.preview.api.domain.solution.diff` package,
 and in the `SolutionManager`

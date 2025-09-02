@@ -14,7 +14,9 @@ import ai.timefold.solver.core.api.domain.variable.NextElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -22,8 +24,6 @@ import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowVariablesInconsistent;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;

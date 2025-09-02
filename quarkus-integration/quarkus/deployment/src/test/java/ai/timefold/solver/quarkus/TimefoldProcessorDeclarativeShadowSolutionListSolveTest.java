@@ -26,7 +26,6 @@ class TimefoldProcessorDeclarativeShadowSolutionListSolveTest {
 
     @RegisterExtension
     static final QuarkusUnitTest config = new QuarkusUnitTest()
-            .overrideConfigKey("quarkus.timefold.solver.enabled-preview-features", "DECLARATIVE_SHADOW_VARIABLES")
             .overrideConfigKey("quarkus.timefold.solver.termination.best-score-limit", "-1")
             .setArchiveProducer(() -> ShrinkWrap.create(JavaArchive.class)
                     .addClasses(TestdataQuarkusDeclarativeShadowVariableListSolution.class,

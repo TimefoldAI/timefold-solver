@@ -1,0 +1,31 @@
+package ai.timefold.solver.core.testdomain.shadow.concurrent;
+
+import static ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue.BASE_START_TIME;
+
+import java.time.Duration;
+
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
+import ai.timefold.solver.core.api.score.stream.Constraint;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+
+import org.jspecify.annotations.NonNull;
+
+public class TestdataConcurrentConstraintProvider implements ConstraintProvider {
+    @Override
+    public Constraint @NonNull [] defineConstraints(@NonNull ConstraintFactory constraintFactory) {
+        return new Constraint[] {
+                constraintFactory.forEachUnfiltered(TestdataConcurrentValue.class)
+                        .filter(TestdataConcurrentValue::isInconsistent)
+                        .penalize(HardSoftScore.ONE_HARD)
+                        .asConstraint("Invalid visit"),
+
+                constraintFactory.forEach(TestdataConcurrentValue.class)
+                        .filter(TestdataConcurrentValue::isAssigned)
+                        .penalize(HardSoftScore.ONE_SOFT, visit -> (int) Duration
+                                .between(BASE_START_TIME, visit.getServiceFinishTime())
+                                .toMinutes())
+                        .asConstraint("Minimize finish time")
+        };
+    }
+}

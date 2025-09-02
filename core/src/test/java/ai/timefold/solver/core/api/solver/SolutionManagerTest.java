@@ -13,7 +13,6 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolutionManager;
 import ai.timefold.solver.core.impl.util.Pair;
@@ -26,10 +25,6 @@ import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChaine
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedObject;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedSolution;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentConstraintProvider;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentEntity;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentSolution;
-import ai.timefold.solver.core.testdomain.declarative.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListCMAIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListEntity;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
@@ -45,6 +40,10 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataOtherValue;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedEntity;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedIncrementalScoreCalculator;
 import ai.timefold.solver.core.testdomain.shadow.TestdataShadowedSolution;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
+import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentValue;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
@@ -74,8 +73,7 @@ public class SolutionManagerTest {
             new SolverConfig()
                     .withSolutionClass(TestdataConcurrentSolution.class)
                     .withEntityClasses(TestdataConcurrentEntity.class, TestdataConcurrentValue.class)
-                    .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class)
-                    .withPreviewFeature(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES));
+                    .withConstraintProviderClass(TestdataConcurrentConstraintProvider.class));
     public static final SolverFactory<TestdataAllowsUnassignedSolution> SOLVER_FACTORY_UNASSIGNED = SolverFactory.create(
             new SolverConfig()
                     .withSolutionClass(TestdataAllowsUnassignedSolution.class)

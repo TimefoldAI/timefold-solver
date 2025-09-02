@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
-import static ai.timefold.solver.core.config.solver.PreviewFeature.DECLARATIVE_SHADOW_VARIABLES;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -410,8 +409,7 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
     void failMixedModelDefaultConfiguration() {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataMixedSolution.class, TestdataMixedEntity.class, TestdataMixedValue.class,
-                        TestdataMixedOtherValue.class)
-                .withPreviewFeature(DECLARATIVE_SHADOW_VARIABLES);
+                        TestdataMixedOtherValue.class);
 
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, new TestdataSolution("s1")))
                 .hasMessageContaining(

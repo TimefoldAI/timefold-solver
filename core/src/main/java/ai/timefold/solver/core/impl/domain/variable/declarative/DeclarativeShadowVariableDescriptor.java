@@ -7,9 +7,8 @@ import java.util.List;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
+import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.config.solver.PreviewFeature;
-import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory;
@@ -21,7 +20,6 @@ import ai.timefold.solver.core.impl.domain.variable.listener.VariableListenerWit
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
-import ai.timefold.solver.core.preview.api.domain.variable.declarative.ShadowSources;
 
 import org.jspecify.annotations.Nullable;
 
@@ -40,15 +38,6 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
 
     @Override
     public void processAnnotations(DescriptorPolicy descriptorPolicy) {
-        if (!descriptorPolicy.isPreviewFeatureEnabled(PreviewFeature.DECLARATIVE_SHADOW_VARIABLES)) {
-            throw new IllegalStateException(
-                    """
-                            The member (%s) on the entity class (%s) is a declarative shadow variable, but the declarative shadow variable preview feature is disabled.
-                            Maybe enable declarative shadow variables in your %s?
-                            """
-                            .formatted(variableMemberAccessor.getName(), entityDescriptor.getEntityClass().getName(),
-                                    SolverConfig.class.getSimpleName()));
-        }
         var annotation = variableMemberAccessor.getAnnotation(ShadowVariable.class);
         var methodName = annotation.supplierName();
         if (methodName.isEmpty()) {
