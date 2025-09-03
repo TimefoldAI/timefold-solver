@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
 final class ElementPositionRandomIterator<Solution_> implements Iterator<ElementPosition> {
 
@@ -84,10 +85,14 @@ final class ElementPositionRandomIterator<Solution_> implements Iterator<Element
                     var randomIndex = workingRandom.nextInt(unpinnedSize + 1);
                     return ElementPosition.of(entity, listVariableDescriptor.getFirstUnpinnedIndex(entity) + randomIndex);
                 }
-            } else { // +1 to include the destination after the final element in the list.
-                var elementPosition = listVariableStateSupply.getElementPosition(value)
-                        .ensureAssigned();
-                return ElementPosition.of(elementPosition.entity(), elementPosition.index() + 1);
+            } else {
+                var elementPosition = listVariableStateSupply.getElementPosition(value);
+                if (elementPosition instanceof PositionInList positionInList) {
+                    // +1 to include the destination after the final element in the list.
+                    return ElementPosition.of(positionInList.entity(), positionInList.index() + 1);
+                }
+                // Some selectors, like FilteringValueRangeSelector can still return unassigned values when bailing out
+                return ElementPosition.unassigned();
             }
         }
     }
