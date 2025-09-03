@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.IdentityHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -16,78 +16,117 @@ import org.jspecify.annotations.Nullable;
 /**
  * This class records the relationship between each planning value and all entities that include the related value
  * within its value range.
- * 
+ *
  * @see FromEntityPropertyValueRangeDescriptor
  */
 @NullMarked
 public final class ReachableValues {
 
-    private final Map<Object, Set<Object>> valueToEntityMap;
-    private final Map<Object, Set<Object>> valueToValueMap;
-    private final Map<Object, List<Object>> randomAccessValueToEntityMap;
-    private final Map<Object, List<Object>> randomAccessValueToValueMap;
+    private final Map<Object, ReachableItemValue> values;
     private final @Nullable Class<?> valueClass;
+    private final boolean acceptsNullValue;
+    private @Nullable ReachableItemValue firstCachedObject;
+    private @Nullable ReachableItemValue secondCachedObject;
 
-    public ReachableValues(Map<Object, Set<Object>> valueToEntityMap, Map<Object, Set<Object>> valueToValueMap) {
-        this.valueToEntityMap = valueToEntityMap;
-        this.randomAccessValueToEntityMap = new IdentityHashMap<>(this.valueToEntityMap.size());
-        this.valueToValueMap = valueToValueMap;
-        this.randomAccessValueToValueMap = new IdentityHashMap<>(this.valueToValueMap.size());
-        var first = valueToEntityMap.entrySet().stream().findFirst();
-        this.valueClass = first.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
+    public ReachableValues(Map<Object, ReachableItemValue> values, boolean acceptsNullValue) {
+        this.values = values;
+        this.acceptsNullValue = acceptsNullValue;
+        var firstValue = values.entrySet().stream().findFirst();
+        this.valueClass = firstValue.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
     }
 
-    /**
-     * @return all reachable values for the given value.
-     */
-    public @Nullable Set<Object> extractEntities(Object value) {
-        return valueToEntityMap.get(value);
-    }
-
-    /**
-     * @return all reachable entities for the given value.
-     */
-    public @Nullable Set<Object> extractValues(Object value) {
-        return valueToValueMap.get(value);
+    private @Nullable ReachableItemValue fetchItemValue(Object value) {
+        ReachableItemValue selected = null;
+        if (firstCachedObject != null && firstCachedObject.value == value) {
+            selected = firstCachedObject;
+        } else if (secondCachedObject != null && secondCachedObject.value == value) {
+            selected = secondCachedObject;
+            // The most recently used item is moved to the first position.
+            // The goal is to try to keep recently used items in the cache.
+            secondCachedObject = firstCachedObject;
+            firstCachedObject = selected;
+        }
+        if (selected == null) {
+            selected = values.get(value);
+            secondCachedObject = firstCachedObject;
+            firstCachedObject = selected;
+        }
+        return selected;
     }
 
     public List<Object> extractEntitiesAsList(Object value) {
-        var result = randomAccessValueToEntityMap.get(value);
-        if (result == null) {
-            var entitySet = this.valueToEntityMap.get(value);
-            if (entitySet != null) {
-                result = new ArrayList<>(entitySet);
-            } else {
-                result = Collections.emptyList();
-            }
-            randomAccessValueToEntityMap.put(value, result);
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
         }
-        return result;
+        return itemValue.randomAccessEntityList;
     }
 
     public List<Object> extractValuesAsList(Object value) {
-        var result = randomAccessValueToValueMap.get(value);
-        if (result == null) {
-            var valueSet = this.valueToValueMap.get(value);
-            if (valueSet != null) {
-                result = new ArrayList<>(valueSet);
-            } else {
-                result = Collections.emptyList();
-            }
-            randomAccessValueToValueMap.put(value, result);
+        var itemValue = fetchItemValue(value);
+        if (itemValue == null) {
+            return Collections.emptyList();
         }
-        return result;
+        return itemValue.randomAccessValueList;
     }
 
     public int getSize() {
-        return valueToEntityMap.size();
+        return values.size();
     }
 
-    public boolean isValidValueClass(Object value) {
-        if (valueToEntityMap.isEmpty()) {
+    public boolean isEntityReachable(Object origin, @Nullable Object entity) {
+        if (entity == null) {
+            return true;
+        }
+        var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
+        if (originItemValue == null) {
             return false;
         }
-        return Objects.requireNonNull(value).getClass().equals(valueClass);
+        return originItemValue.entitySet.contains(entity);
+    }
+
+    public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
+        var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
+        if (originItemValue == null) {
+            return false;
+        }
+        if (otherValue == null) {
+            return acceptsNullValue;
+        }
+        return originItemValue.valueSet.contains(Objects.requireNonNull(otherValue));
+    }
+
+    public boolean matchesValueClass(Object value) {
+        return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
+    }
+
+    @NullMarked
+    public static final class ReachableItemValue {
+        private final Object value;
+        private final Set<Object> entitySet;
+        private final Set<Object> valueSet;
+        private final List<Object> randomAccessEntityList;
+        private final List<Object> randomAccessValueList;
+
+        public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
+            this.value = value;
+            this.entitySet = new LinkedHashSet<>(entityListSize);
+            this.randomAccessEntityList = new ArrayList<>(entityListSize);
+            this.valueSet = new LinkedHashSet<>(valueListSize);
+            this.randomAccessValueList = new ArrayList<>(valueListSize);
+        }
+
+        public void addEntity(Object entity) {
+            if (entitySet.add(entity)) {
+                randomAccessEntityList.add(entity);
+            }
+        }
+
+        public void addValue(Object value) {
+            if (valueSet.add(value)) {
+                randomAccessValueList.add(value);
+            }
+        }
     }
 
 }
