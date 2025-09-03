@@ -11,7 +11,6 @@ import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**
@@ -32,13 +31,6 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
     private final int leftIndex;
     private final Object rightEntity;
     private final int rightIndex;
-    private final boolean checkValueRange;
-
-    public ListSwapMove(ListVariableDescriptor<Solution_> variableDescriptor, Object leftEntity, int leftIndex,
-            Object rightEntity, int rightIndex) {
-        // We don't enable the value range validation by default
-        this(variableDescriptor, leftEntity, leftIndex, rightEntity, rightIndex, false);
-    }
 
     /**
      * Create a move that swaps a list variable element at {@code leftEntity.listVariable[leftIndex]} with
@@ -82,13 +74,12 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
      * @param rightIndex together with {@code rightEntity} identifies the right element to be moved
      */
     public ListSwapMove(ListVariableDescriptor<Solution_> variableDescriptor, Object leftEntity, int leftIndex,
-            Object rightEntity, int rightIndex, boolean checkValueRange) {
+            Object rightEntity, int rightIndex) {
         this.variableDescriptor = variableDescriptor;
         this.leftEntity = leftEntity;
         this.leftIndex = leftIndex;
         this.rightEntity = rightEntity;
         this.rightIndex = rightIndex;
-        this.checkValueRange = checkValueRange;
     }
 
     public Object getLeftEntity() {
@@ -124,22 +115,7 @@ public class ListSwapMove<Solution_> extends AbstractMove<Solution_> {
         // Do not use Object#equals on user-provided domain objects. Relying on user's implementation of Object#equals
         // opens the opportunity to shoot themselves in the foot if different entities can be equal.
         var sameEntity = leftEntity == rightEntity;
-        var doable = !(sameEntity && leftIndex == rightIndex);
-        if (!doable || sameEntity || variableDescriptor.canExtractValueRangeFromSolution() || !checkValueRange) {
-            return doable;
-        }
-        // When the left and right are different,
-        // and the value range is located at the entity,
-        // we need to check if the destination's value range accepts the upcoming values
-        ValueRangeManager<Solution_> valueRangeManager =
-                ((VariableDescriptorAwareScoreDirector<Solution_>) scoreDirector).getValueRangeManager();
-        var leftElement = variableDescriptor.getElement(leftEntity, leftIndex);
-        var leftElementValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), leftEntity);
-        var rightElement = variableDescriptor.getElement(rightEntity, rightIndex);
-        var rightElementValueRange =
-                valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), rightEntity);
-        return leftElementValueRange.contains(rightElement) && rightElementValueRange.contains(leftElement);
+        return !(sameEntity && leftIndex == rightIndex);
     }
 
     @Override
