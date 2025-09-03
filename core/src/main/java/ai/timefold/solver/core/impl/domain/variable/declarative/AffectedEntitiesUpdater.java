@@ -174,10 +174,4 @@ final class AffectedEntitiesUpdater<Solution_>
         }
     }
 
-    private void changeShadowVariableAndNotify(VariableDescriptor<Solution_> variableDescriptor, Object entity,
-            Object newValue) {
-        changedVariableNotifier.beforeVariableChanged().accept(variableDescriptor, entity);
-        variableDescriptor.setValue(entity, newValue);
-        changedVariableNotifier.afterVariableChanged().accept(variableDescriptor, entity);
-    }
 }

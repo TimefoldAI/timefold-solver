@@ -29,7 +29,7 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
     private final Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> filterFunction;
 
     public BavetForEachUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory, Class<A> forEachClass,
-            Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> filterFunction,
+            @Nullable Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> filterFunction,
             RetrievalSemantics retrievalSemantics) {
         super(constraintFactory, retrievalSemantics);
         this.forEachClass = forEachClass;

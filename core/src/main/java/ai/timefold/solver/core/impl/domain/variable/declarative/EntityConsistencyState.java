@@ -30,10 +30,6 @@ public final class EntityConsistencyState<Solution_> implements Supply {
         }
     }
 
-    public static <Solution_> EntityConsistencyState<Solution_> of(EntityDescriptor<Solution_> entityDescriptor) {
-        throw new UnsupportedOperationException();
-    }
-
     public boolean isEntityConsistent(Object entity) {
         if (externalizedShadowVariableInconsistentProcessor != null) {
             return Boolean.FALSE.equals(externalizedShadowVariableInconsistentProcessor.getIsEntityInconsistent(entity));
