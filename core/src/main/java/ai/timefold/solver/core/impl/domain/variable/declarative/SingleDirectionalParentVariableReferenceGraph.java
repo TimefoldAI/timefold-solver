@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -25,6 +26,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
 
     @SuppressWarnings("unchecked")
     public SingleDirectionalParentVariableReferenceGraph(
+            SupplyManager supplyManager,
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
             TopologicalSorter topologicalSorter,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
@@ -41,9 +43,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         this.changedVariableNotifier = changedVariableNotifier;
         var shadowEntities = Arrays.stream(entities).filter(monitoredEntityClass::isInstance)
                 .sorted(topologicalOrderComparator).toArray();
-        var inconsistentDescriptor =
-                sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor()
-                        .getShadowVariablesInconsistentDescriptor();
+        var entityConsistencyState =
+                supplyManager.demand(new EntityConsistencyStateDemand<>(
+                        sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor()));
 
         var updaterIndex = 0;
         for (var variableDescriptor : sortedDeclarativeShadowVariableDescriptors) {
@@ -52,7 +54,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
                     variableMetaModel,
                     updaterIndex,
                     variableDescriptor,
-                    inconsistentDescriptor,
+                    entityConsistencyState,
                     variableDescriptor.getMemberAccessor(),
                     variableDescriptor.getCalculator()::executeGetter);
             sortedVariableUpdaterInfos[updaterIndex++] = variableUpdaterInfo;
@@ -65,13 +67,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         }
 
         changedEntities.addAll(List.of(shadowEntities));
-
-        if (inconsistentDescriptor != null) {
-            for (var shadowEntity : shadowEntities) {
-                changedVariableNotifier.beforeVariableChanged().accept(inconsistentDescriptor, shadowEntity);
-                inconsistentDescriptor.setValue(shadowEntity, false);
-                changedVariableNotifier.afterVariableChanged().accept(inconsistentDescriptor, shadowEntity);
-            }
+        var variableDescriptor = sortedDeclarativeShadowVariableDescriptors.get(0);
+        for (var shadowEntity : shadowEntities) {
+            entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, variableDescriptor, shadowEntity, false);
         }
 
         updateChanged();

@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -15,21 +16,27 @@ import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public final class BavetForEachUniConstraintStream<Solution_, A>
         extends BavetAbstractUniConstraintStream<Solution_, A>
         implements TupleSource {
 
     private final Class<A> forEachClass;
-    private final Predicate<A> filter;
+    @Nullable
+    private final Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> filterFunction;
 
     public BavetForEachUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory, Class<A> forEachClass,
-            Predicate<A> filter, RetrievalSemantics retrievalSemantics) {
+            Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> filterFunction,
+            RetrievalSemantics retrievalSemantics) {
         super(constraintFactory, retrievalSemantics);
         this.forEachClass = forEachClass;
         if (forEachClass == null) {
             throw new IllegalArgumentException("The forEachClass (null) cannot be null.");
         }
-        this.filter = filter;
+        this.filterFunction = filterFunction;
     }
 
     @Override
@@ -50,8 +57,10 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         TupleLifecycle<UniTuple<A>> tupleLifecycle = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         int outputStoreSize = buildHelper.extractTupleStoreSize(this);
+        var filter = filterFunction != null ? filterFunction.apply(buildHelper) : null;
         var node = filter == null ? new ForEachUnfilteredUniNode<>(forEachClass, tupleLifecycle, outputStoreSize)
-                : new ForEachFilteredUniNode<>(forEachClass, filter, tupleLifecycle, outputStoreSize);
+                : new ForEachFilteredUniNode<>(forEachClass, filter, tupleLifecycle,
+                        outputStoreSize);
         buildHelper.addNode(node, this, null);
     }
 
@@ -68,17 +77,17 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
             return false;
         }
         BavetForEachUniConstraintStream<?, ?> that = (BavetForEachUniConstraintStream<?, ?>) other;
-        return Objects.equals(forEachClass, that.forEachClass) && Objects.equals(filter, that.filter);
+        return Objects.equals(forEachClass, that.forEachClass) && Objects.equals(filterFunction, that.filterFunction);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(forEachClass, filter);
+        return Objects.hash(forEachClass, filterFunction);
     }
 
     @Override
     public String toString() {
-        if (filter != null) {
+        if (filterFunction != null) {
             return "ForEach(" + forEachClass.getSimpleName() + ") with filter and " + childStreamList.size() + " children";
         }
         return "ForEach(" + forEachClass.getSimpleName() + ") with " + childStreamList.size() + " children";

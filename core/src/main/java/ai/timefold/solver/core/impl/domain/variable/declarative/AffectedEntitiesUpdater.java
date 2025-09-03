@@ -123,24 +123,25 @@ final class AffectedEntitiesUpdater<Solution_>
     private boolean updateEntityShadowVariables(GraphNode<Solution_> entityVariable, boolean isVariableInconsistent) {
         var entity = entityVariable.entity();
         var shadowVariableReferences = entityVariable.variableReferences();
-        var inconsistentDescriptor = shadowVariableReferences.get(0).shadowVariablesInconsistentDescriptor();
+        var entityConsistencyState = shadowVariableReferences.get(0).entityConsistencyState();
+        var variableDescriptor = shadowVariableReferences.get(0).variableDescriptor();
         var anyChanged = false;
 
-        if (inconsistentDescriptor != null) {
-            // Do not need to update anyChanged here; the graph already marked
-            // all nodes whose looped status changed for us
-            var groupEntities = shadowVariableReferences.get(0).groupEntities();
-            var groupEntityIds = entityVariable.groupEntityIds();
+        // Do not need to update anyChanged here; the graph already marked
+        // all nodes whose looped status changed for us
+        var groupEntities = shadowVariableReferences.get(0).groupEntities();
+        var groupEntityIds = entityVariable.groupEntityIds();
 
-            if (groupEntities != null) {
-                for (var i = 0; i < groupEntityIds.length; i++) {
-                    var groupEntity = groupEntities[i];
-                    var groupEntityId = groupEntityIds[i];
-                    anyChanged |= updateLoopedStatusOfEntity(groupEntity, groupEntityId, inconsistentDescriptor);
-                }
-            } else {
-                anyChanged |= updateLoopedStatusOfEntity(entity, entityVariable.entityId(), inconsistentDescriptor);
+        if (groupEntities != null) {
+            for (var i = 0; i < groupEntityIds.length; i++) {
+                var groupEntity = groupEntities[i];
+                var groupEntityId = groupEntityIds[i];
+                anyChanged |=
+                        updateLoopedStatusOfEntity(groupEntity, groupEntityId, entityConsistencyState, variableDescriptor);
             }
+        } else {
+            anyChanged |=
+                    updateLoopedStatusOfEntity(entity, entityVariable.entityId(), entityConsistencyState, variableDescriptor);
         }
 
         for (var shadowVariableReference : shadowVariableReferences) {
@@ -151,11 +152,11 @@ final class AffectedEntitiesUpdater<Solution_>
     }
 
     private boolean updateLoopedStatusOfEntity(Object entity, int entityId,
-            ShadowVariablesInconsistentVariableDescriptor<Solution_> loopDescriptor) {
-        var oldLooped = (Boolean) loopDescriptor.getValue(entity);
+            EntityConsistencyState<Solution_> entityConsistencyState, VariableDescriptor<Solution_> variableDescriptor) {
+        var oldLooped = entityConsistencyState.getEntityInconsistentValue(entity);
         var isEntityLooped = loopedTracker.isEntityInconsistent(graph, entityId, oldLooped);
         if (!Objects.equals(oldLooped, isEntityLooped)) {
-            changeShadowVariableAndNotify(loopDescriptor, entity, isEntityLooped);
+            entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, variableDescriptor, entity, isEntityLooped);
         }
         // We return true if the entity's loop status changed at any point;
         // Since an entity might correspond to multiple nodes, we want all nodes

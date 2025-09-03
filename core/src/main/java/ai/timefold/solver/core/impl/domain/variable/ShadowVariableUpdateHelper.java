@@ -43,6 +43,7 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVaria
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.supply.ScoreDirectorIndependentSupplyManager;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -137,7 +138,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 SolutionDescriptor<Solution_> solutionDescriptor, VariableReferenceGraphBuilder<Solution_> graph,
                 Object... entities) {
             return new InternalShadowVariableSession<>(solutionDescriptor,
-                    DefaultShadowVariableSessionFactory.buildGraph(solutionDescriptor, graph, entities,
+                    DefaultShadowVariableSessionFactory.buildGraph(new ScoreDirectorIndependentSupplyManager(),
+                            solutionDescriptor, graph, entities,
                             DefaultTopologicalOrderGraph::new));
         }
 

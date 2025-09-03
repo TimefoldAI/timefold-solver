@@ -11,6 +11,8 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.supply.ScoreDirectorIndependentSupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
@@ -62,20 +64,24 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         constraintSessionFactory = new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel);
     }
 
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
+    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, SupplyManager supplyManager,
+            ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived) {
-        return newSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived, null);
+        return newSession(workingSolution, supplyManager, constraintMatchPolicy, scoreDirectorDerived, null);
     }
 
-    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
+    public BavetConstraintSession<Score_> newSession(Solution_ workingSolution, SupplyManager supplyManager,
+            ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
-        return constraintSessionFactory.buildSession(workingSolution, constraintMatchPolicy, scoreDirectorDerived,
+        return constraintSessionFactory.buildSession(workingSolution, supplyManager, constraintMatchPolicy,
+                scoreDirectorDerived,
                 nodeNetworkVisualizationConsumer);
     }
 
     @Override
     public AbstractScoreInliner<Score_> fireAndForget(Object... facts) {
-        var session = newSession(null, ConstraintMatchPolicy.ENABLED, true);
+        var session = newSession(null, new ScoreDirectorIndependentSupplyManager(),
+                ConstraintMatchPolicy.ENABLED, true);
         Arrays.stream(facts).forEach(session::insert);
         session.calculateScore();
         return session.getScoreInliner();

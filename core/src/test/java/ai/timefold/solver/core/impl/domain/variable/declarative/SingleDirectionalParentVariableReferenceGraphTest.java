@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
+import ai.timefold.solver.core.impl.domain.variable.supply.ScoreDirectorIndependentSupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingEntity;
 import ai.timefold.solver.core.testdomain.shadow.counting.TestdataCountingSolution;
@@ -36,6 +37,8 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         var listStateSupply = Mockito.mock(ListVariableStateSupply.class);
         Mockito.when(scoreDirector.getListVariableStateSupply(Mockito.any()))
                 .thenReturn(listStateSupply);
+        Mockito.when(scoreDirector.getSupplyManager())
+                .thenReturn(new ScoreDirectorIndependentSupplyManager());
 
         value1.setEntity(entity1);
         value1.setPrevious(null);
@@ -70,7 +73,9 @@ class SingleDirectionalParentVariableReferenceGraphTest {
         var values = List.of(value1, value2, value3, value4, value5);
 
         @SuppressWarnings("unchecked")
-        var graph = DefaultShadowVariableSessionFactory.buildSingleDirectionalParentGraph(solutionDescriptor,
+        var graph = DefaultShadowVariableSessionFactory.buildSingleDirectionalParentGraph(
+                scoreDirector.getSupplyManager(),
+                solutionDescriptor,
                 ChangedVariableNotifier.of(scoreDirector),
                 graphStructureAndDirection,
                 new Object[] { entity1, entity2, value5, value4, value3, value2, value1 });

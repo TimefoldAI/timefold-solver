@@ -4,14 +4,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
@@ -71,7 +75,8 @@ public final class BavetConstraintFactory<Solution_>
      * If a constraint already exists in this factory, it replaces it with the old copy.
      * {@link BavetAbstractConstraintStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link BavetConstraintSessionFactory#buildSession(Object, ConstraintMatchPolicy, boolean, Consumer)} needs this to happen
+     * {@link BavetConstraintSessionFactory#buildSession(Object, SupplyManager, ConstraintMatchPolicy, boolean, Consumer)} needs
+     * this to happen
      * for all streams.
      * <p>
      * This must be called before the stream receives child streams.
@@ -95,6 +100,28 @@ public final class BavetConstraintFactory<Solution_>
 
     private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
             ForEachFilteringCriteria criteria) {
+        // Required for node sharing, since using a lambda will create different instances
+        record ForEachFilteringCriteriaPredicateFunction<Solution_, A>(EntityDescriptor<Solution_> entityDescriptor,
+                ForEachFilteringCriteria criteria) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
+            public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
+                return helper.getForEachPredicateForEntityDescriptorAndCriteria(entityDescriptor, criteria);
+            }
+
+            @Override
+            public boolean equals(Object object) {
+                if (object instanceof ForEachFilteringCriteriaPredicateFunction<?, ?> that) {
+                    return criteria == that.criteria
+                            && Objects.equals(entityDescriptor.getEntityClass(), that.entityDescriptor.getEntityClass());
+                }
+                return false;
+            }
+
+            @Override
+            public int hashCode() {
+                return Objects.hash(entityDescriptor.getEntityClass(), criteria);
+            }
+        }
+
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) {
@@ -105,7 +132,7 @@ public final class BavetConstraintFactory<Solution_>
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
             // No applicable list variable; don't need to check inverse relationships.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    criteria.getFilterForEntityDescriptor(entityDescriptor),
+                    new ForEachFilteringCriteriaPredicateFunction<>(entityDescriptor, criteria),
                     RetrievalSemantics.STANDARD));
         }
         var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
@@ -124,7 +151,8 @@ public final class BavetConstraintFactory<Solution_>
                             Joiners.filtering(listVariableDescriptor.getInListPredicate()));
         } else { // We have the inverse relation variable, so we can read its value directly.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
-                    criteria.getFilterForEntityDescriptor(entityDescriptor), RetrievalSemantics.STANDARD));
+                    new ForEachFilteringCriteriaPredicateFunction<>(entityDescriptor, criteria),
+                    RetrievalSemantics.STANDARD));
         }
     }
 
@@ -145,11 +173,21 @@ public final class BavetConstraintFactory<Solution_>
 
     @Override
     public @NonNull <A> UniConstraintStream<A> from(@NonNull Class<A> fromClass) {
+        // Required for node sharing, since using a lambda will create different instances
+        record PredicateSupplier<Solution_, A>(
+                Predicate<A> suppliedPredicate) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
+            public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
+                return suppliedPredicate;
+            }
+        }
+
         assertValidFromType(fromClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(fromClass);
         if (entityDescriptor != null && entityDescriptor.isGenuine()) {
             var predicate = (Predicate<A>) entityDescriptor.getIsInitializedPredicate();
-            return share(new BavetForEachUniConstraintStream<>(this, fromClass, predicate, RetrievalSemantics.LEGACY));
+            return share(
+                    new BavetForEachUniConstraintStream<>(this, fromClass, new PredicateSupplier<>(predicate),
+                            RetrievalSemantics.LEGACY));
         } else {
             return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
         }

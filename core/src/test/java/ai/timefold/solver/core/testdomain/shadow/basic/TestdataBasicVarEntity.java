@@ -4,15 +4,10 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 
 @PlanningEntity
 public class TestdataBasicVarEntity {
     String id;
-
-    // TODO: Remove me when supplier present
-    @ShadowVariablesInconsistent
-    boolean isInconsistent;
 
     @PlanningVariable
     TestdataBasicVarValue value;
@@ -47,14 +42,6 @@ public class TestdataBasicVarEntity {
             return value.getDuration().toDays();
         }
         return 0;
-    }
-
-    public boolean isInconsistent() {
-        return isInconsistent;
-    }
-
-    public void setInconsistent(boolean inconsistent) {
-        isInconsistent = inconsistent;
     }
 
     public long getDurationInDays() {
