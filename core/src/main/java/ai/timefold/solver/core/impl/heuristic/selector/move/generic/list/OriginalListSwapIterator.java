@@ -30,7 +30,6 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         this.leftValueIterator = leftValueSelector.iterator();
         this.rightValueSelector = rightValueSelector;
         this.rightValueIterator = Collections.emptyIterator();
-        this.checkValueRange = checkValueRange;
     }
 
     @Override

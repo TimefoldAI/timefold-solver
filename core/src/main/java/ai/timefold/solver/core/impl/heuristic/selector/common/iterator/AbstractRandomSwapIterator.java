@@ -16,7 +16,7 @@ public abstract class AbstractRandomSwapIterator<Solution_, Move_ extends Move<S
     private SubSelection_ leftSubSelection;
 
     public AbstractRandomSwapIterator(Iterable<SubSelection_> leftSubSelector,
-                                      Iterable<SubSelection_> rightSubSelector) {
+            Iterable<SubSelection_> rightSubSelector) {
         this.leftSubSelector = leftSubSelector;
         this.rightSubSelector = rightSubSelector;
         leftSubSelectionIterator = this.leftSubSelector.iterator();
