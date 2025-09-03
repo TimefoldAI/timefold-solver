@@ -96,7 +96,7 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                     var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
                     if (targetPosition instanceof UnassignedElement) {
                         var currentElementPosition = currentPosition.ensureAssigned();
-                        return new ListUnassignMove<>(variableMetaModel, value, currentElementPosition.entity(),
+                        return new ListUnassignMove<>(variableMetaModel, currentElementPosition.entity(),
                                 currentElementPosition.index());
                     }
                     var targetElementPosition = Objects.requireNonNull(targetPosition).ensureAssigned();

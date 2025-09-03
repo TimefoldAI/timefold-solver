@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
-import ai.timefold.solver.core.impl.move.generic.NoChangeMove;
+import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -133,10 +133,10 @@ public class ConstructionHeuristicDecider<Solution_> {
     private static <Solution_> boolean isAllowedNonDoableMove(Move<Solution_> move) {
         if (move instanceof LegacyMoveAdapter<Solution_> legacyMove) {
             var adaptedMove = legacyMove.legacyMove();
-            return adaptedMove instanceof ai.timefold.solver.core.impl.heuristic.move.NoChangeMove<Solution_>
+            return adaptedMove instanceof NoChangeMove<Solution_>
                     || adaptedMove instanceof ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove<Solution_>;
         } else {
-            return move instanceof NoChangeMove<Solution_>;
+            return false;
         }
     }
 
