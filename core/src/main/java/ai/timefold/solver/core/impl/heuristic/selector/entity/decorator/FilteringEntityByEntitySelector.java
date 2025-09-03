@@ -2,13 +2,13 @@ package ai.timefold.solver.core.impl.heuristic.selector.entity.decorator;
 
 import java.util.Iterator;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionListIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -198,7 +198,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         return Objects.hash(childEntitySelector, replayingEntitySelector);
     }
 
-    private abstract static class AbstractFilteringValueRangeIterator<Solution_> extends UpcomingSelectionListIterator<Object> {
+    private abstract static class AbstractFilteringValueRangeIterator<Solution_> implements Iterator<Object> {
         private final Supplier<Object> upcomingEntitySupplier;
         private final BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
         private final ValueRangeManager<Solution_> valueRangeManager;
@@ -266,9 +266,11 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
     }
 
-    private static class OriginalFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_> {
+    private static class OriginalFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_>
+            implements ListIterator<Object> {
 
         private final ListIterator<Object> entityIterator;
+        private Object selected = null;
 
         private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
                 ListIterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
@@ -278,27 +280,89 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        protected Object createUpcomingSelection() {
+        public boolean hasNext() {
+            this.selected = pickNext();
+            return selected != null;
+        }
+
+        private Object pickNext() {
+            if (selected != null) {
+                throw new IllegalStateException("The next value has already been picked.");
+            }
             initialize();
+            this.selected = null;
             while (entityIterator.hasNext()) {
                 var entity = entityIterator.next();
                 if (isReachable(entity)) {
                     return entity;
                 }
             }
-            return noUpcomingSelection();
+            return null;
+        }
+
+        private Object pickSelected() {
+            if (selected == null) {
+                throw new NoSuchElementException();
+            }
+            var result = selected;
+            this.selected = null;
+            return result;
         }
 
         @Override
-        protected Object createPreviousSelection() {
+        public Object next() {
+            return pickSelected();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            this.selected = pickPrevious();
+            return selected != null;
+        }
+
+        private Object pickPrevious() {
+            if (selected != null) {
+                throw new IllegalStateException("The next value has already been picked.");
+            }
             initialize();
+            this.selected = null;
             while (entityIterator.hasPrevious()) {
                 var entity = entityIterator.previous();
                 if (isReachable(entity)) {
                     return entity;
                 }
             }
-            return noUpcomingSelection();
+            return null;
+        }
+
+        @Override
+        public Object previous() {
+            return pickSelected();
+        }
+
+        @Override
+        public int nextIndex() {
+            return entityIterator.nextIndex();
+        }
+
+        @Override
+        public int previousIndex() {
+            return entityIterator.previousIndex();
+        }
+
+        @Override
+        public void remove() {
+            entityIterator.remove();
+        }
+
+        @Override
+        public void set(Object o) {
+            entityIterator.set(o);
+        }
+
+        @Override
+        public void add(Object o) {
+            entityIterator.add(o);
         }
     }
 
@@ -317,25 +381,17 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         @Override
         public boolean hasNext() {
-            checkReplayedEntity();
-            var hasNext = super.hasNext();
-            if (!hasNext && entityIterator.hasNext()) {
-                // If a valid move is not found with the given bailout size,
-                // we can still use the iterator as long as the entity iterator is not exhausted
-                this.upcomingCreated = true;
-                this.hasUpcomingSelection = true;
-                // We assigned the same entity from the left side, which will result in a non-doable move
-                this.upcomingSelection = currentReplayedEntity();
-                return true;
-            }
-            return hasNext;
+            initialize();
+            return entityIterator.hasNext();
         }
 
         @Override
-        protected Object createUpcomingSelection() {
+        public Object next() {
             initialize();
             if (!entityIterator.hasNext()) {
-                return noUpcomingSelection();
+                // If no reachable entity is found, we return the currently selected entity,
+                // which will result in a non-doable move
+                return currentReplayedEntity();
             }
             Object next;
             var bailoutSize = maxBailoutSize;
@@ -347,12 +403,9 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                     return next;
                 }
             } while (bailoutSize > 0);
-            return noUpcomingSelection();
-        }
-
-        @Override
-        protected Object createPreviousSelection() {
-            throw new UnsupportedOperationException();
+            // If no reachable entity is found, we return the currently selected entity,
+            // which will result in a non-doable move
+            return currentReplayedEntity();
         }
     }
 }
