@@ -23,19 +23,16 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
     protected final EntitySelector<Solution_> rightEntitySelector;
     protected final List<GenuineVariableDescriptor<Solution_>> variableDescriptorList;
     protected final boolean randomSelection;
-    protected final boolean checkValueRange;
 
     protected final boolean anyChained;
     protected List<SingletonInverseVariableSupply> inverseVariableSupplyList = null;
 
     public SwapMoveSelector(EntitySelector<Solution_> leftEntitySelector, EntitySelector<Solution_> rightEntitySelector,
-            List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, boolean randomSelection,
-            boolean checkValueRange) {
+            List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, boolean randomSelection) {
         this.leftEntitySelector = leftEntitySelector;
         this.rightEntitySelector = rightEntitySelector;
         this.variableDescriptorList = variableDescriptorList;
         this.randomSelection = randomSelection;
-        this.checkValueRange = checkValueRange;
         EntityDescriptor<Solution_> leftEntityDescriptor = leftEntitySelector.getEntityDescriptor();
         EntityDescriptor<Solution_> rightEntityDescriptor = rightEntitySelector.getEntityDescriptor();
         if (!leftEntityDescriptor.getEntityClass().equals(rightEntityDescriptor.getEntityClass())) {
@@ -132,7 +129,7 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
                     return anyChained
                             ? new ChainedSwapMove<>(variableDescriptorList, inverseVariableSupplyList, leftSubSelection,
                                     rightSubSelection)
-                            : new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection, checkValueRange);
+                            : new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         } else {
@@ -142,7 +139,7 @@ public class SwapMoveSelector<Solution_> extends GenericMoveSelector<Solution_> 
                     return anyChained
                             ? new ChainedSwapMove<>(variableDescriptorList, inverseVariableSupplyList, leftSubSelection,
                                     rightSubSelection)
-                            : new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection, checkValueRange);
+                            : new SwapMove<>(variableDescriptorList, leftSubSelection, rightSubSelection);
                 }
             };
         }

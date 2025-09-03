@@ -22,19 +22,10 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
     protected final Object leftEntity;
     protected final Object rightEntity;
 
-    private final boolean checkValueRange;
-
     public SwapMove(List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, Object leftEntity, Object rightEntity) {
-        // We don't enable the value range validation by default
-        this(variableDescriptorList, leftEntity, rightEntity, false);
-    }
-
-    public SwapMove(List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, Object leftEntity, Object rightEntity,
-            boolean checkValueRange) {
         this.variableDescriptorList = variableDescriptorList;
         this.leftEntity = leftEntity;
         this.rightEntity = rightEntity;
-        this.checkValueRange = checkValueRange;
     }
 
     public Object getLeftEntity() {
@@ -54,27 +45,14 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
         if (leftEntity == rightEntity) {
             return false;
         }
-        var movable = false;
         for (var variableDescriptor : variableDescriptorList) {
             var leftValue = variableDescriptor.getValue(leftEntity);
             var rightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(leftValue, rightValue)) {
-                movable = true;
-                if (!variableDescriptor.canExtractValueRangeFromSolution() && checkValueRange) {
-                    var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-                    var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, rightEntity);
-                    if (!rightValueRange.contains(leftValue)) {
-                        return false;
-                    }
-                    var leftValueRange =
-                            extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
-                    if (!leftValueRange.contains(rightValue)) {
-                        return false;
-                    }
-                }
+                return true;
             }
         }
-        return movable;
+        return false;
     }
 
     @Override
