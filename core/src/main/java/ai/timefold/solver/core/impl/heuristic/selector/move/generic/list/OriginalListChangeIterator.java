@@ -23,18 +23,15 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
     private Iterator<ElementPosition> destinationIterator;
-    private final boolean checkValueRange;
 
     private Object upcomingValue;
 
     public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            IterableValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector,
-            boolean checkValueRange) {
+            IterableValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
         this.destinationSelector = destinationSelector;
         this.destinationIterator = Collections.emptyIterator();
-        this.checkValueRange = checkValueRange;
     }
 
     @Override
@@ -46,7 +43,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
             upcomingValue = valueIterator.next();
             destinationIterator = destinationSelector.iterator();
         }
-        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator, checkValueRange);
+        var move = buildChangeMove(listVariableStateSupply, upcomingValue, destinationIterator);
         if (move == null) {
             return noUpcomingSelection();
         } else {
@@ -55,7 +52,7 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
     }
 
     static <Solution_> Move<Solution_> buildChangeMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
-            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator, boolean checkValueRange) {
+            Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (upcomingDestination == null) {
@@ -65,14 +62,14 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
         if (upcomingSource instanceof PositionInList sourceElement) {
             if (upcomingDestination instanceof PositionInList destinationElement) {
                 return new ListChangeMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index(),
-                        destinationElement.entity(), destinationElement.index(), checkValueRange);
+                        destinationElement.entity(), destinationElement.index());
             } else {
                 return new ListUnassignMove<>(listVariableDescriptor, sourceElement.entity(), sourceElement.index());
             }
         } else {
             if (upcomingDestination instanceof PositionInList destinationElement) {
                 return new ListAssignMove<>(listVariableDescriptor, upcomingLeftValue, destinationElement.entity(),
-                        destinationElement.index(), checkValueRange);
+                        destinationElement.index());
             } else {
                 // Only used in construction heuristics to give the CH an option to leave the element unassigned.
                 return NoChangeMove.getInstance();

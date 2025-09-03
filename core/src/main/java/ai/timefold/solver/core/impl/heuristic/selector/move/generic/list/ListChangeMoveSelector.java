@@ -19,17 +19,15 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     private final IterableValueSelector<Solution_> sourceValueSelector;
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
-    private final boolean checkValueRange;
 
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
 
     public ListChangeMoveSelector(IterableValueSelector<Solution_> sourceValueSelector,
-            DestinationSelector<Solution_> destinationSelector, boolean randomSelection, boolean checkValueRange) {
+            DestinationSelector<Solution_> destinationSelector, boolean randomSelection) {
         this.sourceValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(sourceValueSelector, this::getListVariableStateSupply);
         this.destinationSelector = destinationSelector;
         this.randomSelection = randomSelection;
-        this.checkValueRange = checkValueRange;
         phaseLifecycleSupport.addEventListener(this.sourceValueSelector);
         phaseLifecycleSupport.addEventListener(this.destinationSelector);
     }
@@ -87,12 +85,12 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
             return new RandomListChangeIterator<>(
                     listVariableStateSupply,
                     sourceValueSelector,
-                    destinationSelector, checkValueRange);
+                    destinationSelector);
         } else {
             return new OriginalListChangeIterator<>(
                     listVariableStateSupply,
                     sourceValueSelector,
-                    destinationSelector, checkValueRange);
+                    destinationSelector);
         }
     }
 
