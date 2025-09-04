@@ -9,8 +9,6 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-
 final class AffectedEntitiesUpdater<Solution_>
         implements Consumer<BitSet> {
 
@@ -137,11 +135,11 @@ final class AffectedEntitiesUpdater<Solution_>
                 var groupEntity = groupEntities[i];
                 var groupEntityId = groupEntityIds[i];
                 anyChanged |=
-                        updateLoopedStatusOfEntity(groupEntity, groupEntityId, entityConsistencyState, variableDescriptor);
+                        updateLoopedStatusOfEntity(groupEntity, groupEntityId, entityConsistencyState);
             }
         } else {
             anyChanged |=
-                    updateLoopedStatusOfEntity(entity, entityVariable.entityId(), entityConsistencyState, variableDescriptor);
+                    updateLoopedStatusOfEntity(entity, entityVariable.entityId(), entityConsistencyState);
         }
 
         for (var shadowVariableReference : shadowVariableReferences) {
@@ -152,7 +150,7 @@ final class AffectedEntitiesUpdater<Solution_>
     }
 
     private boolean updateLoopedStatusOfEntity(Object entity, int entityId,
-            EntityConsistencyState<Solution_> entityConsistencyState, VariableDescriptor<Solution_> variableDescriptor) {
+            EntityConsistencyState<Solution_> entityConsistencyState) {
         var oldLooped = entityConsistencyState.getEntityInconsistentValue(entity);
         var isEntityLooped = loopedTracker.isEntityInconsistent(graph, entityId, oldLooped);
         if (!Objects.equals(oldLooped, isEntityLooped)) {
@@ -171,6 +169,32 @@ final class AffectedEntitiesUpdater<Solution_>
             return shadowVariableReference.updateIfChanged(entity, null, changedVariableNotifier);
         } else {
             return shadowVariableReference.updateIfChanged(entity, changedVariableNotifier);
+        }
+    }
+
+    void setUnknownInconsistencyValues() {
+        for (var node : nodeList) {
+            var entityConsistencyState = node.variableReferences().get(0).entityConsistencyState();
+            if (node.groupEntityIds() != null) {
+                for (var i = 0; i < node.groupEntityIds().length; i++) {
+                    var groupEntity = node.variableReferences().get(0).groupEntities()[i];
+                    var groupEntityId = node.groupEntityIds()[i];
+                    updateLoopedStatusOfEntitySkippingProcessor(groupEntity, groupEntityId, entityConsistencyState);
+                }
+            } else {
+                updateLoopedStatusOfEntitySkippingProcessor(node.entity(), node.entityId(), entityConsistencyState);
+            }
+        }
+    }
+
+    private void updateLoopedStatusOfEntitySkippingProcessor(Object entity, int entityId,
+            EntityConsistencyState<Solution_> entityConsistencyState) {
+        var oldLooped = entityConsistencyState.getEntityInconsistentValueFromProcessorOrNull(entity);
+        if (oldLooped == null) {
+            var isEntityLooped = loopedTracker.isEntityInconsistent(graph, entityId, oldLooped);
+            entityConsistencyState.setEntityIsInconsistentSkippingProcessor(entity, isEntityLooped);
+        } else {
+            entityConsistencyState.setEntityIsInconsistentSkippingProcessor(entity, oldLooped);
         }
     }
 

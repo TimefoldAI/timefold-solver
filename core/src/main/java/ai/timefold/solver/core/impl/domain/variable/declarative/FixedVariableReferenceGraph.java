@@ -27,7 +27,6 @@ public final class FixedVariableReferenceGraph<Solution_>
         for (var node = 0; node < nodeList.size(); node++) {
             changeSet.add(graph.getTopologicalOrder(node));
             var variableReference = nodeList.get(node).variableReferences().get(0);
-            var variableDescriptor = variableReference.variableDescriptor();
             var entityConsistencyState = variableReference.entityConsistencyState();
             if (variableReference.groupEntities() != null) {
                 for (var groupEntity : variableReference.groupEntities()) {
@@ -91,5 +90,10 @@ public final class FixedVariableReferenceGraph<Solution_>
                 }
             }
         }
+    }
+
+    @Override
+    public void setUnknownInconsistencyValues() {
+        // Consistency was updated in constructor
     }
 }

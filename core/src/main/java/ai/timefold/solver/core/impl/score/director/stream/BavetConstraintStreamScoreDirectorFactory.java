@@ -81,7 +81,9 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
 
     @Override
     public AbstractScoreInliner<Score_> fireAndForget(Object... facts) {
-        var session = newSession(null, new ConsistencyTracker<>(),
+        var consistencyTracker = new ConsistencyTracker<Solution_>();
+        consistencyTracker.initializeForEntities(solutionDescriptor, facts);
+        var session = newSession(null, consistencyTracker,
                 ConstraintMatchPolicy.ENABLED, true);
         Arrays.stream(facts).forEach(session::insert);
         session.calculateScore();

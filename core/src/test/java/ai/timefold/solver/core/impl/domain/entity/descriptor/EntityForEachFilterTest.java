@@ -122,7 +122,7 @@ class EntityForEachFilterTest {
 
         entity.setValues(List.of());
         value.setEntity(null);
-        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), value, false);
+        entityConsistencyState.setEntityIsInconsistentSkippingProcessor(value, false);
 
         assertThat(assignedAndConsistentPredicate).rejects(value);
         assertThat(consistentPredicate).accepts(value);
@@ -133,7 +133,7 @@ class EntityForEachFilterTest {
         assertThat(assignedAndConsistentPredicate).accepts(value);
         assertThat(consistentPredicate).accepts(value);
 
-        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), value, true);
+        entityConsistencyState.setEntityIsInconsistentSkippingProcessor(value, true);
 
         assertThat(assignedAndConsistentPredicate).rejects(value);
         assertThat(consistentPredicate).rejects(value);

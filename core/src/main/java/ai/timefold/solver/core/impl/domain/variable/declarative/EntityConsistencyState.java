@@ -42,7 +42,8 @@ public final class EntityConsistencyState<Solution_> {
         return Boolean.FALSE.equals(entityToIsInconsistentMap.get(entity));
     }
 
-    public Boolean getEntityInconsistentValue(Object entity) {
+    @Nullable
+    Boolean getEntityInconsistentValue(Object entity) {
         return entityToIsInconsistentMap.get(entity);
     }
 
@@ -62,6 +63,19 @@ public final class EntityConsistencyState<Solution_> {
         changedVariableNotifier.beforeVariableChanged().accept(randomDeclarativeVariableDescriptor, entity);
         entityToIsInconsistentMap.put(entity, isInconsistent);
         changedVariableNotifier.afterVariableChanged().accept(randomDeclarativeVariableDescriptor, entity);
+    }
+
+    @Nullable
+    Boolean getEntityInconsistentValueFromProcessorOrNull(Object entity) {
+        if (externalizedShadowVariableInconsistentProcessor != null) {
+            return externalizedShadowVariableInconsistentProcessor.getIsEntityInconsistent(entity);
+        }
+        return null;
+    }
+
+    public void setEntityIsInconsistentSkippingProcessor(Object entity,
+            boolean isInconsistent) {
+        entityToIsInconsistentMap.put(entity, isInconsistent);
     }
 
 }

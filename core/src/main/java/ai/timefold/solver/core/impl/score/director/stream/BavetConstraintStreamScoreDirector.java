@@ -103,6 +103,13 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         }
     }
 
+    /**
+     * Called by ConstraintVerifier when it skips updating Shadow Variables.
+     */
+    public void forceUpdateConsistencyOfEntities() {
+        throw new UnsupportedOperationException();
+    }
+
     // ************************************************************************
     // Entity/variable add/change/remove methods
     // ************************************************************************

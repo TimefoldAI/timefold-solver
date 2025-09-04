@@ -28,7 +28,7 @@ public class TestdataDependencyValue {
     LocalDateTime endTime;
 
     @ShadowVariablesInconsistent
-    boolean isInvalid;
+    Boolean isInvalid;
 
     @InverseRelationShadowVariable(sourceVariableName = "values")
     TestdataDependencyEntity entity;
@@ -111,11 +111,11 @@ public class TestdataDependencyValue {
         this.duration = duration;
     }
 
-    public boolean isInvalid() {
+    public Boolean isInvalid() {
         return isInvalid;
     }
 
-    public void setInvalid(boolean invalid) {
+    public void setInvalid(Boolean invalid) {
         isInvalid = invalid;
     }
 
@@ -125,6 +125,14 @@ public class TestdataDependencyValue {
 
     public void setEntity(TestdataDependencyEntity entity) {
         this.entity = entity;
+    }
+
+    public TestdataDependencyValue getPreviousValue() {
+        return previousValue;
+    }
+
+    public void setPreviousValue(TestdataDependencyValue previousValue) {
+        this.previousValue = previousValue;
     }
 
     @Override

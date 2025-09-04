@@ -126,4 +126,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         }
     }
 
+    @Override
+    public void setUnknownInconsistencyValues() {
+        // Consistency was updated in constructor
+    }
+
 }

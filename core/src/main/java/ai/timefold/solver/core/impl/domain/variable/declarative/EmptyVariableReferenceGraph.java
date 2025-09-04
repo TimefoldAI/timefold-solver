@@ -26,4 +26,9 @@ final class EmptyVariableReferenceGraph implements VariableReferenceGraph {
         return "{}";
     }
 
+    @Override
+    public void setUnknownInconsistencyValues() {
+        // There are no declarative entities
+    }
+
 }
