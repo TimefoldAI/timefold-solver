@@ -18,7 +18,7 @@ import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.visual.NodeGraph;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
@@ -47,7 +47,8 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     // ************************************************************************
 
     @SuppressWarnings("unchecked")
-    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, SupplyManager supplyManager,
+    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution,
+            ConsistencyTracker<Solution_> consistencyTracker,
             ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
@@ -114,15 +115,15 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                     .log(constraintWeightString.toString().trim());
         }
         return new BavetConstraintSession<>(scoreInliner,
-                buildNodeNetwork(workingSolution, supplyManager, constraintStreamSet, scoreInliner,
+                buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner,
                         nodeNetworkVisualizationConsumer));
     }
 
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
-            SupplyManager supplyManager, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
+            ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
             AbstractScoreInliner<Score_> scoreInliner,
             Consumer<String> nodeNetworkVisualizationConsumer) {
-        var buildHelper = new ConstraintNodeBuildHelper<>(supplyManager, constraintStreamSet, scoreInliner);
+        var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
         var nodeList = buildHelper.buildNodeList(constraintStreamSet, buildHelper,
                 BavetAbstractConstraintStream::buildNode,

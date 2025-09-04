@@ -31,14 +31,14 @@ public final class FixedVariableReferenceGraph<Solution_>
             var entityConsistencyState = variableReference.entityConsistencyState();
             if (variableReference.groupEntities() != null) {
                 for (var groupEntity : variableReference.groupEntities()) {
-                    entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, variableDescriptor, groupEntity,
+                    entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, groupEntity,
                             false);
                 }
             } else {
                 for (var shadowEntity : outerGraph.entityToEntityId.keySet()) {
                     if (variableReference.variableDescriptor().getEntityDescriptor().getEntityClass()
                             .isInstance(shadowEntity)) {
-                        entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, variableDescriptor,
+                        entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier,
                                 shadowEntity, false);
                     }
                 }

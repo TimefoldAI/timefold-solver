@@ -7,8 +7,7 @@ import java.time.Duration;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableNotifier;
-import ai.timefold.solver.core.impl.domain.variable.declarative.EntityConsistencyStateDemand;
-import ai.timefold.solver.core.impl.domain.variable.supply.ScoreDirectorIndependentSupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -33,11 +32,11 @@ class EntityForEachFilterTest {
     void filtersForBasicEntities() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataEntity.class);
-        var entityForEachFilter = new EntityForEachFilter(entityDescriptor);
+        var entityForEachFilter = new EntityForEachFilter<>(entityDescriptor);
 
-        var supplyManager = new ScoreDirectorIndependentSupplyManager();
-        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(supplyManager);
-        var consistentPredicate = entityForEachFilter.getConsistentPredicate(supplyManager);
+        var consistencyTracker = new ConsistencyTracker<TestdataSolution>();
+        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(consistencyTracker);
+        var consistentPredicate = entityForEachFilter.getConsistentPredicate(consistencyTracker);
 
         assertThat(consistentPredicate).isNull();
 
@@ -57,11 +56,11 @@ class EntityForEachFilterTest {
     void filtersForListValueEntities() {
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataListValue.class);
-        var entityForEachFilter = new EntityForEachFilter(entityDescriptor);
+        var entityForEachFilter = new EntityForEachFilter<>(entityDescriptor);
 
-        var supplyManager = new ScoreDirectorIndependentSupplyManager();
-        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(supplyManager);
-        var consistentPredicate = entityForEachFilter.getConsistentPredicate(supplyManager);
+        var consistencyTracker = new ConsistencyTracker<TestdataListSolution>();
+        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(consistencyTracker);
+        var consistentPredicate = entityForEachFilter.getConsistentPredicate(consistencyTracker);
 
         assertThat(consistentPredicate).isNull();
 
@@ -83,19 +82,17 @@ class EntityForEachFilterTest {
     void filtersForDeclarativeBasicEntities() {
         var solutionDescriptor = TestdataBasicVarSolution.buildSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataBasicVarEntity.class);
-        // we don't care what variable descriptor, we just need one
-        var variableDescriptor = entityDescriptor.getShadowVariableDescriptors().iterator().next();
-        var entityForEachFilter = new EntityForEachFilter(entityDescriptor);
+        var entityForEachFilter = new EntityForEachFilter<>(entityDescriptor);
 
-        var supplyManager = new ScoreDirectorIndependentSupplyManager();
-        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(supplyManager);
-        var consistentPredicate = entityForEachFilter.getConsistentPredicate(supplyManager);
+        var consistencyTracker = new ConsistencyTracker<TestdataBasicVarSolution>();
+        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(consistencyTracker);
+        var consistentPredicate = entityForEachFilter.getConsistentPredicate(consistencyTracker);
 
         var entity = new TestdataBasicVarEntity("entity", null);
         var value = new TestdataBasicVarValue("value", Duration.ofHours(1L));
-        var entityConsistencyState = supplyManager.demand(new EntityConsistencyStateDemand<>(entityDescriptor));
+        var entityConsistencyState = consistencyTracker.getDeclarativeEntityConsistencyState(entityDescriptor);
 
-        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), variableDescriptor, entity, false);
+        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), entity, false);
         assertThat(assignedAndConsistentPredicate).rejects(entity);
         assertThat(consistentPredicate).accepts(entity);
 
@@ -104,7 +101,7 @@ class EntityForEachFilterTest {
         assertThat(assignedAndConsistentPredicate).accepts(entity);
         assertThat(consistentPredicate).accepts(entity);
 
-        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), variableDescriptor, entity, true);
+        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), entity, true);
         assertThat(assignedAndConsistentPredicate).rejects(entity);
         assertThat(consistentPredicate).rejects(entity);
     }
@@ -113,18 +110,19 @@ class EntityForEachFilterTest {
     void filtersForDeclarativeListValueEntities() {
         var solutionDescriptor = TestdataConcurrentSolution.buildSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataConcurrentValue.class);
-        var entityForEachFilter = new EntityForEachFilter(entityDescriptor);
+        var entityForEachFilter = new EntityForEachFilter<>(entityDescriptor);
 
-        var supplyManager = new ScoreDirectorIndependentSupplyManager();
-        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(supplyManager);
-        var consistentPredicate = entityForEachFilter.getConsistentPredicate(supplyManager);
+        var consistencyTracker = new ConsistencyTracker<TestdataConcurrentSolution>();
+        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(consistencyTracker);
+        var consistentPredicate = entityForEachFilter.getConsistentPredicate(consistencyTracker);
+        var entityConsistencyState = consistencyTracker.getDeclarativeEntityConsistencyState(entityDescriptor);
 
         var entity = new TestdataConcurrentEntity("entity");
         var value = new TestdataConcurrentValue("value");
 
         entity.setValues(List.of());
         value.setEntity(null);
-        value.setInconsistent(false);
+        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), value, false);
 
         assertThat(assignedAndConsistentPredicate).rejects(value);
         assertThat(consistentPredicate).accepts(value);
@@ -135,7 +133,7 @@ class EntityForEachFilterTest {
         assertThat(assignedAndConsistentPredicate).accepts(value);
         assertThat(consistentPredicate).accepts(value);
 
-        value.setInconsistent(true);
+        entityConsistencyState.setEntityIsInconsistent(ChangedVariableNotifier.empty(), value, true);
 
         assertThat(assignedAndConsistentPredicate).rejects(value);
         assertThat(consistentPredicate).rejects(value);
@@ -145,11 +143,11 @@ class EntityForEachFilterTest {
     void filtersForListValueEntitiesWithoutInverse() {
         var solutionDescriptor = TestdataPinnedNoShadowsListSolution.buildSolutionDescriptor();
         var entityDescriptor = solutionDescriptor.getEntityDescriptorStrict(TestdataPinnedNoShadowsListValue.class);
-        var entityForEachFilter = new EntityForEachFilter(entityDescriptor);
+        var entityForEachFilter = new EntityForEachFilter<>(entityDescriptor);
 
-        var supplyManager = new ScoreDirectorIndependentSupplyManager();
-        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(supplyManager);
-        var consistentPredicate = entityForEachFilter.getConsistentPredicate(supplyManager);
+        var consistencyTracker = new ConsistencyTracker<TestdataPinnedNoShadowsListSolution>();
+        var assignedAndConsistentPredicate = entityForEachFilter.getAssignedAndConsistentPredicate(consistencyTracker);
+        var consistentPredicate = entityForEachFilter.getConsistentPredicate(consistencyTracker);
 
         assertThat(consistentPredicate).isNull();
 

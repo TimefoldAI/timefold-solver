@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
@@ -17,14 +17,14 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         extends AbstractNodeBuildHelper<BavetAbstractConstraintStream<Solution_>> {
 
     private final AbstractScoreInliner<Score_> scoreInliner;
-    private final SupplyManager supplyManager;
+    private final ConsistencyTracker<Solution_> consistencyTracker;
     private final Map<EntityDescriptor<?>, Map<ForEachFilteringCriteria, Predicate<Object>>> entityDescriptorToForEachCriteriaToPredicateMap;
 
-    public ConstraintNodeBuildHelper(SupplyManager supplyManager,
+    public ConstraintNodeBuildHelper(ConsistencyTracker<Solution_> consistencyTracker,
             Set<BavetAbstractConstraintStream<Solution_>> activeStreamSet,
             AbstractScoreInliner<Score_> scoreInliner) {
         super(activeStreamSet);
-        this.supplyManager = supplyManager;
+        this.consistencyTracker = consistencyTracker;
         this.scoreInliner = scoreInliner;
         this.entityDescriptorToForEachCriteriaToPredicateMap = new HashMap<>();
     }
@@ -38,6 +38,6 @@ public final class ConstraintNodeBuildHelper<Solution_, Score_ extends Score<Sco
         var predicateMap =
                 entityDescriptorToForEachCriteriaToPredicateMap.computeIfAbsent(entityDescriptor, ignored -> new HashMap<>());
         return (Predicate<A>) predicateMap.computeIfAbsent(criteria,
-                ignored -> criteria.getFilterForEntityDescriptor(supplyManager, entityDescriptor));
+                ignored -> criteria.getFilterForEntityDescriptor(consistencyTracker, entityDescriptor));
     }
 }

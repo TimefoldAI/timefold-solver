@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.UnaryOperator;
 
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 public final class SingleDirectionalParentVariableReferenceGraph<Solution_> implements VariableReferenceGraph {
@@ -26,7 +25,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
 
     @SuppressWarnings("unchecked")
     public SingleDirectionalParentVariableReferenceGraph(
-            SupplyManager supplyManager,
+            ConsistencyTracker<Solution_> consistencyTracker,
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
             TopologicalSorter topologicalSorter,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
@@ -44,8 +43,8 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         var shadowEntities = Arrays.stream(entities).filter(monitoredEntityClass::isInstance)
                 .sorted(topologicalOrderComparator).toArray();
         var entityConsistencyState =
-                supplyManager.demand(new EntityConsistencyStateDemand<>(
-                        sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor()));
+                consistencyTracker.getDeclarativeEntityConsistencyState(
+                        sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor());
 
         var updaterIndex = 0;
         for (var variableDescriptor : sortedDeclarativeShadowVariableDescriptors) {
@@ -67,9 +66,8 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         }
 
         changedEntities.addAll(List.of(shadowEntities));
-        var variableDescriptor = sortedDeclarativeShadowVariableDescriptors.get(0);
         for (var shadowEntity : shadowEntities) {
-            entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, variableDescriptor, shadowEntity, false);
+            entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, shadowEntity, false);
         }
 
         updateChanged();

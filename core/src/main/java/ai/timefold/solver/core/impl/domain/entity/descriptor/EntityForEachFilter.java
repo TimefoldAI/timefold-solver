@@ -3,22 +3,21 @@ package ai.timefold.solver.core.impl.domain.entity.descriptor;
 import java.util.Collection;
 import java.util.function.Predicate;
 
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DeclarativeShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.declarative.EntityConsistencyStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class EntityForEachFilter {
-    private final EntityDescriptor<?> entityDescriptor;
+public class EntityForEachFilter<Solution_> {
+    private final EntityDescriptor<Solution_> entityDescriptor;
     private final Predicate<Object> assignedPredicate;
     private final boolean hasDeclarativeShadowVariables;
 
-    EntityForEachFilter(EntityDescriptor<?> entityDescriptor) {
+    EntityForEachFilter(EntityDescriptor<Solution_> entityDescriptor) {
         var solutionDescriptor = entityDescriptor.getSolutionDescriptor();
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
 
@@ -27,20 +26,20 @@ public class EntityForEachFilter {
         this.hasDeclarativeShadowVariables = !getDeclarativeShadowVariables(entityDescriptor).isEmpty();
     }
 
-    public Predicate<Object> getAssignedAndConsistentPredicate(SupplyManager supplyManager) {
+    public Predicate<Object> getAssignedAndConsistentPredicate(ConsistencyTracker<Solution_> consistencyTracker) {
         if (!hasDeclarativeShadowVariables) {
             return assignedPredicate;
         }
-        var entityConsistencyState = supplyManager.demand(new EntityConsistencyStateDemand<>(entityDescriptor));
+        var entityConsistencyState = consistencyTracker.getDeclarativeEntityConsistencyState(entityDescriptor);
         return assignedPredicate.and(entityConsistencyState::isEntityConsistent);
     }
 
     @Nullable
-    public Predicate<Object> getConsistentPredicate(SupplyManager supplyManager) {
+    public Predicate<Object> getConsistentPredicate(ConsistencyTracker<Solution_> consistencyTracker) {
         if (!hasDeclarativeShadowVariables) {
             return null;
         }
-        var entityConsistencyState = supplyManager.demand(new EntityConsistencyStateDemand<>(entityDescriptor));
+        var entityConsistencyState = consistencyTracker.getDeclarativeEntityConsistencyState(entityDescriptor);
         return entityConsistencyState::isEntityConsistent;
     }
 

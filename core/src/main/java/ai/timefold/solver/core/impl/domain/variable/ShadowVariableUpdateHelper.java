@@ -31,6 +31,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableNotifier;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
@@ -43,7 +44,6 @@ import ai.timefold.solver.core.impl.domain.variable.listener.support.ShadowVaria
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.ScoreDirectorIndependentSupplyManager;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirectorFactory;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -138,7 +138,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                 SolutionDescriptor<Solution_> solutionDescriptor, VariableReferenceGraphBuilder<Solution_> graph,
                 Object... entities) {
             return new InternalShadowVariableSession<>(solutionDescriptor,
-                    DefaultShadowVariableSessionFactory.buildGraph(new ScoreDirectorIndependentSupplyManager(),
+                    DefaultShadowVariableSessionFactory.buildGraph(new ConsistencyTracker<>(),
                             solutionDescriptor, graph, entities,
                             DefaultTopologicalOrderGraph::new));
         }

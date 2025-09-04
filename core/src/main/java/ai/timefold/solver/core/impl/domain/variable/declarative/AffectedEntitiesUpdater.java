@@ -156,7 +156,7 @@ final class AffectedEntitiesUpdater<Solution_>
         var oldLooped = entityConsistencyState.getEntityInconsistentValue(entity);
         var isEntityLooped = loopedTracker.isEntityInconsistent(graph, entityId, oldLooped);
         if (!Objects.equals(oldLooped, isEntityLooped)) {
-            entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, variableDescriptor, entity, isEntityLooped);
+            entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, entity, isEntityLooped);
         }
         // We return true if the entity's loop status changed at any point;
         // Since an entity might correspond to multiple nodes, we want all nodes

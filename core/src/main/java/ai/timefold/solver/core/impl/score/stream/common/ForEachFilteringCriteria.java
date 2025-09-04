@@ -4,29 +4,30 @@ import java.util.function.BiFunction;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public enum ForEachFilteringCriteria {
-    ASSIGNED_AND_CONSISTENT((supplyManager, entityDescriptor) -> entityDescriptor.getEntityForEachFilter()
-            .getAssignedAndConsistentPredicate(supplyManager)),
-    CONSISTENT((supplyManager, entityDescriptor) -> entityDescriptor.getEntityForEachFilter()
-            .getConsistentPredicate(supplyManager)),
+    ASSIGNED_AND_CONSISTENT((consistencyTracker, entityDescriptor) -> entityDescriptor.getEntityForEachFilter()
+            .getAssignedAndConsistentPredicate(consistencyTracker)),
+    CONSISTENT((consistencyTracker, entityDescriptor) -> entityDescriptor.getEntityForEachFilter()
+            .getConsistentPredicate(consistencyTracker)),
     ALL((ignored1, ignored2) -> null);
 
-    private final BiFunction<SupplyManager, EntityDescriptor<?>, @Nullable Predicate<Object>> entityDescriptorToPredicateFunction;
+    private final BiFunction<ConsistencyTracker<?>, EntityDescriptor<?>, @Nullable Predicate<Object>> entityDescriptorToPredicateFunction;
 
     ForEachFilteringCriteria(
-            BiFunction<SupplyManager, EntityDescriptor<?>, Predicate<Object>> entityDescriptorToPredicateFunction) {
+            BiFunction<ConsistencyTracker<?>, EntityDescriptor<?>, Predicate<Object>> entityDescriptorToPredicateFunction) {
         this.entityDescriptorToPredicateFunction = entityDescriptorToPredicateFunction;
     }
 
     @Nullable
     @SuppressWarnings("unchecked")
-    public <A> Predicate<A> getFilterForEntityDescriptor(SupplyManager supplyManager, EntityDescriptor<?> entityDescriptor) {
-        return (Predicate<A>) entityDescriptorToPredicateFunction.apply(supplyManager, entityDescriptor);
+    public <A> Predicate<A> getFilterForEntityDescriptor(ConsistencyTracker<?> consistencyTracker,
+            EntityDescriptor<?> entityDescriptor) {
+        return (Predicate<A>) entityDescriptorToPredicateFunction.apply(consistencyTracker, entityDescriptor);
     }
 }

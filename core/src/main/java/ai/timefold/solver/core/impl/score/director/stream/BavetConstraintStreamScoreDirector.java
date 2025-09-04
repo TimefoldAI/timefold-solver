@@ -54,7 +54,8 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
 
     @Override
     public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
-        session = scoreDirectorFactory.newSession(workingSolution, variableListenerSupport, constraintMatchPolicy, derived);
+        session = scoreDirectorFactory.newSession(workingSolution, variableListenerSupport.getConsistencyTracker(),
+                constraintMatchPolicy, derived);
         super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, session::insert);
     }
 

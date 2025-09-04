@@ -18,10 +18,6 @@ public final class ExternalizedShadowVariableInconsistentProcessor<Solution_> {
                 new WeakReference<>(shadowVariablesInconsistentVariableDescriptor);
     }
 
-    public Boolean getIsEntityInconsistent(Object entity) {
-        return Objects.requireNonNull(shadowVariablesInconsistentVariableDescriptorReference.get()).getValue(entity);
-    }
-
     public void setIsEntityInconsistent(ChangedVariableNotifier<Solution_> changedVariableNotifier, Object entity,
             boolean isInconsistent) {
         var shadowVariablesInconsistentVariableDescriptor =

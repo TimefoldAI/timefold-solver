@@ -4,55 +4,56 @@ import java.util.IdentityHashMap;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class EntityConsistencyState<Solution_> implements Supply {
-    @Nullable
+public final class EntityConsistencyState<Solution_> {
     private final IdentityHashMap<Object, Boolean> entityToIsInconsistentMap;
 
     @Nullable
     private final ExternalizedShadowVariableInconsistentProcessor<Solution_> externalizedShadowVariableInconsistentProcessor;
 
-    EntityConsistencyState(EntityDescriptor<Solution_> entityDescriptor) {
-        var entityIsInconsistentDescriptor = entityDescriptor.getShadowVariablesInconsistentDescriptor();
+    private final VariableDescriptor<Solution_> randomDeclarativeVariableDescriptor;
 
+    EntityConsistencyState(EntityDescriptor<Solution_> entityDescriptor,
+            IdentityHashMap<Object, Boolean> entityToIsInconsistentMap) {
+        this.entityToIsInconsistentMap = entityToIsInconsistentMap;
+
+        var entityIsInconsistentDescriptor = entityDescriptor.getShadowVariablesInconsistentDescriptor();
         if (entityIsInconsistentDescriptor == null) {
-            entityToIsInconsistentMap = new IdentityHashMap<>();
             externalizedShadowVariableInconsistentProcessor = null;
+            randomDeclarativeVariableDescriptor = entityDescriptor.getShadowVariableDescriptors()
+                    .stream()
+                    .filter(variableDescriptor -> variableDescriptor instanceof DeclarativeShadowVariableDescriptor<?>)
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException(
+                            "Impossible state: Entity class (%s) does not have any declarative variable descriptors."
+                                    .formatted(entityDescriptor.getEntityClass())));
         } else {
-            entityToIsInconsistentMap = null;
             externalizedShadowVariableInconsistentProcessor =
                     new ExternalizedShadowVariableInconsistentProcessor<>(entityIsInconsistentDescriptor);
+            randomDeclarativeVariableDescriptor = entityIsInconsistentDescriptor;
         }
     }
 
     public boolean isEntityConsistent(Object entity) {
-        if (externalizedShadowVariableInconsistentProcessor != null) {
-            return Boolean.FALSE.equals(externalizedShadowVariableInconsistentProcessor.getIsEntityInconsistent(entity));
-        }
         return Boolean.FALSE.equals(entityToIsInconsistentMap.get(entity));
     }
 
     public Boolean getEntityInconsistentValue(Object entity) {
-        if (externalizedShadowVariableInconsistentProcessor != null) {
-            return externalizedShadowVariableInconsistentProcessor.getIsEntityInconsistent(entity);
-        }
         return entityToIsInconsistentMap.get(entity);
     }
 
     public void setEntityIsInconsistent(ChangedVariableNotifier<Solution_> changedVariableNotifier,
-            VariableDescriptor<Solution_> randomDeclarativeVariableDescriptor, Object entity,
+            Object entity,
             boolean isInconsistent) {
         if (externalizedShadowVariableInconsistentProcessor != null) {
             externalizedShadowVariableInconsistentProcessor.setIsEntityInconsistent(changedVariableNotifier, entity,
                     isInconsistent);
-            return;
         }
-        // There is no ShadowVariablesInconsistent shadow variable,
+        // There may be no ShadowVariablesInconsistent shadow variable,
         // so we use a random declarative shadow variable on the entity to notify the score director
         // that the entity changed.
         //

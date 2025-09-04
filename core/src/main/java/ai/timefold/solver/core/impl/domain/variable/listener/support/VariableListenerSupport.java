@@ -22,6 +22,7 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
@@ -63,6 +64,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final NotifiableRegistry<Solution_> notifiableRegistry;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
+    private final ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
 
     private final @Nullable ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<ListVariableChangedNotification<Solution_>> listVariableChangedNotificationList;
@@ -220,6 +222,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    public ConsistencyTracker<Solution_> getConsistencyTracker() {
+        return consistencyTracker;
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
@@ -234,7 +240,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
                     scoreDirector.getSolutionDescriptor(),
                     scoreDirector,
                     shadowVariableGraphCreator);
-            shadowVariableSession = shadowVariableSessionFactory.forSolution(this, scoreDirector.getWorkingSolution());
+            shadowVariableSession =
+                    shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.getWorkingSolution());
             shadowVariableSession.updateVariables();
             triggerVariableListenersInNotificationQueues();
         }
