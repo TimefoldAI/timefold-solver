@@ -30,19 +30,19 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * The decorator can only be applied to list variables.
  * <p>
  * <code>
- * <p>
+ *
  * e1 = entity_range[v1, v2, v3]
- * <p>
+ *
  * e2 = entity_range[v1, v4]
- * <p>
+ *
  * v1 = [e1, e2]
- * <p>
+ *
  * v2 = [e1]
- * <p>
+ *
  * v3 = [e1]
- * <p>
+ *
  * v4 = [e2]
- * <p>
+ *
  * </code>
  * <p>
  * This node is currently used by the {@link QueuedValuePlacer} to build an initial solution.

@@ -36,19 +36,19 @@ import org.jspecify.annotations.Nullable;
  * The decorator can only be applied to list variables.
  * <p>
  * <code>
- * <p>
+ *
  * e1 = entity_range[v1, v2, v3]
- * <p>
+ *
  * e2 = entity_range[v1, v4]
- * <p>
+ *
  * v1 = [v2, v3, v4]
- * <p>
+ *
  * v2 = [v1, v3]
- * <p>
+ *
  * v3 = [v1, v2]
- * <p>
+ *
  * v4 = [v1]
- * <p>
+ *
  * </code>
  * <p>
  * This node is currently used by the {@link ListChangeMoveSelector} and {@link ListSwapMoveSelector} selectors.
