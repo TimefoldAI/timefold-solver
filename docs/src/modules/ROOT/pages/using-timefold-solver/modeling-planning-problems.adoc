@@ -15,31 +15,130 @@ Explore our documentation and available models https://docs.timefold.ai/[here].
 ====
 
 [#isThisClassAProblemFactOrPlanningEntity]
-== Is this class a problem fact or planning entity?
+== Introduction
 
-Look at a dataset of your planning problem.
-You will recognize domain classes in there, each of which can be categorized as one of the following:
+Timefold Solver gives you access to a range of building blocks to model the domain of you planning problem.
+This page describes those building blocks in more detail.
 
-* An unrelated class: not used by any of the score constraints.
-From a planning standpoint, this data is obsolete.
-* A *problem fact* class: used by the score constraints, but does NOT change during planning (as long as the problem stays the same).
-For example: ``Bed``, ``Room``, ``Shift``, ``Employee``, ``Topic``, ``Period``, ... All the properties of a problem fact class are problem properties.
-* A *planning entity* class: used by the score constraints and changes during planning.
-For example: ``BedDesignation``, ``ShiftAssignment``, ``Exam``, ... The properties that change during planning are planning variables.
-The other properties are problem properties.
+If instead you are looking for guidance on how to create a good domain model, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
 
-Ask yourself: __What class changes during planning?__ __Which class has variables that I want the ``__Solver__`` to change for me?__ That class is a planning entity.
-Most use cases have only one planning entity class.
-Most use cases also have only one planning variable per planning entity class.
 
 [NOTE]
 ====
-In xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning], even though the problem itself changes, problem facts do not really change during planning, instead they change between planning (because the Solver temporarily stops to apply the problem fact changes).
+If you have never tried Timefold Solver before, we recommend following our xref:quickStartOverview[Getting Started guides] for a practical introduction.
 ====
 
-To create a good domain model, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
+A planning domain model typically consist of the following elements:
 
-*In Timefold Solver, all problem facts and planning entities are plain objects.* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
+* *xref:planningEntity[Planning entities]* are classes whose instances change during planning.
+* The properties of a planning entity that change during planning are called *xref:planningVariableTypes[planning variables]*. The different types of planning variables are described below.
+* *xref:genuinePlanningVariables[Genuine planning variables]* are assigned available *xref:planningValue[planning values]* during solving.
+* *xref:problemFact[Problem facts]* are classes that do not change during planning, but are used to validate constraints. Problem facts are often also used as *planning values*.
+* A *xref:planningProblemAndPlanningSolution[planning solution]* class contains all the planning entities and problem facts, and often also provides the planning values that the solver can use during planning. It also contains the status and score of the planning problem.
+
+.School Timetableing example
+====
+In a school timetabling scenario, where _lessons_ need to be assigned _rooms_ and _timeslots_, we get this class diagram.
+
+[plantuml, format=svg, theme=sketchy-outline]
+----
+@startuml
+left to right direction
+
+class Timeslot {
+  +String id
+  +DayOfWeek dayOfWeek
+  +LocalTime startTime
+  +LocalTime endTime
+}
+
+class Room {
+  +String id
+  +String name
+}
+
+class "@PlanningEntity Lesson" as Lesson {
+  +String id
+  +String subject
+  +String teacher
+  +String studentGroup
+  --
+  +@PlanningVariable Timeslot timeslot
+  +@PlanningVariable Room room
+}
+
+class "@PlanningSolution Timetable" as Timetable {
+  +List<Timeslot> timeslots
+  +List<Room> rooms
+  +List<Lesson> lessons
+  --
+  +SolverStatus solverStatus
+  +HardSoftScore score
+}
+
+Timetable "1..*" o-- Timeslot : timeslots
+Timetable "1..*" o-- Room : rooms
+Timetable "1..*" o-- Lesson : lessons
+
+Lesson --> Timeslot : timeslot
+Lesson --> Room : room
+@enduml
+----
+
+For this planning problem:
+
+- _Timeslot_ and _Room_ are *problem facts*.
+- _Lesson_ is the *planning entity*, which has 2 *planning variables*: _Timeslot_ and _Room_.
+- _Timetable_ is the *planning solution*. It contains all the _Lesson_ *planning entity* instances, and all possible *planning values*, which are instances of _Room_ and _Timeslot_ which can be assigned to the *planning variables* in _Lesson_.
+====
+
+*In Timefold Solver, all elements of the planning domain model are plain objects.* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
+
+[#planningVariableTypes]
+=== Types of planning variables
+
+*Planning variables* are the properties of *planning entities* which the solver will change in its effort to find better solutions.
+There are 2 different types of planning variables we can distinguish: *genuine* and *shadow* planning variables.
+
+[#genuinePlanningVariables]
+==== Genuine planning variables
+
+*Genuine* planning variables are variables to which the solver will assign *planning values*.
+There are 3 variants of genuine planning variables. The variants you use depends on the problem you are solving.
+For more detailed guidance on when to use which variant, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
+
+- xref:planningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
+- xref:planningListVariable[@PlanningListVariable]: contains multiple *planning values* in a specific order. *Planning values* can only be assigned to a single *planning entity*.
+- xref:chainedPlanningVariable[Chained @PlanningVariable]: allows *planning entities* to point to each other and form a chain. *Planning values* can only be part of a single chain.
+
+A planning entity can contain xref:mixedModels[a mix] of these genuine variables, with some limitations.
+
+
+[#shadowPlanningVariables]
+==== Shadow planning variables
+
+A shadow variable is a planning variable whose correct value can be deduced from the state of the <<genuinePlanningVariables,genuine planning variables>>.
+From an optimization perspective, Timefold Solver effectively only optimizes _genuine variables_.
+Whenever a genuine variable is modified, the solver ensures that all dependent shadow variables are updated accordingly to maintain consistency.
+
+Even though shadow variables violate the principle of normalization by definition, in some use cases it can be very practical to use a shadow variable, especially to express the constraints more naturally.
+
+.Shadow variables in Vehicle Routing Problems
+====
+For example, in vehicle routing with time windows,
+the arrival time at a customer for a vehicle can be calculated based on the previously visited customers of that vehicle
+(and the known travel times between two locations).
+
+image::using-timefold-solver/modeling-planning-problems/planningVariableListener.png[align="center"]
+
+When the customers for a vehicle change, the arrival time for each customer is automatically adjusted.
+For more information, see the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
+====
+
+Depending on your use of xref:planningVariable[@PlanningVariable], xref:planningListVariable[@PlanningListVariable] or the xref:chainedPlanningVariable[Chained @PlanningVariable]
+several built-in shadow variables are provided. These are documented in the details section of the respective genuine planning variables.
+
+In addition, Timefold Solver also provides a way to xref:shadowVariable[implement shadow variables yourself].
 
 [#problemFact]
 == Problem fact
@@ -162,25 +261,23 @@ A `@PlanningId` property must be:
 
 
 [#planningEntityAnnotation]
-=== Planning entity annotation
+=== Planning entity definition
 
-A planning entity is a JavaBean (POJO) that changes during solving, for example a `Lesson` that changes timeslots.
-A planning problem has multiple planning entities; in school timetabling for example, each `Lesson` is a planning entity.
-But there is usually only one planning entity class, for example the `Lesson` class.
+A planning entity is a JavaBean (POJO) who's properties changes during solving, for example a `Lesson` which has a `Timeslot` property.
 
+A planning problem usually only has one planning entity class, for example the `Lesson` class.
 A planning entity class needs to be annotated with the `@PlanningEntity` annotation.
+The problem usually consists of multiple planning entities, which are instances of the planning entity class.
+In school timetabling for example, each `Lesson` instance is a planning entity.
 
 Each planning entity class has one or more _planning variables_ (which can be <<planningVariable,genuine>> or <<shadowVariable,shadows>>).
 It should also have one or more _defining_ properties.
-In school timetabling, a `Lesson` is defined by its subject, teacher and a student group,
-and has planning variables for its timeslot and room.
-This means that `Lesson`'s subject, teacher and student group never changes during solving,
-while its timeslot and room do.
 
 [tabs]
 ====
 Java::
 +
+--
 [source,java,options="nowrap"]
 ----
 @PlanningEntity
@@ -198,49 +295,81 @@ public class Lesson {
 
     // ... getters and setters
 }
+
 ----
+--
 ====
 
+In the school timetabling example above, a `Lesson` is defined by its subject, teacher and a student group,
+and has planning variables for its timeslot and room.
+This means that `Lesson`'s subject, teacher and student group never changes during solving,
+while its timeslot and room do.
+
+Planning entities need to be declared either through the `@PlanningEntity` annotation on the Java class, or in the solver configuration XML.
+
+[tabs]
+====
+Java::
++
+--
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Lesson {
+    // Planning variables, getters, setters and fields excluded
+}
+
+----
+--
+XML::
++
+--
 The solver configuration needs to declare each planning entity class:
 
 [source,xml,options="nowrap"]
 ----
 <solver xmlns="https://timefold.ai/xsd/solver" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
-  ...
-  <entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
-  ...
+xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solver/solver.xsd">
+...
+<entityClass>org.acme.schooltimetabling.domain.Lesson</entityClass>
+...
 </solver>
 ----
+--
+====
 
 Some uses cases have multiple planning entity classes.
 For example: route freight and trains into railway network arcs, where each freight can use multiple trains over its journey and each train can carry multiple freights per arc.
-Having multiple planning entity classes directly raises the implementation complexity of your use case.
 
-[NOTE]
-====
-_Do not create unnecessary planning entity classes._ This leads to difficult `Move` implementations and slower move evaluation.
+[#planningEntityConsiderations]
+=== Planning entity considerations
+
+When implementing planning entities, take the following into account.
+
+==== Do not create unnecessary planning entity classes
+
+Having multiple planning entity classes directly raises the implementation complexity of your use case.
+Consequently, this will also increase the time it takes Timefold Solver to find optimized solutions.
+If possible, avoid creating planning entity classes and use one of the other available mechanisms instead.
 
 For example, do not create a planning entity class to hold the total free time of a teacher, which needs to be kept up to date as the `Lecture` planning entities change.
 Instead, calculate the free time in the score constraints (or as a <<shadowVariable,shadow variable>>) and put the result per teacher into a logically inserted score object.
 
-If historic data needs to be considered too, then create problem fact to hold the total of the historic assignments up to, but __not including__, the planning window (so that it does not change when a planning entity changes) and let the score constraints take it into account.
-====
+If historic data needs to be considered too, then create a problem fact to hold the total of the historic assignments up to, but __not including__, the planning window (so that it does not change when a planning entity changes) and let the score constraints take it into account.
 
-[NOTE]
-====
+==== Keep planning entity `hashCode()` implementations constant
+
 Planning entity `hashCode()` implementations must remain constant.
-Therefore entity `hashCode()` must not depend on any planning variables.
+Therefore, entity `hashCode()` implementations must not depend on any planning variables, as these change during solving.
 Pay special attention when using data structures with auto-generated `hashCode()` as entities,
 such as Kotlin data classes or Lombok's `@EqualsAndHashCode`.
-====
 
-[NOTE]
-====
-Planning entity implementations must not be of Java's `enum` or `record` types.
-Those are immutable by design and therefore cannot change during planning,
-whereas planning entities will.
-====
+==== Planning entity implementations must be mutable
+
+As Timefold Solver will mutate the <<planningVariable,genuine>> or <<shadowVariable,shadow>> _planning variables_ of the planning entity, the planning entity must be mutable.
+
+As Java's `enum` and `record` types are immutable by design, these can not be used as planning entities.
+
 
 [#planningEntityDifficulty]
 === Planning entity difficulty
@@ -316,15 +445,12 @@ Run xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuris
 
 
 [#planningVariable]
-== Planning variable (genuine)
-
-
-[#planningVariableAnnotation]
-=== Planning variable annotation
+== Planning variable (@PlanningVariable)
 
 A planning variable is a JavaBean property (so a getter and setter) on a planning entity.
 It points to a planning value, which changes during planning.
-For example, a ``Lesson``'s `timeslot` property is a genuine planning variable.
+
+In the example below, a ``Lesson``'s `timeslot` property is a genuine planning variable.
 Note that even though a ``Lesson``'s `timeslot` property changes to another `Timeslot` during planning,
 no `Timeslot` instance itself is changed.
 Normally planning variables are genuine, but advanced cases can also have <<shadowVariable,shadows>>.
@@ -383,8 +509,6 @@ public class Lesson {
 
 }
 ----
-
-
 ====
 
 [NOTE]
@@ -436,10 +560,6 @@ Failure to penalize unassigned variables can cause a solution with *all* variabl
 See the xref:responding-to-change/responding-to-change.adoc#overconstrainedPlanningWithNullValues[overconstrained planning with `null` variable values] section in the docs for more infomation.
 ====
 
-[WARNING]
-====
-Currently <<chainedPlanningVariable,chained>> planning variables are not compatible with `allowsUnassigned`.
-====
 
 xref:responding-to-change/responding-to-change.adoc[Repeated planning]
 (especially xref:responding-to-change/responding-to-change.adoc#realTimePlanning[real-time planning])
@@ -470,44 +590,23 @@ One way to deal with this is to filter the entity selector of the placer in the 
 </solver>
 ----
 
+[#planningVariableShadowVariable]
+=== Planning variable shadow variables
 
-[#shadowVariable]
-== Planning variable (shadow)
+When a planning entity uses <<planningVariable,regular planning variables>>, you can use the following built-in annotation to derive shadow variables from that genuine planning variable.
 
-A shadow variable is a planning variable whose correct value can be deduced from the state of the <<planningVariable,genuine planning variables>>.
-Even though such a variable violates the principle of normalization by definition, in some use cases it can be very practical to use a shadow variable, especially to express the constraints more naturally.
-In vehicle routing with time windows,
-the arrival time at a customer for a vehicle can be calculated based on the previously visited customers of that vehicle
-(and the known travel times between two locations).
+- `@InverseRelationShadowVariable`: for mapping bidirectional relationships.
 
-image::using-timefold-solver/modeling-planning-problems/planningVariableListener.png[align="center"]
-
-When the customers for a vehicle change, the arrival time for each customer is automatically adjusted.
-For more information, see the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
-
-From a score calculation perspective, a shadow variable is like any other planning variable.
-From an optimization perspective, Timefold Solver effectively only optimizes the genuine variables (and mostly ignores the shadow variables): it just assures that when a genuine variable changes, any dependent shadow variables are changed accordingly.
-
-[IMPORTANT]
-====
-**Any class that has at least one shadow variable, is a planning entity class (even if it has no genuine planning variables).
-That class must be defined in the solver configuration and have a `@PlanningEntity` annotation.**
-
-A genuine planning entity class has at least one genuine planning variable, but can have shadow variables too.
-A shadow planning entity class has no genuine planning variables and at least one shadow planning variable.
-====
-
-There are several built-in shadow variables:
-
+If the built-in shadow variable annotations are insufficient, xref:declarativeShadowVariable[@ShadowVariable] can be used to create custom handlers.
 
 [#bidirectionalVariable]
-=== Bi-directional variable (inverse relation shadow variable)
+==== Inverse relation shadow variable
 
 Two variables are bi-directional if their instances always point to each other,
 unless one side points to `null` and the other side does not exist.
 So if A references B, then B references A.
 
-For a non-chained planning variable, the bi-directional relationship must be a many-to-one relationship.
+For regular planning variables, the bi-directional relationship must be a many-to-one relationship.
 To map a bi-directional relationship between two planning variables,
 annotate the source side (which is the genuine side) as a normal planning variable:
 
@@ -552,8 +651,6 @@ public class Timeslot {
 ----
 ====
 
-<<shadowVariable,Register this class as a planning entity>>,
-otherwise Timefold Solver won't detect it and the shadow variable won't update.
 The `sourceVariableName` property is the name of the genuine planning variable on the return type of the getter
 (so the name of the genuine planning variable on the _other_ side).
 
@@ -561,768 +658,12 @@ The `sourceVariableName` property is the name of the genuine planning variable o
 ====
 The shadow property, which is ``Collection`` (usually `List`, `Set` or `SortedSet`), can never be ``null``.
 If no genuine variable references that shadow entity, then it is an empty collection.
-Furthermore it must be a mutable `Collection` because once Timefold Solver starts initializing or changing genuine planning variables,
+Furthermore, it must be a mutable `Collection` because once Timefold Solver starts initializing or changing genuine planning variables,
 it will add and remove elements to the ``Collection``s of those shadow variables accordingly.
-====
-
-For a chained planning variable, the bi-directional relationship is always a one-to-one relationship.
-In that case, the genuine side looks like this:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Customer ... {
-
-    @PlanningVariable(graphType = PlanningVariableGraphType.CHAINED, ...)
-    public Standstill getPreviousStandstill() {
-        return previousStandstill;
-    }
-    public void setPreviousStandstill(Standstill previousStandstill) {...}
-
-}
-----
-
-
-====
-
-And the shadow side looks like this:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Standstill {
-
-    @InverseRelationShadowVariable(sourceVariableName = "previousStandstill")
-    public Customer getNextCustomer() {
-         return nextCustomer;
-    }
-    public void setNextCustomer(Customer nextCustomer) {...}
-
-}
-----
-====
-
-<<shadowVariable,Register this class as a planning entity>>,
-otherwise Timefold Solver won't detect it and the shadow variable won't update.
-
-[WARNING]
-====
-The input planning problem of a `Solver` must not violate bi-directional relationships.
-If A points to B, then B must point to A.
-Timefold Solver will not violate that principle during planning, but the input must not violate it either.
-====
-
-
-[#anchorShadowVariable]
-=== Anchor shadow variable
-
-An anchor shadow variable is the anchor of <<chainedPlanningVariable,a chained variable>>.
-
-Annotate the anchor property as a `@AnchorShadowVariable` annotation:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Customer {
-
-    @AnchorShadowVariable(sourceVariableName = "previousStandstill")
-    public Vehicle getVehicle() {...}
-    public void setVehicle(Vehicle vehicle) {...}
-
-}
-----
-
-
-====
-
-<<shadowVariable,This class should already be registered as a planning entity.>>
-The `sourceVariableName` property is the name of the chained variable on the same entity class.
-
-[#customVariableListener]
-=== Custom `VariableListener`
-
-To update a shadow variable, Timefold Solver uses a ``VariableListener``.
-To define a custom shadow variable, write a custom ``VariableListener``:
-implement the interface and annotate it on the shadow variable that needs to change.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(...)
-    public Standstill getPreviousStandstill() {
-        return previousStandstill;
-    }
-
-    @ShadowVariable(
-            variableListenerClass = VehicleUpdatingVariableListener.class,
-            sourceVariableName = "previousStandstill")
-    public Vehicle getVehicle() {
-        return vehicle;
-    }
-----
-====
-
-<<shadowVariable,Register this class as a planning entity>> if it isn't already.
-Otherwise Timefold Solver won't detect it and the shadow variable won't update.
-
-The `sourceVariableName` is the (genuine or shadow) variable that triggers changes to the annotated shadow variable.
-If the source variable is declared on a different class than the annotated shadow variable's class,
-also specify the `sourceEntityClass` and make sure the shadow variable's class is <<shadowVariable,registered as a planning entity>>.
-
-Implement the `VariableListener` interface.
-For example, the `VehicleUpdatingVariableListener` assures that every `Customer` in a chain has the same ``Vehicle``, namely the chain's anchor.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class VehicleUpdatingVariableListener implements VariableListener<VehicleRoutePlan, Customer> {
-
-    public void afterEntityAdded(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit customer) {
-        updateVehicle(scoreDirector, customer);
-    }
-
-    public void afterVariableChanged(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit customer) {
-        updateVehicle(scoreDirector, customer);
-    }
-
-    ...
-
-    protected void updateVehicle(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit sourceCustomer) {
-        Standstill previousStandstill = sourceCustomer.getPreviousStandstill();
-        Vehicle vehicle = previousStandstill == null ? null : previousStandstill.getVehicle();
-        Visit shadowCustomer = sourceCustomer;
-        while (shadowCustomer != null && shadowCustomer.getVehicle() != vehicle) {
-            scoreDirector.beforeVariableChanged(shadowCustomer, "vehicle");
-            shadowCustomer.setVehicle(vehicle);
-            scoreDirector.afterVariableChanged(shadowCustomer, "vehicle");
-            shadowCustomer = shadowCustomer.getNextCustomer();
-        }
-    }
-
-}
-----
-
-
-====
-
-[WARNING]
-====
-A `VariableListener` can only change shadow variables.
-It must never change a genuine planning variable or a problem fact.
-====
-
-[WARNING]
-====
-Any change of a shadow variable must be told to the ``ScoreDirector`` with `before*()` and `after*()` methods.
-====
-
-==== Multiple source variables
-
-If your custom variable listener needs multiple source variables to compute the shadow variable, annotate the shadow variable with multiple `@ShadowVariable` annotations, one per each source variable.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(...)
-    public ExecutionMode getExecutionMode() {
-        return executionMode;
-    }
-
-    @PlanningVariable(...)
-    public Integer getDelay() {
-        return delay;
-    }
-
-    @ShadowVariable(
-            variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class,
-            sourceVariableName = "executionMode")
-    @ShadowVariable(
-            variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class,
-            sourceVariableName = "delay")
-    public Integer getPredecessorsDoneDate() {
-        return predecessorsDoneDate;
-    }
-----
-====
-
-==== Piggyback shadow variable
-
-If one `VariableListener` changes two or more shadow variables (because having two separate ``VariableListener``s would be inefficient), then annotate only the first shadow variable with `@ShadowVariable` and specify the `variableListenerClass` there.
-Use `@PiggybackShadowVariable` on each shadow variable updated by that variable listener and reference the first shadow variable:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(...)
-    public Standstill getPreviousStandstill() {
-        return previousStandstill;
-    }
-
-    @ShadowVariable(
-            variableListenerClass = TransportTimeAndCapacityUpdatingVariableListener.class,
-            sourceVariableName = "previousStandstill")
-    public Integer getTransportTime() {
-        return transportTime;
-    }
-
-    @PiggybackShadowVariable(shadowVariableName = "transportTime")
-    public Integer getCapacity() {
-        return capacity;
-    }
-----
-
-
-====
-
-[#declarativeShadowVariable]
-=== Declarative Shadow Variable
-
-Declarative shadow variables are the simplest way to calculate shadow variables.
-This approach allows access to all the fields and methods of the declaring class.
-
-To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specify the name of a supplier method.
-Annotate the supplier method with `@ShadowSources`, listing all the planning variables (genuine or shadow) it depends on.
-
-Whenever any of the declared sources change, the supplier method is invoked, and its return value is set on all fields that reference it via @ShadowVariable.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Job {
-
-    @PlanningVariable
-    private LocalDate startDate;
-
-    private int durationInDays;
-
-    @ShadowVariable(supplierName="endDateSupplier")
-    private LocalDate endDate;
-
-    @ShadowSources("startDate")
-    public LocalDate endDateSupplier() {
-        if (startDate == null) {
-            return null;
-        } else {
-            return startDate.plusDays(durationInDays);
-        }
-    }
-}
-----
-====
-
-In the example above, whenever the solver changes the `startDate` planning variable, the `endDateSupplier()` method is called.
-Its return value is assigned to the `endDate` field, as declared by the `@ShadowVariable(supplierName="endDateSupplier")` annotation.
-
-Some key considerations:
-
-- _Type consistency_: The return type of the supplier method must match the type of the field it is assigned to.
-- _Explicit dependencies_: All planning variables used in the supplier logic must be explicitly listed in `@ShadowSources`.
-Undeclared dependencies will not trigger updates, leading to stale or incorrect shadow values.
-
-
-==== @ShadowSources paths
-
-When using `@ShadowSources`, you must specify the paths to the variables that the supplier method depends on to compute its value.
-These paths must follow 1 of 3 syntactic forms:
-
-[cols="1,1,3", options="header"]
-|===
-|Form
-|Syntax Example
-|Description
-
-|Simple Variable Name
-|"variableName"
-|Refers to a variable (genuine or shadow) on the same planning entity.
-
-|Chained Property Path
-|"a.b.c"
-|Refers to a variable reachable via chained properties. Intermediate elements must be facts or variables; the final one must be a variable.
-
-|Collection Element Access
-|"collectionVar[].varName"
-|Refers to a variable (`varName`) on each element in a collection (`collectionVar`) on the entity. The collection must not change during solving.
-|===
-
-Concrete example
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Job {
-
-    @PreviousElementShadowVariable
-    Job previous;
-
-    private int durationInDays;
-
-    private Collection<Job> dependencies;
-
-    @ShadowVariable(supplierName="startDateSupplier")
-    private LocalDateTime startDate;
-
-    @ShadowVariable(supplierName="endDateSupplier")
-    private LocalDate endDate;
-
-    @ShadowSources({"previous.endDate", "dependencies[].endDate"})
-    public LocalDate startDateSupplier() {
-      LocalDate readyDate = null;
-      if (previous != null) {
-          readyDate = previous.endDate;
-      } else {
-          return null;
-      }
-      if (dependencies != null) {
-          for (var dependency : dependencies) {
-              if (dependency.endDate == null) {
-                  return null;
-              }
-              if (readyDate.isBefore(dependency.endDate)) {
-                  readyDate = dependency.endDate;
-              }
-          }
-      }
-      return readyDate;
-    }
-
-    @ShadowSources("startDate")
-    public LocalDate endDateSupplier() {
-        if (startDate == null) {
-            return null;
-        } else {
-            return startDate.plusDays(durationInDays);
-        }
-    }
-
-}
-----
-
-
-====
-
-[cols="1,1,2", options="header"]
-|===
-|Reference
-|Form
-|Meaning
-
-|"startDate"
-|Simple Variable Name
-|Direct reference to the `startDate` field.
-
-|"previous.endDate"
-|Chained Property Path
-|Accesses `endDate` from the `previous` variable.
-
-|"dependencies[].endTime"
-|Collection Element Access
-|Accesses `endTime` of each element in the `dependencies` collection.
-|===
-
-[#detectingInconsistencies]
-==== Detecting Inconsistencies in Shadow Variables
-
-In certain cases, shadow variables may form an infinite loop.
-There are three ways a loop can form:
-
-- Source-induced, when two declarative shadow variables' sources refer to each other:
-+
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Entity {
-    @ShadowVariable(supplierName="variable1Supplier")
-    String variable1;
-
-    @ShadowVariable(supplierName="variable2Supplier")
-    String variable2;
-
-    // ...
-
-    @ShadowSources("variable2")
-    String variable1Supplier() { /* ... */ }
-
-    @ShadowSources("variable1")
-    String variable2Supplier() { /* ... */ }
-}
-----
-====
-
-- Fact-induced, when a shadow variable has itself as a direct or transitive dependency via a fact:
-+
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Entity {
-  Entity dependency;
-
-  @ShadowVariable(supplierName="variableSupplier")
-  String variable;
-
-  @ShadowSources("dependency.variable")
-  String variableSupplier() { /* ... */ }
-  // ...
-}
-
-Entity a = new Entity();
-Entity b = new Entity();
-a.setDependency(b);
-b.setDependency(a);
-// a depends on b, and b depends on a, which is invalid.
-----
-====
-
-- Variable-induced, when a shadow variable has itself as a direct or transitive dependency via a variable:
-+
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Entity {
-  Entity dependency;
-
-  @PreviousElementShadowVariable(/* ... */)
-  Entity previous;
-
-  @ShadowVariable(supplierName="variableSupplier")
-  String variable;
-
-  @ShadowSources({"previous.variable", "dependency.variable"})
-  String variable1Supplier() { /* ... */ }
-  // ...
-}
-
-Entity a = new Entity();
-Entity b = new Entity();
-b.setDependency(a);
-a.setPrevious(b);
-// b depends on a via a fact, and a depends on b via a variable
-// The solver can break this loop by moving a after b.
-----
-====
-
-[IMPORTANT]
-====
-Source-induced and fact-induced loops cannot be broken by the solver, and represents an issue in either the input problem or the domain model.
-The solver will fail-fast if it detects a source-induced or fact-induced loop.
-====
-
-A declarative shadow variable is considered  _inconsistent_ if:
-
-- It directly or indirectly depends on itself.
-For example, if variable `a` depends on `b` and `b` depends on `a`, both are in a loop.
-- It depends on another variable that is inconsistent.
-For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
-
-When a declarative shadow variable is inconsistent, it will be set to `null`.
-
-To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
-The solver will set this field to true if the entity has any inconsistent shadow variables.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Job {
-    @ShadowVariablesInconsistent
-    boolean isInconsistent;
-
-    public boolean isInconsistent() {
-        return isInconsistent;
-    }
-}
-----
-====
-
-NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariablesInconsistent`-annotated properties.
-These methods are only called if none of their shadow variables are inconsistent, and therefore the value of such properties at that time is guaranteed to be `false`.
-
-This property (`isInconsistent` in the example above) is typically used in a constraint filter to penalize entities with inconsistent shadow variables via a hard constraint, since PlanningSolution instances containing inconsistent shadow variables are generally considered invalid.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-//Example constraint
-Constraint penalizeInconsistentJobs(ConstraintFactory factory) {
-    return factory.forEachUnfiltered(Job.class)
-            .filter(job -> job.isInconsistent())
-            .penalize(HardSoftScore.ONE_HARD)
-            .asConstraint("Job has inconsistent shadow variables.");
-}
-----
-====
-
-IMPORTANT: Since `forEach` filters out inconsistent entities, you must use `forEachUnfiltered` to penalize inconsistent entities.
-
-[#aligningShadowVariables]
-==== Aligning Shadow Variables
-
-`@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
-
-image::using-timefold-solver/modeling-planning-problems/alignmentShadowVariable.png[align="center"]
-
-To be used, a few requirements must be met:
-
-* `alignmentKey` must be the name of a problem fact on the entity.
-As with any problem fact, the value of this fact must not change during solving.
-
-* For all entities with the same, non-null `alignmentKey` value, calling the supplier method will result in the same value regardless of what entity is called.
-
-[IMPORTANT]
-====
-Only use alignment keys when you can *guarantee* the two requirements above are met.
-Since the calculation will only be performed on a single entity, if the supplier method can return a different value depending on what aligned entity is chosen, you will get *inconsistent and incorrect* results.
-====
-
-The code below meets the requirements, since the `leader` field is not a variable, and entities with the same `leader` will get the same value.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Leader {
-    @PlanningVariable
-    Integer value;
-    // ...
-}
-
-@PlanningEntity
-public class Follower {
-    Leader leader;
-
-    @ShadowVariable(supplierName="valueSupplier")
-    Integer value;
-
-    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
-    public Integer valueSupplier() {
-      return leader.value;
-    }
-}
-----
-====
-
-However, the code below does not meet the requirements, since `Follower` entities with the same `leader` but a different `minValue` may calculate different values.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Leader {
-    @PlanningVariable
-    Integer value;
-    // ...
-}
-
-@PlanningEntity
-public class Follower {
-    Leader leader;
-    int minValue;
-
-    @ShadowVariable(supplierName="valueSupplier")
-    Integer value;
-
-    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
-    public Integer valueSupplier() {
-      if (leader.value == null || leader.value < minValue) {
-          return minValue;
-      }
-      return leader.value;
-    }
-}
-----
-====
-
-Entities where the `alignmentKey` is evaluated to `null` are each calculated separately and won't share calculations for that shadow variable with other entities.
-
-This feature is particularly useful when you have a group of entities that must be aligned to the same value.
-For example:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Job {
-
-    @PreviousElementShadowVariable
-    Job previous;
-
-    private Collection<Job> alignedJobs;
-
-    @ShadowVariable(supplierName="readyDateSupplier")
-    private LocalDateTime readyDate;
-
-    @ShadowVariable(supplierName="startDateSupplier")
-    private LocalDateTime startDate;
-
-    @ShadowSources(/* ... */)
-    public LocalDate readyDateSupplier() {
-        // ...
-    }
-
-    @ShadowSources(value = {"readyDate", "alignedJobs[].readyDate"}, alignmentKey="alignedJobs")
-    public LocalDate startDateSupplier() {
-        if (alignedJobs == null) {
-            // All entities with a null alignmentKey (in this case, "alignedJobs")
-            // are calculated separately.
-            return readyDate;
-        }
-        var lastReadyDate = readyDate;
-        for (var job : alignedJobs) {
-            if (job.readyDate.isAfter(lastReadyDate)) {
-                lastReadyDate = job.readyDate;
-            }
-        }
-        return lastReadyDate;
-    }
-}
-----
-====
-
-==== Optimizing Shadow Variables
-
-Each custom Shadow Variable on each planning entity constitutes one node of a reference graph. 
-The Solver analyzes this graph to decide what is the most optimal strategy for updating these variables. 
-In general, the less variables and the less dependencies between them, the faster the processing.
-For the best performance, follow these guidelines:
-
-- Keep all custom Shadow Variables on the same entity class.
-If one entity is grouping another entity, you might be able to use <<aligningShadowVariables,custom Shadow Variable alignment>> to keep custom Shadow Variables on the same entity class.
-
-- Do not use both `@PreviousElementShadowVariable` and `@NextElementShadowVariable` in your sources.
-This includes using `@PreviousElementShadowVariable` as a source in one custom Shadow Variable while using `@NextElementShadowVariable` as a source in another custom Shadow Variable.
-
-- Compute as much as possible within a single custom Shadow Variable supplier method.
-Do not create intermediate custom Shadow Variables when it is possible to compute the value directly from another custom Shadow Variable.
-
-NOTE: These are tips and tricks for optimal performance and needn't be followed to the letter. The solver will work correctly even if you decide not to follow any of the advice, albeit with slightly lesser performance.
-
-=== Shadow variable cloning
-
-A shadow variable's value (just like a genuine variable's value)
-isn't <<cloningASolution,planning cloned>> by the default solution cloner,
-unless it can easily prove that it must be planning cloned (for example the property type is a planning entity class).
-Specifically shadow variables of type `List`, `Set`, `Collection` or `Map` usually need to be planning cloned
-to avoid corrupting the best solution when the working solution changes.
-To planning clone a shadow variable, add `@DeepPlanningClone` annotation:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @DeepPlanningClone
-    @ShadowVariable(...)
-    private Map<LocalDateTime, Integer> usedManHoursPerDayMap;
-----
-====
-
-
-[#variableListenerTriggeringOrder]
-=== VariableListener triggering order
-
-All shadow variables are triggered by a ``VariableListener``, regardless if it's a built-in or a custom shadow variable.
-The genuine and shadow variables form a graph, that determines the order in which the ``afterEntityAdded()``, `afterVariableChanged()` and `afterEntityRemoved()` methods are called:
-
-image::using-timefold-solver/modeling-planning-problems/shadowVariableOrder.png[align="center"]
-
-[NOTE]
-====
-In the example above, D could have also been ordered after E (or F) because there is no direct or indirect dependency between D and E (or F).
-====
-
-Timefold Solver guarantees that:
-
-* The first ``VariableListener``'s `after*()` methods trigger _after_ the last genuine variable has changed. Therefore the genuine variables (A and B in the example above) are guaranteed to be in a consistent state across all its instances (with values A1, A2 and B1 in the example above) because the entire `Move` has been applied.
-* The second ``VariableListener``'s `after*()` methods trigger _after_ the last first shadow variable has changed. Therefore the first shadow variable (C in the example above) are guaranteed to be in a consistent state across all its instances (with values C1 and C2 in the example above). And the genuine variables too.
-* And so forth.
-
-Timefold Solver does not guarantee the order in which the `after*()` methods are called for the _same_``VariableListener`` with different parameters (such as A1 and A2 in the example above), although they are likely to be in the order in which they were affected.
-
-By default, Timefold Solver does not guarantee that the events are unique.
-For example, if a shadow variable on an entity is changed twice in the same move (for example by two different genuine variables), then that will cause the same event twice on the ``VariableListener``s that are listening to that original shadow variable.
-To avoid dealing with that complexity, overwrite the method `requiresUniqueEntityEvents()` to receive unique events at the cost of a small performance penalty:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class StartTimeUpdatingVariableListener implements VariableListener<TaskAssigningSolution, Task> {
-
-    @Override
-    public boolean requiresUniqueEntityEvents() {
-        return true;
-    }
-
-    ...
-}
-----
-
-
 ====
 
 [#planningValueAndPlanningValueRange]
 == Planning value and planning value range
-
 
 [#planningValue]
 === Planning value
@@ -1384,10 +725,10 @@ Java::
 +
 [source,java,options="nowrap"]
 ----
-    @PlanningVariable
-    public Timeslot getTimeslot() {
-        return timeslot;
-    }
+@PlanningVariable
+public Timeslot getTimeslot() {
+    return timeslot;
+}
 ----
 +
 [source,java,options="nowrap"]
@@ -1864,13 +1205,20 @@ One way to deal with this is to filter the entity selector of the placer in the 
 === List variable shadow variables
 
 When the planning entity uses a <<planningListVariable,list variable>>,
-its elements can use a number of built-in shadow variables.
+you can use the following built-in annotations to derive shadow variables from that genuine planning variable.
+
+- xref:listVariableShadowVariablesInverseRelation[@InverseRelationShadowVariable]: Used to get the planning entity containing the planning variable list to which a planning value is assigned;
+- xref:listVariableShadowVariablesIndex[@IndexShadowVariable]: Used to get the index of a planning value's position it's assigned planning variable list;
+- xref:listVariableShadowVariablesPreviousAndNext[@PreviousElementShadowVariable]: Used to get a planning value's predecessor in it's assigned planning variable list;
+- xref:listVariableShadowVariablesPreviousAndNext[@NextElementShadowVariable]: Used to get a planning value's successor in it's assigned planning variable list;
+- xref:tailChainVariable[@CascadingUpdateShadowVariable]: Used to update a set of connected elements;
+
+If the built-in shadow variable annotations are insufficient, xref:declarativeShadowVariable[@ShadowVariable] can be used to create custom handlers.
 
 [#listVariableShadowVariablesInverseRelation]
 ==== Inverse relation shadow variable
 
-Use the same `@InverseRelationShadowVariable` annotation as with basic or chained planning variable
-to establish bi-directional relationship between the entity and the elements assigned to its list variable.
+Use the `@InverseRelationShadowVariable` annotation to establish bi-directional relationship between the entity and the elements assigned to its list variable.
 The type of the inverse shadow variable is the planning entity itself
 because there is a one-to-many relationship between the entity and the element classes.
 
@@ -1980,6 +1328,7 @@ public class Customer {
 ----
 ====
 
+[#listVariableShadowVariablesPreviousAndNext]
 ==== Previous and next element shadow variable
 
 Use `@PreviousElementShadowVariable` or `@NextElementShadowVariable` to get a reference to an element that is assigned to the same entity's list variable one index lower (previous element) or one index higher (next element).
@@ -2170,6 +1519,9 @@ Here are some examples of valid and invalid chains:
 
 image::using-timefold-solver/modeling-planning-problems/chainPrinciples.png[align="center"]
 
+[#chainedVariableConsiderations]
+=== Chained variable considerations
+
 *Every initialized planning entity is part of an open-ended chain that begins from an anchor.* A valid model means that:
 
 * A chain is never a loop. The tail is always open.
@@ -2177,12 +1529,6 @@ image::using-timefold-solver/modeling-planning-problems/chainPrinciples.png[alig
 * A chain is never a tree, it is always a line. Every anchor or planning entity has at most one trailing planning entity.
 * Every initialized planning entity is part of a chain.
 * An anchor with no planning entities pointing to it, is also considered a chain.
-
-
-[WARNING]
-====
-A planning problem instance given to the `Solver` must be valid.
-====
 
 [NOTE]
 ====
@@ -2273,6 +1619,106 @@ Two value range providers are usually combined:
 Since ``Domicile`` and ``Visit`` both implement ``Standstill``, an <<anonymousValueRangeProviders,anonymous value range>> on ``Standstill`` will combine both value ranges.
 ====
 
+[WARNING]
+====
+Despite using the same base annotation as <<planningVariable, regular planning variables>>, <<chainedPlanningVariable,chained>> planning variables are not compatible with the `allowsUnassigned` attribute.
+====
+
+[#chainedVariableShadowVariable]
+=== Chained variable shadow variables
+
+When a planning entity uses <<chainedPlanningVariable,a chained variable>>, you can use the following built-in annotations to derive shadow variables from that genuine planning variable.
+
+- xref:bidirectionalVariableForChainedVariable[@InverseRelationShadowVariable]: Used to get the planning entity containing the chained planning variable to which a planning value is assigned;
+- xref:anchorShadowVariable[@AnchorShadowVariable]: Used to get the planning entity containing the planning variable list to which a planning value is assigned;
+
+If the built-in shadow variable annotations are insufficient, xref:declarativeShadowVariable[@ShadowVariable] can be used to create custom handlers.
+
+[#bidirectionalVariableForChainedVariable]
+==== Bi-directional variable (inverse relation shadow variable)
+
+Two variables are bi-directional if their instances always point to each other,
+unless one side points to `null` and the other side does not exist.
+So if A references B, then B references A.
+
+For a chained planning variable, the bi-directional relationship is always a one-to-one relationship.
+In that case, the genuine side looks like this:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Customer ... {
+
+    @PlanningVariable(graphType = PlanningVariableGraphType.CHAINED, ...)
+    public Standstill getPreviousStandstill() {
+        return previousStandstill;
+    }
+    public void setPreviousStandstill(Standstill previousStandstill) {...}
+
+}
+----
+====
+
+And the shadow side looks like this:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Standstill {
+
+    @InverseRelationShadowVariable(sourceVariableName = "previousStandstill")
+    public Customer getNextCustomer() {
+         return nextCustomer;
+    }
+    public void setNextCustomer(Customer nextCustomer) {...}
+
+}
+----
+====
+
+[WARNING]
+====
+The input planning problem of a `Solver` must not violate bi-directional relationships.
+If A points to B, then B must point to A.
+Timefold Solver will not violate that principle during planning, but the input must not violate it either.
+====
+
+[#anchorShadowVariable]
+==== Anchor shadow variable
+
+An anchor shadow variable is the anchor of <<chainedPlanningVariable,a chained variable>>.
+
+Annotate the anchor property as a `@AnchorShadowVariable` annotation:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Customer {
+
+    @AnchorShadowVariable(sourceVariableName = "previousStandstill")
+    public Vehicle getVehicle() {...}
+    public void setVehicle(Vehicle vehicle) {...}
+
+}
+----
+
+
+====
+
+The `sourceVariableName` property is the name of the chained variable on the same entity class.
+
 [#mixedModels]
 == Mixed models
 
@@ -2334,6 +1780,902 @@ public class LineOperation {
 ====
 Creating mixed models with chained and list variables is prohibited, and only one list variable can be defined.
 ====
+
+[#shadowVariable]
+== Shadow variables
+
+A shadow variable is a xref:planningVariableTypes[planning variable] whose correct value can be deduced from the state of the <<genuinePlanningVariables,genuine planning variables>>.
+Timefold Solver effectively only optimizes the genuine variables, and it assures that when a genuine variable changes, any dependent shadow variables are changed accordingly.
+
+Shadow variables can be defined by:
+
+- Using one of the xref:shadowVariablesBuiltIn[built-in] shadow variable annotations;
+- Defining them yourselves using xref:declarativeShadowVariable[declarative shadow variables].
+
+[#shadowVariablesBuiltIn]
+=== Built-in shadow variables
+
+Timefold Solver provides various built-in shadow variable annotation that make configuring common shadow variables trivial.
+Their applicability and usage varies depending on your use of xref:planningVariableShadowVariable[@PlanningVariable], xref:listVariableShadowVariables[@PlanningListVariable] or the xref:chainedVariableShadowVariable[chained @PlanningVariable]
+
+Detailed information on these built-in shadow variables can be found in the section on shadow variables of each of the genuine variable variants:
+
+- xref:planningVariableShadowVariable[Built-in shadow variables for @PlanningVariable],
+- xref:listVariableShadowVariables[Built-in shadow variables for  @PlanningListVariable]
+- xref:chainedVariableShadowVariable[Built-in shadow variables for chained @PlanningVariable]
+
+[#declarativeShadowVariable]
+=== Declarative Shadow Variables
+
+Declarative shadow variables can be used to derive values of shadow variables from _genuine variables or other shadow variables._
+This approach allows access to all the fields and methods of the declaring class.
+
+To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specify the name of a supplier method.
+Annotate the supplier method with `@ShadowSources`, listing all the planning variables (genuine or shadow) it depends on.
+
+Whenever any of the declared sources change, the supplier method is invoked, and its return value is set on all fields that reference it via @ShadowVariable.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+
+    @PlanningVariable
+    private LocalDate startDate;
+
+    private int durationInDays;
+
+    @ShadowVariable(supplierName="endDateSupplier")
+    private LocalDate endDate;
+
+    @ShadowSources("startDate")
+    public LocalDate endDateSupplier() {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+}
+----
+====
+
+In the example above, whenever the solver changes the `startDate` planning variable, the `endDateSupplier()` method is called.
+Its return value is assigned to the `endDate` field, as declared by the `@ShadowVariable(supplierName="endDateSupplier")` annotation.
+
+Some key considerations:
+
+- _Type consistency_: The return type of the supplier method must match the type of the field it is assigned to.
+- _Explicit dependencies_: All planning variables used in the supplier logic must be explicitly listed in `@ShadowSources`.
+Undeclared dependencies will not trigger updates, leading to stale or incorrect shadow values.
+
+==== @ShadowSources paths
+
+When using `@ShadowSources`, you must specify the paths to the variables that the supplier method depends on to compute its value.
+These paths must follow 1 of 3 syntactic forms:
+
+[cols="1,1,3", options="header"]
+|===
+|Form
+|Syntax Example
+|Description
+
+|Simple Variable Name
+|"variableName"
+|Refers to a variable (genuine or shadow) on the same planning entity.
+
+|Chained Property Path
+|"a.b.c"
+|Refers to a variable reachable via chained properties. Intermediate elements must be facts or variables; the final one must be a variable.
+
+|Collection Element Access
+|"collectionVar[].varName"
+|Refers to a variable (`varName`) on each element in a collection (`collectionVar`) on the entity. The collection must not change during solving.
+|===
+
+Concrete example
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+
+    @PreviousElementShadowVariable
+    Job previous;
+
+    private int durationInDays;
+
+    private Collection<Job> dependencies;
+
+    @ShadowVariable(supplierName="startDateSupplier")
+    private LocalDateTime startDate;
+
+    @ShadowVariable(supplierName="endDateSupplier")
+    private LocalDate endDate;
+
+    @ShadowSources({"previous.endDate", "dependencies[].endDate"})
+    public LocalDate startDateSupplier() {
+      LocalDate readyDate = null;
+      if (previous != null) {
+          readyDate = previous.endDate;
+      } else {
+          return null;
+      }
+      if (dependencies != null) {
+          for (var dependency : dependencies) {
+              if (dependency.endDate == null) {
+                  return null;
+              }
+              if (readyDate.isBefore(dependency.endDate)) {
+                  readyDate = dependency.endDate;
+              }
+          }
+      }
+      return readyDate;
+    }
+
+    @ShadowSources("startDate")
+    public LocalDate endDateSupplier() {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+
+}
+----
+
+
+====
+
+[cols="1,1,2", options="header"]
+|===
+|Reference
+|Form
+|Meaning
+
+|"startDate"
+|Simple Variable Name
+|Direct reference to the `startDate` field.
+
+|"previous.endDate"
+|Chained Property Path
+|Accesses `endDate` from the `previous` variable.
+
+|"dependencies[].endDate"
+|Collection Element Access
+|Accesses `endDate` of each element in the `dependencies` collection.
+|===
+
+[#detectingInconsistencies]
+==== Detecting Inconsistencies in Shadow Variables
+
+In certain cases, shadow variables may form an infinite loop.
+There are three ways a loop can form:
+
+- Source-induced, when two declarative shadow variables' sources refer to each other:
++
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Entity {
+    @ShadowVariable(supplierName="variable1Supplier")
+    String variable1;
+
+    @ShadowVariable(supplierName="variable2Supplier")
+    String variable2;
+
+    // ...
+
+    @ShadowSources("variable2")
+    String variable1Supplier() { /* ... */ }
+
+    @ShadowSources("variable1")
+    String variable2Supplier() { /* ... */ }
+}
+----
+====
+
+- Fact-induced, when a shadow variable has itself as a direct or transitive dependency via a fact:
++
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Entity {
+  Entity dependency;
+
+  @ShadowVariable(supplierName="variableSupplier")
+  String variable;
+
+  @ShadowSources("dependency.variable")
+  String variableSupplier() { /* ... */ }
+  // ...
+}
+
+Entity a = new Entity();
+Entity b = new Entity();
+a.setDependency(b);
+b.setDependency(a);
+// a depends on b, and b depends on a, which is invalid.
+----
+====
+
+- Variable-induced, when a shadow variable has itself as a direct or transitive dependency via a variable:
++
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Entity {
+  Entity dependency;
+
+  @PreviousElementShadowVariable(/* ... */)
+  Entity previous;
+
+  @ShadowVariable(supplierName="variableSupplier")
+  String variable;
+
+  @ShadowSources({"previous.variable", "dependency.variable"})
+  String variable1Supplier() { /* ... */ }
+  // ...
+}
+
+Entity a = new Entity();
+Entity b = new Entity();
+b.setDependency(a);
+a.setPrevious(b);
+// b depends on a via a fact, and a depends on b via a variable
+// The solver can break this loop by moving a after b.
+----
+====
+
+[IMPORTANT]
+====
+Source-induced and fact-induced loops cannot be broken by the solver, and represents an issue in either the input problem or the domain model.
+The solver will fail-fast if it detects a source-induced or fact-induced loop.
+====
+
+A declarative shadow variable is considered  _inconsistent_ if:
+
+- It directly or indirectly depends on itself.
+For example, if variable `a` depends on `b` and `b` depends on `a`, both are in a loop.
+- It depends on another variable that is inconsistent.
+For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
+
+When a declarative shadow variable is inconsistent, it will be set to `null`.
+
+To detect whether an entity has inconsistent shadow variables, annotate a boolean field with `@ShadowVariablesInconsistent`.
+The solver will set this field to true if the entity has any inconsistent shadow variables.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+    @ShadowVariablesInconsistent
+    boolean isInconsistent;
+
+    public boolean isInconsistent() {
+        return isInconsistent;
+    }
+}
+----
+====
+
+NOTE: `@ShadowSources`-annotated methods do not need to check `@ShadowVariablesInconsistent`-annotated properties.
+These methods are only called if none of their shadow variables are inconsistent, and therefore the value of such properties at that time is guaranteed to be `false`.
+
+This property (`isInconsistent` in the example above) is typically used in a constraint filter to penalize entities with inconsistent shadow variables via a hard constraint, since PlanningSolution instances containing inconsistent shadow variables are generally considered invalid.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+//Example constraint
+Constraint penalizeInconsistentJobs(ConstraintFactory factory) {
+    return factory.forEachUnfiltered(Job.class)
+            .filter(job -> job.isInconsistent())
+            .penalize(HardSoftScore.ONE_HARD)
+            .asConstraint("Job has inconsistent shadow variables.");
+}
+----
+====
+
+IMPORTANT: Since `forEach` filters out inconsistent entities, you must use `forEachUnfiltered` to penalize inconsistent entities.
+
+[#aligningShadowVariables]
+==== Aligning Shadow Variables
+
+`@ShadowSources` has an optional `alignmentKey` parameter that can be used to reuse calculation results to increase performance.
+
+image::using-timefold-solver/modeling-planning-problems/alignmentShadowVariable.png[align="center"]
+
+To be used, a few requirements must be met:
+
+* `alignmentKey` must reference a property that remains constant during solving. It may point to a problem fact or a regular property of the planning entity, but it cannot reference any planning variables.
+
+* For all entities with the same, non-null `alignmentKey` value, calling the supplier method must result in the same value regardless of what entity is called.
+
+[IMPORTANT]
+====
+Only use alignment keys when you can *guarantee* the two requirements above are met.
+Since the calculation will only be performed on a single entity, if the supplier method can return a different value depending on what aligned entity is chosen, you will get *inconsistent and incorrect* results.
+====
+
+The code below meets the requirements, since the `leader` field is not a variable, and entities with the same `leader` will get the same value.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Leader {
+    @PlanningVariable
+    Integer value;
+    // ...
+}
+
+@PlanningEntity
+public class Follower {
+    Leader leader;
+
+    @ShadowVariable(supplierName="valueSupplier")
+    Integer value;
+
+    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
+    public Integer valueSupplier() {
+      return leader.value;
+    }
+}
+----
+====
+
+However, the code below does not meet the requirements, since `Follower` entities with the same `leader` but a different `minValue` may calculate different values.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Leader {
+    @PlanningVariable
+    Integer value;
+    // ...
+}
+
+@PlanningEntity
+public class Follower {
+    Leader leader;
+    int minValue;
+
+    @ShadowVariable(supplierName="valueSupplier")
+    Integer value;
+
+    @ShadowSources(value = {"leader.value"}, alignmentKey = "leader")
+    public Integer valueSupplier() {
+      if (leader.value == null || leader.value < minValue) {
+          return minValue;
+      }
+      return leader.value;
+    }
+}
+----
+====
+
+Entities where the `alignmentKey` is evaluated to `null` are each calculated separately and won't share calculations for that shadow variable with other entities.
+
+This feature is particularly useful when you have a group of entities that must be aligned to the same value.
+For example:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Job {
+
+    @PreviousElementShadowVariable
+    Job previous;
+
+    private Collection<Job> alignedJobs;
+
+    @ShadowVariable(supplierName="readyDateSupplier")
+    private LocalDateTime readyDate;
+
+    @ShadowVariable(supplierName="startDateSupplier")
+    private LocalDateTime startDate;
+
+    @ShadowSources(/* ... */)
+    public LocalDate readyDateSupplier() {
+        // ...
+    }
+
+    @ShadowSources(value = {"readyDate", "alignedJobs[].readyDate"}, alignmentKey="alignedJobs")
+    public LocalDate startDateSupplier() {
+        if (alignedJobs == null) {
+            // All entities with a null alignmentKey (in this case, "alignedJobs")
+            // are calculated separately.
+            return readyDate;
+        }
+        var lastReadyDate = readyDate;
+        for (var job : alignedJobs) {
+            if (job.readyDate.isAfter(lastReadyDate)) {
+                lastReadyDate = job.readyDate;
+            }
+        }
+        return lastReadyDate;
+    }
+}
+----
+====
+
+==== Optimizing Shadow Variables
+
+Each custom Shadow Variable on each planning entity constitutes one node of a reference graph.
+The Solver analyzes this graph to decide what is the most optimal strategy for updating these variables.
+In general, the less variables and the less dependencies between them, the faster the processing.
+For the best performance, follow these guidelines:
+
+- Keep all custom Shadow Variables on the same entity class.
+If one entity is grouping another entity, you might be able to use <<aligningShadowVariables,custom Shadow Variable alignment>> to keep custom Shadow Variables on the same entity class.
+
+- Do not use both `@PreviousElementShadowVariable` and `@NextElementShadowVariable` in your sources.
+This includes using `@PreviousElementShadowVariable` as a source in one custom Shadow Variable while using `@NextElementShadowVariable` as a source in another custom Shadow Variable.
+
+- Compute as much as possible within a single custom Shadow Variable supplier method.
+Do not create intermediate custom Shadow Variables when it is possible to compute the value directly from another custom Shadow Variable.
+
+NOTE: These are tips and tricks for optimal performance and needn't be followed to the letter. The solver will work correctly even if you decide not to follow any of the advice, albeit with slightly lesser performance.
+
+[#customVariableListener]
+=== Custom `VariableListener`
+
+[WARNING]
+====
+*Deprecation notice*: Using `VariableListeners` effectively required intimate knowledge of some internal solver concepts.
+We recommend all users of `VariableListeners` to migrate to xref:declarativeShadowVariable[declarative shadow variables], which provide a much simpler way to handle updating shadow variables.
+====
+
+To update a shadow variable, Timefold Solver uses a ``VariableListener``.
+To define a custom shadow variable, write a custom ``VariableListener``:
+implement the interface and annotate it on the shadow variable that needs to change.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable(...)
+    public Standstill getPreviousStandstill() {
+        return previousStandstill;
+    }
+
+    @ShadowVariable(
+            variableListenerClass = VehicleUpdatingVariableListener.class,
+            sourceVariableName = "previousStandstill")
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+----
+====
+
+<<shadowVariable,Register this class as a planning entity>> if it isn't already.
+Otherwise Timefold Solver won't detect it and the shadow variable won't update.
+
+The `sourceVariableName` is the (genuine or shadow) variable that triggers changes to the annotated shadow variable.
+If the source variable is declared on a different class than the annotated shadow variable's class,
+also specify the `sourceEntityClass` and make sure the shadow variable's class is <<shadowVariable,registered as a planning entity>>.
+
+Implement the `VariableListener` interface.
+For example, the `VehicleUpdatingVariableListener` assures that every `Customer` in a chain has the same ``Vehicle``, namely the chain's anchor.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class VehicleUpdatingVariableListener implements VariableListener<VehicleRoutePlan, Customer> {
+
+    public void afterEntityAdded(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit customer) {
+        updateVehicle(scoreDirector, customer);
+    }
+
+    public void afterVariableChanged(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit customer) {
+        updateVehicle(scoreDirector, customer);
+    }
+
+    ...
+
+    protected void updateVehicle(ScoreDirector<VehicleRoutePlan> scoreDirector, Visit sourceCustomer) {
+        Standstill previousStandstill = sourceCustomer.getPreviousStandstill();
+        Vehicle vehicle = previousStandstill == null ? null : previousStandstill.getVehicle();
+        Visit shadowCustomer = sourceCustomer;
+        while (shadowCustomer != null && shadowCustomer.getVehicle() != vehicle) {
+            scoreDirector.beforeVariableChanged(shadowCustomer, "vehicle");
+            shadowCustomer.setVehicle(vehicle);
+            scoreDirector.afterVariableChanged(shadowCustomer, "vehicle");
+            shadowCustomer = shadowCustomer.getNextCustomer();
+        }
+    }
+
+}
+----
+
+
+====
+
+[WARNING]
+====
+A `VariableListener` can only change shadow variables.
+It must never change a genuine planning variable or a problem fact.
+====
+
+[WARNING]
+====
+Any change of a shadow variable must be told to the ``ScoreDirector`` with `before*()` and `after*()` methods.
+====
+
+==== Multiple source variables
+
+If your custom variable listener needs multiple source variables to compute the shadow variable, annotate the shadow variable with multiple `@ShadowVariable` annotations, one per each source variable.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable(...)
+    public ExecutionMode getExecutionMode() {
+        return executionMode;
+    }
+
+    @PlanningVariable(...)
+    public Integer getDelay() {
+        return delay;
+    }
+
+    @ShadowVariable(
+            variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class,
+            sourceVariableName = "executionMode")
+    @ShadowVariable(
+            variableListenerClass = PredecessorsDoneDateUpdatingVariableListener.class,
+            sourceVariableName = "delay")
+    public Integer getPredecessorsDoneDate() {
+        return predecessorsDoneDate;
+    }
+----
+====
+
+==== Piggyback shadow variable
+
+If one `VariableListener` changes two or more shadow variables (because having two separate ``VariableListener``s would be inefficient), then annotate only the first shadow variable with `@ShadowVariable` and specify the `variableListenerClass` there.
+Use `@PiggybackShadowVariable` on each shadow variable updated by that variable listener and reference the first shadow variable:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable(...)
+    public Standstill getPreviousStandstill() {
+        return previousStandstill;
+    }
+
+    @ShadowVariable(
+            variableListenerClass = TransportTimeAndCapacityUpdatingVariableListener.class,
+            sourceVariableName = "previousStandstill")
+    public Integer getTransportTime() {
+        return transportTime;
+    }
+
+    @PiggybackShadowVariable(shadowVariableName = "transportTime")
+    public Integer getCapacity() {
+        return capacity;
+    }
+----
+====
+
+
+[#variableListenerTriggeringOrder]
+==== VariableListener triggering order
+
+All shadow variables are triggered by a ``VariableListener``, regardless if it's a built-in or a custom shadow variable.
+The genuine and shadow variables form a graph, that determines the order in which the ``afterEntityAdded()``, `afterVariableChanged()` and `afterEntityRemoved()` methods are called:
+
+image::using-timefold-solver/modeling-planning-problems/shadowVariableOrder.png[align="center"]
+
+[NOTE]
+====
+In the example above, D could have also been ordered after E (or F) because there is no direct or indirect dependency between D and E (or F).
+====
+
+Timefold Solver guarantees that:
+
+* The first ``VariableListener``'s `after*()` methods trigger _after_ the last genuine variable has changed. Therefore the genuine variables (A and B in the example above) are guaranteed to be in a consistent state across all its instances (with values A1, A2 and B1 in the example above) because the entire `Move` has been applied.
+* The second ``VariableListener``'s `after*()` methods trigger _after_ the last first shadow variable has changed. Therefore the first shadow variable (C in the example above) are guaranteed to be in a consistent state across all its instances (with values C1 and C2 in the example above). And the genuine variables too.
+* And so forth.
+
+Timefold Solver does not guarantee the order in which the `after*()` methods are called for the _same_``VariableListener`` with different parameters (such as A1 and A2 in the example above), although they are likely to be in the order in which they were affected.
+
+By default, Timefold Solver does not guarantee that the events are unique.
+For example, if a shadow variable on an entity is changed twice in the same move (for example by two different genuine variables), then that will cause the same event twice on the ``VariableListener``s that are listening to that original shadow variable.
+To avoid dealing with that complexity, overwrite the method `requiresUniqueEntityEvents()` to receive unique events at the cost of a small performance penalty:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class StartTimeUpdatingVariableListener implements VariableListener<TaskAssigningSolution, Task> {
+
+    @Override
+    public boolean requiresUniqueEntityEvents() {
+        return true;
+    }
+
+    ...
+}
+----
+
+
+====
+
+=== Shadow variable cloning
+
+A shadow variable's value (just like a genuine variable's value)
+isn't <<cloningASolution,planning cloned>> by the default solution cloner,
+unless it can easily prove that it must be planning cloned (for example the property type is a planning entity class).
+Specifically shadow variables of type `List`, `Set`, `Collection` or `Map` usually need to be planning cloned
+to avoid corrupting the best solution when the working solution changes.
+To planning clone a shadow variable, add `@DeepPlanningClone` annotation:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @DeepPlanningClone
+    @ShadowVariable(...)
+    private Map<LocalDateTime, Integer> usedManHoursPerDayMap;
+----
+====
+
+
+[#shadowVariableTest]
+=== Testing a shadow variable
+
+Testing the logic of shadow variables is crucial for maintaining consistency
+and preventing issues such as xref:constraints-and-score/overview.adoc#invalidScoreDetection[score corruption].
+The Timefold Solver API includes a facility method that automatically updates shadow variables from a given model,
+allowing you to create unit tests easily.
+Consider the following solution class:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class Schedule {
+
+     @PlanningEntityCollectionProperty
+     private List<Job> jobs;
+     ...
+}
+----
+
+
+====
+
+Next, let's reuse the following model from previous section.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class Job {
+
+    public Job(LocalDate startDate, int durationInDays) {
+        ...
+    }
+
+    @PlanningVariable
+    private LocalDate startDate;
+
+    private int durationInDays;
+
+    @ShadowVariable(supplierName="endDateSupplier")
+    private LocalDate endDate;
+
+    @ShadowSources("startDate")
+    public LocalDate endDateSupplier() {
+        if (startDate == null) {
+            return null;
+        } else {
+            return startDate.plusDays(durationInDays);
+        }
+    }
+}
+----
+====
+
+Finally, let's create a unit test that will validate the defined shadow variable `endDate`.
+The utility method `SolutionManager::updateShadowVariables` reads the entity and updates its shadow variables.
+Notably, the method `updateShadowVariables` simplifies the logic and does not require proper solver configuration to update the shadow variables.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @Test
+    void updateShadowVariables() {
+        var job = new Job(LocalDate.now(), 10);
+        SolutionManager.updateShadowVariables(Schedule.class, job);
+        assertThat(job.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
+    }
+----
+
+
+====
+
+It is also possible to pass a solution instance rather than the solution class along with the related planning entities.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @Test
+    void updateShadowVariables() {
+        var solution = new Schedule();
+        var job = new Job(LocalDate.now(), 10);
+        solution.setJobs(List.of(job));
+        SolutionManager.updateShadowVariables(solution);
+        assertThat(job.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
+    }
+----
+====
+
+[WARNING]
+====
+Models using xref:#customVariableListener[custom variable listeners] are not compatible with `SolutionManager::updateShadowVariables(Class, Object...)`,
+leading to failure if attempted.
+However, this limitation does not apply when the solution is passed instead.
+====
+
+In the following example, a model that uses a planning list variable is employed to demonstrate the test feature.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+public class VehicleRoutePlan {
+
+     @PlanningEntityCollectionProperty
+     private List<Vehicle> vehicles;
+     ...
+}
+----
+
+
+====
+
+The planning entity:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Vehicle {
+
+    @PlanningListVariable
+    List<Customer> customers;
+    ...
+}
+----
+====
+
+On the element side:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningEntity
+public class Customer {
+
+    @PreviousElementShadowVariable(sourceVariableName = "customers")
+    Customer previousCustomer;
+
+    @NextElementShadowVariable(sourceVariableName = "customers")
+    Customer nextCustomer;
+
+    ...
+}
+----
+
+
+====
+
+The test is defined as follows:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    void updateShadowVariables() {
+        var vehicle = new Vehicle();
+        var customer1 = new Customer();
+        var customer2 = new Customer();
+        vehicle.setCustomers(List.of(customer1, customer2));
+
+        SolutionManager.updateShadowVariables(VehicleRoutePlan.class, vehicle, customer1, customer2);
+        assertThat(customer1.previousCustomer).isNull();
+        assertThat(customer1.nextCustomer).isSameAs(customer2);
+        assertThat(customer2.previousCustomer).isSameAs(customer1);
+        assertThat(customer2.nextCustomer).isNull();
+    }
+----
+====
+
+[NOTE]
+====
+In the example above, only two types of shadow variables are used, but it is not limited to these variable types.
+The method `SolutionManager::updateShadowVariables` is also capable of automatically updating the xref:#listVariableShadowVariablesInverseRelation[inverse relationship],
+xref:#listVariableShadowVariablesIndex[index position],
+and xref:#tailChainVariable[tail chains].
+====
+
 
 [#planningProblemAndPlanningSolution]
 == Planning problem and planning solution
@@ -2794,205 +3136,6 @@ Java::
 Usually, most of this data comes from your data layer,
 and your solution implementation just aggregates that data and creates the uninitialized planning entity instances for the solver to plan.
 
-[#shadowVariableTest]
-== Testing a shadow variable
-
-Testing the logic of shadow variables is crucial for maintaining consistency
-and preventing issues such as xref:constraints-and-score/overview.adoc#invalidScoreDetection[score corruption].
-The Timefold Solver API includes a facility method that automatically updates shadow variables from a given model,
-allowing you to create unit tests easily.
-Consider the following solution class:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class Schedule {
-
-     @PlanningEntityCollectionProperty
-     private List<Job> jobs;
-     ...
-}
-----
-
-
-====
-
-Next, let's reuse the following model from previous section.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class Job {
-
-    public Job(LocalDate startDate, int durationInDays) {
-        ...
-    }
-
-    @PlanningVariable
-    private LocalDate startDate;
-
-    private int durationInDays;
-
-    @ShadowVariable(supplierName="endDateSupplier")
-    private LocalDate endDate;
-
-    @ShadowSources("startDate")
-    public LocalDate endDateSupplier() {
-        if (startDate == null) {
-            return null;
-        } else {
-            return startDate.plusDays(durationInDays);
-        }
-    }
-}
-----
-====
-
-Finally, let's create a unit test that will validate the defined shadow variable `endDate`.
-The utility method `SolutionManager::updateShadowVariables` reads the entity and updates its shadow variables.
-Notably, the method `updateShadowVariables` simplifies the logic and does not require proper solver configuration to update the shadow variables.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @Test
-    void updateShadowVariables() {
-        var job = new Job(LocalDate.now(), 10);
-        SolutionManager.updateShadowVariables(Schedule.class, job);
-        assertThat(job.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
-    }
-----
-
-
-====
-
-It is also possible to pass a solution instance rather than the solution class along with the related planning entities.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @Test
-    void updateShadowVariables() {
-        var solution = new Schedule();
-        var job = new Job(LocalDate.now(), 10);
-        solution.setJobs(List.of(job));
-        SolutionManager.updateShadowVariables(solution);
-        assertThat(job.getEndDate()).isEqualTo(LocalDate.now().plusDays(10));
-    }
-----
-====
-
-[WARNING]
-====
-Models using xref:#customVariableListener[custom variable listeners] are not compatible with `SolutionManager::updateShadowVariables(Class, Object...)`,
-leading to failure if attempted.
-However, this limitation does not apply when the solution is passed instead.
-====
-
-In the following example, a model that uses a planning list variable is employed to demonstrate the test feature.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-public class VehicleRoutePlan {
-
-     @PlanningEntityCollectionProperty
-     private List<Vehicle> vehicles;
-     ...
-}
-----
-
-
-====
-
-The planning entity:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Vehicle {
-
-    @PlanningListVariable
-    List<Customer> customers;
-    ...
-}
-----
-====
-
-On the element side:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningEntity
-public class Customer {
-
-    @PreviousElementShadowVariable(sourceVariableName = "customers")
-    Customer previousCustomer;
-
-    @NextElementShadowVariable(sourceVariableName = "customers")
-    Customer nextCustomer;
-
-    ...
-}
-----
-
-
-====
-
-The test is defined as follows:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    void updateShadowVariables() {
-        var vehicle = new Vehicle();
-        var customer1 = new Customer();
-        var customer2 = new Customer();
-        vehicle.setCustomers(List.of(customer1, customer2));
-
-        SolutionManager.updateShadowVariables(VehicleRoutePlan.class, vehicle, customer1, customer2);
-        assertThat(customer1.previousCustomer).isNull();
-        assertThat(customer1.nextCustomer).isSameAs(customer2);
-        assertThat(customer2.previousCustomer).isSameAs(customer1);
-        assertThat(customer2.nextCustomer).isNull();
-    }
-----
-====
-
-[NOTE]
-====
-In the example above, only two types of shadow variables are used, but it is not limited to these variable types.
-The method `SolutionManager::updateShadowVariables` is also capable of automatically updating the xref:#listVariableShadowVariablesInverseRelation[inverse relationship],
-xref:#listVariableShadowVariablesIndex[index position],
-and xref:#tailChainVariable[tail chains].
-====
-
 [#planningModelSolutionInheritance]
 == Inheritance for Planning Solutions
 
@@ -3150,12 +3293,12 @@ public class ExtendedSolution extends ChildSolution {
 Similar to xref:planningModelSolutionInheritance[planning solutions],
 there are also restrictions on the use of inheritance and modeling planning entities:
 
- . If both the child and parent entities are annotated, the solver must identify and accept all defined variables from each class, ensuring the solving process fills in these planning variables.
- . If a child class is not annotated yet inherits from an entity class or implements an entity interface, it should be considered an entity, and the previous statement continues to apply to it.
- . If a class declares any variable (genuine or shadow), it must be annotated as an entity, even if a supertype already has the annotation.
- . A child entity must not redefine any existing planning variable, but it can add new variables (genuine or shadow).
- . Inheriting properties from more than one parent entity, also known as multiple inheritance, is not allowed. Therefore, only one parent entity or one level of inheritance is allowed.
- . Mixing inheritance models with classes and interfaces is prohibited. Therefore, inheriting exclusively from classes or only from interfaces is acceptable.
+. If both the child and parent entities are annotated, the solver must identify and accept all defined variables from each class, ensuring the solving process fills in these planning variables.
+. If a child class is not annotated yet inherits from an entity class or implements an entity interface, it should be considered an entity, and the previous statement continues to apply to it.
+. If a class declares any variable (genuine or shadow), it must be annotated as an entity, even if a supertype already has the annotation.
+. A child entity must not redefine any existing planning variable, but it can add new variables (genuine or shadow).
+. Inheriting properties from more than one parent entity, also known as multiple inheritance, is not allowed. Therefore, only one parent entity or one level of inheritance is allowed.
+. Mixing inheritance models with classes and interfaces is prohibited. Therefore, inheriting exclusively from classes or only from interfaces is acceptable.
 
 === Defining multiple planning variables
 
