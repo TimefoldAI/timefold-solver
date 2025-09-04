@@ -32,8 +32,10 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataMultiVarEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataMultiVarEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -298,19 +300,21 @@ class SwapMoveSelectorTest {
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
         var v4 = new TestdataValue("4");
-        var e1 = new TestdataEntityProvidingEntity("A", List.of(v1, v4));
-        var e2 = new TestdataEntityProvidingEntity("B", List.of(v2, v3));
-        var e3 = new TestdataEntityProvidingEntity("C", List.of(v1, v3, v4));
-        var solution = new TestdataEntityProvidingSolution("s1");
+        var e1 = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v1, v3, v4));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
         solution.setEntityList(List.of(e1, e2, e3));
 
-        var scoreDirector = mockScoreDirector(TestdataEntityProvidingSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        var leftEntitySelector = mockEntitySelector(TestdataEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
+        var leftEntitySelector =
+                mockEntitySelector(TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
         var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
 
-        var entitySelector = mockEntitySelector(TestdataEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
+        var entitySelector =
+                mockEntitySelector(TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
                 new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
@@ -320,9 +324,9 @@ class SwapMoveSelectorTest {
 
         var solverScope = solvingStarted(moveSelector, scoreDirector);
         phaseStarted(moveSelector, solverScope);
+        scoreDirector.setWorkingSolution(solution);
 
         // We assume that any entity is reachable if its assigned values are null or if it can be reached by the inverse entities
-        scoreDirector.setWorkingSolution(solution);
         assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
 
         // e1(v1) can swap with e3(v4)
@@ -345,13 +349,13 @@ class SwapMoveSelectorTest {
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
         var v4 = new TestdataValue("4");
-        var e1 = new TestdataEntityProvidingEntity("A", List.of(v1, v4));
-        var e2 = new TestdataEntityProvidingEntity("B", List.of(v2, v3));
-        var e3 = new TestdataEntityProvidingEntity("C", List.of(v1, v4));
-        var solution = new TestdataEntityProvidingSolution("s1");
+        var e1 = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v1, v4));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
         solution.setEntityList(List.of(e1, e2, e3));
 
-        var scoreDirector = mockScoreDirector(TestdataEntityProvidingSolution.buildSolutionDescriptor());
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
         var leftEntitySelector =
@@ -386,30 +390,33 @@ class SwapMoveSelectorTest {
         e3.setValue(v4);
         // select left A, select right C
         // select left A, select right C
-        random.reset(0, 2, 0, 2);
+        random.reset(0, 1, 0, 1);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
     }
 
     @Test
     void multiVarOriginalLeftUnequalsRightWithEntityValueRange() {
-        var solution = new TestdataMultiVarEntityProvidingSolution();
+        var solution = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution();
         var v1 = new TestdataValue("1");
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
         var v4 = new TestdataValue("4");
-        var e1 = new TestdataMultiVarEntityProvidingEntity("A", List.of(v1, v4), List.of(v1, v4));
-        var e2 = new TestdataMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
-        var e3 = new TestdataMultiVarEntityProvidingEntity("C", List.of(v1, v3, v4), List.of(v1, v3, v4));
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("A", List.of(v1, v4), List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("C", List.of(v1, v3, v4), List.of(v1, v3, v4));
         solution.setEntityList(List.of(e1, e2, e3));
 
-        var scoreDirector = mockScoreDirector(TestdataMultiVarEntityProvidingSolution.buildSolutionDescriptor());
+        var scoreDirector =
+                mockScoreDirector(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
-        var leftEntitySelector = mockEntitySelector(TestdataMultiVarEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
+        var leftEntitySelector =
+                mockEntitySelector(TestdataAllowsUnassignedMultiVarEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
         var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
 
-        var entitySelector = mockEntitySelector(TestdataMultiVarEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
+        var entitySelector =
+                mockEntitySelector(TestdataAllowsUnassignedMultiVarEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
                 new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
@@ -459,17 +466,18 @@ class SwapMoveSelectorTest {
 
     @Test
     void multiVarRandomSelectionWithEntityValueRange() {
-        var solution = new TestdataMultiVarEntityProvidingSolution();
+        var solution = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution();
         var v1 = new TestdataValue("1");
         var v2 = new TestdataValue("2");
         var v3 = new TestdataValue("3");
         var v4 = new TestdataValue("4");
-        var e1 = new TestdataMultiVarEntityProvidingEntity("A", List.of(v1, v4), List.of(v1, v4));
-        var e2 = new TestdataMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
-        var e3 = new TestdataMultiVarEntityProvidingEntity("C", List.of(v1, v4), List.of(v1, v3, v4));
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("A", List.of(v1, v4), List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("C", List.of(v1, v4), List.of(v1, v3, v4));
         solution.setEntityList(List.of(e1, e2, e3));
 
-        var scoreDirector = mockScoreDirector(TestdataMultiVarEntityProvidingSolution.buildSolutionDescriptor());
+        var scoreDirector =
+                mockScoreDirector(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.buildSolutionDescriptor());
         scoreDirector.setWorkingSolution(solution);
 
         var leftEntitySelector =

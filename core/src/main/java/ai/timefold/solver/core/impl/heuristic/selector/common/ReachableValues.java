@@ -2,12 +2,13 @@ package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashSet;
+import java.util.IdentityHashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
+import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 
 import org.jspecify.annotations.NullMarked;
@@ -28,11 +29,10 @@ public final class ReachableValues {
     private @Nullable ReachableItemValue firstCachedObject;
     private @Nullable ReachableItemValue secondCachedObject;
 
-    public ReachableValues(Map<Object, ReachableItemValue> values, boolean acceptsNullValue) {
+    public ReachableValues(Map<Object, ReachableItemValue> values, Class<?> valueClass, boolean acceptsNullValue) {
         this.values = values;
+        this.valueClass = valueClass;
         this.acceptsNullValue = acceptsNullValue;
-        var firstValue = values.entrySet().stream().findFirst();
-        this.valueClass = firstValue.<Class<?>> map(entry -> entry.getKey().getClass()).orElse(null);
     }
 
     private @Nullable ReachableItemValue fetchItemValue(Object value) {
@@ -74,15 +74,18 @@ public final class ReachableValues {
         return values.size();
     }
 
-    public boolean isEntityReachable(Object origin, @Nullable Object entity) {
+    public boolean isEntityReachable(@Nullable Object origin, @Nullable Object entity) {
         if (entity == null) {
             return true;
         }
-        var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
+        if (origin == null) {
+            return acceptsNullValue;
+        }
+        var originItemValue = fetchItemValue(origin);
         if (originItemValue == null) {
             return false;
         }
-        return originItemValue.entitySet.contains(entity);
+        return originItemValue.entitySet.containsKey(entity);
     }
 
     public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
@@ -93,7 +96,7 @@ public final class ReachableValues {
         if (otherValue == null) {
             return acceptsNullValue;
         }
-        return originItemValue.valueSet.contains(Objects.requireNonNull(otherValue));
+        return originItemValue.valueSet.containsKey(Objects.requireNonNull(otherValue));
     }
 
     public boolean matchesValueClass(Object value) {
@@ -103,27 +106,28 @@ public final class ReachableValues {
     @NullMarked
     public static final class ReachableItemValue {
         private final Object value;
-        private final Set<Object> entitySet;
-        private final Set<Object> valueSet;
+        private final Map<Object, Object> entitySet;
+        private final Map<Object, Object> valueSet;
         private final List<Object> randomAccessEntityList;
         private final List<Object> randomAccessValueList;
 
         public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
             this.value = value;
-            this.entitySet = new LinkedHashSet<>(entityListSize);
+            this.entitySet = new IdentityHashMap<>(entityListSize);
             this.randomAccessEntityList = new ArrayList<>(entityListSize);
-            this.valueSet = new LinkedHashSet<>(valueListSize);
+            this.valueSet = ConfigUtils.isGenericTypeImmutable(value.getClass()) ? new LinkedHashMap<>(valueListSize)
+                    : new IdentityHashMap<>(valueListSize);
             this.randomAccessValueList = new ArrayList<>(valueListSize);
         }
 
         public void addEntity(Object entity) {
-            if (entitySet.add(entity)) {
+            if (entitySet.put(entity, entity) == null) {
                 randomAccessEntityList.add(entity);
             }
         }
 
         public void addValue(Object value) {
-            if (valueSet.add(value)) {
+            if (valueSet.put(value, value) == null) {
                 randomAccessValueList.add(value);
             }
         }

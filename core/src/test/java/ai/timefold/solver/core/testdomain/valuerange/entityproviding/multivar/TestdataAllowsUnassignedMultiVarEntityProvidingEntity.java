@@ -10,34 +10,35 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 @PlanningEntity
-public class TestdataMultiVarEntityProvidingEntity extends TestdataObject {
+public class TestdataAllowsUnassignedMultiVarEntityProvidingEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataMultiVarEntityProvidingSolution> buildEntityDescriptor() {
-        return TestdataMultiVarEntityProvidingSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataMultiVarEntityProvidingEntity.class);
+    public static EntityDescriptor<TestdataAllowsUnassignedMultiVarEntityProvidingSolution> buildEntityDescriptor() {
+        return TestdataAllowsUnassignedMultiVarEntityProvidingSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataAllowsUnassignedMultiVarEntityProvidingEntity.class);
     }
 
     @ValueRangeProvider(id = "valueRange")
     private List<TestdataValue> valueRange;
-    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", allowsUnassigned = true)
     private TestdataValue value;
     @ValueRangeProvider(id = "secondValueRange")
     private List<TestdataValue> secondValueRange;
-    @PlanningVariable(valueRangeProviderRefs = "secondValueRange")
+    @PlanningVariable(valueRangeProviderRefs = "secondValueRange", allowsUnassigned = true)
     private TestdataValue secondValue;
-    @PlanningVariable(valueRangeProviderRefs = "solutionValueRange")
+    @PlanningVariable(valueRangeProviderRefs = "solutionValueRange", allowsUnassigned = true)
     private TestdataValue solutionValue;
 
-    public TestdataMultiVarEntityProvidingEntity() {
+    public TestdataAllowsUnassignedMultiVarEntityProvidingEntity() {
         // Required for cloning
     }
 
-    public TestdataMultiVarEntityProvidingEntity(String code, List<TestdataValue> valueRange,
+    public TestdataAllowsUnassignedMultiVarEntityProvidingEntity(String code, List<TestdataValue> valueRange,
             List<TestdataValue> secondValueRange) {
         this(code, valueRange, null, secondValueRange, null, null);
     }
 
-    public TestdataMultiVarEntityProvidingEntity(String code, List<TestdataValue> valueRange, TestdataValue value,
+    public TestdataAllowsUnassignedMultiVarEntityProvidingEntity(String code, List<TestdataValue> valueRange,
+            TestdataValue value,
             List<TestdataValue> secondValueRange, TestdataValue secondValue, TestdataValue solutionValue) {
         super(code);
         this.valueRange = valueRange;
