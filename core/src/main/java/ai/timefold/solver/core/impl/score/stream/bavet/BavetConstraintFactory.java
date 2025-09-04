@@ -13,7 +13,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
@@ -75,7 +75,8 @@ public final class BavetConstraintFactory<Solution_>
      * If a constraint already exists in this factory, it replaces it with the old copy.
      * {@link BavetAbstractConstraintStream} implement equals/hashcode ignoring child streams.
      * <p>
-     * {@link BavetConstraintSessionFactory#buildSession(Object, SupplyManager, ConstraintMatchPolicy, boolean, Consumer)} needs
+     * {@link BavetConstraintSessionFactory#buildSession(Object, ConsistencyTracker, ConstraintMatchPolicy, boolean, Consumer)}
+     * needs
      * this to happen
      * for all streams.
      * <p>

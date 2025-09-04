@@ -122,7 +122,6 @@ final class AffectedEntitiesUpdater<Solution_>
         var entity = entityVariable.entity();
         var shadowVariableReferences = entityVariable.variableReferences();
         var entityConsistencyState = shadowVariableReferences.get(0).entityConsistencyState();
-        var variableDescriptor = shadowVariableReferences.get(0).variableDescriptor();
         var anyChanged = false;
 
         // Do not need to update anyChanged here; the graph already marked
