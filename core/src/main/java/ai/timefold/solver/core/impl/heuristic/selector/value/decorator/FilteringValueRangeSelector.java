@@ -378,7 +378,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         @Override
         public boolean hasNext() {
             checkUpcomingValue();
-            return reachableValues != null && !reachableValueList.isEmpty();
+            return reachableValueList != null && !reachableValueList.isEmpty();
         }
 
         @Override

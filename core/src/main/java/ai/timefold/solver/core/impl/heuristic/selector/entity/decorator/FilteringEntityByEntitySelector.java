@@ -109,12 +109,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         this.allEntities = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution());
         this.basicVariableDescriptors = basicVariableList.toArray(new BasicVariableDescriptor[0]);
         this.valueRangeManager = phaseScope.getScoreDirector().getValueRangeManager();
-        // If there is only one basic variable, we load the reachable values structure,
-        // as this process may take some time,
-        // and it will be used by SingleVariableRandomFilteringValueRangeIterator
-        if (basicVariableList.size() == 1) {
-            valueRangeManager.getReachableValues(basicVariableDescriptors[0]);
-        }
         this.childEntitySelector.phaseStarted(phaseScope);
     }
 
@@ -183,10 +177,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            if (!childEntitySelector.isNeverEnding()) {
-                throw new IllegalArgumentException(
-                        "Impossible state: childEntitySelector must provide a never-ending approach.");
-            }
             if (basicVariableDescriptors.length == 1) {
                 return new SingleVariableRandomFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities,
                         basicVariableDescriptors[0], valueRangeManager.getReachableValues(basicVariableDescriptors[0]),
