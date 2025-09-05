@@ -1,0 +1,60 @@
+:root {
+    /* Keep in sync with .navbar height on a large screen. */
+    --ts-navbar-height: 109px;
+
+    --ts-violet-1-rgb: #3E00FF;
+    --ts-violet-2-rgb: #3423A6;
+    --ts-violet-3-rgb: #2E1760;
+    --ts-violet-4-rgb: #200F4F;
+    --ts-violet-5-rgb: #000000; /* TODO FIXME */
+    --ts-violet-dark-1-rgb: #b6adfd;
+    --ts-violet-dark-2-rgb: #c1bbfd;
+    --ts-gray-rgb: #666666;
+    --ts-white-rgb: #FFFFFF;
+    --ts-light-rgb: #F2F2F2;
+    --ts-gray-border: #c5c5c5;
+
+    --tf-light-rgb-transparent: rgb(242,242,242,0.5); /* #F2F2F2 = rgb(242,242,242) */
+    --bs-body-bg: var(--ts-light-rgb); /* link to html bg */
+    --bs-link-color: var(--ts-violet-1-rgb);
+    --bs-link-hover-color: var(--ts-violet-2-rgb);
+
+    --bs-navbar-color: var(--ts-white-rgb);
+    --bs-navbar-hover-color: var(--ts-white-rgb);
+    --bs-nav-link-font-size: 18px;
+    --bs-nav-link-font-weight: 400;
+    --bs-nav-link-color: var(--ts-white-rgb);
+    --ts-nav-link-hover-border-color: var(--ts-violet-1-rgb);
+}
+.btn {
+    --bs-btn-border-radius: 1.5rem;
+}
+.btn-primary {
+    --bs-btn-bg: var(--ts-violet-1-rgb);
+    --bs-btn-border-color: var(--ts-violet-1-rgb);
+    --bs-btn-hover-bg: var(--ts-violet-2-rgb);
+    --bs-btn-hover-border-color: var(--ts-violet-2-rgb);
+    --bs-btn-active-bg: var(--ts-violet-2-rgb);
+    --bs-btn-active-border-bg: var(--ts-violet-2-rgb);
+    --bs-btn-disabled-bg: var(--ts-violet-1-rgb);
+    --bs-btn-disabled-border-color: var(--ts-violet-1-rgb);
+}
+.btn-outline-primary {
+    --bs-btn-color: var(--ts-violet-1-rgb);
+    --bs-btn-border-color: var(--ts-violet-1-rgb);
+    --bs-btn-hover-bg: var(--ts-violet-1-rgb);
+    --bs-btn-hover-border-color: var(--ts-violet-1-rgb);
+    --bs-btn-active-bg: var(--ts-violet-1-rgb);
+    --bs-btn-active-border-color: var(--ts-violet-1-rgb);
+    --bs-btn-disabled-color: var(--ts-violet-1-rgb);
+    --bs-btn-disabled-border-color: var(--ts-violet-1-rgb);
+}
+.navbar-dark {
+    --bs-link-color: var(--ts-violet-dark-1-rgb);
+    --bs-link-hover-color: var(--ts-violet-dark-2-rgb);
+    --bs-navbar-color: var(--ts-white-rgb);
+    --bs-navbar-hover-color: var(--ts-white-rgb);
+}
+.nav-pills {
+    --bs-nav-pills-link-active-bg: var(--ts-violet-1-rgb);
+}

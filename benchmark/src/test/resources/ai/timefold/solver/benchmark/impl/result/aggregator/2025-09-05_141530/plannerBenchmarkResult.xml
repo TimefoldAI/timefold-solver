@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="UTF-8"?><plannerBenchmarkResult>
+  <name>2025-09-05_141530</name>
+  <aggregation>false</aggregation>
+  <availableProcessors>8</availableProcessors>
+  <loggingLevelTimefoldSolverCore>INFO</loggingLevelTimefoldSolverCore>
+  <maxMemory>2147483648</maxMemory>
+  <timefoldSolverVersion>Community Edition v999-SNAPSHOT</timefoldSolverVersion>
+  <javaVersion>Java 21.0.5 (Oracle Corporation)</javaVersion>
+  <javaVM>Java Java HotSpot(TM) 64-Bit Server VM 21.0.5+9-LTS-jvmci-23.1-b48 (Oracle Corporation)</javaVM>
+  <operatingSystem>Mac OS X aarch64 15.5</operatingSystem>
+  <parallelBenchmarkCount>1</parallelBenchmarkCount>
+  <warmUpTimeMillisSpentLimit>0</warmUpTimeMillisSpentLimit>
+  <solverBenchmarkResult>
+    <name>Config_0</name>
+    <subSingleCount>1</subSingleCount>
+    <solverConfig>
+      <monitoring>
+        <metric>BEST_SCORE</metric>
+      </monitoring>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
+      <scoreDirectorFactory>
+        <constraintProviderClass>ai.timefold.solver.core.testdomain.TestdataConstraintProvider</constraintProviderClass>
+      </scoreDirectorFactory>
+      <termination>
+        <secondsSpentLimit>0</secondsSpentLimit>
+      </termination>
+      <constructionHeuristic>
+        <constructionHeuristicType>FIRST_FIT</constructionHeuristicType>
+      </constructionHeuristic>
+    </solverConfig>
+    <singleBenchmarkResult id="171">
+      <subSingleBenchmarkResult>
+        <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
+        <usedMemoryAfterInputSolution>20249104</usedMemoryAfterInputSolution>
+        <succeeded>true</succeeded>
+        <score class="ai.timefold.solver.core.api.score.buildin.simple.SimpleScore">0</score>
+        <initialized>false</initialized>
+        <timeMillisSpent>0</timeMillisSpent>
+        <scoreCalculationCount>1</scoreCalculationCount>
+        <moveEvaluationCount>0</moveEvaluationCount>
+      </subSingleBenchmarkResult>
+      <allScoresInitialized>false</allScoresInitialized>
+      <timeMillisSpent>-1</timeMillisSpent>
+      <scoreCalculationCount>-1</scoreCalculationCount>
+      <moveEvaluationCount>-1</moveEvaluationCount>
+    </singleBenchmarkResult>
+  </solverBenchmarkResult>
+  <solverBenchmarkResult>
+    <name>Config_1</name>
+    <subSingleCount>1</subSingleCount>
+    <solverConfig>
+      <monitoring>
+        <metric>BEST_SCORE</metric>
+      </monitoring>
+      <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+      <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
+      <scoreDirectorFactory>
+        <constraintProviderClass>ai.timefold.solver.core.testdomain.TestdataConstraintProvider</constraintProviderClass>
+      </scoreDirectorFactory>
+      <termination>
+        <secondsSpentLimit>0</secondsSpentLimit>
+      </termination>
+      <constructionHeuristic>
+        <constructionHeuristicType>CHEAPEST_INSERTION</constructionHeuristicType>
+      </constructionHeuristic>
+    </solverConfig>
+    <singleBenchmarkResult id="172">
+      <subSingleBenchmarkResult>
+        <subSingleBenchmarkIndex>0</subSingleBenchmarkIndex>
+        <usedMemoryAfterInputSolution>19915784</usedMemoryAfterInputSolution>
+        <succeeded>true</succeeded>
+        <score class="ai.timefold.solver.core.api.score.buildin.simple.SimpleScore">0</score>
+        <initialized>false</initialized>
+        <timeMillisSpent>1</timeMillisSpent>
+        <scoreCalculationCount>1</scoreCalculationCount>
+        <moveEvaluationCount>0</moveEvaluationCount>
+      </subSingleBenchmarkResult>
+      <allScoresInitialized>false</allScoresInitialized>
+      <timeMillisSpent>-1</timeMillisSpent>
+      <scoreCalculationCount>-1</scoreCalculationCount>
+      <moveEvaluationCount>-1</moveEvaluationCount>
+    </singleBenchmarkResult>
+  </solverBenchmarkResult>
+  <unifiedProblemBenchmarkResult>
+    <name>input</name>
+    <fileProblemProvider>
+      <problemFile>target/test/benchmarkTest/input.xml</problemFile>
+    </fileProblemProvider>
+    <writeOutputSolutionEnabled>false</writeOutputSolutionEnabled>
+    <bestScoreProblemStatistic>
+      <problemStatisticType>BEST_SCORE</problemStatisticType>
+    </bestScoreProblemStatistic>
+    <singleBenchmarkResult>171</singleBenchmarkResult>
+    <singleBenchmarkResult>172</singleBenchmarkResult>
+    <entityCount>3</entityCount>
+    <variableCount>3</variableCount>
+    <maximumValueCount>2</maximumValueCount>
+    <problemScale>903090</problemScale>
+    <inputSolutionLoadingTimeMillisSpent>0</inputSolutionLoadingTimeMillisSpent>
+  </unifiedProblemBenchmarkResult>
+  <startingTimestamp>2025-09-05T14:15:30.171636+03:00</startingTimestamp>
+  <benchmarkTimeMillisSpent>49</benchmarkTimeMillisSpent>
+</plannerBenchmarkResult>
