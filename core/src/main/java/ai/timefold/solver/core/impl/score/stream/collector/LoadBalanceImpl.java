@@ -73,13 +73,13 @@ public final class LoadBalanceImpl<Balanced_> implements LoadBalance<Balanced_> 
 
         var newSum = sum - oldValue + newValue;
 
-        // (s' - s)
+        // (s - s')
         var secondTermSecondFactor = sum - newSum;
 
         // (s'^2 - s^2)
         var thirdTerm = newSum * newSum - sum * sum;
 
-        // 2 * (x_0u - x_0'u')
+        // 2 * (x_0s - x_0's')
         var fourthTerm = 2 * (oldValue * sum - newValue * newSum);
         var squaredDeviationSecondTermNumerator = secondTermFirstFactor * secondTermSecondFactor + thirdTerm + fourthTerm;
 
