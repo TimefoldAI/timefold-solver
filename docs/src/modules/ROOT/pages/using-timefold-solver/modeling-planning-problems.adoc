@@ -91,7 +91,7 @@ Lesson --> Room : room
 For this planning problem:
 
 - `Timeslot` and `Room` are *problem facts*.
-- `Lesson` is the *planning entity*, which has 2 *planning variables*: `Timeslot` and `Room`.
+- `Lesson` is the *planning entity*, which has 2 *planning variables*: `timeslot` and `room`.
 - `Timetable` is the *planning solution*. It contains all the `Lesson` *planning entity* instances, and all possible *planning values*, which are instances of `Room` and `Timeslot` which can be assigned to the *planning variables* in `Lesson`.
 ====
 
