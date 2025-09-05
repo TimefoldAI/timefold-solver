@@ -17,7 +17,7 @@ Explore our documentation and available models https://docs.timefold.ai/[here].
 [#isThisClassAProblemFactOrPlanningEntity]
 == Introduction
 
-Timefold Solver gives you access to a range of building blocks to model the domain of you planning problem.
+Timefold Solver gives you access to a range of building blocks to model the domain of your planning problem.
 This page describes those building blocks in more detail.
 
 If instead you are looking for guidance on how to create a good domain model, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
@@ -263,7 +263,7 @@ A `@PlanningId` property must be:
 [#planningEntityAnnotation]
 === Planning entity definition
 
-A planning entity is a JavaBean (POJO) who's properties changes during solving, for example a `Lesson` which has a `Timeslot` property.
+A planning entity is a JavaBean (POJO) whose properties change during solving, for example a `Lesson` which has a `Timeslot` property.
 
 A planning problem usually only has one planning entity class, for example the `Lesson` class.
 A planning entity class needs to be annotated with the `@PlanningEntity` annotation.
@@ -1209,8 +1209,8 @@ you can use the following built-in annotations to derive shadow variables from t
 
 - xref:listVariableShadowVariablesInverseRelation[@InverseRelationShadowVariable]: Used to get the planning entity containing the planning variable list to which a planning value is assigned;
 - xref:listVariableShadowVariablesIndex[@IndexShadowVariable]: Used to get the index of a planning value's position it's assigned planning variable list;
-- xref:listVariableShadowVariablesPreviousAndNext[@PreviousElementShadowVariable]: Used to get a planning value's predecessor in it's assigned planning variable list;
-- xref:listVariableShadowVariablesPreviousAndNext[@NextElementShadowVariable]: Used to get a planning value's successor in it's assigned planning variable list;
+- xref:listVariableShadowVariablesPreviousAndNext[@PreviousElementShadowVariable]: Used to get a planning value's predecessor in its assigned planning variable list;
+- xref:listVariableShadowVariablesPreviousAndNext[@NextElementShadowVariable]: Used to get a planning value's successor in its assigned planning variable list;
 - xref:tailChainVariable[@CascadingUpdateShadowVariable]: Used to update a set of connected elements;
 
 If the built-in shadow variable annotations are insufficient, xref:declarativeShadowVariable[@ShadowVariable] can be used to create custom handlers.
@@ -1853,7 +1853,7 @@ Some key considerations:
 - _Explicit dependencies_: All planning variables used in the supplier logic must be explicitly listed in `@ShadowSources`.
 Undeclared dependencies will not trigger updates, leading to stale or incorrect shadow values.
 
-==== @ShadowSources paths
+==== `@ShadowSources` paths
 
 When using `@ShadowSources`, you must specify the paths to the variables that the supplier method depends on to compute its value.
 These paths must follow 1 of 3 syntactic forms:
@@ -2056,7 +2056,7 @@ The solver will fail-fast if it detects a source-induced or fact-induced loop.
 
 A declarative shadow variable is considered  _inconsistent_ if:
 
-- It directly or indirectly depends on itself.
+- It is part of a loop.
 For example, if variable `a` depends on `b` and `b` depends on `a`, both are in a loop.
 - It depends on another variable that is inconsistent.
 For example, if `c` depends on `a`, and `a` is in a loop with `b`, then `c` is also considered part of the loop.
