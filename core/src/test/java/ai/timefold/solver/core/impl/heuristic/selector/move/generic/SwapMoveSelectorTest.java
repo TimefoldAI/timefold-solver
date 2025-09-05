@@ -14,6 +14,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -317,7 +318,7 @@ class SwapMoveSelectorTest {
                 mockEntitySelector(TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
+                new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, Collections.emptyList(), false);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
@@ -364,7 +365,8 @@ class SwapMoveSelectorTest {
 
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, Collections.emptyList(),
+                        true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
@@ -419,7 +421,7 @@ class SwapMoveSelectorTest {
                 mockEntitySelector(TestdataAllowsUnassignedMultiVarEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
+                new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, Collections.emptyList(), false);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
@@ -486,7 +488,8 @@ class SwapMoveSelectorTest {
 
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, Collections.emptyList(),
+                        true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
@@ -554,7 +557,8 @@ class SwapMoveSelectorTest {
 
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, Collections.emptyList(),
+                        true);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
