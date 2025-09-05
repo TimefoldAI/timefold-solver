@@ -96,7 +96,7 @@ public @interface ShadowSources {
     String[] value();
 
     /**
-     * If non-empty, this is the property name of a problem fact on the entity that will be used
+     * If non-empty, this is name of a property on the entity that will be used
      * to define a group of entities to align values for.
      * <p>
      * When the alignment key is null, the entity is considered independent and their alignment will
@@ -109,9 +109,9 @@ public @interface ShadowSources {
      * be part of any alignment group and will not share variable calculations with other
      * entities.
      * <p>
-     * Important: the alignment key must not be a variable and must not change during solving.
+     * Important: the alignment key must not point to a planning variable and must not change during solving.
      *
-     * @return The property name of a problem fact on the entity to use for value alignment, or the empty string to not align
+     * @return The name of a property on the entity to use for value alignment, or the empty string to not align
      *         values with any other entity.
      */
     String alignmentKey() default "";
