@@ -559,7 +559,7 @@ public class BenchmarkAggregatorFrame extends JFrame {
 
         @Override
         protected File doInBackground() {
-            return benchmarkAggregator.aggregateFrameSelectedBenchmarks(singleBenchmarkResultList,
+            return benchmarkAggregator.aggregateSelectedBenchmarksInUi(singleBenchmarkResultList,
                     solverBenchmarkResultNameMapping);
         }
 

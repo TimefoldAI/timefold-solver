@@ -94,7 +94,7 @@ public class BenchmarkAggregator {
         return this.aggregate(allSingleBenchmarkResults, solverBenchmarkResultNameMap);
     }
 
-    public File aggregateFrameSelectedBenchmarks(List<SingleBenchmarkResult> selectedSingleBenchmarkResults,
+    public File aggregateSelectedBenchmarksInUi(List<SingleBenchmarkResult> selectedSingleBenchmarkResults,
             Map<SolverBenchmarkResult, String> solverBenchmarkResultNameMap) {
         return this.aggregate(selectedSingleBenchmarkResults, solverBenchmarkResultNameMap);
     }
