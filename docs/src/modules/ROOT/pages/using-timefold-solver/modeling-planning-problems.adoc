@@ -128,7 +128,7 @@ For example, in vehicle routing with time windows,
 the arrival time at a customer for a vehicle can be calculated based on the previously visited customers of that vehicle
 (and the known travel times between two locations).
 
-image::using-timefold-solver/modeling-planning-problems/planningVariableListener.png[align="center"]
+image::using-timefold-solver/modeling-planning-problems/shadowVariableExample.svg[align="center"]
 
 When the customers for a vehicle change, the arrival time for each customer is automatically adjusted.
 For more information, see the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
