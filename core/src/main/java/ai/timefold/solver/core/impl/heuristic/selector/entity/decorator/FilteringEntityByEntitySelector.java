@@ -58,7 +58,7 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * the right node can filter out all non-reachable entities and generate a valid move.
  * A move is considered valid only if both entities accept each other's values.
  * The filtering process of invalid entities allows the solver to explore the solution space more efficiently.
- * 
+ *
  * @see SwapMoveSelectorFactory
  * @see EntitySelectorFactory
  * @param <Solution_> the solution type
@@ -434,7 +434,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     /**
      * When there is only one basic single variable, the list of available entities can be optimized,
      * and the iterator will iterate only over the reachable entities of a given entity's assigned value.
-     * 
+     *
      * @param <Solution_> the solution type
      */
     private static class SingleVariableRandomFilteringValueRangeIterator<Solution_>
@@ -442,7 +442,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         private final BasicVariableDescriptor<Solution_> basicVariableDescriptor;
         private final List<Object> allEntities;
-        private final ReachableValues<Solution_> reachableValues;
+        private final ReachableValues reachableValues;
         private final Random workingRandom;
         private int maxBailoutSize;
         private Object currentReplayedEntity = null;

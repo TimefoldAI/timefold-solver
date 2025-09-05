@@ -35,6 +35,8 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Caches value ranges for the current working solution,
@@ -59,9 +61,11 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ValueRangeManager<Solution_> {
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
+
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final CountableValueRange<?>[] fromSolution;
-    private final ReachableValues<Solution_>[] reachableValues;
+    private final ReachableValues[] reachableValues;
     private final Map<Object, CountableValueRange<?>[]> fromEntityMap =
             new IdentityHashMap<>();
 
@@ -422,15 +426,16 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
-    public ReachableValues<Solution_> getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
+    public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
         var values = reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
         if (values == null) {
             if (cachedWorkingSolution == null) {
                 throw new IllegalStateException(
                         "Impossible state: value reachability requested before the working solution is known.");
             }
+            logger.warn("Creating reachable values structure for {}", variableDescriptor);
             var entityDescriptor = variableDescriptor.getEntityDescriptor();
-            var allEntities = entityDescriptor.extractEntities(cachedWorkingSolution);
+            var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
             var allValues = getFromSolution(variableDescriptor.getValueRangeDescriptor());
             var valuesSize = allValues.getSize();
             if (valuesSize > Integer.MAX_VALUE) {
@@ -453,11 +458,43 @@ public final class ValueRangeManager<Solution_> {
             Map<Object, ReachableItemValue> reachableValuesMap = ConfigUtils.isGenericTypeImmutable(valueClass)
                     ? new HashMap<>((int) valuesSize)
                     : new IdentityHashMap<>((int) valuesSize);
-            values = new ReachableValues<>(variableDescriptor, reachableValuesMap, valueClass, (int) valuesSize, allEntities,
-                    this, variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
+            for (var entity : entityList) {
+                var range = getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
+                for (var i = 0; i < range.getSize(); i++) {
+                    var value = range.get(i);
+                    if (value == null) {
+                        continue;
+                    }
+                    var item = initReachableMap(reachableValuesMap, value, entityList.size(), (int) valuesSize);
+                    item.addEntity(entity);
+                    for (int j = i + 1; j < range.getSize(); j++) {
+                        var otherValue = range.get(j);
+                        if (otherValue == null) {
+                            continue;
+                        }
+                        item.addValue(otherValue);
+                        var otherValueItem =
+                                initReachableMap(reachableValuesMap, otherValue, entityList.size(), (int) valuesSize);
+                        otherValueItem.addValue(value);
+                    }
+                }
+            }
+            values = new ReachableValues(reachableValuesMap, valueClass,
+                    variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
+            logger.warn("Finished creating reachable values structure for {}", variableDescriptor);
         }
         return values;
+    }
+
+    private static ReachableItemValue initReachableMap(Map<Object, ReachableItemValue> reachableValuesMap, Object value,
+            int entityListSize, int valueListSize) {
+        var item = reachableValuesMap.get(value);
+        if (item == null) {
+            item = new ReachableItemValue(value, entityListSize, valueListSize);
+            reachableValuesMap.put(value, item);
+        }
+        return item;
     }
 
     public void reset(@Nullable Solution_ workingSolution) {

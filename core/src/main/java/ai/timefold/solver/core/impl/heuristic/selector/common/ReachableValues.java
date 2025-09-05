@@ -10,8 +10,6 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
-import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -23,27 +21,17 @@ import org.jspecify.annotations.Nullable;
  * @see FromEntityPropertyValueRangeDescriptor
  */
 @NullMarked
-public final class ReachableValues<Solution_> {
+public final class ReachableValues {
 
-    private final GenuineVariableDescriptor<Solution_> variableDescriptor;
     private final Map<Object, ReachableItemValue> values;
     private final @Nullable Class<?> valueClass;
-    private final int valuesSize;
-    private final List<Object> allEntities;
-    private final ValueRangeManager<Solution_> valueRangeManager;
     private final boolean acceptsNullValue;
     private @Nullable ReachableItemValue firstCachedObject;
     private @Nullable ReachableItemValue secondCachedObject;
 
-    public ReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            Map<Object, ReachableItemValue> values, Class<?> valueClass, int valuesSize, List<Object> allEntities,
-            ValueRangeManager<Solution_> valueRangeManager, boolean acceptsNullValue) {
-        this.variableDescriptor = variableDescriptor;
+    public ReachableValues(Map<Object, ReachableItemValue> values, Class<?> valueClass, boolean acceptsNullValue) {
         this.values = values;
         this.valueClass = valueClass;
-        this.valuesSize = valuesSize;
-        this.allEntities = allEntities;
-        this.valueRangeManager = valueRangeManager;
         this.acceptsNullValue = acceptsNullValue;
     }
 
@@ -60,43 +48,10 @@ public final class ReachableValues<Solution_> {
         }
         if (selected == null) {
             selected = values.get(value);
-            if (selected == null) {
-                // We need to load the values
-                selected = loadReachableValue(value);
-            }
             secondCachedObject = firstCachedObject;
             firstCachedObject = selected;
         }
         return selected;
-    }
-
-    private ReachableItemValue loadReachableValue(Object value) {
-        var item = initReachableMap(values, value, allEntities.size(), valuesSize);
-        for (var entity : allEntities) {
-            var range = valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
-            if (!range.contains(value)) {
-                continue;
-            }
-            item.addEntity(entity);
-            for (var i = 0; i < range.getSize(); i++) {
-                var otherValue = range.get(i);
-                if (otherValue == null || Objects.equals(otherValue, value)) {
-                    continue;
-                }
-                item.addValue(otherValue);
-            }
-        }
-        return item;
-    }
-
-    private static ReachableItemValue initReachableMap(Map<Object, ReachableItemValue> reachableValuesMap, Object value,
-            int entityListSize, int valueListSize) {
-        var item = reachableValuesMap.get(value);
-        if (item == null) {
-            item = new ReachableItemValue(value, entityListSize, valueListSize);
-            reachableValuesMap.put(value, item);
-        }
-        return item;
     }
 
     public List<Object> extractEntitiesAsList(Object value) {
@@ -116,7 +71,7 @@ public final class ReachableValues<Solution_> {
     }
 
     public int getSize() {
-        return valuesSize;
+        return values.size();
     }
 
     public boolean isEntityReachable(@Nullable Object origin, @Nullable Object entity) {
