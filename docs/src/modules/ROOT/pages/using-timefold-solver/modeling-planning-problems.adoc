@@ -2111,7 +2111,7 @@ image::using-timefold-solver/modeling-planning-problems/alignmentShadowVariable.
 
 To be used, a few requirements must be met:
 
-* `alignmentKey` must reference a property that remains constant during solving. It may point to a problem fact or a regular property of the planning entity, but it cannot reference any planning variables.
+* `alignmentKey` must reference a property that remains constant during solving. It may point to a problem fact, planning entity or a regular property of the planning entity, but it cannot reference any planning variables.
 
 * For all entities with the same, non-null `alignmentKey` value, calling the supplier method must result in the same value regardless of what entity is called.
 
