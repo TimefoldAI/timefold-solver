@@ -307,7 +307,7 @@ and has planning variables for its timeslot and room.
 This means that `Lesson`'s subject, teacher and student group never changes during solving,
 while its timeslot and room do.
 
-Planning entities need to be declared either through the `@PlanningEntity` annotation on the Java class, or in the solver configuration XML.
+Planning entities need to be declared through the `@PlanningEntity` annotation on the class and in the solver configuration XML.
 
 [tabs]
 ====
@@ -323,9 +323,8 @@ public class Lesson {
 
 ----
 --
-XML::
-+
---
+====
+
 The solver configuration needs to declare each planning entity class:
 
 [source,xml,options="nowrap"]
@@ -338,7 +337,8 @@ xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solve
 </solver>
 ----
 --
-====
+
+NOTE: When Timefold Solver is xref:integration/integration.adoc#integration[integrated in Quarkus or Spring], the XML file is optional.
 
 Some uses cases have multiple planning entity classes.
 For example: route freight and trains into railway network arcs, where each freight can use multiple trains over its journey and each train can carry multiple freights per arc.
