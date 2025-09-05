@@ -36,10 +36,13 @@ A planning domain model typically consist of the following elements:
 * *xref:problemFact[Problem facts]* are classes that do not change during planning, but are used to validate constraints. Problem facts are often also used as *planning values*.
 * A *xref:planningProblemAndPlanningSolution[planning solution]* class contains all the planning entities and problem facts, and often also provides the planning values that the solver can use during planning. It also contains the status of the solving process and the score of the planning problem.
 
-.School Timetableing example
+.School Timetabling example
 ====
 In a school timetabling scenario, where _lessons_ need to be assigned _rooms_ and _timeslots_, we get this class diagram.
 
+image:using-timefold-solver/modeling-planning-problems/classDiagramSchoolTimetabling.svg[align="center"]
+////
+original plantuml, as we currently can't render plantuml in antora
 [plantuml, format=svg, theme=sketchy-outline]
 ----
 @startuml
@@ -84,7 +87,7 @@ Lesson --> Timeslot : timeslot
 Lesson --> Room : room
 @enduml
 ----
-
+////
 For this planning problem:
 
 - `Timeslot` and `Room` are *problem facts*.

@@ -76,9 +76,6 @@
                   <severity>WARN</severity>
                 </failIf>
               </logHandler>
-              <requires>
-                <require>asciidoctor-diagram</require>
-              </requires>
             </configuration>
           </execution>
           <execution>
@@ -103,9 +100,6 @@
                   <severity>WARN</severity>
                 </failIf>
               </logHandler>
-              <requires>
-                <require>asciidoctor-diagram</require>
-              </requires>
             </configuration>
           </execution>
         </executions>
