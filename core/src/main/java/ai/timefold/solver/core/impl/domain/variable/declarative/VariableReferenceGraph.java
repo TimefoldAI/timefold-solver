@@ -7,6 +7,8 @@ public sealed interface VariableReferenceGraph
 
     void updateChanged();
 
+    void setUnknownInconsistencyValues();
+
     void beforeVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity);
 
     void afterVariableChanged(VariableMetaModel<?, ?, ?> variableReference, Object entity);

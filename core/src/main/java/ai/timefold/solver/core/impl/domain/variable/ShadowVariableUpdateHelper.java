@@ -32,9 +32,7 @@ import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShado
 import ai.timefold.solver.core.impl.domain.variable.custom.CustomShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ChangedVariableNotifier;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
-import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
 import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraph;
-import ai.timefold.solver.core.impl.domain.variable.declarative.VariableReferenceGraphBuilder;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -116,8 +114,7 @@ public final class ShadowVariableUpdateHelper<Solution_> {
                             .formatted(missingShadowVariableTypeList));
         }
         // No solution, we trigger all supported events manually
-        var session = InternalShadowVariableSession.build(solutionDescriptor,
-                new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.empty()), entities);
+        var session = InternalShadowVariableSession.build(solutionDescriptor, entities);
         // Update all built-in shadow variables
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null) {
@@ -134,11 +131,12 @@ public final class ShadowVariableUpdateHelper<Solution_> {
             VariableReferenceGraph graph) {
 
         public static <Solution_> InternalShadowVariableSession<Solution_> build(
-                SolutionDescriptor<Solution_> solutionDescriptor, VariableReferenceGraphBuilder<Solution_> graph,
+                SolutionDescriptor<Solution_> solutionDescriptor,
                 Object... entities) {
             return new InternalShadowVariableSession<>(solutionDescriptor,
-                    DefaultShadowVariableSessionFactory.buildGraph(solutionDescriptor, graph, entities,
-                            DefaultTopologicalOrderGraph::new));
+                    DefaultShadowVariableSessionFactory.buildGraph(
+                            new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
+                                    ChangedVariableNotifier.empty(), entities)));
         }
 
         /**

@@ -39,6 +39,13 @@
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
+
+    <!-- Required since one of the testdata we use uses it -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <scope>test</scope>
+    </dependency>
     <!-- External dependencies -->
     <!-- Logging -->
     <dependency>

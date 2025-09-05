@@ -4,17 +4,12 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
 public class TestdataAlwaysLoopedEntity extends TestdataObject {
     @PlanningVariable
     Integer value;
-
-    // TODO: Remove me when supplier present
-    @ShadowVariablesInconsistent
-    boolean isInconsistent;
 
     @ShadowVariable(supplierName = "isEvenSupplier")
     Boolean isEven;

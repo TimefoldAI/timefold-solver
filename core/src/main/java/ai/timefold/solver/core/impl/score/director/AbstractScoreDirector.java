@@ -277,6 +277,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var originalShouldAssert = expectShadowVariablesInCorrectState;
         expectShadowVariablesInCorrectState = false;
         setWorkingSolutionWithoutUpdatingShadows(workingSolution);
+        variableListenerSupport.resetWorkingSolution();
         forceTriggerVariableListeners();
         expectShadowVariablesInCorrectState = originalShouldAssert;
     }

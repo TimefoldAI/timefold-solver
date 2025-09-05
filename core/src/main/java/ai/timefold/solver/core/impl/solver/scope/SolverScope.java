@@ -332,8 +332,9 @@ public class SolverScope<Solution_> {
 
     public void setWorkingSolutionFromBestSolution() {
         // The workingSolution must never be the same instance as the bestSolution.
-        // The bestSolution is set by the Solver, and thus have updated shadows
-        scoreDirector.setWorkingSolutionWithoutUpdatingShadows(scoreDirector.cloneSolution(getBestSolution()));
+        // Since we are doing a planning clone, we need to update consistency shadows
+        // that are inside identity hash map.
+        scoreDirector.setWorkingSolution(scoreDirector.cloneSolution(getBestSolution()));
     }
 
     public void setInitialSolution(Solution_ initialSolution) {

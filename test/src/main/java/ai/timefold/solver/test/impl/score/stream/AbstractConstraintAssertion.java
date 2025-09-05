@@ -39,7 +39,11 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
                 .withConstraintMatchPolicy(ConstraintMatchPolicy.ENABLED)
                 .buildDerived()) {
             // Users use settingAllShadowVariables to set shadow variables
-            scoreDirector.setWorkingSolutionWithoutUpdatingShadows(getSolution());
+            var solution = getSolution();
+            if (scoreDirector instanceof BavetConstraintStreamScoreDirector bavetConstraintStreamScoreDirector) {
+                bavetConstraintStreamScoreDirector.updateConsistencyFromSolution(solution);
+            }
+            scoreDirector.setWorkingSolutionWithoutUpdatingShadows(solution);
             // When models include custom listeners,
             // the notification queue may no longer be empty
             // because the shadow variable might be linked to a source

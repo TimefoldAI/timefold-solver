@@ -5,7 +5,6 @@ import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
-import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
 @PlanningEntity
@@ -18,10 +17,6 @@ public class TestdataDeclarativeSimpleListValue extends TestdataObject {
 
     @InverseRelationShadowVariable(sourceVariableName = "values")
     TestdataDeclarativeSimpleListEntity entity;
-
-    // TODO: Remove me when supplier present
-    @ShadowVariablesInconsistent
-    boolean isInconsistent;
 
     @ShadowVariable(supplierName = "startTimeSupplier")
     Integer startTime;
@@ -84,14 +79,6 @@ public class TestdataDeclarativeSimpleListValue extends TestdataObject {
 
     public void setEndTime(Integer endTime) {
         this.endTime = endTime;
-    }
-
-    public boolean isInconsistent() {
-        return isInconsistent;
-    }
-
-    public void setInconsistent(boolean inconsistent) {
-        isInconsistent = inconsistent;
     }
 
     @ShadowSources({ "entity", "previous.endTime" })

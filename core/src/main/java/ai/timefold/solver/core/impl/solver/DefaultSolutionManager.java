@@ -17,6 +17,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -188,7 +189,8 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
     public @Nullable String visualizeNodeNetwork(Solution_ solution) {
         if (scoreDirectorFactory instanceof BavetConstraintStreamScoreDirectorFactory<Solution_, ?> bavetScoreDirectorFactory) {
             var result = new MutableReference<String>(null);
-            bavetScoreDirectorFactory.newSession(solution, ConstraintMatchPolicy.ENABLED, false, result::setValue);
+            bavetScoreDirectorFactory.newSession(solution, new ConsistencyTracker<>(),
+                    ConstraintMatchPolicy.ENABLED, false, result::setValue);
             return result.getValue();
         }
         throw new UnsupportedOperationException("Node network visualization is only supported when using Constraint Streams.");

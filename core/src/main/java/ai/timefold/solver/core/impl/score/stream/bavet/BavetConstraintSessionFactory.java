@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.visual.NodeGraph;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
@@ -46,7 +47,9 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
     // ************************************************************************
 
     @SuppressWarnings("unchecked")
-    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution, ConstraintMatchPolicy constraintMatchPolicy,
+    public BavetConstraintSession<Score_> buildSession(Solution_ workingSolution,
+            ConsistencyTracker<Solution_> consistencyTracker,
+            ConstraintMatchPolicy constraintMatchPolicy,
             boolean scoreDirectorDerived, Consumer<String> nodeNetworkVisualizationConsumer) {
         var constraintWeightSupplier = solutionDescriptor.getConstraintWeightSupplier();
         var constraints = constraintMetaModel.getConstraints();
@@ -112,13 +115,15 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                     .log(constraintWeightString.toString().trim());
         }
         return new BavetConstraintSession<>(scoreInliner,
-                buildNodeNetwork(workingSolution, constraintStreamSet, scoreInliner, nodeNetworkVisualizationConsumer));
+                buildNodeNetwork(workingSolution, consistencyTracker, constraintStreamSet, scoreInliner,
+                        nodeNetworkVisualizationConsumer));
     }
 
     private static <Solution_, Score_ extends Score<Score_>> NodeNetwork buildNodeNetwork(Solution_ workingSolution,
-            Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet, AbstractScoreInliner<Score_> scoreInliner,
+            ConsistencyTracker<Solution_> consistencyTracker, Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet,
+            AbstractScoreInliner<Score_> scoreInliner,
             Consumer<String> nodeNetworkVisualizationConsumer) {
-        var buildHelper = new ConstraintNodeBuildHelper<>(constraintStreamSet, scoreInliner);
+        var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner);
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
         var nodeList = buildHelper.buildNodeList(constraintStreamSet, buildHelper,
                 BavetAbstractConstraintStream::buildNode,
@@ -129,10 +134,10 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
                     var forEachClass = forEachUniNode.getForEachClass();
                     var forEachUniNodeList =
                             declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>(2));
-                    if (forEachUniNodeList.size() == 2) {
-                        // Each class can have at most two forEach nodes: one including null vars, the other excluding them.
+                    if (forEachUniNodeList.size() == 3) {
+                        // Each class can have at most three forEach nodes: one including everything, one including consistent + null vars, the last consistent + no null vars.
                         throw new IllegalStateException(
-                                "Impossible state: For class (%s) there are already 2 nodes (%s), not adding another (%s)."
+                                "Impossible state: For class (%s) there are already 3 nodes (%s), not adding another (%s)."
                                         .formatted(forEachClass, forEachUniNodeList, forEachUniNode));
                     }
                     forEachUniNodeList.add(forEachUniNode);

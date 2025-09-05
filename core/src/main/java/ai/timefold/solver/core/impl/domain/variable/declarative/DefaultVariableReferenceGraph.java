@@ -4,14 +4,13 @@ import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.IntFunction;
 
 import org.jspecify.annotations.NonNull;
 
 final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableReferenceGraph<Solution_, BitSet> {
     // These structures are mutable.
-    private final Consumer<BitSet> affectedEntitiesUpdater;
+    private final AffectedEntitiesUpdater<Solution_> affectedEntitiesUpdater;
 
     public DefaultVariableReferenceGraph(VariableReferenceGraphBuilder<Solution_> outerGraph,
             IntFunction<TopologicalOrderGraph> graphCreator) {
@@ -57,5 +56,11 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         }
         graph.commitChanges(changeSet);
         affectedEntitiesUpdater.accept(changeSet);
+    }
+
+    @Override
+    public void setUnknownInconsistencyValues() {
+        graph.commitChanges(changeSet);
+        affectedEntitiesUpdater.setUnknownInconsistencyValues();
     }
 }
