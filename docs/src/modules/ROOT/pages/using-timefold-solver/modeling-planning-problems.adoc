@@ -110,7 +110,7 @@ There are 2 different types of planning variables we can distinguish: *genuine* 
 There are 3 variants of genuine planning variables. The variants you use depends on the problem you are solving.
 For more detailed guidance on when to use which variant, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
 
-- xref:basicPlanningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
+- xref:planningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
 - xref:planningListVariable[@PlanningListVariable]: contains multiple *planning values* in a specific order. *Planning values* can only be assigned to a single *planning entity*.
 - xref:chainedPlanningVariable[Chained @PlanningVariable]: allows *planning entities* to point to each other and form a chain. *Planning values* can only be part of a single chain.
 
@@ -137,7 +137,7 @@ When the customers for a vehicle change, the arrival time for each customer is a
 For more information, see the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
 ====
 
-Depending on your use of xref:basicPlanningVariable[@PlanningVariable], xref:planningListVariable[@PlanningListVariable] or the xref:chainedPlanningVariable[Chained @PlanningVariable]
+Depending on your use of xref:planningVariable[@PlanningVariable], xref:planningListVariable[@PlanningListVariable] or the xref:chainedPlanningVariable[Chained @PlanningVariable]
 several built-in shadow variables are provided. These are documented in the details section of the respective genuine planning variables.
 
 In addition, Timefold Solver also provides a way to xref:shadowVariable[implement shadow variables yourself].
@@ -336,7 +336,6 @@ xsi:schemaLocation="https://timefold.ai/xsd/solver https://timefold.ai/xsd/solve
 ...
 </solver>
 ----
---
 
 NOTE: When Timefold Solver is xref:integration/integration.adoc#integration[integrated in Quarkus or Spring], the XML file is optional.
 
@@ -437,7 +436,7 @@ For example, a ``Lesson``'s `timeslot` variable should not be used.
 A planning entity is considered initialized in either of the following cases:
 
 - No <<genuinePlanningVariables,genuine planning variable>> is set to `null`.
-- Genuine planning variable is set to `null`, but it <<basicVariableAllowingUnassigned,allows unassigned values>>.
+- Genuine planning variable is set to `null`, but it <<planningVariableAllowingUnassigned,allows unassigned values>>.
 - No possible value for a list variable is left unassigned to any one of the genuine entities, unless it <<planningListVariableAllowingUnassigned,allows unassigned values>>.
 
 NOTE: It follows that, if unassigned values are allowed, a planning entity is always considered initialized.
@@ -446,7 +445,7 @@ xref:optimization-algorithms/local-search.adoc#localSearchOverview[Local Search]
 Run xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristicsOverview[Construction Heuristics] before Local Search to get a good starting solution.
 
 
-[#basicPlanningVariable]
+[#planningVariable]
 == Basic planning variable (@PlanningVariable)
 
 A basic variable is a JavaBean property (so a getter and setter) on a planning entity.
@@ -520,7 +519,7 @@ see xref:#planningListVariable[planning list variable] and xref:#chainedPlanning
 ====
 
 
-[#basicVariableAllowingUnassigned]
+[#planningVariableAllowingUnassigned]
 === Allowing unassigned values
 
 By default, an initialized planning variable cannot be ``null``,
@@ -751,7 +750,7 @@ public class Timetable {
 [IMPORTANT]
 ====
 That `Collection` (or ``CountableValueRange``) must not contain the value ``null``,
-not even for a <<basicVariableAllowingUnassigned,planning variable allowing unassigned values>>.
+not even for a <<planningVariableAllowingUnassigned,planning variable allowing unassigned values>>.
 ====
 
 xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
