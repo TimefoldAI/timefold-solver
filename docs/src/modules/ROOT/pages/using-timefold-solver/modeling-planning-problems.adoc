@@ -34,7 +34,7 @@ A planning domain model typically consist of the following elements:
 * The properties of a planning entity that change during planning are called *xref:planningVariableTypes[planning variables]*. The different types of planning variables are described below.
 * *xref:genuinePlanningVariables[Genuine planning variables]* are assigned available *xref:planningValue[planning values]* during solving.
 * *xref:problemFact[Problem facts]* are classes that do not change during planning, but are used to validate constraints. Problem facts are often also used as *planning values*.
-* A *xref:planningProblemAndPlanningSolution[planning solution]* class contains all the planning entities and problem facts, and often also provides the planning values that the solver can use during planning. It also contains the status and score of the planning problem.
+* A *xref:planningProblemAndPlanningSolution[planning solution]* class contains all the planning entities and problem facts, and often also provides the planning values that the solver can use during planning. It also contains the status of the solving process and the score of the planning problem.
 
 .School Timetableing example
 ====
@@ -87,9 +87,9 @@ Lesson --> Room : room
 
 For this planning problem:
 
-- _Timeslot_ and _Room_ are *problem facts*.
-- _Lesson_ is the *planning entity*, which has 2 *planning variables*: _Timeslot_ and _Room_.
-- _Timetable_ is the *planning solution*. It contains all the _Lesson_ *planning entity* instances, and all possible *planning values*, which are instances of _Room_ and _Timeslot_ which can be assigned to the *planning variables* in _Lesson_.
+- `Timeslot` and `Room` are *problem facts*.
+- `Lesson` is the *planning entity*, which has 2 *planning variables*: `Timeslot` and `Room`.
+- `Timetable` is the *planning solution*. It contains all the `Lesson` *planning entity* instances, and all possible *planning values*, which are instances of `Room` and `Timeslot` which can be assigned to the *planning variables* in `Lesson`.
 ====
 
 *In Timefold Solver, all elements of the planning domain model are plain objects.* Load them from a database, an XML file, a data repository, a REST service, a noSQL cloud, ... (see xref:integration/integration.adoc#integration[integration]): it doesn't matter.
@@ -107,12 +107,11 @@ There are 2 different types of planning variables we can distinguish: *genuine* 
 There are 3 variants of genuine planning variables. The variants you use depends on the problem you are solving.
 For more detailed guidance on when to use which variant, read the xref:design-patterns/design-patterns.adoc#domainModelingGuide[domain modeling guide].
 
-- xref:planningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
+- xref:basicPlanningVariable[@PlanningVariable]: contains a single *planning value*. *Planning values* can be assigned to multiple *planning entities*.
 - xref:planningListVariable[@PlanningListVariable]: contains multiple *planning values* in a specific order. *Planning values* can only be assigned to a single *planning entity*.
 - xref:chainedPlanningVariable[Chained @PlanningVariable]: allows *planning entities* to point to each other and form a chain. *Planning values* can only be part of a single chain.
 
 A planning entity can contain xref:mixedModels[a mix] of these genuine variables, with some limitations.
-
 
 [#shadowPlanningVariables]
 ==== Shadow planning variables
@@ -135,7 +134,7 @@ When the customers for a vehicle change, the arrival time for each customer is a
 For more information, see the xref:quickstart/quarkus-vehicle-routing/quarkus-vehicle-routing-quickstart.adoc#vrpQuarkusQuickStartDomainModel[vehicle routing domain model].
 ====
 
-Depending on your use of xref:planningVariable[@PlanningVariable], xref:planningListVariable[@PlanningListVariable] or the xref:chainedPlanningVariable[Chained @PlanningVariable]
+Depending on your use of xref:basicPlanningVariable[@PlanningVariable], xref:planningListVariable[@PlanningListVariable] or the xref:chainedPlanningVariable[Chained @PlanningVariable]
 several built-in shadow variables are provided. These are documented in the details section of the respective genuine planning variables.
 
 In addition, Timefold Solver also provides a way to xref:shadowVariable[implement shadow variables yourself].
@@ -353,7 +352,7 @@ Consequently, this will also increase the time it takes Timefold Solver to find 
 If possible, avoid creating planning entity classes and use one of the other available mechanisms instead.
 
 For example, do not create a planning entity class to hold the total free time of a teacher, which needs to be kept up to date as the `Lecture` planning entities change.
-Instead, calculate the free time in the score constraints (or as a <<shadowVariable,shadow variable>>) and put the result per teacher into a logically inserted score object.
+Instead, calculate the free time in the score constraints (or as a <<shadowVariable,shadow variable>>).
 
 If historic data needs to be considered too, then create a problem fact to hold the total of the historic assignments up to, but __not including__, the planning window (so that it does not change when a planning entity changes) and let the score constraints take it into account.
 
@@ -434,8 +433,8 @@ For example, a ``Lesson``'s `timeslot` variable should not be used.
 
 A planning entity is considered initialized in either of the following cases:
 
-- No <<planningVariable,genuine planning variable>> is set to `null`.
-- Genuine planning variable is set to `null`, but it <<planningVariableAllowingUnassigned,allows unassigned values>>.
+- No <<genuinePlanningVariables,genuine planning variable>> is set to `null`.
+- Genuine planning variable is set to `null`, but it <<basicVariableAllowingUnassigned,allows unassigned values>>.
 - No possible value for a list variable is left unassigned to any one of the genuine entities, unless it <<planningListVariableAllowingUnassigned,allows unassigned values>>.
 
 NOTE: It follows that, if unassigned values are allowed, a planning entity is always considered initialized.
@@ -444,18 +443,18 @@ xref:optimization-algorithms/local-search.adoc#localSearchOverview[Local Search]
 Run xref:optimization-algorithms/construction-heuristics.adoc#constructionHeuristicsOverview[Construction Heuristics] before Local Search to get a good starting solution.
 
 
-[#planningVariable]
-== Planning variable (@PlanningVariable)
+[#basicPlanningVariable]
+== Basic planning variable (@PlanningVariable)
 
-A planning variable is a JavaBean property (so a getter and setter) on a planning entity.
-It points to a planning value, which changes during planning.
+A basic variable is a JavaBean property (so a getter and setter) on a planning entity.
+It is a <<genuinePlanningVariables,genuine planning variable>>, so it points to a planning value, which changes during planning.
 
-In the example below, a ``Lesson``'s `timeslot` property is a genuine planning variable.
+In the example below, a ``Lesson``'s `timeslot` property is a basic planning variable.
 Note that even though a ``Lesson``'s `timeslot` property changes to another `Timeslot` during planning,
 no `Timeslot` instance itself is changed.
 Normally planning variables are genuine, but advanced cases can also have <<shadowVariable,shadows>>.
 
-A genuine planning variable getter needs to be annotated with the `@PlanningVariable` annotation,
+A basic planning variable getter needs to be annotated with the `@PlanningVariable` annotation,
 optionally with a non-empty `valueRangeProviderRefs` property.
 
 [source,java,options="nowrap"]
@@ -518,7 +517,7 @@ see xref:#planningListVariable[planning list variable] and xref:#chainedPlanning
 ====
 
 
-[#planningVariableAllowingUnassigned]
+[#basicVariableAllowingUnassigned]
 === Allowing unassigned values
 
 By default, an initialized planning variable cannot be ``null``,
@@ -590,14 +589,14 @@ One way to deal with this is to filter the entity selector of the placer in the 
 </solver>
 ----
 
-[#planningVariableShadowVariable]
-=== Planning variable shadow variables
+[#basicVariableShadowVariable]
+=== Basic variable shadow variables
 
-When a planning entity uses <<planningVariable,regular planning variables>>, you can use the following built-in annotation to derive shadow variables from that genuine planning variable.
+When a planning entity uses <<planningVariable,basic planning variables>>, you can use the following built-in annotation to derive shadow variables from that genuine planning variable.
 
 - `@InverseRelationShadowVariable`: for mapping bidirectional relationships.
 
-If the built-in shadow variable annotations are insufficient, xref:declarativeShadowVariable[@ShadowVariable] can be used to create custom handlers.
+If the built-in shadow variable annotations are insufficient, xref:customShadowVariable[@ShadowVariable] can be used to create custom handlers.
 
 [#bidirectionalVariable]
 ==== Inverse relation shadow variable
@@ -606,7 +605,7 @@ Two variables are bi-directional if their instances always point to each other,
 unless one side points to `null` and the other side does not exist.
 So if A references B, then B references A.
 
-For regular planning variables, the bi-directional relationship must be a many-to-one relationship.
+For basic planning variables, the bi-directional relationship must be a many-to-one relationship.
 To map a bi-directional relationship between two planning variables,
 annotate the source side (which is the genuine side) as a normal planning variable:
 
@@ -749,7 +748,7 @@ public class Timetable {
 [IMPORTANT]
 ====
 That `Collection` (or ``CountableValueRange``) must not contain the value ``null``,
-not even for a <<planningVariableAllowingUnassigned,planning variable allowing unassigned values>>.
+not even for a <<basicVariableAllowingUnassigned,planning variable allowing unassigned values>>.
 ====
 
 xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
@@ -778,7 +777,7 @@ public class Timetable {
 ==== `ValueRangeProvider` on the Planning Entity
 
 Each planning entity has its own value range (a set of possible planning values) for the planning variable.
-For example, if a teacher can *never* teach in a room that does not belong to his department, lectures of that teacher can limit their room value range to the rooms of his department.
+For example, if a teacher can *never* teach in a room that does not belong to their department, lectures of that teacher can limit their room value range to the rooms of their department.
 
 [tabs]
 ====
@@ -798,8 +797,8 @@ Java::
 ----
 ====
 
-Never use this to enforce a soft constraint (or even a hard constraint when the problem might not have a feasible solution). For example: __Unless there is no other way__, a teacher cannot teach in a room that does not belong to his department.
-In this case, the teacher should _not_ be limited in his room value range (because sometimes there is no other way).
+Never use this to enforce a soft constraint (or even a hard constraint when the problem might not have a feasible solution). For example: __Unless there is no other way__, a teacher cannot teach in a room that does not belong to their department.
+In this case, the teacher should _not_ be limited in their room value range (because sometimes there is no other way).
 
 [NOTE]
 ====
@@ -1082,13 +1081,10 @@ For example, none of the `timeslot` variables of any `Lesson` may be used to det
 == Planning list variable (VRP, Task assigning, ...)
 
 Use the planning list variable to model problems where the goal is to distribute a number of workload elements among limited resources in a specific order.
-This includes, for example, vehicle routing, traveling salesman, task assigning, and similar problems, that have previously been modeled using the <<chainedPlanningVariable,chained planning variable>>.
+This includes, for example, vehicle routing, traveling salesman, task assigning, and similar problems.
 
-The planning list variable is a successor to the chained planning variable and provides a more intuitive way to express the problem domain.
-
-[WARNING]
+[NOTE]
 ====
-Planning list variable does not yet support all the advanced planning features that work with the chained planning variable.
 Use a <<chainedPlanningVariable,chained planning variable>> instead of a planning list variable,
 if you need any of the following planning techniques:
 
@@ -1213,7 +1209,7 @@ you can use the following built-in annotations to derive shadow variables from t
 - xref:listVariableShadowVariablesPreviousAndNext[@NextElementShadowVariable]: Used to get a planning value's successor in its assigned planning variable list;
 - xref:tailChainVariable[@CascadingUpdateShadowVariable]: Used to update a set of connected elements;
 
-If the built-in shadow variable annotations are insufficient, xref:declarativeShadowVariable[@ShadowVariable] can be used to create custom handlers.
+If the built-in shadow variable annotations are insufficient, xref:customShadowVariable[@ShadowVariable] can be used to create custom handlers.
 
 [#listVariableShadowVariablesInverseRelation]
 ==== Inverse relation shadow variable
@@ -1389,7 +1385,7 @@ public class Customer {
 [#tailChainVariable]
 === Updating tail chains
 
-The annotation `@CascadingUpdateShadowVariable` provides a built-in listener that updates a set of connected elements.
+The annotation `@CascadingUpdateShadowVariable` enables updates a set of connected elements.
 Timefold Solver triggers a user-defined logic after all events are processed.
 Hence, the related listener is the final one executed during the event lifecycle.
 Moreover,
@@ -1495,7 +1491,7 @@ public class Customer {
 
 ====
 
-Timefold Solver triggers a single listener to run the user-defined logic at the end of the event lifecycle.
+Timefold Solver triggers the user-defined logic in `updateWeightAndArrivalTime` at the end of the event lifecycle.
 It stops when both `arrivalTime` and `weightAtVisit` values do not change or when it reaches the end.
 
 [#chainedPlanningVariable]
@@ -1621,7 +1617,7 @@ Since ``Domicile`` and ``Visit`` both implement ``Standstill``, an <<anonymousVa
 
 [WARNING]
 ====
-Despite using the same base annotation as <<planningVariable, regular planning variables>>, <<chainedPlanningVariable,chained>> planning variables are not compatible with the `allowsUnassigned` attribute.
+Despite using the same base annotation as <<planningVariable, basic planning variables>>, <<chainedPlanningVariable,chained>> planning variables are not compatible with the `allowsUnassigned` attribute.
 ====
 
 [#chainedVariableShadowVariable]
@@ -1632,7 +1628,7 @@ When a planning entity uses <<chainedPlanningVariable,a chained variable>>, you 
 - xref:bidirectionalVariableForChainedVariable[@InverseRelationShadowVariable]: Used to get the planning entity containing the chained planning variable to which a planning value is assigned;
 - xref:anchorShadowVariable[@AnchorShadowVariable]: Used to get the planning entity containing the planning variable list to which a planning value is assigned;
 
-If the built-in shadow variable annotations are insufficient, xref:declarativeShadowVariable[@ShadowVariable] can be used to create custom handlers.
+If the built-in shadow variable annotations are insufficient, xref:customShadowVariable[@ShadowVariable] can be used to create custom handlers.
 
 [#bidirectionalVariableForChainedVariable]
 ==== Bi-directional variable (inverse relation shadow variable)
@@ -1724,8 +1720,6 @@ The `sourceVariableName` property is the name of the chained variable on the sam
 
 If both xref:using-timefold-solver/modeling-planning-problems.adoc#planningVariable[basic] and xref:using-timefold-solver/modeling-planning-problems#planningListVariable[list] variables are included in the model,
 it is referred to as a *mixed model*.
-This model eliminates the need for xref:using-timefold-solver/modeling-planning-problems#chainedPlanningVariable[chained]  variables
-when mixed variable types are required.
 
 The following planning entity defines two genuine variables:
 
@@ -1790,24 +1784,24 @@ Timefold Solver effectively only optimizes the genuine variables, and it assures
 Shadow variables can be defined by:
 
 - Using one of the xref:shadowVariablesBuiltIn[built-in] shadow variable annotations;
-- Defining them yourselves using xref:declarativeShadowVariable[declarative shadow variables].
+- Defining them yourselves using xref:customShadowVariable[custom shadow variables].
 
 [#shadowVariablesBuiltIn]
 === Built-in shadow variables
 
 Timefold Solver provides various built-in shadow variable annotation that make configuring common shadow variables trivial.
-Their applicability and usage varies depending on your use of xref:planningVariableShadowVariable[@PlanningVariable], xref:listVariableShadowVariables[@PlanningListVariable] or the xref:chainedVariableShadowVariable[chained @PlanningVariable]
+Their applicability and usage varies depending on your use of xref:basicVariableShadowVariable[@PlanningVariable], xref:listVariableShadowVariables[@PlanningListVariable] or the xref:chainedVariableShadowVariable[chained @PlanningVariable]
 
 Detailed information on these built-in shadow variables can be found in the section on shadow variables of each of the genuine variable variants:
 
-- xref:planningVariableShadowVariable[Built-in shadow variables for @PlanningVariable],
+- xref:basicVariableShadowVariable[Built-in shadow variables for @PlanningVariable],
 - xref:listVariableShadowVariables[Built-in shadow variables for  @PlanningListVariable]
 - xref:chainedVariableShadowVariable[Built-in shadow variables for chained @PlanningVariable]
 
-[#declarativeShadowVariable]
-=== Declarative Shadow Variables
+[#customShadowVariable]
+=== Custom Shadow Variables
 
-Declarative shadow variables can be used to derive values of shadow variables from _genuine variables or other shadow variables._
+Custom shadow variables can be used to derive values of shadow variables from _genuine variables or other shadow variables._
 This approach allows access to all the fields and methods of the declaring class.
 
 To define a declarative shadow variable: Annotate the field with `@ShadowVariable` and specify the name of a supplier method.
@@ -1877,7 +1871,7 @@ These paths must follow 1 of 3 syntactic forms:
 |Refers to a variable (`varName`) on each element in a collection (`collectionVar`) on the entity. The collection must not change during solving.
 |===
 
-Concrete example
+Let's illustrate this with a specific example.
 [tabs]
 ====
 Java::
@@ -1933,7 +1927,6 @@ public class Job {
 }
 ----
 
-
 ====
 
 [cols="1,1,2", options="header"]
@@ -1961,7 +1954,7 @@ public class Job {
 In certain cases, shadow variables may form an infinite loop.
 There are three ways a loop can form:
 
-- Source-induced, when two declarative shadow variables' sources refer to each other:
+- Source-induced, when two custom shadow variables' sources refer to each other:
 +
 [tabs]
 ====
@@ -2263,7 +2256,7 @@ NOTE: These are tips and tricks for optimal performance and needn't be followed 
 [WARNING]
 ====
 *Deprecation notice*: Using `VariableListeners` effectively required intimate knowledge of some internal solver concepts.
-We recommend all users of `VariableListeners` to migrate to xref:declarativeShadowVariable[declarative shadow variables], which provide a much simpler way to handle updating shadow variables.
+We recommend all users of `VariableListeners` to migrate to xref:customShadowVariable[custom shadow variables], which provide a much simpler way to handle updating shadow variables.
 ====
 
 To update a shadow variable, Timefold Solver uses a ``VariableListener``.
