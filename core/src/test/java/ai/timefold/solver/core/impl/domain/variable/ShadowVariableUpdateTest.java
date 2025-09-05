@@ -59,7 +59,6 @@ class ShadowVariableUpdateTest {
         Assertions
                 .assertThatCode(
                         () -> SolutionManager.updateShadowVariables(solution))
-                .cause()
                 .isInstanceOf(NullPointerException.class);
     }
 

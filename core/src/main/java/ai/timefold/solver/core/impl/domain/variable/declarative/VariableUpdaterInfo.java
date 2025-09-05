@@ -15,7 +15,7 @@ public record VariableUpdaterInfo<Solution_>(
         VariableMetaModel<Solution_, ?, ?> id,
         int groupId,
         DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
-        EntityConsistencyState<Solution_> entityConsistencyState,
+        EntityConsistencyState<Solution_, Object> entityConsistencyState,
         MemberAccessor memberAccessor,
         Function<Object, Object> calculator,
         @Nullable Object[] groupEntities) {
@@ -23,7 +23,7 @@ public record VariableUpdaterInfo<Solution_>(
     public VariableUpdaterInfo(VariableMetaModel<Solution_, ?, ?> id,
             int groupId,
             DeclarativeShadowVariableDescriptor<Solution_> variableDescriptor,
-            EntityConsistencyState<Solution_> entityConsistencyState,
+            EntityConsistencyState<Solution_, Object> entityConsistencyState,
             MemberAccessor memberAccessor,
             Function<Object, Object> calculator) {
         this(id, groupId, variableDescriptor, entityConsistencyState, memberAccessor, calculator, null);

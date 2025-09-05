@@ -12,16 +12,18 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public class ConsistencyTracker<Solution_> {
     private final IdentityHashMap<Object, Boolean> entityToIsInconsistentMap = new IdentityHashMap<>();
-    private final HashMap<Class<?>, EntityConsistencyState<Solution_>> entityClassToConsistencyStateMap = new HashMap<>();
+    private final HashMap<Class<?>, EntityConsistencyState<Solution_, Object>> entityClassToConsistencyStateMap =
+            new HashMap<>();
+    private boolean isFrozen;
 
-    public EntityConsistencyState<Solution_>
+    public EntityConsistencyState<Solution_, Object>
             getDeclarativeEntityConsistencyState(EntityDescriptor<Solution_> entityDescriptor) {
         return entityClassToConsistencyStateMap.computeIfAbsent(entityDescriptor.getEntityClass(),
                 ignored -> new EntityConsistencyState<>(entityDescriptor, entityToIsInconsistentMap));
     }
 
-    public void initializeForEntities(SolutionDescriptor<Solution_> solutionDescriptor,
-            Object... entityOrFacts) {
+    public void setUnknownConsistencyFromEntityShadowVariablesInconsistent(SolutionDescriptor<Solution_> solutionDescriptor,
+            Object[] entityOrFacts) {
         var entityList = new ArrayList<>(entityOrFacts.length);
         for (Object entityOrFact : entityOrFacts) {
             if (solutionDescriptor.hasEntityDescriptor(entityOrFact.getClass())) {
@@ -33,10 +35,20 @@ public class ConsistencyTracker<Solution_> {
                 // set inconsistency of entities, which ConstraintVerifier does not want
                 // if the user specified a specific inconsistency value.
                 new GraphStructure.GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null),
-                this, solutionDescriptor,
-                new VariableReferenceGraphBuilder<>(ChangedVariableNotifier.empty()),
-                entityList.toArray(),
-                DefaultTopologicalOrderGraph::new);
+                new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor, ChangedVariableNotifier.empty(),
+                        entityList.toArray()).withConsistencyTracker(this));
         graph.setUnknownInconsistencyValues();
+        isFrozen = true;
+    }
+
+    public boolean isFrozen() {
+        return isFrozen;
+    }
+
+    @Override
+    public String toString() {
+        return "ConsistencyTracker{" +
+                "entityToIsInconsistentMap=" + entityToIsInconsistentMap +
+                '}';
     }
 }

@@ -149,7 +149,7 @@ final class AffectedEntitiesUpdater<Solution_>
     }
 
     private boolean updateLoopedStatusOfEntity(Object entity, int entityId,
-            EntityConsistencyState<Solution_> entityConsistencyState) {
+            EntityConsistencyState<Solution_, Object> entityConsistencyState) {
         var oldLooped = entityConsistencyState.getEntityInconsistentValue(entity);
         var isEntityLooped = loopedTracker.isEntityInconsistent(graph, entityId, oldLooped);
         if (!Objects.equals(oldLooped, isEntityLooped)) {
@@ -187,7 +187,7 @@ final class AffectedEntitiesUpdater<Solution_>
     }
 
     private void updateLoopedStatusOfEntitySkippingProcessor(Object entity, int entityId,
-            EntityConsistencyState<Solution_> entityConsistencyState) {
+            EntityConsistencyState<Solution_, Object> entityConsistencyState) {
         var oldLooped = entityConsistencyState.getEntityInconsistentValueFromProcessorOrNull(entity);
         if (oldLooped == null) {
             var isEntityLooped = loopedTracker.isEntityInconsistent(graph, entityId, oldLooped);

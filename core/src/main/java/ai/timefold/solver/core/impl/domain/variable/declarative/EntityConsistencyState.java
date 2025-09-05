@@ -9,8 +9,8 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public final class EntityConsistencyState<Solution_> {
-    private final IdentityHashMap<Object, Boolean> entityToIsInconsistentMap;
+public final class EntityConsistencyState<Solution_, Entity_> {
+    private final IdentityHashMap<Entity_, Boolean> entityToIsInconsistentMap;
 
     @Nullable
     private final ExternalizedShadowVariableInconsistentProcessor<Solution_> externalizedShadowVariableInconsistentProcessor;
@@ -18,7 +18,7 @@ public final class EntityConsistencyState<Solution_> {
     private final VariableDescriptor<Solution_> randomDeclarativeVariableDescriptor;
 
     EntityConsistencyState(EntityDescriptor<Solution_> entityDescriptor,
-            IdentityHashMap<Object, Boolean> entityToIsInconsistentMap) {
+            IdentityHashMap<Entity_, Boolean> entityToIsInconsistentMap) {
         this.entityToIsInconsistentMap = entityToIsInconsistentMap;
 
         var entityIsInconsistentDescriptor = entityDescriptor.getShadowVariablesInconsistentDescriptor();
@@ -38,17 +38,17 @@ public final class EntityConsistencyState<Solution_> {
         }
     }
 
-    public boolean isEntityConsistent(Object entity) {
+    public boolean isEntityConsistent(Entity_ entity) {
         return Boolean.FALSE.equals(entityToIsInconsistentMap.get(entity));
     }
 
     @Nullable
-    Boolean getEntityInconsistentValue(Object entity) {
+    Boolean getEntityInconsistentValue(Entity_ entity) {
         return entityToIsInconsistentMap.get(entity);
     }
 
     public void setEntityIsInconsistent(ChangedVariableNotifier<Solution_> changedVariableNotifier,
-            Object entity,
+            Entity_ entity,
             boolean isInconsistent) {
         if (externalizedShadowVariableInconsistentProcessor != null) {
             externalizedShadowVariableInconsistentProcessor.setIsEntityInconsistent(changedVariableNotifier, entity,
@@ -66,14 +66,14 @@ public final class EntityConsistencyState<Solution_> {
     }
 
     @Nullable
-    Boolean getEntityInconsistentValueFromProcessorOrNull(Object entity) {
+    Boolean getEntityInconsistentValueFromProcessorOrNull(Entity_ entity) {
         if (externalizedShadowVariableInconsistentProcessor != null) {
             return externalizedShadowVariableInconsistentProcessor.getIsEntityInconsistent(entity);
         }
         return null;
     }
 
-    public void setEntityIsInconsistentSkippingProcessor(Object entity,
+    public void setEntityIsInconsistentSkippingProcessor(Entity_ entity,
             boolean isInconsistent) {
         entityToIsInconsistentMap.put(entity, isInconsistent);
     }

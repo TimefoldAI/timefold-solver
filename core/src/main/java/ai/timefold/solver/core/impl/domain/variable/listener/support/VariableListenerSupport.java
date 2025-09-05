@@ -235,15 +235,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             notifiable.resetWorkingSolution();
         }
 
-        if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()) {
+        if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()
+                && !consistencyTracker.isFrozen()) {
             var shadowVariableSessionFactory = new DefaultShadowVariableSessionFactory<>(
                     scoreDirector.getSolutionDescriptor(),
                     scoreDirector,
                     shadowVariableGraphCreator);
             shadowVariableSession =
                     shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.getWorkingSolution());
-            shadowVariableSession.updateVariables();
-            triggerVariableListenersInNotificationQueues();
         }
     }
 

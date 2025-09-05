@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.director.stream;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -50,6 +51,23 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
      */
     public void clearShadowVariablesListenerQueue() {
         clearVariableListenerEvents();
+    }
+
+    /**
+     * The function is exclusively available for the Bavet score director, and its use must be approached with caution.
+     * The primary purpose of this method is
+     * to enable the {@code ConstraintVerifier}
+     * to update the consistency status of entities in the solution without updating shadows.
+     * <p>
+     * This must be done before setWorkingSolutionWithoutUpdatingShadows, which inserts the entities.
+     */
+    public void updateConsistencyFromSolution(Solution_ solution) {
+        var solutionDescriptor = getSolutionDescriptor();
+        var entityList = new ArrayList<>();
+        solutionDescriptor.visitAllEntities(solution, entityList::add);
+        variableListenerSupport.getConsistencyTracker().setUnknownConsistencyFromEntityShadowVariablesInconsistent(
+                getSolutionDescriptor(),
+                entityList.toArray());
     }
 
     @Override

@@ -69,13 +69,12 @@ class SingleDirectionalParentVariableReferenceGraphTest {
 
         var values = List.of(value1, value2, value3, value4, value5);
 
-        @SuppressWarnings("unchecked")
+        @SuppressWarnings({ "unchecked", "rawtypes" })
         var graph = DefaultShadowVariableSessionFactory.buildSingleDirectionalParentGraph(
-                new ConsistencyTracker<>(),
-                solutionDescriptor,
-                ChangedVariableNotifier.of(scoreDirector),
-                graphStructureAndDirection,
-                new Object[] { entity1, entity2, value5, value4, value3, value2, value1 });
+                new DefaultShadowVariableSessionFactory.GraphDescriptor<>(
+                        solutionDescriptor, ChangedVariableNotifier.of(scoreDirector),
+                        entity1, entity2, value5, value4, value3, value2, value1),
+                graphStructureAndDirection);
 
         assertThat(value1.getCount()).isZero();
         assertThat(value2.getCount()).isZero();

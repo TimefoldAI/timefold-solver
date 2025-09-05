@@ -1385,8 +1385,8 @@ class SingleConstraintAssertionTest {
                 .givenSolution(solution)
                 .penalizes(0);
 
-        assertThat(dependent.isInvalid()).isTrue();
-        assertThat(dependency.isInvalid()).isTrue();
+        assertThat(dependent.isInvalid()).isNull();
+        assertThat(dependency.isInvalid()).isNull();
 
         entity.setValues(List.of(dependency, dependent));
         dependent.setPreviousValue(dependency);
@@ -1401,8 +1401,8 @@ class SingleConstraintAssertionTest {
                 // 60 + 120 = 180
                 .penalizesBy(180);
 
-        assertThat(dependent.isInvalid()).isFalse();
-        assertThat(dependency.isInvalid()).isFalse();
+        assertThat(dependent.isInvalid()).isNull();
+        assertThat(dependency.isInvalid()).isNull();
     }
 
     @Test
@@ -1427,11 +1427,21 @@ class SingleConstraintAssertionTest {
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
                 .givenSolution(solution)
-                .penalizesBy(0);
+                .penalizesBy(120);
+    }
 
+    @Test
+    void shouldUpdateInternalConsistencyStateIfInconsistentIsSpecifiedGivenSolutionUnfiltered() {
+        var entity = new TestdataDependencyEntity(LocalDateTime.MIN);
+
+        var solution = new TestdataDependencySolution();
         var singleValue = new TestdataDependencyValue("single", Duration.ofHours(1L));
+
+        solution.setEntities(List.of(entity));
         solution.setValues(List.of(singleValue));
+
         singleValue.setInvalid(false);
+        singleValue.setEntity(entity);
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
                 .givenSolution(solution)
@@ -1441,6 +1451,6 @@ class SingleConstraintAssertionTest {
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
                 .givenSolution(solution)
-                .penalizes(0);
+                .penalizes(1);
     }
 }

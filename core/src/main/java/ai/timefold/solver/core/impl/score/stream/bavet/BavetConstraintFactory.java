@@ -98,35 +98,34 @@ public final class BavetConstraintFactory<Solution_>
     // ************************************************************************
     // from
     // ************************************************************************
+    // Required for node sharing, since using a lambda will create different instances
+    private record ForEachFilteringCriteriaPredicateFunction<Solution_, A>(EntityDescriptor<Solution_> entityDescriptor,
+            ForEachFilteringCriteria criteria) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
+        public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
+            return helper.getForEachPredicateForEntityDescriptorAndCriteria(entityDescriptor, criteria);
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (object instanceof ForEachFilteringCriteriaPredicateFunction<?, ?> that) {
+                return criteria == that.criteria
+                        && Objects.equals(entityDescriptor.getEntityClass(), that.entityDescriptor.getEntityClass());
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(entityDescriptor.getEntityClass(), criteria);
+        }
+    }
 
     private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
             ForEachFilteringCriteria criteria) {
-        // Required for node sharing, since using a lambda will create different instances
-        record ForEachFilteringCriteriaPredicateFunction<Solution_, A>(EntityDescriptor<Solution_> entityDescriptor,
-                ForEachFilteringCriteria criteria) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
-            public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
-                return helper.getForEachPredicateForEntityDescriptorAndCriteria(entityDescriptor, criteria);
-            }
-
-            @Override
-            public boolean equals(Object object) {
-                if (object instanceof ForEachFilteringCriteriaPredicateFunction<?, ?> that) {
-                    return criteria == that.criteria
-                            && Objects.equals(entityDescriptor.getEntityClass(), that.entityDescriptor.getEntityClass());
-                }
-                return false;
-            }
-
-            @Override
-            public int hashCode() {
-                return Objects.hash(entityDescriptor.getEntityClass(), criteria);
-            }
-        }
-
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
-        if (entityDescriptor == null) {
-            // Not genuine or shadow entity; no need for filtering.
+        if (entityDescriptor == null || criteria == ForEachFilteringCriteria.ALL) {
+            // Not genuine or shadow entity, or filtering was not requested; no need for filtering.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
         }
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
@@ -172,16 +171,16 @@ public final class BavetConstraintFactory<Solution_>
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL);
     }
 
+    // Required for node sharing, since using a lambda will create different instances
+    private record PredicateSupplier<Solution_, A>(
+            Predicate<A> suppliedPredicate) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
+        public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
+            return suppliedPredicate;
+        }
+    }
+
     @Override
     public @NonNull <A> UniConstraintStream<A> from(@NonNull Class<A> fromClass) {
-        // Required for node sharing, since using a lambda will create different instances
-        record PredicateSupplier<Solution_, A>(
-                Predicate<A> suppliedPredicate) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
-            public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
-                return suppliedPredicate;
-            }
-        }
-
         assertValidFromType(fromClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(fromClass);
         if (entityDescriptor != null && entityDescriptor.isGenuine()) {
