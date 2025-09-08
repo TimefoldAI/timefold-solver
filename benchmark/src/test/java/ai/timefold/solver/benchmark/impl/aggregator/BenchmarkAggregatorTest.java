@@ -8,36 +8,93 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 
+import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
 import ai.timefold.solver.benchmark.config.SolverBenchmarkConfig;
 import ai.timefold.solver.benchmark.config.report.BenchmarkReportConfig;
+import ai.timefold.solver.benchmark.impl.DefaultPlannerBenchmark;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.*;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 class BenchmarkAggregatorTest {
 
-    private BenchmarkAggregator benchmarkAggregator;
+    private static final BenchmarkAggregator benchmarkAggregator = new BenchmarkAggregator();
 
-    @BeforeEach
-    void setUp() {
-        benchmarkAggregator = new BenchmarkAggregator();
+    @TempDir
+    private static Path tempDir;
+
+    private static File benchmarkDirectory;
+    private static List<String> generatedBenchmarkDirectories;
+    private static File testDataBenchmarkConfigXml;
+
+    @BeforeAll
+    static void setupBenchmarks() throws IOException, InterruptedException {
+        // Create benchmark directory
+        benchmarkDirectory = tempDir.resolve("benchmarks").toFile();
+        benchmarkDirectory.mkdirs();
+
+        // Create input directory and solution file for XML config
+        File inputDir = tempDir.resolve("input").toFile();
+        inputDir.mkdirs();
+        File inputSolutionFile = new File(inputDir, "testSolution.xml");
+        Files.writeString(inputSolutionFile.toPath(), "<TestdataSolution/>");
+
+        // Create the benchmark config XML
+        testDataBenchmarkConfigXml = tempDir.resolve("testdataBenchmarkConfig.xml").toFile();
+        String xmlContent =
+                """
+                        <?xml version="1.0" encoding="UTF-8"?>
+                        <plannerBenchmark>
+                            <benchmarkDirectory>%s</benchmarkDirectory>
+                            <warmUpSecondsSpentLimit>0</warmUpSecondsSpentLimit>
+                            <benchmarkReport>
+                                <locale>en_US</locale>
+                            </benchmarkReport>
+                            <solverBenchmark>
+                                <problemBenchmarks>
+                                    <solutionFileIOClass>ai.timefold.solver.persistence.common.api.domain.solution.RigidTestdataSolutionFileIO</solutionFileIOClass>
+                                    <inputSolutionFile>%s</inputSolutionFile>
+                                </problemBenchmarks>
+                                <solver>
+                                    <solutionClass>ai.timefold.solver.core.testdomain.TestdataSolution</solutionClass>
+                                    <entityClass>ai.timefold.solver.core.testdomain.TestdataEntity</entityClass>
+                                    <scoreDirectorFactory>
+                                        <constraintProviderClass>ai.timefold.solver.core.testdomain.TestdataConstraintProvider</constraintProviderClass>
+                                    </scoreDirectorFactory>
+                                    <termination>
+                                        <millisecondsSpentLimit>10</millisecondsSpentLimit>
+                                    </termination>
+                                </solver>
+                            </solverBenchmark>
+                        </plannerBenchmark>
+                        """
+                        .formatted(benchmarkDirectory.getAbsolutePath(), inputSolutionFile.getAbsolutePath());
+
+        Files.writeString(testDataBenchmarkConfigXml.toPath(), xmlContent);
+
+        // Run 3 benchmarks to generate test data
+        runMultipleBenchmarks(3);
+
+        // Get the list of generated benchmark directories
+        PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
+        config.setBenchmarkDirectory(benchmarkDirectory);
+        generatedBenchmarkDirectories = benchmarkAggregator.getAvailableBenchmarkDirectories(config);
+
+        // Verify we have the expected number of benchmarks
+        assertThat(generatedBenchmarkDirectories).hasSize(3);
     }
 
     @Test
-    void aggregateBenchmarks_nonExistentDirectory(@TempDir Path tempDir) {
-        PlannerBenchmarkConfig config = createValidBenchmarkConfig(tempDir);
-        File nonExistentDir = new File("non/existent/directory");
+    void aggregateBenchmarks_nonExistentDirectory() throws IllegalArgumentException {
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        File nonExistentDir = new File(tempDir.toFile(), "non_existent_directory");
         config.setBenchmarkDirectory(nonExistentDir);
 
         assertThatIllegalArgumentException()
@@ -46,8 +103,8 @@ class BenchmarkAggregatorTest {
     }
 
     @Test
-    void aggregateBenchmarks_directoryIsFile(@TempDir Path tempDir) throws IOException {
-        PlannerBenchmarkConfig config = createValidBenchmarkConfig(tempDir);
+    void aggregateBenchmarks_directoryIsFile() throws IOException {
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
         File regularFile = Files.createFile(tempDir.resolve("regularFile.txt")).toFile();
         config.setBenchmarkDirectory(regularFile);
 
@@ -57,8 +114,12 @@ class BenchmarkAggregatorTest {
     }
 
     @Test
-    void aggregateBenchmarks_emptyDirectory(@TempDir Path tempDir) {
-        PlannerBenchmarkConfig config = createValidBenchmarkConfig(tempDir);
+    void aggregateBenchmarks_emptyDirectory() throws IllegalArgumentException {
+        File emptyDir = tempDir.resolve("empty").toFile();
+        emptyDir.mkdirs();
+
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        config.setBenchmarkDirectory(emptyDir);
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> benchmarkAggregator.aggregateBenchmarks(config))
@@ -67,8 +128,20 @@ class BenchmarkAggregatorTest {
 
     @Test
     void aggregateBenchmarks_withValidResults() {
-        PlannerBenchmarkConfig config = PlannerBenchmarkConfig
-                .createFromXmlResource("ai/timefold/solver/benchmark/api/testdataBenchmarkConfigWithReport.xml");
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        config.setBenchmarkDirectory(benchmarkDirectory);
+
+        File htmlReportFile = benchmarkAggregator.aggregateBenchmarks(config);
+
+        assertThat(htmlReportFile).isNotNull();
+        assertThat(htmlReportFile.exists()).isTrue();
+        assertThat(htmlReportFile.getName()).endsWith(".html");
+        assertThat(htmlReportFile.getParentFile().getName()).endsWith("aggregation");
+    }
+
+    @Test
+    void aggregateBenchmarks_withXmlConfig() {
+        PlannerBenchmarkConfig config = PlannerBenchmarkConfig.createFromXmlFile(testDataBenchmarkConfigXml);
 
         File htmlReportFile = benchmarkAggregator.aggregateBenchmarks(config);
 
@@ -78,47 +151,47 @@ class BenchmarkAggregatorTest {
     }
 
     @Test
-    void aggregateSelectedBenchmarks_nonExistentDirectory(@TempDir Path tempDir) {
-        PlannerBenchmarkConfig config = createValidBenchmarkConfig(tempDir);
-        File nonExistentDir = new File("non/existent/directory");
+    void aggregateSelectedBenchmarks_nonExistentDirectory() throws IllegalArgumentException {
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        File nonExistentDir = new File(tempDir.toFile(), "non_existent_directory");
         config.setBenchmarkDirectory(nonExistentDir);
         List<String> selectedDirectories = Arrays.asList("benchmark1", "benchmark2");
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> benchmarkAggregator.aggregateSelectedBenchmarks(config, selectedDirectories))
-                .withMessageContaining("Benchmark directory does not exist");
+                .withMessageContaining("No benchmark results found in directory");
     }
 
     @Test
-    void aggregateSelectedBenchmarks_directoryIsFile(@TempDir Path tempDir) throws IOException {
-        PlannerBenchmarkConfig config = PlannerBenchmarkConfig
-                .createFromXmlResource("ai/timefold/solver/benchmark/api/testdataBenchmarkConfigWithReport.xml");
-        File regularFile = Files.createFile(tempDir.resolve("regularFile.txt")).toFile();
+    void aggregateSelectedBenchmarks_directoryIsFile() throws IOException {
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        File regularFile = Files.createFile(tempDir.resolve("regularFile2.txt")).toFile();
         config.setBenchmarkDirectory(regularFile);
         List<String> selectedDirectories = Arrays.asList("benchmark1", "benchmark2");
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> benchmarkAggregator.aggregateSelectedBenchmarks(config, selectedDirectories))
-                .withMessageContaining("Benchmark directory does not exist");
+                .withMessageContaining("No benchmark results found in directory");
     }
 
     @Test
-    void aggregateSelectedBenchmarks_noValidDirectories() {
-        PlannerBenchmarkConfig config = PlannerBenchmarkConfig
-                .createFromXmlResource("ai/timefold/solver/benchmark/api/testdataBenchmarkConfigWithReport.xml");
+    void aggregateSelectedBenchmarks_noValidDirectories() throws IllegalArgumentException {
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        config.setBenchmarkDirectory(benchmarkDirectory);
         List<String> nonExistentDirectories = Arrays.asList("nonExistent1", "nonExistent2");
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> benchmarkAggregator.aggregateSelectedBenchmarks(config, nonExistentDirectories))
-                .withMessageContaining("No valid benchmark results found for selected directories");
+                .withMessageContaining("No valid benchmark results found in the selected directories");
     }
 
     @Test
     void aggregateSelectedBenchmarks_withValidDirectories() {
-        PlannerBenchmarkConfig config = PlannerBenchmarkConfig
-                .createFromXmlResource("ai/timefold/solver/benchmark/api/testdataBenchmarkConfigWithReport.xml");
-        List<String> availableDirectories = benchmarkAggregator.getAvailableBenchmarkDirectories(config);
-        List<String> selectedDirectories = availableDirectories.subList(0, 2);
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        config.setBenchmarkDirectory(benchmarkDirectory);
+
+        // Use the first 2 directories from the generated benchmarks
+        List<String> selectedDirectories = generatedBenchmarkDirectories.subList(0, 2);
 
         File htmlReportFile = benchmarkAggregator.aggregateSelectedBenchmarks(config, selectedDirectories);
 
@@ -130,7 +203,7 @@ class BenchmarkAggregatorTest {
     @Test
     void getAvailableBenchmarkDirectories_nonExistentDirectory() {
         PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
-        config.setBenchmarkDirectory(new File("non/existent/directory"));
+        config.setBenchmarkDirectory(new File(tempDir.toFile(), "non_existent_directory"));
 
         List<String> directories = benchmarkAggregator.getAvailableBenchmarkDirectories(config);
 
@@ -138,9 +211,12 @@ class BenchmarkAggregatorTest {
     }
 
     @Test
-    void getAvailableBenchmarkDirectories_emptyDirectory(@TempDir Path tempDir) {
+    void getAvailableBenchmarkDirectories_emptyDirectory() {
+        File emptyDir = tempDir.resolve("empty2").toFile();
+        emptyDir.mkdirs();
+
         PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
-        config.setBenchmarkDirectory(tempDir.toFile());
+        config.setBenchmarkDirectory(emptyDir);
 
         List<String> directories = benchmarkAggregator.getAvailableBenchmarkDirectories(config);
 
@@ -148,23 +224,23 @@ class BenchmarkAggregatorTest {
     }
 
     @Test
-    void getAvailableBenchmarkDirectories_withValidDirectories() throws IOException {
-        PlannerBenchmarkConfig config = PlannerBenchmarkConfig
-                .createFromXmlResource("ai/timefold/solver/benchmark/api/testdataBenchmarkConfigWithReport.xml");
+    void getAvailableBenchmarkDirectories_withValidDirectories() {
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        config.setBenchmarkDirectory(benchmarkDirectory);
 
         List<String> directories = benchmarkAggregator.getAvailableBenchmarkDirectories(config);
 
-        assertThat(directories)
-                .hasSize(4)
-                .containsExactlyInAnyOrder("2025-09-05_141529", "2025-09-05_141529_1", "2025-09-05_141530",
-                        "2025-09-05_141530_1");
+        assertThat(directories).hasSize(3);
+        assertThat(directories).isEqualTo(generatedBenchmarkDirectories);
+
+        // Check that all directories have valid timestamp format
+        directories.forEach(dir -> assertThat(dir).matches("\\d{4}-\\d{2}-\\d{2}_\\d{6}(_\\d+)?"));
     }
 
     @Test
-    void aggregateAndShowReportInBrowser_nonExistentDirectory() {
-        PlannerBenchmarkConfig config = PlannerBenchmarkConfig
-                .createFromXmlResource("ai/timefold/solver/benchmark/api/testdataBenchmarkConfigWithReport.xml");
-        File nonExistentDir = new File("non/existent/directory");
+    void aggregateAndShowReportInBrowser_nonExistentDirectory() throws IllegalArgumentException {
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        File nonExistentDir = new File(tempDir.toFile(), "non_existent_directory");
         config.setBenchmarkDirectory(nonExistentDir);
 
         assertThatIllegalArgumentException()
@@ -173,8 +249,12 @@ class BenchmarkAggregatorTest {
     }
 
     @Test
-    void aggregateAndShowReportInBrowser_emptyDirectory(@TempDir Path tempDir) {
-        PlannerBenchmarkConfig config = createValidBenchmarkConfig(tempDir);
+    void aggregateAndShowReportInBrowser_emptyDirectory() {
+        File emptyDir = tempDir.resolve("empty3").toFile();
+        emptyDir.mkdirs();
+
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        config.setBenchmarkDirectory(emptyDir);
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> benchmarkAggregator.aggregateAndShowReportInBrowser(config))
@@ -183,8 +263,8 @@ class BenchmarkAggregatorTest {
 
     @Test
     void aggregateAndShowReportInBrowser_withValidResults() {
-        PlannerBenchmarkConfig config = PlannerBenchmarkConfig
-                .createFromXmlResource("ai/timefold/solver/benchmark/api/testdataBenchmarkConfigWithReport.xml");
+        PlannerBenchmarkConfig config = createValidBenchmarkConfig();
+        config.setBenchmarkDirectory(benchmarkDirectory);
 
         File htmlReportFile = benchmarkAggregator.aggregateAndShowReportInBrowser(config);
 
@@ -194,50 +274,11 @@ class BenchmarkAggregatorTest {
         // Note: Browser opening might fail in test environment, which is expected
     }
 
-    @AfterAll
-    static void cleanupAggregationFolders() {
-        try {
-            Path resourcesPath = Path.of("src/test/resources/ai/timefold/solver/benchmark/impl/result/aggregator");
-            if (Files.exists(resourcesPath)) {
-                try (var paths = Files.walk(resourcesPath)) {
-                    paths.filter(Files::isDirectory)
-                            .filter(path -> path.getFileName().toString().endsWith("aggregation"))
-                            .sorted(Comparator.reverseOrder()) // Delete deepest directories first
-                            .forEach(path -> {
-                                try {
-                                    deleteDirectoryRecursively(path);
-                                    System.out.println("Deleted aggregation folder: " + path);
-                                } catch (IOException e) {
-                                    System.err.println("Failed to delete aggregation folder: " + path + " - " + e.getMessage());
-                                }
-                            });
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("Error during aggregation folders cleanup: " + e.getMessage());
-        }
-    }
-
     // Helper methods
 
-    private static void deleteDirectoryRecursively(Path directory) throws IOException {
-        if (Files.exists(directory)) {
-            try (var paths = Files.walk(directory)) {
-                paths.sorted(Comparator.reverseOrder()) // Delete files first, then directories
-                        .forEach(path -> {
-                            try {
-                                Files.deleteIfExists(path);
-                            } catch (IOException e) {
-                                throw new RuntimeException("Failed to delete: " + path, e);
-                            }
-                        });
-            }
-        }
-    }
-
-    private PlannerBenchmarkConfig createValidBenchmarkConfig(Path tempDir) {
+    private static PlannerBenchmarkConfig createValidBenchmarkConfig() {
         PlannerBenchmarkConfig config = new PlannerBenchmarkConfig();
-        config.setBenchmarkDirectory(tempDir.toFile());
+        config.setBenchmarkDirectory(benchmarkDirectory);
         config.setBenchmarkReportConfig(new BenchmarkReportConfig());
         config.setWarmUpMillisecondsSpentLimit(0L);
 
@@ -246,8 +287,9 @@ class BenchmarkAggregatorTest {
         SolverConfig solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withEasyScoreCalculatorClass(TestdataEasyScoreCalculator.class)
-                .withTerminationConfig(new TerminationConfig().withSecondsSpentLimit(1L));
+                .withTerminationConfig(new TerminationConfig().withMillisecondsSpentLimit(10L));
 
         solverBenchmarkConfig.setSolverConfig(solverConfig);
         config.setSolverBenchmarkConfigList(List.of(solverBenchmarkConfig));
@@ -255,4 +297,45 @@ class BenchmarkAggregatorTest {
         return config;
     }
 
+    private static void runMultipleBenchmarks(int count) throws InterruptedException {
+        for (int i = 0; i < count; i++) {
+            runSingleBenchmark(i);
+            // Small delay to ensure different timestamps
+            Thread.sleep(50);
+        }
+    }
+
+    private static void runSingleBenchmark(int index) {
+        PlannerBenchmarkConfig benchmarkConfig = new PlannerBenchmarkConfig();
+        benchmarkConfig.setBenchmarkDirectory(benchmarkDirectory);
+        benchmarkConfig.setWarmUpMillisecondsSpentLimit(0L); // No warmup for test speed
+
+        SolverBenchmarkConfig solverBenchmarkConfig = new SolverBenchmarkConfig();
+        solverBenchmarkConfig.setName("TestSolver-" + index);
+        SolverConfig solverConfig = new SolverConfig()
+                .withSolutionClass(TestdataSolution.class)
+                .withEntityClasses(TestdataEntity.class)
+                .withConstraintProviderClass(TestdataConstraintProvider.class)
+                .withTerminationConfig(new TerminationConfig().withMillisecondsSpentLimit(10L));
+
+        solverBenchmarkConfig.setSolverConfig(solverConfig);
+        benchmarkConfig.setInheritedSolverBenchmarkConfig(solverBenchmarkConfig);
+        benchmarkConfig.setSolverBenchmarkConfigList(List.of(new SolverBenchmarkConfig()));
+
+        PlannerBenchmarkFactory benchmarkFactory = PlannerBenchmarkFactory.create(benchmarkConfig);
+
+        // Create a simple test problem
+        TestdataSolution solution = new TestdataSolution("s" + index);
+        solution.setEntityList(Arrays.asList(
+                new TestdataEntity("e1"),
+                new TestdataEntity("e2"),
+                new TestdataEntity("e3")));
+        solution.setValueList(Arrays.asList(
+                new TestdataValue("v1"),
+                new TestdataValue("v2")));
+
+        DefaultPlannerBenchmark plannerBenchmark =
+                (DefaultPlannerBenchmark) benchmarkFactory.buildPlannerBenchmark(solution);
+        plannerBenchmark.benchmark(); // Run the benchmark
+    }
 }

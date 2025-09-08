@@ -5,10 +5,7 @@ import java.awt.Desktop.Action;
 import java.io.File;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
@@ -63,7 +60,7 @@ public class BenchmarkAggregator {
     public File aggregateBenchmarks(PlannerBenchmarkConfig benchmarkConfig) {
         File benchmarkDirectory = benchmarkConfig.getBenchmarkDirectory();
         if (!benchmarkDirectory.exists() || !benchmarkDirectory.isDirectory()) {
-            throw new IllegalArgumentException("Benchmark directory does not exist: " + benchmarkDirectory);
+            throw new IllegalArgumentException("Benchmark directory does not exist: %s".formatted(benchmarkDirectory));
         }
 
         // Read all existing benchmark results from the directory
@@ -72,7 +69,7 @@ public class BenchmarkAggregator {
                 benchmarkResultIO.readPlannerBenchmarkResultList(benchmarkDirectory);
 
         if (plannerBenchmarkResults.isEmpty()) {
-            throw new IllegalArgumentException("No benchmark results found in directory: " + benchmarkDirectory);
+            throw new IllegalArgumentException("No benchmark results found in directory: %s".formatted(benchmarkDirectory));
         }
 
         // Collect all single benchmark results and preserve solver names
@@ -102,7 +99,7 @@ public class BenchmarkAggregator {
     public File aggregateSelectedBenchmarks(PlannerBenchmarkConfig benchmarkConfig, List<String> selectedDirectoryNames) {
         File benchmarkDirectory = benchmarkConfig.getBenchmarkDirectory();
         if (!benchmarkDirectory.exists() || !benchmarkDirectory.isDirectory()) {
-            throw new IllegalArgumentException("Benchmark directory does not exist: " + benchmarkDirectory);
+            throw new IllegalArgumentException("No benchmark results found in directory: %s".formatted(benchmarkDirectory));
         }
 
         // Read all benchmark results first, then filter
@@ -127,8 +124,8 @@ public class BenchmarkAggregator {
         }
 
         if (selectedSingleBenchmarkResults.isEmpty()) {
-            throw new IllegalArgumentException(
-                    "No valid benchmark results found for selected directories: " + selectedDirectoryNames);
+            throw new IllegalArgumentException("No valid benchmark results found in the selected directories: %s"
+                    .formatted(selectedDirectoryNames));
         }
 
         // Configure the aggregator instance
@@ -141,11 +138,12 @@ public class BenchmarkAggregator {
 
     public List<String> getAvailableBenchmarkDirectories(PlannerBenchmarkConfig benchmarkConfig) {
         File benchmarkDirectory = benchmarkConfig.getBenchmarkDirectory();
-        List<String> directories = new ArrayList<>();
 
         if (!benchmarkDirectory.exists() || !benchmarkDirectory.isDirectory()) {
-            return directories;
+            return Collections.emptyList();
         }
+
+        List<String> directories = new ArrayList<>();
 
         File[] subdirs = benchmarkDirectory.listFiles(File::isDirectory);
         if (subdirs != null) {
@@ -179,7 +177,7 @@ public class BenchmarkAggregator {
                 desktop.browse(htmlOverviewFile.getAbsoluteFile().toURI());
             } catch (IOException e) {
                 throw new IllegalStateException(
-                        "Failed showing htmlOverviewFile (" + htmlOverviewFile + ") in the default browser.", e);
+                        "Failed showing htmlOverviewFile (%s) in the default browser.".formatted(htmlOverviewFile), e);
             }
         } else {
             LOGGER.warn("The default browser can't be opened to show htmlOverviewFile ({}).", htmlOverviewFile);
@@ -189,18 +187,18 @@ public class BenchmarkAggregator {
     private File aggregate(List<SingleBenchmarkResult> singleBenchmarkResultList,
             Map<SolverBenchmarkResult, String> solverBenchmarkResultNameMap) {
         if (benchmarkDirectory == null) {
-            throw new IllegalArgumentException("The benchmarkDirectory (" + benchmarkDirectory + ") must not be null.");
+            throw new IllegalArgumentException(
+                    "The benchmarkReportConfig (%s) must not be null.".formatted(benchmarkReportConfig));
         }
         if (!benchmarkDirectory.exists()) {
             throw new IllegalArgumentException("The benchmarkDirectory (" + benchmarkDirectory + ") must exist.");
         }
         if (benchmarkReportConfig == null) {
-            throw new IllegalArgumentException("The benchmarkReportConfig (" + benchmarkReportConfig
-                    + ") must not be null.");
+            throw new IllegalArgumentException("The benchmarkDirectory (%s) must exist.".formatted(benchmarkDirectory));
         }
         if (singleBenchmarkResultList.isEmpty()) {
-            throw new IllegalArgumentException("The singleBenchmarkResultList (" + singleBenchmarkResultList
-                    + ") must not be empty.");
+            throw new IllegalArgumentException(
+                    "The singleBenchmarkResultList (%s) must not be empty.".formatted(singleBenchmarkResultList));
         }
         OffsetDateTime startingTimestamp = OffsetDateTime.now();
         for (SingleBenchmarkResult singleBenchmarkResult : singleBenchmarkResultList) {
