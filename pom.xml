@@ -27,7 +27,7 @@
   </licenses>
 
   <properties>
-    <version.javadoc.plugin>3.11.3</version.javadoc.plugin> <!-- https://github.com/apache/maven-javadoc-plugin/issues/1241 -->
+    <version.javadoc.plugin>3.11.2</version.javadoc.plugin> <!-- https://github.com/apache/maven-javadoc-plugin/issues/1241 -->
     <version.rewrite.plugin>6.17.0</version.rewrite.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
     <version.resources.plugin>3.3.1</version.resources.plugin>
