@@ -40,7 +40,13 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
                 .buildDerived()) {
             // Users use settingAllShadowVariables to set shadow variables
             var solution = getSolution();
-            if (scoreDirector instanceof BavetConstraintStreamScoreDirector bavetConstraintStreamScoreDirector) {
+            BavetConstraintStreamScoreDirector<Solution_, Score_> bavetConstraintStreamScoreDirector = null;
+
+            if (scoreDirector instanceof BavetConstraintStreamScoreDirector) {
+                bavetConstraintStreamScoreDirector = (BavetConstraintStreamScoreDirector<Solution_, Score_>) scoreDirector;
+            }
+
+            if (bavetConstraintStreamScoreDirector != null) {
                 bavetConstraintStreamScoreDirector.updateConsistencyFromSolution(solution);
             }
             scoreDirector.setWorkingSolutionWithoutUpdatingShadows(solution);
@@ -55,7 +61,7 @@ public abstract class AbstractConstraintAssertion<Solution_, Score_ extends Scor
             // However, to maintain API consistency,
             // we will only trigger the listeners
             // if the user opts to use settingAllShadowVariables.
-            if (scoreDirector instanceof BavetConstraintStreamScoreDirector<?, ?> bavetConstraintStreamScoreDirector) {
+            if (bavetConstraintStreamScoreDirector != null) {
                 bavetConstraintStreamScoreDirector.clearShadowVariablesListenerQueue();
             }
             update(scoreDirector.calculateScore(), scoreDirector.getConstraintMatchTotalMap(),

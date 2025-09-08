@@ -80,7 +80,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         return buildGraphForStructureAndDirection(graphStructureAndDirection, graphDescriptor);
     }
 
-    public static <Solution_> VariableReferenceGraph buildGraphForStructureAndDirection(
+    static <Solution_> VariableReferenceGraph buildGraphForStructureAndDirection(
             GraphStructure.GraphStructureAndDirection graphStructureAndDirection, GraphDescriptor<Solution_> graphDescriptor) {
         return switch (graphStructureAndDirection.structure()) {
             case EMPTY -> EmptyVariableReferenceGraph.INSTANCE;

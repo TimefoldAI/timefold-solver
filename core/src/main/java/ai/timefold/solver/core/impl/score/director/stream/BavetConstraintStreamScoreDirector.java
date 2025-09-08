@@ -10,6 +10,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
@@ -65,9 +66,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         var solutionDescriptor = getSolutionDescriptor();
         var entityList = new ArrayList<>();
         solutionDescriptor.visitAllEntities(solution, entityList::add);
-        variableListenerSupport.getConsistencyTracker().setUnknownConsistencyFromEntityShadowVariablesInconsistent(
+        variableListenerSupport.setConsistencyTracker(ConsistencyTracker.frozen(
                 getSolutionDescriptor(),
-                entityList.toArray());
+                entityList.toArray()));
     }
 
     @Override

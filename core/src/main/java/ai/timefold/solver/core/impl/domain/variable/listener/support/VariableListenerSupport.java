@@ -64,7 +64,6 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
     private final NotifiableRegistry<Solution_> notifiableRegistry;
     private final Map<Demand<?>, SupplyWithDemandCount> supplyMap = new HashMap<>();
-    private final ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
 
     private final @Nullable ListVariableDescriptor<Solution_> listVariableDescriptor;
     private final List<ListVariableChangedNotification<Solution_>> listVariableChangedNotificationList;
@@ -77,6 +76,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private int nextGlobalOrder = 0;
     @Nullable
     private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
+    private ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
+
     @Nullable
     private ListVariableStateSupply<Solution_> listVariableStateSupply = null;
     private final List<ShadowVariableType> supportedShadowVariableTypeList;
@@ -224,6 +225,10 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public ConsistencyTracker<Solution_> getConsistencyTracker() {
         return consistencyTracker;
+    }
+
+    public void setConsistencyTracker(ConsistencyTracker<Solution_> consistencyTracker) {
+        this.consistencyTracker = consistencyTracker;
     }
 
     // ************************************************************************

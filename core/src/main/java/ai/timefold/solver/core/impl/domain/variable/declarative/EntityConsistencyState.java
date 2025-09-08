@@ -15,7 +15,7 @@ public final class EntityConsistencyState<Solution_, Entity_> {
     @Nullable
     private final ExternalizedShadowVariableInconsistentProcessor<Solution_> externalizedShadowVariableInconsistentProcessor;
 
-    private final VariableDescriptor<Solution_> randomDeclarativeVariableDescriptor;
+    private final VariableDescriptor<Solution_> arbitraryDeclarativeVariableDescriptor;
 
     EntityConsistencyState(EntityDescriptor<Solution_> entityDescriptor,
             IdentityHashMap<Entity_, Boolean> entityToIsInconsistentMap) {
@@ -24,7 +24,7 @@ public final class EntityConsistencyState<Solution_, Entity_> {
         var entityIsInconsistentDescriptor = entityDescriptor.getShadowVariablesInconsistentDescriptor();
         if (entityIsInconsistentDescriptor == null) {
             externalizedShadowVariableInconsistentProcessor = null;
-            randomDeclarativeVariableDescriptor = entityDescriptor.getShadowVariableDescriptors()
+            arbitraryDeclarativeVariableDescriptor = entityDescriptor.getShadowVariableDescriptors()
                     .stream()
                     .filter(variableDescriptor -> variableDescriptor instanceof DeclarativeShadowVariableDescriptor<?>)
                     .findFirst()
@@ -34,7 +34,7 @@ public final class EntityConsistencyState<Solution_, Entity_> {
         } else {
             externalizedShadowVariableInconsistentProcessor =
                     new ExternalizedShadowVariableInconsistentProcessor<>(entityIsInconsistentDescriptor);
-            randomDeclarativeVariableDescriptor = entityIsInconsistentDescriptor;
+            arbitraryDeclarativeVariableDescriptor = entityIsInconsistentDescriptor;
         }
     }
 
@@ -55,14 +55,19 @@ public final class EntityConsistencyState<Solution_, Entity_> {
                     isInconsistent);
         }
         // There may be no ShadowVariablesInconsistent shadow variable,
-        // so we use a random declarative shadow variable on the entity to notify the score director
+        // so we use an arbitrary declarative shadow variable on the entity to notify the score director
         // that the entity changed.
+        //
+        // This is needed because null is a valid return value for a supplier, so there
+        // is no guarantee any declarative would actually change when the entity
+        // changes from inconsistent to consistent (or vice versa).
+        // `forEach` checks consistency, and thus must be notified.
         //
         // Since declarative shadow variables cannot be used as sources for legacy variable listeners,
         // this does not cause any issues/additional recalculation of shadow variables.
-        changedVariableNotifier.beforeVariableChanged().accept(randomDeclarativeVariableDescriptor, entity);
+        changedVariableNotifier.beforeVariableChanged().accept(arbitraryDeclarativeVariableDescriptor, entity);
         entityToIsInconsistentMap.put(entity, isInconsistent);
-        changedVariableNotifier.afterVariableChanged().accept(randomDeclarativeVariableDescriptor, entity);
+        changedVariableNotifier.afterVariableChanged().accept(arbitraryDeclarativeVariableDescriptor, entity);
     }
 
     @Nullable

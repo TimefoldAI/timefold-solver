@@ -58,7 +58,9 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         affectedEntitiesUpdater.accept(changeSet);
     }
 
-    @Override
+    /**
+     * See {@link ConsistencyTracker#setUnknownConsistencyFromEntityShadowVariablesInconsistent}
+     */
     public void setUnknownInconsistencyValues() {
         graph.commitChanges(changeSet);
         affectedEntitiesUpdater.setUnknownInconsistencyValues();

@@ -91,9 +91,4 @@ public final class FixedVariableReferenceGraph<Solution_>
             }
         }
     }
-
-    @Override
-    public void setUnknownInconsistencyValues() {
-        // Consistency was updated in constructor
-    }
 }

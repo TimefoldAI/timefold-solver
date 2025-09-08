@@ -104,20 +104,6 @@ public final class BavetConstraintFactory<Solution_>
         public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
             return helper.getForEachPredicateForEntityDescriptorAndCriteria(entityDescriptor, criteria);
         }
-
-        @Override
-        public boolean equals(Object object) {
-            if (object instanceof ForEachFilteringCriteriaPredicateFunction<?, ?> that) {
-                return criteria == that.criteria
-                        && Objects.equals(entityDescriptor.getEntityClass(), that.entityDescriptor.getEntityClass());
-            }
-            return false;
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(entityDescriptor.getEntityClass(), criteria);
-        }
     }
 
     private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
