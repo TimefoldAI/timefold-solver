@@ -25,6 +25,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
 
     @SuppressWarnings("unchecked")
     public SingleDirectionalParentVariableReferenceGraph(
+            ConsistencyTracker<Solution_> consistencyTracker,
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
             TopologicalSorter topologicalSorter,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
@@ -41,9 +42,9 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         this.changedVariableNotifier = changedVariableNotifier;
         var shadowEntities = Arrays.stream(entities).filter(monitoredEntityClass::isInstance)
                 .sorted(topologicalOrderComparator).toArray();
-        var inconsistentDescriptor =
-                sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor()
-                        .getShadowVariablesInconsistentDescriptor();
+        var entityConsistencyState =
+                consistencyTracker.getDeclarativeEntityConsistencyState(
+                        sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor());
 
         var updaterIndex = 0;
         for (var variableDescriptor : sortedDeclarativeShadowVariableDescriptors) {
@@ -52,7 +53,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
                     variableMetaModel,
                     updaterIndex,
                     variableDescriptor,
-                    inconsistentDescriptor,
+                    entityConsistencyState,
                     variableDescriptor.getMemberAccessor(),
                     variableDescriptor.getCalculator()::executeGetter);
             sortedVariableUpdaterInfos[updaterIndex++] = variableUpdaterInfo;
@@ -65,13 +66,8 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         }
 
         changedEntities.addAll(List.of(shadowEntities));
-
-        if (inconsistentDescriptor != null) {
-            for (var shadowEntity : shadowEntities) {
-                changedVariableNotifier.beforeVariableChanged().accept(inconsistentDescriptor, shadowEntity);
-                inconsistentDescriptor.setValue(shadowEntity, false);
-                changedVariableNotifier.afterVariableChanged().accept(inconsistentDescriptor, shadowEntity);
-            }
+        for (var shadowEntity : shadowEntities) {
+            entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, shadowEntity, false);
         }
 
         updateChanged();

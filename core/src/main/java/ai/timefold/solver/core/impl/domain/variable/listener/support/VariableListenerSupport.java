@@ -22,6 +22,7 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultTopologicalOrderGraph;
@@ -75,6 +76,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private int nextGlobalOrder = 0;
     @Nullable
     private DefaultShadowVariableSession<Solution_> shadowVariableSession = null;
+    private ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
+
     @Nullable
     private ListVariableStateSupply<Solution_> listVariableStateSupply = null;
     private final List<ShadowVariableType> supportedShadowVariableTypeList;
@@ -220,6 +223,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    public ConsistencyTracker<Solution_> getConsistencyTracker() {
+        return consistencyTracker;
+    }
+
+    public void setConsistencyTracker(ConsistencyTracker<Solution_> consistencyTracker) {
+        this.consistencyTracker = consistencyTracker;
+    }
+
     // ************************************************************************
     // Lifecycle methods
     // ************************************************************************
@@ -229,13 +240,14 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
             notifiable.resetWorkingSolution();
         }
 
-        if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()) {
+        if (!scoreDirector.getSolutionDescriptor().getDeclarativeShadowVariableDescriptors().isEmpty()
+                && !consistencyTracker.isFrozen()) {
             var shadowVariableSessionFactory = new DefaultShadowVariableSessionFactory<>(
                     scoreDirector.getSolutionDescriptor(),
                     scoreDirector,
                     shadowVariableGraphCreator);
-            shadowVariableSession = shadowVariableSessionFactory.forSolution(scoreDirector.getWorkingSolution());
-            triggerVariableListenersInNotificationQueues();
+            shadowVariableSession =
+                    shadowVariableSessionFactory.forSolution(consistencyTracker, scoreDirector.getWorkingSolution());
         }
     }
 

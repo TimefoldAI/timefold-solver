@@ -1,8 +1,11 @@
 package ai.timefold.solver.test.api.score.stream;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -21,6 +24,10 @@ import ai.timefold.solver.core.testdomain.list.pinned.noshadows.TestdataPinnedNo
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyConstraintProvider;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySolution;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyValue;
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableEntity;
 import ai.timefold.solver.core.testdomain.shadow.multiplelistener.TestdataListMultipleShadowVariableSolution;
@@ -55,6 +62,12 @@ class SingleConstraintAssertionTest {
             ConstraintVerifier.build(new TestdataConstraintVerifierJustificationProvider(),
                     TestdataConstraintVerifierSolution.class,
                     TestdataConstraintVerifierFirstEntity.class);
+
+    private final ConstraintVerifier<TestdataDependencyConstraintProvider, TestdataDependencySolution> constraintVerifierForConsistency =
+            ConstraintVerifier.build(new TestdataDependencyConstraintProvider(),
+                    TestdataDependencySolution.class,
+                    TestdataDependencyEntity.class,
+                    TestdataDependencyValue.class);
 
     @Test
     void triggerVariableListenersListSingleSolution() {
@@ -1274,5 +1287,170 @@ class SingleConstraintAssertionTest {
                 .hasMessageContaining("Actual")
                 .hasMessageContaining("No Indictment")
                 .hasMessageContaining("Expected but not found:");
+    }
+
+    @Test
+    void shouldUpdateInternalConsistencyStateIfInconsistentIsNull() {
+        var dependency = new TestdataDependencyValue("dependency", Duration.ofHours(1L));
+        var dependent = new TestdataDependencyValue("dependent", Duration.ofHours(1L), List.of(dependency));
+        var entity = new TestdataDependencyEntity(LocalDateTime.MIN);
+
+        dependent.setEntity(entity);
+        dependency.setEntity(entity);
+
+        dependent.setPreviousValue(null);
+        dependency.setPreviousValue(dependent);
+
+        dependent.setInvalid(null);
+        dependency.setInvalid(null);
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .given(dependency, dependent)
+                .penalizes(0);
+
+        assertThat(dependent.isInvalid()).isNull();
+        assertThat(dependency.isInvalid()).isNull();
+
+        dependent.setPreviousValue(dependency);
+        dependency.setPreviousValue(null);
+        dependent.setStartTime(LocalDateTime.MIN);
+        dependent.setEndTime(LocalDateTime.MIN.plusHours(1));
+        dependency.setStartTime(LocalDateTime.MIN.plusHours(1));
+        dependency.setEndTime(LocalDateTime.MIN.plusHours(2));
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .given(dependency, dependent)
+                // 60 + 120 = 180
+                .penalizesBy(180);
+
+        assertThat(dependent.isInvalid()).isNull();
+        assertThat(dependency.isInvalid()).isNull();
+    }
+
+    @Test
+    void shouldNotUpdateInternalConsistencyStateIfInconsistentIsSpecified() {
+        var dependency = new TestdataDependencyValue("dependency", Duration.ofHours(1L));
+        var dependent = new TestdataDependencyValue("dependent", Duration.ofHours(1L), List.of(dependency));
+        var entity = new TestdataDependencyEntity(LocalDateTime.MIN);
+
+        dependent.setEntity(entity);
+        dependency.setEntity(entity);
+
+        dependent.setPreviousValue(null);
+        dependency.setPreviousValue(dependent);
+
+        dependency.setInvalid(false);
+        dependency.setStartTime(LocalDateTime.MIN.plusHours(1));
+        dependency.setEndTime(LocalDateTime.MIN.plusHours(2));
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .given(dependency, dependent)
+                .penalizesBy(120);
+
+        var singleValue = new TestdataDependencyValue("single", Duration.ofHours(1L));
+        singleValue.setInvalid(false);
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
+                .given(singleValue)
+                .penalizes(0);
+
+        singleValue.setInvalid(true);
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
+                .given(singleValue)
+                .penalizes(1);
+    }
+
+    @Test
+    void shouldUpdateInternalConsistencyStateIfInconsistentIsNullGivenSolution() {
+        var dependency = new TestdataDependencyValue("dependency", Duration.ofHours(1L));
+        var dependent = new TestdataDependencyValue("dependent", Duration.ofHours(1L), List.of(dependency));
+        var entity = new TestdataDependencyEntity(LocalDateTime.MIN);
+
+        var solution = new TestdataDependencySolution();
+        solution.setEntities(List.of(entity));
+        solution.setValues(List.of(dependency, dependent));
+
+        entity.setValues(List.of(dependent, dependency));
+        dependent.setEntity(entity);
+        dependency.setEntity(entity);
+
+        dependent.setPreviousValue(null);
+        dependency.setPreviousValue(dependent);
+
+        dependent.setInvalid(null);
+        dependency.setInvalid(null);
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .givenSolution(solution)
+                .penalizes(0);
+
+        assertThat(dependent.isInvalid()).isNull();
+        assertThat(dependency.isInvalid()).isNull();
+
+        entity.setValues(List.of(dependency, dependent));
+        dependent.setPreviousValue(dependency);
+        dependency.setPreviousValue(null);
+        dependent.setStartTime(LocalDateTime.MIN);
+        dependent.setEndTime(LocalDateTime.MIN.plusHours(1));
+        dependency.setStartTime(LocalDateTime.MIN.plusHours(1));
+        dependency.setEndTime(LocalDateTime.MIN.plusHours(2));
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .givenSolution(solution)
+                // 60 + 120 = 180
+                .penalizesBy(180);
+
+        assertThat(dependent.isInvalid()).isNull();
+        assertThat(dependency.isInvalid()).isNull();
+    }
+
+    @Test
+    void shouldUpdateInternalConsistencyStateIfInconsistentIsSpecifiedGivenSolution() {
+        var dependency = new TestdataDependencyValue("dependency", Duration.ofHours(1L));
+        var dependent = new TestdataDependencyValue("dependent", Duration.ofHours(1L), List.of(dependency));
+        var entity = new TestdataDependencyEntity(LocalDateTime.MIN);
+
+        var solution = new TestdataDependencySolution();
+        solution.setEntities(List.of(entity));
+        solution.setValues(List.of(dependency, dependent));
+
+        dependent.setEntity(entity);
+        dependency.setEntity(entity);
+
+        dependent.setPreviousValue(null);
+        dependency.setPreviousValue(dependent);
+
+        dependency.setInvalid(false);
+        dependency.setStartTime(LocalDateTime.MIN.plusHours(1));
+        dependency.setEndTime(LocalDateTime.MIN.plusHours(2));
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .givenSolution(solution)
+                .penalizesBy(120);
+    }
+
+    @Test
+    void shouldUpdateInternalConsistencyStateIfInconsistentIsSpecifiedGivenSolutionUnfiltered() {
+        var entity = new TestdataDependencyEntity(LocalDateTime.MIN);
+
+        var solution = new TestdataDependencySolution();
+        var singleValue = new TestdataDependencyValue("single", Duration.ofHours(1L));
+
+        solution.setEntities(List.of(entity));
+        solution.setValues(List.of(singleValue));
+
+        singleValue.setInvalid(false);
+        singleValue.setEntity(entity);
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
+                .givenSolution(solution)
+                .penalizes(0);
+
+        singleValue.setInvalid(true);
+
+        constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
+                .givenSolution(solution)
+                .penalizes(1);
     }
 }

@@ -23,10 +23,26 @@ public final class FixedVariableReferenceGraph<Solution_>
 
         // Now that we know the topological order of nodes, add
         // each node to changed.
+        changedVariableNotifier = outerGraph.changedVariableNotifier;
         for (var node = 0; node < nodeList.size(); node++) {
             changeSet.add(graph.getTopologicalOrder(node));
+            var variableReference = nodeList.get(node).variableReferences().get(0);
+            var entityConsistencyState = variableReference.entityConsistencyState();
+            if (variableReference.groupEntities() != null) {
+                for (var groupEntity : variableReference.groupEntities()) {
+                    entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier, groupEntity,
+                            false);
+                }
+            } else {
+                for (var shadowEntity : outerGraph.entityToEntityId.keySet()) {
+                    if (variableReference.variableDescriptor().getEntityDescriptor().getEntityClass()
+                            .isInstance(shadowEntity)) {
+                        entityConsistencyState.setEntityIsInconsistent(changedVariableNotifier,
+                                shadowEntity, false);
+                    }
+                }
+            }
         }
-        changedVariableNotifier = outerGraph.changedVariableNotifier;
     }
 
     @Override

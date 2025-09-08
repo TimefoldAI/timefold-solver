@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.director.stream;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -9,6 +10,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.AbstractScoreDirector;
@@ -52,9 +54,27 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         clearVariableListenerEvents();
     }
 
+    /**
+     * The function is exclusively available for the Bavet score director, and its use must be approached with caution.
+     * The primary purpose of this method is
+     * to enable the {@code ConstraintVerifier}
+     * to update the consistency status of entities in the solution without updating shadows.
+     * <p>
+     * This must be done before setWorkingSolutionWithoutUpdatingShadows, which inserts the entities.
+     */
+    public void updateConsistencyFromSolution(Solution_ solution) {
+        var solutionDescriptor = getSolutionDescriptor();
+        var entityList = new ArrayList<>();
+        solutionDescriptor.visitAllEntities(solution, entityList::add);
+        variableListenerSupport.setConsistencyTracker(ConsistencyTracker.frozen(
+                getSolutionDescriptor(),
+                entityList.toArray()));
+    }
+
     @Override
     public void setWorkingSolutionWithoutUpdatingShadows(Solution_ workingSolution) {
-        session = scoreDirectorFactory.newSession(workingSolution, constraintMatchPolicy, derived);
+        session = scoreDirectorFactory.newSession(workingSolution, variableListenerSupport.getConsistencyTracker(),
+                constraintMatchPolicy, derived);
         super.setWorkingSolutionWithoutUpdatingShadows(workingSolution, session::insert);
     }
 
