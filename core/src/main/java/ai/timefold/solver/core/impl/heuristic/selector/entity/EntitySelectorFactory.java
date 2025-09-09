@@ -1,9 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.entity;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -116,13 +114,14 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection
             entitySelector = applyNearbySelection(configPolicy, nearbySelectionConfig, minimumCacheType,
                     resolvedSelectionOrder, entitySelector);
+        } else {
+            // The nearby selector will implement its own logic to filter out unreachable elements.
+            // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
+            // otherwise, we would end up applying the filtering logic twice.
+            entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, valueRangeRecorderId,
+                    minimumCacheType, inheritedSelectionOrder, baseRandomSelection);
         }
-        // The nearby selector will implement its own logic to filter out unreachable elements.
-        // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
-        // otherwise, we would end up applying the filtering logic twice.
-        entitySelector =
-                applyFiltering(configPolicy, entitySelector, nearbySelectionConfig == null ? valueRangeRecorderId : null,
-                        minimumCacheType, resolvedSelectionOrder, baseRandomSelection, instanceCache);
+        entitySelector = applyFiltering(entitySelector, instanceCache);
         entitySelector = applySorting(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyShuffling(resolvedCacheType, resolvedSelectionOrder, entitySelector);
@@ -195,11 +194,14 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
 
     private EntitySelector<Solution_> applyEntityValueRangeFiltering(HeuristicConfigPolicy<Solution_> configPolicy,
             EntitySelector<Solution_> entitySelector, ValueRangeRecorderId valueRangeRecorderId,
-            List<SelectionFilter<Solution_, Object>> filterList, SelectionCacheType minimumCacheType,
+            SelectionCacheType minimumCacheType,
             SelectionOrder selectionOrder, boolean randomSelection) {
+        if (valueRangeRecorderId == null || valueRangeRecorderId.recorderId() == null) {
+            return entitySelector;
+        }
         if (valueRangeRecorderId.basicVariable()) {
             var replayingEntitySelector = buildMimicReplaying(configPolicy, valueRangeRecorderId.recorderId());
-            return new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, filterList, randomSelection);
+            return new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, randomSelection);
         } else {
             var valueSelectorConfig = new ValueSelectorConfig()
                     .withMimicSelectorRef(valueRangeRecorderId.recorderId());
@@ -218,16 +220,12 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                         resolvedSelectionOrder, entitySelector);
     }
 
-    private EntitySelector<Solution_> applyFiltering(HeuristicConfigPolicy<Solution_> configPolicy,
-            EntitySelector<Solution_> entitySelector, ValueRangeRecorderId valueRangeRecorderId,
-            SelectionCacheType minimumCacheType, SelectionOrder resolvedSelectionOrder, boolean baseRandomSelection,
+    private EntitySelector<Solution_> applyFiltering(EntitySelector<Solution_> entitySelector,
             ClassInstanceCache instanceCache) {
-        var enableValueRangeFiltering = valueRangeRecorderId != null && valueRangeRecorderId.recorderId() != null;
         var entityDescriptor = entitySelector.getEntityDescriptor();
-        List<SelectionFilter<Solution_, Object>> filterList = Collections.emptyList();
         if (hasFiltering(entityDescriptor)) {
             var filterClass = config.getFilterClass();
-            filterList = new ArrayList<>(filterClass == null ? 1 : 2);
+            var filterList = new ArrayList<SelectionFilter<Solution_, Object>>(filterClass == null ? 1 : 2);
             if (filterClass != null) {
                 SelectionFilter<Solution_, Object> selectionFilter =
                         instanceCache.newInstance(config, "filterClass", filterClass);
@@ -238,11 +236,6 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                 filterList.add((scoreDirector, selection) -> entityDescriptor.getEffectiveMovableEntityFilter()
                         .test(scoreDirector.getWorkingSolution(), selection));
             }
-        }
-        if (enableValueRangeFiltering) {
-            entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, valueRangeRecorderId, filterList,
-                    minimumCacheType, resolvedSelectionOrder, baseRandomSelection);
-        } else if (!filterList.isEmpty()) {
             // Do not filter out initialized entities here for CH and ES, because they can be partially initialized
             // Instead, ValueSelectorConfig.applyReinitializeVariableFiltering() does that.
             entitySelector = FilteringEntitySelector.of(entitySelector, SelectionFilter.compose(filterList));
