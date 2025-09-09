@@ -190,24 +190,12 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
     @Override
     public ListIterator<Object> listIterator() {
-        if (!randomSelection) {
-            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.listIterator(),
-                    basicVariableDescriptors, valueRangeManager);
-        } else {
-            throw new IllegalStateException("The selector (%s) does not support a ListIterator with randomSelection (%s)."
-                    .formatted(this, randomSelection));
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public ListIterator<Object> listIterator(int index) {
-        if (!randomSelection) {
-            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity,
-                    childEntitySelector.listIterator(index), basicVariableDescriptors, valueRangeManager);
-        } else {
-            throw new IllegalStateException("The selector (%s) does not support a ListIterator with randomSelection (%s)."
-                    .formatted(this, randomSelection));
-        }
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -283,8 +271,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
     }
 
-    private static class OriginalFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_>
-            implements ListIterator<Object> {
+    private static class OriginalFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_> {
 
         private final ListIterator<Object> entityIterator;
         private Object selected = null;
@@ -336,56 +323,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return pickSelected();
         }
 
-        @Override
-        public boolean hasPrevious() {
-            this.selected = pickPrevious();
-            return selected != null;
-        }
-
-        private Object pickPrevious() {
-            if (selected != null) {
-                throw new IllegalStateException("The next value has already been picked.");
-            }
-            initialize();
-            this.selected = null;
-            while (entityIterator.hasPrevious()) {
-                var entity = entityIterator.previous();
-                if (isReachable(entity)) {
-                    return entity;
-                }
-            }
-            return null;
-        }
-
-        @Override
-        public Object previous() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int nextIndex() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public int previousIndex() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void set(Object o) {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        public void add(Object o) {
-            throw new UnsupportedOperationException();
-        }
     }
 
     private static class RandomFilteringValueRangeIterator<Solution_>

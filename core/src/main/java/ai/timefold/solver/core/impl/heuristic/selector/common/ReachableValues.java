@@ -85,7 +85,7 @@ public final class ReachableValues {
         if (originItemValue == null) {
             return false;
         }
-        return originItemValue.entitySet.containsKey(entity);
+        return originItemValue.entityMap.containsKey(entity);
     }
 
     public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
@@ -96,7 +96,7 @@ public final class ReachableValues {
         if (otherValue == null) {
             return acceptsNullValue;
         }
-        return originItemValue.valueSet.containsKey(Objects.requireNonNull(otherValue));
+        return originItemValue.valueMap.containsKey(Objects.requireNonNull(otherValue));
     }
 
     public boolean matchesValueClass(Object value) {
@@ -106,28 +106,28 @@ public final class ReachableValues {
     @NullMarked
     public static final class ReachableItemValue {
         private final Object value;
-        private final Map<Object, Object> entitySet;
-        private final Map<Object, Object> valueSet;
+        private final Map<Object, Object> entityMap;
+        private final Map<Object, Object> valueMap;
         private final List<Object> randomAccessEntityList;
         private final List<Object> randomAccessValueList;
 
         public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
             this.value = value;
-            this.entitySet = new IdentityHashMap<>(entityListSize);
+            this.entityMap = new IdentityHashMap<>(entityListSize);
             this.randomAccessEntityList = new ArrayList<>(entityListSize);
-            this.valueSet = ConfigUtils.isGenericTypeImmutable(value.getClass()) ? new LinkedHashMap<>(valueListSize)
+            this.valueMap = ConfigUtils.isGenericTypeImmutable(value.getClass()) ? new LinkedHashMap<>(valueListSize)
                     : new IdentityHashMap<>(valueListSize);
             this.randomAccessValueList = new ArrayList<>(valueListSize);
         }
 
         public void addEntity(Object entity) {
-            if (entitySet.put(entity, entity) == null) {
+            if (entityMap.put(entity, entity) == null) {
                 randomAccessEntityList.add(entity);
             }
         }
 
         public void addValue(Object value) {
-            if (valueSet.put(value, value) == null) {
+            if (valueMap.put(value, value) == null) {
                 randomAccessValueList.add(value);
             }
         }

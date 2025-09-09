@@ -1,13 +1,11 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
-import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockEntitySelector;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getEntityDescriptor;
 import static ai.timefold.solver.core.testutil.PlannerAssert.DO_NOT_ASSERT_SIZE;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterableSelector;
-import static ai.timefold.solver.core.testutil.PlannerAssert.assertIterableSelectorWithoutSize;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -295,55 +293,6 @@ class SwapMoveSelectorTest {
     }
 
     @Test
-    void singleVarOriginalLeftUnequalsRightWithEntityValueRange() {
-        var v1 = new TestdataValue("1");
-        var v2 = new TestdataValue("2");
-        var v3 = new TestdataValue("3");
-        var v4 = new TestdataValue("4");
-        var e1 = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v1, v4));
-        var e2 = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3));
-        var e3 = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v1, v3, v4));
-        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
-        solution.setEntityList(List.of(e1, e2, e3));
-
-        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
-        scoreDirector.setWorkingSolution(solution);
-
-        var leftEntitySelector =
-                mockEntitySelector(TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
-        var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
-
-        var entitySelector =
-                mockEntitySelector(TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
-        var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
-        var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
-
-        var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
-
-        var solverScope = solvingStarted(moveSelector, scoreDirector);
-        phaseStarted(moveSelector, solverScope);
-        scoreDirector.setWorkingSolution(solution);
-
-        // We assume that any entity is reachable if its assigned values are null or if it can be reached by the inverse entities
-        assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
-
-        // e1(v1) can swap with e3(v4)
-        // e1(v1) cannot swap with e2(v3) because e1 does not accept v3
-        // e2(v3) cannot swap with e1(v1) because e2 does not accept v1
-        // e2(v3) cannot swap with e3(v4) because e2 does not accept v4
-        // e3(v4) can swap with e1(v1)
-        // e3(v4) cannot swap with e2(v3) because e2 does not accept v4
-        e1.setValue(v1);
-        e2.setValue(v3);
-        e3.setValue(v4);
-        scoreDirector.setWorkingSolution(solution);
-        phaseStarted(moveSelector, solverScope);
-        assertIterableSelectorWithoutSize(moveSelector, "A<->C", "C<->A");
-    }
-
-    @Test
     void singleVarRandomSelectionWithEntityValueRange() {
         var v1 = new TestdataValue("1");
         var v2 = new TestdataValue("2");
@@ -393,75 +342,6 @@ class SwapMoveSelectorTest {
         random.reset(0, 1, 2, 1);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
-    }
-
-    @Test
-    void multiVarOriginalLeftUnequalsRightWithEntityValueRange() {
-        var solution = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution();
-        var v1 = new TestdataValue("1");
-        var v2 = new TestdataValue("2");
-        var v3 = new TestdataValue("3");
-        var v4 = new TestdataValue("4");
-        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("A", List.of(v1, v4), List.of(v1, v4));
-        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
-        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("C", List.of(v1, v3, v4), List.of(v1, v3, v4));
-        solution.setEntityList(List.of(e1, e2, e3));
-
-        var scoreDirector =
-                mockScoreDirector(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.buildSolutionDescriptor());
-        scoreDirector.setWorkingSolution(solution);
-
-        var leftEntitySelector =
-                mockEntitySelector(TestdataAllowsUnassignedMultiVarEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
-        var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
-
-        var entitySelector =
-                mockEntitySelector(TestdataAllowsUnassignedMultiVarEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3);
-        var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
-        var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, false);
-
-        var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
-                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
-
-        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
-        phaseStarted(moveSelector, solverScope);
-
-        // We assume that any entity is reachable if its assigned values are null or if it can be reached by the inverse entities
-        scoreDirector.setWorkingSolution(solution);
-        assertIterableSelectorWithoutSize(moveSelector, "A<->B", "A<->C", "B<->A", "B<->C", "C<->A", "C<->B");
-
-        // e1(v1) cannot swap with e2(v3) because e1 does not accept v3
-        // e1(v1) can swap with e3(v4)
-        // e2(v3) cannot swap with e1(v1) because e2 does not accept v1
-        // e2(v3) cannot swap with e3(v4) because e2 does not accept v4
-        // e3(v4) can swap with e1(v1)
-        // e3(v4) cannot swap with e2(v3) because e2 does not accept v4
-        e1.setValue(v1);
-        e1.setSecondValue(v1);
-        e2.setValue(v3);
-        e2.setSecondValue(v1);
-        e3.setValue(v4);
-        e3.setSecondValue(v1);
-        scoreDirector.setWorkingSolution(solution);
-        phaseStarted(moveSelector, solverScope);
-        assertIterableSelectorWithoutSize(moveSelector, "A<->C", "C<->A");
-
-        // e1(v4. v4) cannot swap with e2(v3, v3) because e1 does not accept v3 in both variables
-        // e1(v4, v4) cannot swap with e3(v1, v3) because e1 does not accept v3 in the second variable
-        // e2(v3, v3) cannot swap with e1(v4. v4) because e2 does not accept v4 in both variables
-        // e2(v3, v3) cannot swap with e3(v1, v3) because e2 does not accept v1 in the first variable
-        // e3(v1, v3) cannot swap with e1(v4. v4) because e1 does not accept v3 in both variables
-        // e3(v1, v3) cannot swap with e2(v3, v3) because e2 does not accept v1 in the first variable
-        e1.setValue(v1);
-        e1.setSecondValue(v1);
-        e2.setValue(v3);
-        e2.setSecondValue(v3);
-        e3.setValue(v1);
-        e3.setSecondValue(v3);
-        scoreDirector.setWorkingSolution(solution);
-        phaseStarted(moveSelector, solverScope);
-        assertIterableSelectorWithoutSize(moveSelector);
     }
 
     @Test
