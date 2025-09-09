@@ -1244,54 +1244,86 @@ because the benchmark report data structure often changes.
 
 ==== Using the Benchmark Aggregator programmatically
 
-For automated or integrated workflows, you can use the `BenchmarkAggregator.aggregate()` method directly to create aggregated reports programmatically. This approach is particularly useful in CI/CD pipelines, data science analytics, research studies, or when you need a comprehensive view of multiple benchmark runs as part of a larger application workflow.
+For automated or integrated workflows, you can use the BenchmarkAggregator methods to create aggregated reports programmatically. This approach is particularly useful in CI/CD pipelines, data science analytics, research studies, or when you need a comprehensive view of multiple benchmark runs as part of a larger application workflow.
 
+===== Aggregating All Benchmark Results
+
+The simplest approach is to aggregate all benchmark results found in the configured benchmark directory:
 [source,java,options="nowrap"]
 ----
-public File aggregateBenchmarks() {
+public File aggregateAllBenchmarks() {
     // Load benchmark configuration
     PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromXmlResource("benchmarkConfig.xml");
-    File benchmarkDirectory = benchmarkConfig.getBenchmarkDirectory();
-    if (!benchmarkDirectory.exists() || !benchmarkDirectory.isDirectory()) {
-        throw new IllegalArgumentException("Benchmark directory does not exist: " + benchmarkDirectory);
-    }
 
-    // Read all existing benchmark results from the directory
-    BenchmarkResultIO benchmarkResultIO = new BenchmarkResultIO();
-    List<PlannerBenchmarkResult> plannerBenchmarkResults =
-            benchmarkResultIO.readPlannerBenchmarkResultList(benchmarkDirectory);
-
-    if (plannerBenchmarkResults.isEmpty()) {
-        throw new IllegalArgumentException("No benchmark results found in directory: " + benchmarkDirectory);
-    }
-
-    // Collect all single benchmark results and preserve solver names
-    List<SingleBenchmarkResult> allSingleBenchmarkResults = new ArrayList<>();
-    Map<SolverBenchmarkResult, String> solverBenchmarkResultNameMap = new HashMap<>();
-
-    for (PlannerBenchmarkResult plannerResult : plannerBenchmarkResults) {
-        for (SolverBenchmarkResult solverResult : plannerResult.getSolverBenchmarkResultList()) {
-            allSingleBenchmarkResults.addAll(solverResult.getSingleBenchmarkResultList());
-            solverBenchmarkResultNameMap.put(solverResult, solverResult.getName());
-        }
-    }
-
-    // Create and configure the benchmark aggregator
+    // Create and use the benchmark aggregator
     BenchmarkAggregator aggregator = new BenchmarkAggregator();
-    aggregator.setBenchmarkDirectory(benchmarkDirectory);
-    aggregator.setBenchmarkReportConfig(benchmarkConfig.getBenchmarkReportConfig());
 
-    // Perform the aggregation - returns HTML report file
-    return aggregator.aggregate(allSingleBenchmarkResults, solverBenchmarkResultNameMap);
+    // Aggregate all benchmark results - returns HTML report file
+    return aggregator.aggregateBenchmarks(benchmarkConfig);
 }
 ----
 
-The `BenchmarkAggregator.aggregate()` method takes two parameters:
+===== Discovering Available Benchmark Directories
 
-* `allSingleBenchmarkResults`: A list of **SingleBenchmarkResult** objects from all the benchmarks you want to aggregate
-* `solverBenchmarkResultNameMap`: A map that preserves the original solver names of **SolverBenchmarkResult** for proper identification in the aggregated report
+To see what benchmark results are available for aggregation:
+[source,java,options="nowrap"]
+----
+public List<String> getAvailableBenchmarks() {
+    PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromXmlResource("benchmarkConfig.xml");
+    BenchmarkAggregator aggregator = new BenchmarkAggregator();
+    // Returns list of directory names that contain valid benchmark results
+    return aggregator.getAvailableBenchmarkDirectories(benchmarkConfig);
+}
+----
 
-The method returns a `File` pointing to the generated HTML overview report that contains the aggregated benchmark results.
+===== Aggregating Selected Benchmark Results
+
+For more control, you can aggregate specific benchmark results by selecting particular subdirectories:
+[source,java,options="nowrap"]
+----
+public File aggregateSelectedBenchmarks() {
+    PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromXmlResource("benchmarkConfig.xml");
+    BenchmarkAggregator aggregator = new BenchmarkAggregator();
+
+    // Get available benchmark directories
+    List<String> availableDirectories =
+            aggregator.getAvailableBenchmarkDirectories(benchmarkConfig);
+
+    // Select specific directories to aggregate (example: latest two benchmarks)
+    List<String> selectedDirectories = availableDirectories.stream()
+            .sorted(Collections.reverseOrder())
+            .limit(2)
+            .collect(Collectors.toList());
+
+    // Aggregate only selected benchmark results
+    return aggregator.aggregateSelectedBenchmarks(benchmarkConfig, selectedDirectories);
+}
+----
+
+===== Aggregating and Opening in Browser
+
+For interactive analysis, you can aggregate benchmarks and automatically open the report in the default browser:
+[source,java,options="nowrap"]
+----
+public File aggregateAndView() {
+    PlannerBenchmarkConfig benchmarkConfig = PlannerBenchmarkConfig.createFromXmlResource("benchmarkConfig.xml");
+    BenchmarkAggregator aggregator = new BenchmarkAggregator();
+
+    // Aggregate all benchmarks and open HTML report in browser
+    return aggregator.aggregateAndShowReportInBrowser(benchmarkConfig);
+}
+----
+
+===== Method Overview
+
+The BenchmarkAggregator provides the following public methods:
+
+* `aggregateBenchmarks(PlannerBenchmarkConfig)` - Aggregates all benchmark results found in the configured directory
+* `aggregateSelectedBenchmarks(PlannerBenchmarkConfig, List<String>)` - Aggregates benchmark results from specific subdirectories by name
+* `getAvailableBenchmarkDirectories(PlannerBenchmarkConfig)` - Returns list of available benchmark subdirectories with valid results
+* `aggregateAndShowReportInBrowser(PlannerBenchmarkConfig)` - Aggregates all benchmarks and opens the HTML report in the default browser
+
+All aggregation methods return a `File` pointing to the generated HTML overview report that contains the aggregated benchmark results.
 
 NOTE: All the input reports which are being merged should have been generated with the same Timefold Solver version as the `BenchmarkAggregator`.
 Using reports from different Timefold Solver major or minor versions are not guaranteed to succeed and deliver correct information,

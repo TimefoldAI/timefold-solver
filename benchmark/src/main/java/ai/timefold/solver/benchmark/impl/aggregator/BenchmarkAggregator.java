@@ -5,7 +5,11 @@ import java.awt.Desktop.Action;
 import java.io.File;
 import java.io.IOException;
 import java.time.OffsetDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import ai.timefold.solver.benchmark.config.PlannerBenchmarkConfig;
