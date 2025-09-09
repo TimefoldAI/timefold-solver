@@ -11,7 +11,6 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMoveSelector;
@@ -30,13 +29,13 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * <p>
  * The decorator can only be applied to basic variables.
  * <code>
- * <p>
+ *
  * e1 = entity_range[v1, v2, v3]
- * <p>
+ *
  * e2 = entity_range[v1, v4]
- * <p>
+ *
  * e3 = entity_range[v1, v4, v5]
- * <p>
+ *
  * </code>
  * <p>
  * Let's consider the following use-cases:
@@ -177,18 +176,12 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            if (basicVariableDescriptors.length == 1) {
-                return new SingleVariableRandomFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities,
-                        basicVariableDescriptors[0], valueRangeManager.getReachableValues(basicVariableDescriptors[0]),
-                        valueRangeManager, workingRandom);
-            } else {
-                // Experiments have shown that a large number of attempts do not scale well,
-                // and 10 seems like an appropriate limit. 
-                // So we won't spend excessive time trying to generate a single move for the current selection.
-                // If we are unable to generate a move, the move iterator can still be used in later iterations.
-                return new MultiVariableRandomFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities,
-                        basicVariableDescriptors, valueRangeManager, workingRandom, 10);
-            }
+            // Experiments have shown that a large number of attempts do not scale well,
+            // and 10 seems like an appropriate limit. 
+            // So we won't spend excessive time trying to generate a single move for the current selection.
+            // If we are unable to generate a move, the move iterator can still be used in later iterations.
+            return new RandomFilteringValueRangeIterator<>(this::selectReplayedEntity, allEntities,
+                    basicVariableDescriptors, valueRangeManager, workingRandom, 10);
         } else {
             return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.listIterator(),
                     basicVariableDescriptors, valueRangeManager);
@@ -276,19 +269,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             for (var basicVariableDescriptor : basicVariableDescriptors) {
                 if (!isReachable(entity, basicVariableDescriptor.getValue(entity), otherEntity,
                         basicVariableDescriptor.getValue(otherEntity), basicVariableDescriptor, valueRangeManager)) {
-                    return false;
-                }
-            }
-            return true;
-        }
-
-        boolean isReachable(Object entity, Object value, Object otherEntity, Object otherValue) {
-            if (entity == otherEntity) {
-                // Same entity cannot be swapped
-                return false;
-            }
-            for (var basicVariableDescriptor : basicVariableDescriptors) {
-                if (!isReachable(entity, value, otherEntity, otherValue, basicVariableDescriptor, valueRangeManager)) {
                     return false;
                 }
             }
@@ -408,101 +388,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
     }
 
-    /**
-     * When there is only one basic single variable, the list of available entities can be optimized,
-     * and the iterator will iterate only over the reachable entities of a given entity's assigned value.
-     *
-     * @param <Solution_> the solution type
-     */
-    private static class SingleVariableRandomFilteringValueRangeIterator<Solution_>
-            extends AbstractFilteringValueRangeIterator<Solution_> {
-
-        private final BasicVariableDescriptor<Solution_> basicVariableDescriptor;
-        private final List<Object> allEntities;
-        private final ReachableValues reachableValues;
-        private final Random workingRandom;
-        private int maxBailoutSize;
-        private Object currentReplayedEntity = null;
-        private Object currentReplayedValue = null;
-        private List<Object> entities;
-
-        @SuppressWarnings("unchecked")
-        private SingleVariableRandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
-                List<Object> allEntities, BasicVariableDescriptor<Solution_> basicVariableDescriptor,
-                ReachableValues reachableValues, ValueRangeManager<Solution_> valueRangeManager, Random workingRandom) {
-            super(upcomingEntitySupplier, new BasicVariableDescriptor[] { basicVariableDescriptor }, valueRangeManager);
-            this.basicVariableDescriptor = basicVariableDescriptor;
-            this.allEntities = allEntities;
-            this.reachableValues = reachableValues;
-            this.workingRandom = workingRandom;
-        }
-
-        @Override
-        void load(Object replayedEntity) {
-            this.currentReplayedEntity = replayedEntity;
-            this.currentReplayedValue = basicVariableDescriptor.getValue(replayedEntity);
-            if (currentReplayedValue == null) {
-                // No value is assigned, then we test all available entities
-                this.entities = allEntities;
-                // Experiments have shown that a large number of attempts do not scale well,
-                // and 10 seems like an appropriate limit.
-                this.maxBailoutSize = 10;
-            } else {
-                // Only reachable entities to the values are evaluated
-                this.entities = reachableValues.extractEntitiesAsList(currentReplayedValue);
-                this.maxBailoutSize = entities.size();
-            }
-        }
-
-        @Override
-        public boolean hasNext() {
-            initialize();
-            return entities != null && !entities.isEmpty();
-        }
-
-        @Override
-        public Object next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            countIterations++;
-            var bailoutSize = maxBailoutSize;
-            do {
-                bailoutSize--;
-                var index = workingRandom.nextInt(entities.size());
-                var nextEntity = entities.get(index);
-                var nextValue = basicVariableDescriptor.getValue(nextEntity);
-                var isReachable = currentReplayedValue != null ? isOtherValueReachable(currentReplayedEntity, nextValue)
-                        : isReachable(currentReplayedEntity, null, nextEntity, nextValue);
-                if (isReachable) {
-                    countAttempts += maxBailoutSize - bailoutSize;
-                    countSuccess++;
-                    return nextEntity;
-                }
-            } while (bailoutSize > 0);
-            // If no reachable entity is found, we return the currently selected entity,
-            // which will result in a non-doable move
-            countAttempts += maxBailoutSize;
-            countFails++;
-            return currentReplayedEntity;
-        }
-
-        private boolean isOtherValueReachable(Object entity, Object otherValue) {
-            return reachableValues.isEntityReachable(otherValue, entity);
-        }
-    }
-
-    /**
-     * The iterator will traverse all available entities
-     * because building a list of reachable entities would require
-     * reading the values of each variable to produce a unique list of entities.
-     * Creating this list each time a new replayed entity is selected is not efficient.
-     *
-     * TODO - Develop an efficient structure to retrieve reachable entities from a specific entity.
-     * 
-     * @param <Solution_> the solution type
-     */
-    private static class MultiVariableRandomFilteringValueRangeIterator<Solution_>
+    private static class RandomFilteringValueRangeIterator<Solution_>
             extends AbstractFilteringValueRangeIterator<Solution_> {
 
         private final List<Object> allEntities;
@@ -510,7 +396,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         private final int maxBailoutSize;
         private Object currentReplayedEntity = null;
 
-        private MultiVariableRandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
                 List<Object> allEntities, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
                 ValueRangeManager<Solution_> valueRangeManager, Random workingRandom, int maxBailoutSize) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
@@ -535,7 +421,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            countIterations++;
             Object next;
             var bailoutSize = maxBailoutSize;
             do {
@@ -543,15 +428,11 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 var index = workingRandom.nextInt(allEntities.size());
                 next = allEntities.get(index);
                 if (isReachable(currentReplayedEntity, next)) {
-                    countAttempts += maxBailoutSize - bailoutSize;
-                    countSuccess++;
                     return next;
                 }
             } while (bailoutSize > 0);
             // If no reachable entity is found, we return the currently selected entity,
             // which will result in a non-doable move
-            countAttempts += maxBailoutSize;
-            countFails++;
             return currentReplayedEntity;
         }
     }

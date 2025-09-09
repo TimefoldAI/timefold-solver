@@ -114,14 +114,17 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection
             entitySelector = applyNearbySelection(configPolicy, nearbySelectionConfig, minimumCacheType,
                     resolvedSelectionOrder, entitySelector);
-        } else {
-            // The nearby selector will implement its own logic to filter out unreachable elements.
-            // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
-            // otherwise, we would end up applying the filtering logic twice.
+        }
+        entitySelector = applyFiltering(entitySelector, instanceCache);
+        if (nearbySelectionConfig == null) {
+            // The range-filtering node for basic variables will use the entity child selector
+            // to iterate over the values.
+            // Creating it after the usual filter node may result in evaluating fewer entities.
+            // This approach differs from the one used for a list variable,
+            // as there is no structure in place to keep track of a list of reachable entities for a given entity.
             entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, valueRangeRecorderId,
                     minimumCacheType, inheritedSelectionOrder, baseRandomSelection);
         }
-        entitySelector = applyFiltering(entitySelector, instanceCache);
         entitySelector = applySorting(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyShuffling(resolvedCacheType, resolvedSelectionOrder, entitySelector);
