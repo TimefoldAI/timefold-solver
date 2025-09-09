@@ -13,7 +13,7 @@ public final class DynamicCompactNonNegativeIntCounter {
     /**
      * Sentinel for removed/missing entries in the {@link #keys} array
      */
-    private final static int MISSING = -1;
+    private static final int MISSING = -1;
 
     private int[] keys;
     private int[] counts;
