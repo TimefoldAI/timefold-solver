@@ -421,7 +421,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     .withLookUpEnabled(true)
                     .withConstraintMatchPolicy(constraintMatchPolicy)
                     .buildDerived();
-            childThreadScoreDirector.setWorkingSolutionWithoutUpdatingShadows(cloneWorkingSolution());
+            childThreadScoreDirector.setWorkingSolution(cloneWorkingSolution());
             return childThreadScoreDirector;
         } else {
             throw new IllegalStateException("The childThreadType (" + childThreadType + ") is not implemented.");
