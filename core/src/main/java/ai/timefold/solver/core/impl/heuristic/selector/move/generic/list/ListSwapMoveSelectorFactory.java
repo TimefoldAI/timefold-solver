@@ -56,9 +56,10 @@ public class ListSwapMoveSelectorFactory<Solution_>
             }
         }
         var leftValueSelector = buildIterableValueSelector(configPolicy, entityDescriptor, valueSelectorConfig,
-                minimumCacheType, selectionOrder, null);
+                minimumCacheType, selectionOrder, null, false);
         var rightValueSelector = buildIterableValueSelector(configPolicy, entityDescriptor,
-                secondaryValueSelectorConfig, minimumCacheType, selectionOrder, entityValueRangeRecorderId);
+                secondaryValueSelectorConfig, minimumCacheType, selectionOrder, entityValueRangeRecorderId,
+                config.getFilterClass() != null);
         var variableDescriptor = leftValueSelector.getVariableDescriptor();
         // This may be redundant but emphasizes that the ListSwapMove is not designed to swap elements
         // on multiple list variables, unlike the SwapMove, which swaps all (basic) variables between left and right entities.
@@ -77,13 +78,13 @@ public class ListSwapMoveSelectorFactory<Solution_>
     private IterableValueSelector<Solution_> buildIterableValueSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor, ValueSelectorConfig valueSelectorConfig,
             SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder,
-            String entityValueRangeRecorderId) {
+            String entityValueRangeRecorderId, boolean hasMoveFilter) {
         // Swap moves require asserting both sides,
         // which means checking if the left and right entities accept the swapped values
         var valueSelector = ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                 .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder,
                         configPolicy.isReinitializeVariableFilterEnabled(), ValueSelectorFactory.ListValueFilteringType.NONE,
-                        entityValueRangeRecorderId, true);
+                        entityValueRangeRecorderId, true, hasMoveFilter);
         return (IterableValueSelector<Solution_>) valueSelector;
     }
 

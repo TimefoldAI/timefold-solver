@@ -313,7 +313,7 @@ class SwapMoveSelectorTest {
 
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true, false);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
@@ -365,7 +365,7 @@ class SwapMoveSelectorTest {
 
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true, false);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
@@ -433,7 +433,7 @@ class SwapMoveSelectorTest {
 
         var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
         var rightEntitySelector =
-                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true, false);
 
         var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
                 leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);

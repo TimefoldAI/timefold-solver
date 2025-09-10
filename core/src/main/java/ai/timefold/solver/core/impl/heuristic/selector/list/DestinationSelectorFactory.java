@@ -29,17 +29,18 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
 
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection) {
-        return buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, null);
+        return buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, null, false);
     }
 
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
-            SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId) {
+            SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId,
+            boolean hasMoveFilter) {
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
         var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
-                        new ValueRangeRecorderId(entityValueRangeRecorderId, false));
+                        new ValueRangeRecorderId(entityValueRangeRecorderId, false, hasMoveFilter));
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
-                minimumCacheType, selectionOrder, entityValueRangeRecorderId);
+                minimumCacheType, selectionOrder, entityValueRangeRecorderId, hasMoveFilter);
         var baseDestinationSelector =
                 new ElementDestinationSelector<>(entitySelector, valueSelector, selectionOrder.toRandomSelectionBoolean());
         return applyNearbySelection(configPolicy, minimumCacheType, selectionOrder, baseDestinationSelector,
@@ -48,7 +49,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
 
     private IterableValueSelector<Solution_> buildIterableValueSelector(
             HeuristicConfigPolicy<Solution_> configPolicy, EntityDescriptor<Solution_> entityDescriptor,
-            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder, String entityValueRangeRecorderId) {
+            SelectionCacheType minimumCacheType, SelectionOrder inheritedSelectionOrder, String entityValueRangeRecorderId,
+            boolean hasMoveFilter) {
         // Destination selector does not require asserting both sides,
         // which means checking only if the destination entity accept the selected value
         ValueSelector<Solution_> valueSelector = ValueSelectorFactory
@@ -70,7 +72,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                          * the configPolicy that only allows this filtering type in the CH phase.
                          */
                         ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED,
-                        entityValueRangeRecorderId, false);
+                        entityValueRangeRecorderId, false, hasMoveFilter);
         return (IterableValueSelector<Solution_>) valueSelector;
     }
 
@@ -92,7 +94,7 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                     .<Solution_> create(Objects.requireNonNull(config.getValueSelectorConfig()))
                     .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType,
                             selectionOrder, configPolicy.isReinitializeVariableFilterEnabled(),
-                            ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED, null, false);
+                            ValueSelectorFactory.ListValueFilteringType.ACCEPT_ASSIGNED, null, false, false);
             var updatedDestinationSelector =
                     new ElementDestinationSelector<>(entitySelector, (IterableValueSelector<Solution_>) valueSelector,
                             selectionOrder.toRandomSelectionBoolean());

@@ -1498,6 +1498,8 @@ class DefaultSolverTest extends AbstractMeterTest {
         allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig());
         // Swap - basic
         allMoveSelectionConfigList.add(new SwapMoveSelectorConfig());
+        // Swap - basic with filter
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig().withFilterClass(AcceptAllFilter.class));
         // Pillar change - basic
         allMoveSelectionConfigList.add(new PillarChangeMoveSelectorConfig());
         // Pilar swap - basic
@@ -2227,8 +2229,12 @@ class DefaultSolverTest extends AbstractMeterTest {
         var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
         // Change - list
         allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        // Change - list with filter
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig().withFilterClass(AcceptAllFilter.class));
         // Swap - list
         allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        // Swap - list with filter
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig().withFilterClass(AcceptAllFilter.class));
         // Sublist change - list
         allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
         // Sublist swap - list
@@ -2525,6 +2531,17 @@ class DefaultSolverTest extends AbstractMeterTest {
             return SimpleScore.of(-sum.intValue());
         }
 
+    }
+
+    public static class AcceptAllFilter implements SelectionFilter {
+
+        public AcceptAllFilter() {
+        }
+
+        @Override
+        public boolean accept(ScoreDirector scoreDirector, Object selection) {
+            return true;
+        }
     }
 
 }

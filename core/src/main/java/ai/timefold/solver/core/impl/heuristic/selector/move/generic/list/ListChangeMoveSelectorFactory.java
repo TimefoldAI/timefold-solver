@@ -79,7 +79,8 @@ public class ListChangeMoveSelectorFactory<Solution_>
 
         var destinationSelector = DestinationSelectorFactory
                 .<Solution_> create(destinationSelectorConfig)
-                .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, entityValueRangeRecorderId);
+                .buildDestinationSelector(configPolicy, minimumCacheType, randomSelection, entityValueRangeRecorderId,
+                        config.getFilterClass() != null);
 
         return new ListChangeMoveSelector<>((IterableValueSelector<Solution_>) sourceValueSelector, destinationSelector,
                 randomSelection);

@@ -65,6 +65,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private final EntitySelector<Solution_> replayingEntitySelector;
     private final EntitySelector<Solution_> childEntitySelector;
     private final boolean randomSelection;
+    private final boolean hasMoveFilter;
 
     private Object replayedEntity;
     private BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
@@ -72,10 +73,11 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private List<Object> allEntities;
 
     public FilteringEntityByEntitySelector(EntitySelector<Solution_> childEntitySelector,
-            EntitySelector<Solution_> replayingEntitySelector, boolean randomSelection) {
+            EntitySelector<Solution_> replayingEntitySelector, boolean randomSelection, boolean hasMoveFilter) {
         this.childEntitySelector = childEntitySelector;
         this.replayingEntitySelector = replayingEntitySelector;
         this.randomSelection = randomSelection;
+        this.hasMoveFilter = hasMoveFilter;
     }
 
     // ************************************************************************
@@ -169,8 +171,20 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 throw new IllegalArgumentException(
                         "Impossible state: childEntitySelector must provide a never-ending approach.");
             }
+            // Experiments have shown that a large number of attempts do not scale well.
+            // The value of 10 was chosen after some experiments with different values.
+            // So we won't spend excessive time trying to generate a single move for the current selection.
+            // If we are unable to generate a move, the move iterator can still be used in later iterations.
+            var maxBailoutSize = 10;
+            if (hasMoveFilter) {
+                // When a move filter is enabled,
+                // attempting to find a reachable value multiple times may be ineffective,
+                // as it could still be excluded by the move filter,
+                // leading to performance degradation.
+                maxBailoutSize = 1;
+            }
             return new RandomFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
-                    basicVariableDescriptors, valueRangeManager);
+                    basicVariableDescriptors, valueRangeManager, maxBailoutSize);
         } else {
             return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
                     basicVariableDescriptors, valueRangeManager);
@@ -319,12 +333,14 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         private final Iterator<Object> entityIterator;
         private Object currentReplayedEntity = null;
+        private final int maxBailoutSize;
 
         private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
                 Iterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
-                ValueRangeManager<Solution_> valueRangeManager) {
+                ValueRangeManager<Solution_> valueRangeManager, int maxBailoutSize) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
             this.entityIterator = entityIterator;
+            this.maxBailoutSize = maxBailoutSize;
         }
 
         @Override
@@ -343,14 +359,18 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }
-            // We expect the iterator to apply a random selection
-            var next = entityIterator.next();
-            // Experiments have shown that a large number of attempts do not scale well.
-            // So we won't spend excessive time trying to generate a single move for the current selection.
-            // If we are unable to generate a move, the move iterator can still be used in later iterations.
-            if (isReachable(currentReplayedEntity, next)) {
-                return next;
-            }
+            var bailoutSize = maxBailoutSize;
+            do {
+                bailoutSize--;
+                // We expect the iterator to apply a random selection
+                var next = entityIterator.next();
+                // Experiments have shown that a large number of attempts do not scale well.
+                // So we won't spend excessive time trying to generate a single move for the current selection.
+                // If we are unable to generate a move, the move iterator can still be used in later iterations.
+                if (isReachable(currentReplayedEntity, next)) {
+                    return next;
+                }
+            } while (bailoutSize > 0);
             // If no reachable entity is found, we return the currently selected entity,
             // which will result in a non-doable move
             return currentReplayedEntity;
