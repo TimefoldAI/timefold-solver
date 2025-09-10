@@ -63,8 +63,8 @@ jobs:
       # But unless something catastrophic happened, PR checks on source branch already ensured that all tests pass.
       - name: Set release version and build release
         run: |
-          mvn -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
-          mvn -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
+          ./mvnw -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
+          ./mvnw -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
           cp docs/target/antora-template.yml docs/src/antora.yml
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
