@@ -433,7 +433,6 @@ public final class ValueRangeManager<Solution_> {
             throw new IllegalStateException(
                     "Impossible state: value reachability requested before the working solution is known.");
         }
-        logger.warn("Creating reachable values structure for {}", variableDescriptor);
         var entityDescriptor = variableDescriptor.getEntityDescriptor();
         var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
         var allValues = getFromSolution(variableDescriptor.getValueRangeDescriptor());
@@ -482,7 +481,6 @@ public final class ValueRangeManager<Solution_> {
         values = new ReachableValues(reachableValuesMap, valueClass,
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
         reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
-        logger.warn("Finished creating reachable values structure for {}", variableDescriptor);
         return values;
     }
 
