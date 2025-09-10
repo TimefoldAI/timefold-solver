@@ -39,9 +39,9 @@ import ai.timefold.solver.core.impl.solver.scope.SolverScope;
  * <p>
  * Let's consider the following use-cases:
  * <ol>
- * <li>e1(null) <-> e2(null): e2 is reachable by e1 because both assigned values are null.</li>
- * <li>e1(v2) <-> e2(v1): e2 is not reachable by e1 because its value range does not accept v2.</li>
- * <li>e2(v1) <-> e3(v4): e3 is reachable by e2 because e2 accepts v4 and e3 accepts v1.</li>
+ * <li>e1(null) - e2(null): e2 is reachable by e1 because both assigned values are null.</li>
+ * <li>e1(v2) - e2(v1): e2 is not reachable by e1 because its value range does not accept v2.</li>
+ * <li>e2(v1) - e3(v4): e3 is reachable by e2 because e2 accepts v4 and e3 accepts v1.</li>
  * </ol>
  * <p>
  * This node is currently used by the {@link SwapMoveSelector} selector.
