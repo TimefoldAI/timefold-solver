@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.util.DynamicCompactNonNegativeIntCounter;
+import ai.timefold.solver.core.impl.util.DynamicLinearProbeNonNegativeIntCounter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
@@ -26,7 +26,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
 
     // These structures are mutable.
-    protected final DynamicCompactNonNegativeIntCounter[] edgeCount;
+    protected final DynamicLinearProbeNonNegativeIntCounter[] edgeCount;
     protected final ChangeSet_ changeSet;
     protected final TopologicalOrderGraph graph;
 
@@ -38,9 +38,9 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         variableReferenceToContainingNodeMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToContainingNodeMap);
         variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
-        edgeCount = new DynamicCompactNonNegativeIntCounter[instanceCount];
+        edgeCount = new DynamicLinearProbeNonNegativeIntCounter[instanceCount];
         for (int i = 0; i < instanceCount; i++) {
-            edgeCount[i] = new DynamicCompactNonNegativeIntCounter();
+            edgeCount[i] = new DynamicLinearProbeNonNegativeIntCounter();
         }
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(nodeList);

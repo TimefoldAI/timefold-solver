@@ -4,11 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.Test;
 
-class DynamicCompactNonNegativeIntCounterTest {
+class DynamicLinearProbeNonNegativeIntCounterTest {
 
     @Test
     void count() {
-        var counter = new DynamicCompactNonNegativeIntCounter();
+        var counter = new DynamicLinearProbeNonNegativeIntCounter();
 
         // Empty counter
         assertThat(counter.getCount(0)).isZero();
@@ -47,7 +47,7 @@ class DynamicCompactNonNegativeIntCounterTest {
 
     @Test
     void testToString() {
-        var counter = new DynamicCompactNonNegativeIntCounter();
+        var counter = new DynamicLinearProbeNonNegativeIntCounter();
 
         assertThat(counter).hasToString("{}");
 
