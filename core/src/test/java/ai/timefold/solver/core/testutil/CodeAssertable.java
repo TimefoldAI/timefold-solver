@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
+import ai.timefold.solver.core.impl.heuristic.selector.move.generic.PillarChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListAssignMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMove;
@@ -41,6 +42,10 @@ public interface CodeAssertable {
         } else if (o instanceof SwapMove<?> swapMove) {
             final String code = convert(swapMove.getLeftEntity()).getCode()
                     + "<->" + convert(swapMove.getRightEntity()).getCode();
+            return () -> code;
+        } else if (o instanceof PillarChangeMove<?> pillarChangeMove) {
+            final String code = pillarChangeMove.getPillar() +
+                    "->" + convert(pillarChangeMove.getToPlanningValue()).getCode();
             return () -> code;
         } else if (o instanceof CompositeMove<?> compositeMove) {
             StringBuilder codeBuilder = new StringBuilder(compositeMove.getMoves().length * 80);

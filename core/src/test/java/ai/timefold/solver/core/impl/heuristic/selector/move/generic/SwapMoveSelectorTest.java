@@ -1,17 +1,40 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
+import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getEntityDescriptor;
+import static ai.timefold.solver.core.testutil.PlannerAssert.DO_NOT_ASSERT_SIZE;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelector;
+import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
+import java.util.Random;
+
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicRecordingEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataValue;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.multivar.TestdataAllowsUnassignedMultiVarEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
 
@@ -269,4 +292,161 @@ class SwapMoveSelectorTest {
         verifyPhaseLifecycle(rightEntitySelector, 1, 2, 5);
     }
 
+    @Test
+    void singleVarRandomSelectionWithEntityValueRange() {
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        var v4 = new TestdataValue("4");
+        var e1 = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v1, v4));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var leftEntitySelector =
+                new FromSolutionEntitySelector<>(getEntityDescriptor(scoreDirector), SelectionCacheType.JUST_IN_TIME, true);
+        var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
+
+        var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
+        var rightEntitySelector =
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+
+        var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+
+        var random = new TestRandom(0);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
+        var expectedSize = (long) solution.getEntityList().size() * solution.getEntityList().size();
+
+        // e1(null) and e2(null)
+        // only e3 is reachable by e1
+        scoreDirector.setWorkingSolution(solution);
+        // select left A, select right C
+        // select left A, select right B
+        random.reset(0, 2, 0, 1, 0, 2);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
+
+        // e1(v1), e2(v3) and e3(v4)
+        // e1 does not accepts v3 and e2 does not accepts v1
+        // e1 accepts v4, and e3 accepts v1
+        e1.setValue(v1);
+        e2.setValue(v3);
+        e3.setValue(v4);
+        // select left A, select right B
+        // select left A, select right C
+        random.reset(0, 1, 2, 1);
+        scoreDirector.setWorkingSolution(solution);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
+    }
+
+    @Test
+    void multiVarRandomSelectionWithEntityValueRange() {
+        var solution = new TestdataAllowsUnassignedMultiVarEntityProvidingSolution();
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        var v4 = new TestdataValue("4");
+        var e1 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("A", List.of(v1, v4), List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("B", List.of(v2, v3), List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedMultiVarEntityProvidingEntity("C", List.of(v1, v4), List.of(v1, v3, v4));
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var scoreDirector =
+                mockScoreDirector(TestdataAllowsUnassignedMultiVarEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var leftEntitySelector =
+                new FromSolutionEntitySelector<>(getEntityDescriptor(scoreDirector), SelectionCacheType.JUST_IN_TIME, true);
+        var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
+
+        var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
+        var rightEntitySelector =
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+
+        var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+
+        var random = new TestRandom(0);
+        var solverScope = solvingStarted(moveSelector, scoreDirector, random);
+        phaseStarted(moveSelector, solverScope);
+        var expectedSize = (long) solution.getEntityList().size() * solution.getEntityList().size();
+
+        // e1(null, null) and e2(null, null)
+        // we assume that any entity is reachable if they share at least one common value in the range
+        scoreDirector.setWorkingSolution(solution);
+        // select left A, select right B
+        // select left A, select right C
+        random.reset(0, 1, 0, 2, 0, 2);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->B", "A<->C");
+
+        // e1(v1, v1), e2(v3, v3) and e3(v4, v4)
+        // e1 does not accepts v3 and e2 does not accepts v1
+        // e1 accepts v4, and e3 accepts v1
+        e1.setValue(v1);
+        e1.setSecondValue(v1);
+        e2.setValue(v3);
+        e2.setSecondValue(v3);
+        e3.setValue(v4);
+        e3.setSecondValue(v4);
+        // select left A, select right C
+        // select left A, select right C
+        random.reset(0, 2, 0, 2);
+        scoreDirector.setWorkingSolution(solution);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
+
+        // e1(v1, v1), e2(v3, v3) and e3(v3, v4)
+        // e1 accepts v4 in the first variable, but it does not accept v3 in the second variable
+        e1.setValue(v1);
+        e1.setSecondValue(v1);
+        e2.setValue(v3);
+        e2.setSecondValue(v3);
+        e3.setValue(v4);
+        e3.setSecondValue(v3);
+        // select left A, select right C
+        random.reset(0, 2, 0, 2);
+        scoreDirector.setWorkingSolution(solution);
+        assertCodesOfNeverEndingIterableSelector(moveSelector, DO_NOT_ASSERT_SIZE);
+    }
+
+    @Test
+    void noReachableEntities() {
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        // Each entity has a different value, which makes impossible to do swaps
+        var e1 = new TestdataEntityProvidingEntity("A", List.of(v1), v1);
+        var e2 = new TestdataEntityProvidingEntity("B", List.of(v2), v2);
+        var e3 = new TestdataEntityProvidingEntity("C", List.of(v3), v3);
+        var solution = new TestdataEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var scoreDirector = mockScoreDirector(TestdataEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var leftEntitySelector =
+                new FromSolutionEntitySelector<>(getEntityDescriptor(scoreDirector), SelectionCacheType.JUST_IN_TIME, true);
+        var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
+
+        var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
+        var rightEntitySelector =
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, true);
+
+        var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), true);
+
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(moveSelector, solverScope);
+        scoreDirector.setWorkingSolution(solution);
+
+        // The iterator is not able to find a reachable entity, but the random iterator will return has next as true
+        var iterator = moveSelector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        var swapMove = (SwapMove<TestdataEntityProvidingSolution>) iterator.next();
+        assertThat(swapMove.getLeftEntity()).isSameAs(swapMove.getRightEntity());
+    }
 }
