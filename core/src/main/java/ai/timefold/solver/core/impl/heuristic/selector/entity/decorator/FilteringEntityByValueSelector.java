@@ -230,10 +230,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
             this.workingRandom = workingRandom;
         }
 
-        private void initialize() {
-            if (entityList != null) {
-                return;
-            }
+        private void checkReplayedValue() {
             var oldUpcomingValue = currentUpcomingValue;
             currentUpcomingValue = upcomingValueSupplier.get();
             if (currentUpcomingValue == null) {
@@ -249,7 +246,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
         @Override
         public boolean hasNext() {
-            initialize();
+            checkReplayedValue();
             return entityList != null && !entityList.isEmpty();
         }
 
