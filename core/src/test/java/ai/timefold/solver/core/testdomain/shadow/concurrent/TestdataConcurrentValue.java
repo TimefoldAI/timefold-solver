@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
@@ -23,7 +22,6 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 @PlanningEntity
 public class TestdataConcurrentValue {
     public static final LocalDateTime BASE_START_TIME = LocalDate.of(2025, 1, 1).atTime(LocalTime.of(9, 0));
-    @PlanningId
     String id;
 
     @InverseRelationShadowVariable(sourceVariableName = "values")

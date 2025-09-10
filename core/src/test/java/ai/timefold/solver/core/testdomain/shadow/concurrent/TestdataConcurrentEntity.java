@@ -4,12 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 
 @PlanningEntity
 public class TestdataConcurrentEntity {
-    @PlanningId
     String id;
 
     @PlanningListVariable
