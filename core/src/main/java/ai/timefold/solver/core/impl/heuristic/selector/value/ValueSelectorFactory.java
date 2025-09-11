@@ -78,7 +78,7 @@ public class ValueSelectorFactory<Solution_>
             SelectionOrder inheritedSelectionOrder, boolean applyReinitializeVariableFiltering,
             ListValueFilteringType listValueFilteringType) {
         return buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, inheritedSelectionOrder,
-                applyReinitializeVariableFiltering, listValueFilteringType, null, false);
+                applyReinitializeVariableFiltering, listValueFilteringType, null, false, false);
     }
 
     /**
@@ -93,12 +93,14 @@ public class ValueSelectorFactory<Solution_>
      * @param entityValueRangeRecorderId the recorder id to be used to create a replaying selector when enabling entity value
      *        range
      * @param assertBothSides a flag used by the entity value range filtering select to enable different types of validations
+     * @param hasMoveFilter a flag used to identify if the related move enables custom filtering
      * @return never null
      */
     public ValueSelector<Solution_> buildValueSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType,
             SelectionOrder inheritedSelectionOrder, boolean applyReinitializeVariableFiltering,
-            ListValueFilteringType listValueFilteringType, String entityValueRangeRecorderId, boolean assertBothSides) {
+            ListValueFilteringType listValueFilteringType, String entityValueRangeRecorderId, boolean assertBothSides,
+            boolean hasMoveFilter) {
         var variableDescriptor = deduceGenuineVariableDescriptor(downcastEntityDescriptor(configPolicy, entityDescriptor),
                 config.getVariableName());
         if (config.getMimicSelectorRef() != null) {
@@ -135,7 +137,7 @@ public class ValueSelectorFactory<Solution_>
             // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
             // otherwise, we would end up applying the filtering logic twice.
             valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entityDescriptor, minimumCacheType,
-                    inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId, assertBothSides);
+                    inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId, assertBothSides, hasMoveFilter);
         }
         valueSelector = applyFiltering(valueSelector, instanceCache);
         valueSelector = applyInitializedChainedValueFilter(configPolicy, variableDescriptor, valueSelector);
@@ -521,7 +523,7 @@ public class ValueSelectorFactory<Solution_>
     public static <Solution_> ValueSelector<Solution_> applyValueRangeFiltering(
             HeuristicConfigPolicy<Solution_> configPolicy, ValueSelector<Solution_> valueSelector,
             EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType, SelectionOrder selectionOrder,
-            boolean randomSelection, String entityValueRangeRecorderId, boolean assertBothSides) {
+            boolean randomSelection, String entityValueRangeRecorderId, boolean assertBothSides, boolean hasMoveFilter) {
         if (entityValueRangeRecorderId == null) {
             return valueSelector;
         }
@@ -531,7 +533,7 @@ public class ValueSelectorFactory<Solution_>
                 (IterableValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
         return new FilteringValueRangeSelector<>((IterableValueSelector<Solution_>) valueSelector, replayingValueSelector,
-                randomSelection, assertBothSides);
+                randomSelection, assertBothSides, hasMoveFilter);
     }
 
     public enum ListValueFilteringType {

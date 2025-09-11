@@ -68,7 +68,7 @@ public class SwapMoveSelectorFactory<Solution_>
         var rightEntitySelector =
                 EntitySelectorFactory.<Solution_> create(secondaryEntitySelectorConfig)
                         .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
-                                new ValueRangeRecorderId(entityRecorderId, true));
+                                new ValueRangeRecorderId(entityRecorderId, true, config.getFilterClass() != null));
         var variableDescriptorList = deduceBasicVariableDescriptorList(entityDescriptor, config.getVariableNameIncludeList());
 
         return new SwapMoveSelector<>(leftEntitySelector, rightEntitySelector, variableDescriptorList,

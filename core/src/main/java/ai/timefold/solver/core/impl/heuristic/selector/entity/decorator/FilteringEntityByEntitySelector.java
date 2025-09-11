@@ -65,22 +65,19 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private final EntitySelector<Solution_> replayingEntitySelector;
     private final EntitySelector<Solution_> childEntitySelector;
     private final boolean randomSelection;
+    private final boolean hasMoveFilter;
 
     private Object replayedEntity;
     private BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
     private ValueRangeManager<Solution_> valueRangeManager;
     private List<Object> allEntities;
 
-    private static long countIterations = 0;
-    private static long countAttempts = 0;
-    private static long countSuccess = 0;
-    private static long countFails = 0;
-
     public FilteringEntityByEntitySelector(EntitySelector<Solution_> childEntitySelector,
-            EntitySelector<Solution_> replayingEntitySelector, boolean randomSelection) {
+            EntitySelector<Solution_> replayingEntitySelector, boolean randomSelection, boolean hasMoveFilter) {
         this.childEntitySelector = childEntitySelector;
         this.replayingEntitySelector = replayingEntitySelector;
         this.randomSelection = randomSelection;
+        this.hasMoveFilter = hasMoveFilter;
     }
 
     // ************************************************************************
@@ -123,11 +120,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         this.replayedEntity = null;
         this.valueRangeManager = null;
         this.basicVariableDescriptors = null;
-        logger.warn(
-                "Iterations ({}), total attempts ({}), average attempts ({}), succeed count ({}), succeed rate ({}), fails count({}), fails rate ({})",
-                countIterations, countAttempts, countAttempts / (double) countIterations, countSuccess,
-                countSuccess / (double) countIterations, countFails,
-                countFails / (double) countIterations);
     }
 
     // ************************************************************************
@@ -179,12 +171,20 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 throw new IllegalArgumentException(
                         "Impossible state: childEntitySelector must provide a never-ending approach.");
             }
-            // Experiments have shown that a large number of attempts do not scale well,
-            // and 10 seems like an appropriate limit. 
+            // Experiments have shown that a large number of attempts do not scale well.
+            // The value of 10 was chosen after some experiments with different values.
             // So we won't spend excessive time trying to generate a single move for the current selection.
             // If we are unable to generate a move, the move iterator can still be used in later iterations.
+            var maxBailoutSize = 10;
+            if (hasMoveFilter) {
+                // When a move filter is enabled,
+                // attempting to find a reachable value multiple times may be ineffective,
+                // as it could still be excluded by the move filter,
+                // leading to performance degradation.
+                maxBailoutSize = 1;
+            }
             return new RandomFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
-                    basicVariableDescriptors, valueRangeManager, 10);
+                    basicVariableDescriptors, valueRangeManager, maxBailoutSize);
         } else {
             return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
                     basicVariableDescriptors, valueRangeManager);
@@ -332,8 +332,8 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             extends AbstractFilteringValueRangeIterator<Solution_> {
 
         private final Iterator<Object> entityIterator;
-        private final int maxBailoutSize;
         private Object currentReplayedEntity = null;
+        private final int maxBailoutSize;
 
         private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
                 Iterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
@@ -350,7 +350,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         @Override
         public boolean hasNext() {
-            initialize();
+            checkReplayedEntity();
             return entityIterator.hasNext();
         }
 
@@ -364,6 +364,9 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 bailoutSize--;
                 // We expect the iterator to apply a random selection
                 var next = entityIterator.next();
+                // Experiments have shown that a large number of attempts do not scale well.
+                // So we won't spend excessive time trying to generate a single move for the current selection.
+                // If we are unable to generate a move, the move iterator can still be used in later iterations.
                 if (isReachable(currentReplayedEntity, next)) {
                     return next;
                 }

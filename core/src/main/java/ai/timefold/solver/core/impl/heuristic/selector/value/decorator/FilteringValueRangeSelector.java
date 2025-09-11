@@ -75,21 +75,22 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private final IterableValueSelector<Solution_> nonReplayingValueSelector;
     private final IterableValueSelector<Solution_> replayingValueSelector;
     private final boolean randomSelection;
+    private final boolean checkSourceAndDestination;
+    private final boolean hasMoveFilter;
 
     private Object replayedValue = null;
     private long valuesSize;
     private ListVariableStateSupply<Solution_> listVariableStateSupply;
     private ReachableValues reachableValues;
 
-    private final boolean checkSourceAndDestination;
-
     public FilteringValueRangeSelector(IterableValueSelector<Solution_> nonReplayingValueSelector,
             IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection,
-            boolean checkSourceAndDestination) {
+            boolean checkSourceAndDestination, boolean hasMoveFilter) {
         this.nonReplayingValueSelector = nonReplayingValueSelector;
         this.replayingValueSelector = replayingValueSelector;
         this.randomSelection = randomSelection;
         this.checkSourceAndDestination = checkSourceAndDestination;
+        this.hasMoveFilter = hasMoveFilter;
     }
 
     // ************************************************************************
@@ -176,8 +177,20 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
+            // Experiments have shown that a large number of attempts do not scale well.
+            // The value of 10 was chosen after some experiments with different values.
+            // So we won't spend excessive time trying to generate a single move for the current selection.
+            // If we are unable to generate a move, the move iterator can still be used in later iterations.
+            var maxBailoutSize = 10;
+            if (hasMoveFilter) {
+                // When a move filter is enabled,
+                // attempting to find a reachable value multiple times may be ineffective,
+                // as it could still be excluded by the move filter,
+                // leading to performance degradation.
+                maxBailoutSize = 1;
+            }
             return new RandomFilteringValueRangeIterator(this::selectReplayedValue, reachableValues,
-                    listVariableStateSupply, workingRandom, checkSourceAndDestination);
+                    listVariableStateSupply, maxBailoutSize, workingRandom, checkSourceAndDestination);
         } else {
             return new OriginalFilteringValueRangeIterator(this::selectReplayedValue, reachableValues,
                     listVariableStateSupply, checkSourceAndDestination);
@@ -357,22 +370,24 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private class RandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
 
         private final Random workingRandom;
-        private int maxBailoutSize = 1;
+        private final int maxBailoutSize;
         private Object replayedValue;
         private List<Object> reachableValueList = null;
+        private int calculatedBailoutSize;
 
         private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, Random workingRandom,
+                ListVariableStateSupply<Solution_> listVariableStateSupply, int maxBailoutSize, Random workingRandom,
                 boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
+            this.maxBailoutSize = maxBailoutSize;
             this.workingRandom = workingRandom;
         }
 
         @Override
         void processUpcomingValue(Object upcomingValue, List<Object> upcomingList) {
             this.replayedValue = upcomingValue;
-            this.reachableValueList = upcomingList;
-            this.maxBailoutSize = upcomingList.size();
+            this.reachableValueList = Objects.requireNonNull(upcomingList);
+            this.calculatedBailoutSize = Math.min(maxBailoutSize, reachableValueList.size());
         }
 
         @Override
@@ -386,12 +401,11 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             if (hasNoData()) {
                 throw new NoSuchElementException();
             }
-            Object next;
-            var bailoutSize = maxBailoutSize;
+            var bailoutSize = calculatedBailoutSize;
             do {
                 bailoutSize--;
-                var index = workingRandom.nextInt(Objects.requireNonNull(reachableValueList).size());
-                next = reachableValueList.get(index);
+                var index = workingRandom.nextInt(reachableValueList.size());
+                var next = reachableValueList.get(index);
                 if (isReachable(next)) {
                     return next;
                 }

@@ -229,7 +229,8 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             return entitySelector;
         }
         var replayingEntitySelector = buildMimicReplaying(configPolicy, valueRangeRecorderId.recorderId());
-        return new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, randomSelection);
+        return new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, randomSelection,
+                valueRangeRecorderId.hasMoveFilter());
     }
 
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,
