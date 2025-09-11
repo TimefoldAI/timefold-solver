@@ -10,7 +10,7 @@ import java.util.function.BiConsumer;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.util.DynamicIntArray;
+import ai.timefold.solver.core.impl.util.DynamicLinearProbeNonNegativeIntCounter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
 import org.jspecify.annotations.NonNull;
@@ -26,7 +26,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
 
     // These structures are mutable.
-    protected final DynamicIntArray[] edgeCount;
+    protected final DynamicLinearProbeNonNegativeIntCounter[] edgeCount;
     protected final ChangeSet_ changeSet;
     protected final TopologicalOrderGraph graph;
 
@@ -38,9 +38,9 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         variableReferenceToContainingNodeMap = mapOfMapsDeepCopyOf(outerGraph.variableReferenceToContainingNodeMap);
         variableReferenceToBeforeProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToBeforeProcessor);
         variableReferenceToAfterProcessor = mapOfListsDeepCopyOf(outerGraph.variableReferenceToAfterProcessor);
-        edgeCount = new DynamicIntArray[instanceCount];
+        edgeCount = new DynamicLinearProbeNonNegativeIntCounter[instanceCount];
         for (int i = 0; i < instanceCount; i++) {
-            edgeCount[i] = new DynamicIntArray(instanceCount);
+            edgeCount[i] = new DynamicLinearProbeNonNegativeIntCounter();
         }
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(nodeList);
@@ -79,11 +79,11 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
             return;
         }
 
-        var count = edgeCount[fromNodeId].get(toNodeId);
+        var count = edgeCount[fromNodeId].getCount(toNodeId);
         if (count == 0) {
             graph.addEdge(fromNodeId, toNodeId);
         }
-        edgeCount[fromNodeId].set(toNodeId, count + 1);
+        edgeCount[fromNodeId].increment(toNodeId);
         markChanged(to);
     }
 
@@ -94,11 +94,11 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
             return;
         }
 
-        var count = edgeCount[fromNodeId].get(toNodeId);
+        var count = edgeCount[fromNodeId].getCount(toNodeId);
         if (count == 1) {
             graph.removeEdge(fromNodeId, toNodeId);
         }
-        edgeCount[fromNodeId].set(toNodeId, count - 1);
+        edgeCount[fromNodeId].decrement(toNodeId);
         markChanged(to);
     }
 
