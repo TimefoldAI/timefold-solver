@@ -300,6 +300,64 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
         return summary.toString();
     }
 
+    /**
+     * Provides a summary of the solution's score analysis using the {@link #summarize(int)} method
+     * in a similar way to {@link #summarize()}.
+     * It is possible to specify the maximum number of constraint matches to display per constraint by passing
+     * the desired limit as an argument.
+     *
+     * @param topLimit maximum number of constraint matches to show per constraint.
+     *        Use {@link Integer#MAX_VALUE} to show all matches.
+     */
+    @SuppressWarnings("java:S3457")
+    public @NonNull String summarize(int topLimit) {
+        if (topLimit <= 0) {
+            throw new IllegalArgumentException("topLimit (" + topLimit + ") must be positive.");
+        }
+
+        StringBuilder summary = new StringBuilder();
+        summary.append("""
+                Explanation of score (%s):
+                    Constraint matches:
+                """.formatted(score));
+        Comparator<ConstraintAnalysis<Score_>> constraintsScoreComparator = comparing(ConstraintAnalysis::score);
+        Comparator<MatchAnalysis<Score_>> matchScoreComparator = comparing(MatchAnalysis::score);
+
+        constraintAnalyses().stream()
+                .sorted(constraintsScoreComparator)
+                .forEach(constraint -> {
+                    var matches = constraint.matches();
+                    if (matches == null) {
+                        throw new IllegalArgumentException("""
+                                The constraint matches must be non-null.
+                                Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
+                                """);
+                    }
+                    if (matches.isEmpty()) {
+                        summary.append(
+                                "%8s%s: constraint (%s) has no matches.\n".formatted(" ", constraint.score().toShortString(),
+                                        constraint.constraintRef().constraintName()));
+                    } else {
+                        summary.append(
+                                "%8s%s: constraint (%s) has %s matches:\n".formatted(" ", constraint.score().toShortString(),
+                                        constraint.constraintRef().constraintName(), matches.size()));
+                    }
+                    matches.stream()
+                            .sorted(matchScoreComparator)
+                            .limit(topLimit)
+                            .forEach(match -> summary
+                                    .append("%12s%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
+                                            match.justification())));
+
+                    if (matches.size() > topLimit) {
+                        summary.append("%12s... and %d more matches\n".formatted(" ",
+                                matches.size() - topLimit));
+                    }
+                });
+
+        return summary.toString();
+    }
+
     @Override
     public String toString() {
         return "Score analysis of score %s with %d constraints.".formatted(score, constraintMap.size());

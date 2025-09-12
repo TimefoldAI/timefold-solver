@@ -165,6 +165,69 @@ class ScoreAnalysisTest {
     }
 
     @Test
+    void summarizeWithLimit() {
+        var constraintPackage = "constraintPackage";
+        var constraintName1 = "constraint1";
+        var constraintName2 = "constraint2";
+        var constraintId1 = ConstraintRef.of(constraintPackage, constraintName1);
+        var constraintId2 = ConstraintRef.of(constraintPackage, constraintName2);
+
+        var constraintMatchTotal = new DefaultConstraintMatchTotal<>(constraintId1, SimpleScore.of(1));
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(2), "A", "B", "C");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(4), "A", "B");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(6), "B", "C");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(7), "C");
+        addConstraintMatch(constraintMatchTotal, SimpleScore.of(8));
+
+        var constraintMatchTotal2 = new DefaultConstraintMatchTotal<>(constraintId2, SimpleScore.of(3));
+        addConstraintMatch(constraintMatchTotal2, SimpleScore.of(3), "B", "C", "D");
+        addConstraintMatch(constraintMatchTotal2, SimpleScore.of(6), "B", "C");
+
+        var constraintAnalysisMap = Map.of(
+                constraintMatchTotal.getConstraintRef(),
+                getConstraintAnalysis(constraintMatchTotal, ScoreAnalysisFetchPolicy.FETCH_ALL),
+                constraintMatchTotal2.getConstraintRef(),
+                getConstraintAnalysis(constraintMatchTotal2, ScoreAnalysisFetchPolicy.FETCH_ALL));
+        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.of(36), constraintAnalysisMap);
+
+        // Test with limit of 2
+        var summaryWith2 = scoreAnalysis.summarize(2);
+        assertThat(summaryWith2).contains("... and 3 more matches");
+        assertThat(summaryWith2).doesNotContain("justified with ([C])");
+        assertThat(summaryWith2).contains("justified with ([A, B, C])");
+        assertThat(summaryWith2).contains("justified with ([A, B])");
+
+        // Test with limit of 10 (more than available)
+        var summaryWith10 = scoreAnalysis.summarize(10);
+        assertThat(summaryWith10).doesNotContain("... and");
+        assertThat(summaryWith10).contains("justified with ([C])");
+
+        // Test with Integer.MAX_VALUE
+        var summaryWithAll = scoreAnalysis.summarize(Integer.MAX_VALUE);
+        assertThat(summaryWithAll).doesNotContain("...");
+        assertThat(summaryWithAll).contains("justified with ([C])");
+
+        // Test individual constraint analysis
+        var constraintSummaryWith1 = constraintAnalysisMap.get(constraintMatchTotal.getConstraintRef()).summarize(1);
+        assertThat(constraintSummaryWith1).contains("... and 4 more matches");
+        assertThat(constraintSummaryWith1).contains("justified with ([A, B, C])");
+        assertThat(constraintSummaryWith1).doesNotContain("justified with ([A, B])");
+    }
+
+    @Test
+    void summarizeWithInvalidLimit() {
+        var scoreAnalysis = new ScoreAnalysis<>(SimpleScore.of(0), Collections.emptyMap());
+
+        assertThatThrownBy(() -> scoreAnalysis.summarize(0))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("topLimit (0) must be positive");
+
+        assertThatThrownBy(() -> scoreAnalysis.summarize(-1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("topLimit (-1) must be positive");
+    }
+
+    @Test
     void diffWithConstraintMatchesWithoutMatchAnalysis() {
         var constraintPackage = "constraintPackage";
         var constraintName1 = "constraint1";

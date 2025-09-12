@@ -234,6 +234,55 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         return summary.toString();
     }
 
+    /**
+     * Return a diagnostic text that explains part of the score quality using the {@link #summarize(int)} method
+     * in a similar way to {@link #summarize()}.
+     * It is possible to specify the maximum number of constraint matches to display per constraint by passing
+     * the desired limit as an argument.
+     *
+     * @param topLimit maximum number of constraint matches to display per constraint
+     *        Use {@link Integer#MAX_VALUE} to show all matches.
+     */
+
+    public @NonNull String summarize(int topLimit) {
+        if (topLimit < 1) {
+            throw new IllegalArgumentException("The topLimit (" + topLimit + ") must be at least 1.");
+        }
+        var summary = new StringBuilder();
+        summary.append("""
+                Explanation of score (%s):
+                    Constraint matches:
+                """.formatted(score));
+        Comparator<MatchAnalysis<Score_>> matchScoreComparator = comparing(MatchAnalysis::score);
+
+        var constraintMatches = matches();
+        if (constraintMatches == null) {
+            throw new IllegalArgumentException("""
+                    The constraint matches must be non-null.
+                    Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
+                    """);
+        }
+        if (constraintMatches.isEmpty()) {
+            summary.append(
+                    "%8s%s: constraint (%s) has no matches.\n".formatted(" ", score().toShortString(),
+                            constraintRef().constraintName()));
+        } else {
+            summary.append("%8s%s: constraint (%s) has %s matches:\n".formatted(" ", score().toShortString(),
+                    constraintRef().constraintName(), constraintMatches.size()));
+        }
+        constraintMatches.stream()
+                .sorted(matchScoreComparator)
+                .limit(topLimit)
+                .forEach(match -> summary.append("%12S%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
+                        match.justification())));
+        if (matches.size() > topLimit) {
+            summary.append("%12s... and %d more matches\n".formatted(" ",
+                    matches.size() - topLimit));
+        }
+
+        return summary.toString();
+    }
+
     @Override
     public String toString() {
         if (matches == null) {
