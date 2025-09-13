@@ -591,6 +591,64 @@ class SolverManagerTest {
     }
 
     @Test
+    void solveWithTerminationSpentLimit() {
+        // Default spent limit is 1 second
+        var terminationConfig = new TerminationConfig()
+                .withSpentLimit(Duration.ofSeconds(1L));
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withTerminationConfig(terminationConfig);
+
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problem = PlannerTestUtils.generateTestdataSolution("s1");
+
+            SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+            doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
+
+            // Override spent limit to 100 milliseconds
+            var configOverride = new SolverConfigOverride<TestdataSolution>()
+                    .withTerminationSpentLimit(Duration.ofMillis(100L));
+            var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblem(problem)
+                    .withConfigOverride(configOverride)
+                    .run();
+            assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.5);
+        }
+    }
+
+    @Test
+    void solveWithTerminationUnimprovedSpentLimit() {
+        // Default unimproved spent limit is 1 second, but also set a longer spent limit
+        var terminationConfig = new TerminationConfig()
+                .withSpentLimit(Duration.ofSeconds(10L))
+                .withUnimprovedSpentLimit(Duration.ofSeconds(1L));
+        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                .withTerminationConfig(terminationConfig);
+
+        try (var solverManager = createDefaultSolverManager(solverConfig)) {
+            var problem = PlannerTestUtils.generateTestdataSolution("s1");
+
+            SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+            doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
+
+            // Override unimproved spent limit to 500 milliseconds, keep the longer spent limit
+            var configOverride = new SolverConfigOverride<TestdataSolution>()
+                    .withTerminationUnimprovedSpentLimit(Duration.ofMillis(500L));
+
+            var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                    .withProblemId(1L)
+                    .withProblem(problem)
+                    .withConfigOverride(configOverride)
+                    .run();
+
+            assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.0);
+            assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isNotNull();
+            assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isEqualTo(Duration.ofMillis(500L));
+
+        }
+    }
+
+    @Test
     void testScoreCalculationCountForFinishedJob() throws ExecutionException, InterruptedException {
         // Terminate after exactly 5 score calculations
         var terminationConfig = new TerminationConfig()
