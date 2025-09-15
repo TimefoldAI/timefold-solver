@@ -523,6 +523,39 @@ The following functions are required for filtering constraint streams of differe
 |===
 
 
+[#constraintStreamsPrefilter]
+==== Handling time-consuming stateless predicates
+
+The `filter()` building block will be called every time your constraint match changes.
+This is usually fast,
+but if you have a time-consuming predicate which doesn't depend on any of the planning variables,
+you can use the `prefilter()` building block instead to avoid re-checking it.
+
+The `prefilter()` building block is called only once per constraint match,
+and will not be re-evaluted on any change.
+Its use is much like `filter()`:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    private Constraint onlyPenalizeDifficultShifts(ConstraintFactory factory) {
+        return factory.forEach(Shift.class)
+                .prefilter(shift -> ShiftUtil.isDifficultShift(shift))
+                     // "isDifficultShift" takes a long time to compute
+                     // but does not depend on any planning variables.
+                     // It is a static method to indicate that it is stateless.
+                .penalize(SimpleScore.ONE)
+                .asConstraint("Difficult shift");
+    }
+----
+====
+
+NOTE: If you're not sure whether to use `filter()` or `prefilter()`, use `filter()`.
+`prefilter()` is an advanced feature that is only necessary in special cases to improve performance.
+
 [#constraintStreamsJoin]
 === Joining
 
