@@ -6,6 +6,11 @@ The {solver_name_prefix} attribute is the solver name for multiple managers.
 ////
 
 ifeval::["{solver_name_prefix}" == ""]
+{property_prefix}timefold.solver-manager.random-seed::
+The random seed to be used in the solving process.
+endif::[]
+
+ifeval::["{solver_name_prefix}" == ""]
 {property_prefix}timefold.solver-manager.parallel-solver-count::
 The number of solvers that run in parallel.
 This directly influences CPU consumption.
