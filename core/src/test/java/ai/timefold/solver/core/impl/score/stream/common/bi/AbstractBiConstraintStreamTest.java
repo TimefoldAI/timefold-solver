@@ -132,6 +132,33 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
     @Override
     @TestTemplate
+    public void prefilter() {
+        var solution = TestdataLavishSolution.generateSolution(2, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .prefilter(entity -> entity1.getIntegerProperty() == 1)
+                        .expand(TestdataLavishEntity::getValue)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector, assertMatch(entity1, value1), assertMatch(entity2, value2));
+
+        // Change the property, ensure that the filter was not re-evaluated.
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setIntegerProperty(2);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector, assertMatch(entity1, value1), assertMatch(entity2, value2));
+    }
+
+    @Override
+    @TestTemplate
     public void join_0() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution(1, 0, 1, 0);
         TestdataLavishValue value1 = new TestdataLavishValue("MyValue 1", solution.getFirstValueGroup());

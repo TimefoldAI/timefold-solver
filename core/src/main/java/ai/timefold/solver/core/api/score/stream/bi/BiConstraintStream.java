@@ -66,6 +66,9 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * If the tuple changes, it will not be tested again;
      * this method is therefore useful for testing properties that are constant over time
      * and don't rely in any way on planning variables.
+     * When the tuple passes the filter and is later updated,
+     * downstream will see the current values of all of its facts' fields
+     * and not the values at the time of when the filter was originally called.
      * <p>
      * This is a specialized method, useful for avoiding overhead of repeated complex stateless computations.
      * In almost all cases, you should use {@link #filter(BiPredicate)} instead.

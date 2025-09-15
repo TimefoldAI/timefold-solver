@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
+import java.util.Objects;
+import java.util.function.Predicate;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.uni.PrefilterUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
-import java.util.function.Predicate;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class BavetPrefilterUniConstraintStream<Solution_, A>

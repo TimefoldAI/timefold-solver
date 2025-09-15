@@ -190,6 +190,30 @@ public abstract class AbstractUniConstraintStreamTest
         assertScore(scoreDirector);
     }
 
+    @Override
+    @TestTemplate
+    public void prefilter() {
+        var solution = TestdataLavishSolution.generateSolution(2, 2);
+        var entity1 = solution.getEntityList().get(0);
+        var entity2 = solution.getEntityList().get(1);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
+                        .prefilter(entity -> entity1.getIntegerProperty() == 1)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector, assertMatch(entity1), assertMatch(entity2));
+
+        // Change the property, ensure that the filter was not re-evaluated.
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setIntegerProperty(2);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector, assertMatch(entity1), assertMatch(entity2));
+    }
+
     @TestTemplate
     public void join_unknownClass() {
         assertThatThrownBy(() -> buildScoreDirector(factory -> factory.forEach(TestdataLavishValueGroup.class)

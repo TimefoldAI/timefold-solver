@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
+import java.util.Objects;
+import java.util.function.BiPredicate;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.bi.PrefilterBiNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
-import java.util.function.BiPredicate;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class BavetPrefilterBiConstraintStream<Solution_, A, B>
