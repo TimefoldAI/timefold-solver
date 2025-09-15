@@ -71,6 +71,10 @@ public final class StaticPropagationQueue<Tuple_ extends AbstractTuple>
         retractQueue.add(carrier);
     }
 
+    public void retract(Tuple_ carrier) {
+        retract(carrier, carrier.state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+    }
+
     @Override
     public void propagateRetracts() {
         if (retractQueue.isEmpty()) {

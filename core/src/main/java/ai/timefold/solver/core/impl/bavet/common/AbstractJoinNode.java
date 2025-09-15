@@ -151,12 +151,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         outEntryLeft.remove();
         ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
         outEntryRight.remove();
-        var state = outTuple.state;
-        if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
+        if (!outTuple.state.isActive()) { // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
                     .formatted(outTuple, this, outTuple.state));
         }
-        propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+        propagationQueue.retract(outTuple);
     }
 
     @Override

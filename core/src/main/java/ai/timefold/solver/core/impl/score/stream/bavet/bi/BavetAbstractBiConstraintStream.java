@@ -1,16 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
-import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultIndictedObjectsMapping;
-import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultJustificationMapping;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.ToIntBiFunction;
-import java.util.function.ToLongBiFunction;
-
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
@@ -63,8 +52,18 @@ import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.bi.BiConstraintBuilderImpl;
 import ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-
 import org.jspecify.annotations.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToLongBiFunction;
+
+import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultIndictedObjectsMapping;
+import static ai.timefold.solver.core.impl.score.stream.common.bi.InnerBiConstraintStream.createDefaultJustificationMapping;
 
 public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends BavetAbstractConstraintStream<Solution_>
         implements InnerBiConstraintStream<A, B> {
@@ -86,6 +85,11 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     @Override
     public @NonNull BavetAbstractBiConstraintStream<Solution_, A, B> filter(@NonNull BiPredicate<A, B> predicate) {
         return shareAndAddChild(new BavetFilterBiConstraintStream<>(constraintFactory, this, predicate));
+    }
+
+    @Override
+    public @NonNull BavetAbstractBiConstraintStream<Solution_, A, B> prefilter(@NonNull BiPredicate<A, B> predicate) {
+        return shareAndAddChild(new BavetPrefilterBiConstraintStream<>(constraintFactory, this, predicate));
     }
 
     // ************************************************************************

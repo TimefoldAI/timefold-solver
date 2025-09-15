@@ -1,19 +1,5 @@
 package ai.timefold.solver.core.api.score.stream.bi;
 
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.ToIntBiFunction;
-import java.util.function.ToLongBiFunction;
-
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -34,8 +20,21 @@ import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-
 import org.jspecify.annotations.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.ToIntBiFunction;
+import java.util.function.ToLongBiFunction;
+
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
 
 /**
  * A {@link ConstraintStream} that matches two facts.
@@ -60,6 +59,19 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      */
     @NonNull
     BiConstraintStream<A, B> filter(@NonNull BiPredicate<A, B> predicate);
+
+    /**
+     * Test each tuple of facts once against the {@link BiPredicate}
+     * and match if {@link BiPredicate#test(Object, Object)} returns true.
+     * If the tuple changes, it will not be tested again;
+     * this method is therefore useful for testing properties that are constant over time
+     * and don't rely in any way on planning variables.
+     * <p>
+     * This is a specialized method, useful for avoiding overhead of repeated complex stateless computations.
+     * In almost all cases, you should use {@link #filter(BiPredicate)} instead.
+     */
+    @NonNull
+    BiConstraintStream<A, B> prefilter(@NonNull BiPredicate<A, B> predicate);
 
     // ************************************************************************
     // Join
