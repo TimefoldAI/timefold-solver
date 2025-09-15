@@ -338,7 +338,7 @@ class SwapMoveSelectorTest {
         e2.setValue(v3);
         e3.setValue(v4);
         // select left A, select right C
-        random.reset(0, 2, 1);
+        random.reset(0, 2, 1, 1, 1, 1);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
     }
