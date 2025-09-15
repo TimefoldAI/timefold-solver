@@ -146,7 +146,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
     @Override
     @TestTemplate
-    public void prefilter() {
+    public void memoizedFilter() {
         var solution = TestdataLavishSolution.generateSolution(2, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -155,7 +155,7 @@ public abstract class AbstractQuadConstraintStreamTest
 
         var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .prefilter(entity -> entity1.getIntegerProperty() == 1)
+                        .memoizedFilter(entity -> entity1.getIntegerProperty() == 1)
                         .map(entity -> entity,
                                 TestdataLavishEntity::getValue,
                                 TestdataLavishEntity::getIntegerProperty,

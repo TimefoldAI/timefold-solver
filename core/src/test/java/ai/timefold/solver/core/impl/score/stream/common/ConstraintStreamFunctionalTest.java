@@ -10,7 +10,7 @@ public interface ConstraintStreamFunctionalTest {
 
     void filter_consecutive();
 
-    void prefilter();
+    void memoizedFilter();
 
     default void join_0() {
         // Quads don't have joins, so don't force it.

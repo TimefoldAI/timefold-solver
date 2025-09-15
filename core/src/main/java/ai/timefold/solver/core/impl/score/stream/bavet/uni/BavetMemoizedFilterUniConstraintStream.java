@@ -1,23 +1,23 @@
-package ai.timefold.solver.core.impl.score.stream.bavet.tri;
+package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
 import java.util.Objects;
+import java.util.function.Predicate;
 
-import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.tri.PrefilterTriNode;
+import ai.timefold.solver.core.impl.bavet.uni.MemoizedFilterUniNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class BavetPrefilterTriConstraintStream<Solution_, A, B, C>
-        extends BavetAbstractTriConstraintStream<Solution_, A, B, C> {
+final class BavetMemoizedFilterUniConstraintStream<Solution_, A>
+        extends BavetAbstractUniConstraintStream<Solution_, A> {
 
-    private final TriPredicate<A, B, C> predicate;
+    private final Predicate<A> predicate;
 
-    public BavetPrefilterTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractTriConstraintStream<Solution_, A, B, C> parent, TriPredicate<A, B, C> predicate) {
+    public BavetMemoizedFilterUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+            BavetAbstractUniConstraintStream<Solution_, A> parent, Predicate<A> predicate) {
         super(constraintFactory, parent);
         this.predicate = Objects.requireNonNull(predicate);
     }
@@ -25,7 +25,8 @@ final class BavetPrefilterTriConstraintStream<Solution_, A, B, C>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         var inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        var node = new PrefilterTriNode<>(inputStoreIndex, predicate, buildHelper.getAggregatedTupleLifecycle(childStreamList));
+        var node = new MemoizedFilterUniNode<>(inputStoreIndex, predicate,
+                buildHelper.getAggregatedTupleLifecycle(childStreamList));
         buildHelper.addNode(node, this);
     }
 
@@ -38,7 +39,7 @@ final class BavetPrefilterTriConstraintStream<Solution_, A, B, C>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetPrefilterTriConstraintStream<?, ?, ?, ?> other) {
+        } else if (o instanceof BavetMemoizedFilterUniConstraintStream<?, ?> other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {
@@ -48,7 +49,7 @@ final class BavetPrefilterTriConstraintStream<Solution_, A, B, C>
 
     @Override
     public String toString() {
-        return "Prefilter() with " + childStreamList.size() + " children";
+        return "MemoizedFilter() with " + childStreamList.size() + " children";
     }
 
 }

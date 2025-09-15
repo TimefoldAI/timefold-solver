@@ -4,19 +4,19 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.quad.PrefilterQuadNode;
+import ai.timefold.solver.core.impl.bavet.quad.MemoizedFilterQuadNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class BavetPrefilterQuadConstraintStream<Solution_, A, B, C, D>
+final class BavetMemoizedFilterQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> {
 
     private final QuadPredicate<A, B, C, D> predicate;
 
-    public BavetPrefilterQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+    public BavetMemoizedFilterQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> parent, QuadPredicate<A, B, C, D> predicate) {
         super(constraintFactory, parent);
         this.predicate = Objects.requireNonNull(predicate);
@@ -26,7 +26,8 @@ final class BavetPrefilterQuadConstraintStream<Solution_, A, B, C, D>
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         var inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
         var node =
-                new PrefilterQuadNode<>(inputStoreIndex, predicate, buildHelper.getAggregatedTupleLifecycle(childStreamList));
+                new MemoizedFilterQuadNode<>(inputStoreIndex, predicate,
+                        buildHelper.getAggregatedTupleLifecycle(childStreamList));
         buildHelper.addNode(node, this);
     }
 
@@ -39,7 +40,7 @@ final class BavetPrefilterQuadConstraintStream<Solution_, A, B, C, D>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetPrefilterQuadConstraintStream<?, ?, ?, ?, ?> other) {
+        } else if (o instanceof BavetMemoizedFilterQuadConstraintStream<?, ?, ?, ?, ?> other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {
@@ -49,7 +50,7 @@ final class BavetPrefilterQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     public String toString() {
-        return "Prefilter() with " + childStreamList.size() + " children";
+        return "MemoizedFilter() with " + childStreamList.size() + " children";
     }
 
 }

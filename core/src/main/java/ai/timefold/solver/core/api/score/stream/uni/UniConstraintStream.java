@@ -1,5 +1,21 @@
 package ai.timefold.solver.core.api.score.stream.uni;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneLong;
+
+import java.math.BigDecimal;
+import java.util.Arrays;
+import java.util.Objects;
+import java.util.function.BiPredicate;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
+import java.util.stream.Stream;
+
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -17,23 +33,8 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
+
 import org.jspecify.annotations.NonNull;
-
-import java.math.BigDecimal;
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.function.BiPredicate;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
-import java.util.stream.Stream;
-
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEquals;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantOneLong;
 
 /**
  * A {@link ConstraintStream} that matches one fact.
@@ -67,7 +68,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * In almost all cases, you should use {@link #filter(Predicate)} instead.
      */
     @NonNull
-    UniConstraintStream<A> prefilter(@NonNull Predicate<A> predicate);
+    UniConstraintStream<A> memoizedFilter(@NonNull Predicate<A> predicate);
 
     // ************************************************************************
     // Join

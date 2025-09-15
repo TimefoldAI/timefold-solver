@@ -1,5 +1,17 @@
 package ai.timefold.solver.core.api.score.stream.quad;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -23,19 +35,8 @@ import ai.timefold.solver.core.api.score.stream.penta.PentaJoiner;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
+
 import org.jspecify.annotations.NonNull;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.quadConstantOneLong;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
 
 /**
  * A {@link ConstraintStream} that matches four facts.
@@ -80,7 +81,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * In almost all cases, you should use {@link #filter(QuadPredicate)} instead.
      */
     @NonNull
-    QuadConstraintStream<A, B, C, D> prefilter(@NonNull QuadPredicate<A, B, C, D> predicate);
+    QuadConstraintStream<A, B, C, D> memoizedFilter(@NonNull QuadPredicate<A, B, C, D> predicate);
 
     // ************************************************************************
     // If (not) exists

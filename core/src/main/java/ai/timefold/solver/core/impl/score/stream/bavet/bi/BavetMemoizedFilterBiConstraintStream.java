@@ -4,19 +4,19 @@ import java.util.Objects;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.bi.PrefilterBiNode;
+import ai.timefold.solver.core.impl.bavet.bi.MemoizedFilterBiNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class BavetPrefilterBiConstraintStream<Solution_, A, B>
+final class BavetMemoizedFilterBiConstraintStream<Solution_, A, B>
         extends BavetAbstractBiConstraintStream<Solution_, A, B> {
 
     private final BiPredicate<A, B> predicate;
 
-    public BavetPrefilterBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
+    public BavetMemoizedFilterBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractBiConstraintStream<Solution_, A, B> parent, BiPredicate<A, B> predicate) {
         super(constraintFactory, parent);
         this.predicate = Objects.requireNonNull(predicate);
@@ -25,7 +25,8 @@ final class BavetPrefilterBiConstraintStream<Solution_, A, B>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         var inputStoreIndex = buildHelper.reserveTupleStoreIndex(parent.getTupleSource());
-        var node = new PrefilterBiNode<>(inputStoreIndex, predicate, buildHelper.getAggregatedTupleLifecycle(childStreamList));
+        var node = new MemoizedFilterBiNode<>(inputStoreIndex, predicate,
+                buildHelper.getAggregatedTupleLifecycle(childStreamList));
         buildHelper.addNode(node, this);
     }
 
@@ -38,7 +39,7 @@ final class BavetPrefilterBiConstraintStream<Solution_, A, B>
     public boolean equals(Object o) {
         if (this == o) {
             return true;
-        } else if (o instanceof BavetPrefilterBiConstraintStream<?, ?, ?> other) {
+        } else if (o instanceof BavetMemoizedFilterBiConstraintStream<?, ?, ?> other) {
             return parent == other.parent
                     && predicate == other.predicate;
         } else {
@@ -48,7 +49,7 @@ final class BavetPrefilterBiConstraintStream<Solution_, A, B>
 
     @Override
     public String toString() {
-        return "Prefilter() with " + childStreamList.size() + " children";
+        return "MemoizedFilter() with " + childStreamList.size() + " children";
     }
 
 }

@@ -89,8 +89,8 @@ public abstract class BavetAbstractBiConstraintStream<Solution_, A, B> extends B
     }
 
     @Override
-    public @NonNull BavetAbstractBiConstraintStream<Solution_, A, B> prefilter(@NonNull BiPredicate<A, B> predicate) {
-        return shareAndAddChild(new BavetPrefilterBiConstraintStream<>(constraintFactory, this, predicate));
+    public @NonNull BavetAbstractBiConstraintStream<Solution_, A, B> memoizedFilter(@NonNull BiPredicate<A, B> predicate) {
+        return shareAndAddChild(new BavetMemoizedFilterBiConstraintStream<>(constraintFactory, this, predicate));
     }
 
     // ************************************************************************

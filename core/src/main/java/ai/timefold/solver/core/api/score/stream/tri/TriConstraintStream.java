@@ -1,5 +1,17 @@
 package ai.timefold.solver.core.api.score.stream.tri;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOne;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneBigDecimal;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneLong;
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
+
+import java.math.BigDecimal;
+import java.util.Objects;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintConfiguration;
 import ai.timefold.solver.core.api.domain.constraintweight.ConstraintWeight;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
@@ -23,19 +35,8 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
+
 import org.jspecify.annotations.NonNull;
-
-import java.math.BigDecimal;
-import java.util.Objects;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.biConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantNull;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOne;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneBigDecimal;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.triConstantOneLong;
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uniConstantNull;
 
 /**
  * A {@link ConstraintStream} that matches three facts.
@@ -77,7 +78,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * In almost all cases, you should use {@link #filter(TriPredicate)} instead.
      */
     @NonNull
-    TriConstraintStream<A, B, C> prefilter(@NonNull TriPredicate<A, B, C> predicate);
+    TriConstraintStream<A, B, C> memoizedFilter(@NonNull TriPredicate<A, B, C> predicate);
 
     // ************************************************************************
     // Join

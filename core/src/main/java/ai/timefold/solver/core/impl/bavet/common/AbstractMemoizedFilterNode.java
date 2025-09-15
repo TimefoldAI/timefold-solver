@@ -13,14 +13,14 @@ import org.jspecify.annotations.NullMarked;
  * The predicate is not re-evaluated on update or retract.
  */
 @NullMarked
-public abstract class AbstractPrefilterNode<Tuple_ extends AbstractTuple>
+public abstract class AbstractMemoizedFilterNode<Tuple_ extends AbstractTuple>
         extends AbstractNode
         implements TupleLifecycle<Tuple_> {
 
     private final int inputStoreIndex;
     private final StaticPropagationQueue<Tuple_> propagationQueue;
 
-    protected AbstractPrefilterNode(int inputStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+    protected AbstractMemoizedFilterNode(int inputStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this.inputStoreIndex = inputStoreIndex;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }

@@ -90,8 +90,8 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     public @NonNull BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
-            prefilter(@NonNull QuadPredicate<A, B, C, D> predicate) {
-        return shareAndAddChild(new BavetPrefilterQuadConstraintStream<>(constraintFactory, this, predicate));
+            memoizedFilter(@NonNull QuadPredicate<A, B, C, D> predicate) {
+        return shareAndAddChild(new BavetMemoizedFilterQuadConstraintStream<>(constraintFactory, this, predicate));
     }
 
     // ************************************************************************
