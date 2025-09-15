@@ -322,8 +322,8 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             extends AbstractFilteringValueRangeIterator<Solution_> {
 
         private final Iterator<Object> entityIterator;
-        private Object currentReplayedEntity = null;
         private final int maxBailoutSize;
+        private Object currentReplayedEntity = null;
 
         private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
                 Iterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
@@ -354,9 +354,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 bailoutSize--;
                 // We expect the iterator to apply a random selection
                 var next = entityIterator.next();
-                // Experiments have shown that a large number of attempts do not scale well.
-                // So we won't spend excessive time trying to generate a single move for the current selection.
-                // If we are unable to generate a move, the move iterator can still be used in later iterations.
                 if (isReachable(currentReplayedEntity, next)) {
                     return next;
                 }
