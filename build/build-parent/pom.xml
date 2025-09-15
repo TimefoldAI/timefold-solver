@@ -21,7 +21,7 @@
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
     <version.ch.qos.logback>1.5.18</version.ch.qos.logback>
-    <version.io.quarkus>3.26.2</version.io.quarkus>
+    <version.io.quarkus>3.26.3</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.1</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.4</version.org.assertj>
@@ -52,7 +52,7 @@
     <version.sonar.plugin>5.2.0.4988</version.sonar.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
     <version.spotless.plugin>2.46.1</version.spotless.plugin>
-    <version.surefire.plugin>3.5.3</version.surefire.plugin>
+    <version.surefire.plugin>3.5.4</version.surefire.plugin>
     <version.versions.plugin>2.19.0</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
