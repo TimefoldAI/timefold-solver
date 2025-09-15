@@ -18,7 +18,7 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
     private final IterableValueSelector<Solution_> rightValueSelector;
     private final boolean randomSelection;
 
-    private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public ListSwapMoveSelector(IterableValueSelector<Solution_> leftValueSelector,
             IterableValueSelector<Solution_> rightValueSelector, boolean randomSelection) {
@@ -32,7 +32,7 @@ public class ListSwapMoveSelector<Solution_> extends GenericMoveSelector<Solutio
         phaseLifecycleSupport.addEventListener(this.rightValueSelector);
     }
 
-    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
         return Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }

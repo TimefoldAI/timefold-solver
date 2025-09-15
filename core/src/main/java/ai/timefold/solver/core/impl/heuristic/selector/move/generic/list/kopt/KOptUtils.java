@@ -107,7 +107,7 @@ final class KOptUtils {
 
     @SuppressWarnings("unchecked")
     public static <Node_> Function<Node_, Node_> getMultiEntitySuccessorFunction(Node_[] pickedValues,
-            ListVariableStateSupply<?> listVariableStateSupply) {
+            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
         return node -> entityOrderInfo.successor(node, listVariableStateSupply);
     }
@@ -129,7 +129,7 @@ final class KOptUtils {
     }
 
     public static <Node_> TriPredicate<Node_, Node_, Node_> getMultiEntityBetweenPredicate(Node_[] pickedValues,
-            ListVariableStateSupply<?> listVariableStateSupply) {
+            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var entityOrderInfo = EntityOrderInfo.of(pickedValues, listVariableStateSupply);
         return (start, middle, end) -> entityOrderInfo.between(start, middle, end, listVariableStateSupply);
     }

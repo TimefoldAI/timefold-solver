@@ -3,7 +3,8 @@ package ai.timefold.solver.core.impl.domain.variable.listener;
 import java.util.Collection;
 import java.util.Collections;
 
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.ChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
 /**
@@ -11,23 +12,25 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
  *
  * @param <Solution_>
  */
-public final class VariableListenerWithSources<Solution_> {
+public final class VariableListenerWithSources<Solution_, ChangeEvent_ extends ChangeEvent> {
 
-    private final AbstractVariableListener<Solution_, Object> variableListener;
+    private final InnerVariableListener<Solution_, ChangeEvent_> variableListener;
     private final Collection<VariableDescriptor<Solution_>> sourceVariableDescriptors;
 
-    public VariableListenerWithSources(AbstractVariableListener<Solution_, Object> variableListener,
+    public VariableListenerWithSources(
+            InnerVariableListener<Solution_, ChangeEvent_> variableListener,
             Collection<VariableDescriptor<Solution_>> sourceVariableDescriptors) {
         this.variableListener = variableListener;
         this.sourceVariableDescriptors = sourceVariableDescriptors;
     }
 
-    public VariableListenerWithSources(AbstractVariableListener<Solution_, Object> variableListener,
+    public VariableListenerWithSources(
+            InnerVariableListener<Solution_, ChangeEvent_> variableListener,
             VariableDescriptor<Solution_> sourceVariableDescriptor) {
         this(variableListener, Collections.singleton(sourceVariableDescriptor));
     }
 
-    public AbstractVariableListener<Solution_, Object> getVariableListener() {
+    public InnerVariableListener<Solution_, ChangeEvent_> getVariableListener() {
         return variableListener;
     }
 
@@ -35,7 +38,7 @@ public final class VariableListenerWithSources<Solution_> {
         return sourceVariableDescriptors;
     }
 
-    public Collection<VariableListenerWithSources<Solution_>> toCollection() {
+    public Collection<VariableListenerWithSources> toCollection() {
         return Collections.singleton(this);
     }
 }

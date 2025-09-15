@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
@@ -90,7 +89,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
+    public Collection<String> getVariableListenerClassNames() {
         return Collections.emptyList();
     }
 
@@ -100,7 +99,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         return Collections.emptyList();
     }
 

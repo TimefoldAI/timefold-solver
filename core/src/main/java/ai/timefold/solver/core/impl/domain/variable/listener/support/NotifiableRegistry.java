@@ -9,6 +9,8 @@ import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
@@ -66,7 +68,8 @@ final class NotifiableRegistry<Solution_> {
         return (Collection) notifiables;
     }
 
-    Collection<ListVariableListenerNotifiable<Solution_>> get(ListVariableDescriptor<?> variableDescriptor) {
+    Collection<ListVariableListenerNotifiable<Solution_, InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>>>>
+            get(ListVariableDescriptor<?> variableDescriptor) {
         var notifiables =
                 sourceVariableToNotifiableListArray[variableDescriptor.getEntityDescriptor().getOrdinal()][variableDescriptor
                         .getOrdinal()];

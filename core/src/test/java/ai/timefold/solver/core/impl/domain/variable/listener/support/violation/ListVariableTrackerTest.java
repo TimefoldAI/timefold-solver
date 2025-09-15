@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -24,11 +25,11 @@ class ListVariableTrackerTest {
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
 
-        tracker.beforeListVariableChanged(null, a, 0, 1);
-        tracker.afterListVariableChanged(null, a, 0, 1);
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(a, 0, 1));
 
         // intentionally missing before event for b
-        tracker.afterListVariableChanged(null, b, 0, 1);
+        tracker.afterChange(null, new ListElementsChangeEvent<>(b, 0, 1));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -43,11 +44,11 @@ class ListVariableTrackerTest {
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
 
-        tracker.beforeListVariableChanged(null, a, 0, 1);
-        tracker.afterListVariableChanged(null, a, 0, 1);
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(a, 0, 1));
 
         // intentionally missing after event for b
-        tracker.beforeListVariableChanged(null, b, 0, 1);
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(b, 0, 1));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -62,8 +63,8 @@ class ListVariableTrackerTest {
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
 
-        tracker.beforeListVariableChanged(null, a, 0, 1);
-        tracker.afterListVariableChanged(null, a, 0, 1);
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(a, 0, 1));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -79,10 +80,10 @@ class ListVariableTrackerTest {
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
 
-        tracker.beforeListVariableChanged(null, a, 0, 1);
-        tracker.afterListVariableChanged(null, a, 0, 1);
-        tracker.beforeListVariableChanged(null, b, 0, 1);
-        tracker.afterListVariableChanged(null, b, 0, 1);
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(b, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(b, 0, 1));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -96,10 +97,10 @@ class ListVariableTrackerTest {
         var a = new TestdataEntity("a");
         var b = new TestdataEntity("b");
 
-        tracker.beforeListVariableChanged(null, a, 0, 1);
-        tracker.afterListVariableChanged(null, a, 0, 1);
-        tracker.beforeListVariableChanged(null, b, 0, 1);
-        tracker.afterListVariableChanged(null, b, 0, 1);
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(b, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(b, 0, 1));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -123,8 +124,8 @@ class ListVariableTrackerTest {
         var a = new TestdataEntity("a");
         var b = new TestdataListEntityWithShadowHistory("b");
 
-        tracker.beforeListVariableChanged(null, a, 0, 1);
-        tracker.afterListVariableChanged(null, a, 0, 1);
+        tracker.beforeChange(null, new ListElementsChangeEvent<>(a, 0, 1));
+        tracker.afterChange(null, new ListElementsChangeEvent<>(a, 0, 1));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),

@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.AnchorShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -70,8 +69,8 @@ public final class AnchorShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
-        return Collections.singleton(AnchorVariableListener.class);
+    public Collection<String> getVariableListenerClassNames() {
+        return Collections.singleton(AnchorVariableListener.class.getSimpleName());
     }
 
     // ************************************************************************
@@ -84,7 +83,7 @@ public final class AnchorShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         SingletonInverseVariableSupply inverseVariableSupply = supplyManager
                 .demand(new SingletonInverseVariableDemand<>(sourceVariableDescriptor));
         return new VariableListenerWithSources<>(

@@ -7,7 +7,6 @@ import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.CustomShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableReference;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
@@ -198,11 +197,11 @@ public final class LegacyCustomShadowVariableDescriptor<Solution_> extends Shado
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
+    public Collection<String> getVariableListenerClassNames() {
         if (isRef()) {
-            return refVariableDescriptor.getVariableListenerClasses();
+            return refVariableDescriptor.getVariableListenerClassNames();
         }
-        return Collections.singleton(variableListenerClass);
+        return Collections.singleton(variableListenerClass.getSimpleName());
     }
 
     // ************************************************************************
@@ -220,7 +219,7 @@ public final class LegacyCustomShadowVariableDescriptor<Solution_> extends Shado
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         if (refVariableDescriptor != null) {
             throw new IllegalStateException("The shadowVariableDescriptor (" + this
                     + ") references another shadowVariableDescriptor (" + refVariableDescriptor
@@ -228,7 +227,10 @@ public final class LegacyCustomShadowVariableDescriptor<Solution_> extends Shado
         }
         VariableListener<Solution_, Object> variableListener =
                 ConfigUtils.newInstance(this::toString, "variableListenerClass", variableListenerClass);
-        return new VariableListenerWithSources<>(variableListener, sourceVariableDescriptorList).toCollection();
+        return new VariableListenerWithSources<>(
+                new LegacyCustomShadowVariableBasicVariableListener<>(sourceVariableDescriptorList.stream()
+                        .map(source -> source.getEntityDescriptor().getEntityClass()).toArray(Class[]::new), variableListener),
+                sourceVariableDescriptorList).toCollection();
     }
 
     @Override
@@ -236,4 +238,8 @@ public final class LegacyCustomShadowVariableDescriptor<Solution_> extends Shado
         return false;
     }
 
+    @Override
+    public String toString() {
+        return variableListenerClass.getSimpleName();
+    }
 }

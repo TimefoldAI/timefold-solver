@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.ListElementUnassignedChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 final class ElementUnassignedNotification<Solution_> implements ListVariableNotification<Solution_> {
 
@@ -12,15 +14,17 @@ final class ElementUnassignedNotification<Solution_> implements ListVariableNoti
     }
 
     @Override
-    public void triggerBefore(ListVariableListener<Solution_, Object, Object> variableListener,
-            ScoreDirector<Solution_> scoreDirector) {
+    public void triggerBefore(
+            InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>> variableListener,
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
         throw new UnsupportedOperationException("ListVariableListeners do not listen for this event.");
     }
 
     @Override
-    public void triggerAfter(ListVariableListener<Solution_, Object, Object> variableListener,
-            ScoreDirector<Solution_> scoreDirector) {
-        variableListener.afterListVariableElementUnassigned(scoreDirector, element);
+    public void triggerAfter(
+            InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>> variableListener,
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
+        variableListener.afterChange(scoreDirector, new ListElementUnassignedChangeEvent<>(element));
     }
 
     @Override

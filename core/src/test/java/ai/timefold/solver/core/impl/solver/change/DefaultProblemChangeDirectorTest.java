@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.solver.change;
 
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -61,11 +62,10 @@ class DefaultProblemChangeDirectorTest {
         testdataSolution.getValueList().add(changedEntityValue);
 
         problemChange.doChange(testdataSolution, defaultProblemChangeDirector);
-        verify(scoreDirectorMock, times(1)).beforeEntityAdded(addedEntity);
-        verify(scoreDirectorMock, times(1)).afterEntityAdded(addedEntity);
 
-        verify(scoreDirectorMock, times(1)).beforeEntityRemoved(removedEntity);
-        verify(scoreDirectorMock, times(1)).afterEntityRemoved(removedEntity);
+        // Sets the working solution twice (once when an entity added, and again when the entity is removed)
+        // The working solution is set since the declarative shadow variable graph network needs to be rebuilt
+        verify(scoreDirectorMock, times(2)).setWorkingSolution(any());
 
         verify(scoreDirectorMock, times(1))
                 .beforeVariableChanged(changedEntity, TestdataEntity.VALUE_FIELD);

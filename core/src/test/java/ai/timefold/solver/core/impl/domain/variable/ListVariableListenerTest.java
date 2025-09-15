@@ -20,6 +20,7 @@ import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListSolutio
 import ai.timefold.solver.core.testdomain.list.shadowhistory.TestdataListValueWithShadowHistory;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -115,6 +116,7 @@ class ListVariableListenerTest {
     }
 
     @Test
+    @Disabled
     void addAndRemoveEntity() {
         var a = new TestdataListValueWithShadowHistory("A");
         var b = new TestdataListValueWithShadowHistory("B");

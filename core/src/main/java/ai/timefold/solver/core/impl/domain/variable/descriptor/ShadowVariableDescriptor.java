@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
@@ -53,7 +52,7 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
      */
     public abstract List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList();
 
-    public abstract Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses();
+    public abstract Collection<String> getVariableListenerClassNames();
 
     /**
      * @return never null
@@ -73,7 +72,8 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
      * @param supplyManager never null
      * @return never null
      */
-    public abstract Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager);
+    public abstract Iterable<VariableListenerWithSources>
+            buildVariableListeners(SupplyManager supplyManager);
 
     // ************************************************************************
     // Extraction methods

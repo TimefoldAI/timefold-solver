@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
@@ -11,6 +10,9 @@ import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableList
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Single source of truth for all information about elements inside {@link PlanningListVariable list variables}.
@@ -35,9 +37,9 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
  * @see ExternalizedListVariableStateSupply The external representation of these shadow variables,
  *      which doesn't care whether the variable is internal or externalized.
  */
-public interface ListVariableStateSupply<Solution_> extends
-        SourcedVariableListener<Solution_>,
-        ListVariableListener<Solution_, Object, Object>,
+@NullMarked
+public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends
+        SourcedVariableListener<Solution_, ListVariableChangeEvent<Entity_, Element_>>,
         SingletonInverseVariableSupply,
         IndexVariableSupply {
 
@@ -86,6 +88,7 @@ public interface ListVariableStateSupply<Solution_> extends
      * @param element never null
      * @return null if the element is the first element in the list
      */
+    @Nullable
     Object getPreviousElement(Object element);
 
     /**
@@ -93,6 +96,7 @@ public interface ListVariableStateSupply<Solution_> extends
      * @param element never null
      * @return null if the element is the last element in the list
      */
+    @Nullable
     Object getNextElement(Object element);
 
 }

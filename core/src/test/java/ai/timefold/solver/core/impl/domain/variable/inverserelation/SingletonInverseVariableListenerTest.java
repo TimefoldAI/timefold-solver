@@ -9,6 +9,7 @@ import java.util.Arrays;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.chained.shadow.TestdataShadowingChainedAnchor;
@@ -56,9 +57,9 @@ class SingletonInverseVariableListenerTest {
 
         assertThat(b1.getNextEntity()).isEqualTo(null);
 
-        variableListener.beforeVariableChanged(scoreDirector, a3);
+        variableListener.beforeChange(scoreDirector, new BasicVariableChangeEvent<>(a3));
         a3.setChainedObject(b1);
-        variableListener.afterVariableChanged(scoreDirector, a3);
+        variableListener.afterChange(scoreDirector, new BasicVariableChangeEvent<>(a3));
         assertThat(b1.getNextEntity()).isEqualTo(a3);
 
         InOrder inOrder = inOrder(scoreDirector);

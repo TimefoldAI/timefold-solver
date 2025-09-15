@@ -18,6 +18,7 @@ import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
+import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.VariableSnapshotTotal;
 import ai.timefold.solver.core.impl.score.DefaultScoreExplanation;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -76,7 +77,11 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             if (isShadowVariableUpdateEnabled) {
                 scoreDirector.setWorkingSolution(nonNullSolution);
             } else {
+                // Some notificables resetWorkingSolution update shadow variables
+                var oldSnapshot =
+                        VariableSnapshotTotal.takeSnapshot(scoreDirectorFactory.getSolutionDescriptor(), nonNullSolution);
                 scoreDirector.setWorkingSolutionWithoutUpdatingShadows(nonNullSolution);
+                oldSnapshot.restore();
             }
             if (constraintMatchPolicy.isEnabled() && !scoreDirector.getConstraintMatchPolicy().isEnabled()) {
                 throw new IllegalStateException("""

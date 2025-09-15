@@ -1,14 +1,14 @@
 package ai.timefold.solver.core.impl.domain.variable.inverserelation;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-import org.jspecify.annotations.NonNull;
-
 public class SingletonInverseVariableListener<Solution_>
-        implements VariableListener<Solution_, Object>, SingletonInverseVariableSupply {
+        implements InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>>,
+        SingletonInverseVariableSupply {
 
     protected final InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
     protected final VariableDescriptor<Solution_> sourceVariableDescriptor;
@@ -20,33 +20,26 @@ public class SingletonInverseVariableListener<Solution_>
     }
 
     @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
+    public ChangeEventType listenedEventType() {
+        return ChangeEventType.BASIC;
     }
 
     @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert((InnerScoreDirector<Solution_, ?>) scoreDirector, entity);
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        InnerVariableListener.forEachEntity(scoreDirector, sourceVariableDescriptor.getEntityDescriptor().getEntityClass(),
+                entity -> insert(scoreDirector, entity));
     }
 
     @Override
-    public void beforeVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        retract((InnerScoreDirector<Solution_, ?>) scoreDirector, entity);
+    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Object> event) {
+        retract(scoreDirector, event.entity());
     }
 
     @Override
-    public void afterVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert((InnerScoreDirector<Solution_, ?>) scoreDirector, entity);
-    }
-
-    @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        retract((InnerScoreDirector<Solution_, ?>) scoreDirector, entity);
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
+    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Object> event) {
+        insert(scoreDirector, event.entity());
     }
 
     protected void insert(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
@@ -89,5 +82,4 @@ public class SingletonInverseVariableListener<Solution_>
     public Object getInverseSingleton(Object planningValue) {
         return shadowVariableDescriptor.getValue(planningValue);
     }
-
 }

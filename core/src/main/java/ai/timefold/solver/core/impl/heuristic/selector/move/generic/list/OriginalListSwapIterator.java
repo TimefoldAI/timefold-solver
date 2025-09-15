@@ -18,13 +18,13 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
  */
 public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final Iterator<Object> leftValueIterator;
     private final IterableValueSelector<Solution_> rightValueSelector;
     private Iterator<Object> rightValueIterator;
     private Object upcomingLeftValue;
 
-    public OriginalListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    public OriginalListSwapIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             IterableValueSelector<Solution_> leftValueSelector, IterableValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.leftValueIterator = leftValueSelector.iterator();
@@ -46,7 +46,7 @@ public class OriginalListSwapIterator<Solution_> extends UpcomingSelectionIterat
         return buildSwapMove(listVariableStateSupply, upcomingLeftValue, upcomingRightValue);
     }
 
-    static <Solution_> Move<Solution_> buildSwapMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    static <Solution_> Move<Solution_> buildSwapMove(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             Object upcomingLeftValue, Object upcomingRightValue) {
         if (upcomingLeftValue == upcomingRightValue) {
             return NoChangeMove.getInstance();

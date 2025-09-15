@@ -5,10 +5,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -89,8 +89,7 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessage() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        SolutionTracker<TestdataSolution> tracker = new SolutionTracker<>(solutionDescriptor,
-                supplyManager);
+        var tracker = new SolutionTracker<>(solutionDescriptor, supplyManager);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
@@ -131,44 +130,42 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodVariableListeners() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        List<VariableListener<TestdataSolution, TestdataEntity>> variableListeners = new ArrayList<>();
+        var variableListeners = new ArrayList<InnerVariableListener<?, BasicVariableChangeEvent<?>>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
-            Demand<?> demand = invocation.getArgument(0, Demand.class);
-            VariableListener<TestdataSolution, TestdataEntity> supply =
-                    (VariableListener<TestdataSolution, TestdataEntity>) demand.createExternalizedSupply(supplyManager);
-            variableListeners.add(supply);
+            var demand = invocation.getArgument(0, Demand.class);
+            var supply = demand.createExternalizedSupply(supplyManager);
+            variableListeners.add((InnerVariableListener<?, BasicVariableChangeEvent<?>>) supply);
             return supply;
         });
-        SolutionTracker<TestdataSolution> tracker = new SolutionTracker<>(solutionDescriptor,
-                supplyManager);
+        var tracker = new SolutionTracker<>(solutionDescriptor, supplyManager);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
         tracker.setBeforeMoveSolution(workingSolution);
 
         variableListeners.forEach(variableListener -> {
-            variableListener.beforeVariableChanged(null, workingSolution.getEntityList().get(0));
+            variableListener.beforeChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(0)));
         });
         workingSolution.getEntityList().get(0).setValue(null);
         variableListeners.forEach(variableListener -> {
-            variableListener.afterVariableChanged(null, workingSolution.getEntityList().get(0));
+            variableListener.afterChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(0)));
         });
 
         variableListeners.forEach(variableListener -> {
-            variableListener.beforeVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.beforeChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
         workingSolution.getEntityList().get(1).setValue(workingSolution.getValueList().get(0));
         variableListeners.forEach(variableListener -> {
-            variableListener.afterVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.afterChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
 
         tracker.setAfterMoveSolution(workingSolution);
 
         variableListeners.forEach(variableListener -> {
-            variableListener.beforeVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.beforeChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
         workingSolution.getEntityList().get(1).setValue(workingSolution.getValueList().get(1));
         variableListeners.forEach(variableListener -> {
-            variableListener.afterVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.afterChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
 
         tracker.setAfterUndoSolution(workingSolution);
@@ -200,12 +197,11 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodForwardVariableListeners() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        List<VariableListener<TestdataSolution, TestdataEntity>> variableListeners = new ArrayList<>();
+        var variableListeners = new ArrayList<InnerVariableListener<?, BasicVariableChangeEvent<?>>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
-            Demand<?> demand = invocation.getArgument(0, Demand.class);
-            VariableListener<TestdataSolution, TestdataEntity> supply =
-                    (VariableListener<TestdataSolution, TestdataEntity>) demand.createExternalizedSupply(supplyManager);
-            variableListeners.add(supply);
+            var demand = invocation.getArgument(0, Demand.class);
+            var supply = demand.createExternalizedSupply(supplyManager);
+            variableListeners.add((InnerVariableListener<?, BasicVariableChangeEvent<?>>) supply);
             return supply;
         });
         SolutionTracker<TestdataSolution> tracker = new SolutionTracker<>(solutionDescriptor,
@@ -215,19 +211,19 @@ public class SolutionTrackerTest {
         tracker.setBeforeMoveSolution(workingSolution);
 
         variableListeners.forEach(variableListener -> {
-            variableListener.beforeVariableChanged(null, workingSolution.getEntityList().get(0));
+            variableListener.beforeChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(0)));
         });
         workingSolution.getEntityList().get(0).setValue(null);
         variableListeners.forEach(variableListener -> {
-            variableListener.afterVariableChanged(null, workingSolution.getEntityList().get(0));
+            variableListener.afterChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(0)));
         });
 
         variableListeners.forEach(variableListener -> {
-            variableListener.beforeVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.beforeChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
         workingSolution.getEntityList().get(1).setValue(workingSolution.getValueList().get(0));
         variableListeners.forEach(variableListener -> {
-            variableListener.afterVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.afterChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
 
         tracker.setAfterMoveSolution(workingSolution);
@@ -261,15 +257,14 @@ public class SolutionTrackerTest {
     void testBuildScoreCorruptionMessageGoodUndoVariableListeners() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
         var supplyManager = Mockito.mock(SupplyManager.class);
-        List<VariableListener<TestdataSolution, TestdataEntity>> variableListeners = new ArrayList<>();
+        var variableListeners = new ArrayList<InnerVariableListener<?, BasicVariableChangeEvent<?>>>();
         Mockito.when(supplyManager.demand(Mockito.any())).thenAnswer((invocation) -> {
             Demand<?> demand = invocation.getArgument(0, Demand.class);
-            VariableListener<TestdataSolution, TestdataEntity> supply =
-                    (VariableListener<TestdataSolution, TestdataEntity>) demand.createExternalizedSupply(supplyManager);
-            variableListeners.add(supply);
+            var supply = demand.createExternalizedSupply(supplyManager);
+            variableListeners.add((InnerVariableListener<?, BasicVariableChangeEvent<?>>) supply);
             return supply;
         });
-        SolutionTracker<TestdataSolution> tracker = new SolutionTracker<>(solutionDescriptor,
+        var tracker = new SolutionTracker<>(solutionDescriptor,
                 supplyManager);
 
         var workingSolution = TestdataSolution.generateSolution(3, 3);
@@ -281,11 +276,11 @@ public class SolutionTrackerTest {
         tracker.setAfterMoveSolution(workingSolution);
 
         variableListeners.forEach(variableListener -> {
-            variableListener.beforeVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.beforeChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
         workingSolution.getEntityList().get(1).setValue(workingSolution.getValueList().get(1));
         variableListeners.forEach(variableListener -> {
-            variableListener.afterVariableChanged(null, workingSolution.getEntityList().get(1));
+            variableListener.afterChange(null, new BasicVariableChangeEvent<>(workingSolution.getEntityList().get(1)));
         });
 
         tracker.setAfterUndoSolution(workingSolution);

@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 
-public interface BasicVariableNotification<Solution_> extends Notification<Solution_, VariableListener<Solution_, Object>> {
+public interface BasicVariableNotification<Solution_> extends
+        Notification<Solution_, BasicVariableChangeEvent<Object>, InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>>> {
 
 }

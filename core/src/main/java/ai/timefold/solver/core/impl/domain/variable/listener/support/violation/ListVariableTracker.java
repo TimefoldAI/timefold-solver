@@ -3,8 +3,9 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support.violation;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
+import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
@@ -13,13 +14,14 @@ import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Tracks variable listener events for a given {@link ai.timefold.solver.core.api.domain.variable.PlanningListVariable}.
  */
+@NullMarked
 public class ListVariableTracker<Solution_>
-        implements SourcedVariableListener<Solution_>, ListVariableListener<Solution_, Object, Object>, Supply {
+        implements SourcedVariableListener<Solution_, ListVariableChangeEvent<Object, Object>>, Supply {
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
@@ -36,46 +38,30 @@ public class ListVariableTracker<Solution_>
     }
 
     @Override
-    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
+    public ChangeEventType listenedEventType() {
+        return ChangeEventType.LIST;
+    }
+
+    @Override
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         beforeVariableChangedEntityList.clear();
         afterVariableChangedEntityList.clear();
     }
 
     @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-
+    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListVariableChangeEvent<Object, Object> event) {
+        if (event instanceof ListElementsChangeEvent<Object, Object> changeEvent) {
+            beforeVariableChangedEntityList.add(changeEvent.entity());
+        }
     }
 
     @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-
-    }
-
-    @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-
-    }
-
-    @Override
-    public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
-
-    }
-
-    @Override
-    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
-            int fromIndex, int toIndex) {
-        beforeVariableChangedEntityList.add(entity);
-    }
-
-    @Override
-    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
-            int toIndex) {
-        afterVariableChangedEntityList.add(entity);
+    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListVariableChangeEvent<Object, Object> event) {
+        if (event instanceof ListElementsChangeEvent<Object, Object> changeEvent) {
+            afterVariableChangedEntityList.add(changeEvent.entity());
+        }
     }
 
     public List<String> getEntitiesMissingBeforeAfterEvents(

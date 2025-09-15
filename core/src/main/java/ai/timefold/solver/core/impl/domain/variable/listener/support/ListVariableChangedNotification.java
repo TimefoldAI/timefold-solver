@@ -1,7 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public final class ListVariableChangedNotification<Solution_> extends AbstractNotification
         implements ListVariableNotification<Solution_> {
@@ -24,15 +26,19 @@ public final class ListVariableChangedNotification<Solution_> extends AbstractNo
     }
 
     @Override
-    public void triggerBefore(ListVariableListener<Solution_, Object, Object> variableListener,
-            ScoreDirector<Solution_> scoreDirector) {
-        variableListener.beforeListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
+    public void triggerBefore(
+            InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>> variableListener,
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
+        variableListener.beforeChange(scoreDirector,
+                new ListElementsChangeEvent<>(entity, fromIndex, toIndex));
     }
 
     @Override
-    public void triggerAfter(ListVariableListener<Solution_, Object, Object> variableListener,
-            ScoreDirector<Solution_> scoreDirector) {
-        variableListener.afterListVariableChanged(scoreDirector, entity, fromIndex, toIndex);
+    public void triggerAfter(
+            InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>> variableListener,
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
+        variableListener.afterChange(scoreDirector,
+                new ListElementsChangeEvent<>(entity, fromIndex, toIndex));
     }
 
     @Override

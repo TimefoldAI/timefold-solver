@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
@@ -10,10 +9,12 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-final class ExternalizedListVariableStateSupply<Solution_>
-        implements ListVariableStateSupply<Solution_> {
+@NullMarked
+final class ExternalizedListVariableStateSupply<Solution_, Entity_>
+        implements ListVariableStateSupply<Solution_, Entity_, Object> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
     private final ListVariableState<Solution_> listVariableState;
@@ -50,11 +51,11 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         workingSolution = scoreDirector.getWorkingSolution();
-        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        listVariableState.initialize(innerScoreDirector, (int) innerScoreDirector.getValueRangeManager()
+        listVariableState.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
                 .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
+
         // Will run over all entities and unmark all present elements as unassigned.
         sourceVariableDescriptor.getEntityDescriptor()
                 .visitAllEntities(workingSolution, this::insert);
@@ -70,59 +71,42 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
+    public ChangeEventType listenedEventType() {
+        return ChangeEventType.LIST;
+    }
+
+    @Override
+    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListVariableChangeEvent<Entity_, Object> changeEvent) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert(entity);
-    }
+    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListVariableChangeEvent<Entity_, Object> event) {
+        if (event instanceof ListElementsChangeEvent<Entity_, ?> changeEvent) {
+            var entity = changeEvent.entity();
+            var fromIndex = changeEvent.changeStartIndexInclusive();
+            var toIndex = changeEvent.changeEndIndexExclusive();
 
-    @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // No need to do anything.
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // When the entity is removed, its values become unassigned.
-        // An unassigned value has no inverse entity and no index.
-        var assignedElements = sourceVariableDescriptor.getValue(entity);
-        for (var index = 0; index < assignedElements.size(); index++) {
-            listVariableState.removeElement(entity, assignedElements.get(index), index);
-        }
-    }
-
-    @Override
-    public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
-        listVariableState.unassignElement(element);
-    }
-
-    @Override
-    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
-            int fromIndex, int toIndex) {
-        // No need to do anything.
-    }
-
-    @Override
-    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
-            int toIndex) {
-        var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var elementCount = assignedElements.size();
-        // Include the last element of the previous part of the list, if any, for the next element shadow var.
-        // But only if the next element shadow var is externalized; otherwise, there is nothing to update.
-        var firstChangeIndex = nextExternalized ? Math.max(0, fromIndex - 1) : fromIndex;
-        // Include the first element of the next part of the list, if any, for the previous element shadow var.
-        // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
-        var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
-        for (var index = firstChangeIndex; index < elementCount; index++) {
-            var positionsDiffer = listVariableState.changeElement(entity, assignedElements, index);
-            if (!positionsDiffer && index >= lastChangeIndex) {
-                // Position is unchanged and we are past the part of the list that changed.
-                // We can terminate the loop prematurely.
-                return;
+            var assignedElements = sourceVariableDescriptor.getValue(entity);
+            var elementCount = assignedElements.size();
+            // Include the last element of the previous part of the list, if any, for the next element shadow var.
+            // But only if the next element shadow var is externalized; otherwise, there is nothing to update.
+            var firstChangeIndex = nextExternalized ? Math.max(0, fromIndex - 1) : fromIndex;
+            // Include the first element of the next part of the list, if any, for the previous element shadow var.
+            // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
+            var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
+            for (var index = firstChangeIndex; index < elementCount; index++) {
+                var positionsDiffer = listVariableState.changeElement(entity, assignedElements, index);
+                if (!positionsDiffer && index >= lastChangeIndex) {
+                    // Position is unchanged and we are past the part of the list that changed.
+                    // We can terminate the loop prematurely.
+                    return;
+                }
             }
+        } else if (event instanceof ListElementUnassignedChangeEvent<Entity_, ?> changeEvent) {
+            listVariableState.unassignElement(changeEvent.element());
         }
     }
 
@@ -132,12 +116,12 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public Integer getIndex(Object planningValue) {
+    public @Nullable Integer getIndex(Object planningValue) {
         return listVariableState.getIndex(planningValue);
     }
 
     @Override
-    public Object getInverseSingleton(Object planningValue) {
+    public @Nullable Object getInverseSingleton(Object planningValue) {
         return listVariableState.getInverseSingleton(planningValue);
     }
 
@@ -166,12 +150,12 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public Object getPreviousElement(Object element) {
+    public @Nullable Object getPreviousElement(Object element) {
         return listVariableState.getPreviousElement(element);
     }
 
     @Override
-    public Object getNextElement(Object element) {
+    public @Nullable Object getNextElement(Object element) {
         return listVariableState.getNextElement(element);
     }
 

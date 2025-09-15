@@ -15,11 +15,11 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
  */
 public class RandomListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
     private final Iterator<ElementPosition> destinationIterator;
 
-    public RandomListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    public RandomListChangeIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             IterableValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();

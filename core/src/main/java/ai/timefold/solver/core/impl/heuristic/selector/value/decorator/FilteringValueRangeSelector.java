@@ -78,7 +78,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     private Object replayedValue = null;
     private long valuesSize;
-    private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private ReachableValues reachableValues;
 
     private final boolean checkSourceAndDestination;
@@ -205,7 +205,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     @NullMarked
     private abstract class AbstractFilteringValueRangeIterator implements Iterator<Object> {
         private final Supplier<Object> upcomingValueSupplier;
-        private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+        private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
         private final ReachableValues reachableValues;
         private final boolean checkSourceAndDestination;
         private boolean initialized = false;
@@ -218,7 +218,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         private List<Object> currentUpcomingList;
 
         AbstractFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, boolean checkSourceAndDestination) {
+                ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, boolean checkSourceAndDestination) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.listVariableStateSupply = listVariableStateSupply;
@@ -312,7 +312,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         private Object selected = null;
 
         private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, boolean checkSourceAndDestination) {
+                ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
         }
 
@@ -362,7 +362,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         private List<Object> reachableValueList = null;
 
         private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
-                ListVariableStateSupply<Solution_> listVariableStateSupply, Random workingRandom,
+                ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, Random workingRandom,
                 boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
             this.workingRandom = workingRandom;

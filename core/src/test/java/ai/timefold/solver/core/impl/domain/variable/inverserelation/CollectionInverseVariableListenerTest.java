@@ -5,10 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
@@ -20,29 +17,25 @@ class CollectionInverseVariableListenerTest {
 
     @Test
     void normal() {
-        InnerScoreDirector<TestdataInverseRelationSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
-        SolutionDescriptor<TestdataInverseRelationSolution> solutionDescriptor =
-                TestdataInverseRelationSolution.buildSolutionDescriptor();
-        EntityDescriptor<TestdataInverseRelationSolution> entityDescriptor =
-                solutionDescriptor.findEntityDescriptorOrFail(TestdataInverseRelationEntity.class);
-        EntityDescriptor<TestdataInverseRelationSolution> shadowEntityDescriptor =
-                solutionDescriptor.findEntityDescriptorOrFail(TestdataInverseRelationValue.class);
-        ShadowVariableDescriptor<TestdataInverseRelationSolution> entitiesVariableDescriptor =
-                shadowEntityDescriptor.getShadowVariableDescriptor("entities");
-        CollectionInverseVariableListener<TestdataInverseRelationSolution> variableListener =
+        var scoreDirector = mock(InnerScoreDirector.class);
+        var solutionDescriptor = TestdataInverseRelationSolution.buildSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataInverseRelationEntity.class);
+        var shadowEntityDescriptor = solutionDescriptor.findEntityDescriptorOrFail(TestdataInverseRelationValue.class);
+        var entitiesVariableDescriptor = shadowEntityDescriptor.getShadowVariableDescriptor("entities");
+        var variableListener =
                 new CollectionInverseVariableListener<>(
                         (InverseRelationShadowVariableDescriptor<TestdataInverseRelationSolution>) entitiesVariableDescriptor,
                         entityDescriptor.getGenuineVariableDescriptor("value"));
 
-        TestdataInverseRelationValue val1 = new TestdataInverseRelationValue("1");
-        TestdataInverseRelationValue val2 = new TestdataInverseRelationValue("2");
-        TestdataInverseRelationValue val3 = new TestdataInverseRelationValue("3");
-        TestdataInverseRelationEntity a = new TestdataInverseRelationEntity("a", val1);
-        TestdataInverseRelationEntity b = new TestdataInverseRelationEntity("b", val1);
-        TestdataInverseRelationEntity c = new TestdataInverseRelationEntity("c", val3);
-        TestdataInverseRelationEntity d = new TestdataInverseRelationEntity("d", val3);
+        var val1 = new TestdataInverseRelationValue("1");
+        var val2 = new TestdataInverseRelationValue("2");
+        var val3 = new TestdataInverseRelationValue("3");
+        var a = new TestdataInverseRelationEntity("a", val1);
+        var b = new TestdataInverseRelationEntity("b", val1);
+        var c = new TestdataInverseRelationEntity("c", val3);
+        var d = new TestdataInverseRelationEntity("d", val3);
 
-        TestdataInverseRelationSolution solution = new TestdataInverseRelationSolution("solution");
+        var solution = new TestdataInverseRelationSolution("solution");
         solution.setEntityList(Arrays.asList(a, b, c, d));
         solution.setValueList(Arrays.asList(val1, val2, val3));
 
@@ -50,9 +43,9 @@ class CollectionInverseVariableListenerTest {
         assertThat(val2.getEntities()).isEmpty();
         assertThat(val3.getEntities()).containsExactly(c, d);
 
-        variableListener.beforeVariableChanged(scoreDirector, c);
+        variableListener.beforeChange(scoreDirector, new BasicVariableChangeEvent<>(c));
         c.setValue(val2);
-        variableListener.afterVariableChanged(scoreDirector, c);
+        variableListener.afterChange(scoreDirector, new BasicVariableChangeEvent<>(c));
 
         assertThat(val1.getEntities()).containsExactly(a, b);
         assertThat(val2.getEntities()).containsExactly(c);

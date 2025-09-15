@@ -38,7 +38,7 @@ public class MultipleDelegateListTest {
 
         when(listVariableDescriptor.getEntityDescriptor()).thenReturn(entityDescriptor);
 
-        ListVariableStateSupply<Object> listVariableStateSupply = mock(ListVariableStateSupply.class);
+        ListVariableStateSupply<Object, Object, Object> listVariableStateSupply = mock(ListVariableStateSupply.class);
         doAnswer(invocation -> {
             String value = invocation.getArgument(0);
             return switch (value) {

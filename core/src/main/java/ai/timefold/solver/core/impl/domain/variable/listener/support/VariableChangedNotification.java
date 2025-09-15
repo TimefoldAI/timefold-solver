@@ -1,7 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 final class VariableChangedNotification<Solution_> extends AbstractNotification
         implements BasicVariableNotification<Solution_> {
@@ -11,13 +12,17 @@ final class VariableChangedNotification<Solution_> extends AbstractNotification
     }
 
     @Override
-    public void triggerBefore(VariableListener<Solution_, Object> variableListener, ScoreDirector<Solution_> scoreDirector) {
-        variableListener.beforeVariableChanged(scoreDirector, entity);
+    public void triggerBefore(
+            InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>> variableListener,
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
+        variableListener.beforeChange(scoreDirector, new BasicVariableChangeEvent<>(entity));
     }
 
     @Override
-    public void triggerAfter(VariableListener<Solution_, Object> variableListener, ScoreDirector<Solution_> scoreDirector) {
-        variableListener.afterVariableChanged(scoreDirector, entity);
+    public void triggerAfter(
+            InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>> variableListener,
+            InnerScoreDirector<Solution_, ?> scoreDirector) {
+        variableListener.afterChange(scoreDirector, new BasicVariableChangeEvent<>(entity));
     }
 
     @Override

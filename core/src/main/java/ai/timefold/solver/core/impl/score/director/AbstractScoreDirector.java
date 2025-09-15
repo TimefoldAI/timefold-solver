@@ -94,7 +94,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     private final ValueRangeManager<Solution_> valueRangeManager;
     private final MoveDirector<Solution_, Score_> moveDirector = new MoveDirector<>(this);
     private @Nullable MoveRepository<Solution_> moveRepository;
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply; // Null when no list variable.
+    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply; // Null when no list variable.
 
     protected AbstractScoreDirector(AbstractScoreDirectorBuilder<Solution_, Score_, Factory_, ?> builder) {
         this.scoreDirectorFactory = builder.scoreDirectorFactory;
@@ -146,7 +146,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public ListVariableStateSupply<Solution_> getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
+    public ListVariableStateSupply<Solution_, Object, Object>
+            getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
         var originalListVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (variableDescriptor != originalListVariableDescriptor) {
             throw new IllegalStateException(
@@ -261,6 +262,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                 -(initializationStatistics.unassignedValueCount() + initializationStatistics.uninitializedVariableCount());
         assertInitScoreZeroOrLess();
         workingGenuineEntityCount = initializationStatistics.genuineEntityCount();
+
         variableListenerSupport.resetWorkingSolution();
         if (moveRepository != null) {
             moveRepository.initialize(new SessionContext<>(this));
@@ -277,7 +279,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         var originalShouldAssert = expectShadowVariablesInCorrectState;
         expectShadowVariablesInCorrectState = false;
         setWorkingSolutionWithoutUpdatingShadows(workingSolution);
-        variableListenerSupport.resetWorkingSolution();
         forceTriggerVariableListeners();
         expectShadowVariablesInCorrectState = originalShouldAssert;
     }
@@ -446,7 +447,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     // ************************************************************************
 
     public void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        variableListenerSupport.beforeEntityAdded(entityDescriptor, entity);
     }
 
     public void afterEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
@@ -546,7 +546,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
         workingInitScore += entityDescriptor.countUninitializedVariables(entity);
         assertInitScoreZeroOrLess();
-        variableListenerSupport.beforeEntityRemoved(entityDescriptor, entity);
     }
 
     public void afterEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {

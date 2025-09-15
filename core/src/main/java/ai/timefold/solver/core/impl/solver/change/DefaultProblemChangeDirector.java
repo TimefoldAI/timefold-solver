@@ -22,9 +22,9 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     public <Entity> void addEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer) {
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
-        scoreDirector.beforeEntityAdded(entity);
         entityConsumer.accept(entity);
-        scoreDirector.afterEntityAdded(entity);
+        // Rebuild the shadow variable graph and update all shadows
+        scoreDirector.setWorkingSolution(scoreDirector.getWorkingSolution());
     }
 
     @Override
@@ -32,9 +32,9 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
         var workingEntity = lookUpWorkingObjectOrFail(entity);
-        scoreDirector.beforeEntityRemoved(workingEntity);
         entityConsumer.accept(workingEntity);
-        scoreDirector.afterEntityRemoved(workingEntity);
+        // Rebuild the shadow variable graph and update all shadows
+        scoreDirector.setWorkingSolution(scoreDirector.getWorkingSolution());
     }
 
     @Override

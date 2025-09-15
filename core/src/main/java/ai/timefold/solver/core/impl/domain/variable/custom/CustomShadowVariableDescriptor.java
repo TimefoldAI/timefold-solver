@@ -127,8 +127,11 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
-        return listenerClassToSourceDescriptorListMap.keySet();
+    public Collection<String> getVariableListenerClassNames() {
+        return listenerClassToSourceDescriptorListMap.keySet()
+                .stream()
+                .map(Class::getSimpleName)
+                .collect(Collectors.toSet());
     }
 
     // ************************************************************************
@@ -141,11 +144,21 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         return listenerClassToSourceDescriptorListMap.entrySet().stream().map(classListEntry -> {
             AbstractVariableListener<Solution_, Object> variableListener =
                     ConfigUtils.newInstance(this::toString, "variableListenerClass", classListEntry.getKey());
-            return new VariableListenerWithSources<>(variableListener, classListEntry.getValue());
+            return new VariableListenerWithSources(
+                    (variableListener instanceof ListVariableListener<?, ?, ?>)
+                            ? new LegacyCustomShadowVariableListVariableListener<>(entityDescriptor.getEntityClass(),
+                                    (ListVariableListener<Solution_, Object, Object>) variableListener)
+                            : new LegacyCustomShadowVariableBasicVariableListener<>(
+                                    classListEntry.getValue().stream()
+                                            .map(variableDescriptor -> variableDescriptor.getEntityDescriptor()
+                                                    .getEntityClass())
+                                            .toArray(Class[]::new),
+                                    (VariableListener) variableListener),
+                    classListEntry.getValue());
         }).collect(Collectors.toList());
     }
 

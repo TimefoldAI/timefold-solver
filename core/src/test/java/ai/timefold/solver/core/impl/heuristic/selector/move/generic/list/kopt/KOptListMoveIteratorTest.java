@@ -39,7 +39,7 @@ public class KOptListMoveIteratorTest {
         Random workingRandom;
         ListVariableDescriptor<Object> listVariableDescriptor;
         EntityDescriptor<Object> entityDescriptor;
-        ListVariableStateSupply<Object> listVariableStateSupply;
+        ListVariableStateSupply<Object, Object, Object> listVariableStateSupply;
         IterableValueSelector<Object> originSelector;
         IterableValueSelector<Object> valueSelector;
     }

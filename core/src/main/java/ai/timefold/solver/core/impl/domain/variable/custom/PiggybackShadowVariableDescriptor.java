@@ -5,7 +5,6 @@ import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -87,8 +86,8 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
-        return shadowVariableDescriptor.getVariableListenerClasses();
+    public Collection<String> getVariableListenerClassNames() {
+        return shadowVariableDescriptor.getVariableListenerClassNames();
     }
 
     // ************************************************************************
@@ -106,7 +105,7 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         throw new UnsupportedOperationException("The piggybackShadowVariableDescriptor (" + this
                 + ") cannot build a variable listener.");
     }

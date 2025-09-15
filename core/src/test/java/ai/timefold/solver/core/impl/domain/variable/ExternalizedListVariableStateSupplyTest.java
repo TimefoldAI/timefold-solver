@@ -77,7 +77,7 @@ class ExternalizedListVariableStateSupplyTest {
                 softly.assertThat(supply.getElementPosition(v3)).isEqualTo(ElementPosition.unassigned());
             });
 
-            supply.afterListVariableElementUnassigned(scoreDirector, v1);
+            supply.afterChange(scoreDirector, new ListElementUnassignedChangeEvent<>(v1));
             assertSoftly(softly -> {
                 softly.assertThat(supply.getUnassignedCount()).isEqualTo(3);
                 softly.assertThat(supply.getElementPosition(v1)).isEqualTo(ElementPosition.unassigned());
@@ -86,7 +86,7 @@ class ExternalizedListVariableStateSupplyTest {
             });
 
             // Cannot unassign again.
-            assertThatThrownBy(() -> supply.afterListVariableElementUnassigned(scoreDirector, v1))
+            assertThatThrownBy(() -> supply.afterChange(scoreDirector, new ListElementUnassignedChangeEvent<>(v1)))
                     .isInstanceOf(IllegalStateException.class);
         }
     }

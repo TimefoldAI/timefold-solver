@@ -32,9 +32,7 @@ final class ShadowVariableSnapshot {
                     + ")'s corrupted value (" + originalValue + ") changed to uncorrupted value (" + newValue
                     + ") after all variable listeners were triggered without changes to the genuine variables.\n"
                     + "      Maybe one of the listeners ("
-                    + shadowVariableDescriptor.getVariableListenerClasses().stream()
-                            .map(Class::getSimpleName)
-                            .collect(Collectors.toList())
+                    + shadowVariableDescriptor.getVariableListenerClassNames()
                     + ") for that shadow variable (" + shadowVariableDescriptor.getSimpleEntityAndVariableName()
                     + ") forgot to update it when one of its sourceVariables ("
                     + shadowVariableDescriptor.getSourceVariableDescriptorList().stream()

@@ -36,7 +36,7 @@ public class FilteringValueSelector<Solution_>
     }
 
     public static <Solution_> ValueSelector<Solution_> ofAssigned(ValueSelector<Solution_> valueSelector,
-            Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
+            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) valueSelector.getVariableDescriptor();
         if (!listVariableDescriptor.allowsUnassignedValues()) {
             return valueSelector;
@@ -53,7 +53,7 @@ public class FilteringValueSelector<Solution_>
 
     public static <Solution_> IterableValueSelector<Solution_> ofAssigned(
             IterableValueSelector<Solution_> iterableValueSelector,
-            Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
+            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
         return (IterableValueSelector<Solution_>) ofAssigned((ValueSelector<Solution_>) iterableValueSelector,
                 listVariableStateSupplier);
     }

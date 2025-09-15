@@ -19,7 +19,7 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
 
     private final Random workingRandom;
     private final ListVariableDescriptor<Solution_> listVariableDescriptor;
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final IterableValueSelector<Node_> originSelector;
     private final IterableValueSelector<Node_> valueSelector;
     private final int minK;
@@ -28,7 +28,8 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
     private final int maxCyclesPatchedInInfeasibleMove;
 
     public KOptListMoveIterator(Random workingRandom, ListVariableDescriptor<Solution_> listVariableDescriptor,
-            ListVariableStateSupply<Solution_> listVariableStateSupply, IterableValueSelector<Node_> originSelector,
+            ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
+            IterableValueSelector<Node_> originSelector,
             IterableValueSelector<Node_> valueSelector, int minK, int maxK, int[] pickedKDistribution) {
         this.workingRandom = workingRandom;
         this.listVariableDescriptor = listVariableDescriptor;

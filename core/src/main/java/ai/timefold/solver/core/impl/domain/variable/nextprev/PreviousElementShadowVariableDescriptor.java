@@ -2,7 +2,6 @@ package ai.timefold.solver.core.impl.domain.variable.nextprev;
 
 import java.util.Collection;
 
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.PreviousElementShadowVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
@@ -29,13 +28,13 @@ public final class PreviousElementShadowVariableDescriptor<Solution_>
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
+    public Collection<String> getVariableListenerClassNames() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
