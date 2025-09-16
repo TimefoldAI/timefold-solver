@@ -35,10 +35,10 @@ public interface MoveStreamFactory<Solution_> {
      * @return A stream containing a tuple for each of the entities as described above.
      * @see PlanningPin An annotation to mark the entire entity as pinned.
      * @see PlanningPinToIndex An annotation to specify only a portion of {@link PlanningListVariable} is pinned.
-     * @see #enumerateIncludingPinned(Class, boolean) Specialized method exists to automatically include pinned entities as
+     * @see #forEachUnfiltered(Class, boolean) Specialized method exists to automatically include pinned entities as
      *      well.
      */
-    <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass, boolean includeNull);
+    <A> UniDataStream<Solution_, A> forEach(Class<A> sourceClass, boolean includeNull);
 
     /**
      * Start a {@link DataStream} of all instances of the sourceClass
@@ -46,22 +46,22 @@ public interface MoveStreamFactory<Solution_> {
      * or {@link PlanningEntity planning entities}.
      * If the sourceClass is a genuine or shadow entity,
      * it returns instances regardless of their pinning status.
-     * Otherwise as defined by {@link #enumerate(Class, boolean)}.
+     * Otherwise as defined by {@link #forEach(Class, boolean)}.
      */
-    <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass, boolean includeNull);
+    <A> UniDataStream<Solution_, A> forEachUnfiltered(Class<A> sourceClass, boolean includeNull);
 
     /**
      * Enumerate possible values for any given entity,
-     * where entities are obtained using {@link #enumerate(Class, boolean)},
+     * where entities are obtained using {@link #forEach(Class, boolean)},
      * with the class matching the entity type of the variable.
      * If the variable allows unassigned values, the resulting stream will include a null value.
      *
      * @param variableMetaModel the meta model of the variable to enumerate
      * @return data stream with all possible values of a given variable
      */
-    default <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
-            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return enumerateEntityValuePairs(variableMetaModel, enumerate(variableMetaModel.entity().type(), false));
+    default <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_>
+            forEachEntityValuePair(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        return forEachEntityValuePair(variableMetaModel, forEach(variableMetaModel.entity().type(), false));
     }
 
     /**
@@ -72,13 +72,9 @@ public interface MoveStreamFactory<Solution_> {
      * @param entityDataStream the data stream of entities to enumerate values for
      * @return data stream with all possible values of a given variable
      */
-    <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
+    <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> forEachEntityValuePair(
             GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             UniDataStream<Solution_, Entity_> entityDataStream);
-
-    default <A> UniMoveStream<Solution_, A> pick(Class<A> clz) {
-        return pick(enumerate(clz, false));
-    }
 
     <A> UniMoveStream<Solution_, A> pick(UniDataStream<Solution_, A> dataStream);
 

@@ -62,11 +62,11 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
         // Stream with unpinned entities;
         // includes null if the variable allows unassigned values.
         var unpinnedEntities =
-                moveStreamFactory.enumerate(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
+                moveStreamFactory.forEach(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
         // Stream with unpinned values, which are assigned to any list variable;
         // always includes null so that we can later create a position at the end of the list,
         // i.e. with no value after it.
-        var unpinnedValues = moveStreamFactory.enumerate(variableMetaModel.type(), true)
+        var unpinnedValues = moveStreamFactory.forEach(variableMetaModel.type(), true)
                 .filter((solutionView, value) -> value == null
                         || solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
         // Joins the two previous streams to create pairs of (entity, value),
@@ -87,7 +87,7 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                 .distinct();
         // Finally the stream of these positions is joined with the stream of all existing values,
         // filtering out those which would not result in a valid move.
-        var dataStream = moveStreamFactory.enumerate(variableMetaModel.type(), false)
+        var dataStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
                 .join(entityValuePairs, DataJoiners.filtering(this::isValidChange));
         // When picking from this stream, we decide what kind of move we need to create,
         // based on whether the value is assigned or unassigned.

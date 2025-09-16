@@ -22,7 +22,7 @@ public class ChangeMoveProvider<Solution_, Entity_, Value_>
 
     @Override
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var dataStream = moveStreamFactory.enumerateEntityValuePairs(variableMetaModel)
+        var dataStream = moveStreamFactory.forEachEntityValuePair(variableMetaModel)
                 .filter((solutionView, entity, value) -> {
                     Value_ currentValue = solutionView.getValue(variableMetaModel, Objects.requireNonNull(entity));
                     return !Objects.equals(currentValue, value);

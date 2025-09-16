@@ -25,7 +25,7 @@ public class ListSwapMoveProvider<Solution_, Entity_, Value_>
 
     @Override
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var assignedValueStream = moveStreamFactory.enumerate(variableMetaModel.type(), false)
+        var assignedValueStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
                 .filter((solutionView,
                         value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
         var validAssignedValuePairStream = assignedValueStream.join(assignedValueStream,

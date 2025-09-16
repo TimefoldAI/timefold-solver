@@ -61,7 +61,7 @@ public class SwapMoveProvider<Solution_, Entity_>
     @Override
     public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
         var entityType = entityMetaModel.type();
-        var dataStream = moveStreamFactory.enumerate(entityType, false)
+        var dataStream = moveStreamFactory.forEach(entityType, false)
                 .join(entityType,
                         filtering((SolutionView<Solution_> solutionView, Entity_ leftEntity, Entity_ rightEntity) -> {
                             if (leftEntity == rightEntity) {
