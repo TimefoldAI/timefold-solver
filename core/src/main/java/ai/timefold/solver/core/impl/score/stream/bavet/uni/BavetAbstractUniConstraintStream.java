@@ -1,21 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
-import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.fourKeysGroupBy;
-import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.oneKeyGroupBy;
-import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.threeKeysGroupBy;
-import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.twoKeysGroupBy;
-import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.zeroKeysGroupBy;
-import static ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream.createDefaultIndictedObjectsMapping;
-import static ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream.createDefaultJustificationMapping;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.Predicate;
-import java.util.function.ToIntFunction;
-import java.util.function.ToLongFunction;
-
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
@@ -68,8 +52,23 @@ import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.uni.UniConstraintBuilderImpl;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
-
 import org.jspecify.annotations.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
+
+import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.fourKeysGroupBy;
+import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.oneKeyGroupBy;
+import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.threeKeysGroupBy;
+import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.twoKeysGroupBy;
+import static ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor.zeroKeysGroupBy;
+import static ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream.createDefaultIndictedObjectsMapping;
+import static ai.timefold.solver.core.impl.score.stream.common.uni.InnerUniConstraintStream.createDefaultJustificationMapping;
 
 public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends BavetAbstractConstraintStream<Solution_>
         implements InnerUniConstraintStream<A> {
@@ -94,8 +93,8 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
     }
 
     @Override
-    public @NonNull BavetAbstractUniConstraintStream<Solution_, A> memoizedFilter(@NonNull Predicate<A> predicate) {
-        return shareAndAddChild(new BavetMemoizedFilterUniConstraintStream<>(constraintFactory, this, predicate));
+    public @NonNull BavetAbstractUniConstraintStream<Solution_, A> filterByFact(@NonNull Predicate<A> predicate) {
+        return shareAndAddChild(new BavetFilterByFactUniConstraintStream<>(constraintFactory, this, predicate));
     }
 
     // ************************************************************************

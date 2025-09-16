@@ -75,7 +75,7 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
      * In almost all cases, you should use {@link #filter(BiPredicate)} instead.
      */
     @NonNull
-    BiConstraintStream<A, B> memoizedFilter(@NonNull BiPredicate<A, B> predicate);
+    BiConstraintStream<A, B> filterByFact(@NonNull BiPredicate<A, B> predicate);
 
     // ************************************************************************
     // Join

@@ -130,9 +130,8 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         assertScore(scoreDirector);
     }
 
-    @Override
     @TestTemplate
-    public void memoizedFilter() {
+    public void filterByFact() {
         var solution = TestdataLavishSolution.generateSolution(2, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -141,7 +140,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
 
         var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .memoizedFilter(entity -> entity1.getIntegerProperty() == 1)
+                        .filterByFact(entity -> entity1.getIntegerProperty() == 1)
                         .expand(TestdataLavishEntity::getValue)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));

@@ -81,7 +81,7 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
      * In almost all cases, you should use {@link #filter(QuadPredicate)} instead.
      */
     @NonNull
-    QuadConstraintStream<A, B, C, D> memoizedFilter(@NonNull QuadPredicate<A, B, C, D> predicate);
+    QuadConstraintStream<A, B, C, D> filterByFact(@NonNull QuadPredicate<A, B, C, D> predicate);
 
     // ************************************************************************
     // If (not) exists

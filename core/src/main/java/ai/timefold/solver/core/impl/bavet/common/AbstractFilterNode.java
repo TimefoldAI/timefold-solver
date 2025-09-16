@@ -1,26 +1,30 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import java.util.Objects;
-
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-
 import org.jspecify.annotations.NullMarked;
+
+import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * Implements a filter node which only checks the predicate at tuple insertion.
  * Updates and retracts to that tuple are only propagated if the tuple originally passed the filter.
  * The predicate is not re-evaluated on update or retract.
+ * This exists to support {@link UniConstraintStream#filterByFact(Predicate)}, and similarly for bi, tri, ...
+ * {@link UniConstraintStream#filter(Predicate)} has no node in the network;
+ * it is implemented as a simple passthrough.
  */
 @NullMarked
-public abstract class AbstractMemoizedFilterNode<Tuple_ extends AbstractTuple>
+public abstract class AbstractFilterNode<Tuple_ extends AbstractTuple>
         extends AbstractNode
         implements TupleLifecycle<Tuple_> {
 
     private final int inputStoreIndex;
     private final StaticPropagationQueue<Tuple_> propagationQueue;
 
-    protected AbstractMemoizedFilterNode(int inputStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
+    protected AbstractFilterNode(int inputStoreIndex, TupleLifecycle<Tuple_> nextNodesTupleLifecycle) {
         this.inputStoreIndex = inputStoreIndex;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }

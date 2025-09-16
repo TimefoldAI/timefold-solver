@@ -145,9 +145,8 @@ public abstract class AbstractTriConstraintStreamTest
         assertScore(scoreDirector);
     }
 
-    @Override
     @TestTemplate
-    public void memoizedFilter() {
+    public void filterByFact() {
         var solution = TestdataLavishSolution.generateSolution(2, 2);
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
@@ -156,7 +155,7 @@ public abstract class AbstractTriConstraintStreamTest
 
         var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .memoizedFilter(entity -> entity1.getIntegerProperty() == 1)
+                        .filterByFact(entity -> entity1.getIntegerProperty() == 1)
                         .map(entity -> entity,
                                 TestdataLavishEntity::getValue,
                                 TestdataLavishEntity::getIntegerProperty)

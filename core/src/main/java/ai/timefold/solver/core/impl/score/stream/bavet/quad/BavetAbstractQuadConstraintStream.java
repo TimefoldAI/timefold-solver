@@ -1,13 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
-import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultIndictedObjectsMapping;
-import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultJustificationMapping;
-
-import java.math.BigDecimal;
-import java.util.Collection;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 import ai.timefold.solver.core.api.function.PentaFunction;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.QuadPredicate;
@@ -61,8 +53,15 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.ScoreImpactType;
 import ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.quad.QuadConstraintBuilderImpl;
-
 import org.jspecify.annotations.NonNull;
+
+import java.math.BigDecimal;
+import java.util.Collection;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+
+import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultIndictedObjectsMapping;
+import static ai.timefold.solver.core.impl.score.stream.common.quad.InnerQuadConstraintStream.createDefaultJustificationMapping;
 
 public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractConstraintStream<Solution_>
@@ -90,8 +89,8 @@ public abstract class BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     public @NonNull BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
-            memoizedFilter(@NonNull QuadPredicate<A, B, C, D> predicate) {
-        return shareAndAddChild(new BavetMemoizedFilterQuadConstraintStream<>(constraintFactory, this, predicate));
+    filterByFact(@NonNull QuadPredicate<A, B, C, D> predicate) {
+        return shareAndAddChild(new BavetFilterByFactQuadConstraintStream<>(constraintFactory, this, predicate));
     }
 
     // ************************************************************************

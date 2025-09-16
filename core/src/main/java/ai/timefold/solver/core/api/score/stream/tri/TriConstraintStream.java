@@ -78,7 +78,7 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
      * In almost all cases, you should use {@link #filter(TriPredicate)} instead.
      */
     @NonNull
-    TriConstraintStream<A, B, C> memoizedFilter(@NonNull TriPredicate<A, B, C> predicate);
+    TriConstraintStream<A, B, C> filterByFact(@NonNull TriPredicate<A, B, C> predicate);
 
     // ************************************************************************
     // Join

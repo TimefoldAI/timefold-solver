@@ -68,7 +68,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      * In almost all cases, you should use {@link #filter(Predicate)} instead.
      */
     @NonNull
-    UniConstraintStream<A> memoizedFilter(@NonNull Predicate<A> predicate);
+    UniConstraintStream<A> filterByFact(@NonNull Predicate<A> predicate);
 
     // ************************************************************************
     // Join
