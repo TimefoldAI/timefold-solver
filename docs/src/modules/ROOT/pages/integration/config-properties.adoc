@@ -6,11 +6,6 @@ The {solver_name_prefix} attribute is the solver name for multiple managers.
 ////
 
 ifeval::["{solver_name_prefix}" == ""]
-{property_prefix}timefold.solver-manager.random-seed::
-The random seed to be used in the solving process.
-endif::[]
-
-ifeval::["{solver_name_prefix}" == ""]
 {property_prefix}timefold.solver-manager.parallel-solver-count::
 The number of solvers that run in parallel.
 This directly influences CPU consumption.
@@ -25,6 +20,9 @@ If the property is not specified, the file `solverConfig.xml` is used when found
 configuration continues without using any configuration file.
 The specified resources take precedence over the default file `solverConfig.xml`, even if both files' resources are
 located in the classpath.
+
+{property_prefix}timefold.solver.{solver_name_prefix}random-seed::
+The random seed to be used in the solving process.
 
 {property_prefix}timefold.solver.{solver_name_prefix}environment-mode::
 Enable xref:using-timefold-solver/running-the-solver.adoc#environmentMode[runtime assertions] to detect common bugs in your
