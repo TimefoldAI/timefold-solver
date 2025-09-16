@@ -149,7 +149,7 @@
           "annotationType": "jakarta.xml.bind.annotation.XmlType",
           "attribute": "propOrder",
           "oldValue": "{\"localSearchType\", \"moveSelectorConfig\", \"acceptorConfig\", \"foragerConfig\"}",
-          "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"moveProvidersClass\", \"acceptorConfig\", \"foragerConfig\"}",
+          "newValue": "{\"localSearchType\", \"moveSelectorConfig\", \"moveProviderClass\", \"acceptorConfig\", \"foragerConfig\"}",
           "justification": "Move Streams arrives as a preview feature."
         },
         {

@@ -8,8 +8,8 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.SwapMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
@@ -19,14 +19,14 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class SwapMoveProvider<Solution_, Entity_>
-        implements MoveProvider<Solution_> {
+public class SwapMoveDefinition<Solution_, Entity_>
+        implements MoveDefinition<Solution_> {
 
     private final PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel;
     private final List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList;
 
     @SuppressWarnings("unchecked")
-    public SwapMoveProvider(PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
+    public SwapMoveDefinition(PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
         this.entityMetaModel = Objects.requireNonNull(entityMetaModel);
         this.variableMetaModelList = entityMetaModel.variables().stream()
                 .flatMap(v -> {
@@ -42,7 +42,7 @@ public class SwapMoveProvider<Solution_, Entity_>
         }
     }
 
-    public SwapMoveProvider(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
+    public SwapMoveDefinition(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
         this.variableMetaModelList = Objects.requireNonNull(variableMetaModelList);
         var entityMetaModels = variableMetaModelList.stream()
                 .map(VariableMetaModel::entity)
@@ -59,7 +59,7 @@ public class SwapMoveProvider<Solution_, Entity_>
     }
 
     @Override
-    public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
+    public MoveProducer<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var entityType = entityMetaModel.type();
         var dataStream = moveStreamFactory.forEach(entityType, false)
                 .join(entityType,

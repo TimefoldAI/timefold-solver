@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListUnassignMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ListChangeMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ListChangeMoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
@@ -35,7 +35,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class ListChangeMoveProviderTest {
+class ListChangeMoveDefinitionTest {
 
     @Test
     void fromSolution() {
@@ -55,8 +55,8 @@ class ListChangeMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ListChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ListChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
@@ -135,8 +135,8 @@ class ListChangeMoveProviderTest {
                 createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ListChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ListChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
@@ -213,8 +213,8 @@ class ListChangeMoveProviderTest {
                 solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ListChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ListChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
@@ -300,8 +300,8 @@ class ListChangeMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ListChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ListChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);

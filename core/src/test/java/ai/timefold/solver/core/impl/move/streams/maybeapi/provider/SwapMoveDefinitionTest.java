@@ -13,7 +13,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.SwapMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.SwapMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.SwapMoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
@@ -28,7 +28,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class SwapMoveProviderTest {
+class SwapMoveDefinitionTest {
 
     @Test
     void univariate() {
@@ -45,8 +45,8 @@ class SwapMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new SwapMoveProvider<>(entityMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new SwapMoveDefinition<>(entityMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
@@ -92,8 +92,8 @@ class SwapMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new SwapMoveProvider<>(entityMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new SwapMoveDefinition<>(entityMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.
@@ -136,8 +136,8 @@ class SwapMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new SwapMoveProvider<>(allowedVariableMetaModels);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new SwapMoveDefinition<>(allowedVariableMetaModels);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         // With 3 entities, only 3 swap moves are possible: e1 <-> e2, e1 <-> e3, e2 <-> e3.

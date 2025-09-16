@@ -43,7 +43,8 @@ import ai.timefold.solver.core.impl.move.MoveRepository;
 import ai.timefold.solver.core.impl.move.MoveSelectorBasedMoveRepository;
 import ai.timefold.solver.core.impl.move.MoveStreamsBasedMoveRepository;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProviders;
+import ai.timefold.solver.core.impl.move.streams.InnerMoveProducer;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -60,7 +61,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
-        var moveProviderClass = phaseConfig.<Solution_> getMoveProvidersClass();
+        var moveProviderClass = phaseConfig.<Solution_> getMoveProviderClass();
         var moveStreamsEnabled = moveProviderClass != null;
         var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
         var moveSelectorsEnabled = moveSelectorConfig != null;
@@ -87,7 +88,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     }
 
     private LocalSearchDecider<Solution_> buildMoveStreamsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination, Class<? extends MoveProviders<Solution_>> moveProvidersClass) {
+            PhaseTermination<Solution_> termination, Class<? extends MoveProvider<Solution_>> moveProviderClass) {
         configPolicy.ensurePreviewFeature(PreviewFeature.MOVE_STREAMS);
 
         var solutionDescriptor = configPolicy.getSolutionDescriptor();
@@ -120,22 +121,22 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                             PlanningPin.class.getSimpleName()));
         }
 
-        if (!MoveProviders.class.isAssignableFrom(moveProvidersClass)) {
+        if (!MoveProvider.class.isAssignableFrom(moveProviderClass)) {
             throw new IllegalArgumentException(
-                    "The moveProvidersClass (%s) does not implement %s."
-                            .formatted(moveProvidersClass, MoveProviders.class.getSimpleName()));
+                    "The moveProviderClass (%s) does not implement %s."
+                            .formatted(moveProviderClass, MoveProvider.class.getSimpleName()));
         }
-        var moveProviders =
-                ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName, "moveProvidersClass", moveProvidersClass);
-        var moveProviderList = moveProviders.defineMoves(solutionMetaModel);
-        if (moveProviderList.size() != 1) {
+        var moveProvider =
+                ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName, "moveProviderClass", moveProviderClass);
+        var moveDefinitionList = moveProvider.defineMoves(solutionMetaModel);
+        if (moveDefinitionList.size() != 1) {
             throw new IllegalArgumentException(
-                    "The moveProvidersClass (%s) must define exactly one MoveProvider, not %s."
-                            .formatted(moveProvidersClass, moveProviderList.size()));
+                    "The moveProviderClass (%s) must define exactly one MoveDefinition, not %s."
+                            .formatted(moveProviderClass, moveDefinitionList.size()));
         }
-        var moveProvider = moveProviderList.get(0);
+        var moveDefinition = moveDefinitionList.get(0);
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveProducer = (InnerMoveProducer<Solution_>) moveDefinition.build(moveStreamFactory);
         var moveRepository = new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer,
                 pickSelectionOrder() == SelectionOrder.RANDOM);
 

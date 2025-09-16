@@ -7,8 +7,8 @@ import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListChangeMove;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListUnassignMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -38,13 +38,13 @@ import org.jspecify.annotations.NullMarked;
  * user-defined change move providers needn't be this complex, as they understand the specifics of the domain.
  */
 @NullMarked
-public class ListChangeMoveProvider<Solution_, Entity_, Value_>
-        implements MoveProvider<Solution_> {
+public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
+        implements MoveDefinition<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final BiDataFilter<Solution_, Entity_, Value_> isValueInListFilter;
 
-    public ListChangeMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public ListChangeMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.isValueInListFilter = (solution, entity, value) -> {
             if (entity == null || value == null) {
@@ -58,7 +58,7 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
     }
 
     @Override
-    public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
+    public MoveProducer<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         // Stream with unpinned entities;
         // includes null if the variable allows unassigned values.
         var unpinnedEntities =

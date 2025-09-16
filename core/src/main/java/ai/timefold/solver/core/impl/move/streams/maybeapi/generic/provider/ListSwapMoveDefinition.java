@@ -4,8 +4,8 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListSwapMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -14,17 +14,17 @@ import ai.timefold.solver.core.preview.api.move.SolutionView;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public class ListSwapMoveProvider<Solution_, Entity_, Value_>
-        implements MoveProvider<Solution_> {
+public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
+        implements MoveDefinition<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
 
-    public ListSwapMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public ListSwapMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
     }
 
     @Override
-    public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
+    public MoveProducer<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var assignedValueStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
                 .filter((solutionView,
                         value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);

@@ -7,8 +7,8 @@ import java.util.Random;
 
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamSession;
+import ai.timefold.solver.core.impl.move.streams.InnerMoveProducer;
 import ai.timefold.solver.core.impl.move.streams.MoveIterable;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
@@ -23,7 +23,7 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
         implements MoveRepository<Solution_> {
 
     private final DefaultMoveStreamFactory<Solution_> moveStreamFactory;
-    private final MoveProducer<Solution_> moveProducer;
+    private final InnerMoveProducer<Solution_> moveProducer;
     private final boolean random;
 
     private @Nullable DefaultMoveStreamSession<Solution_> moveStreamSession;
@@ -31,7 +31,7 @@ public final class MoveStreamsBasedMoveRepository<Solution_>
     private @Nullable Random workingRandom;
 
     public MoveStreamsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            MoveProducer<Solution_> moveProducer, boolean random) {
+            InnerMoveProducer<Solution_> moveProducer, boolean random) {
         this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
         this.moveProducer = Objects.requireNonNull(moveProducer);
         this.random = random;
