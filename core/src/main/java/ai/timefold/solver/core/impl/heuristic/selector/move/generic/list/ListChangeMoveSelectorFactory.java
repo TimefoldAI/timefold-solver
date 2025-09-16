@@ -29,7 +29,9 @@ public class ListChangeMoveSelectorFactory<Solution_>
         extends AbstractMoveSelectorFactory<Solution_, ListChangeMoveSelectorConfig> {
 
     public ListChangeMoveSelectorFactory(ListChangeMoveSelectorConfig moveSelectorConfig) {
-        super(moveSelectorConfig);
+        // We copy the configuration,
+        // as the settings may be updated during the autoconfiguration of the entity value range
+        super(Objects.requireNonNull(moveSelectorConfig).copyConfig());
     }
 
     @Override
