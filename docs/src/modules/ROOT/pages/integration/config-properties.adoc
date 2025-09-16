@@ -21,6 +21,9 @@ configuration continues without using any configuration file.
 The specified resources take precedence over the default file `solverConfig.xml`, even if both files' resources are
 located in the classpath.
 
+{property_prefix}timefold.solver.{solver_name_prefix}random-seed::
+The random seed to be used in the solving process.
+
 {property_prefix}timefold.solver.{solver_name_prefix}environment-mode::
 Enable xref:using-timefold-solver/running-the-solver.adoc#environmentMode[runtime assertions] to detect common bugs in your
 implementation during development.
