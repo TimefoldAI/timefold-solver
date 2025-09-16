@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.tri.FilterTriNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class BavetFilterByFactTriConstraintStream<Solution_, A, B, C>
@@ -16,7 +17,7 @@ final class BavetFilterByFactTriConstraintStream<Solution_, A, B, C>
     private final TriPredicate<A, B, C> predicate;
 
     public BavetFilterByFactTriConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-                                                BavetAbstractTriConstraintStream<Solution_, A, B, C> parent, TriPredicate<A, B, C> predicate) {
+            BavetAbstractTriConstraintStream<Solution_, A, B, C> parent, TriPredicate<A, B, C> predicate) {
         super(constraintFactory, parent);
         this.predicate = Objects.requireNonNull(predicate);
     }

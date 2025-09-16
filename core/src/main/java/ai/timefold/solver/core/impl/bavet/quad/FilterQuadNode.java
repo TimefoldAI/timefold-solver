@@ -16,7 +16,7 @@ public final class FilterQuadNode<A, B, C, D>
     private final QuadPredicate<A, B, C, D> predicate;
 
     public FilterQuadNode(int inputStoreIndex, QuadPredicate<A, B, C, D> predicate,
-                          TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle) {
+            TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle) {
         super(inputStoreIndex, nextNodesTupleLifecycle);
         this.predicate = Objects.requireNonNull(predicate);
     }

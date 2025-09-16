@@ -1,12 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import java.util.Objects;
+import java.util.function.Predicate;
+
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
-import java.util.function.Predicate;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Implements a filter node which only checks the predicate at tuple insertion.

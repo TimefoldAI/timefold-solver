@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.quad.FilterQuadNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class BavetFilterByFactQuadConstraintStream<Solution_, A, B, C, D>
@@ -16,7 +17,7 @@ final class BavetFilterByFactQuadConstraintStream<Solution_, A, B, C, D>
     private final QuadPredicate<A, B, C, D> predicate;
 
     public BavetFilterByFactQuadConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-                                                 BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> parent, QuadPredicate<A, B, C, D> predicate) {
+            BavetAbstractQuadConstraintStream<Solution_, A, B, C, D> parent, QuadPredicate<A, B, C, D> predicate) {
         super(constraintFactory, parent);
         this.predicate = Objects.requireNonNull(predicate);
     }

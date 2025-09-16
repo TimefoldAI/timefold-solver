@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
+import java.util.Objects;
+import java.util.function.BiPredicate;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.bi.FilterBiNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Objects;
-import java.util.function.BiPredicate;
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class BavetFilterByFactBiConstraintStream<Solution_, A, B>
@@ -16,7 +17,7 @@ final class BavetFilterByFactBiConstraintStream<Solution_, A, B>
     private final BiPredicate<A, B> predicate;
 
     public BavetFilterByFactBiConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
-                                               BavetAbstractBiConstraintStream<Solution_, A, B> parent, BiPredicate<A, B> predicate) {
+            BavetAbstractBiConstraintStream<Solution_, A, B> parent, BiPredicate<A, B> predicate) {
         super(constraintFactory, parent);
         this.predicate = Objects.requireNonNull(predicate);
     }

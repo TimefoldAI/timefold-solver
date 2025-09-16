@@ -16,7 +16,7 @@ public final class FilterTriNode<A, B, C>
     private final TriPredicate<A, B, C> predicate;
 
     public FilterTriNode(int inputStoreIndex, TriPredicate<A, B, C> predicate,
-                         TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle) {
+            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle) {
         super(inputStoreIndex, nextNodesTupleLifecycle);
         this.predicate = Objects.requireNonNull(predicate);
     }

@@ -16,7 +16,7 @@ public final class FilterUniNode<A>
     private final Predicate<A> predicate;
 
     public FilterUniNode(int inputStoreIndex, Predicate<A> predicate,
-                         TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle) {
+            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle) {
         super(inputStoreIndex, nextNodesTupleLifecycle);
         this.predicate = Objects.requireNonNull(predicate);
     }
