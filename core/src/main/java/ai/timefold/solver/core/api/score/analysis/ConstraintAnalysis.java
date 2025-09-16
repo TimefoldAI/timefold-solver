@@ -200,38 +200,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
      */
     @SuppressWarnings("java:S3457")
     public @NonNull String summarize() {
-        var summary = new StringBuilder();
-        summary.append("""
-                Explanation of score (%s):
-                    Constraint matches:
-                """.formatted(score));
-        Comparator<MatchAnalysis<Score_>> matchScoreComparator = comparing(MatchAnalysis::score);
-
-        var constraintMatches = matches();
-        if (constraintMatches == null) {
-            throw new IllegalArgumentException("""
-                    The constraint matches must be non-null.
-                    Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
-                    """);
-        }
-        if (constraintMatches.isEmpty()) {
-            summary.append(
-                    "%8s%s: constraint (%s) has no matches.\n".formatted(" ", score().toShortString(),
-                            constraintRef().constraintName()));
-        } else {
-            summary.append("%8s%s: constraint (%s) has %s matches:\n".formatted(" ", score().toShortString(),
-                    constraintRef().constraintName(), constraintMatches.size()));
-        }
-        constraintMatches.stream()
-                .sorted(matchScoreComparator)
-                .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
-                .forEach(match -> summary.append("%12S%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
-                        match.justification())));
-        if (constraintMatches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
-            summary.append("%12s%s\n".formatted(" ", "..."));
-        }
-
-        return summary.toString();
+        return buildSummary(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT);
     }
 
     /**
@@ -248,6 +217,11 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         if (topLimit < 1) {
             throw new IllegalArgumentException("The topLimit (" + topLimit + ") must be at least 1.");
         }
+        return buildSummary(topLimit);
+    }
+
+    @SuppressWarnings("java:S3457")
+    private @NonNull String buildSummary(int topLimit) {
         var summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):
@@ -264,20 +238,28 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
         }
         if (constraintMatches.isEmpty()) {
             summary.append(
-                    "%8s%s: constraint (%s) has no matches.\n".formatted(" ", score().toShortString(),
+                    "%8s%s: constraint (%s) has no matches.\n".formatted(" ",
+                            score().toShortString(),
                             constraintRef().constraintName()));
         } else {
-            summary.append("%8s%s: constraint (%s) has %s matches:\n".formatted(" ", score().toShortString(),
-                    constraintRef().constraintName(), constraintMatches.size()));
+            summary.append(
+                    "%8s%s: constraint (%s) has %s matches:\n".formatted(" ",
+                            score().toShortString(),
+                            constraintRef().constraintName(),
+                            constraintMatches.size()));
         }
+
         constraintMatches.stream()
                 .sorted(matchScoreComparator)
                 .limit(topLimit)
-                .forEach(match -> summary.append("%12S%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
-                        match.justification())));
-        if (matches.size() > topLimit) {
+                .forEach(match -> summary.append(
+                        "%12s%s: justified with (%s)\n".formatted(" ",
+                                match.score().toShortString(),
+                                match.justification())));
+
+        if (constraintMatches.size() > topLimit) {
             summary.append("%12s... and %d more matches\n".formatted(" ",
-                    matches.size() - topLimit));
+                    constraintMatches.size() - topLimit));
         }
 
         return summary.toString();

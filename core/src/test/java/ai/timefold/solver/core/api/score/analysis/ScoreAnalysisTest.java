@@ -83,7 +83,7 @@ class ScoreAnalysisTest {
                                     2: justified with ([A, B, C])
                                     4: justified with ([A, B])
                                     6: justified with ([B, C])
-                                    ...
+                                    ... and 2 more matches
                         """);
 
         // Complete score analysis
@@ -98,12 +98,12 @@ class ScoreAnalysisTest {
                                     2: justified with ([A, B, C])
                                     4: justified with ([A, B])
                                     6: justified with ([B, C])
-                                    ...
+                                    ... and 2 more matches
                                 40: constraint (constraint2) has 5 matches:
                                     3: justified with ([B, C, D])
                                     6: justified with ([B, C])
                                     9: justified with ([C, D])
-                                    ...
+                                    ... and 2 more matches
                         """);
     }
 

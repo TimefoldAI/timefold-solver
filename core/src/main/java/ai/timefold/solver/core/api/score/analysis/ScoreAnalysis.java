@@ -259,45 +259,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      */
     @SuppressWarnings("java:S3457")
     public @NonNull String summarize() {
-        StringBuilder summary = new StringBuilder();
-        summary.append("""
-                Explanation of score (%s):
-                    Constraint matches:
-                """.formatted(score));
-        Comparator<ConstraintAnalysis<Score_>> constraintsScoreComparator = comparing(ConstraintAnalysis::score);
-        Comparator<MatchAnalysis<Score_>> matchScoreComparator = comparing(MatchAnalysis::score);
-
-        constraintAnalyses().stream()
-                .sorted(constraintsScoreComparator)
-                .forEach(constraint -> {
-                    var matches = constraint.matches();
-                    if (matches == null) {
-                        throw new IllegalArgumentException("""
-                                The constraint matches must be non-null.
-                                Maybe use ScoreAnalysisFetchPolicy.FETCH_ALL to request the score analysis
-                                """);
-                    }
-                    if (matches.isEmpty()) {
-                        summary.append(
-                                "%8s%s: constraint (%s) has no matches.\n".formatted(" ", constraint.score().toShortString(),
-                                        constraint.constraintRef().constraintName()));
-                    } else {
-                        summary.append(
-                                "%8s%s: constraint (%s) has %s matches:\n".formatted(" ", constraint.score().toShortString(),
-                                        constraint.constraintRef().constraintName(), matches.size()));
-                    }
-                    matches.stream()
-                            .sorted(matchScoreComparator)
-                            .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
-                            .forEach(match -> summary
-                                    .append("%12s%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
-                                            match.justification())));
-                    if (matches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
-                        summary.append("%12s%s\n".formatted(" ", "..."));
-                    }
-                });
-
-        return summary.toString();
+        return buildSummary(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT);
     }
 
     /**
@@ -311,10 +273,14 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      */
     @SuppressWarnings("java:S3457")
     public @NonNull String summarize(int topLimit) {
-        if (topLimit <= 0) {
+        if (topLimit < 1) {
             throw new IllegalArgumentException("topLimit (" + topLimit + ") must be positive.");
         }
+        return buildSummary(topLimit);
+    }
 
+    @SuppressWarnings("java:S3457")
+    private @NonNull String buildSummary(int topLimit) {
         StringBuilder summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):
@@ -346,7 +312,8 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
                             .sorted(matchScoreComparator)
                             .limit(topLimit)
                             .forEach(match -> summary
-                                    .append("%12s%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
+                                    .append("%12s%s: justified with (%s)\n".formatted(" ",
+                                            match.score().toShortString(),
                                             match.justification())));
 
                     if (matches.size() > topLimit) {
