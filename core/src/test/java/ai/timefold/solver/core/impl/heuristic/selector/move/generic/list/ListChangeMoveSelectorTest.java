@@ -422,7 +422,7 @@ class ListChangeMoveSelectorTest {
         var v1 = new TestdataListEntityProvidingValue("1");
         var v2 = new TestdataListEntityProvidingValue("2");
         var v3 = new TestdataListEntityProvidingValue("3");
-        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v2, v1));
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2, v3), List.of(v2, v1));
         var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
         var solution = new TestdataListEntityProvidingSolution();
         solution.setEntityList(List.of(a, b));
@@ -445,10 +445,10 @@ class ListChangeMoveSelectorTest {
         // and that causes the B destination to become an invalid destination
         assertCodesOfNeverEndingMoveSelector(moveSelector,
                 "1 {A[1]->A[1]}",
+                "3 {B[0]->A[0]}",
                 "3 {B[0]->B[0]}",
-                "3 {B[0]->B[0]}",
-                "3 {B[0]->B[0]}",
-                "3 {B[0]->B[1]}");
+                "3 {B[0]->A[2]}",
+                "3 {B[0]->A[1]}");
     }
 
     @Test
