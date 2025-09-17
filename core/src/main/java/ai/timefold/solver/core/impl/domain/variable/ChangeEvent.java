@@ -1,4 +1,4 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-public interface ChangeEvent {
+public sealed interface ChangeEvent permits BasicVariableChangeEvent, ListVariableChangeEvent {
 }

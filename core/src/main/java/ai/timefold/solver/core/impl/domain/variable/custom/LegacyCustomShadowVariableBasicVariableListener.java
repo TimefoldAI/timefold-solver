@@ -16,16 +16,6 @@ public record LegacyCustomShadowVariableBasicVariableListener<Solution_>(
         VariableListener<Solution_, Object> customVariableListener)
         implements
             InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>> {
-
-    private boolean handlesSourceEntity(Object sourceEntity) {
-        for (var sourceEntityClass : sourceEntityClasses) {
-            if (sourceEntityClass.isInstance(sourceEntity)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public ChangeEventType listenedEventType() {
         return ChangeEventType.BASIC;
@@ -34,19 +24,13 @@ public record LegacyCustomShadowVariableBasicVariableListener<Solution_>(
     @Override
     public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
             BasicVariableChangeEvent<Object> event) {
-        Object entity = event.entity();
-        if (handlesSourceEntity(entity)) {
-            customVariableListener.beforeVariableChanged(scoreDirector, event.entity());
-        }
+        customVariableListener.beforeVariableChanged(scoreDirector, event.entity());
     }
 
     @Override
     public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
             BasicVariableChangeEvent<Object> event) {
-        Object entity = event.entity();
-        if (handlesSourceEntity(entity)) {
-            customVariableListener.afterVariableChanged(scoreDirector, event.entity());
-        }
+        customVariableListener.afterVariableChanged(scoreDirector, event.entity());
     }
 
     @Override

@@ -1340,7 +1340,7 @@ public abstract class AbstractUniConstraintStreamTest
         scoreDirector.afterListVariableChanged(e1, "values", 0, 1);
 
         scoreDirector.beforeListVariableChanged(e2, "values", 0, 0);
-        e1.setValues(List.of(dependency));
+        e2.setValues(List.of(dependency));
         scoreDirector.afterListVariableChanged(e2, "values", 0, 1);
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,

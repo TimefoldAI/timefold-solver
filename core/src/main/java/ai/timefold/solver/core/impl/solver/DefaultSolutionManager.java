@@ -77,7 +77,7 @@ public final class DefaultSolutionManager<Solution_, Score_ extends Score<Score_
             if (isShadowVariableUpdateEnabled) {
                 scoreDirector.setWorkingSolution(nonNullSolution);
             } else {
-                // Some notificables resetWorkingSolution update shadow variables
+                // Some notifiables resetWorkingSolution update shadow variables
                 var oldSnapshot =
                         VariableSnapshotTotal.takeSnapshot(scoreDirectorFactory.getSolutionDescriptor(), nonNullSolution);
                 scoreDirector.setWorkingSolutionWithoutUpdatingShadows(nonNullSolution);
