@@ -30,7 +30,9 @@ public class SwapMoveSelectorFactory<Solution_>
     private static final Logger LOGGER = LoggerFactory.getLogger(SwapMoveSelectorFactory.class);
 
     public SwapMoveSelectorFactory(SwapMoveSelectorConfig moveSelectorConfig) {
-        super(moveSelectorConfig);
+        // We copy the configuration,
+        // as the settings may be updated during the autoconfiguration of the entity value range
+        super(Objects.requireNonNull(moveSelectorConfig).copyConfig());
     }
 
     @Override
