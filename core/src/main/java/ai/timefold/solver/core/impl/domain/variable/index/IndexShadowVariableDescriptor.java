@@ -91,7 +91,7 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }

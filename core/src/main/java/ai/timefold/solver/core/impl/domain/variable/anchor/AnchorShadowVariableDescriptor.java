@@ -69,8 +69,8 @@ public final class AnchorShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
-        return Collections.singleton(AnchorVariableListener.class.getSimpleName());
+    public Collection<Class<?>> getVariableListenerClasses() {
+        return Collections.singleton(AnchorVariableListener.class);
     }
 
     // ************************************************************************

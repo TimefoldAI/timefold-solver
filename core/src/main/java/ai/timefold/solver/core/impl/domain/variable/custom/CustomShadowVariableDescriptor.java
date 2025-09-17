@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.custom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -127,11 +128,8 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
-        return listenerClassToSourceDescriptorListMap.keySet()
-                .stream()
-                .map(Class::getSimpleName)
-                .collect(Collectors.toSet());
+    public Collection<Class<?>> getVariableListenerClasses() {
+        return new HashSet<>(listenerClassToSourceDescriptorListMap.keySet());
     }
 
     // ************************************************************************

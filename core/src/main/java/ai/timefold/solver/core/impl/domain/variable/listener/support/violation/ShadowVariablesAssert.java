@@ -69,7 +69,7 @@ public final class ShadowVariablesAssert {
         for (ShadowVariableSnapshot shadowVariableSnapshot : shadowVariableSnapshots) {
             shadowVariableSnapshot.validate(violationMessage -> violationListMap
                     .computeIfAbsent(shadowVariableSnapshot.getShadowVariableDescriptor(), k -> new ArrayList<>())
-                    .add(violationMessage));
+                    .add(violationMessage.indent(4)));
         }
         return violationListMap;
     }

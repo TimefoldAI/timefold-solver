@@ -86,8 +86,8 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
-        return shadowVariableDescriptor.getVariableListenerClassNames();
+    public Collection<Class<?>> getVariableListenerClasses() {
+        return shadowVariableDescriptor.getVariableListenerClasses();
     }
 
     // ************************************************************************

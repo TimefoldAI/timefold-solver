@@ -52,7 +52,7 @@ public abstract class ShadowVariableDescriptor<Solution_> extends VariableDescri
      */
     public abstract List<VariableDescriptor<Solution_>> getSourceVariableDescriptorList();
 
-    public abstract Collection<String> getVariableListenerClassNames();
+    public abstract Collection<Class<?>> getVariableListenerClasses();
 
     /**
      * @return never null

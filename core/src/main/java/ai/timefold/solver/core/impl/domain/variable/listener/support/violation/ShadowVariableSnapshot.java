@@ -27,23 +27,25 @@ final class ShadowVariableSnapshot {
     void validate(Consumer<String> violationMessageConsumer) {
         Object newValue = shadowVariableDescriptor.getValue(entity);
         if (!Objects.equals(originalValue, newValue)) {
-            violationMessageConsumer.accept("    The entity (" + entity
-                    + ")'s shadow variable (" + shadowVariableDescriptor.getSimpleEntityAndVariableName()
-                    + ")'s corrupted value (" + originalValue + ") changed to uncorrupted value (" + newValue
-                    + ") after all variable listeners were triggered without changes to the genuine variables.\n"
-                    + "      Maybe one of the listeners ("
-                    + shadowVariableDescriptor.getVariableListenerClassNames()
-                    + ") for that shadow variable (" + shadowVariableDescriptor.getSimpleEntityAndVariableName()
-                    + ") forgot to update it when one of its sourceVariables ("
-                    + shadowVariableDescriptor.getSourceVariableDescriptorList().stream()
-                            .map(VariableDescriptor::getSimpleEntityAndVariableName)
-                            .collect(Collectors.toList())
-                    + ") changed.\n"
-                    + "      Or vice versa, maybe one of the listeners computes this shadow variable using a planning variable"
-                    + " that is not declared as its source."
-                    + " Use the repeatable @" + ShadowVariable.class.getSimpleName()
-                    + " annotation for each source variable that is used to compute this shadow variable."
-                    + "\n");
+            violationMessageConsumer.accept(
+                    """
+                            The entity (%s)'s shadow variable (%s)'s corrupted value (%s) changed to uncorrupted value (%s) after all variable listeners were triggered without changes to the genuine variables.
+                            Maybe one of the listeners (%s) for that shadow variable (%s) forgot to update it when one of its sourceVariables (%s) changed.
+                            Or vice versa, maybe one of the listeners computes this shadow variable using a planning variable that is not declared as its source.
+                            Use the repeatable @%s annotation for each source variable that is used to compute this shadow variable.
+                            """
+                            .formatted(
+                                    entity,
+                                    shadowVariableDescriptor.getSimpleEntityAndVariableName(),
+                                    originalValue,
+                                    newValue,
+                                    shadowVariableDescriptor.getVariableListenerClasses().stream().map(Class::getSimpleName)
+                                            .toList(),
+                                    shadowVariableDescriptor.getSimpleEntityAndVariableName(),
+                                    shadowVariableDescriptor.getSourceVariableDescriptorList().stream()
+                                            .map(VariableDescriptor::getSimpleEntityAndVariableName)
+                                            .collect(Collectors.toList()),
+                                    ShadowVariable.class.getSimpleName()));
         }
     }
 

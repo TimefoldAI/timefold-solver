@@ -140,7 +140,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         return Collections.emptyList();
     }
 

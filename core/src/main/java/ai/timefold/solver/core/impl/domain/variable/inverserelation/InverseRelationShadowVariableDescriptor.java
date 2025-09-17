@@ -135,16 +135,16 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         if (singleton) {
             if (chained) {
-                return Collections.singleton(SingletonInverseVariableListener.class.getSimpleName());
+                return Collections.singleton(SingletonInverseVariableListener.class);
             } else {
                 throw new UnsupportedOperationException("Impossible state: Handled by %s."
                         .formatted(ListVariableStateSupply.class.getSimpleName()));
             }
         } else {
-            return Collections.singleton(CollectionInverseVariableListener.class.getSimpleName());
+            return Collections.singleton(CollectionInverseVariableListener.class);
         }
     }
 

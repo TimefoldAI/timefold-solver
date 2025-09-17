@@ -59,21 +59,21 @@ public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends
      * @param element never null
      * @return true if the element is contained in a list variable of any entity.
      */
-    boolean isAssigned(Object element);
+    boolean isAssigned(Element_ element);
 
     /**
      *
      * @param element never null
      * @return true if the element is in a pinned part of a list variable of any entity
      */
-    boolean isPinned(Object element);
+    boolean isPinned(Element_ element);
 
     /**
      *
      * @param value never null
      * @return never null
      */
-    ElementPosition getElementPosition(Object value);
+    ElementPosition getElementPosition(Element_ value);
 
     /**
      * Consider calling this before {@link #isAssigned(Object)} to eliminate some map accesses.
@@ -89,7 +89,7 @@ public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends
      * @return null if the element is the first element in the list
      */
     @Nullable
-    Object getPreviousElement(Object element);
+    Element_ getPreviousElement(Element_ element);
 
     /**
      *
@@ -97,6 +97,6 @@ public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends
      * @return null if the element is the last element in the list
      */
     @Nullable
-    Object getNextElement(Object element);
+    Element_ getNextElement(Element_ element);
 
 }

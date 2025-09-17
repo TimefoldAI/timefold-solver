@@ -89,7 +89,7 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         return Collections.emptyList();
     }
 

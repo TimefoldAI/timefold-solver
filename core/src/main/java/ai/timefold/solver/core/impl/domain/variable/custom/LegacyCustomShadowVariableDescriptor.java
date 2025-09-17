@@ -197,11 +197,11 @@ public final class LegacyCustomShadowVariableDescriptor<Solution_> extends Shado
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         if (isRef()) {
-            return refVariableDescriptor.getVariableListenerClassNames();
+            return refVariableDescriptor.getVariableListenerClasses();
         }
-        return Collections.singleton(variableListenerClass.getSimpleName());
+        return Collections.singleton(variableListenerClass);
     }
 
     // ************************************************************************

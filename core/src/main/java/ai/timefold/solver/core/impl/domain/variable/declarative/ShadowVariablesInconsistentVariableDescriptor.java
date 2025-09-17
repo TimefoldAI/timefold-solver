@@ -31,7 +31,7 @@ public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<String> getVariableListenerClassNames() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         return Collections.emptyList();
     }
 
