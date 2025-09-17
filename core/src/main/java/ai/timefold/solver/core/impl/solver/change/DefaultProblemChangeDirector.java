@@ -14,6 +14,8 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
 
     private final InnerScoreDirector<Solution_, ?> scoreDirector;
 
+    private boolean problemEntitiesChanged = false;
+
     public DefaultProblemChangeDirector(InnerScoreDirector<Solution_, ?> scoreDirector) {
         this.scoreDirector = scoreDirector;
     }
@@ -22,9 +24,10 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
     public <Entity> void addEntity(@NonNull Entity entity, @NonNull Consumer<Entity> entityConsumer) {
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
+        scoreDirector.beforeEntityAdded(entity);
         entityConsumer.accept(entity);
-        // Rebuild the shadow variable graph and update all shadows
-        scoreDirector.setWorkingSolution(scoreDirector.getWorkingSolution());
+        scoreDirector.afterEntityAdded(entity);
+        problemEntitiesChanged = true;
     }
 
     @Override
@@ -32,9 +35,10 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
         Objects.requireNonNull(entity, () -> "Entity (" + entity + ") cannot be null.");
         Objects.requireNonNull(entityConsumer, () -> "Entity consumer (" + entityConsumer + ") cannot be null.");
         var workingEntity = lookUpWorkingObjectOrFail(entity);
+        scoreDirector.beforeEntityRemoved(workingEntity);
         entityConsumer.accept(workingEntity);
-        // Rebuild the shadow variable graph and update all shadows
-        scoreDirector.setWorkingSolution(scoreDirector.getWorkingSolution());
+        scoreDirector.afterEntityRemoved(workingEntity);
+        problemEntitiesChanged = true;
     }
 
     @Override
@@ -99,7 +103,13 @@ public final class DefaultProblemChangeDirector<Solution_> implements ProblemCha
 
     @Override
     public void updateShadowVariables() {
-        scoreDirector.triggerVariableListeners();
+        if (problemEntitiesChanged) {
+            // Need to rebuild the declarative shadow variable graph
+            scoreDirector.setWorkingSolution(scoreDirector.getWorkingSolution());
+            problemEntitiesChanged = false;
+        } else {
+            scoreDirector.triggerVariableListeners();
+        }
     }
 
 }

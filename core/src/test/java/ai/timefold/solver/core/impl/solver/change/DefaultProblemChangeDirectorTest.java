@@ -7,7 +7,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
-import ai.timefold.solver.core.api.solver.change.ProblemChangeDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -23,20 +22,20 @@ class DefaultProblemChangeDirectorTest {
 
     @Test
     void complexProblemChange_correctlyNotifiesScoreDirector() {
-        final TestdataLavishEntityGroup entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
-        final TestdataLavishValueGroup valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
-        final TestdataLavishEntity addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
-        final TestdataLavishEntity removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
-        final TestdataLavishValue addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
-        final TestdataLavishValue removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
-        final TestdataLavishEntity changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
-        final TestdataLavishValue changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
+        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        final var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
+        final var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
+        final var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
+        final var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
+        final var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
+        final var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
+        final var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
 
         InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
         when(scoreDirectorMock.lookUpWorkingObject(removedEntity)).thenReturn(removedEntity);
         when(scoreDirectorMock.lookUpWorkingObject(changedEntity)).thenReturn(changedEntity);
         when(scoreDirectorMock.lookUpWorkingObject(removedFact)).thenReturn(removedFact);
-        ProblemChangeDirector defaultProblemChangeDirector = new DefaultProblemChangeDirector<>(scoreDirectorMock);
+        var defaultProblemChangeDirector = new DefaultProblemChangeDirector<>(scoreDirectorMock);
 
         ProblemChange<TestdataLavishSolution> problemChange = ((workingSolution, problemChangeDirector) -> {
             // Add an entity.
@@ -55,17 +54,18 @@ class DefaultProblemChangeDirectorTest {
             problemChangeDirector.removeProblemFact(removedFact, workingSolution.getValueList()::remove);
         });
 
-        TestdataLavishSolution testdataSolution = TestdataLavishSolution.generateSolution();
+        var testdataSolution = TestdataLavishSolution.generateSolution();
         testdataSolution.getEntityList().add(removedEntity);
         testdataSolution.getEntityList().add(changedEntity);
         testdataSolution.getValueList().add(removedFact);
         testdataSolution.getValueList().add(changedEntityValue);
 
         problemChange.doChange(testdataSolution, defaultProblemChangeDirector);
+        verify(scoreDirectorMock, times(1)).beforeEntityAdded(addedEntity);
+        verify(scoreDirectorMock, times(1)).afterEntityAdded(addedEntity);
 
-        // Sets the working solution twice (once when an entity added, and again when the entity is removed)
-        // The working solution is set since the declarative shadow variable graph network needs to be rebuilt
-        verify(scoreDirectorMock, times(2)).setWorkingSolution(any());
+        verify(scoreDirectorMock, times(1)).beforeEntityRemoved(removedEntity);
+        verify(scoreDirectorMock, times(1)).afterEntityRemoved(removedEntity);
 
         verify(scoreDirectorMock, times(1))
                 .beforeVariableChanged(changedEntity, TestdataEntity.VALUE_FIELD);
@@ -80,5 +80,126 @@ class DefaultProblemChangeDirectorTest {
 
         verify(scoreDirectorMock, times(1)).beforeProblemFactRemoved(removedFact);
         verify(scoreDirectorMock, times(1)).afterProblemFactRemoved(removedFact);
+    }
+
+    @Test
+    void verify_noResetSolutionIfNoEntitiesAddedOrRemoved() {
+        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        final var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
+        final var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
+        final var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
+        final var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
+        final var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
+
+        InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
+        when(scoreDirectorMock.lookUpWorkingObject(changedEntity)).thenReturn(changedEntity);
+        when(scoreDirectorMock.lookUpWorkingObject(removedFact)).thenReturn(removedFact);
+        var defaultProblemChangeDirector = new DefaultProblemChangeDirector<>(scoreDirectorMock);
+
+        ProblemChange<TestdataLavishSolution> problemChange = ((workingSolution, problemChangeDirector) -> {
+            // Change a planning variable.
+            problemChangeDirector.changeVariable(changedEntity, TestdataLavishEntity.VALUE_FIELD,
+                    testdataEntity -> testdataEntity.setValue(changedEntityValue));
+            // Change a property
+            problemChangeDirector.changeProblemProperty(changedEntity,
+                    workingEntity -> workingEntity.setEntityGroup(null));
+            // Add a problem fact.
+            problemChangeDirector.addProblemFact(addedFact, workingSolution.getValueList()::add);
+            // Remove a problem fact.
+            problemChangeDirector.removeProblemFact(removedFact, workingSolution.getValueList()::remove);
+            problemChangeDirector.updateShadowVariables();
+        });
+
+        var testdataSolution = TestdataLavishSolution.generateSolution();
+        problemChange.doChange(testdataSolution, defaultProblemChangeDirector);
+
+        verify(scoreDirectorMock, times(0)).setWorkingSolution(any());
+        verify(scoreDirectorMock, times(1)).triggerVariableListeners();
+    }
+
+    @Test
+    void verify_ResetSolutionIfEntitiesAddedOrRemoved() {
+        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        final var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
+        final var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
+
+        InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
+        when(scoreDirectorMock.lookUpWorkingObject(removedEntity)).thenReturn(removedEntity);
+        var defaultProblemChangeDirector = new DefaultProblemChangeDirector<>(scoreDirectorMock);
+
+        ProblemChange<TestdataLavishSolution> addProblemChange = ((workingSolution, problemChangeDirector) -> {
+            // Add an entity.
+            problemChangeDirector.addEntity(addedEntity, workingSolution.getEntityList()::add);
+            problemChangeDirector.updateShadowVariables();
+        });
+
+        var testdataSolution = TestdataLavishSolution.generateSolution();
+        addProblemChange.doChange(testdataSolution, defaultProblemChangeDirector);
+
+        verify(scoreDirectorMock, times(1)).setWorkingSolution(any());
+        verify(scoreDirectorMock, times(0)).triggerVariableListeners();
+
+        ProblemChange<TestdataLavishSolution> removeProblemChange = ((workingSolution, problemChangeDirector) -> {
+            // Add an entity.
+            problemChangeDirector.removeEntity(removedEntity, workingSolution.getEntityList()::remove);
+            problemChangeDirector.updateShadowVariables();
+        });
+
+        testdataSolution = TestdataLavishSolution.generateSolution();
+        removeProblemChange.doChange(testdataSolution, defaultProblemChangeDirector);
+
+        verify(scoreDirectorMock, times(2)).setWorkingSolution(any());
+        verify(scoreDirectorMock, times(0)).triggerVariableListeners();
+    }
+
+    @Test
+    void verify_ResetSolutionOnceIfEntitiesAddedOrRemovedThenVariablesChanged() {
+        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        final var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
+        final var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
+        final var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
+        final var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
+        final var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
+        final var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
+        final var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
+
+        InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
+        when(scoreDirectorMock.lookUpWorkingObject(removedEntity)).thenReturn(removedEntity);
+        when(scoreDirectorMock.lookUpWorkingObject(changedEntity)).thenReturn(changedEntity);
+        when(scoreDirectorMock.lookUpWorkingObject(removedFact)).thenReturn(removedFact);
+        var defaultProblemChangeDirector = new DefaultProblemChangeDirector<>(scoreDirectorMock);
+
+        ProblemChange<TestdataLavishSolution> problemChange = ((workingSolution, problemChangeDirector) -> {
+            // Add an entity.
+            problemChangeDirector.addEntity(addedEntity, workingSolution.getEntityList()::add);
+            // Remove an entity.
+            problemChangeDirector.removeEntity(removedEntity, workingSolution.getEntityList()::remove);
+
+            problemChangeDirector.updateShadowVariables();
+
+            // Change a planning variable.
+            problemChangeDirector.changeVariable(changedEntity, TestdataLavishEntity.VALUE_FIELD,
+                    testdataEntity -> testdataEntity.setValue(changedEntityValue));
+            // Change a property
+            problemChangeDirector.changeProblemProperty(changedEntity,
+                    workingEntity -> workingEntity.setEntityGroup(null));
+            // Add a problem fact.
+            problemChangeDirector.addProblemFact(addedFact, workingSolution.getValueList()::add);
+            // Remove a problem fact.
+            problemChangeDirector.removeProblemFact(removedFact, workingSolution.getValueList()::remove);
+
+            problemChangeDirector.updateShadowVariables();
+        });
+
+        var testdataSolution = TestdataLavishSolution.generateSolution();
+        testdataSolution.getEntityList().add(removedEntity);
+        testdataSolution.getEntityList().add(changedEntity);
+        testdataSolution.getValueList().add(removedFact);
+        testdataSolution.getValueList().add(changedEntityValue);
+
+        problemChange.doChange(testdataSolution, defaultProblemChangeDirector);
+
+        verify(scoreDirectorMock, times(1)).setWorkingSolution(any());
+        verify(scoreDirectorMock, times(1)).triggerVariableListeners();
     }
 }
