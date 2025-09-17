@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.domain.variable.inverserelation;
 import java.util.Collection;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
+import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public class CollectionInverseVariableListener<Solution_>
-        implements InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>>,
+        implements InnerBasicVariableListener<Solution_, Object>,
         CollectionInverseVariableSupply {
 
     protected final InverseRelationShadowVariableDescriptor<Solution_> shadowVariableDescriptor;
@@ -19,11 +19,6 @@ public class CollectionInverseVariableListener<Solution_>
             VariableDescriptor<Solution_> sourceVariableDescriptor) {
         this.shadowVariableDescriptor = shadowVariableDescriptor;
         this.sourceVariableDescriptor = sourceVariableDescriptor;
-    }
-
-    @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.BASIC;
     }
 
     @Override

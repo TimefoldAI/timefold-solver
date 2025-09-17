@@ -1,8 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.InnerListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 public final class ListVariableChangedNotification<Solution_> extends AbstractNotification
@@ -27,7 +26,7 @@ public final class ListVariableChangedNotification<Solution_> extends AbstractNo
 
     @Override
     public void triggerBefore(
-            InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>> variableListener,
+            InnerListVariableListener<Solution_, Object, Object> variableListener,
             InnerScoreDirector<Solution_, ?> scoreDirector) {
         variableListener.beforeChange(scoreDirector,
                 new ListElementsChangeEvent<>(entity, fromIndex, toIndex));
@@ -35,7 +34,7 @@ public final class ListVariableChangedNotification<Solution_> extends AbstractNo
 
     @Override
     public void triggerAfter(
-            InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>> variableListener,
+            InnerListVariableListener<Solution_, Object, Object> variableListener,
             InnerScoreDirector<Solution_, ?> scoreDirector) {
         variableListener.afterChange(scoreDirector,
                 new ListElementsChangeEvent<>(entity, fromIndex, toIndex));

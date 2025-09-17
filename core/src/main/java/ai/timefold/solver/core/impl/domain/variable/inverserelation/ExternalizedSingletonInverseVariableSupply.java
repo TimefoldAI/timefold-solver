@@ -4,10 +4,8 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedBasicVariableListener;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NonNull;
@@ -16,8 +14,7 @@ import org.jspecify.annotations.NonNull;
  * Alternative to {@link SingletonInverseVariableListener}.
  */
 public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
-        SourcedVariableListener<Solution_, BasicVariableChangeEvent<Object>>,
-        InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>>,
+        SourcedBasicVariableListener<Solution_, Object>,
         SingletonInverseVariableSupply {
 
     protected final VariableDescriptor<Solution_> sourceVariableDescriptor;
@@ -42,11 +39,6 @@ public class ExternalizedSingletonInverseVariableSupply<Solution_> implements
     @Override
     public void close() {
         inverseEntityMap = null;
-    }
-
-    @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.BASIC;
     }
 
     @Override

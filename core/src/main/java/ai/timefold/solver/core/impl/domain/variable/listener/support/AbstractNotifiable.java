@@ -4,10 +4,10 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.ChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.InnerListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.ListBasedScalingOrderedSet;
 
@@ -33,17 +33,22 @@ abstract class AbstractNotifiable<Solution_, ChangeEvent_ extends ChangeEvent, L
                     InnerScoreDirector<Solution_, ?> scoreDirector,
                     Listener_ variableListener,
                     int globalOrder) {
-        return switch (variableListener.listenedEventType()) {
-            case BASIC -> new VariableListenerNotifiable<>(
+        if (variableListener instanceof InnerBasicVariableListener<?, ?> basicVariableListener) {
+            return new VariableListenerNotifiable<>(
                     scoreDirector,
-                    (InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>>) variableListener,
+                    (InnerBasicVariableListener<Solution_, Object>) basicVariableListener,
                     variableListener.requiresUniqueEntityEvents() ? new ListBasedScalingOrderedSet<>() : new ArrayDeque<>(),
                     globalOrder);
-            case LIST -> new ListVariableListenerNotifiable<>(
+        } else if (variableListener instanceof InnerListVariableListener<?, ?, ?> listVariableListener) {
+            return new ListVariableListenerNotifiable<>(
                     scoreDirector,
-                    (InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>>) variableListener,
+                    (InnerListVariableListener<Solution_, Object, Object>) listVariableListener,
                     new ArrayDeque<>(), globalOrder);
-        };
+        } else {
+            throw new IllegalArgumentException("Impossible state: InnerVariableListener (%s) must be an instance of %s or %s."
+                    .formatted(variableListener.getClass().getCanonicalName(), InnerBasicVariableListener.class.getSimpleName(),
+                            InnerListVariableListener.class.getSimpleName()));
+        }
     }
 
     AbstractNotifiable(InnerScoreDirector<Solution_, ?> scoreDirector,

@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerListVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
@@ -17,14 +17,14 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-final class ListVariableListenerNotifiable<Solution_, Listener_ extends InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>>>
+final class ListVariableListenerNotifiable<Solution_, Listener_ extends InnerListVariableListener<Solution_, Object, Object>>
         extends
-        AbstractNotifiable<Solution_, ListVariableChangeEvent<Object, Object>, InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>>> {
+        AbstractNotifiable<Solution_, ListElementsChangeEvent<Object>, InnerListVariableListener<Solution_, Object, Object>> {
 
     ListVariableListenerNotifiable(
             InnerScoreDirector<Solution_, ?> scoreDirector,
             Listener_ variableListener,
-            Collection<Notification<Solution_, ListVariableChangeEvent<Object, Object>, Listener_>> notificationQueue,
+            Collection<Notification<Solution_, ListElementsChangeEvent<Object>, Listener_>> notificationQueue,
             int globalOrder) {
         super(scoreDirector, variableListener, (Collection) notificationQueue, globalOrder);
     }

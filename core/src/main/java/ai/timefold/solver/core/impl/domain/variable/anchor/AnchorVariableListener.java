@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.anchor;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
+import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
@@ -14,8 +14,8 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 @NullMarked
-public class AnchorVariableListener<Solution_, Entity_, Value_> implements
-        InnerVariableListener<Solution_, BasicVariableChangeEvent<Entity_>>, AnchorVariableSupply {
+public class AnchorVariableListener<Solution_, Entity_> implements
+        InnerBasicVariableListener<Solution_, Entity_>, AnchorVariableSupply {
 
     protected final AnchorShadowVariableDescriptor<Solution_> anchorShadowVariableDescriptor;
     protected final VariableDescriptor<Solution_> previousVariableDescriptor;
@@ -27,11 +27,6 @@ public class AnchorVariableListener<Solution_, Entity_, Value_> implements
         this.anchorShadowVariableDescriptor = anchorShadowVariableDescriptor;
         this.previousVariableDescriptor = previousVariableDescriptor;
         this.nextVariableSupply = nextVariableSupply;
-    }
-
-    @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.BASIC;
     }
 
     @Override

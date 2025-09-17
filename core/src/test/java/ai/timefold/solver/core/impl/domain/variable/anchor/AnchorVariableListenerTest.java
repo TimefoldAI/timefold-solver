@@ -40,7 +40,7 @@ class AnchorVariableListenerTest {
                         entityDescriptor.getGenuineVariableDescriptor("chainedObject"));
         ShadowVariableDescriptor<TestdataShadowingChainedSolution> anchorVariableDescriptor =
                 entityDescriptor.getShadowVariableDescriptor("anchor");
-        AnchorVariableListener<TestdataShadowingChainedSolution, Object, Object> variableListener =
+        AnchorVariableListener<TestdataShadowingChainedSolution, Object> variableListener =
                 new AnchorVariableListener<>(
                         (AnchorShadowVariableDescriptor<TestdataShadowingChainedSolution>) anchorVariableDescriptor,
                         chainedObjectVariableDescriptor, inverseVariableListener);

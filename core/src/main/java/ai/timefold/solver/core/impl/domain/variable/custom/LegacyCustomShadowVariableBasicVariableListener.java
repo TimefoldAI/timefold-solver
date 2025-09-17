@@ -4,7 +4,7 @@ import java.util.Arrays;
 
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
+import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
@@ -15,11 +15,7 @@ public record LegacyCustomShadowVariableBasicVariableListener<Solution_>(
         Class<?>[] sourceEntityClasses,
         VariableListener<Solution_, Object> customVariableListener)
         implements
-            InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>> {
-    @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.BASIC;
-    }
+            InnerBasicVariableListener<Solution_, Object> {
 
     @Override
     public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,

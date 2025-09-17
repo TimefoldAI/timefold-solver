@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.index.IndexVariableSupply;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
@@ -39,7 +39,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends
-        SourcedVariableListener<Solution_, ListVariableChangeEvent<Entity_, Element_>>,
+        SourcedListVariableListener<Solution_, Entity_, Element_>,
         SingletonInverseVariableSupply,
         IndexVariableSupply {
 

@@ -20,7 +20,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableBasicVariableListener;
@@ -188,8 +187,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     @SuppressWarnings("unchecked")
     private Supply createSupply(Demand<?> demand) {
         var supply = demand.createExternalizedSupply(this);
-        if (supply instanceof SourcedVariableListener) {
-            var variableListener = (SourcedVariableListener<Solution_, ChangeEvent>) supply;
+        if (supply instanceof SourcedVariableListener<?, ?>) {
+            var variableListener = (SourcedVariableListener<Solution_, ?>) supply;
             // An external ScoreDirector can be created before the working solution is set
             if (scoreDirector.getWorkingSolution() != null) {
                 variableListener.resetWorkingSolution(scoreDirector);

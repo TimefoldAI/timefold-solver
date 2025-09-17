@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
@@ -21,6 +23,8 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
 
     private boolean previousExternalized = false;
     private boolean nextExternalized = false;
+
+    @Nullable
     private Solution_ workingSolution;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
@@ -71,43 +75,39 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
     }
 
     @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.LIST;
-    }
-
-    @Override
     public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableChangeEvent<Entity_, Object> changeEvent) {
+            ListElementsChangeEvent<Entity_> changeEvent) {
         // No need to do anything.
     }
 
     @Override
     public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableChangeEvent<Entity_, Object> event) {
-        if (event instanceof ListElementsChangeEvent<Entity_, ?> changeEvent) {
-            var entity = changeEvent.entity();
-            var fromIndex = changeEvent.changeStartIndexInclusive();
-            var toIndex = changeEvent.changeEndIndexExclusive();
+            ListElementsChangeEvent<Entity_> changeEvent) {
+        var entity = changeEvent.entity();
+        var fromIndex = changeEvent.changeStartIndexInclusive();
+        var toIndex = changeEvent.changeEndIndexExclusive();
 
-            var assignedElements = sourceVariableDescriptor.getValue(entity);
-            var elementCount = assignedElements.size();
-            // Include the last element of the previous part of the list, if any, for the next element shadow var.
-            // But only if the next element shadow var is externalized; otherwise, there is nothing to update.
-            var firstChangeIndex = nextExternalized ? Math.max(0, fromIndex - 1) : fromIndex;
-            // Include the first element of the next part of the list, if any, for the previous element shadow var.
-            // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
-            var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
-            for (var index = firstChangeIndex; index < elementCount; index++) {
-                var positionsDiffer = listVariableState.changeElement(entity, assignedElements, index);
-                if (!positionsDiffer && index >= lastChangeIndex) {
-                    // Position is unchanged and we are past the part of the list that changed.
-                    // We can terminate the loop prematurely.
-                    return;
-                }
+        var assignedElements = sourceVariableDescriptor.getValue(entity);
+        var elementCount = assignedElements.size();
+        // Include the last element of the previous part of the list, if any, for the next element shadow var.
+        // But only if the next element shadow var is externalized; otherwise, there is nothing to update.
+        var firstChangeIndex = nextExternalized ? Math.max(0, fromIndex - 1) : fromIndex;
+        // Include the first element of the next part of the list, if any, for the previous element shadow var.
+        // But only if the previous element shadow var is externalized; otherwise, there is nothing to update.
+        var lastChangeIndex = previousExternalized ? Math.min(toIndex + 1, elementCount) : toIndex;
+        for (var index = firstChangeIndex; index < elementCount; index++) {
+            var positionsDiffer = listVariableState.changeElement(entity, assignedElements, index);
+            if (!positionsDiffer && index >= lastChangeIndex) {
+                // Position is unchanged and we are past the part of the list that changed.
+                // We can terminate the loop prematurely.
+                return;
             }
-        } else if (event instanceof ListElementUnassignedChangeEvent<Entity_, ?> changeEvent) {
-            listVariableState.unassignElement(changeEvent.element());
         }
+    }
+
+    @Override
+    public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
+        listVariableState.unassignElement(unassignedElement);
     }
 
     @Override
@@ -137,7 +137,7 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
         }
         var position = getElementPosition(element);
         if (position instanceof PositionInList assignedPosition) {
-            return sourceVariableDescriptor.isElementPinned(workingSolution, assignedPosition.entity(),
+            return sourceVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), assignedPosition.entity(),
                     assignedPosition.index());
         } else {
             return false;

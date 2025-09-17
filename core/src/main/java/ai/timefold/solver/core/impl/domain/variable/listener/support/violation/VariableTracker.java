@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedBasicVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -19,7 +18,7 @@ import org.jspecify.annotations.NonNull;
  * (except {@link ai.timefold.solver.core.api.domain.variable.PlanningListVariable}).
  */
 public class VariableTracker<Solution_>
-        implements SourcedVariableListener<Solution_, BasicVariableChangeEvent<Object>>, Supply {
+        implements SourcedBasicVariableListener<Solution_, Object>, Supply {
     private final VariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
@@ -33,11 +32,6 @@ public class VariableTracker<Solution_>
     @Override
     public VariableDescriptor<Solution_> getSourceVariableDescriptor() {
         return variableDescriptor;
-    }
-
-    @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.BASIC;
     }
 
     @Override

@@ -23,7 +23,6 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public interface InnerVariableListener<Solution_, ChangeEvent_ extends ChangeEvent> extends Closeable {
-    ChangeEventType listenedEventType();
 
     void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector, ChangeEvent_ event);
 

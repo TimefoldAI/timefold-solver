@@ -7,10 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedBasicVariableListener;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NonNull;
@@ -19,8 +17,7 @@ import org.jspecify.annotations.NonNull;
  * Alternative to {@link CollectionInverseVariableListener}.
  */
 public class ExternalizedCollectionInverseVariableSupply<Solution_> implements
-        SourcedVariableListener<Solution_, BasicVariableChangeEvent<Object>>,
-        InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>>,
+        SourcedBasicVariableListener<Solution_, Object>,
         CollectionInverseVariableSupply {
 
     protected final VariableDescriptor<Solution_> sourceVariableDescriptor;
@@ -40,11 +37,6 @@ public class ExternalizedCollectionInverseVariableSupply<Solution_> implements
     public void resetWorkingSolution(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
         inverseEntitySetMap = new IdentityHashMap<>();
         sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(scoreDirector.getWorkingSolution(), this::insert);
-    }
-
-    @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.BASIC;
     }
 
     @Override

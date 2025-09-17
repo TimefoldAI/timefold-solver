@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
-import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerListVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
 
 public interface ListVariableNotification<Solution_>
         extends
-        Notification<Solution_, ListVariableChangeEvent<Object, Object>, InnerVariableListener<Solution_, ListVariableChangeEvent<Object, Object>>> {
+        Notification<Solution_, ListElementsChangeEvent<Object>, InnerListVariableListener<Solution_, Object, Object>> {
 
 }

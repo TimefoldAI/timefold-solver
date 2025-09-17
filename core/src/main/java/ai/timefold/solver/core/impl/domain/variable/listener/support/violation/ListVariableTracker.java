@@ -3,12 +3,10 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support.violation;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
 import ai.timefold.solver.core.impl.domain.variable.ListElementsChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.supply.Demand;
 import ai.timefold.solver.core.impl.domain.variable.supply.Supply;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
@@ -21,7 +19,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 public class ListVariableTracker<Solution_>
-        implements SourcedVariableListener<Solution_, ListVariableChangeEvent<Object, Object>>, Supply {
+        implements SourcedListVariableListener<Solution_, Object, Object>, Supply {
     private final ListVariableDescriptor<Solution_> variableDescriptor;
     private final List<Object> beforeVariableChangedEntityList;
     private final List<Object> afterVariableChangedEntityList;
@@ -38,11 +36,6 @@ public class ListVariableTracker<Solution_>
     }
 
     @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.LIST;
-    }
-
-    @Override
     public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         beforeVariableChangedEntityList.clear();
         afterVariableChangedEntityList.clear();
@@ -50,18 +43,14 @@ public class ListVariableTracker<Solution_>
 
     @Override
     public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableChangeEvent<Object, Object> event) {
-        if (event instanceof ListElementsChangeEvent<Object, Object> changeEvent) {
-            beforeVariableChangedEntityList.add(changeEvent.entity());
-        }
+            ListElementsChangeEvent<Object> event) {
+        beforeVariableChangedEntityList.add(event.entity());
     }
 
     @Override
     public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
-            ListVariableChangeEvent<Object, Object> event) {
-        if (event instanceof ListElementsChangeEvent<Object, Object> changeEvent) {
-            afterVariableChangedEntityList.add(changeEvent.entity());
-        }
+            ListElementsChangeEvent<Object> event) {
+        afterVariableChangedEntityList.add(event.entity());
     }
 
     public List<String> getEntitiesMissingBeforeAfterEvents(
@@ -90,6 +79,11 @@ public class ListVariableTracker<Solution_>
 
     public TrackerDemand demand() {
         return new TrackerDemand();
+    }
+
+    @Override
+    public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
+        // Do nothing
     }
 
     /**

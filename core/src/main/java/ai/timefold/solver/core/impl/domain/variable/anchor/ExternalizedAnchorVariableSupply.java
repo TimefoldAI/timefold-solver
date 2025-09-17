@@ -4,10 +4,9 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
-import ai.timefold.solver.core.impl.domain.variable.ChangeEventType;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedBasicVariableListener;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NullMarked;
@@ -18,7 +17,7 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public class ExternalizedAnchorVariableSupply<Solution_> implements
-        SourcedVariableListener<Solution_, BasicVariableChangeEvent<Object>>,
+        SourcedBasicVariableListener<Solution_, Object>,
         AnchorVariableSupply {
 
     protected final VariableDescriptor<Solution_> previousVariableDescriptor;
@@ -41,11 +40,6 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
     public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         anchorMap.clear();
         previousVariableDescriptor.getEntityDescriptor().visitAllEntities(scoreDirector.getWorkingSolution(), this::insert);
-    }
-
-    @Override
-    public ChangeEventType listenedEventType() {
-        return ChangeEventType.BASIC;
     }
 
     @Override
