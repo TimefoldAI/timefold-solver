@@ -1,9 +1,9 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions;
 
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListSwapMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
@@ -46,18 +46,26 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
                         && solutionView.isValueInRange(variableMetaModel, leftPosition.entity(), rightPosition.value()));
         // Finally pick the moves.
         return moveStreamFactory.pick(result)
-                .asMove((solutionView, leftPosition, rightPosition) -> new ListSwapMove<>(variableMetaModel,
-                        leftPosition.entity(), leftPosition.index(),
-                        rightPosition.entity(), rightPosition.index()));
+                .asMove((solutionView, leftPosition, rightPosition) -> Moves.swap(leftPosition.elementPosition,
+                        rightPosition.elementPosition, variableMetaModel));
     }
 
-    private record FullElementPosition<Entity_, Value_>(Value_ value, Entity_ entity, int index) {
+    @NullMarked
+    private record FullElementPosition<Entity_, Value_>(Value_ value, PositionInList elementPosition) {
 
         public static <Solution_, Entity_, Value_> FullElementPosition<Entity_, Value_> of(
                 PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
                 SolutionView<Solution_> solutionView, Value_ value) {
             var assignedElement = solutionView.getPositionOf(variableMetaModel, value).ensureAssigned();
-            return new FullElementPosition<>(value, assignedElement.entity(), assignedElement.index());
+            return new FullElementPosition<>(value, assignedElement);
+        }
+
+        public Entity_ entity() {
+            return elementPosition.entity();
+        }
+
+        public int index() {
+            return elementPosition.index();
         }
 
     }

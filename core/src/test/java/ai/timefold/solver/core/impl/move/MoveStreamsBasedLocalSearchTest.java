@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.move.streams.InnerMoveProducer;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveDefinition;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ChangeMoveDefinition;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;

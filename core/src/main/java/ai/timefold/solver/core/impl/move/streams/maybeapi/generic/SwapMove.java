@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -49,7 +49,7 @@ public final class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> 
      */
     private @Nullable List<@Nullable Object> valueCache;
 
-    public SwapMove(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ leftEntity,
+    protected SwapMove(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ leftEntity,
             Entity_ rightEntity) {
         this.variableMetaModelList = Objects.requireNonNull(variableMetaModelList);
         if (variableMetaModelList.isEmpty()) {

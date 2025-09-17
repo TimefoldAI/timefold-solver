@@ -1,8 +1,7 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -33,21 +32,12 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
      * @return never null
      */
     @SafeVarargs
-    public static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(Move_... moves) {
+    static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(Move_... moves) {
         return switch (moves.length) {
             case 0 -> throw new UnsupportedOperationException("The CompositeMove cannot be built from an empty move list.");
             case 1 -> moves[0];
             default -> new CompositeMove<>(moves);
         };
-    }
-
-    /**
-     * @param moveList never null, sometimes empty
-     * @return never null
-     */
-    @SuppressWarnings("unchecked")
-    public static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(List<Move_> moveList) {
-        return buildMove(moveList.toArray(new Move[0]));
     }
 
     private final Move<Solution_>[] moves;

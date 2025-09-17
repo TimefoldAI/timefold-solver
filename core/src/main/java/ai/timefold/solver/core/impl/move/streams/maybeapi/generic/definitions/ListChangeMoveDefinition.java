@@ -1,12 +1,10 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions;
 
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListChangeMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListUnassignMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
@@ -96,17 +94,14 @@ public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
                     var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
                     if (targetPosition instanceof UnassignedElement) {
                         var currentElementPosition = currentPosition.ensureAssigned();
-                        return new ListUnassignMove<>(variableMetaModel, currentElementPosition.entity(),
-                                currentElementPosition.index());
+                        return Moves.unassign(currentElementPosition, variableMetaModel);
                     }
                     var targetElementPosition = Objects.requireNonNull(targetPosition).ensureAssigned();
                     if (currentPosition instanceof UnassignedElement) {
-                        return new ListAssignMove<>(variableMetaModel, value, targetElementPosition.entity(),
-                                targetElementPosition.index());
+                        return Moves.assign(value, targetElementPosition, variableMetaModel);
                     }
                     var currentElementPosition = currentPosition.ensureAssigned();
-                    return new ListChangeMove<>(variableMetaModel, currentElementPosition.entity(),
-                            currentElementPosition.index(), targetElementPosition.entity(), targetElementPosition.index());
+                    return Moves.change(currentElementPosition, targetElementPosition, variableMetaModel);
                 });
     }
 
@@ -127,7 +122,6 @@ public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
 
         var currentPositionInList = currentPosition.ensureAssigned();
         if (currentPositionInList.entity() == targetPositionInList.entity()) { // The value is already in the list.
-
             var valueCount = solutionView.countValues(variableMetaModel, currentPositionInList.entity());
             if (valueCount == 1) { // The value is the only value in the list; no change.
                 return false;

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -94,7 +94,7 @@ public final class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMo
      * @param destinationEntity planning entity instance to which a planning value will be moved, for example "Bob"
      * @param destinationIndex index in destinationEntity's list variable where the moved planning value will be inserted
      */
-    public ListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
+    protected ListChangeMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ sourceEntity,
             int sourceIndex, Entity_ destinationEntity, int destinationIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.sourceEntity = Objects.requireNonNull(sourceEntity);

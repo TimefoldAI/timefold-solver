@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions;
 
 import static ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners.filtering;
 
@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.SwapMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
@@ -92,8 +92,8 @@ public class SwapMoveDefinition<Solution_, Entity_>
                 .distinct()
                 .map((solutionView, pair) -> pair.first(), (solutionView, pair) -> pair.second());
         return moveStreamFactory.pick(dataStream)
-                .asMove((solutionView, leftEntity, rightEntity) -> new SwapMove<>(variableMetaModelList, leftEntity,
-                        rightEntity));
+                .asMove((solutionView, leftEntity, rightEntity) -> Moves.swap(leftEntity, rightEntity,
+                        variableMetaModelList.toArray(new PlanningVariableMetaModel[0])));
     }
 
 }

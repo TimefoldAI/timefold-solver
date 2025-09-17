@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -88,7 +88,7 @@ public final class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove
      * @param rightEntity together with {@code rightIndex} identifies the right element to be moved
      * @param rightIndex together with {@code rightEntity} identifies the right element to be moved
      */
-    public ListSwapMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity,
+    protected ListSwapMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity,
             int leftIndex, Entity_ rightEntity, int rightIndex) {
         this.variableMetaModel = variableMetaModel;
         this.leftEntity = leftEntity;

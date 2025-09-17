@@ -8,7 +8,7 @@ import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
 import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -60,40 +60,36 @@ class FollowerValuesShadowVariableTest {
                 List.of(value1, value2));
 
         var solutionDescriptor = TestdataFollowerSolution.buildSolutionDescriptor();
-        var variableMetamodel = solutionDescriptor.getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
+        var variableMetamodel =
+                (PlanningVariableMetaModel<TestdataFollowerSolution, ? super TestdataLeaderEntity, ? super TestdataValue>) solutionDescriptor
+                        .getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
 
-        moveAsserter.assertMoveAndApply(solution, new ChangeMove<>(
-                (PlanningVariableMetaModel<TestdataFollowerSolution, ? super TestdataLeaderEntity, ? super TestdataValue>) variableMetamodel,
-                leaderA, value1), newSolution -> {
-                    assertThat(followerA1.getValue()).isEqualTo(value1);
-                    assertThat(followerA2.getValue()).isEqualTo(value1);
-                    assertThat(followerA3.getValue()).isEqualTo(value1);
+        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderA, value1, variableMetamodel), newSolution -> {
+            assertThat(followerA1.getValue()).isEqualTo(value1);
+            assertThat(followerA2.getValue()).isEqualTo(value1);
+            assertThat(followerA3.getValue()).isEqualTo(value1);
 
-                    assertThat(followerB1.getValue()).isNull();
-                    assertThat(followerB2.getValue()).isNull();
-                });
+            assertThat(followerB1.getValue()).isNull();
+            assertThat(followerB2.getValue()).isNull();
+        });
 
-        moveAsserter.assertMoveAndApply(solution, new ChangeMove<>(
-                (PlanningVariableMetaModel<TestdataFollowerSolution, ? super TestdataLeaderEntity, ? super TestdataValue>) variableMetamodel,
-                leaderB, value2), newSolution -> {
-                    assertThat(followerA1.getValue()).isEqualTo(value1);
-                    assertThat(followerA2.getValue()).isEqualTo(value1);
-                    assertThat(followerA3.getValue()).isEqualTo(value1);
+        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderB, value2, variableMetamodel), newSolution -> {
+            assertThat(followerA1.getValue()).isEqualTo(value1);
+            assertThat(followerA2.getValue()).isEqualTo(value1);
+            assertThat(followerA3.getValue()).isEqualTo(value1);
 
-                    assertThat(followerB1.getValue()).isEqualTo(value2);
-                    assertThat(followerB2.getValue()).isEqualTo(value2);
-                });
+            assertThat(followerB1.getValue()).isEqualTo(value2);
+            assertThat(followerB2.getValue()).isEqualTo(value2);
+        });
 
-        moveAsserter.assertMoveAndApply(solution, new ChangeMove<>(
-                (PlanningVariableMetaModel<TestdataFollowerSolution, ? super TestdataLeaderEntity, ? super TestdataValue>) variableMetamodel,
-                leaderC, value1), newSolution -> {
-                    assertThat(followerA1.getValue()).isEqualTo(value1);
-                    assertThat(followerA2.getValue()).isEqualTo(value1);
-                    assertThat(followerA3.getValue()).isEqualTo(value1);
+        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderC, value1, variableMetamodel), newSolution -> {
+            assertThat(followerA1.getValue()).isEqualTo(value1);
+            assertThat(followerA2.getValue()).isEqualTo(value1);
+            assertThat(followerA3.getValue()).isEqualTo(value1);
 
-                    assertThat(followerB1.getValue()).isEqualTo(value2);
-                    assertThat(followerB2.getValue()).isEqualTo(value2);
-                });
+            assertThat(followerB1.getValue()).isEqualTo(value2);
+            assertThat(followerB2.getValue()).isEqualTo(value2);
+        });
     }
 }

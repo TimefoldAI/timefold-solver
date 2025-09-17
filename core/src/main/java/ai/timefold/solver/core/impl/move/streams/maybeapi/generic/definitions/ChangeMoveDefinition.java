@@ -1,8 +1,8 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
@@ -28,8 +28,7 @@ public class ChangeMoveDefinition<Solution_, Entity_, Value_>
                     return !Objects.equals(currentValue, value);
                 });
         return moveStreamFactory.pick(dataStream)
-                .asMove((solution, entity, value) -> new ChangeMove<>(variableMetaModel, Objects.requireNonNull(entity),
-                        value));
+                .asMove((solution, entity, value) -> Moves.change(Objects.requireNonNull(entity), value, variableMetaModel));
     }
 
 }

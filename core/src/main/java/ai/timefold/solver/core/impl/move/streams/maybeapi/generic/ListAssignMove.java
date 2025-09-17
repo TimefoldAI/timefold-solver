@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,7 +19,7 @@ public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMo
     private final Entity_ destinationEntity;
     private final int destinationIndex;
 
-    public ListAssignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
+    protected ListAssignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
             Entity_ destinationEntity, int destinationIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.planningValue = Objects.requireNonNull(planningValue);

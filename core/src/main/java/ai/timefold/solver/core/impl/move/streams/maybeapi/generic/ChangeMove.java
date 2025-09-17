@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -29,7 +29,7 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
 
     private @Nullable Value_ currentValue;
 
-    public ChangeMove(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+    protected ChangeMove(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
             @Nullable Value_ toPlanningValue) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.entity = Objects.requireNonNull(entity);
