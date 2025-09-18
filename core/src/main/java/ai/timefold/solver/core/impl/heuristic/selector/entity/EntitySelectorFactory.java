@@ -118,24 +118,16 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
             // The nearby selector will implement its own logic to filter out unreachable elements.
             // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
             // otherwise, we would end up applying the filtering logic twice.
-            // The range-filtering node for list variables will use the ReachableValues structure
+            // The range-filtering node will use the ReachableValues structure
             // to fetch and iterate only over the values that are reachable from the current selection.
             // It is expected that the size of the reachable values will be smaller than that of the filtering node
             // created by the applyFiltering function.
             // Therefore, we first create the range-filtering node,
             // and then we apply the usual filtering node decorator.
-            entitySelector = applyEntityValueRangeFilteringForListVariable(configPolicy, entitySelector, valueRangeRecorderId,
+            entitySelector = applyEntityValueRangeFiltering(configPolicy, entitySelector, valueRangeRecorderId,
                     minimumCacheType, inheritedSelectionOrder, baseRandomSelection);
         }
         entitySelector = applyFiltering(entitySelector, instanceCache);
-        if (nearbySelectionConfig == null) {
-            // The range-filtering node for basic variables will use the entity child selector
-            // to iterate over the values.
-            // The node will iterate over any available entities from the child selector.
-            // Creating it after the usual filter node may result in evaluating fewer entities.
-            entitySelector = applyEntityValueRangeFilteringForBasicVariable(configPolicy, entitySelector, valueRangeRecorderId,
-                    baseRandomSelection);
-        }
         entitySelector = applySorting(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, entitySelector, instanceCache);
         entitySelector = applyShuffling(resolvedCacheType, resolvedSelectionOrder, entitySelector);
@@ -206,30 +198,23 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         return config.getFilterClass() != null || entityDescriptor.hasEffectiveMovableEntityFilter();
     }
 
-    private EntitySelector<Solution_> applyEntityValueRangeFilteringForListVariable(
-            HeuristicConfigPolicy<Solution_> configPolicy, EntitySelector<Solution_> entitySelector,
-            ValueRangeRecorderId valueRangeRecorderId, SelectionCacheType minimumCacheType, SelectionOrder selectionOrder,
-            boolean randomSelection) {
-        if (valueRangeRecorderId == null || valueRangeRecorderId.recorderId() == null || valueRangeRecorderId.basicVariable()) {
+    private EntitySelector<Solution_> applyEntityValueRangeFiltering(HeuristicConfigPolicy<Solution_> configPolicy,
+            EntitySelector<Solution_> entitySelector, ValueRangeRecorderId valueRangeRecorderId,
+            SelectionCacheType minimumCacheType, SelectionOrder selectionOrder, boolean randomSelection) {
+        if (valueRangeRecorderId == null || valueRangeRecorderId.recorderId() == null) {
             return entitySelector;
         }
-        var valueSelectorConfig = new ValueSelectorConfig()
-                .withMimicSelectorRef(valueRangeRecorderId.recorderId());
-        var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
-                .<Solution_> create(valueSelectorConfig)
-                .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
-        return new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, randomSelection);
-    }
-
-    private EntitySelector<Solution_> applyEntityValueRangeFilteringForBasicVariable(
-            HeuristicConfigPolicy<Solution_> configPolicy, EntitySelector<Solution_> entitySelector,
-            ValueRangeRecorderId valueRangeRecorderId, boolean randomSelection) {
-        if (valueRangeRecorderId == null || valueRangeRecorderId.recorderId() == null
-                || !valueRangeRecorderId.basicVariable()) {
-            return entitySelector;
+        if (valueRangeRecorderId.basicVariable()) {
+            var replayingEntitySelector = buildMimicReplaying(configPolicy, valueRangeRecorderId.recorderId());
+            return new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, randomSelection);
+        } else {
+            var valueSelectorConfig = new ValueSelectorConfig()
+                    .withMimicSelectorRef(valueRangeRecorderId.recorderId());
+            var replayingValueSelector = (IterableValueSelector<Solution_>) ValueSelectorFactory
+                    .<Solution_> create(valueSelectorConfig)
+                    .buildValueSelector(configPolicy, entitySelector.getEntityDescriptor(), minimumCacheType, selectionOrder);
+            return new FilteringEntityByValueSelector<>(entitySelector, replayingValueSelector, randomSelection);
         }
-        var replayingEntitySelector = buildMimicReplaying(configPolicy, valueRangeRecorderId.recorderId());
-        return new FilteringEntityByEntitySelector<>(entitySelector, replayingEntitySelector, randomSelection);
     }
 
     private EntitySelector<Solution_> applyNearbySelection(HeuristicConfigPolicy<Solution_> configPolicy,

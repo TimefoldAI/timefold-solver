@@ -99,6 +99,10 @@ public final class ReachableValues {
         return originItemValue.valueMap.containsKey(Objects.requireNonNull(otherValue));
     }
 
+    public boolean isAcceptsNullValue() {
+        return acceptsNullValue;
+    }
+
     public boolean matchesValueClass(Object value) {
         return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
     }
