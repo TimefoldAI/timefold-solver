@@ -19,6 +19,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverE
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.Collections;
@@ -195,6 +196,22 @@ class ElementDestinationSelectorTest {
         solverScope = solvingStarted(selector, scoreDirector);
         phaseStarted(solverScope, selector);
         assertAllCodesOfIterator(selector.listIterator(), "C");
+
+        // Getting the previous element
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(solverScope, selector);
+        var listIterator = selector.listIterator();
+        assertThat(listIterator.hasNext()).isTrue();
+        assertThat(listIterator.next()).isSameAs(b);
+        assertThat(listIterator.hasNext()).isTrue();
+        assertThat(listIterator.next()).isSameAs(c);
+        assertThat(listIterator.hasNext()).isFalse();
+        assertThat(listIterator.hasPrevious()).isTrue();
+        assertThat(listIterator.previous()).isSameAs(c);
+        assertThat(listIterator.hasPrevious()).isTrue();
+        assertThat(listIterator.previous()).isSameAs(b);
     }
 
     @Test
