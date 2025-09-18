@@ -15,6 +15,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionListIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
@@ -161,12 +162,14 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
     @Override
     public ListIterator<Object> listIterator() {
-        throw new UnsupportedOperationException();
+        return new OriginalFilteringValueRangeListIterator(this::selectReplayedValue, childEntitySelector.listIterator(),
+                reachableValues);
     }
 
     @Override
     public ListIterator<Object> listIterator(int index) {
-        throw new UnsupportedOperationException();
+        return new OriginalFilteringValueRangeListIterator(this::selectReplayedValue, childEntitySelector.listIterator(index),
+                reachableValues);
     }
 
     @Override
@@ -212,6 +215,68 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
                 return noUpcomingSelection();
             }
             return valueIterator.next();
+        }
+    }
+
+    private static class OriginalFilteringValueRangeListIterator extends UpcomingSelectionListIterator<Object> {
+
+        private final Supplier<Object> upcomingValueSupplier;
+        private final ListIterator<Object> entityIterator;
+        private final ReachableValues reachableValues;
+        private Object replayedValue;
+
+        private OriginalFilteringValueRangeListIterator(Supplier<Object> upcomingValueSupplier,
+                ListIterator<Object> entityIterator, ReachableValues reachableValues) {
+            this.upcomingValueSupplier = upcomingValueSupplier;
+            this.entityIterator = entityIterator;
+            this.reachableValues = reachableValues;
+        }
+
+        void checkReplayedValue() {
+            var newReplayedValue = upcomingValueSupplier.get();
+            if (newReplayedValue != replayedValue) {
+                replayedValue = newReplayedValue;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            checkReplayedValue();
+            return super.hasNext();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            checkReplayedValue();
+            return super.hasPrevious();
+        }
+
+        @Override
+        protected Object createUpcomingSelection() {
+            if (!entityIterator.hasNext()) {
+                return noUpcomingSelection();
+            }
+            while (entityIterator.hasNext()) {
+                var otherEntity = entityIterator.next();
+                if (reachableValues.isEntityReachable(replayedValue, otherEntity)) {
+                    return otherEntity;
+                }
+            }
+            return noUpcomingSelection();
+        }
+
+        @Override
+        protected Object createPreviousSelection() {
+            if (!entityIterator.hasPrevious()) {
+                return noUpcomingSelection();
+            }
+            while (entityIterator.hasPrevious()) {
+                var otherEntity = entityIterator.previous();
+                if (reachableValues.isEntityReachable(replayedValue, otherEntity)) {
+                    return otherEntity;
+                }
+            }
+            return noUpcomingSelection();
         }
     }
 
