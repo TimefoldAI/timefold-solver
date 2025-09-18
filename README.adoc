@@ -9,6 +9,7 @@ _Planning optimization made easy._ +
 https://timefold.ai[timefold.ai]
 
 image:https://img.shields.io/github/discussions/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Discussions", link="https://github.com/TimefoldAI/timefold-solver/discussions"]
+image:https://img.shields.io/discord/1413420192213631086?link=https%3A%2F%2Fdiscord.gg%2FbW8tUUeBzH[Discord]
 image:https://img.shields.io/github/commit-activity/m/TimefoldAI/timefold-solver?label=commits&style=for-the-badge["Commit Activity", link="https://github.com/TimefoldAI/timefold-solver/pulse"]
 image:https://img.shields.io/github/issues/TimefoldAI/timefold-solver?style=for-the-badge&logo=github["GitHub Issues", link="https://github.com/TimefoldAI/timefold-solver/issues"]
 
