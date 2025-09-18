@@ -213,7 +213,6 @@ class ElementDestinationSelectorTest {
 
         // select C for V5 and first unpinned pos C[1]
         // 3 - pick random value in ElementPositionRandomIterator and force generating a random position
-        // 0 - pick entity C in RandomFilteringValueRangeIterator
         // 1 - pick random position, v3 and v4 are reachable
         // 0 - remaining call
         valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v5, v5, v5, v5, v5); // simulate five positions
@@ -223,7 +222,7 @@ class ElementDestinationSelectorTest {
         doReturn(List.of(v5).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
         checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
                 new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
-                scoreDirector, new TestRandom(3, 0, 1, 0), "C[1]");
+                scoreDirector, new TestRandom(3, 1, 0), "C[1]");
     }
 
     private void checkEntityValueRange(FilteringEntityByValueSelector<TestdataListEntityProvidingSolution> entitySelector,

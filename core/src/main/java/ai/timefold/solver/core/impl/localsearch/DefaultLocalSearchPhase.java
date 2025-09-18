@@ -142,16 +142,28 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
         collectMetrics(stepScope);
         var phaseScope = stepScope.getPhaseScope();
         if (logger.isDebugEnabled()) {
-            logger.debug("{}    LS step ({}), time spent ({}), score ({}), {} best score ({})," +
-                    " accepted/selected move count ({}/{}), picked move ({}).",
-                    logIndentation,
-                    stepScope.getStepIndex(),
-                    phaseScope.calculateSolverTimeMillisSpentUpToNow(),
-                    stepScope.getScore().raw(),
-                    (stepScope.getBestScoreImproved() ? "new" : "   "), phaseScope.getBestScore().raw(),
-                    stepScope.getAcceptedMoveCount(),
-                    stepScope.getSelectedMoveCount(),
-                    stepScope.getStepString());
+            if (stepScope.getAcceptedMoveCount() == 0 && phaseTermination.isPhaseTerminated(phaseScope)) {
+                // Terminated early
+                logger.debug("{}    LS step ({}), time spent ({}), score ({}), {} best score ({})," +
+                        " terminated prematurely after selecting {} moves.",
+                        logIndentation,
+                        stepScope.getStepIndex(),
+                        phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                        stepScope.getScore().raw(),
+                        (stepScope.getBestScoreImproved() ? "new" : "   "), phaseScope.getBestScore().raw(),
+                        stepScope.getSelectedMoveCount());
+            } else {
+                logger.debug("{}    LS step ({}), time spent ({}), score ({}), {} best score ({})," +
+                        " accepted/selected move count ({}/{}), picked move ({}).",
+                        logIndentation,
+                        stepScope.getStepIndex(),
+                        phaseScope.calculateSolverTimeMillisSpentUpToNow(),
+                        stepScope.getScore().raw(),
+                        (stepScope.getBestScoreImproved() ? "new" : "   "), phaseScope.getBestScore().raw(),
+                        stepScope.getAcceptedMoveCount(),
+                        stepScope.getSelectedMoveCount(),
+                        stepScope.getStepString());
+            }
         }
     }
 
