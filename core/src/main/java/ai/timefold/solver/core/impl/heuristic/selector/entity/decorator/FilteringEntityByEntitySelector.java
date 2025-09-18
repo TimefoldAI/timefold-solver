@@ -10,6 +10,7 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionListIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.SwapMoveSelector;
@@ -168,7 +169,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
     @Override
     public Iterator<Object> endingIterator() {
-        return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.iterator(),
+        return new OriginalFilteringValueRangeIterator<>(this::selectReplayedEntity, childEntitySelector.endingIterator(),
                 basicVariableDescriptors, valueRangeManager);
     }
 
@@ -193,12 +194,14 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
     @Override
     public ListIterator<Object> listIterator() {
-        throw new UnsupportedOperationException();
+        return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedEntity, childEntitySelector.listIterator(),
+                basicVariableDescriptors, valueRangeManager);
     }
 
     @Override
     public ListIterator<Object> listIterator(int index) {
-        throw new UnsupportedOperationException();
+        return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedEntity,
+                childEntitySelector.listIterator(index), basicVariableDescriptors, valueRangeManager);
     }
 
     @Override
@@ -326,6 +329,91 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return pickSelected();
         }
 
+    }
+
+    private static class OriginalFilteringValueRangeListIterator<Solution_> extends UpcomingSelectionListIterator<Object> {
+
+        private final Supplier<Object> upcomingEntitySupplier;
+        private final BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
+        private final ListIterator<Object> entityIterator;
+        private final ValueRangeManager<Solution_> valueRangeManager;
+        private Object replayedEntity;
+
+        private OriginalFilteringValueRangeListIterator(Supplier<Object> upcomingEntitySupplier,
+                ListIterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
+                ValueRangeManager<Solution_> valueRangeManager) {
+            this.upcomingEntitySupplier = upcomingEntitySupplier;
+            this.entityIterator = entityIterator;
+            this.basicVariableDescriptors = basicVariableDescriptors;
+            this.valueRangeManager = valueRangeManager;
+        }
+
+        void checkReplayedEntity() {
+            var newReplayedEntity = upcomingEntitySupplier.get();
+            if (newReplayedEntity != replayedEntity) {
+                replayedEntity = newReplayedEntity;
+            }
+        }
+
+        @Override
+        public boolean hasNext() {
+            checkReplayedEntity();
+            return super.hasNext();
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            checkReplayedEntity();
+            return super.hasPrevious();
+        }
+
+        @Override
+        protected Object createUpcomingSelection() {
+            if (!entityIterator.hasNext()) {
+                return noUpcomingSelection();
+            }
+            while (entityIterator.hasNext()) {
+                var otherEntity = entityIterator.next();
+                if (isReachable(replayedEntity, otherEntity)) {
+                    return otherEntity;
+                }
+            }
+            return noUpcomingSelection();
+        }
+
+        @Override
+        protected Object createPreviousSelection() {
+            if (!entityIterator.hasPrevious()) {
+                return noUpcomingSelection();
+            }
+            while (entityIterator.hasPrevious()) {
+                var otherEntity = entityIterator.previous();
+                if (isReachable(replayedEntity, otherEntity)) {
+                    return otherEntity;
+                }
+            }
+            return noUpcomingSelection();
+        }
+
+        boolean isReachable(Object entity, Object otherEntity) {
+            if (entity == otherEntity) {
+                return false;
+            }
+            for (var basicVariableDescriptor : basicVariableDescriptors) {
+                if (!isReachable(entity, basicVariableDescriptor.getValue(entity), otherEntity,
+                        basicVariableDescriptor.getValue(otherEntity), basicVariableDescriptor, valueRangeManager)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private boolean isReachable(Object entity, Object value, Object otherEntity, Object otherValue,
+                BasicVariableDescriptor<Solution_> variableDescriptor, ValueRangeManager<Solution_> valueRangeManager) {
+            return valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity).contains(otherValue)
+                    && valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), otherEntity)
+                            .contains(value);
+        }
     }
 
     private static class RandomFilteringValueRangeIterator<Solution_>

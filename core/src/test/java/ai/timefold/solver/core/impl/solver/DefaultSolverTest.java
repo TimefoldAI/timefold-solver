@@ -2193,6 +2193,10 @@ class DefaultSolverTest extends AbstractMeterTest {
         allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig().withEntitySelectorConfig(entitySelectorConfig));
         // Swap - basic
         allMoveSelectionConfigList.add(new SwapMoveSelectorConfig().withEntitySelectorConfig(entitySelectorConfig));
+        // Swap - basic - original sort order
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig()
+                .withSelectionOrder(SelectionOrder.ORIGINAL)
+                .withEntitySelectorConfig(entitySelectorConfig));
         // Pillar change - basic
         var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
         var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("value");
