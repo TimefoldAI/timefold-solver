@@ -261,9 +261,11 @@ class SwapMoveSelectorTest {
         phaseStarted(moveSelector, solverScope);
 
         scoreDirector.setWorkingSolution(solution);
+        var expectedSize = (long) solution.getEntityList().size() * solution.getEntityList().size();
+
         // The moves are duplicated because the left and right selectors are not equal,
         // and listIterator(index) is not called in such cases.
-        assertAllCodesOfMoveSelector(moveSelector, "A<->B",
+        assertAllCodesOfMoveSelector(moveSelector, expectedSize, "A<->B",
                 "A<->C",
                 "B<->A",
                 "B<->C",
