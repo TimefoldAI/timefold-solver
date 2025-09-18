@@ -47,6 +47,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
@@ -2279,8 +2280,20 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withVariableName("valueList");
         // Change - list
         allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig().withValueSelectorConfig(valueSelectorConfig));
+        // Change - list - original sort order
+        allMoveSelectionConfigList.add(
+                new ListChangeMoveSelectorConfig().withValueSelectorConfig(valueSelectorConfig)
+                        .withSelectionOrder(SelectionOrder.ORIGINAL)
+                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                .withEntitySelectorConfig(
+                                        new EntitySelectorConfig().withSelectionOrder(SelectionOrder.ORIGINAL))
+                                .withValueSelectorConfig(
+                                        new ValueSelectorConfig().withSelectionOrder(SelectionOrder.ORIGINAL))));
         // Swap - list
         allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig().withValueSelectorConfig(valueSelectorConfig));
+        // Swap - list - original sort order
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig().withSelectionOrder(SelectionOrder.ORIGINAL)
+                .withValueSelectorConfig(valueSelectorConfig.copyConfig().withSelectionOrder(SelectionOrder.ORIGINAL)));
         // Sublist change - list
         allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig()
                 .withSubListSelectorConfig(new SubListSelectorConfig().withValueSelectorConfig(valueSelectorConfig)));
