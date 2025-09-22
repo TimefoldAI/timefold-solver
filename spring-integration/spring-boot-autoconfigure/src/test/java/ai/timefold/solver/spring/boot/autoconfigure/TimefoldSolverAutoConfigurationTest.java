@@ -357,6 +357,12 @@ class TimefoldSolverAutoConfigurationTest {
                     assertThat(solverConfig).isNotNull();
                     assertThat(solverConfig.getNearbyDistanceMeterClass()).isNotNull();
                 });
+        contextRunner
+                .withPropertyValues("timefold.solver.random-seed=123")
+                .run(context -> {
+                    var solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(solverConfig.getRandomSeed()).isEqualTo(123L);
+                });
     }
 
     @Test

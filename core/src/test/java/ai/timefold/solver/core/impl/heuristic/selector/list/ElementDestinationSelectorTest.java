@@ -19,6 +19,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverE
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertEmptyNeverEndingIterableSelector;
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.mockito.Mockito.doReturn;
 
 import java.util.Collections;
@@ -146,6 +147,74 @@ class ElementDestinationSelectorTest {
     }
 
     @Test
+    void originalWithEntityValueRange() {
+        var v1 = new TestdataListEntityProvidingValue("V1");
+        var v2 = new TestdataListEntityProvidingValue("V2");
+        var v3 = new TestdataListEntityProvidingValue("V3");
+        var v4 = new TestdataListEntityProvidingValue("V4");
+        var v5 = new TestdataListEntityProvidingValue("V5");
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v1, v2));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v2, v3), List.of(v3));
+        var c = new TestdataListEntityProvidingEntity("C", List.of(v3, v4, v5), List.of(v4, v5));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b, c));
+
+        var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        // V1 is only reachable by A
+        var valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v1);
+        var selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        var solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(solverScope, selector);
+        assertAllCodesOfIterator(selector.listIterator(), "A");
+
+        // V2 is reachable by A and B
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v2);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(solverScope, selector);
+        assertAllCodesOfIterator(selector.listIterator(), "A", "B");
+
+        // V3 is reachable by B and C
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(solverScope, selector);
+        assertAllCodesOfIterator(selector.listIterator(), "B", "C");
+
+        // V4 is only reachable by C
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v4);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(solverScope, selector);
+        assertAllCodesOfIterator(selector.listIterator(), "C");
+
+        // V5 is only reachable by C
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v5);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(solverScope, selector);
+        assertAllCodesOfIterator(selector.listIterator(), "C");
+
+        // Getting the previous element
+        valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
+        selector = new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, false);
+        solverScope = solvingStarted(selector, scoreDirector);
+        phaseStarted(solverScope, selector);
+        var listIterator = selector.listIterator();
+        assertThat(listIterator.hasNext()).isTrue();
+        assertThat(listIterator.next()).isSameAs(b);
+        assertThat(listIterator.hasNext()).isTrue();
+        assertThat(listIterator.next()).isSameAs(c);
+        assertThat(listIterator.hasNext()).isFalse();
+        assertThat(listIterator.hasPrevious()).isTrue();
+        assertThat(listIterator.previous()).isSameAs(c);
+        assertThat(listIterator.hasPrevious()).isTrue();
+        assertThat(listIterator.previous()).isSameAs(b);
+    }
+
+    @Test
     void randomWithEntityValueRange() {
         var v1 = new TestdataListEntityProvidingValue("V1");
         var v2 = new TestdataListEntityProvidingValue("V2");
@@ -213,7 +282,6 @@ class ElementDestinationSelectorTest {
 
         // select C for V5 and first unpinned pos C[1]
         // 3 - pick random value in ElementPositionRandomIterator and force generating a random position
-        // 0 - pick entity C in RandomFilteringValueRangeIterator
         // 1 - pick random position, v3 and v4 are reachable
         // 0 - remaining call
         valueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v5, v5, v5, v5, v5); // simulate five positions
@@ -223,7 +291,7 @@ class ElementDestinationSelectorTest {
         doReturn(List.of(v5).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
         checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
                 new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
-                scoreDirector, new TestRandom(3, 0, 1, 0), "C[1]");
+                scoreDirector, new TestRandom(3, 1, 0), "C[1]");
     }
 
     private void checkEntityValueRange(FilteringEntityByValueSelector<TestdataListEntityProvidingSolution> entitySelector,

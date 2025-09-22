@@ -230,6 +230,50 @@ class SwapMoveSelectorTest {
     }
 
     @Test
+    void originalLeftUnequalsRightWithEntityRange() {
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        var v4 = new TestdataValue("4");
+        var e1 = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v1, v4));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var leftEntitySelector =
+                new FromSolutionEntitySelector<>(getEntityDescriptor(scoreDirector), SelectionCacheType.JUST_IN_TIME, false);
+        var entityMimicRecorder = new MimicRecordingEntitySelector<>(leftEntitySelector);
+
+        var replayingEntitySelector = new MimicReplayingEntitySelector<>(entityMimicRecorder);
+        var rightEntitySelector =
+                new FilteringEntityByEntitySelector<>(leftEntitySelector, replayingEntitySelector, false);
+
+        // It is impossible for the left and right selectors to be equal
+        // when using the entity-range filtering node FilteringEntityByEntitySelector
+        var moveSelector = new SwapMoveSelector<>(entityMimicRecorder, rightEntitySelector,
+                leftEntitySelector.getEntityDescriptor().getGenuineVariableDescriptorList(), false);
+
+        var solverScope = solvingStarted(moveSelector, scoreDirector);
+        phaseStarted(moveSelector, solverScope);
+
+        scoreDirector.setWorkingSolution(solution);
+        var expectedSize = (long) solution.getEntityList().size() * solution.getEntityList().size();
+
+        // The moves are duplicated because the left and right selectors are not equal,
+        // and listIterator(index) is not called in such cases.
+        assertAllCodesOfMoveSelector(moveSelector, expectedSize, "A<->B",
+                "A<->C",
+                "B<->A",
+                "B<->C",
+                "C<->A",
+                "C<->B");
+    }
+
+    @Test
     void emptyRightOriginalLeftUnequalsRight() {
         EntityDescriptor entityDescriptor = TestdataEntity.buildEntityDescriptor();
 
@@ -337,9 +381,8 @@ class SwapMoveSelectorTest {
         e1.setValue(v1);
         e2.setValue(v3);
         e3.setValue(v4);
-        // select left A, select right B
         // select left A, select right C
-        random.reset(0, 1, 2, 1);
+        random.reset(0, 2, 1, 1, 1, 1);
         scoreDirector.setWorkingSolution(solution);
         assertCodesOfNeverEndingIterableSelector(moveSelector, expectedSize, "A<->C");
     }

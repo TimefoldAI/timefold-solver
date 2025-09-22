@@ -47,6 +47,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.entity.pillar.PillarSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
@@ -2184,11 +2185,56 @@ class DefaultSolverTest extends AbstractMeterTest {
         }
     }
 
+    private static List<MoveSelectorConfig> generateMovesForBasicVar() {
+        var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Shared entity selector config
+        var entitySelectorConfig = new EntitySelectorConfig()
+                .withEntityClass(TestdataAllowsUnassignedEntityProvidingEntity.class);
+        // Change - basic
+        allMoveSelectionConfigList.add(new ChangeMoveSelectorConfig().withEntitySelectorConfig(entitySelectorConfig));
+        // Swap - basic
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig().withEntitySelectorConfig(entitySelectorConfig));
+        // Swap - basic - original sort order
+        allMoveSelectionConfigList.add(new SwapMoveSelectorConfig()
+                .withSelectionOrder(SelectionOrder.ORIGINAL)
+                .withEntitySelectorConfig(entitySelectorConfig));
+        // Pillar change - basic
+        var pillarChangeMoveSelectorConfig = new PillarChangeMoveSelectorConfig();
+        var pillarChangeValueSelectorConfig = new ValueSelectorConfig().withVariableName("value");
+        pillarChangeMoveSelectorConfig
+                .withPillarSelectorConfig(new PillarSelectorConfig().withEntitySelectorConfig(entitySelectorConfig))
+                .withValueSelectorConfig(pillarChangeValueSelectorConfig);
+        allMoveSelectionConfigList.add(pillarChangeMoveSelectorConfig);
+        // Pilar swap - basic
+        allMoveSelectionConfigList.add(new PillarSwapMoveSelectorConfig().withPillarSelectorConfig(
+                new PillarSelectorConfig().withEntitySelectorConfig(entitySelectorConfig)));
+        // R&R - basic
+        allMoveSelectionConfigList.add(new RuinRecreateMoveSelectorConfig().withEntitySelectorConfig(entitySelectorConfig));
+        // Union of all moves
+        allMoveSelectionConfigList.add(new UnionMoveSelectorConfig(List.copyOf(allMoveSelectionConfigList)));
+        return allMoveSelectionConfigList;
+    }
+
     @ParameterizedTest
-    @MethodSource("generateMovesForSingleVar")
-    void solveBasicVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
+    @MethodSource("generateMovesForBasicVar")
+    void solveBasicVarEntityRangeModelSingleLocalSearch(MoveSelectorConfig moveSelectionConfig) {
+        solveBasicVarEntityRangeModel(moveSelectionConfig, false);
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForBasicVar")
+    void solveBasicVarEntityRangeModelMultipleLocalSearch(MoveSelectorConfig moveSelectionConfig) {
+        solveBasicVarEntityRangeModel(moveSelectionConfig, true);
+    }
+
+    private void solveBasicVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig, boolean multipleLocalSearch) {
         // Local search
         var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectionConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+
+        // Local search 2
+        var localSearchConfig2 = new LocalSearchPhaseConfig()
                 .withMoveSelectorConfig(moveSelectionConfig)
                 .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
 
@@ -2198,6 +2244,10 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withEasyScoreCalculatorClass(TestdataAllowsUnassignedEntityProvidingScoreCalculator.class)
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig);
+
+        if (multipleLocalSearch) {
+            solverConfig.withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig, localSearchConfig2);
+        }
 
         var value1 = new TestdataValue("v1");
         var value2 = new TestdataValue("v2");
@@ -2225,16 +2275,33 @@ class DefaultSolverTest extends AbstractMeterTest {
     private static List<MoveSelectorConfig> generateMovesForListVarEntityRangeModel() {
         // Local Search
         var allMoveSelectionConfigList = new ArrayList<MoveSelectorConfig>();
+        // Shared value selector config
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withVariableName("valueList");
         // Change - list
-        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new ListChangeMoveSelectorConfig().withValueSelectorConfig(valueSelectorConfig));
+        // Change - list - original sort order
+        allMoveSelectionConfigList.add(
+                new ListChangeMoveSelectorConfig().withValueSelectorConfig(valueSelectorConfig)
+                        .withSelectionOrder(SelectionOrder.ORIGINAL)
+                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                .withEntitySelectorConfig(
+                                        new EntitySelectorConfig().withSelectionOrder(SelectionOrder.ORIGINAL))
+                                .withValueSelectorConfig(
+                                        new ValueSelectorConfig().withSelectionOrder(SelectionOrder.ORIGINAL))));
         // Swap - list
-        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig().withValueSelectorConfig(valueSelectorConfig));
+        // Swap - list - original sort order
+        allMoveSelectionConfigList.add(new ListSwapMoveSelectorConfig().withSelectionOrder(SelectionOrder.ORIGINAL)
+                .withValueSelectorConfig(valueSelectorConfig.copyConfig().withSelectionOrder(SelectionOrder.ORIGINAL)));
         // Sublist change - list
-        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new SubListChangeMoveSelectorConfig()
+                .withSubListSelectorConfig(new SubListSelectorConfig().withValueSelectorConfig(valueSelectorConfig)));
         // Sublist swap - list
-        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new SubListSwapMoveSelectorConfig()
+                .withSubListSelectorConfig(new SubListSelectorConfig().withValueSelectorConfig(valueSelectorConfig)));
         // KOpt - list
-        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig());
+        allMoveSelectionConfigList.add(new KOptListMoveSelectorConfig().withValueSelectorConfig(valueSelectorConfig));
         // R&R - list
         allMoveSelectionConfigList.add(new ListRuinRecreateMoveSelectorConfig());
         // Union of all moves
@@ -2244,9 +2311,24 @@ class DefaultSolverTest extends AbstractMeterTest {
 
     @ParameterizedTest
     @MethodSource("generateMovesForListVarEntityRangeModel")
-    void solveListVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig) {
+    void solveListVarEntityRangeModelSingleLocalSearch(MoveSelectorConfig moveSelectionConfig) {
+        solveListVarEntityRangeModel(moveSelectionConfig, false);
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateMovesForListVarEntityRangeModel")
+    void solveListVarEntityRangeModelMultipleLocalSearch(MoveSelectorConfig moveSelectionConfig) {
+        solveListVarEntityRangeModel(moveSelectionConfig, true);
+    }
+
+    private void solveListVarEntityRangeModel(MoveSelectorConfig moveSelectionConfig, boolean multipleLocalSearch) {
         // Local search
         var localSearchConfig = new LocalSearchPhaseConfig()
+                .withMoveSelectorConfig(moveSelectionConfig)
+                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
+
+        // Local search 2
+        var localSearchConfig2 = new LocalSearchPhaseConfig()
                 .withMoveSelectorConfig(moveSelectionConfig)
                 .withTerminationConfig(new TerminationConfig().withMoveCountLimit(1000L));
 
@@ -2256,6 +2338,10 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withEnvironmentMode(EnvironmentMode.TRACKED_FULL_ASSERT)
                 .withEasyScoreCalculatorClass(TestdataListUnassignedEntityProvidingScoreCalculator.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig);
+
+        if (multipleLocalSearch) {
+            solverConfig.withPhases(new ConstructionHeuristicPhaseConfig(), localSearchConfig, localSearchConfig2);
+        }
 
         var value1 = new TestdataValue("v1");
         var value2 = new TestdataValue("v2");
