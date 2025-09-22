@@ -274,7 +274,7 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
     @SuppressWarnings("java:S3457")
     public @NonNull String summarize(int topLimit) {
         if (topLimit < 1) {
-            throw new IllegalArgumentException("topLimit (" + topLimit + ") must be positive.");
+            throw new IllegalArgumentException("The topLimit (%d) must be at least 1.".formatted(topLimit));
         }
         return buildSummary(topLimit);
     }

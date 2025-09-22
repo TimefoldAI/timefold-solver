@@ -220,11 +220,11 @@ class ScoreAnalysisTest {
 
         assertThatThrownBy(() -> scoreAnalysis.summarize(0))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("topLimit (0) must be positive");
+                .hasMessageContaining("The topLimit (0) must be at least 1.");
 
         assertThatThrownBy(() -> scoreAnalysis.summarize(-1))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("topLimit (-1) must be positive");
+                .hasMessageContaining("The topLimit (-1) must be at least 1.");
     }
 
     @Test

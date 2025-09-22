@@ -215,7 +215,7 @@ public record ConstraintAnalysis<Score_ extends Score<Score_>>(@NonNull Constrai
 
     public @NonNull String summarize(int topLimit) {
         if (topLimit < 1) {
-            throw new IllegalArgumentException("The topLimit (" + topLimit + ") must be at least 1.");
+            throw new IllegalArgumentException("The topLimit (%d) must be at least 1.".formatted(topLimit));
         }
         return buildSummary(topLimit);
     }
