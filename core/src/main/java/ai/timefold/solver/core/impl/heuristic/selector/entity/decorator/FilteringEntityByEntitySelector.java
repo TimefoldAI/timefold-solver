@@ -491,7 +491,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 if (otherValue != null) {
                     return reachableValues.isEntityReachable(otherValue, replayedEntity);
                 } else {
-                    return reachableValues.isAcceptsNullValue();
+                    return reachableValues.acceptsNullValue();
                 }
             } else {
                 return isReachable(replayedEntity, otherEntity);
@@ -562,7 +562,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         @Override
         public Object next() {
-            if (values.isEmpty()) {
+            if (!hasNext()) {
                 throw new NoSuchElementException();
             }
             return values.get(workingRandom.nextInt(values.size()));
