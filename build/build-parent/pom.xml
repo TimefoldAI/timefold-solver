@@ -24,14 +24,14 @@
     <version.io.quarkus>3.26.3</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.1</version.org.apache.logging.log4j>
-    <version.org.assertj>3.27.4</version.org.assertj>
+    <version.org.assertj>3.27.5</version.org.assertj>
     <version.org.awaitility>4.3.0</version.org.awaitility>
     <version.org.freemarker>2.3.34</version.org.freemarker>
     <version.org.jfree.jfreechart>1.5.6</version.org.jfree.jfreechart>
     <version.org.jspecify>1.0.0</version.org.jspecify>
     <version.org.junit.jupiter>5.13.4</version.org.junit.jupiter>
     <version.org.openrewrite.recipe>3.14.0</version.org.openrewrite.recipe>
-    <version.org.springframework.boot>3.5.5</version.org.springframework.boot>
+    <version.org.springframework.boot>3.5.6</version.org.springframework.boot>
     <version.ow2.asm>9.8</version.ow2.asm>
 
     <!-- ************************************************************************ -->
