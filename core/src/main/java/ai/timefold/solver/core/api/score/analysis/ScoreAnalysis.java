@@ -259,6 +259,28 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
      */
     @SuppressWarnings("java:S3457")
     public @NonNull String summarize() {
+        return buildSummary(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT);
+    }
+
+    /**
+     * Provides a summary of the solution's score analysis using the {@link #summarize(int)} method
+     * in a similar way to {@link #summarize()}.
+     * It is possible to specify the maximum number of constraint matches to display per constraint by passing
+     * the desired limit as an argument.
+     *
+     * @param topLimit maximum number of constraint matches to show per constraint.
+     *        Use {@link Integer#MAX_VALUE} to show all matches.
+     */
+    @SuppressWarnings("java:S3457")
+    public @NonNull String summarize(int topLimit) {
+        if (topLimit < 1) {
+            throw new IllegalArgumentException("The topLimit (%d) must be at least 1.".formatted(topLimit));
+        }
+        return buildSummary(topLimit);
+    }
+
+    @SuppressWarnings("java:S3457")
+    private @NonNull String buildSummary(int topLimit) {
         StringBuilder summary = new StringBuilder();
         summary.append("""
                 Explanation of score (%s):
@@ -288,12 +310,15 @@ public record ScoreAnalysis<Score_ extends Score<Score_>>(@NonNull Score_ score,
                     }
                     matches.stream()
                             .sorted(matchScoreComparator)
-                            .limit(DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT)
+                            .limit(topLimit)
                             .forEach(match -> summary
-                                    .append("%12s%s: justified with (%s)\n".formatted(" ", match.score().toShortString(),
+                                    .append("%12s%s: justified with (%s)\n".formatted(" ",
+                                            match.score().toShortString(),
                                             match.justification())));
-                    if (matches.size() > DEFAULT_SUMMARY_CONSTRAINT_MATCH_LIMIT) {
-                        summary.append("%12s%s\n".formatted(" ", "..."));
+
+                    if (matches.size() > topLimit) {
+                        summary.append("%12s... and %d more matches\n".formatted(" ",
+                                matches.size() - topLimit));
                     }
                 });
 
