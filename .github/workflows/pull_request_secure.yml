@@ -74,10 +74,10 @@ jobs:
           path: ./timefold-solver
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
 
-      - name: Setup Temurin 17 and Maven
+      - name: Setup Temurin 25 and Maven
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
 

@@ -25,16 +25,16 @@ jobs:
     strategy:
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest ]
-        java-version: [ 21 ] # Latest LTS if not Ubuntu
+        java-version: [ 25 ] # Latest LTS if not Ubuntu
         include:
           - os: ubuntu-latest
             java-version: 17
           - os: ubuntu-24.04-arm
             java-version: 17
           - os: ubuntu-latest
-            java-version: 24
+            java-version: 25
           - os: ubuntu-24.04-arm
-            java-version: 24
+            java-version: 25
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
@@ -66,7 +66,7 @@ jobs:
 
       - uses: actions/setup-java@v5
         with:
-          java-version: 21
+          java-version: 25
           distribution: 'temurin'
           cache: 'maven'
 
@@ -81,7 +81,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
         with:
-          java-version: 21 # Latest LTS if not Ubuntu
+          java-version: 25 # Latest LTS if not Ubuntu
           distribution: 'temurin'
           cache: 'maven'
       - name: Set release latest 3.3.x version
@@ -108,7 +108,7 @@ jobs:
       - uses: actions/checkout@v5
       - uses: actions/setup-java@v5
         with:
-          java-version: 21 # Latest LTS if not Ubuntu
+          java-version: 25 # Latest LTS if not Ubuntu
           distribution: 'temurin'
           cache: 'maven'
       - name: Set release latest 3.4.x version
@@ -138,7 +138,7 @@ jobs:
       matrix:
         os: [ ubuntu-latest, ubuntu-24.04-arm ] # Windows doesn't work, Mac is not a deploy OS.
         module: ["spring-integration", "quarkus-integration"]
-        java-version: [ 17, 21, 24 ] # LTS + latest.
+        java-version: [ 17, 21, 25 ] # LTS + latest.
         exclude:
           # Quarkus 3.17.2 has weird issues with Java 17 GraalVM,
           # with Java 21+ GraalVM being recommended even for
