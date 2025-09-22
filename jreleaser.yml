@@ -6,13 +6,6 @@ signing:
   active: ALWAYS
   armored: true
 
-catalog:
-  github:
-    active: ALWAYS
-    attestationName: 'timefold-solver-{{projectVersion}}'
-    excludes:
-      - '**/*.asc'
-
 release:
   github:
     commitAuthor:

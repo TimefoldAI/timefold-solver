@@ -283,7 +283,7 @@ class ValueRangeManagerTest {
         var solution = TestdataAllowsUnassignedCompositeListSolution.generateSolution(2, 2);
         var valueRangeDescriptor = TestdataAllowsUnassignedCompositeListEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
-        var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
+        var solutionDescriptor = TestdataAllowsUnassignedCompositeListSolution.buildSolutionDescriptor();
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
 
         // The value range manager will not add the null value because it is a list variable

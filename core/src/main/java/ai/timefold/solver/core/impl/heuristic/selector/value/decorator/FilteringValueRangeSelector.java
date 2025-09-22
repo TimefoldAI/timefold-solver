@@ -357,7 +357,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private class RandomFilteringValueRangeIterator extends AbstractFilteringValueRangeIterator {
 
         private final Random workingRandom;
-        private int maxBailoutSize = 1;
+        private int maxBailoutSize;
         private Object replayedValue;
         private List<Object> reachableValueList = null;
 
@@ -371,8 +371,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         @Override
         void processUpcomingValue(Object upcomingValue, List<Object> upcomingList) {
             this.replayedValue = upcomingValue;
-            this.reachableValueList = upcomingList;
-            this.maxBailoutSize = upcomingList.size();
+            this.reachableValueList = Objects.requireNonNull(upcomingList);
+            this.maxBailoutSize = reachableValueList.size();
         }
 
         @Override
@@ -386,12 +386,11 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             if (hasNoData()) {
                 throw new NoSuchElementException();
             }
-            Object next;
             var bailoutSize = maxBailoutSize;
             do {
                 bailoutSize--;
-                var index = workingRandom.nextInt(Objects.requireNonNull(reachableValueList).size());
-                next = reachableValueList.get(index);
+                var index = workingRandom.nextInt(reachableValueList.size());
+                var next = reachableValueList.get(index);
                 if (isReachable(next)) {
                     return next;
                 }

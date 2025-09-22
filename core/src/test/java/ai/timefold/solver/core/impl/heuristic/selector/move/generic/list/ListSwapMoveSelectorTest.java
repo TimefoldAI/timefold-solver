@@ -15,10 +15,12 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMov
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMoveSelectorWithoutSize;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfNeverEndingMoveSelector;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -335,8 +337,7 @@ class ListSwapMoveSelectorTest {
                 "2 {A[0]} <-> 3 {B[0]}",
                 "1 {A[1]} <-> 2 {A[0]}",
                 "3 {B[0]} <-> 2 {A[0]}",
-                "1 {A[1]} <-> 2 {A[0]}",
-                "3 {B[0]} <-> 2 {A[0]}");
+                "1 {A[1]} <-> 2 {A[0]}");
     }
 
     @Test
@@ -540,5 +541,35 @@ class ListSwapMoveSelectorTest {
                 "1 {A[1]->null}+4 {null->A[1]}",
                 "2 {A[0]->null}+4 {null->A[0]}",
                 "1 {A[1]->null}+4 {null->A[1]}");
+    }
+
+    @Test
+    void noReachableEntities() {
+        var v1 = new TestdataListEntityProvidingValue("1");
+        var v2 = new TestdataListEntityProvidingValue("2");
+        // The current selected values makes impossible any swap move as b does not accepts v2
+        var a = new TestdataListEntityProvidingEntity("A", List.of(v1, v2), List.of(v2));
+        var b = new TestdataListEntityProvidingEntity("B", List.of(v1), List.of(v1));
+        var solution = new TestdataListEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b));
+
+        var scoreDirector = mockScoreDirector(TestdataListEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var mimicRecordingValueSelector = getMimicRecordingIterableValueSelector(
+                getEntityRangeListVariableDescriptor(scoreDirector).getValueRangeDescriptor(), true);
+
+        var filteringValueRangeSelector =
+                getFilteringValueRangeSelector(mimicRecordingValueSelector, mimicRecordingValueSelector, true, true, false);
+
+        var moveSelector = new ListSwapMoveSelector<>(mimicRecordingValueSelector, filteringValueRangeSelector, true);
+
+        var solverScope = solvingStarted(moveSelector, scoreDirector, new Random(0));
+        phaseStarted(solverScope, moveSelector);
+
+        // The iterator is not able to find a reachable entity, but the random iterator will return has next as true
+        var iterator = moveSelector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).isSameAs(NoChangeMove.getInstance());
     }
 }

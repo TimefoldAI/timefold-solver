@@ -22,7 +22,8 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
     protected final Object leftEntity;
     protected final Object rightEntity;
 
-    public SwapMove(List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, Object leftEntity, Object rightEntity) {
+    public SwapMove(List<GenuineVariableDescriptor<Solution_>> variableDescriptorList, Object leftEntity,
+            Object rightEntity) {
         this.variableDescriptorList = variableDescriptorList;
         this.leftEntity = leftEntity;
         this.rightEntity = rightEntity;
@@ -42,27 +43,17 @@ public class SwapMove<Solution_> extends AbstractMove<Solution_> {
 
     @Override
     public boolean isMoveDoable(ScoreDirector<Solution_> scoreDirector) {
-        var movable = false;
+        if (leftEntity == rightEntity) {
+            return false;
+        }
         for (var variableDescriptor : variableDescriptorList) {
             var leftValue = variableDescriptor.getValue(leftEntity);
             var rightValue = variableDescriptor.getValue(rightEntity);
             if (!Objects.equals(leftValue, rightValue)) {
-                movable = true;
-                if (!variableDescriptor.canExtractValueRangeFromSolution()) {
-                    var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
-                    var rightValueRange = extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, rightEntity);
-                    if (!rightValueRange.contains(leftValue)) {
-                        return false;
-                    }
-                    var leftValueRange =
-                            extractValueRangeFromEntity(scoreDirector, valueRangeDescriptor, leftEntity);
-                    if (!leftValueRange.contains(rightValue)) {
-                        return false;
-                    }
-                }
+                return true;
             }
         }
-        return movable;
+        return false;
     }
 
     @Override

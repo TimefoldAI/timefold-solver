@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.director;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -12,6 +13,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.ProblemScaleTracker;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -31,6 +33,8 @@ import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Caches value ranges for the current working solution,
@@ -54,6 +58,8 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public final class ValueRangeManager<Solution_> {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final CountableValueRange<?>[] fromSolution;
@@ -420,45 +426,61 @@ public final class ValueRangeManager<Solution_> {
 
     public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
         var values = reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
-        if (values == null) {
-            if (cachedWorkingSolution == null) {
-                throw new IllegalStateException(
-                        "Impossible state: value reachability requested before the working solution is known.");
+        if (values != null) {
+            return values;
+        }
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException(
+                    "Impossible state: value reachability requested before the working solution is known.");
+        }
+        var entityDescriptor = variableDescriptor.getEntityDescriptor();
+        var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
+        var allValues = getFromSolution(variableDescriptor.getValueRangeDescriptor());
+        var valuesSize = allValues.getSize();
+        if (valuesSize > Integer.MAX_VALUE) {
+            throw new IllegalStateException(
+                    "The matrix %s cannot be built for the entity %s (%s) because value range has a size (%d) which is higher than Integer.MAX_VALUE."
+                            .formatted(ReachableValues.class.getSimpleName(),
+                                    entityDescriptor.getEntityClass().getSimpleName(),
+                                    variableDescriptor.getVariableName(), valuesSize));
+        }
+        Class<?> valueClass = null;
+        var idx = 0;
+        while (valueClass == null && idx < allValues.getSize()) {
+            var value = allValues.get(idx++);
+            if (value == null) {
+                continue;
             }
-            var entityDescriptor = variableDescriptor.getEntityDescriptor();
-            var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
-            var allValues = getFromSolution(variableDescriptor.getValueRangeDescriptor());
-            var valuesSize = allValues.getSize();
-            if (valuesSize > Integer.MAX_VALUE) {
-                throw new IllegalStateException(
-                        "The matrix %s cannot be built for the entity %s (%s) because value range has a size (%d) which is higher than Integer.MAX_VALUE."
-                                .formatted(ReachableValues.class.getSimpleName(),
-                                        entityDescriptor.getEntityClass().getSimpleName(),
-                                        variableDescriptor.getVariableName(), valuesSize));
-            }
-            var reachableValuesMap = new IdentityHashMap<Object, ReachableItemValue>((int) valuesSize);
-            for (var entity : entityList) {
-                var valuesIterator = allValues.createOriginalIterator();
-                var range = getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
-                while (valuesIterator.hasNext()) {
-                    var value = valuesIterator.next();
-                    if (value != null && range.contains(value)) {
-                        var item = initReachableMap(reachableValuesMap, value, entityList.size(), (int) valuesSize);
-                        item.addEntity(entity);
-                        var iterator = range.createOriginalIterator();
-                        while (iterator.hasNext()) {
-                            var iteratorValue = iterator.next();
-                            if (iteratorValue != null && !Objects.equals(iteratorValue, value)) {
-                                item.addValue(iteratorValue);
-                            }
-                        }
+            valueClass = value.getClass();
+            break;
+        }
+        Map<Object, ReachableItemValue> reachableValuesMap = ConfigUtils.isGenericTypeImmutable(valueClass)
+                ? new HashMap<>((int) valuesSize)
+                : new IdentityHashMap<>((int) valuesSize);
+        for (var entity : entityList) {
+            var range = getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
+            for (var i = 0; i < range.getSize(); i++) {
+                var value = range.get(i);
+                if (value == null) {
+                    continue;
+                }
+                var item = initReachableMap(reachableValuesMap, value, entityList.size(), (int) valuesSize);
+                item.addEntity(entity);
+                for (int j = i + 1; j < range.getSize(); j++) {
+                    var otherValue = range.get(j);
+                    if (otherValue == null) {
+                        continue;
                     }
+                    item.addValue(otherValue);
+                    var otherValueItem =
+                            initReachableMap(reachableValuesMap, otherValue, entityList.size(), (int) valuesSize);
+                    otherValueItem.addValue(value);
                 }
             }
-            values = new ReachableValues(reachableValuesMap,
-                    variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
-            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
         }
+        values = new ReachableValues(reachableValuesMap, valueClass,
+                variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
+        reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
         return values;
     }
 
