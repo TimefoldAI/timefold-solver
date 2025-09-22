@@ -37,7 +37,7 @@ public final class DefaultMoveStreamFactory<Solution_>
     }
 
     @Override
-    public <A> UniDataStream<Solution_, A> enumerate(Class<A> sourceClass, boolean includeNull) {
+    public <A> UniDataStream<Solution_, A> forEach(Class<A> sourceClass, boolean includeNull) {
         var entityDescriptor = getSolutionDescriptor().findEntityDescriptor(sourceClass);
         if (entityDescriptor == null) { // Not an entity, can't be pinned.
             return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
@@ -61,12 +61,12 @@ public final class DefaultMoveStreamFactory<Solution_>
     }
 
     @Override
-    public <A> UniDataStream<Solution_, A> enumerateIncludingPinned(Class<A> sourceClass, boolean includeNull) {
+    public <A> UniDataStream<Solution_, A> forEachUnfiltered(Class<A> sourceClass, boolean includeNull) {
         return dataStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
     }
 
     @Override
-    public <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> enumerateEntityValuePairs(
+    public <Entity_, Value_> BiDataStream<Solution_, Entity_, Value_> forEachEntityValuePair(
             GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             UniDataStream<Solution_, Entity_> entityDataStream) {
         var includeNull =

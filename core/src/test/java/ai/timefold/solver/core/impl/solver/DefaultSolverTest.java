@@ -81,10 +81,10 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ListChangeMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ChangeMoveDefinition;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ListChangeMoveDefinition;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProviders;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
@@ -199,7 +199,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProvidersClass(TestingMoveProviders.class));
+                        .withMoveProviderClass(TestingMoveProvider.class));
 
         var solution = TestdataSolution.generateSolution(3, 2);
 
@@ -219,7 +219,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProvidersClass(TestingListMoveProviders.class));
+                        .withMoveProviderClass(TestingListMoveProvider.class));
 
         // Both values are on the same entity; the goal of the solver is to move one of them to the other entity.
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
@@ -243,7 +243,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProvidersClass(TestingMoveProviders.class));
+                        .withMoveProviderClass(TestingMoveProvider.class));
 
         var solution = TestdataSolution.generateSolution(3, 2);
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
@@ -262,7 +262,7 @@ class DefaultSolverTest extends AbstractMeterTest {
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
                         .withMoveSelectorConfig(new ChangeMoveSelectorConfig())
-                        .withMoveProvidersClass(TestingMoveProviders.class));
+                        .withMoveProviderClass(TestingMoveProvider.class));
 
         var solution = TestdataSolution.generateSolution(3, 2);
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
@@ -2548,13 +2548,14 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @NullMarked
-    public static final class TestingMoveProviders implements MoveProviders<TestdataSolution> {
+    public static final class TestingMoveProvider implements MoveProvider<TestdataSolution> {
 
         @Override
-        public List<MoveProvider<TestdataSolution>> defineMoves(PlanningSolutionMetaModel<TestdataSolution> solutionMetaModel) {
+        public List<MoveDefinition<TestdataSolution>>
+                defineMoves(PlanningSolutionMetaModel<TestdataSolution> solutionMetaModel) {
             var variableMetamodel = solutionMetaModel.entity(TestdataEntity.class)
                     .<TestdataValue> planningVariable();
-            return List.of(new ChangeMoveProvider<>(variableMetamodel));
+            return List.of(new ChangeMoveDefinition<>(variableMetamodel));
         }
 
     }
@@ -2580,14 +2581,14 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @NullMarked
-    public static final class TestingListMoveProviders implements MoveProviders<TestdataListSolution> {
+    public static final class TestingListMoveProvider implements MoveProvider<TestdataListSolution> {
 
         @Override
-        public List<MoveProvider<TestdataListSolution>>
+        public List<MoveDefinition<TestdataListSolution>>
                 defineMoves(PlanningSolutionMetaModel<TestdataListSolution> solutionMetaModel) {
             var variableMetamodel = solutionMetaModel.entity(TestdataListEntity.class)
                     .planningListVariable();
-            return List.of(new ListChangeMoveProvider<>(variableMetamodel));
+            return List.of(new ListChangeMoveDefinition<>(variableMetamodel));
         }
 
     }

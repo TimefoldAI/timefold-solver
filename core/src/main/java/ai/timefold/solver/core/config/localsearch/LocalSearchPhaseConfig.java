@@ -29,7 +29,7 @@ import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchFor
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProviders;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -37,7 +37,7 @@ import org.jspecify.annotations.Nullable;
 @XmlType(propOrder = {
         "localSearchType",
         "moveSelectorConfig",
-        "moveProvidersClass",
+        "moveProviderClass",
         "acceptorConfig",
         "foragerConfig"
 })
@@ -77,7 +77,7 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
             @XmlElement(name = UnionMoveSelectorConfig.XML_ELEMENT_NAME, type = UnionMoveSelectorConfig.class)
     })
     private MoveSelectorConfig moveSelectorConfig = null;
-    private Class<? extends MoveProviders> moveProvidersClass = null;
+    private Class<? extends MoveProvider> moveProviderClass = null;
     @XmlElement(name = "acceptor")
     private LocalSearchAcceptorConfig acceptorConfig = null;
     @XmlElement(name = "forager")
@@ -107,16 +107,16 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
      * Part of {@link PreviewFeature#MOVE_STREAMS}.
      */
     @SuppressWarnings("unchecked")
-    public @Nullable <Solution_> Class<? extends MoveProviders<Solution_>> getMoveProvidersClass() {
-        return (Class<? extends MoveProviders<Solution_>>) moveProvidersClass;
+    public @Nullable <Solution_> Class<? extends MoveProvider<Solution_>> getMoveProviderClass() {
+        return (Class<? extends MoveProvider<Solution_>>) moveProviderClass;
     }
 
     /**
      * Part of {@link PreviewFeature#MOVE_STREAMS}.
      */
     @SuppressWarnings("rawtypes")
-    public void setMoveProvidersClass(@Nullable Class<? extends MoveProviders> moveProvidersClass) {
-        this.moveProvidersClass = moveProvidersClass;
+    public void setMoveProviderClass(@Nullable Class<? extends MoveProvider> moveProviderClass) {
+        this.moveProviderClass = moveProviderClass;
     }
 
     public @Nullable LocalSearchAcceptorConfig getAcceptorConfig() {
@@ -152,9 +152,8 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
     /**
      * Part of {@link PreviewFeature#MOVE_STREAMS}.
      */
-    public @NonNull LocalSearchPhaseConfig
-            withMoveProvidersClass(@NonNull Class<? extends MoveProviders<?>> moveProviderClass) {
-        this.moveProvidersClass = moveProviderClass;
+    public @NonNull LocalSearchPhaseConfig withMoveProviderClass(@NonNull Class<? extends MoveProvider<?>> moveProviderClass) {
+        this.moveProviderClass = moveProviderClass;
         return this;
     }
 
@@ -175,8 +174,8 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
                 inheritedConfig.getLocalSearchType());
         setMoveSelectorConfig(ConfigUtils.inheritOverwritableProperty(
                 getMoveSelectorConfig(), inheritedConfig.getMoveSelectorConfig()));
-        setMoveProvidersClass(ConfigUtils.inheritOverwritableProperty(getMoveProvidersClass(),
-                inheritedConfig.getMoveProvidersClass()));
+        setMoveProviderClass(ConfigUtils.inheritOverwritableProperty(getMoveProviderClass(),
+                inheritedConfig.getMoveProviderClass()));
         acceptorConfig = ConfigUtils.inheritConfig(acceptorConfig, inheritedConfig.getAcceptorConfig());
         foragerConfig = ConfigUtils.inheritConfig(foragerConfig, inheritedConfig.getForagerConfig());
         return this;
@@ -195,8 +194,8 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
         if (moveSelectorConfig != null) {
             moveSelectorConfig.visitReferencedClasses(classVisitor);
         }
-        if (moveProvidersClass != null) {
-            classVisitor.accept(moveProvidersClass);
+        if (moveProviderClass != null) {
+            classVisitor.accept(moveProviderClass);
         }
         if (acceptorConfig != null) {
             acceptorConfig.visitReferencedClasses(classVisitor);

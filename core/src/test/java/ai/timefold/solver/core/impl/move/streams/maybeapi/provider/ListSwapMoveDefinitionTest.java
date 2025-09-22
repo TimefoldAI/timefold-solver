@@ -12,8 +12,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListSwapMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ListSwapMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.ListSwapMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ListSwapMoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
@@ -28,7 +28,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class ListSwapMoveProviderTest {
+class ListSwapMoveDefinitionTest {
 
     @Test
     void fromSolution() {
@@ -52,8 +52,8 @@ class ListSwapMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ListSwapMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ListSwapMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
@@ -113,8 +113,8 @@ class ListSwapMoveProviderTest {
                 createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ListSwapMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ListSwapMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);

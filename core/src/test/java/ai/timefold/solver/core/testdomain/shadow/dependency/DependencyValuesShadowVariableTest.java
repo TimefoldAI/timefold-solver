@@ -13,7 +13,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
 import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 
@@ -90,16 +90,16 @@ class DependencyValuesShadowVariableTest {
         var solutionDescriptor = SolutionDescriptor.buildSolutionDescriptor(
                 TestdataDependencySolution.class, TestdataDependencyEntity.class, TestdataDependencyValue.class);
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
+        var variableMetaModel =
+                (PlanningListVariableMetaModel<TestdataDependencySolution, ? super TestdataDependencyEntity, ? super TestdataDependencyValue>) solutionDescriptor
+                        .getListVariableDescriptor().getVariableMetaModel();
 
         // Tests the move [A, B] -> [C, A, B].
         // Since C depends on A and B, this is an invalid solution,
         // and C.startTime/C.endTime remains null and C.isInconsistent is true.
         // When the move is undone, C.startTime/C.endTime remains null,
         // and C.isInconsistent is false.
-        moveAsserter.assertMoveAndUndo(schedule, new ListAssignMove<>(
-                (PlanningListVariableMetaModel<TestdataDependencySolution, ? super TestdataDependencyEntity, ? super TestdataDependencyValue>) solutionDescriptor
-                        .getListVariableDescriptor().getVariableMetaModel(),
-                valueC, entityA, 0));
+        moveAsserter.assertMoveAndUndo(schedule, Moves.assign(valueC, entityA, 0, variableMetaModel));
     }
 
     @Test

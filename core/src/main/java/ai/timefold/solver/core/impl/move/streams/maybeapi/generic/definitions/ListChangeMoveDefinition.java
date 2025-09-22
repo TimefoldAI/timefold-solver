@@ -1,14 +1,12 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions;
 
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListAssignMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListChangeMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ListUnassignMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProducer;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
@@ -38,13 +36,13 @@ import org.jspecify.annotations.NullMarked;
  * user-defined change move providers needn't be this complex, as they understand the specifics of the domain.
  */
 @NullMarked
-public class ListChangeMoveProvider<Solution_, Entity_, Value_>
-        implements MoveProvider<Solution_> {
+public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
+        implements MoveDefinition<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
     private final BiDataFilter<Solution_, Entity_, Value_> isValueInListFilter;
 
-    public ListChangeMoveProvider(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public ListChangeMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.isValueInListFilter = (solution, entity, value) -> {
             if (entity == null || value == null) {
@@ -58,15 +56,15 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
     }
 
     @Override
-    public MoveProducer<Solution_> apply(MoveStreamFactory<Solution_> moveStreamFactory) {
+    public MoveProducer<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         // Stream with unpinned entities;
         // includes null if the variable allows unassigned values.
         var unpinnedEntities =
-                moveStreamFactory.enumerate(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
+                moveStreamFactory.forEach(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
         // Stream with unpinned values, which are assigned to any list variable;
         // always includes null so that we can later create a position at the end of the list,
         // i.e. with no value after it.
-        var unpinnedValues = moveStreamFactory.enumerate(variableMetaModel.type(), true)
+        var unpinnedValues = moveStreamFactory.forEach(variableMetaModel.type(), true)
                 .filter((solutionView, value) -> value == null
                         || solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
         // Joins the two previous streams to create pairs of (entity, value),
@@ -87,7 +85,7 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                 .distinct();
         // Finally the stream of these positions is joined with the stream of all existing values,
         // filtering out those which would not result in a valid move.
-        var dataStream = moveStreamFactory.enumerate(variableMetaModel.type(), false)
+        var dataStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
                 .join(entityValuePairs, DataJoiners.filtering(this::isValidChange));
         // When picking from this stream, we decide what kind of move we need to create,
         // based on whether the value is assigned or unassigned.
@@ -96,17 +94,14 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
                     var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
                     if (targetPosition instanceof UnassignedElement) {
                         var currentElementPosition = currentPosition.ensureAssigned();
-                        return new ListUnassignMove<>(variableMetaModel, currentElementPosition.entity(),
-                                currentElementPosition.index());
+                        return Moves.unassign(currentElementPosition, variableMetaModel);
                     }
                     var targetElementPosition = Objects.requireNonNull(targetPosition).ensureAssigned();
                     if (currentPosition instanceof UnassignedElement) {
-                        return new ListAssignMove<>(variableMetaModel, value, targetElementPosition.entity(),
-                                targetElementPosition.index());
+                        return Moves.assign(value, targetElementPosition, variableMetaModel);
                     }
                     var currentElementPosition = currentPosition.ensureAssigned();
-                    return new ListChangeMove<>(variableMetaModel, currentElementPosition.entity(),
-                            currentElementPosition.index(), targetElementPosition.entity(), targetElementPosition.index());
+                    return Moves.change(currentElementPosition, targetElementPosition, variableMetaModel);
                 });
     }
 
@@ -127,7 +122,6 @@ public class ListChangeMoveProvider<Solution_, Entity_, Value_>
 
         var currentPositionInList = currentPosition.ensureAssigned();
         if (currentPositionInList.entity() == targetPositionInList.entity()) { // The value is already in the list.
-
             var valueCount = solutionView.countValues(variableMetaModel, currentPositionInList.entity());
             if (valueCount == 1) { // The value is the only value in the list; no change.
                 return false;

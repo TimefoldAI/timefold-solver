@@ -1,13 +1,7 @@
 package ai.timefold.solver.core.impl.move.streams.maybeapi.stream;
 
-import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.notEqualsForDataStreams;
-
-import java.util.Arrays;
-import java.util.stream.Stream;
-
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataJoiner;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.DataJoiners;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataMapper;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -24,6 +18,49 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
     UniDataStream<Solution_, A> filter(UniDataFilter<Solution_, A> filter);
 
     /**
+     * As defined by {@link #join(UniDataStream, BiDataJoiner[])}, with the array being empty.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream) {
+        return join(otherStream, new BiDataJoiner[0]);
+    }
+
+    /**
+     * As defined by {@link #join(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner) {
+        return join(otherStream, new BiDataJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #join(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2) {
+        return join(otherStream, new BiDataJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #join(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3) {
+        return join(otherStream, new BiDataJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #join(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3, BiDataJoiner<A, B> joiner4) {
+        return join(otherStream, new BiDataJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
      * Create a new {@link BiDataStream} for every combination of A and B for which the {@link BiDataJoiner}
      * is true (for the properties it extracts from both facts).
      * <p>
@@ -35,6 +72,49 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
      * @return a stream that matches every combination of A and B for which the {@link BiDataJoiner} is true
      */
     <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B>... joiners);
+
+    /**
+     * As defined by {@link #join(Class, BiDataJoiner[])}, with the array being empty.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass) {
+        return join(otherClass, new BiDataJoiner[0]);
+    }
+
+    /**
+     * As defined by {@link #join(Class, BiDataJoiner[])}
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass, BiDataJoiner<A, B> joiner) {
+        return join(otherClass, new BiDataJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #join(Class, BiDataJoiner[])}
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2) {
+        return join(otherClass, new BiDataJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #join(Class, BiDataJoiner[])}
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass, BiDataJoiner<A, B> joiner1, BiDataJoiner<A, B> joiner2,
+            BiDataJoiner<A, B> joiner3) {
+        return join(otherClass, new BiDataJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #join(Class, BiDataJoiner[])}
+     */
+    @SuppressWarnings("unchecked")
+    default <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass, BiDataJoiner<A, B> joiner1, BiDataJoiner<A, B> joiner2,
+            BiDataJoiner<A, B> joiner3, BiDataJoiner<A, B> joiner4) {
+        return join(otherClass, new BiDataJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
 
     /**
      * Create a new {@link BiDataStream} for every combination of A and B
@@ -52,14 +132,47 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
     <B> BiDataStream<Solution_, A, B> join(Class<B> otherClass, BiDataJoiner<A, B>... joiners);
 
     /**
-     * Create a new {@link UniDataStream} for every A where B exists for which all {@link BiDataJoiner}s are true
-     * (for the properties they extract from both facts).
-     *
-     * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B exists for which the {@link BiDataJoiner}s are true
+     * As defined by {@link #ifExists(UniDataStream, BiDataJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
-    <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiDataJoiner<A, B>... joiners);
+    default <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream) {
+        return ifExists(otherStream, new BiDataJoiner[0]);
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner) {
+        return ifExists(otherStream, new BiDataJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2) {
+        return ifExists(otherStream, new BiDataJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3) {
+        return ifExists(otherStream, new BiDataJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3, BiDataJoiner<A, B> joiner4) {
+        return ifExists(otherStream, new BiDataJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
 
     /**
      * Create a new {@link UniDataStream} for every A where B exists for which all {@link BiDataJoiner}s are true
@@ -72,30 +185,101 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
     <B> UniDataStream<Solution_, A> ifExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B>... joiners);
 
     /**
-     * Create a new {@link UniDataStream} for every A, if another A exists that does not {@link Object#equals(Object)}
-     * the first, and for which the {@link BiDataJoiner}s are true (for the properties they extract from both facts).
-     *
-     * @return a stream that matches every A where a different A exists for which the {@link BiDataJoiner}s are true
+     * As defined by {@link #ifExists(Class, BiDataJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
-    default UniDataStream<Solution_, A> ifExistsOther(Class<A> otherClass, BiDataJoiner<A, A>... joiners) {
-        BiDataJoiner<A, A> otherness = DataJoiners.filtering(notEqualsForDataStreams());
-
-        @SuppressWarnings("unchecked")
-        BiDataJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
-                .toArray(BiDataJoiner[]::new);
-        return ifExists(otherClass, allJoiners);
+    default <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass) {
+        return ifExists(otherClass, new BiDataJoiner[0]);
     }
 
     /**
-     * Create a new {@link UniDataStream} for every A where B does not exist for which the {@link BiDataJoiner}s are true
+     * As defined by {@link #ifExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiDataJoiner<A, B> joiner) {
+        return ifExists(otherClass, new BiDataJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2) {
+        return ifExists(otherClass, new BiDataJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2,
+            BiDataJoiner<A, B> joiner3) {
+        return ifExists(otherClass, new BiDataJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3, BiDataJoiner<A, B> joiner4) {
+        return ifExists(otherClass, new BiDataJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * Create a new {@link UniDataStream} for every A where B exists for which all {@link BiDataJoiner}s are true
      * (for the properties they extract from both facts).
      *
      * @param <B> the type of the second matched fact
-     * @return a stream that matches every A where B does not exist for which the {@link BiDataJoiner}s are true
+     * @return a stream that matches every A where B exists for which the {@link BiDataJoiner}s are true
      */
     @SuppressWarnings("unchecked")
-    <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiDataJoiner<A, B>... joiners);
+    <B> UniDataStream<Solution_, A> ifExists(Class<B> otherClass, BiDataJoiner<A, B>... joiners);
+
+    /**
+     * As defined by {@link #ifNotExists(UniDataStream, BiDataJoiner[])}, with the array being empty.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream) {
+        return ifNotExists(otherStream, new BiDataJoiner[0]);
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner) {
+        return ifNotExists(otherStream, new BiDataJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2) {
+        return ifNotExists(otherStream, new BiDataJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3) {
+        return ifNotExists(otherStream, new BiDataJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(UniDataStream, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3, BiDataJoiner<A, B> joiner4) {
+        return ifNotExists(otherStream, new BiDataJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
 
     /**
      * Create a new {@link UniDataStream} for every A where B does not exist for which the {@link BiDataJoiner}s are true
@@ -108,21 +292,57 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
     <B> UniDataStream<Solution_, A> ifNotExists(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B>... joiners);
 
     /**
-     * Create a new {@link UniDataStream} for every A, if no other A exists that does not {@link Object#equals(Object)}
-     * the first,
-     * for which the {@link BiDataJoiner}s are true (for the properties they extract from both facts).
-     *
-     * @return a stream that matches every A where a different A does not exist
+     * As defined by {@link #ifNotExists(Class, BiDataJoiner[])}, with the array being empty.
      */
     @SuppressWarnings("unchecked")
-    default UniDataStream<Solution_, A> ifNotExistsOther(Class<A> otherClass, BiDataJoiner<A, A>... joiners) {
-        BiDataJoiner<A, A> otherness = DataJoiners.filtering(notEqualsForDataStreams());
-
-        @SuppressWarnings("unchecked")
-        BiDataJoiner<A, A>[] allJoiners = Stream.concat(Arrays.stream(joiners), Stream.of(otherness))
-                .toArray(BiDataJoiner[]::new);
-        return ifNotExists(otherClass, allJoiners);
+    default <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass) {
+        return ifNotExists(otherClass, new BiDataJoiner[0]);
     }
+
+    /**
+     * As defined by {@link #ifNotExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiDataJoiner<A, B> joiner) {
+        return ifNotExists(otherClass, new BiDataJoiner[] { joiner });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2) {
+        return ifNotExists(otherClass, new BiDataJoiner[] { joiner1, joiner2 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3) {
+        return ifNotExists(otherClass, new BiDataJoiner[] { joiner1, joiner2, joiner3 });
+    }
+
+    /**
+     * As defined by {@link #ifNotExists(Class, BiDataJoiner[])}.
+     */
+    @SuppressWarnings("unchecked")
+    default <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiDataJoiner<A, B> joiner1,
+            BiDataJoiner<A, B> joiner2, BiDataJoiner<A, B> joiner3, BiDataJoiner<A, B> joiner4) {
+        return ifNotExists(otherClass, new BiDataJoiner[] { joiner1, joiner2, joiner3, joiner4 });
+    }
+
+    /**
+     * Create a new {@link UniDataStream} for every A where B does not exist for which the {@link BiDataJoiner}s are true
+     * (for the properties they extract from both facts).
+     *
+     * @param <B> the type of the second matched fact
+     * @return a stream that matches every A where B does not exist for which the {@link BiDataJoiner}s are true
+     */
+    @SuppressWarnings("unchecked")
+    <B> UniDataStream<Solution_, A> ifNotExists(Class<B> otherClass, BiDataJoiner<A, B>... joiners);
 
     // ************************************************************************
     // Operations with duplicate tuple possibility

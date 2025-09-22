@@ -20,7 +20,8 @@ import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.InnerMoveProducer;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ChangeMoveDefinition;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
 import ai.timefold.solver.core.impl.solver.event.SolverEventSupport;
@@ -94,11 +95,12 @@ class MoveStreamsBasedLocalSearchTest {
         var variableMetaModel = solutionDescriptor.getMetaModel()
                 .entity(TestdataEntity.class)
                 .planningVariable();
-        var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
+        var moveDefinition = new ChangeMoveDefinition<>(variableMetaModel);
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         // Random selection otherwise LS gets stuck in an endless loop.
-        return new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer, true);
+        return new MoveStreamsBasedMoveRepository<>(moveStreamFactory, (InnerMoveProducer<TestdataSolution>) moveProducer,
+                true);
     }
 
     /**

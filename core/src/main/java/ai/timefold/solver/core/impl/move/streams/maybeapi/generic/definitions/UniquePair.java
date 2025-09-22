@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider;
+package ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions;
 
 import java.util.Objects;
 

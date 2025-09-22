@@ -13,8 +13,8 @@ import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.move.ChangeMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.provider.ChangeMoveProvider;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.ChangeMove;
+import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ChangeMoveDefinition;
 import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveStreamSession;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
@@ -35,7 +35,7 @@ import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
 @NullMarked
-class ChangeMoveProviderTest {
+class ChangeMoveDefinitionTest {
 
     @Test
     void fromSolution() {
@@ -54,8 +54,8 @@ class ChangeMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
@@ -121,8 +121,8 @@ class ChangeMoveProviderTest {
                 createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         var moveIterable = moveProducer.getMoveIterable(moveStreamSession);
@@ -180,8 +180,8 @@ class ChangeMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         // One move is expected:
@@ -221,8 +221,8 @@ class ChangeMoveProviderTest {
                 solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         // Three moves are expected:
@@ -282,8 +282,8 @@ class ChangeMoveProviderTest {
         var scoreDirector = createScoreDirector(solutionDescriptor, solution);
 
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveProvider = new ChangeMoveProvider<>(variableMetaModel);
-        var moveProducer = moveProvider.apply(moveStreamFactory);
+        var moveDefinition = new ChangeMoveDefinition<>(variableMetaModel);
+        var moveProducer = moveDefinition.build(moveStreamFactory);
         var moveStreamSession = createSession(moveStreamFactory, scoreDirector);
 
         // Filters out moves that would change the value to the value the entity already has.
