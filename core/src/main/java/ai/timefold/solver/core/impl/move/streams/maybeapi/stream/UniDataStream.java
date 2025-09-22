@@ -26,7 +26,7 @@ public interface UniDataStream<Solution_, A> extends DataStream<Solution_> {
     }
 
     /**
-     * As defined by {@link #join(UniDataStream, BiDataJoiner[])}
+     * As defined by {@link #join(UniDataStream, BiDataJoiner[])}.
      */
     @SuppressWarnings("unchecked")
     default <B> BiDataStream<Solution_, A, B> join(UniDataStream<Solution_, B> otherStream, BiDataJoiner<A, B> joiner) {
