@@ -46,7 +46,7 @@ jobs:
           cache: 'maven'
 
       - name: Build and test timefold-solver
-        run: mvn -B verify
+        run: ./mvnw -B verify
 
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
@@ -71,7 +71,7 @@ jobs:
           cache: 'maven'
 
       - name: Build timefold-solver using flag -Dfull
-        run: mvn -DskipTests -Dfull -B verify
+        run: ./mvnw -DskipTests -Dfull -B verify
 
   spring_boot_3_3_x:
     name: "Spring Boot 3.3.x"
@@ -87,13 +87,13 @@ jobs:
       - name: Set release latest 3.3.x version
         run: |
           SPRING_VERSION="$(curl -s 'https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter+AND+v:3.3.*' | jq -r '.response.docs[0].v')"
-          mvn versions:set-property -Dproperty=version.org.springframework.boot -DnewVersion=$SPRING_VERSION
+          ./mvnw versions:set-property -Dproperty=version.org.springframework.boot -DnewVersion=$SPRING_VERSION
       - name: Quickly build timefold-solver
-        run: mvn -B -Dquickly clean install
+        run: ./mvnw -B -Dquickly clean install
       - name: Test Spring Boot 3.3.x
         run: |
           cd spring-integration
-          mvn -B verify
+          ./mvnw -B verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
@@ -114,13 +114,13 @@ jobs:
       - name: Set release latest 3.4.x version
         run: |
           SPRING_VERSION="$(curl -s 'https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter+AND+v:3.4.*' | jq -r '.response.docs[0].v')"
-          mvn versions:set-property -Dproperty=version.org.springframework.boot -DnewVersion=$SPRING_VERSION
+          ./mvnw versions:set-property -Dproperty=version.org.springframework.boot -DnewVersion=$SPRING_VERSION
       - name: Quickly build timefold-solver
-        run: mvn -B -Dquickly clean install
+        run: ./mvnw -B -Dquickly clean install
       - name: Test Spring Boot 3.4.x
         run: |
           cd spring-integration
-          mvn -B verify
+          ./mvnw -B verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
@@ -158,12 +158,12 @@ jobs:
           cache: 'maven'
 
       - name: Quickly build timefold-solver
-        run: mvn -B -Dquickly clean install
+        run: ./mvnw -B -Dquickly clean install
 
       - name: Test timefold-solver in Native mode
         run: |
           cd ${{matrix.module}}
-          mvn -B -Dnative verify
+          ./mvnw -B -Dnative verify
 
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
