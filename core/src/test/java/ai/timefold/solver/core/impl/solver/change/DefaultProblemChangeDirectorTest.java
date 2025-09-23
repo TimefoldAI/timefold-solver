@@ -22,14 +22,14 @@ class DefaultProblemChangeDirectorTest {
 
     @Test
     void complexProblemChange_correctlyNotifiesScoreDirector() {
-        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
-        final var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
-        final var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
-        final var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
-        final var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
-        final var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
-        final var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
-        final var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
+        var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
+        var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
+        var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
+        var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
+        var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
+        var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
+        var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
 
         InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
         when(scoreDirectorMock.lookUpWorkingObject(removedEntity)).thenReturn(removedEntity);
@@ -84,12 +84,12 @@ class DefaultProblemChangeDirectorTest {
 
     @Test
     void verify_noResetSolutionIfNoEntitiesAddedOrRemoved() {
-        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
-        final var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
-        final var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
-        final var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
-        final var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
-        final var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
+        var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
+        var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
+        var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
+        var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
+        var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
 
         InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
         when(scoreDirectorMock.lookUpWorkingObject(changedEntity)).thenReturn(changedEntity);
@@ -119,9 +119,9 @@ class DefaultProblemChangeDirectorTest {
 
     @Test
     void verify_ResetSolutionIfEntitiesAddedOrRemoved() {
-        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
-        final var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
-        final var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
+        var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
+        var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
 
         InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
         when(scoreDirectorMock.lookUpWorkingObject(removedEntity)).thenReturn(removedEntity);
@@ -154,14 +154,14 @@ class DefaultProblemChangeDirectorTest {
 
     @Test
     void verify_ResetSolutionOnceIfEntitiesAddedOrRemovedThenVariablesChanged() {
-        final var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
-        final var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
-        final var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
-        final var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
-        final var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
-        final var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
-        final var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
-        final var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
+        var entityGroupOne = new TestdataLavishEntityGroup("entityGroupOne");
+        var valueGroupOne = new TestdataLavishValueGroup("valueGroupOne");
+        var addedEntity = new TestdataLavishEntity("newly added entity", entityGroupOne);
+        var removedEntity = new TestdataLavishEntity("entity to remove", entityGroupOne);
+        var addedFact = new TestdataLavishValue("newly added fact", valueGroupOne);
+        var removedFact = new TestdataLavishValue("fact to remove", valueGroupOne);
+        var changedEntity = new TestdataLavishEntity("changed entity", entityGroupOne);
+        var changedEntityValue = new TestdataLavishValue("changed entity value", valueGroupOne);
 
         InnerScoreDirector<TestdataSolution, ?> scoreDirectorMock = mock(InnerScoreDirector.class);
         when(scoreDirectorMock.lookUpWorkingObject(removedEntity)).thenReturn(removedEntity);

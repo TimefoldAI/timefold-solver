@@ -57,21 +57,10 @@ final class ExternalizedListVariableStateSupply<Solution_, Entity_>
     @Override
     public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         workingSolution = scoreDirector.getWorkingSolution();
-        listVariableState.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
-                .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
 
         // Will run over all entities and unmark all present elements as unassigned.
-        sourceVariableDescriptor.getEntityDescriptor()
-                .visitAllEntities(workingSolution, this::insert);
-    }
-
-    private void insert(Object entity) {
-        var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var index = 0;
-        for (var element : assignedElements) {
-            listVariableState.addElement(entity, assignedElements, element, index);
-            index++;
-        }
+        listVariableState.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
+                .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
     }
 
     @Override
