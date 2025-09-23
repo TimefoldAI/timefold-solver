@@ -11,46 +11,17 @@ import org.jspecify.annotations.NonNull;
 /**
  * Includes settings to override default {@link ai.timefold.solver.core.api.solver.Solver} configuration.
  * <p>
- * This class provides an API to override solver termination settings. You can:
+ * This class provides an API to override solver termination settings. The following options are available:
  * <ul>
  * <li>Use {@link #withTerminationConfig(TerminationConfig)} to set a complete termination configuration</li>
  * <li>Use {@link #withTerminationSpentLimit(Duration)} and/or {@link #withTerminationUnimprovedSpentLimit(Duration)}
  * to set specific time limits independently or in combination</li>
  * </ul>
  * <p>
- * <strong>Important ordering constraint:</strong> If you use {@link #withTerminationConfig(TerminationConfig)},
+ * <strong>Important ordering constraint:</strong> If {@link #withTerminationConfig(TerminationConfig)} is used,
  * it must be called before any specific termination methods like {@link #withTerminationSpentLimit(Duration)}
  * or {@link #withTerminationUnimprovedSpentLimit(Duration)}. This prevents accidental override of previously
  * set specific configurations.
- * <p>
- * Valid usage patterns:
- * 
- * <pre>{@code
- * // Pattern 1: Use specific termination methods only
- * new SolverConfigOverride<MySolution>()
- *         .withTerminationSpentLimit(Duration.ofMinutes(5))
- *         .withTerminationUnimprovedSpentLimit(Duration.ofMinutes(2));
- *
- * // Pattern 2: Start with base config, then add specific settings
- * new SolverConfigOverride<MySolution>()
- *         .withTerminationConfig(new TerminationConfig())
- *         .withTerminationSpentLimit(Duration.ofMinutes(5));
- *
- * // Pattern 3: Use complete termination config with all settings
- * new SolverConfigOverride<MySolution>()
- *         .withTerminationConfig(new TerminationConfig()
- *                 .withSpentLimit(Duration.ofMinutes(5))
- *                 .withUnimprovedSpentLimit(Duration.ofMinutes(2)));
- * }</pre>
- * <p>
- * Invalid usage pattern (will throw IllegalStateException):
- * 
- * <pre>{@code
- * // DON'T DO THIS - withTerminationConfig() after specific methods
- * new SolverConfigOverride<MySolution>()
- *         .withTerminationSpentLimit(Duration.ofMinutes(5))
- *         .withTerminationConfig(new TerminationConfig()); // Will throw exception
- * }</pre>
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
@@ -67,12 +38,7 @@ public final class SolverConfigOverride<Solution_> {
      * Sets the solver {@link TerminationConfig}, providing a base configuration that can be further
      * customized with specific termination methods.
      * <p>
-     * <strong>Important:</strong> This method must be called before any specific termination methods
-     * like {@link #withTerminationSpentLimit(Duration)} or {@link #withTerminationUnimprovedSpentLimit(Duration)}.
-     * Calling this method after specific termination settings have been applied will throw an exception
-     * to prevent accidental override of those settings.
-     * <p>
-     * After calling this method, you can chain additional specific termination methods to further
+     * After calling this method, additional specific termination methods can be chained to further
      * customize the configuration:
      * 
      * <pre>{@code
@@ -82,15 +48,30 @@ public final class SolverConfigOverride<Solution_> {
      *         .withTerminationUnimprovedSpentLimit(Duration.ofMinutes(2));
      * }</pre>
      *
+     * <p>
+     * <strong>Important:</strong> This method must be called before any specific termination methods
+     * like {@link #withTerminationSpentLimit(Duration)} or {@link #withTerminationUnimprovedSpentLimit(Duration)}.
+     * <p>
+     * Calling this method after specific termination settings have been applied will throw an exception
+     * to prevent accidental override of those settings.
+     *
+     *
+     * <pre>{@code
+     * new SolverConfigOverride<MySolution>()
+     *         .withTerminationSpentLimit(Duration.ofMinutes(5))
+     *         .withTerminationConfig(new TerminationConfig()); // Will throw exception
+     * }</pre>
+     *
      * @param terminationConfig allows overriding the default termination config of {@link Solver}
-     * @return this SolverConfigOverride instance for method chaining
+     * @return this
      * @throws IllegalStateException if specific termination settings have already been applied
      */
     public @NonNull SolverConfigOverride<Solution_> withTerminationConfig(@NonNull TerminationConfig terminationConfig) {
         if (hasSpecificTerminationSettings) {
-            throw new IllegalStateException("Cannot set terminationConfig after specific termination settings "
-                    + "(withTerminationSpentLimit or withTerminationUnimprovedSpentLimit) have been applied. "
-                    + "Call withTerminationConfig() first, or use the TerminationConfig builder methods directly.");
+            throw new IllegalStateException("""
+                    Cannot set terminationConfig after specific termination settings
+                    (withTerminationSpentLimit or withTerminationUnimprovedSpentLimit) have been applied.
+                    Maybe call withTerminationConfig() first, or use the TerminationConfig builder methods directly.""");
         }
         this.terminationConfig =
                 Objects.requireNonNull(terminationConfig, "Invalid terminationConfig (null) given to SolverConfigOverride.");
@@ -126,7 +107,7 @@ public final class SolverConfigOverride<Solution_> {
      * }</pre>
      *
      * @param spentLimit the maximum duration the solver is allowed to run
-     * @return this SolverConfigOverride instance for method chaining
+     * @return this
      */
     public @NonNull SolverConfigOverride<Solution_> withTerminationSpentLimit(@NonNull Duration spentLimit) {
         if (this.terminationConfig == null) {
@@ -171,7 +152,7 @@ public final class SolverConfigOverride<Solution_> {
      * }</pre>
      *
      * @param unimprovedSpentLimit the maximum duration the solver is allowed to run without improvement
-     * @return this SolverConfigOverride instance for method chaining
+     * @return this
      */
     public @NonNull SolverConfigOverride<Solution_>
             withTerminationUnimprovedSpentLimit(@NonNull Duration unimprovedSpentLimit) {
