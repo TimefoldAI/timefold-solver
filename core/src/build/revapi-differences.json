@@ -348,6 +348,36 @@
           "oldValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfig\", \"moveSelectorConfigList\", \"foragerConfig\"}",
           "newValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfigList\", \"moveSelectorConfigList\", \"foragerConfig\"}",
           "justification": "New CH configuration with multiple placers"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::getSorterWeightFactoryClass()",
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::getSorterWeightFactoryClass()",
+          "justification": "New weight factory base class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterWeightFactory>===)",
+          "parameterIndex": "0",
+          "justification": "New weight factory base class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::getSorterWeightFactoryClass()",
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::getSorterWeightFactoryClass()",
+          "justification": "New weight factory base class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterWeightFactory>===)",
+          "parameterIndex": "0",
+          "justification": "New weight factory base class"
         }
       ]
     }

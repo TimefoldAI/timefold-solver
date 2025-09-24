@@ -7,6 +7,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -14,7 +15,6 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorCo
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ShufflingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingEntitySelector;
@@ -208,7 +208,7 @@ class EntitySelectorFactoryTest {
     }
 
     public static class DummySelectionSorterWeightFactory
-            implements SelectionSorterWeightFactory<TestdataSolution, TestdataEntity> {
+            implements SorterWeightFactory<TestdataSolution, TestdataEntity> {
         @Override
         public Comparable createSorterWeight(TestdataSolution testdataSolution, TestdataEntity selection) {
             return 0;
