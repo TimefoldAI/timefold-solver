@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -21,7 +22,6 @@ import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPro
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 
 /**
@@ -155,8 +155,9 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         }
     }
 
+    @SuppressWarnings("rawtypes")
     protected void processStrength(Class<? extends Comparator> strengthComparatorClass,
-            Class<? extends SelectionSorterWeightFactory> strengthWeightFactoryClass) {
+            Class<? extends SorterWeightFactory> strengthWeightFactoryClass) {
         if (strengthComparatorClass == PlanningVariable.NullStrengthComparator.class) {
             strengthComparatorClass = null;
         }
@@ -179,7 +180,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                     SelectionSorterOrder.DESCENDING);
         }
         if (strengthWeightFactoryClass != null) {
-            SelectionSorterWeightFactory<Solution_, Object> strengthWeightFactory = newInstance(this::toString,
+            SorterWeightFactory<Solution_, Object> strengthWeightFactory = newInstance(this::toString,
                     "strengthWeightFactoryClass", strengthWeightFactoryClass);
             increasingStrengthSorter = new WeightFactorySelectionSorter<>(strengthWeightFactory,
                     SelectionSorterOrder.ASCENDING);
