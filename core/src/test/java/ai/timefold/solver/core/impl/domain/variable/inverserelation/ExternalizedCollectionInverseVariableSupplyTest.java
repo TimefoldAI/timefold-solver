@@ -7,8 +7,8 @@ import static org.mockito.Mockito.when;
 import java.util.Arrays;
 import java.util.Collection;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -19,20 +19,19 @@ class ExternalizedCollectionInverseVariableSupplyTest {
 
     @Test
     void normal() {
-        GenuineVariableDescriptor<TestdataSolution> variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
-        ScoreDirector<TestdataSolution> scoreDirector = mock(ScoreDirector.class);
-        ExternalizedCollectionInverseVariableSupply<TestdataSolution> supply =
-                new ExternalizedCollectionInverseVariableSupply<>(variableDescriptor);
+        var variableDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var scoreDirector = mock(InnerScoreDirector.class);
+        var supply = new ExternalizedCollectionInverseVariableSupply<>(variableDescriptor);
 
-        TestdataValue val1 = new TestdataValue("1");
-        TestdataValue val2 = new TestdataValue("2");
-        TestdataValue val3 = new TestdataValue("3");
-        TestdataEntity a = new TestdataEntity("a", val1);
-        TestdataEntity b = new TestdataEntity("b", val1);
-        TestdataEntity c = new TestdataEntity("c", val3);
-        TestdataEntity d = new TestdataEntity("d", val3);
+        var val1 = new TestdataValue("1");
+        var val2 = new TestdataValue("2");
+        var val3 = new TestdataValue("3");
+        var a = new TestdataEntity("a", val1);
+        var b = new TestdataEntity("b", val1);
+        var c = new TestdataEntity("c", val3);
+        var d = new TestdataEntity("d", val3);
 
-        TestdataSolution solution = new TestdataSolution("solution");
+        var solution = new TestdataSolution("solution");
         solution.setEntityList(Arrays.asList(a, b, c, d));
         solution.setValueList(Arrays.asList(val1, val2, val3));
 
@@ -43,9 +42,9 @@ class ExternalizedCollectionInverseVariableSupplyTest {
         assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val2)).isEmpty();
         assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val3)).containsExactlyInAnyOrder(c, d);
 
-        supply.beforeVariableChanged(scoreDirector, c);
+        supply.beforeChange(scoreDirector, new BasicVariableChangeEvent<>(c));
         c.setValue(val2);
-        supply.afterVariableChanged(scoreDirector, c);
+        supply.afterChange(scoreDirector, new BasicVariableChangeEvent<>(c));
 
         assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val1)).containsExactlyInAnyOrder(a, b);
         assertThat((Collection<TestdataEntity>) supply.getInverseCollection(val2)).containsExactly(c);

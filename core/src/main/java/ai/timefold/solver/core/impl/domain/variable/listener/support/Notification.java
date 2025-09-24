@@ -3,7 +3,9 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.ChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
  * A notification represents some kind of change of a planning variable. When a score director is notified about a change,
@@ -26,21 +28,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the variable listener type
  */
-public interface Notification<Solution_, T extends AbstractVariableListener<Solution_, Object>> {
-
-    /**
-     * The {@code entity} was added.
-     */
-    static <Solution_> EntityNotification<Solution_> entityAdded(Object entity) {
-        return new EntityAddedNotification<>(entity);
-    }
-
-    /**
-     * The {@code entity} was removed.
-     */
-    static <Solution_> EntityNotification<Solution_> entityRemoved(Object entity) {
-        return new EntityRemovedNotification<>(entity);
-    }
+public interface Notification<Solution_, ChangeEvent_ extends ChangeEvent, T extends InnerVariableListener<Solution_, ChangeEvent_>> {
 
     /**
      * Basic genuine or shadow planning variable changed on {@code entity}.
@@ -67,10 +55,10 @@ public interface Notification<Solution_, T extends AbstractVariableListener<Solu
     /**
      * Trigger {@code variableListener}'s before method corresponding to this notification.
      */
-    void triggerBefore(T variableListener, ScoreDirector<Solution_> scoreDirector);
+    void triggerBefore(T variableListener, InnerScoreDirector<Solution_, ?> scoreDirector);
 
     /**
      * Trigger {@code variableListener}'s after method corresponding to this notification.
      */
-    void triggerAfter(T variableListener, ScoreDirector<Solution_> scoreDirector);
+    void triggerAfter(T variableListener, InnerScoreDirector<Solution_, ?> scoreDirector);
 }

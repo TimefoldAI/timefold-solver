@@ -6,9 +6,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.ExternalizedSingletonInverseVariableSupply;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
@@ -19,23 +19,20 @@ class ExternalizedAnchorVariableSupplyTest {
 
     @Test
     void chainedEntity() {
-        GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor =
-                TestdataChainedEntity.buildVariableDescriptorForChainedObject();
-        ScoreDirector<TestdataChainedSolution> scoreDirector = mock(ScoreDirector.class);
-        ExternalizedSingletonInverseVariableSupply<TestdataChainedSolution> nextVariableSupply =
-                new ExternalizedSingletonInverseVariableSupply<>(variableDescriptor);
-        ExternalizedAnchorVariableSupply<TestdataChainedSolution> supply =
-                new ExternalizedAnchorVariableSupply<>(variableDescriptor, nextVariableSupply);
+        var variableDescriptor = TestdataChainedEntity.buildVariableDescriptorForChainedObject();
+        var scoreDirector = mock(InnerScoreDirector.class);
+        var nextVariableSupply = new ExternalizedSingletonInverseVariableSupply<>(variableDescriptor);
+        var supply = new ExternalizedAnchorVariableSupply<>(variableDescriptor, nextVariableSupply);
 
-        TestdataChainedAnchor a0 = new TestdataChainedAnchor("a0");
-        TestdataChainedEntity a1 = new TestdataChainedEntity("a1", a0);
-        TestdataChainedEntity a2 = new TestdataChainedEntity("a2", a1);
-        TestdataChainedEntity a3 = new TestdataChainedEntity("a3", a2);
+        var a0 = new TestdataChainedAnchor("a0");
+        var a1 = new TestdataChainedEntity("a1", a0);
+        var a2 = new TestdataChainedEntity("a2", a1);
+        var a3 = new TestdataChainedEntity("a3", a2);
 
-        TestdataChainedAnchor b0 = new TestdataChainedAnchor("b0");
-        TestdataChainedEntity b1 = new TestdataChainedEntity("b1", b0);
+        var b0 = new TestdataChainedAnchor("b0");
+        var b1 = new TestdataChainedEntity("b1", b0);
 
-        TestdataChainedSolution solution = new TestdataChainedSolution("solution");
+        var solution = new TestdataChainedSolution("solution");
         solution.setChainedAnchorList(Arrays.asList(a0, b0));
         solution.setChainedEntityList(Arrays.asList(a1, a2, a3, b1));
 
@@ -48,11 +45,12 @@ class ExternalizedAnchorVariableSupplyTest {
         assertThat(supply.getAnchor(a3)).isSameAs(a0);
         assertThat(supply.getAnchor(b1)).isSameAs(b0);
 
-        nextVariableSupply.beforeVariableChanged(scoreDirector, a3);
-        supply.beforeVariableChanged(scoreDirector, a3);
+        var event = new BasicVariableChangeEvent<Object>(a3);
+        nextVariableSupply.beforeChange(scoreDirector, event);
+        supply.beforeChange(scoreDirector, event);
         a3.setChainedObject(b1);
-        nextVariableSupply.afterVariableChanged(scoreDirector, a3);
-        supply.afterVariableChanged(scoreDirector, a3);
+        nextVariableSupply.afterChange(scoreDirector, event);
+        supply.afterChange(scoreDirector, event);
 
         assertThat(supply.getAnchor(a1)).isSameAs(a0);
         assertThat(supply.getAnchor(a2)).isSameAs(a0);

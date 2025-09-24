@@ -22,7 +22,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
     private final int maximumSubListSize;
 
     private TriangleElementFactory triangleElementFactory;
-    private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public RandomSubListSelector(
             EntitySelector<Solution_> entitySelector,
@@ -47,7 +47,7 @@ public class RandomSubListSelector<Solution_> extends AbstractSelector<Solution_
         phaseLifecycleSupport.addEventListener(this.valueSelector);
     }
 
-    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
         return Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }

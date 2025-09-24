@@ -26,7 +26,7 @@ abstract class AbstractInverseEntityFilteringValueSelector<Solution_>
 
     protected final IterableValueSelector<Solution_> childValueSelector;
 
-    protected ListVariableStateSupply<Solution_> listVariableStateSupply;
+    protected ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     protected AbstractInverseEntityFilteringValueSelector(IterableValueSelector<Solution_> childValueSelector) {
         if (childValueSelector.isNeverEnding()) {

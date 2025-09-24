@@ -157,7 +157,8 @@ record KOptDescriptor<Node_>(int k, Node_[] removedEdges, int[] removedEdgeIndex
      * </li>
      * </ul>
      */
-    public <Solution_> KOptListMove<Solution_> getKOptListMove(ListVariableStateSupply<Solution_> listVariableStateSupply) {
+    public <Solution_> KOptListMove<Solution_>
+            getKOptListMove(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         if (!isFeasible()) {
             // A KOptListMove move with an empty flip move list is not feasible, since if executed, it's a no-op.

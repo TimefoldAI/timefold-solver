@@ -3,31 +3,32 @@ package ai.timefold.solver.core.impl.domain.variable.anchor;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedBasicVariableListener;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Alternative to {@link AnchorVariableListener}.
  */
+@NullMarked
 public class ExternalizedAnchorVariableSupply<Solution_> implements
-        SourcedVariableListener<Solution_>,
-        VariableListener<Solution_, Object>,
+        SourcedBasicVariableListener<Solution_, Object>,
         AnchorVariableSupply {
 
     protected final VariableDescriptor<Solution_> previousVariableDescriptor;
     protected final SingletonInverseVariableSupply nextVariableSupply;
-
-    protected Map<Object, Object> anchorMap = null;
+    protected final Map<Object, @Nullable Object> anchorMap;
 
     public ExternalizedAnchorVariableSupply(VariableDescriptor<Solution_> previousVariableDescriptor,
             SingletonInverseVariableSupply nextVariableSupply) {
         this.previousVariableDescriptor = previousVariableDescriptor;
         this.nextVariableSupply = nextVariableSupply;
+        this.anchorMap = new IdentityHashMap<>();
     }
 
     @Override
@@ -36,51 +37,26 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
     }
 
     @Override
-    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
-        anchorMap = new IdentityHashMap<>();
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        anchorMap.clear();
         previousVariableDescriptor.getEntityDescriptor().visitAllEntities(scoreDirector.getWorkingSolution(), this::insert);
     }
 
     @Override
-    public void close() {
-        anchorMap = null;
-    }
-
-    @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
-    }
-
-    @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert(entity);
-    }
-
-    @Override
-    public void beforeVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
+    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Object> event) {
         // No need to retract() because the insert (which is guaranteed to be called later) affects the same trailing entities.
     }
 
     @Override
-    public void afterVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert(entity);
+    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Object> event) {
+        insert(event.entity());
     }
 
     @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        boolean removeSucceeded = anchorMap.remove(entity) != null;
-        if (!removeSucceeded) {
-            throw new IllegalStateException("The supply (" + this + ") is corrupted,"
-                    + " because the entity (" + entity
-                    + ") for sourceVariable (" + previousVariableDescriptor.getVariableName()
-                    + ") cannot be retracted: it was never inserted.");
-        }
-        // No need to retract the trailing entities because they will be removed too or change their previousVariable
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
+    public void close() {
+        anchorMap.clear();
     }
 
     protected void insert(Object entity) {
@@ -101,7 +77,7 @@ public class ExternalizedAnchorVariableSupply<Solution_> implements
     }
 
     @Override
-    public Object getAnchor(Object entity) {
+    public @Nullable Object getAnchor(Object entity) {
         return anchorMap.get(entity);
     }
 

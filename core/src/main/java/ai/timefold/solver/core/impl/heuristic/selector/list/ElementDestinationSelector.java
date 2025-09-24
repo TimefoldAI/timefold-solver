@@ -43,7 +43,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
     private final IterableValueSelector<Solution_> valueSelector;
     private final boolean randomSelection;
 
-    private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public ElementDestinationSelector(EntitySelector<Solution_> entitySelector, IterableValueSelector<Solution_> valueSelector,
             boolean randomSelection) {
@@ -56,7 +56,7 @@ public class ElementDestinationSelector<Solution_> extends AbstractSelector<Solu
         phaseLifecycleSupport.addEventListener(this.valueSelector);
     }
 
-    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
         return Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }

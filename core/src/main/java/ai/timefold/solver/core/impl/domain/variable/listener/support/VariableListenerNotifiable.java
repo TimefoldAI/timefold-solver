@@ -4,19 +4,22 @@ import java.util.Collection;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
  * A notifiable specialized to receive {@link BasicVariableNotification}s and trigger them on a given {@link VariableListener}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-final class VariableListenerNotifiable<Solution_> extends AbstractNotifiable<Solution_, VariableListener<Solution_, Object>> {
+final class VariableListenerNotifiable<Solution_> extends
+        AbstractNotifiable<Solution_, BasicVariableChangeEvent<Object>, InnerBasicVariableListener<Solution_, Object>> {
 
     VariableListenerNotifiable(
-            ScoreDirector<Solution_> scoreDirector,
-            VariableListener<Solution_, Object> variableListener,
-            Collection<Notification<Solution_, ? super VariableListener<Solution_, Object>>> notificationQueue,
+            InnerScoreDirector<Solution_, ?> scoreDirector,
+            InnerBasicVariableListener<Solution_, Object> variableListener,
+            Collection<Notification<Solution_, BasicVariableChangeEvent<Object>, InnerBasicVariableListener<Solution_, Object>>> notificationQueue,
             int globalOrder) {
         super(scoreDirector, variableListener, notificationQueue, globalOrder);
     }

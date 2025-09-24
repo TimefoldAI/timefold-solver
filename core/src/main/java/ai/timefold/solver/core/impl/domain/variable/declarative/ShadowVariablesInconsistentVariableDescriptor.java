@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
@@ -32,7 +31,7 @@ public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         return Collections.emptyList();
     }
 
@@ -42,7 +41,7 @@ public class ShadowVariablesInconsistentVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         return Collections.emptyList();
     }
 

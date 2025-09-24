@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable.custom;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -127,8 +128,8 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
-        return listenerClassToSourceDescriptorListMap.keySet();
+    public Collection<Class<?>> getVariableListenerClasses() {
+        return new HashSet<>(listenerClassToSourceDescriptorListMap.keySet());
     }
 
     // ************************************************************************
@@ -141,11 +142,21 @@ public final class CustomShadowVariableDescriptor<Solution_> extends ShadowVaria
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         return listenerClassToSourceDescriptorListMap.entrySet().stream().map(classListEntry -> {
             AbstractVariableListener<Solution_, Object> variableListener =
                     ConfigUtils.newInstance(this::toString, "variableListenerClass", classListEntry.getKey());
-            return new VariableListenerWithSources<>(variableListener, classListEntry.getValue());
+            return new VariableListenerWithSources(
+                    (variableListener instanceof ListVariableListener<?, ?, ?>)
+                            ? new LegacyCustomShadowVariableListVariableListener<>(entityDescriptor.getEntityClass(),
+                                    (ListVariableListener<Solution_, Object, Object>) variableListener)
+                            : new LegacyCustomShadowVariableBasicVariableListener<>(
+                                    classListEntry.getValue().stream()
+                                            .map(variableDescriptor -> variableDescriptor.getEntityDescriptor()
+                                                    .getEntityClass())
+                                            .toArray(Class[]::new),
+                                    (VariableListener) variableListener),
+                    classListEntry.getValue());
         }).collect(Collectors.toList());
     }
 

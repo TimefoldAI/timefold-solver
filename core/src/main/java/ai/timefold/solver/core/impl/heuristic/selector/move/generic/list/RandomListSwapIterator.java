@@ -15,11 +15,11 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelect
  */
 public class RandomListSwapIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final Iterator<Object> leftValueIterator;
     private final Iterator<Object> rightValueIterator;
 
-    public RandomListSwapIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    public RandomListSwapIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             IterableValueSelector<Solution_> leftValueSelector,
             IterableValueSelector<Solution_> rightValueSelector) {
         this.listVariableStateSupply = listVariableStateSupply;

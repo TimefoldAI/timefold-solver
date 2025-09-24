@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
@@ -10,16 +11,20 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-final class ExternalizedListVariableStateSupply<Solution_>
-        implements ListVariableStateSupply<Solution_> {
+@NullMarked
+final class ExternalizedListVariableStateSupply<Solution_, Entity_>
+        implements ListVariableStateSupply<Solution_, Entity_, Object> {
 
     private final ListVariableDescriptor<Solution_> sourceVariableDescriptor;
     private final ListVariableState<Solution_> listVariableState;
 
     private boolean previousExternalized = false;
     private boolean nextExternalized = false;
+
+    @Nullable
     private Solution_ workingSolution;
 
     public ExternalizedListVariableStateSupply(ListVariableDescriptor<Solution_> sourceVariableDescriptor) {
@@ -50,64 +55,27 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
         workingSolution = scoreDirector.getWorkingSolution();
-        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        listVariableState.initialize(innerScoreDirector, (int) innerScoreDirector.getValueRangeManager()
-                .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
+
         // Will run over all entities and unmark all present elements as unassigned.
-        sourceVariableDescriptor.getEntityDescriptor()
-                .visitAllEntities(workingSolution, this::insert);
-    }
-
-    private void insert(Object entity) {
-        var assignedElements = sourceVariableDescriptor.getValue(entity);
-        var index = 0;
-        for (var element : assignedElements) {
-            listVariableState.addElement(entity, assignedElements, element, index);
-            index++;
-        }
+        listVariableState.initialize(scoreDirector, (int) scoreDirector.getValueRangeManager()
+                .countOnSolution(sourceVariableDescriptor.getValueRangeDescriptor(), workingSolution));
     }
 
     @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
+    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListElementsChangeEvent<Entity_> changeEvent) {
         // No need to do anything.
     }
 
     @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert(entity);
-    }
+    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            ListElementsChangeEvent<Entity_> changeEvent) {
+        var entity = changeEvent.entity();
+        var fromIndex = changeEvent.changeStartIndexInclusive();
+        var toIndex = changeEvent.changeEndIndexExclusive();
 
-    @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // No need to do anything.
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // When the entity is removed, its values become unassigned.
-        // An unassigned value has no inverse entity and no index.
-        var assignedElements = sourceVariableDescriptor.getValue(entity);
-        for (var index = 0; index < assignedElements.size(); index++) {
-            listVariableState.removeElement(entity, assignedElements.get(index), index);
-        }
-    }
-
-    @Override
-    public void afterListVariableElementUnassigned(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object element) {
-        listVariableState.unassignElement(element);
-    }
-
-    @Override
-    public void beforeListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity,
-            int fromIndex, int toIndex) {
-        // No need to do anything.
-    }
-
-    @Override
-    public void afterListVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity, int fromIndex,
-            int toIndex) {
         var assignedElements = sourceVariableDescriptor.getValue(entity);
         var elementCount = assignedElements.size();
         // Include the last element of the previous part of the list, if any, for the next element shadow var.
@@ -127,17 +95,22 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
+    public void afterListElementUnassigned(InnerScoreDirector<Solution_, ?> scoreDirector, Object unassignedElement) {
+        listVariableState.unassignElement(unassignedElement);
+    }
+
+    @Override
     public ElementPosition getElementPosition(Object planningValue) {
         return listVariableState.getElementPosition(planningValue);
     }
 
     @Override
-    public Integer getIndex(Object planningValue) {
+    public @Nullable Integer getIndex(Object planningValue) {
         return listVariableState.getIndex(planningValue);
     }
 
     @Override
-    public Object getInverseSingleton(Object planningValue) {
+    public @Nullable Object getInverseSingleton(Object planningValue) {
         return listVariableState.getInverseSingleton(planningValue);
     }
 
@@ -153,7 +126,7 @@ final class ExternalizedListVariableStateSupply<Solution_>
         }
         var position = getElementPosition(element);
         if (position instanceof PositionInList assignedPosition) {
-            return sourceVariableDescriptor.isElementPinned(workingSolution, assignedPosition.entity(),
+            return sourceVariableDescriptor.isElementPinned(Objects.requireNonNull(workingSolution), assignedPosition.entity(),
                     assignedPosition.index());
         } else {
             return false;
@@ -166,12 +139,12 @@ final class ExternalizedListVariableStateSupply<Solution_>
     }
 
     @Override
-    public Object getPreviousElement(Object element) {
+    public @Nullable Object getPreviousElement(Object element) {
         return listVariableState.getPreviousElement(element);
     }
 
     @Override
-    public Object getNextElement(Object element) {
+    public @Nullable Object getNextElement(Object element) {
         return listVariableState.getNextElement(element);
     }
 

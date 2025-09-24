@@ -10,7 +10,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.CascadingUpdateShadowVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -141,7 +140,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         return Collections.emptyList();
     }
 
@@ -161,7 +160,7 @@ public final class CascadingUpdateShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         throw new UnsupportedOperationException("Cascade update element generates no listeners.");
     }
 

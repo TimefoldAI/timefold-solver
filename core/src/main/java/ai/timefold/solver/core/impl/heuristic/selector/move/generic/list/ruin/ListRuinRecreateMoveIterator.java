@@ -18,7 +18,7 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
     private final IterableValueSelector<Solution_> valueSelector;
     private final RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder;
     private final SolverScope<Solution_> solverScope;
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final int minimumRuinedCount;
     private final int maximumRuinedCount;
     private final Random workingRandom;
@@ -26,7 +26,8 @@ final class ListRuinRecreateMoveIterator<Solution_> extends UpcomingSelectionIte
     public ListRuinRecreateMoveIterator(IterableValueSelector<Solution_> valueSelector,
             RuinRecreateConstructionHeuristicPhaseBuilder<Solution_> constructionHeuristicPhaseBuilder,
             SolverScope<Solution_> solverScope,
-            ListVariableStateSupply<Solution_> listVariableStateSupply, int minimumRuinedCount, int maximumRuinedCount,
+            ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, int minimumRuinedCount,
+            int maximumRuinedCount,
             Random workingRandom) {
         this.valueSelector = valueSelector;
         this.constructionHeuristicPhaseBuilder = constructionHeuristicPhaseBuilder;

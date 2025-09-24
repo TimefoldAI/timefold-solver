@@ -699,7 +699,7 @@ class KOptListMoveTest {
     }
 
     private static <Node_> Function<Node_, Node_> getSuccessorFunction(ListVariableDescriptor<?> listVariableDescriptor,
-            ListVariableStateSupply<?> listVariableStateSupply) {
+            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         return (node) -> {
             var entity = listVariableStateSupply.getInverseSingleton(node);
             var valueList = (List<Node_>) listVariableDescriptor.getValue(entity);

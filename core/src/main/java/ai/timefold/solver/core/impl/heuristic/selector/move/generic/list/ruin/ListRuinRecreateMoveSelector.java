@@ -24,7 +24,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
     private final CountSupplier maximumSelectedCountSupplier;
 
     private SolverScope<Solution_> solverScope;
-    private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public ListRuinRecreateMoveSelector(IterableValueSelector<Solution_> valueSelector,
             ListVariableDescriptor<Solution_> listVariableDescriptor,
@@ -40,7 +40,7 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
         phaseLifecycleSupport.addEventListener(this.valueSelector);
     }
 
-    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
         return Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }

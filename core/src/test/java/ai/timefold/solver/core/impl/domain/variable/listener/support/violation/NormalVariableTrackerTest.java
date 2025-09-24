@@ -4,12 +4,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntity;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishEntityGroup;
-import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,16 +18,16 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingBeforeEvents() {
-        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
-        tracker.beforeVariableChanged(null, a);
-        tracker.afterVariableChanged(null, a);
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(a));
 
         // intentionally missing before event for b
-        tracker.afterVariableChanged(null, b);
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(b));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -37,16 +37,16 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingAfterEvents() {
-        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
-        tracker.beforeVariableChanged(null, a);
-        tracker.afterVariableChanged(null, a);
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(a));
 
         // intentionally missing after event for b
-        tracker.beforeVariableChanged(null, b);
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(b));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -56,13 +56,13 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testMissingBeforeAndAfterEvents() {
-        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
-        tracker.beforeVariableChanged(null, a);
-        tracker.afterVariableChanged(null, a);
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(a));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -73,15 +73,15 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testNoMissingEvents() {
-        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
-        tracker.beforeVariableChanged(null, a);
-        tracker.afterVariableChanged(null, a);
-        tracker.beforeVariableChanged(null, b);
-        tracker.afterVariableChanged(null, b);
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(b));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(b));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -90,15 +90,15 @@ public class NormalVariableTrackerTest {
 
     @Test
     void testEventsResetAfterCall() {
-        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataEntity b = new TestdataEntity("b");
+        var a = new TestdataEntity("a");
+        var b = new TestdataEntity("b");
 
-        tracker.beforeVariableChanged(null, a);
-        tracker.afterVariableChanged(null, a);
-        tracker.beforeVariableChanged(null, b);
-        tracker.afterVariableChanged(null, b);
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(b));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(b));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),
@@ -116,16 +116,15 @@ public class NormalVariableTrackerTest {
     @Test
     @SuppressWarnings({ "rawtypes", "unchecked" })
     void testDoesNotIncludeMissingEventsForOtherVariables() {
-
-        VariableTracker<TestdataSolution> tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
-        VariableDescriptor<TestdataLavishSolution> otherVariableDescriptor =
+        var tracker = new VariableTracker<>(VARIABLE_DESCRIPTOR);
+        var otherVariableDescriptor =
                 TestdataLavishEntity.buildVariableDescriptorForValue();
 
-        TestdataEntity a = new TestdataEntity("a");
-        TestdataLavishEntity b = new TestdataLavishEntity("b", new TestdataLavishEntityGroup("group"));
+        var a = new TestdataEntity("a");
+        var b = new TestdataLavishEntity("b", new TestdataLavishEntityGroup("group"));
 
-        tracker.beforeVariableChanged(null, a);
-        tracker.afterVariableChanged(null, a);
+        tracker.beforeChange(null, new BasicVariableChangeEvent<>(a));
+        tracker.afterChange(null, new BasicVariableChangeEvent<>(a));
 
         assertThat(tracker.getEntitiesMissingBeforeAfterEvents(List.of(
                 new VariableId<>(VARIABLE_DESCRIPTOR, a),

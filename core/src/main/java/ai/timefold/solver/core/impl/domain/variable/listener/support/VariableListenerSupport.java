@@ -22,6 +22,8 @@ import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.cascade.CascadingUpdateShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableBasicVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.custom.LegacyCustomShadowVariableListVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSession;
 import ai.timefold.solver.core.impl.domain.variable.declarative.DefaultShadowVariableSessionFactory;
@@ -79,7 +81,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     private ConsistencyTracker<Solution_> consistencyTracker = new ConsistencyTracker<>();
 
     @Nullable
-    private ListVariableStateSupply<Solution_> listVariableStateSupply = null;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply = null;
     private final List<ShadowVariableType> supportedShadowVariableTypeList;
 
     VariableListenerSupport(InnerScoreDirector<Solution_, ?> scoreDirector, NotifiableRegistry<Solution_> notifiableRegistry,
@@ -135,7 +137,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     }
 
     private void processShadowVariableDescriptorWithListVariable(ShadowVariableDescriptor<Solution_> shadowVariableDescriptor,
-            ListVariableStateSupply<Solution_> listVariableStateSupply) {
+            ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply) {
         if (shadowVariableDescriptor instanceof IndexShadowVariableDescriptor<Solution_> indexShadowVariableDescriptor) {
             listVariableStateSupply.externalize(indexShadowVariableDescriptor);
         } else if (shadowVariableDescriptor instanceof InverseRelationShadowVariableDescriptor<Solution_> inverseRelationShadowVariableDescriptor) {
@@ -185,8 +187,8 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
     @SuppressWarnings("unchecked")
     private Supply createSupply(Demand<?> demand) {
         var supply = demand.createExternalizedSupply(this);
-        if (supply instanceof SourcedVariableListener) {
-            var variableListener = (SourcedVariableListener<Solution_>) supply;
+        if (supply instanceof SourcedVariableListener<?, ?>) {
+            var variableListener = (SourcedVariableListener<Solution_, ?>) supply;
             // An external ScoreDirector can be created before the working solution is set
             if (scoreDirector.getWorkingSolution() != null) {
                 variableListener.resetWorkingSolution(scoreDirector);
@@ -251,31 +253,22 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         }
     }
 
+    public void resetWorkingSolutionWithoutUpdatingShadows() {
+        for (var notifiable : notifiableRegistry.getAll()) {
+            if (notifiable instanceof EntityNotifiable<?> entityNotifiable) {
+                if (!(entityNotifiable.getVariableListener() instanceof LegacyCustomShadowVariableBasicVariableListener
+                        || entityNotifiable.getVariableListener() instanceof LegacyCustomShadowVariableListVariableListener)) {
+                    notifiable.resetWorkingSolution();
+                }
+            } else {
+                notifiable.resetWorkingSolution();
+            }
+        }
+    }
+
     public void close() {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.closeVariableListener();
-        }
-    }
-
-    public void beforeEntityAdded(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        var notifiables = notifiableRegistry.get(entityDescriptor);
-        if (!notifiables.isEmpty()) {
-            EntityNotification<Solution_> notification = Notification.entityAdded(entity);
-            for (var notifiable : notifiables) {
-                notifiable.notifyBefore(notification);
-            }
-            notificationQueuesAreEmpty = false;
-        }
-    }
-
-    public void beforeEntityRemoved(EntityDescriptor<Solution_> entityDescriptor, Object entity) {
-        var notifiables = notifiableRegistry.get(entityDescriptor);
-        if (!notifiables.isEmpty()) {
-            EntityNotification<Solution_> notification = Notification.entityRemoved(entity);
-            for (var notifiable : notifiables) {
-                notifiable.notifyBefore(notification);
-            }
-            notificationQueuesAreEmpty = false;
         }
     }
 

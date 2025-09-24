@@ -4,50 +4,56 @@ import java.util.ArrayDeque;
 import java.util.Collection;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
-import ai.timefold.solver.core.api.domain.variable.ListVariableListener;
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.ChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.InnerListVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.util.ListBasedScalingOrderedSet;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Generic notifiable that receives and triggers {@link Notification}s for a specific variable listener of the type {@code T}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
- * @param <T> the variable listener type
+ * @param <Listener_> the variable listener type
  */
-abstract class AbstractNotifiable<Solution_, T extends AbstractVariableListener<Solution_, Object>>
+@NullMarked
+abstract class AbstractNotifiable<Solution_, ChangeEvent_ extends ChangeEvent, Listener_ extends InnerVariableListener<Solution_, ChangeEvent_>>
         implements EntityNotifiable<Solution_> {
 
-    private final ScoreDirector<Solution_> scoreDirector;
-    private final T variableListener;
-    private final Collection<Notification<Solution_, ? super T>> notificationQueue;
+    private final InnerScoreDirector<Solution_, ?> scoreDirector;
+    private final Listener_ variableListener;
+    private final Collection<Notification<Solution_, ChangeEvent_, Listener_>> notificationQueue;
     private final int globalOrder;
 
-    static <Solution_> EntityNotifiable<Solution_> buildNotifiable(
-            ScoreDirector<Solution_> scoreDirector,
-            AbstractVariableListener<Solution_, Object> variableListener,
-            int globalOrder) {
-        if (variableListener instanceof ListVariableListener) {
-            return new ListVariableListenerNotifiable<>(
-                    scoreDirector,
-                    ((ListVariableListener<Solution_, Object, Object>) variableListener),
-                    new ArrayDeque<>(), globalOrder);
-        } else {
-            var basicVariableListener = (VariableListener<Solution_, Object>) variableListener;
+    static <Solution_, ChangeEvent_ extends ChangeEvent, Listener_ extends InnerVariableListener<Solution_, ChangeEvent_>>
+            EntityNotifiable<Solution_> buildNotifiable(
+                    InnerScoreDirector<Solution_, ?> scoreDirector,
+                    Listener_ variableListener,
+                    int globalOrder) {
+        if (variableListener instanceof InnerBasicVariableListener<?, ?> basicVariableListener) {
             return new VariableListenerNotifiable<>(
                     scoreDirector,
-                    basicVariableListener,
-                    basicVariableListener.requiresUniqueEntityEvents()
-                            ? new ListBasedScalingOrderedSet<>()
-                            : new ArrayDeque<>(),
+                    (InnerBasicVariableListener<Solution_, Object>) basicVariableListener,
+                    variableListener.requiresUniqueEntityEvents() ? new ListBasedScalingOrderedSet<>() : new ArrayDeque<>(),
                     globalOrder);
+        } else if (variableListener instanceof InnerListVariableListener<?, ?, ?> listVariableListener) {
+            return new ListVariableListenerNotifiable<>(
+                    scoreDirector,
+                    (InnerListVariableListener<Solution_, Object, Object>) listVariableListener,
+                    new ArrayDeque<>(), globalOrder);
+        } else {
+            throw new IllegalArgumentException("Impossible state: InnerVariableListener (%s) must be an instance of %s or %s."
+                    .formatted(variableListener.getClass().getCanonicalName(), InnerBasicVariableListener.class.getSimpleName(),
+                            InnerListVariableListener.class.getSimpleName()));
         }
     }
 
-    AbstractNotifiable(ScoreDirector<Solution_> scoreDirector,
-            T variableListener,
-            Collection<Notification<Solution_, ? super T>> notificationQueue,
+    AbstractNotifiable(InnerScoreDirector<Solution_, ?> scoreDirector,
+            Listener_ variableListener,
+            Collection<Notification<Solution_, ChangeEvent_, Listener_>> notificationQueue,
             int globalOrder) {
         this.scoreDirector = scoreDirector;
         this.variableListener = variableListener;
@@ -56,17 +62,15 @@ abstract class AbstractNotifiable<Solution_, T extends AbstractVariableListener<
     }
 
     @Override
-    public void notifyBefore(EntityNotification<Solution_> notification) {
-        if (notificationQueue.add(notification)) {
-            notification.triggerBefore(variableListener, scoreDirector);
-        }
+    public InnerVariableListener<Solution_, ?> getVariableListener() {
+        return variableListener;
     }
 
-    protected boolean storeForLater(Notification<Solution_, T> notification) {
+    protected boolean storeForLater(Notification<Solution_, ChangeEvent_, Listener_> notification) {
         return notificationQueue.add(notification);
     }
 
-    protected void triggerBefore(Notification<Solution_, T> notification) {
+    protected void triggerBefore(Notification<Solution_, ChangeEvent_, Listener_> notification) {
         notification.triggerBefore(variableListener, scoreDirector);
     }
 

@@ -27,7 +27,7 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     private final int[] pickedKDistribution;
 
-    private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public KOptListMoveSelector(ListVariableDescriptor<Solution_> listVariableDescriptor,
             IterableValueSelector<Solution_> originSelector, IterableValueSelector<Solution_> valueSelector,
@@ -45,13 +45,13 @@ final class KOptListMoveSelector<Solution_> extends GenericMoveSelector<Solution
 
     private IterableValueSelector<Solution_> createEffectiveValueSelector(
             IterableValueSelector<Solution_> iterableValueSelector,
-            Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
+            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
         var filteredValueSelector =
                 filterPinnedListPlanningVariableValuesWithIndex(iterableValueSelector, listVariableStateSupplier);
         return FilteringValueSelector.ofAssigned(filteredValueSelector, listVariableStateSupplier);
     }
 
-    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
         return Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }

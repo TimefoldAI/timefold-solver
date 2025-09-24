@@ -68,7 +68,7 @@ final class MultipleDelegateList<T> implements List<T>, RandomAccess {
         }
     }
 
-    public int getIndexOfValue(ListVariableStateSupply<?> listVariableStateSupply, Object value) {
+    public int getIndexOfValue(ListVariableStateSupply<?, Object, Object> listVariableStateSupply, Object value) {
         var elementPosition = listVariableStateSupply.getElementPosition(value)
                 .ensureAssigned(() -> "Value (" + value + ") is not contained in any entity list");
         var entity = elementPosition.entity();

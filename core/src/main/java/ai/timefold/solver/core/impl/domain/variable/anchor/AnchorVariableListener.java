@@ -1,18 +1,21 @@
 package ai.timefold.solver.core.impl.domain.variable.anchor;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
-public class AnchorVariableListener<Solution_> implements VariableListener<Solution_, Object>, AnchorVariableSupply {
+@NullMarked
+public class AnchorVariableListener<Solution_, Entity_> implements
+        InnerBasicVariableListener<Solution_, Entity_>, AnchorVariableSupply {
 
     protected final AnchorShadowVariableDescriptor<Solution_> anchorShadowVariableDescriptor;
     protected final VariableDescriptor<Solution_> previousVariableDescriptor;
@@ -27,33 +30,15 @@ public class AnchorVariableListener<Solution_> implements VariableListener<Solut
     }
 
     @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
-    }
-
-    @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert((InnerScoreDirector<Solution_, ?>) scoreDirector, entity);
-    }
-
-    @Override
-    public void beforeVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
+    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Entity_> event) {
         // No need to retract() because the insert (which is guaranteed to be called later) affects the same trailing entities.
     }
 
     @Override
-    public void afterVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert((InnerScoreDirector<Solution_, ?>) scoreDirector, entity);
-    }
-
-    @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // No need to retract() because the trailing entities will be removed too or change their previousVariable
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
+    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Entity_> event) {
+        insert(scoreDirector, event.entity());
     }
 
     protected void insert(InnerScoreDirector<Solution_, ?> scoreDirector, Object entity) {
@@ -80,4 +65,10 @@ public class AnchorVariableListener<Solution_> implements VariableListener<Solut
         return anchorShadowVariableDescriptor.getValue(entity);
     }
 
+    @Override
+    public void resetWorkingSolution(InnerScoreDirector<Solution_, ?> scoreDirector) {
+        InnerVariableListener.forEachEntity(scoreDirector,
+                anchorShadowVariableDescriptor.getEntityDescriptor().getEntityClass(),
+                entity -> insert(scoreDirector, entity));
+    }
 }

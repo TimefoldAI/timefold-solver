@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.variable;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -145,9 +146,8 @@ class ListVariableListenerTest {
         assertEmptyNextHistory(c);
 
         // Remove Ann.
-        scoreDirector.beforeEntityRemoved(ann);
-        scoreDirector.afterEntityRemoved(ann);
-        scoreDirector.triggerVariableListeners();
+        scoreDirector.getWorkingSolution().setEntityList(Collections.emptyList());
+        scoreDirector.setWorkingSolution(scoreDirector.getWorkingSolution());
 
         // Assert inverse entity.
         assertEntityHistory(a, ann, null);

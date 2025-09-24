@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.IndexShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -92,7 +91,7 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }
@@ -104,7 +103,7 @@ public final class IndexShadowVariableDescriptor<Solution_> extends ShadowVariab
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         throw new UnsupportedOperationException("Impossible state: Handled by %s."
                 .formatted(ListVariableStateSupply.class.getSimpleName()));
     }

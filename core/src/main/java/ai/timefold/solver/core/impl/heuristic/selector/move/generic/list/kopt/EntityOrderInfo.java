@@ -9,7 +9,8 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 
 record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityIndex, int[] offsets) {
 
-    public static <Node_> EntityOrderInfo of(Node_[] pickedValues, ListVariableStateSupply<?> listVariableStateSupply) {
+    public static <Node_> EntityOrderInfo of(Node_[] pickedValues,
+            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var entityToEntityIndex = new IdentityHashMap<Object, Integer>();
         for (var i = 1; i < pickedValues.length && pickedValues[i] != null; i++) {
@@ -32,7 +33,7 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
         return new EntityOrderInfo(entities, entityToEntityIndex, offsets);
     }
 
-    public <Node_> EntityOrderInfo withNewNode(Node_ node, ListVariableStateSupply<?> listVariableStateSupply) {
+    public <Node_> EntityOrderInfo withNewNode(Node_ node, ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var entity = listVariableStateSupply.getInverseSingleton(node);
         if (entityToEntityIndex.containsKey(entity)) {
             return this;
@@ -51,7 +52,7 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     }
 
     @SuppressWarnings("unchecked")
-    public <Node_> Node_ successor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
+    public <Node_> Node_ successor(Node_ object, ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var elementPosition = listVariableStateSupply.getElementPosition(object)
                 .ensureAssigned();
@@ -69,7 +70,7 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
     }
 
     @SuppressWarnings("unchecked")
-    public <Node_> Node_ predecessor(Node_ object, ListVariableStateSupply<?> listVariableStateSupply) {
+    public <Node_> Node_ predecessor(Node_ object, ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var elementPosition = listVariableStateSupply.getElementPosition(object)
                 .ensureAssigned();
@@ -86,7 +87,8 @@ record EntityOrderInfo(Object[] entities, Map<Object, Integer> entityToEntityInd
         }
     }
 
-    public <Node_> boolean between(Node_ start, Node_ middle, Node_ end, ListVariableStateSupply<?> listVariableStateSupply) {
+    public <Node_> boolean between(Node_ start, Node_ middle, Node_ end,
+            ListVariableStateSupply<?, Object, Object> listVariableStateSupply) {
         var startElementPosition = listVariableStateSupply.getElementPosition(start)
                 .ensureAssigned();
         var middleElementPosition = listVariableStateSupply.getElementPosition(middle)

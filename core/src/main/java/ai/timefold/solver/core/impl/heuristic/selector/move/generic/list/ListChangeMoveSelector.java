@@ -20,7 +20,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
     private final DestinationSelector<Solution_> destinationSelector;
     private final boolean randomSelection;
 
-    private ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
 
     public ListChangeMoveSelector(IterableValueSelector<Solution_> sourceValueSelector,
             DestinationSelector<Solution_> destinationSelector, boolean randomSelection) {
@@ -32,7 +32,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
         phaseLifecycleSupport.addEventListener(this.destinationSelector);
     }
 
-    private ListVariableStateSupply<Solution_> getListVariableStateSupply() {
+    private ListVariableStateSupply<Solution_, Object, Object> getListVariableStateSupply() {
         return Objects.requireNonNull(listVariableStateSupply,
                 "Impossible state: The listVariableStateSupply is not initialized yet.");
     }
@@ -47,7 +47,7 @@ public class ListChangeMoveSelector<Solution_> extends GenericMoveSelector<Solut
 
     public static <Solution_> IterableValueSelector<Solution_> filterPinnedListPlanningVariableValuesWithIndex(
             IterableValueSelector<Solution_> sourceValueSelector,
-            Supplier<ListVariableStateSupply<Solution_>> listVariableStateSupplier) {
+            Supplier<ListVariableStateSupply<Solution_, Object, Object>> listVariableStateSupplier) {
         var listVariableDescriptor = (ListVariableDescriptor<Solution_>) sourceValueSelector.getVariableDescriptor();
         var supportsPinning = listVariableDescriptor.supportsPinning();
         if (!supportsPinning) {

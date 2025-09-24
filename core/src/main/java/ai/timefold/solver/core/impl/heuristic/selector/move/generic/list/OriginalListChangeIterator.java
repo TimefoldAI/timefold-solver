@@ -19,14 +19,14 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
  */
 public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIterator<Move<Solution_>> {
 
-    private final ListVariableStateSupply<Solution_> listVariableStateSupply;
+    private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
     private final Iterator<Object> valueIterator;
     private final DestinationSelector<Solution_> destinationSelector;
     private Iterator<ElementPosition> destinationIterator;
 
     private Object upcomingValue;
 
-    public OriginalListChangeIterator(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    public OriginalListChangeIterator(ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             IterableValueSelector<Solution_> valueSelector, DestinationSelector<Solution_> destinationSelector) {
         this.listVariableStateSupply = listVariableStateSupply;
         this.valueIterator = valueSelector.iterator();
@@ -51,7 +51,8 @@ public class OriginalListChangeIterator<Solution_> extends UpcomingSelectionIter
         }
     }
 
-    static <Solution_> Move<Solution_> buildChangeMove(ListVariableStateSupply<Solution_> listVariableStateSupply,
+    static <Solution_> Move<Solution_> buildChangeMove(
+            ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply,
             Object upcomingLeftValue, Iterator<ElementPosition> destinationIterator) {
         var listVariableDescriptor = listVariableStateSupply.getSourceVariableDescriptor();
         var upcomingDestination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);

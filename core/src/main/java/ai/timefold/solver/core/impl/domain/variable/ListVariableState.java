@@ -64,6 +64,52 @@ final class ListVariableState<Solution_> {
         } else {
             elementPositionMap = null;
         }
+
+        // If the elements have any shadows, set them to null if no entity has their values
+        // We do not want to do this eagerly, since variable listener events are not triggered.
+        var shouldUnassignElements =
+                !scoreDirector.expectShadowVariablesInCorrectState() && (externalizedIndexProcessor != null ||
+                        externalizedInverseProcessor != null ||
+                        externalizedPreviousElementProcessor != null ||
+                        externalizedNextElementProcessor != null);
+        var unassignedValueSet = CollectionUtils.newIdentityHashSet(initialUnassignedCount);
+
+        if (shouldUnassignElements) {
+            for (var unassignedValue : (Iterable<Object>) scoreDirector.getValueRangeManager().getFromSolution(
+                    sourceVariableDescriptor.getValueRangeDescriptor(),
+                    scoreDirector.getWorkingSolution())::createOriginalIterator) {
+                unassignedValueSet.add(unassignedValue);
+            }
+        }
+
+        // elements must be added even if we are not updating shadows
+        sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(
+                scoreDirector.getWorkingSolution(), entity -> {
+                    var index = 0;
+                    var assignedElements = sourceVariableDescriptor.getValue(entity);
+                    for (var element : assignedElements) {
+                        addElement(entity, assignedElements, element, index);
+                        unassignedValueSet.remove(element);
+                        index++;
+                    }
+                });
+
+        if (shouldUnassignElements) {
+            for (var unassignedValue : unassignedValueSet) {
+                if (externalizedIndexProcessor != null) {
+                    externalizedIndexProcessor.unassignElement(scoreDirector, unassignedValue);
+                }
+                if (externalizedInverseProcessor != null) {
+                    externalizedInverseProcessor.unassignElement(scoreDirector, unassignedValue);
+                }
+                if (externalizedNextElementProcessor != null) {
+                    externalizedNextElementProcessor.unsetElement(scoreDirector, unassignedValue);
+                }
+                if (externalizedPreviousElementProcessor != null) {
+                    externalizedPreviousElementProcessor.unsetElement(scoreDirector, unassignedValue);
+                }
+            }
+        }
     }
 
     public void addElement(Object entity, List<Object> elements, Object element, int index) {

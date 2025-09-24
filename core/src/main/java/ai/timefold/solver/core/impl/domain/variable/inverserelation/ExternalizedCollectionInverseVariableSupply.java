@@ -6,10 +6,10 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.listener.SourcedVariableListener;
+import ai.timefold.solver.core.impl.domain.variable.listener.SourcedBasicVariableListener;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 import org.jspecify.annotations.NonNull;
 
@@ -17,8 +17,7 @@ import org.jspecify.annotations.NonNull;
  * Alternative to {@link CollectionInverseVariableListener}.
  */
 public class ExternalizedCollectionInverseVariableSupply<Solution_> implements
-        SourcedVariableListener<Solution_>,
-        VariableListener<Solution_, Object>,
+        SourcedBasicVariableListener<Solution_, Object>,
         CollectionInverseVariableSupply {
 
     protected final VariableDescriptor<Solution_> sourceVariableDescriptor;
@@ -35,44 +34,26 @@ public class ExternalizedCollectionInverseVariableSupply<Solution_> implements
     }
 
     @Override
-    public void resetWorkingSolution(@NonNull ScoreDirector<Solution_> scoreDirector) {
+    public void resetWorkingSolution(@NonNull InnerScoreDirector<Solution_, ?> scoreDirector) {
         inverseEntitySetMap = new IdentityHashMap<>();
         sourceVariableDescriptor.getEntityDescriptor().visitAllEntities(scoreDirector.getWorkingSolution(), this::insert);
     }
 
     @Override
+    public void beforeChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Object> event) {
+        retract(event.entity());
+    }
+
+    @Override
+    public void afterChange(InnerScoreDirector<Solution_, ?> scoreDirector,
+            BasicVariableChangeEvent<Object> event) {
+        insert(event.entity());
+    }
+
+    @Override
     public void close() {
         inverseEntitySetMap = null;
-    }
-
-    @Override
-    public void beforeEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
-    }
-
-    @Override
-    public void afterEntityAdded(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert(entity);
-    }
-
-    @Override
-    public void beforeVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        retract(entity);
-    }
-
-    @Override
-    public void afterVariableChanged(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        insert(entity);
-    }
-
-    @Override
-    public void beforeEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        retract(entity);
-    }
-
-    @Override
-    public void afterEntityRemoved(@NonNull ScoreDirector<Solution_> scoreDirector, @NonNull Object entity) {
-        // Do nothing
     }
 
     protected void insert(Object entity) {

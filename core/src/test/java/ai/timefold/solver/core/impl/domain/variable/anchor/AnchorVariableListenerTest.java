@@ -9,6 +9,7 @@ import java.util.Arrays;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
@@ -39,9 +40,10 @@ class AnchorVariableListenerTest {
                         entityDescriptor.getGenuineVariableDescriptor("chainedObject"));
         ShadowVariableDescriptor<TestdataShadowingChainedSolution> anchorVariableDescriptor =
                 entityDescriptor.getShadowVariableDescriptor("anchor");
-        AnchorVariableListener<TestdataShadowingChainedSolution> variableListener = new AnchorVariableListener<>(
-                (AnchorShadowVariableDescriptor<TestdataShadowingChainedSolution>) anchorVariableDescriptor,
-                chainedObjectVariableDescriptor, inverseVariableListener);
+        AnchorVariableListener<TestdataShadowingChainedSolution, Object> variableListener =
+                new AnchorVariableListener<>(
+                        (AnchorShadowVariableDescriptor<TestdataShadowingChainedSolution>) anchorVariableDescriptor,
+                        chainedObjectVariableDescriptor, inverseVariableListener);
         InnerScoreDirector<TestdataShadowingChainedSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
 
         TestdataShadowingChainedAnchor a0 = new TestdataShadowingChainedAnchor("a0");
@@ -69,11 +71,12 @@ class AnchorVariableListenerTest {
         assertThat(a3.getAnchor()).isSameAs(a0);
         assertThat(b1.getAnchor()).isSameAs(b0);
 
-        inverseVariableListener.beforeVariableChanged(scoreDirector, a3);
-        variableListener.beforeVariableChanged(scoreDirector, a3);
+        var event = new BasicVariableChangeEvent<Object>(a3);
+        inverseVariableListener.beforeChange(scoreDirector, event);
+        variableListener.beforeChange(scoreDirector, event);
         a3.setChainedObject(b1);
-        inverseVariableListener.afterVariableChanged(scoreDirector, a3);
-        variableListener.afterVariableChanged(scoreDirector, a3);
+        inverseVariableListener.afterChange(scoreDirector, event);
+        variableListener.afterChange(scoreDirector, event);
 
         assertThat(a1.getAnchor()).isSameAs(a0);
         assertThat(a2.getAnchor()).isSameAs(a0);

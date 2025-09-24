@@ -6,8 +6,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Arrays;
 
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
@@ -20,7 +21,7 @@ class ExternalizedSingletonInverseVariableSupplyTest {
     void chainedEntity() {
         GenuineVariableDescriptor<TestdataChainedSolution> variableDescriptor =
                 TestdataChainedEntity.buildVariableDescriptorForChainedObject();
-        ScoreDirector<TestdataChainedSolution> scoreDirector = mock(ScoreDirector.class);
+        var scoreDirector = mock(InnerScoreDirector.class);
         ExternalizedSingletonInverseVariableSupply<TestdataChainedSolution> supply =
                 new ExternalizedSingletonInverseVariableSupply<>(variableDescriptor);
 
@@ -46,9 +47,9 @@ class ExternalizedSingletonInverseVariableSupplyTest {
         assertThat(supply.getInverseSingleton(b0)).isSameAs(b1);
         assertThat(supply.getInverseSingleton(b1)).isSameAs(null);
 
-        supply.beforeVariableChanged(scoreDirector, a3);
+        supply.beforeChange(scoreDirector, new BasicVariableChangeEvent<>(a3));
         a3.setChainedObject(b1);
-        supply.afterVariableChanged(scoreDirector, a3);
+        supply.afterChange(scoreDirector, new BasicVariableChangeEvent<>(a3));
 
         assertThat(supply.getInverseSingleton(a2)).isSameAs(null);
         assertThat(supply.getInverseSingleton(b1)).isSameAs(a3);

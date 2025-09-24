@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.AbstractVariableListener;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -15,6 +14,8 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
+import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -134,7 +135,7 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Collection<Class<? extends AbstractVariableListener>> getVariableListenerClasses() {
+    public Collection<Class<?>> getVariableListenerClasses() {
         if (singleton) {
             if (chained) {
                 return Collections.singleton(SingletonInverseVariableListener.class);
@@ -166,11 +167,11 @@ public final class InverseRelationShadowVariableDescriptor<Solution_> extends Sh
     }
 
     @Override
-    public Iterable<VariableListenerWithSources<Solution_>> buildVariableListeners(SupplyManager supplyManager) {
+    public Iterable<VariableListenerWithSources> buildVariableListeners(SupplyManager supplyManager) {
         return new VariableListenerWithSources<>(buildVariableListener(), sourceVariableDescriptor).toCollection();
     }
 
-    private AbstractVariableListener<Solution_, Object> buildVariableListener() {
+    private InnerVariableListener<Solution_, BasicVariableChangeEvent<Object>> buildVariableListener() {
         if (singleton) {
             if (chained) {
                 return new SingletonInverseVariableListener<>(this, sourceVariableDescriptor);
