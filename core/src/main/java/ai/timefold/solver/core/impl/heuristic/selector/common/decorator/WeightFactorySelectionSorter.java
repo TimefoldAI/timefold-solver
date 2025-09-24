@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
+import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -15,17 +16,17 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 
 /**
- * Sorts a selection {@link List} based on a {@link SelectionSorterWeightFactory}.
+ * Sorts a selection {@link List} based on a {@link SorterWeightFactory}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
 public final class WeightFactorySelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
-    private final SelectionSorterWeightFactory<Solution_, T> selectionSorterWeightFactory;
+    private final SorterWeightFactory<Solution_, T> selectionSorterWeightFactory;
     private final Comparator<Comparable> appliedWeightComparator;
 
-    public WeightFactorySelectionSorter(SelectionSorterWeightFactory<Solution_, T> selectionSorterWeightFactory,
+    public WeightFactorySelectionSorter(SorterWeightFactory<Solution_, T> selectionSorterWeightFactory,
             SelectionSorterOrder selectionSorterOrder) {
         this.selectionSorterWeightFactory = selectionSorterWeightFactory;
         switch (selectionSorterOrder) {
