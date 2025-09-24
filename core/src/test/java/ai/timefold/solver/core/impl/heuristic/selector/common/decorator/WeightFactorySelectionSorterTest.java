@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import java.util.ArrayList;
 import java.util.List;
 
+import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -17,7 +18,7 @@ class WeightFactorySelectionSorterTest {
 
     @Test
     void sortAscending() {
-        SelectionSorterWeightFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
+        SorterWeightFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
         WeightFactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new WeightFactorySelectionSorter<>(
                 weightFactory, SelectionSorterOrder.ASCENDING);
@@ -33,7 +34,7 @@ class WeightFactorySelectionSorterTest {
 
     @Test
     void sortDescending() {
-        SelectionSorterWeightFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
+        SorterWeightFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
         WeightFactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new WeightFactorySelectionSorter<>(
                 weightFactory, SelectionSorterOrder.DESCENDING);
