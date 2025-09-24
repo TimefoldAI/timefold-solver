@@ -1,6 +1,5 @@
-package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
+package ai.timefold.solver.core.api.domain.common;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -19,8 +18,14 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
-@Deprecated(forRemoval = true, since = "1.27.0")
 @FunctionalInterface
-public interface SelectionSorterWeightFactory<Solution_, T> extends SorterWeightFactory<Solution_, T> {
+public interface SorterWeightFactory<Solution_, T> {
+
+    /**
+     * @param solution never null, the {@link PlanningSolution} to which the selection belongs or applies to
+     * @param selection never null, a {@link PlanningEntity}, a planningValue, a {@link Move} or a {@link Selector}
+     * @return never null, for example a {@link Integer}, {@link Double} or a more complex {@link Comparable}
+     */
+    Comparable createSorterWeight(Solution_ solution, T selection);
 
 }
