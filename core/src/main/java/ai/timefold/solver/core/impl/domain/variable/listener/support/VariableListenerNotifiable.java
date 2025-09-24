@@ -3,13 +3,13 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 import java.util.Collection;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.variable.BasicVariableChangeEvent;
 import ai.timefold.solver.core.impl.domain.variable.InnerBasicVariableListener;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 
 /**
- * A notifiable specialized to receive {@link BasicVariableNotification}s and trigger them on a given {@link VariableListener}.
+ * A notifiable specialized to receive {@link BasicVariableNotification}s and trigger them on a given
+ * {@link InnerBasicVariableListener}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
