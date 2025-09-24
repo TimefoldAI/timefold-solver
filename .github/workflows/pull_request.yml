@@ -32,9 +32,9 @@ jobs:
           - os: ubuntu-24.04-arm
             java-version: 17
           - os: ubuntu-latest
-            java-version: 25
+            java-version: 21
           - os: ubuntu-24.04-arm
-            java-version: 25
+            java-version: 21
     timeout-minutes: 120
     steps:
       - uses: actions/checkout@v5
