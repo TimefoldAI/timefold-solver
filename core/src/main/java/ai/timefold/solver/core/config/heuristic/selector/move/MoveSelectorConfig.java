@@ -7,6 +7,7 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 
+import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -33,7 +34,6 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -82,7 +82,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     protected Class<? extends SelectionFilter> filterClass = null;
 
     protected Class<? extends Comparator> sorterComparatorClass = null;
-    protected Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends SorterWeightFactory> sorterWeightFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -128,11 +128,11 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public @Nullable Class<? extends SelectionSorterWeightFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends SorterWeightFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(@Nullable Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterWeightFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
@@ -202,7 +202,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     public @NonNull Config_ withSorterWeightFactoryClass(
-            @NonNull Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
+            @NonNull Class<? extends SorterWeightFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
         return (Config_) this;
     }

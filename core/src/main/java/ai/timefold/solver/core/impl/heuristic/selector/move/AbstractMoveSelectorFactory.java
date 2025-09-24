@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -14,7 +15,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Comparat
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.CachingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
@@ -195,7 +195,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterWeightFactoryClass != null) {
-                SelectionSorterWeightFactory<Solution_, Move<Solution_>> sorterWeightFactory =
+                SorterWeightFactory<Solution_, Move<Solution_>> sorterWeightFactory =
                         ConfigUtils.newInstance(config, "sorterWeightFactoryClass", sorterWeightFactoryClass);
                 sorter = new WeightFactorySelectionSorter<>(sorterWeightFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
