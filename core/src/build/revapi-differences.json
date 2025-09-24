@@ -378,6 +378,21 @@
           "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterWeightFactory>===)",
           "parameterIndex": "0",
           "justification": "New weight factory base class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::getSorterWeightFactoryClass()",
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::getSorterWeightFactoryClass()",
+          "justification": "New weight factory base class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterWeightFactory>===)",
+          "parameterIndex": "0",
+          "justification": "New weight factory base class"
         }
       ]
     }
