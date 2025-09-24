@@ -70,7 +70,7 @@ jobs:
       - name: Build and test timefold-quickstarts
         working-directory: ./timefold-quickstarts
         shell: bash
-        run: ./mvnw -B clean verify
+        run: mvn -B clean verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
