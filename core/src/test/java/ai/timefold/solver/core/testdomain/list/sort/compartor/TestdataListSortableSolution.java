@@ -7,7 +7,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
@@ -35,7 +35,7 @@ public class TestdataListSortableSolution {
 
     private List<TestdataListSortableValue> valueList;
     private List<TestdataListSortableEntity> entityList;
-    private SimpleScore score;
+    private HardSoftScore score;
 
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty
@@ -57,11 +57,11 @@ public class TestdataListSortableSolution {
     }
 
     @PlanningScore
-    public SimpleScore getScore() {
+    public HardSoftScore getScore() {
         return score;
     }
 
-    public void setScore(SimpleScore score) {
+    public void setScore(HardSoftScore score) {
         this.score = score;
     }
 
