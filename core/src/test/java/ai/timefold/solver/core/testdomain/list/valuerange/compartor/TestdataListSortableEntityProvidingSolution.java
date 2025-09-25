@@ -9,7 +9,7 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
+import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
@@ -41,7 +41,7 @@ public class TestdataListSortableEntityProvidingSolution {
     }
 
     private List<TestdataListSortableEntityProvidingEntity> entityList;
-    private SimpleScore score;
+    private HardSoftScore score;
 
     @PlanningEntityCollectionProperty
     public List<TestdataListSortableEntityProvidingEntity> getEntityList() {
@@ -53,11 +53,11 @@ public class TestdataListSortableEntityProvidingSolution {
     }
 
     @PlanningScore
-    public SimpleScore getScore() {
+    public HardSoftScore getScore() {
         return score;
     }
 
-    public void setScore(SimpleScore score) {
+    public void setScore(HardSoftScore score) {
         this.score = score;
     }
 
