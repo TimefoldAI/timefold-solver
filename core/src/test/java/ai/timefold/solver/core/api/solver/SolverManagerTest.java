@@ -17,7 +17,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +50,7 @@ import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
+import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -627,37 +627,26 @@ class SolverManagerTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withTerminationConfig(terminationConfig);
 
-        try (var clockStaticMock = Mockito.mockStatic(Clock.class)) {
-            var TIME_SPENT = 50L;
-            var clock = Mockito.mock(Clock.class);
-            // SolverConfig creates a clock from systemDefaultZone
-            clockStaticMock.when(Clock::systemDefaultZone).thenReturn(clock);
-            // UnimprovedSpentLimit creates a clock from systemUTC
-            clockStaticMock.when(Clock::systemUTC).thenReturn(clock);
-            // UnimprovedSpentLimit calls this to get the current time, if the phase
-            // send best solution event. If the phase does not send best solution event,
-            // it always returns 0.0.
-            doReturn(TIME_SPENT).when(clock).millis();
+        try (var terminationFactory = Mockito.mockStatic(TerminationFactory.class)) {
+            terminationFactory.when(() -> TerminationFactory.create(any())).thenCallRealMethod();
             try (var solverManager = createDefaultSolverManager(solverConfig)) {
                 var problem = PlannerTestUtils.generateTestdataSolution("s1");
-
-                SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
-                doReturn(TIME_SPENT).when(solverScope).calculateTimeMillisSpentUpToNow();
-                doReturn(TIME_SPENT).when(solverScope).getBestSolutionTimeMillis();
-
                 // Override unimproved spent limit to 500 milliseconds, keep the longer spent limit
                 var configOverride = new SolverConfigOverride<TestdataSolution>()
                         .withTerminationUnimprovedSpentLimit(Duration.ofMillis(500L));
 
-                var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                // create a job so we can see the passed termination
+                solverManager.solveBuilder()
                         .withProblemId(1L)
                         .withProblem(problem)
                         .withConfigOverride(configOverride)
                         .run();
 
-                assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.0);
-                assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isNotNull();
-                assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isEqualTo(Duration.ofMillis(500L));
+                var configOverrideTerminationConfig = configOverride.getTerminationConfig();
+                // spent limit is null since the override did not specify one
+                assertThat(configOverrideTerminationConfig.getSpentLimit()).isNull();
+                assertThat(configOverrideTerminationConfig.getUnimprovedSpentLimit()).isEqualTo(Duration.ofMillis(500L));
+                terminationFactory.verify(() -> TerminationFactory.create(configOverrideTerminationConfig));
             }
         }
     }
