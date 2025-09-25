@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.lookup.LookUpStrategyType;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -15,7 +16,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * Allows external changes to the {@link PlanningSolution working solution}. If the changes are not applied through
  * the ProblemChangeDirector,
- * {@link ai.timefold.solver.core.api.domain.variable.VariableListener both internal and custom variable listeners} are
+ * {@link ShadowVariable both internal and custom shadow variables} are
  * never notified about them, resulting to inconsistencies in the {@link PlanningSolution working solution}.
  * Should be used only from a {@link ProblemChange} implementation.
  * To see an example implementation, please refer to the {@link ProblemChange} Javadoc.

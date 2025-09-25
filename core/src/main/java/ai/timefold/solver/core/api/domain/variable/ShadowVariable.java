@@ -48,7 +48,10 @@ public @interface ShadowVariable {
      *
      * @return {@link NullVariableListener} when the attribute is omitted (workaround for annotation limitation).
      *         The variable listener class that computes the value of this shadow variable.
+     *
+     * @deprecated Use a {@link ShadowVariable#supplierName() supplier} with {@link ShadowSources sources} instead.
      */
+    @Deprecated(since = "1.27.0", forRemoval = true)
     Class<? extends AbstractVariableListener> variableListenerClass() default NullVariableListener.class;
 
     /**
@@ -60,7 +63,10 @@ public @interface ShadowVariable {
      *
      * @return {@link NullEntityClass} when the attribute is omitted (workaround for annotation limitation).
      *         Defaults to the same {@link Class} as the one that uses this annotation.
+     *
+     * @deprecated Use a {@link ShadowVariable#supplierName() supplier} with {@link ShadowSources sources} instead.
      */
+    @Deprecated(since = "1.27.0", forRemoval = true)
     Class<?> sourceEntityClass() default NullEntityClass.class;
 
     /**
@@ -69,7 +75,10 @@ public @interface ShadowVariable {
      * Must not be set if {@link #supplierName()} is set.
      *
      * @return never null, a genuine or shadow variable name
+     *
+     * @deprecated Use a {@link ShadowVariable#supplierName() supplier} with {@link ShadowSources sources} instead.
      */
+    @Deprecated(since = "1.27.0", forRemoval = true)
     String sourceVariableName() default "";
 
     /**

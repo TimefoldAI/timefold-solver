@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.listener.support;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ShadowVariableDescriptor;
 
 abstract class AbstractNotification {
@@ -18,7 +18,7 @@ abstract class AbstractNotification {
     }
 
     /**
-     * Warning: do not test equality of {@link AbstractNotification}s for different {@link VariableListener}s
+     * Warning: do not test equality of {@link AbstractNotification}s for different {@link InnerVariableListener}s
      * (so {@link ShadowVariableDescriptor}s) because equality does not take those into account (for performance)!
      *
      * @param o sometimes null
