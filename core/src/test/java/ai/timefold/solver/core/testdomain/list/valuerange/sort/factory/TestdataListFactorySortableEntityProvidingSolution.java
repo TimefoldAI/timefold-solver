@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.list.valuerange.compartor;
+package ai.timefold.solver.core.testdomain.list.valuerange.sort.factory;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,23 +13,23 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
-public class TestdataListSortableEntityProvidingSolution {
+public class TestdataListFactorySortableEntityProvidingSolution {
 
-    public static SolutionDescriptor<TestdataListSortableEntityProvidingSolution> buildSolutionDescriptor() {
+    public static SolutionDescriptor<TestdataListFactorySortableEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
-                TestdataListSortableEntityProvidingSolution.class,
-                TestdataListSortableEntityProvidingEntity.class,
-                TestdataListSortableEntityProvidingValue.class);
+                TestdataListFactorySortableEntityProvidingSolution.class,
+                TestdataListFactorySortableEntityProvidingEntity.class,
+                TestdataListFactorySortableEntityProvidingValue.class);
     }
 
-    public static TestdataListSortableEntityProvidingSolution generateSolution(int valueCount, int entityCount) {
+    public static TestdataListFactorySortableEntityProvidingSolution generateSolution(int valueCount, int entityCount) {
         var entityList = IntStream.range(0, entityCount)
-                .mapToObj(i -> new TestdataListSortableEntityProvidingEntity("Generated Entity " + i, i))
+                .mapToObj(i -> new TestdataListFactorySortableEntityProvidingEntity("Generated Entity " + i, i))
                 .toList();
         var valueList = IntStream.range(0, valueCount)
-                .mapToObj(i -> new TestdataListSortableEntityProvidingValue("Generated Value " + i, i))
+                .mapToObj(i -> new TestdataListFactorySortableEntityProvidingValue("Generated Value " + i, i))
                 .toList();
-        var solution = new TestdataListSortableEntityProvidingSolution();
+        var solution = new TestdataListFactorySortableEntityProvidingSolution();
         var random = new Random(0);
         for (var entity : entityList) {
             var valueRange = new ArrayList<>(valueList);
@@ -40,15 +40,15 @@ public class TestdataListSortableEntityProvidingSolution {
         return solution;
     }
 
-    private List<TestdataListSortableEntityProvidingEntity> entityList;
+    private List<TestdataListFactorySortableEntityProvidingEntity> entityList;
     private HardSoftScore score;
 
     @PlanningEntityCollectionProperty
-    public List<TestdataListSortableEntityProvidingEntity> getEntityList() {
+    public List<TestdataListFactorySortableEntityProvidingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataListSortableEntityProvidingEntity> entityList) {
+    public void setEntityList(List<TestdataListFactorySortableEntityProvidingEntity> entityList) {
         this.entityList = entityList;
     }
 
@@ -61,7 +61,7 @@ public class TestdataListSortableEntityProvidingSolution {
         this.score = score;
     }
 
-    public void removeEntity(TestdataListSortableEntityProvidingEntity entity) {
+    public void removeEntity(TestdataListFactorySortableEntityProvidingEntity entity) {
         this.entityList = entityList.stream()
                 .filter(e -> e != entity)
                 .toList();

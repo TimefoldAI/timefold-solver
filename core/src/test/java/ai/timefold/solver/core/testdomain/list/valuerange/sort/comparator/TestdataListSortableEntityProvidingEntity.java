@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.list.valuerange.compartor;
+package ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator;
 
 import java.util.ArrayList;
 import java.util.List;
