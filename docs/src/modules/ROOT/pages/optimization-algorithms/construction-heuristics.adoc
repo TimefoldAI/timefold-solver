@@ -545,14 +545,19 @@ Advanced configuration for a single entity class with a single variable:
         <selectionOrder>SORTED</selectionOrder>
         <sorterManner>INCREASING_STRENGTH</sorterManner>
       </valueSelector>
-      <changeMoveSelector>
-        <entitySelector>
-          <cacheType>PHASE</cacheType>
-          <selectionOrder>SORTED</selectionOrder>
-          <sorterManner>DECREASING_DIFFICULTY</sorterManner>
-        </entitySelector>
-        <valueSelector mimicSelectorRef="placerValueSelector"/>
-      </changeMoveSelector>
+      <listChangeMoveSelector>
+          <valueSelector mimicSelectorRef="placerValueSelector">
+          </valueSelector>
+          <destinationSelector>
+            <entitySelector>
+              <cacheType>PHASE</cacheType>
+              <selectionOrder>SORTED</selectionOrder>
+              <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+            </entitySelector>
+            <valueSelector>
+            </valueSelector>
+          </destinationSelector>
+      </listChangeMoveSelector>
     </queuedValuePlacer>
   </constructionHeuristic>
 ----
