@@ -17,6 +17,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.time.Clock;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +68,7 @@ import org.assertj.core.api.Assertions;
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.mockito.Mockito;
 
 class SolverManagerTest {
 
@@ -625,26 +627,38 @@ class SolverManagerTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withTerminationConfig(terminationConfig);
 
-        try (var solverManager = createDefaultSolverManager(solverConfig)) {
-            var problem = PlannerTestUtils.generateTestdataSolution("s1");
+        try (var clockStaticMock = Mockito.mockStatic(Clock.class)) {
+            var TIME_SPENT = 50L;
+            var clock = Mockito.mock(Clock.class);
+            // SolverConfig creates a clock from systemDefaultZone
+            clockStaticMock.when(Clock::systemDefaultZone).thenReturn(clock);
+            // UnimprovedSpentLimit creates a clock from systemUTC
+            clockStaticMock.when(Clock::systemUTC).thenReturn(clock);
+            // UnimprovedSpentLimit calls this to get the current time, if the phase
+            // send best solution event. If the phase does not send best solution event,
+            // it always returns 0.0.
+            doReturn(TIME_SPENT).when(clock).millis();
+            try (var solverManager = createDefaultSolverManager(solverConfig)) {
+                var problem = PlannerTestUtils.generateTestdataSolution("s1");
 
-            SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
-            doReturn(50L).when(solverScope).calculateTimeMillisSpentUpToNow();
+                SolverScope<TestdataSolution> solverScope = mock(SolverScope.class);
+                doReturn(TIME_SPENT).when(solverScope).calculateTimeMillisSpentUpToNow();
+                doReturn(TIME_SPENT).when(solverScope).getBestSolutionTimeMillis();
 
-            // Override unimproved spent limit to 500 milliseconds, keep the longer spent limit
-            var configOverride = new SolverConfigOverride<TestdataSolution>()
-                    .withTerminationUnimprovedSpentLimit(Duration.ofMillis(500L));
+                // Override unimproved spent limit to 500 milliseconds, keep the longer spent limit
+                var configOverride = new SolverConfigOverride<TestdataSolution>()
+                        .withTerminationUnimprovedSpentLimit(Duration.ofMillis(500L));
 
-            var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
-                    .withProblemId(1L)
-                    .withProblem(problem)
-                    .withConfigOverride(configOverride)
-                    .run();
+                var solverJob = (DefaultSolverJob<TestdataSolution, Long>) solverManager.solveBuilder()
+                        .withProblemId(1L)
+                        .withProblem(problem)
+                        .withConfigOverride(configOverride)
+                        .run();
 
-            assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.0);
-            assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isNotNull();
-            assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isEqualTo(Duration.ofMillis(500L));
-
+                assertThat(solverJob.getSolverTermination().calculateSolverTimeGradient(solverScope)).isEqualTo(0.0);
+                assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isNotNull();
+                assertThat(configOverride.getTerminationConfig().getUnimprovedSpentLimit()).isEqualTo(Duration.ofMillis(500L));
+            }
         }
     }
 
