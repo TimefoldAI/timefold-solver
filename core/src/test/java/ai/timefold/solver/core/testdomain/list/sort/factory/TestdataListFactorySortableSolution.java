@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.list.sort.compartor;
+package ai.timefold.solver.core.testdomain.list.sort.factory;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -11,48 +11,48 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 @PlanningSolution
-public class TestdataListSortableSolution {
+public class TestdataListFactorySortableSolution {
 
-    public static SolutionDescriptor<TestdataListSortableSolution> buildSolutionDescriptor() {
+    public static SolutionDescriptor<TestdataListFactorySortableSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
-                TestdataListSortableSolution.class,
-                TestdataListSortableEntity.class,
-                TestdataListSortableValue.class);
+                TestdataListFactorySortableSolution.class,
+                TestdataListFactorySortableEntity.class,
+                TestdataListFactorySortableValue.class);
     }
 
-    public static TestdataListSortableSolution generateSolution(int valueCount, int entityCount) {
+    public static TestdataListFactorySortableSolution generateSolution(int valueCount, int entityCount) {
         var entityList = IntStream.range(0, entityCount)
-                .mapToObj(i -> new TestdataListSortableEntity("Generated Entity " + i, i))
+                .mapToObj(i -> new TestdataListFactorySortableEntity("Generated Entity " + i, i))
                 .toList();
         var valueList = IntStream.range(0, valueCount)
-                .mapToObj(i -> new TestdataListSortableValue("Generated Value " + i, i))
+                .mapToObj(i -> new TestdataListFactorySortableValue("Generated Value " + i, i))
                 .toList();
-        TestdataListSortableSolution solution = new TestdataListSortableSolution();
+        TestdataListFactorySortableSolution solution = new TestdataListFactorySortableSolution();
         solution.setValueList(valueList);
         solution.setEntityList(entityList);
         return solution;
     }
 
-    private List<TestdataListSortableValue> valueList;
-    private List<TestdataListSortableEntity> entityList;
+    private List<TestdataListFactorySortableValue> valueList;
+    private List<TestdataListFactorySortableEntity> entityList;
     private HardSoftScore score;
 
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty
-    public List<TestdataListSortableValue> getValueList() {
+    public List<TestdataListFactorySortableValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListSortableValue> valueList) {
+    public void setValueList(List<TestdataListFactorySortableValue> valueList) {
         this.valueList = valueList;
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataListSortableEntity> getEntityList() {
+    public List<TestdataListFactorySortableEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataListSortableEntity> entityList) {
+    public void setEntityList(List<TestdataListFactorySortableEntity> entityList) {
         this.entityList = entityList;
     }
 
@@ -65,7 +65,7 @@ public class TestdataListSortableSolution {
         this.score = score;
     }
 
-    public void removeEntity(TestdataListSortableEntity entity) {
+    public void removeEntity(TestdataListFactorySortableEntity entity) {
         this.entityList = entityList.stream()
                 .filter(e -> e != entity)
                 .toList();

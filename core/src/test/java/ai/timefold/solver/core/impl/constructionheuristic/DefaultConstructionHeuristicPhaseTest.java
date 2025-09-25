@@ -35,10 +35,14 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
-import ai.timefold.solver.core.testdomain.list.sort.compartor.OneValuePerEntityEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.list.sort.compartor.TestdataListSortableEntity;
-import ai.timefold.solver.core.testdomain.list.sort.compartor.TestdataListSortableSolution;
-import ai.timefold.solver.core.testdomain.list.sort.compartor.TestdataListSortableValue;
+import ai.timefold.solver.core.testdomain.list.sort.comparator.OneValuePerEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableEntity;
+import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableSolution;
+import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableValue;
+import ai.timefold.solver.core.testdomain.list.sort.factory.OneValuePerEntityFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.sort.factory.TestdataListFactorySortableEntity;
+import ai.timefold.solver.core.testdomain.list.sort.factory.TestdataListFactorySortableSolution;
+import ai.timefold.solver.core.testdomain.list.sort.factory.TestdataListFactorySortableValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
@@ -47,10 +51,14 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
-import ai.timefold.solver.core.testdomain.list.valuerange.compartor.OneValuePerEntityRangeEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.list.valuerange.compartor.TestdataListSortableEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.list.valuerange.compartor.TestdataListSortableEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.list.valuerange.compartor.TestdataListSortableEntityProvidingValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.OneValuePerEntityRangeEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.TestdataListSortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.TestdataListSortableEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.TestdataListSortableEntityProvidingValue;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.OneValuePerEntityRangeFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.TestdataListFactorySortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.TestdataListFactorySortableEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.TestdataListFactorySortableEntityProvidingValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedEntity;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedOtherValue;
 import ai.timefold.solver.core.testdomain.mixed.singleentity.TestdataMixedSolution;
@@ -546,7 +554,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateConstructionHeuristicTestValues")
-    void constructionHeuristicListVariableAllocateValueFromQueue(ConstructionHeuristicTestConfig phaseConfig) {
+    void constructionHeuristicListVarAllocateValueFromQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataListSortableSolution.class, TestdataListSortableEntity.class,
@@ -555,6 +563,28 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withPhases(phaseConfig.config());
 
         var solution = TestdataListSortableSolution.generateSolution(3, 3);
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        for (var i = 0; i < 3; i++) {
+            // The calculator will give a better score for an entity with only one value.
+            assertThat(solution.getEntityList().get(i).getValueList()).hasSize(1);
+            assertThat(solution.getEntityList().get(i).getValueList().get(0).getStrength())
+                    .isEqualTo(phaseConfig.expected[i]);
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateConstructionHeuristicTestValues")
+    void constructionHeuristicListVarAllocateValueFromQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataListFactorySortableSolution.class, TestdataListFactorySortableEntity.class,
+                                TestdataListFactorySortableValue.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityFactoryEasyScoreCalculator.class)
+                        .withPhases(phaseConfig.config());
+
+        var solution = TestdataListFactorySortableSolution.generateSolution(3, 3);
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -654,7 +684,8 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateEntityRangeConstructionHeuristicTestValues")
-    void constructionHeuristicListVariableEntityRangeAllocateToValueFromQueue(ConstructionHeuristicTestConfig phaseConfig) {
+    void constructionHeuristicListVarEntityRangeAllocateToValueFromQueueComparator(
+            ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataListSortableEntityProvidingSolution.class,
@@ -664,6 +695,31 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withPhases(phaseConfig.config());
 
         var solution = TestdataListSortableEntityProvidingSolution.generateSolution(3, 3);
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                // The calculator will give a better score for an entity with only one value.
+                assertThat(solution.getEntityList().get(i).getValueList()).hasSize(1);
+                assertThat(solution.getEntityList().get(i).getValueList().get(0).getStrength())
+                        .isEqualTo(phaseConfig.expected[i]);
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateEntityRangeConstructionHeuristicTestValues")
+    void constructionHeuristicListVarEntityRangeAllocateToValueFromQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataListFactorySortableEntityProvidingSolution.class,
+                                TestdataListFactorySortableEntityProvidingEntity.class,
+                                TestdataListFactorySortableEntityProvidingValue.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityRangeFactoryEasyScoreCalculator.class)
+                        .withPhases(phaseConfig.config());
+
+        var solution = TestdataListFactorySortableEntityProvidingSolution.generateSolution(3, 3);
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();

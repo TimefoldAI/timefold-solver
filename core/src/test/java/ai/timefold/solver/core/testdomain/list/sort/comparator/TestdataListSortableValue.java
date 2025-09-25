@@ -1,21 +1,21 @@
-package ai.timefold.solver.core.testdomain.list.valuerange.compartor;
+package ai.timefold.solver.core.testdomain.list.sort.comparator;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.InverseRelationShadowVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-@PlanningEntity(difficultyComparatorClass = ListSortableValueComparator.class)
-public class TestdataListSortableEntityProvidingValue extends TestdataObject {
+@PlanningEntity
+public class TestdataListSortableValue extends TestdataObject {
 
     private int strength;
 
     @InverseRelationShadowVariable(sourceVariableName = "valueList")
-    private TestdataListSortableEntityProvidingEntity entity;
+    private TestdataListSortableEntity entity;
 
-    public TestdataListSortableEntityProvidingValue() {
+    public TestdataListSortableValue() {
     }
 
-    public TestdataListSortableEntityProvidingValue(String code, int strength) {
+    public TestdataListSortableValue(String code, int strength) {
         super(code);
         this.strength = strength;
     }
@@ -28,11 +28,11 @@ public class TestdataListSortableEntityProvidingValue extends TestdataObject {
         this.strength = strength;
     }
 
-    public TestdataListSortableEntityProvidingEntity getEntity() {
+    public TestdataListSortableEntity getEntity() {
         return entity;
     }
 
-    public void setEntity(TestdataListSortableEntityProvidingEntity entity) {
+    public void setEntity(TestdataListSortableEntity entity) {
         this.entity = entity;
     }
 }
