@@ -10,7 +10,8 @@ public class OneValuePerEntityRangeFactoryEasyScoreCalculator
 
     @Override
     public @NonNull HardSoftScore
-            calculateScore(@NonNull TestdataListFactorySortableEntityProvidingSolution testdataListFactorySortableEntityProvidingSolution) {
+            calculateScore(
+                    @NonNull TestdataListFactorySortableEntityProvidingSolution testdataListFactorySortableEntityProvidingSolution) {
         var softScore = 0;
         var hardScore = 0;
         for (var entity : testdataListFactorySortableEntityProvidingSolution.getEntityList()) {
