@@ -116,8 +116,6 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
         if (listVariableDescriptor == null) {
             return Optional.empty();
         }
-        failIfConfigured(phaseConfig.getConstructionHeuristicType(), "constructionHeuristicType");
-        failIfConfigured(phaseConfig.getMoveSelectorConfigList(), "moveSelectorConfigList");
         // When an entity has both list and basic variables,
         // the CH configuration will require two separate placers to initialize each variable,
         // which cannot be deduced automatically by default, since a single placer would be returned
@@ -128,13 +126,6 @@ public class DefaultConstructionHeuristicPhaseFactory<Solution_>
                     .formatted(listVariableDescriptor.getEntityDescriptor().getEntityClass()));
         }
         return Optional.of(listVariableDescriptor);
-    }
-
-    private static void failIfConfigured(Object configValue, String configName) {
-        if (configValue != null) {
-            throw new IllegalArgumentException("Construction Heuristic phase with a list variable does not support "
-                    + configName + " configuration. Remove the " + configName + " (" + configValue + ") from the config.");
-        }
     }
 
     @SuppressWarnings("rawtypes")
