@@ -22,10 +22,11 @@ public class TestdataListFactorySortableEntityProvidingSolution {
                 TestdataListFactorySortableEntityProvidingValue.class);
     }
 
-    public static TestdataListFactorySortableEntityProvidingSolution generateSolution(int valueCount, int entityCount) {
-        var entityList = IntStream.range(0, entityCount)
+    public static TestdataListFactorySortableEntityProvidingSolution generateSolution(int valueCount, int entityCount,
+            boolean shuffle) {
+        var entityList = new ArrayList<>(IntStream.range(0, entityCount)
                 .mapToObj(i -> new TestdataListFactorySortableEntityProvidingEntity("Generated Entity " + i, i))
-                .toList();
+                .toList());
         var valueList = IntStream.range(0, valueCount)
                 .mapToObj(i -> new TestdataListFactorySortableEntityProvidingValue("Generated Value " + i, i))
                 .toList();
@@ -33,8 +34,13 @@ public class TestdataListFactorySortableEntityProvidingSolution {
         var random = new Random(0);
         for (var entity : entityList) {
             var valueRange = new ArrayList<>(valueList);
-            Collections.shuffle(valueRange, random);
+            if (shuffle) {
+                Collections.shuffle(valueRange, random);
+            }
             entity.setValueRange(valueRange);
+        }
+        if (shuffle) {
+            Collections.shuffle(entityList, random);
         }
         solution.setEntityList(entityList);
         return solution;
