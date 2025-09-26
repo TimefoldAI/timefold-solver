@@ -23,7 +23,11 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <Entity_> {@link PlanningEntity} on which the source variable is declared
  * @param <Element_> the type of elements of the source list variable
+ *
+ * @deprecated Use a {@link ShadowVariable} with a {@link ShadowVariable#supplierName() supplier}
+ *             and {@link ShadowSources sources} instead.
  */
+@Deprecated(since = "1.27.0", forRemoval = true)
 public interface ListVariableListener<Solution_, Entity_, Element_> extends AbstractVariableListener<Solution_, Entity_> {
 
     /**

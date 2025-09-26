@@ -12,7 +12,7 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.analysis.ConstraintAnalysis;
 import ai.timefold.solver.core.api.score.analysis.MatchAnalysis;
@@ -24,6 +24,7 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.lookup.LookUpManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
@@ -224,7 +225,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     /**
      * Note: resetting the working solution does NOT substitute the calls to before/after methods of
      * the {@link ProblemChangeDirector} during {@link ProblemChange problem changes},
-     * as these calls are propagated to {@link VariableListener variable listeners},
+     * as these calls are propagated to {@link InnerVariableListener variable listeners},
      * which update shadow variables in the {@link PlanningSolution working solution} to keep it consistent.
      *
      * @param workingSolution the working solution to set
@@ -665,7 +666,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             throw new VariableCorruptionException("""
                     %s corruption after completedAction (%s):
                     %s"""
-                    .formatted(VariableListener.class.getSimpleName(), completedAction, violationMessage));
+                    .formatted(ShadowVariable.class.getSimpleName(), completedAction, violationMessage));
         }
 
         var workingScore = calculateScore();
@@ -674,12 +675,12 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     "assertShadowVariablesAreNotStale(" + expectedWorkingScore + ", " + completedAction + ")");
             throw new VariableCorruptionException("""
                     Impossible %s corruption (%s): the expectedWorkingScore (%s) is not the workingScore (%s) \
-                    after all %s were triggered without changes to the genuine variables after completedAction (%s).
+                    after all %s were updated without changes to the genuine variables after completedAction (%s).
                     All the shadow variable values are still the same, so this is impossible.
                     Maybe run with %s if you haven't already, to fail earlier."""
-                    .formatted(VariableListener.class.getSimpleName(),
+                    .formatted(ShadowVariable.class.getSimpleName(),
                             expectedWorkingScore.raw().subtract(workingScore.raw()).toShortString(),
-                            expectedWorkingScore, workingScore, VariableListener.class.getSimpleName(), completedAction,
+                            expectedWorkingScore, workingScore, ShadowVariable.class.getSimpleName(), completedAction,
                             EnvironmentMode.TRACKED_FULL_ASSERT));
         }
     }
@@ -700,8 +701,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         return """
                 Shadow variable corruption in the %s scoreDirector:
                 %s
-                  Maybe there is a bug in the %s of those shadow variable(s)."""
-                .formatted(workingLabel, violationMessage, VariableListener.class.getSimpleName());
+                  Maybe there is a bug in the updater of those shadow variable(s)."""
+                .formatted(workingLabel, violationMessage);
     }
 
     @Override
@@ -800,7 +801,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                         corruptionDiagnosis,
                         EnvironmentMode.TRACKED_FULL_ASSERT, executionPoint,
                         move.getClass().getSimpleName(), move, undoMoveToString,
-                        VariableListener.class.getSimpleName(), scoreDifference);
+                        ShadowVariable.class.getSimpleName(), scoreDifference);
 
         if (trackingWorkingSolution) {
             throw new UndoScoreCorruptionException(corruptionMessage,

@@ -2,7 +2,7 @@ package ai.timefold.solver.core.api.solver.change;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.variable.VariableListener;
+import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
@@ -20,7 +20,7 @@ import org.jspecify.annotations.NullMarked;
  * <li>clones the last {@link PlanningSolution best solution}
  * and sets the clone as the new {@link PlanningSolution working solution}</li>
  * <li>applies every problem change keeping the order in which problem changes have been submitted;
- * after every problem change, {@link VariableListener variable listeners} are triggered
+ * after every problem change, {@link ShadowVariable shadow variables} are updated
  * <li>calculates the score and makes the {@link PlanningSolution updated working solution}
  * the new {@link PlanningSolution best solution};
  * note that this {@link PlanningSolution solution} is not published via the {@link BestSolutionChangedEvent},
