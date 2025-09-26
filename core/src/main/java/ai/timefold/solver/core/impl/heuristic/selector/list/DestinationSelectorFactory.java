@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
+import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.NONE;
+
 import java.util.Objects;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -35,7 +37,23 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
     public DestinationSelector<Solution_> buildDestinationSelector(HeuristicConfigPolicy<Solution_> configPolicy,
             SelectionCacheType minimumCacheType, boolean randomSelection, String entityValueRangeRecorderId) {
         var selectionOrder = SelectionOrder.fromRandomSelectionBoolean(randomSelection);
-        var entitySelector = EntitySelectorFactory.<Solution_> create(Objects.requireNonNull(config.getEntitySelectorConfig()))
+        var entitySelectorConfig = Objects.requireNonNull(config.getEntitySelectorConfig()).copyConfig();
+        var hasSortManner = configPolicy.getEntitySorterManner() != null
+                && configPolicy.getEntitySorterManner() != NONE;
+        var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
+        var hasDifficultySorter = entityDescriptor.getDecreasingDifficultySorter() != null;
+        if (hasSortManner && hasDifficultySorter && entitySelectorConfig.getSorterManner() == null) {
+            if (entityValueRangeRecorderId == null) {
+                // Solution-range model
+                entitySelectorConfig.setCacheType(SelectionCacheType.PHASE);
+            } else {
+                // Entity-range model requires the sorting to be done in each step
+                entitySelectorConfig.setCacheType(SelectionCacheType.STEP);
+            }
+            entitySelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
+            entitySelectorConfig.setSorterManner(configPolicy.getEntitySorterManner());
+        }
+        var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,
                         new ValueRangeRecorderId(entityValueRangeRecorderId, false));
         var valueSelector = buildIterableValueSelector(configPolicy, entitySelector.getEntityDescriptor(),
