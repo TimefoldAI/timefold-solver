@@ -51,16 +51,17 @@ and in the `SolutionManager`
 
 We encourage you to try these preview features and give us feedback on your experience with them.
 Please direct your feedback to
-https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver Github].
+https://github.com/TimefoldAI/timefold-solver/discussions[Timefold Solver Github]
+or to https://discord.com/channels/1413420192213631086/1414521616955605003[Timefold Discord]
 
 
-=== Experimental status of Move Streams
+=== Experimental status of Neighborhoods
 
-Move Streams are an active research project.
+Neighborhoods are an active research project.
 It intends to simplify the creation of custom moves, eventually replacing move selectors.
 The component is under heavy development, entirely undocumented, and many key features are yet to be delivered.
 Neither the API nor the feature set are complete, and any part can change or be removed at any time.
 
-Move Streams will eventually stabilize and be promoted from a research project to a true preview feature.
+The Neighborhoods API will eventually stabilize and be promoted from a research project to a true preview feature.
 We only expose it now to be able to use it for internal experimentation and testing.
 As such, it is an exception to the rule — this preview feature is not finished, and it is not yet ready for feedback.

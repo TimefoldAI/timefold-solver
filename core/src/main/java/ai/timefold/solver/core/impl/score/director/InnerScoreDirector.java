@@ -30,8 +30,8 @@ import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.move.MoveRepository;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -105,7 +105,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
      * Therefore move repository cannot be injected at score director construction time.
      * 
      * A phase may not need a move repository at all,
-     * such as construction heuristics, which currently does not support Move Streams.
+     * such as construction heuristics, which currently does not support Neighborhoods API.
      * 
      * Each phase is responsible for calling this method to set its repository,
      * and also calling it again at the end to null it out.

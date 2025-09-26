@@ -19,6 +19,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
  * The property must be an object type. Primitive types (such as int, double, long) are not allowed.
  * <p>
  * It is specified on a getter of a java bean property (or directly on a field) of a {@link PlanningEntity} class.
+ * <p>
+ * It is sometimes referred to as the "basic" planning variable,
+ * to distinguish it from a {@link PlanningListVariable list variable}.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)

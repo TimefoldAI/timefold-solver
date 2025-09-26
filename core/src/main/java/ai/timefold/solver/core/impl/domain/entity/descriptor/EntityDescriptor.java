@@ -67,7 +67,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Comparat
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.UniDataFilter;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
@@ -133,7 +133,7 @@ public class EntityDescriptor<Solution_> {
     private List<GenuineVariableDescriptor<Solution_>> effectiveGenuineVariableDescriptorList;
     private List<ListVariableDescriptor<Solution_>> effectiveGenuineListVariableDescriptorList;
 
-    private final UniDataFilter<Solution_, Object> entityMovablePredicate =
+    private final UniEnumeratingFilter<Solution_, Object> entityMovablePredicate =
             (solutionView, entity) -> {
                 var moveDirector = (MoveDirector<Solution_, ?>) solutionView;
                 return !moveDirector.isPinned(this, entity);
@@ -639,8 +639,8 @@ public class EntityDescriptor<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    public <A> UniDataFilter<Solution_, A> getEntityMovablePredicate() {
-        return (UniDataFilter<Solution_, A>) entityMovablePredicate;
+    public <A> UniEnumeratingFilter<Solution_, A> getEntityMovablePredicate() {
+        return (UniEnumeratingFilter<Solution_, A>) entityMovablePredicate;
     }
 
     public SelectionSorter<Solution_, Object> getDecreasingDifficultySorter() {
