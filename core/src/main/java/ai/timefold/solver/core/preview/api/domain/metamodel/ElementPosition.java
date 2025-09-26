@@ -16,7 +16,7 @@ import org.jspecify.annotations.NullMarked;
  * This prevents accidental use of {@link UnassignedElement} in places where {@link PositionInList} is expected,
  * catching this error as early as possible.
  * <p>
- * <strong>This package and all of its contents are part of the Move Streams API,
+ * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
  * any class, method, or field may change or be removed without prior notice,
@@ -25,7 +25,8 @@ import org.jspecify.annotations.NullMarked;
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize the API.
  * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
+ * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>
+ * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  */
 @NullMarked
 public sealed interface ElementPosition permits PositionInList, UnassignedElement {

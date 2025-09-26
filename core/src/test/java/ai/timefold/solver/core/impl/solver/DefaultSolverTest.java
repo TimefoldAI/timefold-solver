@@ -81,17 +81,17 @@ import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ChangeMoveDefinition;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.definitions.ListChangeMoveDefinition;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveDefinition;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.Neighborhood;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodBuilder;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodProvider;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.ChangeMoveDefinition;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.ListChangeMoveDefinition;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.util.Pair;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -190,16 +190,16 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solveWithMoveStreams() {
+    void solveWithNeighborhoods() {
         var solverConfig = new SolverConfig()
-                .withPreviewFeature(PreviewFeature.MOVE_STREAMS)
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProviderClass(TestingMoveProvider.class));
+                        .withMoveProviderClass(TestingNeighborhoodProvider.class));
 
         var solution = TestdataSolution.generateSolution(3, 2);
 
@@ -210,16 +210,16 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solveWithMoveStreamsListVar() {
+    void solveWithNeighborhoodsListVar() {
         var solverConfig = new SolverConfig()
-                .withPreviewFeature(PreviewFeature.MOVE_STREAMS)
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataListSolution.class)
                 .withEntityClasses(TestdataListEntity.class, TestdataListValue.class)
                 .withEasyScoreCalculatorClass(TestingListEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProviderClass(TestingListMoveProvider.class));
+                        .withMoveProviderClass(TestingListNeighborhoodProvider.class));
 
         // Both values are on the same entity; the goal of the solver is to move one of them to the other entity.
         var solution = TestdataListSolution.generateUninitializedSolution(2, 2);
@@ -235,7 +235,7 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @Test
-    void solveWithMoveStreamsNotEnabled() {
+    void solveWithNeighborhoodsNotEnabled() {
         var solverConfig = new SolverConfig() // Preview feature not enabled.
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
@@ -243,18 +243,18 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveProviderClass(TestingMoveProvider.class));
+                        .withMoveProviderClass(TestingNeighborhoodProvider.class));
 
         var solution = TestdataSolution.generateSolution(3, 2);
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("MOVE_STREAMS");
+                .hasMessageContaining("NEIGHBORHOODS");
     }
 
     @Test
-    void solveWithMoveStreamsAndMoveSelectorsFails() {
+    void solveWithNeighborhoodsAndMoveSelectorsFails() {
         var solverConfig = new SolverConfig()
-                .withPreviewFeature(PreviewFeature.MOVE_STREAMS)
+                .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataSolution.class)
                 .withEntityClasses(TestdataEntity.class)
                 .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
@@ -262,13 +262,13 @@ class DefaultSolverTest extends AbstractMeterTest {
                         .withBestScoreLimit("0")) // Should get there quickly.
                 .withPhases(new LocalSearchPhaseConfig()
                         .withMoveSelectorConfig(new ChangeMoveSelectorConfig())
-                        .withMoveProviderClass(TestingMoveProvider.class));
+                        .withMoveProviderClass(TestingNeighborhoodProvider.class));
 
         var solution = TestdataSolution.generateSolution(3, 2);
         Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .isInstanceOf(UnsupportedOperationException.class)
                 .hasMessageContaining("move selectors")
-                .hasMessageContaining("Move Streams");
+                .hasMessageContaining("Neighborhoods API");
     }
 
     @Test
@@ -2548,14 +2548,15 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @NullMarked
-    public static final class TestingMoveProvider implements MoveProvider<TestdataSolution> {
+    public static final class TestingNeighborhoodProvider implements NeighborhoodProvider<TestdataSolution> {
 
         @Override
-        public List<MoveDefinition<TestdataSolution>>
-                defineMoves(PlanningSolutionMetaModel<TestdataSolution> solutionMetaModel) {
-            var variableMetamodel = solutionMetaModel.entity(TestdataEntity.class)
-                    .<TestdataValue> planningVariable();
-            return List.of(new ChangeMoveDefinition<>(variableMetamodel));
+        public Neighborhood defineNeighborhood(NeighborhoodBuilder<TestdataSolution> builder) {
+            var variableMetamodel = builder.getSolutionMetaModel()
+                    .entity(TestdataEntity.class)
+                    .<TestdataValue> basicVariable();
+            return builder.add(new ChangeMoveDefinition<>(variableMetamodel))
+                    .build();
         }
 
     }
@@ -2581,14 +2582,15 @@ class DefaultSolverTest extends AbstractMeterTest {
     }
 
     @NullMarked
-    public static final class TestingListMoveProvider implements MoveProvider<TestdataListSolution> {
+    public static final class TestingListNeighborhoodProvider implements NeighborhoodProvider<TestdataListSolution> {
 
         @Override
-        public List<MoveDefinition<TestdataListSolution>>
-                defineMoves(PlanningSolutionMetaModel<TestdataListSolution> solutionMetaModel) {
-            var variableMetamodel = solutionMetaModel.entity(TestdataListEntity.class)
-                    .planningListVariable();
-            return List.of(new ListChangeMoveDefinition<>(variableMetamodel));
+        public Neighborhood defineNeighborhood(NeighborhoodBuilder<TestdataListSolution> builder) {
+            var variableMetamodel = builder.getSolutionMetaModel()
+                    .entity(TestdataListEntity.class)
+                    .listVariable();
+            return builder.add(new ListChangeMoveDefinition<>(variableMetamodel))
+                    .build();
         }
 
     }

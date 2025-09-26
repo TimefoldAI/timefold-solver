@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHe
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.move.PlacerBasedMoveRepository;
+import ai.timefold.solver.core.impl.neighborhood.PlacerBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;

@@ -31,9 +31,9 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescripto
 import ai.timefold.solver.core.impl.domain.variable.listener.support.VariableListenerSupport;
 import ai.timefold.solver.core.impl.domain.variable.listener.support.violation.SolutionTracker;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.move.MoveRepository;
-import ai.timefold.solver.core.impl.move.MoveStreamsBasedMoveRepository;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
+import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
@@ -308,7 +308,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public InnerScore<Score_> executeTemporaryMove(Move<Solution_> move, boolean assertMoveScoreFromScratch) {
-        // This change and resulting before/after events will not be propagated to move stream session,
+        // This change and resulting before/after events will not be propagated to a neighborhood session,
         // as they will be immediately undone.
         // Moves will only be re-generated once the solution has actually changed,
         // which will happen at the end of the step, after executeMove(...) was called.
@@ -459,8 +459,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             lookUpManager.addWorkingObject(entity);
         }
         if (!allChangesWillBeUndoneBeforeStepEnds) {
-            if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-                moveStreamsBasedMoveRepository.insert(entity);
+            if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+                neighborhoodsBasedMoveRepository.insert(entity);
             }
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
@@ -482,8 +482,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (variableDescriptor.isGenuineAndUninitialized(entity)) {
             workingInitScore--;
         }
-        if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-            moveStreamsBasedMoveRepository.update(entity);
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.update(entity);
         }
         variableListenerSupport.afterVariableChanged(variableDescriptor, entity);
     }
@@ -498,8 +498,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             workingInitScore++;
             assertInitScoreZeroOrLess();
         }
-        if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-            moveStreamsBasedMoveRepository.update(element);
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.update(element);
         }
     }
 
@@ -514,8 +514,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             workingInitScore--;
         }
         variableListenerSupport.afterElementUnassigned(variableDescriptor, element);
-        if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-            moveStreamsBasedMoveRepository.update(element);
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.update(element);
         }
     }
 
@@ -539,8 +539,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     public void afterListVariableChanged(ListVariableDescriptor<Solution_> variableDescriptor,
             Object entity, int fromIndex, int toIndex) {
         variableListenerSupport.afterListVariableChanged(variableDescriptor, entity, fromIndex, toIndex);
-        if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-            moveStreamsBasedMoveRepository.update(entity);
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.update(entity);
         }
     }
 
@@ -557,8 +557,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             lookUpManager.removeWorkingObject(entity);
         }
         if (!allChangesWillBeUndoneBeforeStepEnds) {
-            if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-                moveStreamsBasedMoveRepository.retract(entity);
+            if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+                neighborhoodsBasedMoveRepository.retract(entity);
             }
             // Some selectors depend on this revision value to detect changes in entity value ranges.
             // Therefore, we need to reset the value range state, but the working solution does not change.
@@ -581,8 +581,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             lookUpManager.addWorkingObject(problemFact);
         }
         variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
-        if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-            moveStreamsBasedMoveRepository.insert(problemFact);
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.insert(problemFact);
         }
     }
 
@@ -597,8 +597,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             setWorkingSolution(workingSolution); // Nuke everything and recalculate, constraint weights have changed.
         } else {
             variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
-            if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-                moveStreamsBasedMoveRepository.update(problemFactOrEntity);
+            if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+                neighborhoodsBasedMoveRepository.update(problemFactOrEntity);
             }
         }
     }
@@ -618,8 +618,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
             lookUpManager.removeWorkingObject(problemFact);
         }
         variableListenerSupport.resetWorkingSolution(); // TODO do not nuke the variable listeners
-        if (moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_> moveStreamsBasedMoveRepository) {
-            moveStreamsBasedMoveRepository.retract(problemFact);
+        if (moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_> neighborhoodsBasedMoveRepository) {
+            neighborhoodsBasedMoveRepository.retract(problemFact);
         }
     }
 
@@ -1039,7 +1039,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
          * Optionally makes the score director a derived one; most score directors do not require this.
          * Derived score directors may make choices which the main score director cannot make, such as reducing logging.
          * Derived score directors are typically used for multithreaded solving, testing and assert modes.
-         * Derived score directors do not support move streams, as they are only used to calculate the score.
+         * Derived score directors do not support Neighborhoods API, as they are only used to calculate the score.
          *
          * @return this
          */

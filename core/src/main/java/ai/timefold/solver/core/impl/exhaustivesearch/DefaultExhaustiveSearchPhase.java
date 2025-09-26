@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchNode;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchPhaseScope;
 import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepScope;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.generic.Moves;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.Moves;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;

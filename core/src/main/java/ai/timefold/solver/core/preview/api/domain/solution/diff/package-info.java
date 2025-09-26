@@ -12,6 +12,7 @@
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize it.
  * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
+ * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>
+ * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  */
 package ai.timefold.solver.core.preview.api.domain.solution.diff;

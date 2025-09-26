@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningEntityDiff;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningSolutionDiff;
@@ -152,7 +153,8 @@ final class DefaultPlanningSolutionDiff<Solution_> implements PlanningSolutionDi
         }
         var variableDiffString = variableDiffs.stream()
                 .map(diff -> "    %s (%s): %s -> %s".formatted(diff.variableMetaModel().name(),
-                        diff.variableMetaModel().isGenuine() ? "genuine" : "shadow", diff.oldValue(), diff.newValue()))
+                        diff.variableMetaModel() instanceof GenuineVariableMetaModel<?, ?, ?> ? "genuine" : "shadow",
+                        diff.oldValue(), diff.newValue()))
                 .collect(Collectors.joining(System.lineSeparator()));
         return """
                 %s:

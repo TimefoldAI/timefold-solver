@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.solution.descriptor;
 
 import java.util.Objects;
 
+import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningEntityDiff;
 import ai.timefold.solver.core.preview.api.domain.solution.diff.PlanningVariableDiff;
@@ -27,7 +28,10 @@ record DefaultPlanningVariableDiff<Solution_, Entity_, Value_>(PlanningEntityDif
                   Old value: %s
                   New value: %s
                 """
-                .formatted(variableMetaModel.isGenuine() ? "genuine" : "shadow", variableMetaModel.name(),
+                .formatted(
+                        variableMetaModel instanceof GenuineVariableMetaModel<Solution_, Entity_, Value_> ? "genuine"
+                                : "shadow",
+                        variableMetaModel.name(),
                         entityDiff.entity(), entityDiff.entityMetaModel().type(), oldValue, newValue);
     }
 

@@ -1397,7 +1397,7 @@
                       
           </xs:choice>
                     
-          <xs:element minOccurs="0" name="moveProviderClass" type="xs:string"/>
+          <xs:element minOccurs="0" name="neighborhoodProviderClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="acceptor" type="tns:localSearchAcceptorConfig"/>
                     
@@ -1595,7 +1595,7 @@
             
       <xs:enumeration value="PLANNING_SOLUTION_DIFF"/>
             
-      <xs:enumeration value="MOVE_STREAMS"/>
+      <xs:enumeration value="NEIGHBORHOODS"/>
           
     </xs:restriction>
       

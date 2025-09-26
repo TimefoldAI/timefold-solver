@@ -39,12 +39,14 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
-import ai.timefold.solver.core.impl.move.MoveRepository;
-import ai.timefold.solver.core.impl.move.MoveSelectorBasedMoveRepository;
-import ai.timefold.solver.core.impl.move.MoveStreamsBasedMoveRepository;
-import ai.timefold.solver.core.impl.move.streams.DefaultMoveStreamFactory;
-import ai.timefold.solver.core.impl.move.streams.InnerMoveProducer;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.stream.MoveProvider;
+import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
+import ai.timefold.solver.core.impl.neighborhood.MoveSelectorBasedMoveRepository;
+import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodProvider;
+import ai.timefold.solver.core.impl.neighborhood.move.InnerMoveStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhood;
+import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodBuilder;
 import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
@@ -61,19 +63,19 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     public LocalSearchPhase<Solution_> buildPhase(int phaseIndex, boolean lastInitializingPhase,
             HeuristicConfigPolicy<Solution_> solverConfigPolicy, BestSolutionRecaller<Solution_> bestSolutionRecaller,
             SolverTermination<Solution_> solverTermination) {
-        var moveProviderClass = phaseConfig.<Solution_> getMoveProviderClass();
-        var moveStreamsEnabled = moveProviderClass != null;
+        var neighborhoodProviderClass = phaseConfig.<Solution_> getNeighborhoodProviderClass();
+        var neighborhoodsEnabled = neighborhoodProviderClass != null;
         var moveSelectorConfig = phaseConfig.getMoveSelectorConfig();
         var moveSelectorsEnabled = moveSelectorConfig != null;
-        if (moveSelectorsEnabled && moveStreamsEnabled) {
+        if (moveSelectorsEnabled && neighborhoodsEnabled) {
             throw new UnsupportedOperationException("""
-                    The solver configuration enabled both move selectors and Move Streams.
+                    The solver configuration enabled both move selectors and the Neighborhoods API.
                     These are mutually exclusive features, please pick one or the other.""");
         }
         var phaseConfigPolicy = solverConfigPolicy.createPhaseConfigPolicy();
         var phaseTermination = buildPhaseTermination(phaseConfigPolicy, solverTermination);
-        var decider = moveStreamsEnabled
-                ? buildMoveStreamsBasedDecider(phaseConfigPolicy, phaseTermination, moveProviderClass)
+        var decider = neighborhoodsEnabled
+                ? buildNeighborhoodsBasedDecider(phaseConfigPolicy, phaseTermination, neighborhoodProviderClass)
                 : buildMoveSelectorBasedDecider(phaseConfigPolicy, phaseTermination);
         return new DefaultLocalSearchPhase.Builder<>(phaseIndex, solverConfigPolicy.getLogIndentation(), phaseTermination,
                 decider)
@@ -87,26 +89,27 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         return buildDecider(moveRepository, configPolicy, termination);
     }
 
-    private LocalSearchDecider<Solution_> buildMoveStreamsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination, Class<? extends MoveProvider<Solution_>> moveProviderClass) {
-        configPolicy.ensurePreviewFeature(PreviewFeature.MOVE_STREAMS);
+    private LocalSearchDecider<Solution_> buildNeighborhoodsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
+            PhaseTermination<Solution_> termination,
+            Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
+        configPolicy.ensurePreviewFeature(PreviewFeature.NEIGHBORHOODS);
 
         var solutionDescriptor = configPolicy.getSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
         if (solutionMetaModel.genuineEntities().size() > 1) {
             throw new UnsupportedOperationException(
-                    "Move Streams currently only support solutions with a single entity class, not multiple.");
+                    "Neighborhoods API currently only supports solutions with a single entity class, not multiple.");
         }
         var entityMetaModel = solutionMetaModel.genuineEntities().get(0);
         if (entityMetaModel.genuineVariables().size() > 1) {
             throw new UnsupportedOperationException(
-                    "Move Streams currently only support solutions with a single variable class, not multiple.");
+                    "Neighborhoods API currently only supports solutions with a single variable class, not multiple.");
         }
         var variableMetaModel = entityMetaModel.genuineVariables().get(0);
         if (variableMetaModel instanceof PlanningVariableMetaModel<Solution_, ?, ?> planningVariableMetaModel
                 && planningVariableMetaModel.isChained()) {
             throw new UnsupportedOperationException("""
-                    Move Streams don't support solutions with chained variables.
+                    Neighborhoods API doesn't support solutions with chained variables.
                     Convert your model to use @%s instead."""
                     .formatted(PlanningListVariable.class.getSimpleName()));
         }
@@ -115,29 +118,32 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 .toList();
         if (!entitiesWithPinningFilters.isEmpty()) {
             throw new UnsupportedOperationException("""
-                    %s is deprecated and Move Streams do not support it.
+                    %s is deprecated and Neighborhoods API does not support it.
                     Convert your entities (%s) to use @%s instead."""
                     .formatted(PinningFilter.class.getSimpleName(), entitiesWithPinningFilters,
                             PlanningPin.class.getSimpleName()));
         }
 
-        if (!MoveProvider.class.isAssignableFrom(moveProviderClass)) {
+        if (!NeighborhoodProvider.class.isAssignableFrom(neighborhoodProviderClass)) {
             throw new IllegalArgumentException(
-                    "The moveProviderClass (%s) does not implement %s."
-                            .formatted(moveProviderClass, MoveProvider.class.getSimpleName()));
+                    "The neighborhoodProviderClass (%s) does not implement %s."
+                            .formatted(neighborhoodProviderClass, NeighborhoodProvider.class.getSimpleName()));
         }
-        var moveProvider =
-                ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName, "moveProviderClass", moveProviderClass);
-        var moveDefinitionList = moveProvider.defineMoves(solutionMetaModel);
+        var neighborhoodProvider =
+                ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName, "neighborhoodProviderClass",
+                        neighborhoodProviderClass);
+        var neighborhoodBuilder = new DefaultNeighborhoodBuilder<>(solutionMetaModel);
+        var moveDefinitionList = ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
+                .getMoveDefinitionList();
         if (moveDefinitionList.size() != 1) {
             throw new IllegalArgumentException(
-                    "The moveProviderClass (%s) must define exactly one MoveDefinition, not %s."
-                            .formatted(moveProviderClass, moveDefinitionList.size()));
+                    "The neighborhoodProviderClass (%s) must define exactly one MoveDefinition, not %s."
+                            .formatted(neighborhoodProviderClass, moveDefinitionList.size()));
         }
         var moveDefinition = moveDefinitionList.get(0);
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
-        var moveProducer = (InnerMoveProducer<Solution_>) moveDefinition.build(moveStreamFactory);
-        var moveRepository = new MoveStreamsBasedMoveRepository<>(moveStreamFactory, moveProducer,
+        var moveStream = (InnerMoveStream<Solution_>) moveDefinition.build(moveStreamFactory);
+        var moveRepository = new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, moveStream,
                 pickSelectionOrder() == SelectionOrder.RANDOM);
 
         return buildDecider(moveRepository, configPolicy, termination);
@@ -145,7 +151,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
 
     private LocalSearchDecider<Solution_> buildDecider(MoveRepository<Solution_> moveRepository,
             HeuristicConfigPolicy<Solution_> configPolicy, PhaseTermination<Solution_> termination) {
-        var acceptor = buildAcceptor(configPolicy, moveRepository instanceof MoveStreamsBasedMoveRepository<Solution_>);
+        var acceptor = buildAcceptor(configPolicy, moveRepository instanceof NeighborhoodsBasedMoveRepository<Solution_>);
         var forager = buildForager(configPolicy);
         if (moveRepository.isNeverEnding() && !forager.supportsNeverEndingMoveSelector()) {
             throw new IllegalStateException("""
@@ -164,7 +170,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         return decider;
     }
 
-    protected Acceptor<Solution_> buildAcceptor(HeuristicConfigPolicy<Solution_> configPolicy, boolean moveStreamsEnabled) {
+    protected Acceptor<Solution_> buildAcceptor(HeuristicConfigPolicy<Solution_> configPolicy, boolean neighborhoodsEnabled) {
         var acceptorConfig = phaseConfig.getAcceptorConfig();
         var localSearchType = phaseConfig.getLocalSearchType();
         if (acceptorConfig != null) {
@@ -177,10 +183,10 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
         } else {
             var localSearchType_ = Objects.requireNonNullElse(localSearchType, LocalSearchType.LATE_ACCEPTANCE);
             var acceptorConfig_ = new LocalSearchAcceptorConfig();
-            if (moveStreamsEnabled && localSearchType_ == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
+            if (neighborhoodsEnabled && localSearchType_ == LocalSearchType.VARIABLE_NEIGHBORHOOD_DESCENT) {
                 // Maybe works, but never tested.
                 throw new UnsupportedOperationException(
-                        "Variable Neighborhood descent is not yet supported with Move Streams.");
+                        "Variable Neighborhood descent is not yet supported with the Neighborhoods API.");
             }
             var acceptorType = switch (localSearchType_) {
                 case HILL_CLIMBING, VARIABLE_NEIGHBORHOOD_DESCENT -> AcceptorType.HILL_CLIMBING;
@@ -190,8 +196,8 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 case DIVERSIFIED_LATE_ACCEPTANCE -> AcceptorType.DIVERSIFIED_LATE_ACCEPTANCE;
                 case GREAT_DELUGE -> AcceptorType.GREAT_DELUGE;
             };
-            if (moveStreamsEnabled && acceptorType.isTabu()) {
-                throw new UnsupportedOperationException("Tabu search is not yet supported with Move Streams.");
+            if (neighborhoodsEnabled && acceptorType.isTabu()) {
+                throw new UnsupportedOperationException("Tabu search is not yet supported with the Neighborhoods API.");
             }
             acceptorConfig_.setAcceptorTypeList(Collections.singletonList(acceptorType));
             return buildAcceptor(acceptorConfig_, configPolicy);

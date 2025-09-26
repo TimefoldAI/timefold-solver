@@ -244,7 +244,7 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     /**
      * The idea of this iterator is that the list will rarely ever be iterated over in its entirety.
-     * In fact, move streams are likely to only use the first few elements.
+     * In fact, Neighborhoods API is likely to only use the first few elements.
      * Therefore, shuffling the entire list would be a waste of time.
      * Instead, we pick random index every time and keep a list of unused indexes.
      *
