@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -14,6 +16,7 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -135,6 +138,31 @@ class SingleConstraintAssertionTest {
                 .givenSolution(solution)
                 .settingAllShadowVariables()
                 .indictsWith(solution.getValueList().get(1)))
+                .doesNotThrowAnyException();
+    }
+
+    @Test
+    void updatesVariablesReachableFromGivenEntities() {
+        var startTime = LocalDate.of(2000, 1, 1).atTime(LocalTime.MIDNIGHT);
+        var entity = new TestdataDependencyEntity(startTime);
+        var dependency = new TestdataDependencyValue("dependency", Duration.ofHours(1));
+        var previous = new TestdataDependencyValue("previous", Duration.ofHours(1));
+        var current = new TestdataDependencyValue("current", Duration.ofHours(1), List.of(dependency));
+
+        dependency.setEntity(entity);
+        previous.setEntity(entity);
+        current.setEntity(entity);
+
+        dependency.setPreviousValue(previous);
+        current.setPreviousValue(dependency);
+
+        SolutionManager.updateShadowVariables(TestdataDependencySolution.class, current, entity);
+
+        assertThatCode(() -> constraintVerifierForConsistency
+                .verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .given(current)
+                // current should have an end time 3 hours pass the start time of the entity
+                .penalizesBy(180))
                 .doesNotThrowAnyException();
     }
 
