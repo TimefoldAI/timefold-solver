@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 
@@ -22,6 +23,7 @@ import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 
@@ -66,6 +68,55 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         public GraphDescriptor<Solution_> withConsistencyTracker(ConsistencyTracker<Solution_> consistencyTracker) {
             return new GraphDescriptor<>(consistencyTracker, solutionDescriptor,
                     variableReferenceGraphBuilder, entities, graphCreator);
+        }
+
+        public GraphDescriptor<Solution_> withDiscoveredReferencedEntities() {
+            var entitySet = CollectionUtils.newIdentityHashSet(entities.length);
+            entitySet.addAll(Arrays.asList(entities));
+            var declarativeShadowDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
+
+            for (var entity : entities) {
+                for (var shadowDescriptor : declarativeShadowDescriptors) {
+                    if (shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
+                        for (var source : shadowDescriptor.getSources()) {
+                            for (var variableSourceReference : source.variableSourceReferences()) {
+                                source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
+                                        .accept(entity, entitySet::add);
+                            }
+                        }
+                    }
+                }
+            }
+            if (entitySet.size() == entities.length) {
+                // No new entities were discovered; reuse the original descriptor
+                return this;
+            }
+
+            // The newly discovered entities might also reference unknown entities,
+            // so visit them too
+            AtomicBoolean anyChanged = new AtomicBoolean(false);
+            do {
+                anyChanged.setPlain(false);
+                for (var entity : new ArrayList<>(entitySet)) {
+                    for (var shadowDescriptor : declarativeShadowDescriptors) {
+                        if (shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
+                            for (var source : shadowDescriptor.getSources()) {
+                                for (var variableSourceReference : source.variableSourceReferences()) {
+                                    source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
+                                            .accept(entity, newEntity -> {
+                                                if (entitySet.add(newEntity)) {
+                                                    anyChanged.setPlain(true);
+                                                }
+                                            });
+                                }
+                            }
+                        }
+                    }
+                }
+            } while (anyChanged.getPlain());
+
+            return new GraphDescriptor<>(consistencyTracker, solutionDescriptor,
+                    variableReferenceGraphBuilder, entitySet.toArray(), graphCreator);
         }
 
         public ChangedVariableNotifier<Solution_> changedVariableNotifier() {

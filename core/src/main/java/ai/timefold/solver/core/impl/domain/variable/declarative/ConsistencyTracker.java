@@ -59,7 +59,7 @@ public record ConsistencyTracker<Solution_>(
                         new GraphStructure.GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null),
                         new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
                                 ChangedVariableNotifier.empty(),
-                                entities).withConsistencyTracker(this));
+                                entities).withConsistencyTracker(this).withDiscoveredReferencedEntities());
 
         // Graph will either be DefaultVariableReferenceGraph or EmptyVariableReferenceGraph
         // If it is empty, we don't need to do anything.
