@@ -74,17 +74,17 @@ jobs:
           path: ./timefold-solver
           ref: ${{ github.event.pull_request.head.sha }} # The GHA event will pull the main branch by default, and we must specify the PR reference version
 
-      - name: Setup Temurin 17 and Maven
+      - name: Setup Temurin 25 and Maven
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
 
       - name: Quickly build timefold-solver
         working-directory: ./timefold-solver
         shell: bash
-        run: mvn -B -Dquickly clean install
+        run: ./mvnw -B -Dquickly clean install
 
       # Clone timefold-solver-enterprise
       - name: Checkout timefold-solver-enterprise (PR) # Checkout the PR branch first, if it exists
@@ -110,7 +110,7 @@ jobs:
       - name: Quickly build timefold-solver-enterprise
         working-directory: ./timefold-solver-enterprise
         shell: bash
-        run: mvn -B -Dquickly clean install
+        run: ./mvnw -B -Dquickly clean install
 
       # Clone timefold-solver-benchmarks
       - name: Checkout timefold-solver-benchmarks (PR) # Checkout the PR branch first, if it exists
@@ -135,7 +135,7 @@ jobs:
       - name: Build and test timefold-solver-benchmarks
         working-directory: ./timefold-solver-benchmarks
         shell: bash
-        run: mvn -B -DskipJMH clean verify
+        run: ./mvnw -B -DskipJMH clean verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
@@ -191,11 +191,11 @@ jobs:
       - name: Quickly build timefold-solver
         working-directory: ./timefold-solver
         shell: bash
-        run: mvn -B -Dquickly clean install
+        run: ./mvnw -B -Dquickly clean install
       - name: Build and test timefold-solver-enterprise
         working-directory: ./timefold-solver-enterprise
         shell: bash
-        run: mvn -B clean verify
+        run: ./mvnw -B clean verify
       - name: Test Summary
         uses: test-summary/action@2920bc1b1b377c787227b204af6981e8f41bbef3
         with:
@@ -301,7 +301,7 @@ jobs:
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Build with Maven to measure code coverage # The ENV variables are limited to the scope of the current step. Avoid adding sensitive ENV variables here as the tests could leak them.
-        run: mvn -B clean install -Prun-code-coverage
+        run: ./mvnw -B clean install -Prun-code-coverage
 
       - name: Run analysis
         env:
@@ -310,4 +310,4 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           PR_BRANCH: ${{ github.event.pull_request.head.ref }}
           PR_SHA: ${{ github.event.pull_request.head.sha }}
-        run: mvn -B -Psonarcloud-analysis validate org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=timefold -Dsonar.projectKey=ai.timefold:timefold-solver -Dsonar.host.url=https://sonarcloud.io -Dsonar.pullrequest.key="$PR_NUMBER" -Dsonar.pullrequest.branch="$PR_BRANCH" -Dsonar.scm.revision="$PR_SHA"
+        run: ./mvnw -B -Psonarcloud-analysis validate org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.organization=timefold -Dsonar.projectKey=ai.timefold:timefold-solver -Dsonar.host.url=https://sonarcloud.io -Dsonar.pullrequest.key="$PR_NUMBER" -Dsonar.pullrequest.branch="$PR_BRANCH" -Dsonar.scm.revision="$PR_SHA"

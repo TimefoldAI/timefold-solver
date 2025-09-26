@@ -57,16 +57,16 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
 
       # Build and test
-      - name: Setup Temurin 21 and Maven
+      - name: Setup Temurin 25 and Maven
         uses: actions/setup-java@v5
         with:
-          java-version: '21'
+          java-version: '25'
           distribution: 'temurin'
           cache: 'maven'
       - name: Quickly build timefold-solver
         working-directory: ./timefold-solver
         shell: bash
-        run: mvn -B -Dquickly clean install
+        run: ./mvnw -B -Dquickly clean install
       - name: Build and test timefold-quickstarts
         working-directory: ./timefold-quickstarts
         shell: bash

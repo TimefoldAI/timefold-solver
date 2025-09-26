@@ -52,7 +52,7 @@ $ cd timefold-solver
 . Build it from source:
 +
 ----
-$ mvn clean install -Dquickly
+$ ./mvnw clean install -Dquickly
 ----
 
 
