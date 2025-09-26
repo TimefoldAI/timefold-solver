@@ -36,3 +36,7 @@ recipeList:
   - ai.timefold.solver.migration.v8.SolutionManagerRecommendAssignmentRecipe
   - org.openrewrite.java.RemoveUnusedImports
   - ai.timefold.solver.migration.ChangeVersion
+  - org.openrewrite.java.ChangeType:
+      oldFullyQualifiedTypeName: ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory
+      newFullyQualifiedTypeName: ai.timefold.solver.core.api.domain.common.SorterWeightFactory
+      ignoreDefinition: true
