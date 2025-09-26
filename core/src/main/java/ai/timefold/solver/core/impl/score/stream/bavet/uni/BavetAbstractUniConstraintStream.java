@@ -93,6 +93,11 @@ public abstract class BavetAbstractUniConstraintStream<Solution_, A> extends Bav
         return shareAndAddChild(new BavetFilterUniConstraintStream<>(constraintFactory, this, predicate));
     }
 
+    @Override
+    public @NonNull BavetAbstractUniConstraintStream<Solution_, A> filterByFact(@NonNull Predicate<A> predicate) {
+        return shareAndAddChild(new BavetFilterByFactUniConstraintStream<>(constraintFactory, this, predicate));
+    }
+
     // ************************************************************************
     // Join
     // ************************************************************************

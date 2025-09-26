@@ -79,7 +79,7 @@ public abstract sealed class AbstractForEachUniNode<A>
                 throw new IllegalStateException("The fact (%s) was already retracted, so it cannot retract."
                         .formatted(a));
             }
-            propagationQueue.retract(tuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+            propagationQueue.retract(tuple);
         } else {
             propagationQueue.retract(tuple, TupleState.DYING);
         }
