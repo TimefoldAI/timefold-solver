@@ -56,7 +56,7 @@
     <version.versions.plugin>2.19.0</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
-    <maven.min.version>3.9.2</maven.min.version>
+    <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in .mvn/maven-wrapper.properties -->
     <maven.compiler.release>17</maven.compiler.release>
     <!-- This property needs to be defined in all modules that use the packaging 'jar'.
          It is used by different plugins to make sure the module/bundle names are consistent. -->
