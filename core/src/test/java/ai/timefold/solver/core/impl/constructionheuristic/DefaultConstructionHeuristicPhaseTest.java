@@ -356,7 +356,7 @@ class DefaultConstructionHeuristicPhaseTest {
                 .filter(e -> e.getValue() == null)).isEmpty();
     }
 
-    private static List<ConstructionHeuristicTestConfig> generateConstructionHeuristicTestValues() {
+    private static List<ConstructionHeuristicTestConfig> generateConstructionHeuristicSimpleConfiguration() {
         var values = new ArrayList<ConstructionHeuristicTestConfig>();
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
@@ -365,7 +365,9 @@ class DefaultConstructionHeuristicPhaseTest {
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // the entities are being read in decreasing order of difficulty,
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                new int[] { 2, 1, 0 },
+                // Only the entities are sorted, and shuffling the values will alter the expected result
+                false));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.WEAKEST_FIT)
@@ -373,7 +375,9 @@ class DefaultConstructionHeuristicPhaseTest {
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // the values are being read in increase order of strength,
                 // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+                new int[] { 0, 1, 2 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.WEAKEST_FIT_DECREASING)
@@ -382,7 +386,9 @@ class DefaultConstructionHeuristicPhaseTest {
                 // the entities are being read in decreasing order of difficulty,
                 // and the values are being read in increase order of strength
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.STRONGEST_FIT)
@@ -390,7 +396,9 @@ class DefaultConstructionHeuristicPhaseTest {
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // and the values are being read in decreasing order of strength
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                new int[] { 2, 1, 0 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.STRONGEST_FIT_DECREASING)
@@ -399,7 +407,9 @@ class DefaultConstructionHeuristicPhaseTest {
                 // the entities are being read in decreasing order of difficulty,
                 // and the values are being read in decreasing order of strength
                 // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
         // Allocate from pool
         // Simple configuration
         values.add(new ConstructionHeuristicTestConfig(
@@ -412,7 +422,9 @@ class DefaultConstructionHeuristicPhaseTest {
                 // Since we are starting from decreasing strength
                 // and the entities are being read in decreasing order of difficulty,
                 // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
@@ -421,7 +433,9 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
@@ -430,7 +444,9 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                new int[] { 2, 1, 0 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
@@ -439,7 +455,9 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
@@ -448,7 +466,9 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
@@ -457,7 +477,15 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+                new int[] { 0, 1, 2 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
+        return values;
+    }
+
+    private static List<ConstructionHeuristicTestConfig>
+            generateConstructionHeuristicAdvancedConfiguration(SelectionCacheType entityDestinationCacheType) {
+        var values = new ArrayList<ConstructionHeuristicTestConfig>();
         // Advanced configuration
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
@@ -474,14 +502,26 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withValueSelectorConfig(new ValueSelectorConfig())
                                                 .withEntitySelectorConfig(new EntitySelectorConfig()
                                                         .withSelectionOrder(SelectionOrder.SORTED)
-                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                        .withCacheType(entityDestinationCacheType)
                                                         .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY)))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // Since we are starting from decreasing strength
                 // and the entities are being read in decreasing order of difficulty,
                 // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        var nonSortedEntityConfig = new EntitySelectorConfig();
+        var isPhaseScope = entityDestinationCacheType == SelectionCacheType.PHASE;
+        if (isPhaseScope) {
+            // Hack to prevent the default sorting option,
+            // which is DECREASING_DIFFICULTY_IF_AVAILABLE
+            // This hack does not work with STEP scope
+            nonSortedEntityConfig.setSorterManner(EntitySorterManner.NONE);
+            nonSortedEntityConfig.setSelectionOrder(SelectionOrder.SORTED);
+            nonSortedEntityConfig.setCacheType(entityDestinationCacheType);
+        }
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withEntityPlacerConfig(new QueuedValuePlacerConfig()
@@ -495,16 +535,14 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
                                         .withDestinationSelectorConfig(new DestinationSelectorConfig()
                                                 .withValueSelectorConfig(new ValueSelectorConfig())
-                                                .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                        // Hack to prevent the default sorting option,
-                                                        // which is DECREASING_DIFFICULTY_IF_AVAILABLE
-                                                        .withSelectionOrder(SelectionOrder.SORTED)
-                                                        .withCacheType(SelectionCacheType.PHASE)
-                                                        .withSorterManner(EntitySorterManner.NONE)))))
+                                                .withEntitySelectorConfig(nonSortedEntityConfig))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                // The step scope will apply the default entity sort manner
+                isPhaseScope ? new int[] { 2, 1, 0 } : new int[] { 0, 1, 2 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withEntityPlacerConfig(new QueuedValuePlacerConfig()
@@ -520,12 +558,14 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withValueSelectorConfig(new ValueSelectorConfig())
                                                 .withEntitySelectorConfig(new EntitySelectorConfig()
                                                         .withSelectionOrder(SelectionOrder.SORTED)
-                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                        .withCacheType(entityDestinationCacheType)
                                                         .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY)))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withEntityPlacerConfig(new QueuedValuePlacerConfig()
@@ -539,21 +579,26 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
                                         .withDestinationSelectorConfig(new DestinationSelectorConfig()
                                                 .withValueSelectorConfig(new ValueSelectorConfig())
-                                                .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                        // Hack to prevent the default sorting option,
-                                                        // which is DECREASING_DIFFICULTY_IF_AVAILABLE
-                                                        .withSelectionOrder(SelectionOrder.SORTED)
-                                                        .withCacheType(SelectionCacheType.PHASE)
-                                                        .withSorterManner(EntitySorterManner.NONE)))))
+                                                .withEntitySelectorConfig(nonSortedEntityConfig))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+                // The step scope will apply the default entity sort manner
+                isPhaseScope ? new int[] { 0, 1, 2 } : new int[] { 2, 1, 0 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
+        return values;
+    }
+
+    private static List<ConstructionHeuristicTestConfig> generateConstructionHeuristicConfiguration() {
+        var values = new ArrayList<ConstructionHeuristicTestConfig>();
+        values.addAll(generateConstructionHeuristicSimpleConfiguration());
+        values.addAll(generateConstructionHeuristicAdvancedConfiguration(SelectionCacheType.PHASE));
         return values;
     }
 
     @ParameterizedTest
-    @MethodSource("generateConstructionHeuristicTestValues")
+    @MethodSource("generateConstructionHeuristicConfiguration")
     void constructionHeuristicListVarAllocateValueFromQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
@@ -562,20 +607,25 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withEasyScoreCalculatorClass(OneValuePerEntityEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataListSortableSolution.generateSolution(3, 3);
+        var solution = TestdataListSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        for (var i = 0; i < 3; i++) {
-            // The calculator will give a better score for an entity with only one value.
-            assertThat(solution.getEntityList().get(i).getValueList()).hasSize(1);
-            assertThat(solution.getEntityList().get(i).getValueList().get(0).getStrength())
-                    .isEqualTo(phaseConfig.expected[i]);
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValueList()).hasSize(1);
+                assertThat(entity.getValueList().get(0).getStrength()).isEqualTo(phaseConfig.expected[i]);
+            }
         }
     }
 
     @ParameterizedTest
-    @MethodSource("generateConstructionHeuristicTestValues")
+    @MethodSource("generateConstructionHeuristicConfiguration")
     void constructionHeuristicListVarAllocateValueFromQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
@@ -584,106 +634,32 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withEasyScoreCalculatorClass(OneValuePerEntityFactoryEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataListFactorySortableSolution.generateSolution(3, 3);
+        var solution = TestdataListFactorySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
-        for (var i = 0; i < 3; i++) {
-            // The calculator will give a better score for an entity with only one value.
-            assertThat(solution.getEntityList().get(i).getValueList()).hasSize(1);
-            assertThat(solution.getEntityList().get(i).getValueList().get(0).getStrength())
-                    .isEqualTo(phaseConfig.expected[i]);
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValueList()).hasSize(1);
+                assertThat(entity.getValueList().get(0).getStrength()).isEqualTo(phaseConfig.expected[i]);
+            }
         }
     }
 
-    private static List<ConstructionHeuristicTestConfig> generateEntityRangeConstructionHeuristicTestValues() {
+    private static List<ConstructionHeuristicTestConfig> generateEntityRangeConstructionHeuristicConfiguration() {
         var values = new ArrayList<ConstructionHeuristicTestConfig>();
-        // Simple configuration
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.NONE)
-                        .withValueSorterManner(ValueSorterManner.DECREASING_STRENGTH)
-                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
-                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
-                // Since we are starting from decreasing strength
-                // and the entities cannot be sorted,
-                // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.NONE)
-                        .withValueSorterManner(ValueSorterManner.DECREASING_STRENGTH_IF_AVAILABLE)
-                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
-                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
-                // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.NONE)
-                        .withValueSorterManner(ValueSorterManner.INCREASING_STRENGTH)
-                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
-                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
-                // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.NONE)
-                        .withValueSorterManner(ValueSorterManner.INCREASING_STRENGTH_IF_AVAILABLE)
-                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
-                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
-                // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.NONE)
-                        .withValueSorterManner(ValueSorterManner.NONE)
-                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
-                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
-                // The order is not guaranteed
-                null));
-        // Advanced configuration
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
-                                .withValueSelectorConfig(new ValueSelectorConfig()
-                                        .withId("sortedValueSelector")
-                                        .withSelectionOrder(SelectionOrder.SORTED)
-                                        .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))
-                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
-                                        .withValueSelectorConfig(
-                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
-                                        .withDestinationSelectorConfig(new DestinationSelectorConfig())))
-                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
-                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
-                // this is expected: e1[3], e2[2], and e3[1]
-                new int[] { 2, 1, 0 }));
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
-                                .withValueSelectorConfig(new ValueSelectorConfig()
-                                        .withId("sortedValueSelector")
-                                        .withSelectionOrder(SelectionOrder.SORTED)
-                                        .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(ValueSorterManner.INCREASING_STRENGTH))
-                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
-                                        .withValueSelectorConfig(
-                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
-                                        .withDestinationSelectorConfig(new DestinationSelectorConfig())))
-                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
-                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
-                // this is expected: e1[1], e2[2], and e3[3]
-                new int[] { 0, 1, 2 }));
+        values.addAll(generateConstructionHeuristicSimpleConfiguration());
+        values.addAll(generateConstructionHeuristicAdvancedConfiguration(SelectionCacheType.STEP));
         return values;
     }
 
     @ParameterizedTest
-    @MethodSource("generateEntityRangeConstructionHeuristicTestValues")
+    @MethodSource("generateEntityRangeConstructionHeuristicConfiguration")
     void constructionHeuristicListVarEntityRangeAllocateToValueFromQueueComparator(
             ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
@@ -694,22 +670,25 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withEasyScoreCalculatorClass(OneValuePerEntityRangeEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataListSortableEntityProvidingSolution.generateSolution(3, 3);
+        var solution = TestdataListSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
         if (phaseConfig.expected() != null) {
             for (var i = 0; i < 3; i++) {
-                // The calculator will give a better score for an entity with only one value.
-                assertThat(solution.getEntityList().get(i).getValueList()).hasSize(1);
-                assertThat(solution.getEntityList().get(i).getValueList().get(0).getStrength())
-                        .isEqualTo(phaseConfig.expected[i]);
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValueList()).hasSize(1);
+                assertThat(entity.getValueList().get(0).getStrength()).isEqualTo(phaseConfig.expected[i]);
             }
         }
     }
 
     @ParameterizedTest
-    @MethodSource("generateEntityRangeConstructionHeuristicTestValues")
+    @MethodSource("generateEntityRangeConstructionHeuristicConfiguration")
     void constructionHeuristicListVarEntityRangeAllocateToValueFromQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
@@ -719,79 +698,55 @@ class DefaultConstructionHeuristicPhaseTest {
                         .withEasyScoreCalculatorClass(OneValuePerEntityRangeFactoryEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataListFactorySortableEntityProvidingSolution.generateSolution(3, 3);
+        var solution = TestdataListFactorySortableEntityProvidingSolution.generateSolution(3, 3,
+                phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
         if (phaseConfig.expected() != null) {
             for (var i = 0; i < 3; i++) {
-                // The calculator will give a better score for an entity with only one value.
-                assertThat(solution.getEntityList().get(i).getValueList()).hasSize(1);
-                assertThat(solution.getEntityList().get(i).getValueList().get(0).getStrength())
-                        .isEqualTo(phaseConfig.expected[i]);
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValueList()).hasSize(1);
+                assertThat(entity.getValueList().get(0).getStrength()).isEqualTo(phaseConfig.expected[i]);
             }
         }
     }
 
-    private static List<ConstructionHeuristicTestConfig> generateFailingConstructionHeuristicTestValues() {
-        // Entity sorting will throw errors
-        var values = new ArrayList<ConstructionHeuristicTestConfig>();
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT_DECREASING),
-                null));
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.WEAKEST_FIT_DECREASING),
-                null));
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.STRONGEST_FIT_DECREASING),
-                null));
-        // Allocate from pool
-        // Simple configuration
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
-                        .withEntitySorterManner(EntitySorterManner.DECREASING_DIFFICULTY)
-                        .withValueSorterManner(ValueSorterManner.DECREASING_STRENGTH),
-                null));
-        // Advanced configuration
-        values.add(new ConstructionHeuristicTestConfig(
-                new ConstructionHeuristicPhaseConfig()
-                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
-                                .withValueSelectorConfig(new ValueSelectorConfig()
-                                        .withId("sortedValueSelector")
-                                        .withSelectionOrder(SelectionOrder.SORTED)
-                                        .withCacheType(SelectionCacheType.PHASE)
-                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))
-                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
-                                        .withValueSelectorConfig(
-                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
-                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
-                                                .withValueSelectorConfig(new ValueSelectorConfig())
-                                                .withEntitySelectorConfig(new EntitySelectorConfig()
-                                                        .withSelectionOrder(SelectionOrder.SORTED)
-                                                        .withCacheType(SelectionCacheType.PHASE)
-                                                        .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY))))),
-                null));
-        return values;
-    }
-
-    @ParameterizedTest
-    @MethodSource("generateFailingConstructionHeuristicTestValues")
-    void failConstructionHeuristicEntityRangeAllocateToValueFromQueue(ConstructionHeuristicTestConfig phaseConfig) {
+    @Test
+    void failConstructionHeuristicEntityRange() {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataListSortableEntityProvidingSolution.class,
                                 TestdataListSortableEntityProvidingEntity.class,
                                 TestdataListSortableEntityProvidingValue.class)
                         .withEasyScoreCalculatorClass(OneValuePerEntityRangeEasyScoreCalculator.class)
-                        .withPhases(phaseConfig.config());
-        var solution = TestdataListSortableEntityProvidingSolution.generateSolution(3, 3);
+                        .withPhases(
+                                new ConstructionHeuristicPhaseConfig()
+                                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                                        .withId("sortedValueSelector")
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))
+                                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                                                        .withValueSelectorConfig(
+                                                                new ValueSelectorConfig()
+                                                                        .withMimicSelectorRef("sortedValueSelector"))
+                                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                                .withValueSelectorConfig(new ValueSelectorConfig())
+                                                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                                        .withSorterManner(
+                                                                                EntitySorterManner.DECREASING_DIFFICULTY))))));
+        var solution = TestdataListSortableEntityProvidingSolution.generateSolution(3, 3, true);
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
-                .hasMessageContaining(
-                        "The destination selector cannot to sort the entity list when an entity value range is used.");
+                .hasMessageContaining("resolvedSelectionOrder (SORTED) which does not support the resolvedCacheType (PHASE)")
+                .hasMessageContaining("Maybe set the \"cacheType\" to STEP.");
     }
 
     @Test
@@ -805,7 +760,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         "has both basic and list variables and cannot be deduced automatically");
     }
 
-    private record ConstructionHeuristicTestConfig(ConstructionHeuristicPhaseConfig config, int[] expected) {
+    private record ConstructionHeuristicTestConfig(ConstructionHeuristicPhaseConfig config, int[] expected, boolean shuffle) {
 
     }
 }

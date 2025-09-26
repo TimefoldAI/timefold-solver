@@ -13,27 +13,39 @@ public abstract class AbstractSelectorFactory<Solution_, SelectorConfig_ extends
     }
 
     protected void validateCacheTypeVersusSelectionOrder(SelectionCacheType resolvedCacheType,
-            SelectionOrder resolvedSelectionOrder) {
+            SelectionOrder resolvedSelectionOrder, boolean hasEntityRange) {
         switch (resolvedSelectionOrder) {
             case INHERIT:
-                throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                        + ") has a resolvedSelectionOrder (" + resolvedSelectionOrder
-                        + ") which should have been resolved by now.");
-            case ORIGINAL:
-            case RANDOM:
+                throw new IllegalArgumentException(
+                        "The moveSelectorConfig (%s) has a resolvedSelectionOrder (%s) which should have been resolved by now."
+                                .formatted(config, resolvedSelectionOrder));
+            case ORIGINAL, RANDOM:
                 break;
-            case SORTED:
-            case SHUFFLED:
-            case PROBABILISTIC:
+            case SORTED: {
                 if (resolvedCacheType.isNotCached()) {
-                    throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                            + ") has a resolvedSelectionOrder (" + resolvedSelectionOrder
-                            + ") which does not support the resolvedCacheType (" + resolvedCacheType + ").");
+                    throw new IllegalArgumentException(
+                            "The moveSelectorConfig (%s) has a resolvedSelectionOrder (%s) which does not support the resolvedCacheType (%s)."
+                                    .formatted(config, resolvedSelectionOrder, resolvedCacheType));
+                }
+                if (hasEntityRange && resolvedCacheType != SelectionCacheType.STEP) {
+                    throw new IllegalArgumentException(
+                            """
+                                    The moveSelectorConfig (%s) has a resolvedSelectionOrder (%s) which does not support the resolvedCacheType (%s).
+                                    Maybe set the "cacheType" to STEP."""
+                                    .formatted(config, resolvedSelectionOrder, resolvedCacheType));
+                }
+                break;
+            }
+            case SHUFFLED, PROBABILISTIC:
+                if (resolvedCacheType.isNotCached()) {
+                    throw new IllegalArgumentException(
+                            "The moveSelectorConfig (%s) has a resolvedSelectionOrder (%s) which does not support the resolvedCacheType (%s)."
+                                    .formatted(config, resolvedSelectionOrder, resolvedCacheType));
                 }
                 break;
             default:
-                throw new IllegalStateException("The resolvedSelectionOrder (" + resolvedSelectionOrder
-                        + ") is not implemented.");
+                throw new IllegalStateException(
+                        "The resolvedSelectionOrder (%s) is not implemented.".formatted(resolvedSelectionOrder));
         }
     }
 }
