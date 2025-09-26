@@ -16,6 +16,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  * Implementations are expected to be stateless.
  * The solver may choose to reuse instances.
  *
+ * @deprecated Deprecated in favor of {@link SorterWeightFactory}.
+ * 
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */

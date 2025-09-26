@@ -60,7 +60,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         SelectionOrder resolvedSelectionOrder =
                 SelectionOrder.resolve(config.getSelectionOrder(), inheritedSelectionOrder);
 
-        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder);
+        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder, false);
         validateSorting(resolvedSelectionOrder);
         validateProbability(resolvedSelectionOrder);
         validateSelectedLimit(minimumCacheType);

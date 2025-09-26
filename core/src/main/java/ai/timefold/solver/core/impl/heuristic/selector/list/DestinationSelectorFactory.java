@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.list;
 
-import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY;
 import static ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.NONE;
 
 import java.util.Objects;
@@ -43,29 +42,16 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                 && configPolicy.getEntitySorterManner() != NONE;
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
         var hasDifficultySorter = entityDescriptor.getDecreasingDifficultySorter() != null;
-        var isEntityRangeSortingValid =
-                // no entity value range, so we accept any sorting manner
-                entityValueRangeRecorderId == null
-                        // the entity value range is specified
-                        // we only accept DECREASING_DIFFICULTY,
-                        // indicating that the configuration requires sorting
-                        || hasSortManner && configPolicy.getEntitySorterManner() == DECREASING_DIFFICULTY;
-
-        if (hasSortManner && hasDifficultySorter && isEntityRangeSortingValid
-                && entitySelectorConfig.getSorterManner() == null) {
-            entitySelectorConfig.setCacheType(SelectionCacheType.PHASE);
+        if (hasSortManner && hasDifficultySorter && entitySelectorConfig.getSorterManner() == null) {
+            if (entityValueRangeRecorderId == null) {
+                // Solution-range model
+                entitySelectorConfig.setCacheType(SelectionCacheType.PHASE);
+            } else {
+                // Entity-range model requires the sorting to be done in each step
+                entitySelectorConfig.setCacheType(SelectionCacheType.STEP);
+            }
             entitySelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
             entitySelectorConfig.setSorterManner(configPolicy.getEntitySorterManner());
-        }
-        if (entityValueRangeRecorderId != null && entitySelectorConfig.getSelectionOrder() != null
-                && entitySelectorConfig.getSelectionOrder() == SelectionOrder.SORTED) {
-            // Sorting entities is not permitted when using an entity value range,
-            // as the list of reachable entities is only generated after selecting a value.
-            // This process prevents sorting and caching at the phase level.
-            throw new IllegalStateException("""
-                    The destination selector cannot to sort the entity list when an entity value range is used.
-                    Maybe remove the setting "EntitySorterManner" from the phase config.
-                    Maybe remove the entity selector sorting settings from the destination config.""");
         }
         var entitySelector = EntitySelectorFactory.<Solution_> create(entitySelectorConfig)
                 .buildEntitySelector(configPolicy, minimumCacheType, selectionOrder,

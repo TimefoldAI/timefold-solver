@@ -115,7 +115,7 @@ public class ValueSelectorFactory<Solution_>
         if (nearbySelectionConfig != null) {
             nearbySelectionConfig.validateNearby(resolvedCacheType, resolvedSelectionOrder);
         }
-        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder);
+        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder, entityValueRangeRecorderId != null);
         validateSorting(resolvedSelectionOrder);
         validateProbability(resolvedSelectionOrder);
         validateSelectedLimit(minimumCacheType);

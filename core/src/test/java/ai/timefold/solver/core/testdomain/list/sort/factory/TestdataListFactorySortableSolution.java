@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.testdomain.list.sort.factory;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -20,13 +23,18 @@ public class TestdataListFactorySortableSolution {
                 TestdataListFactorySortableValue.class);
     }
 
-    public static TestdataListFactorySortableSolution generateSolution(int valueCount, int entityCount) {
-        var entityList = IntStream.range(0, entityCount)
+    public static TestdataListFactorySortableSolution generateSolution(int valueCount, int entityCount, boolean shuffle) {
+        var entityList = new ArrayList<>(IntStream.range(0, entityCount)
                 .mapToObj(i -> new TestdataListFactorySortableEntity("Generated Entity " + i, i))
-                .toList();
-        var valueList = IntStream.range(0, valueCount)
+                .toList());
+        var valueList = new ArrayList<>(IntStream.range(0, valueCount)
                 .mapToObj(i -> new TestdataListFactorySortableValue("Generated Value " + i, i))
-                .toList();
+                .toList());
+        if (shuffle) {
+            var random = new Random(0);
+            Collections.shuffle(entityList, random);
+            Collections.shuffle(valueList, random);
+        }
         TestdataListFactorySortableSolution solution = new TestdataListFactorySortableSolution();
         solution.setValueList(valueList);
         solution.setEntityList(entityList);

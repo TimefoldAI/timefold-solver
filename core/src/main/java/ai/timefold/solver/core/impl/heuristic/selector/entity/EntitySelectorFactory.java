@@ -99,7 +99,8 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         if (nearbySelectionConfig != null) {
             nearbySelectionConfig.validateNearby(resolvedCacheType, resolvedSelectionOrder);
         }
-        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder);
+        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder,
+                valueRangeRecorderId != null && valueRangeRecorderId.recorderId() != null);
         validateSorting(resolvedSelectionOrder);
         validateProbability(resolvedSelectionOrder);
         validateSelectedLimit(minimumCacheType);
