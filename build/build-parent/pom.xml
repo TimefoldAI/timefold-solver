@@ -21,7 +21,7 @@
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
     <version.ch.qos.logback>1.5.18</version.ch.qos.logback>
-    <version.io.quarkus>3.26.3</version.io.quarkus>
+    <version.io.quarkus>3.28.1</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.1</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.5</version.org.assertj>
