@@ -16,7 +16,6 @@ import ai.timefold.solver.core.api.function.ToIntTriFunction;
 import ai.timefold.solver.core.api.function.ToLongQuadFunction;
 import ai.timefold.solver.core.api.function.ToLongTriFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
-import ai.timefold.solver.core.impl.move.streams.maybeapi.BiDataFilter;
 
 /**
  * A class that holds common lambdas that are guaranteed to be the same across method calls.
@@ -36,10 +35,6 @@ public final class ConstantLambdaUtils {
 
     @SuppressWarnings("rawtypes")
     private static final BiPredicate NOT_EQUALS = (a, b) -> !Objects.equals(a, b);
-
-    @SuppressWarnings("rawtypes")
-    private static final BiDataFilter NOT_EQUALS_FOR_DATA_STREAMS =
-            (BiDataFilter<Object, Object, Object>) (solutionView, a, b) -> !Objects.equals(a, b);
 
     @SuppressWarnings("rawtypes")
     private static final BiFunction BI_PICK_FIRST = (a, b) -> a;
@@ -153,17 +148,6 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("unchecked")
     public static <A> BiPredicate<A, A> notEquals() {
         return NOT_EQUALS;
-    }
-
-    /**
-     * Returns a {@link BiDataFilter} that return true if and only if its inputs are not equal according to
-     * {@link Objects#equals(Object, Object)}.
-     *
-     * @return never null
-     */
-    @SuppressWarnings("unchecked")
-    public static <Solution_, A> BiDataFilter<Solution_, A, A> notEqualsForDataStreams() {
-        return NOT_EQUALS_FOR_DATA_STREAMS;
     }
 
     /**

@@ -120,18 +120,6 @@ class PlanningSolutionMetaModelTest {
                             .isEqualTo(TestdataValue.class);
                 }
 
-                @Test
-                void isGenuine() {
-                    assertThat(variableMetaModel.isGenuine())
-                            .isTrue();
-                }
-
-                @Test
-                void isNotList() {
-                    assertThat(variableMetaModel.isList())
-                            .isFalse();
-                }
-
             }
 
         }
@@ -240,18 +228,6 @@ class PlanningSolutionMetaModelTest {
                             .isEqualTo(TestdataListValue.class);
                 }
 
-                @Test
-                void isGenuine() {
-                    assertThat(variableMetaModel.isGenuine())
-                            .isTrue();
-                }
-
-                @Test
-                void isList() {
-                    assertThat(variableMetaModel.isList())
-                            .isTrue();
-                }
-
             }
 
         }
@@ -317,18 +293,6 @@ class PlanningSolutionMetaModelTest {
                 void hasProperType() {
                     assertThat(variableMetaModel.type())
                             .isEqualTo(TestdataListEntity.class);
-                }
-
-                @Test
-                void isNotGenuine() {
-                    assertThat(variableMetaModel.isGenuine())
-                            .isFalse();
-                }
-
-                @Test
-                void isList() {
-                    assertThat(variableMetaModel.isList())
-                            .isFalse();
                 }
 
             }

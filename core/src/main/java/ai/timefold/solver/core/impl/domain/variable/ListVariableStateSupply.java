@@ -38,10 +38,8 @@ import org.jspecify.annotations.Nullable;
  *      which doesn't care whether the variable is internal or externalized.
  */
 @NullMarked
-public interface ListVariableStateSupply<Solution_, Entity_, Element_> extends
-        SourcedListVariableListener<Solution_, Entity_, Element_>,
-        SingletonInverseVariableSupply,
-        IndexVariableSupply {
+public interface ListVariableStateSupply<Solution_, Entity_, Element_>
+        extends SourcedListVariableListener<Solution_, Entity_, Element_>, SingletonInverseVariableSupply, IndexVariableSupply {
 
     void externalize(IndexShadowVariableDescriptor<Solution_> shadowVariableDescriptor);
 

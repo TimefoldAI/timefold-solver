@@ -43,11 +43,11 @@ class RootVariableSourceTest {
     private final PlanningEntityMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue> shadowEntityMetaModel =
             planningSolutionMetaModel.entity(TestdataInvalidDeclarativeValue.class);
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> previousElementMetaModel =
-            shadowEntityMetaModel.shadowVariable("previous");
+            shadowEntityMetaModel.shadowVariable("previous", TestdataInvalidDeclarativeValue.class);
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> shadowVariableMetaModel =
-            shadowEntityMetaModel.shadowVariable("shadow");
+            shadowEntityMetaModel.shadowVariable("shadow", TestdataInvalidDeclarativeValue.class);
     private final ShadowVariableMetaModel<TestdataInvalidDeclarativeSolution, TestdataInvalidDeclarativeValue, TestdataInvalidDeclarativeValue> dependencyMetaModel =
-            shadowEntityMetaModel.shadowVariable("dependency");
+            shadowEntityMetaModel.shadowVariable("dependency", TestdataInvalidDeclarativeValue.class);
 
     private void assertChainToVariableEntity(VariableSourceReference variableSourceReference, String... expectedNames) {
         var chain = variableSourceReference.chainFromRootEntityToVariableEntity();

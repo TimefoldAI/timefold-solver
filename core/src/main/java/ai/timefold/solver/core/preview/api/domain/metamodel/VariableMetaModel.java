@@ -1,15 +1,12 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
-import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-
 import org.jspecify.annotations.NullMarked;
 
 /**
  * Describes a variable in the domain model.
  * See extending interfaces for more specific types of variables.
  * <p>
- * <strong>This package and all of its contents are part of the Move Streams API,
+ * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
  * There are no guarantees for backward compatibility;
  * any class, method, or field may change or be removed without prior notice,
@@ -18,7 +15,8 @@ import org.jspecify.annotations.NullMarked;
  * We encourage you to try the API and give us feedback on your experience with it,
  * before we finalize the API.
  * Please direct your feedback to
- * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>.
+ * <a href="https://github.com/TimefoldAI/timefold-solver/discussions">Timefold Solver Github</a>
+ * or to <a href="https://discord.com/channels/1413420192213631086/1414521616955605003">Timefold Discord</a>.
  * 
  * @param <Solution_>
  * @param <Entity_>
@@ -48,24 +46,5 @@ public sealed interface VariableMetaModel<Solution_, Entity_, Value_>
      * @return never null
      */
     String name();
-
-    /**
-     * Whether this variable is a @{@link PlanningListVariable} or a {@link PlanningVariable}.
-     * If list, this is guaranteed to extend {@link PlanningListVariableMetaModel}.
-     * Otherwise it is guaranteed to extend either {@link PlanningVariableMetaModel} or {@link ShadowVariableMetaModel}.
-     *
-     * @return true if this variable is a genuine @{@link PlanningListVariable}, false otherwise
-     */
-    boolean isList();
-
-    /**
-     * Whether this variable is a genuine variable.
-     * If genuine, this is guaranteed to extend either {@link PlanningVariableMetaModel} or
-     * {@link PlanningListVariableMetaModel}.
-     * Otherwise it is guaranteed to extend {@link ShadowVariableMetaModel}.
-     *
-     * @return true if this variable is genuine, false otherwise
-     */
-    boolean isGenuine();
 
 }
