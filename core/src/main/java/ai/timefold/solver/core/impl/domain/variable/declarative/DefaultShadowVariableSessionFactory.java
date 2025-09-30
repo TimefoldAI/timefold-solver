@@ -81,9 +81,10 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     return """
                             The entity's (%s) shadow variable (%s) refers to a declarative shadow variable on a non-given entity (%s)
                             variable via the source path (%s).
-                            """.formatted(sourceEntity, referringShadowVariable.getVariableName(),
-                            missingReferredEntity,
-                            referredVariableSource.variablePath());
+                            """
+                            .formatted(sourceEntity, referringShadowVariable.getVariableName(),
+                                    missingReferredEntity,
+                                    referredVariableSource.variablePath());
                 }
 
                 @Override

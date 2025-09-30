@@ -379,10 +379,10 @@ public class SolutionManagerTest {
                 .hasMessageContainingAll(
                         "The entity's (%s) shadow variable (serviceStartTime) refers to a declarative shadow variable on a non-given entity (%s)"
                                 .formatted(a1,
-                                a2),
+                                        a2),
                         "The entity's (%s) shadow variable (serviceReadyTime) refers to a declarative shadow variable on a non-given entity (%s)"
                                 .formatted(a2,
-                                b2),
+                                        b2),
                         "The entity's (%s) shadow variable (serviceStartTime) refers to a declarative shadow variable on a non-given entity (%s)"
                                 .formatted(b2, b1));
     }
