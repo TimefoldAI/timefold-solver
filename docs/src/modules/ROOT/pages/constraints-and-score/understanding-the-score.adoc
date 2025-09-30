@@ -17,7 +17,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
-System.out.println(solutionManager.explain(vehicleRoutePlan));
+System.out.println(solutionManager.analyze(vehicleRoutePlan));
 ----
 ====
 
@@ -273,7 +273,7 @@ Java::
 [source,java,options="nowrap"]
 ----
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
-ScoreExplanation<VehicleRoutePlan, HardSoftLongScore> scoreExplanation = solutionManager.explain(vehicleRoutePlan);
+ScoreExplanation<VehicleRoutePlan, HardSoftLongScore> scoreExplanation = solutionManager.analyze(vehicleRoutePlan);
 Map<Object, Indictment<HardSoftLongScore>> indictmentMap = scoreExplanation.getIndictmentMap();
 for (Visit visit : vehicleRoutePlan.getVisits()) {
     Indictment<HardSoftLongScore> indictment = indictmentMap.get(visit);
