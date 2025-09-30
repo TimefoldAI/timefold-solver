@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import ai.timefold.solver.core.api.function.TriConsumer;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -9,10 +12,9 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.ToIntFunction;
 
-import ai.timefold.solver.core.api.function.TriConsumer;
+import static org.assertj.core.api.Assertions.assertThat;
 
-import org.junit.jupiter.api.Test;
-
+@Execution(ExecutionMode.CONCURRENT)
 public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrderGraph> {
     /**
      * Create a topological graph of the given size
