@@ -163,8 +163,8 @@ class SingleConstraintAssertionTest {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContainingAll(
                         "Found referenced entities that were not given",
-                        "The entity's (current{endTime=null}) shadow variable (startTime) refers to a non-given entity (dependency{endTime=null})",
-                        "The entity's (dependency{endTime=null}) shadow variable (startTime) refers to a non-given entity (previous{endTime=null})");
+                        "The entity's (current{endTime=null}) shadow variable (startTime) refers to a declarative shadow variable on a non-given entity (dependency{endTime=null})",
+                        "The entity's (dependency{endTime=null}) shadow variable (startTime) refers to a declarative shadow variable on a non-given entity (previous{endTime=null})");
     }
 
     @Test

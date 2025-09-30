@@ -79,7 +79,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     RootVariableSource<?, ?> referredVariableSource) {
                 String getMessage() {
                     return """
-                            The entity's (%s) shadow variable (%s) refers to a non-given entity (%s)
+                            The entity's (%s) shadow variable (%s) refers to a declarative shadow variable on a non-given entity (%s)
                             variable via the source path (%s).
                             """.formatted(sourceEntity, referringShadowVariable.getVariableName(),
                             missingReferredEntity,
@@ -109,13 +109,15 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     if (shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
                         for (var source : shadowDescriptor.getSources()) {
                             for (var variableSourceReference : source.variableSourceReferences()) {
-                                source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
-                                        .accept(entity, maybeMissingEntity -> {
-                                            if (!entitySet.contains(maybeMissingEntity)) {
-                                                missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
-                                                        shadowDescriptor, source));
-                                            }
-                                        });
+                                if (variableSourceReference.isDeclarative()) {
+                                    source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
+                                            .accept(entity, maybeMissingEntity -> {
+                                                if (!entitySet.contains(maybeMissingEntity)) {
+                                                    missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
+                                                            shadowDescriptor, source));
+                                                }
+                                            });
+                                }
                             }
                         }
                     }
@@ -136,14 +138,16 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         if (shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
                             for (var source : shadowDescriptor.getSources()) {
                                 for (var variableSourceReference : source.variableSourceReferences()) {
-                                    source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
-                                            .accept(entity, maybeMissingEntity -> {
-                                                if (!entitySet.contains(maybeMissingEntity) &&
-                                                        missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
-                                                                shadowDescriptor, source))) {
-                                                    anyChanged.setPlain(true);
-                                                }
-                                            });
+                                    if (variableSourceReference.isDeclarative()) {
+                                        source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
+                                                .accept(entity, maybeMissingEntity -> {
+                                                    if (!entitySet.contains(maybeMissingEntity) &&
+                                                            missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
+                                                                    shadowDescriptor, source))) {
+                                                        anyChanged.setPlain(true);
+                                                    }
+                                                });
+                                    }
                                 }
                             }
                         }

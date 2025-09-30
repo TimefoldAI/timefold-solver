@@ -377,11 +377,13 @@ public class SolutionManagerTest {
         assertThatCode(() -> SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, a1, e1))
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContainingAll(
-                        "The entity's (%s) shadow variable (serviceStartTime) refers to a non-given entity (%s)".formatted(a1,
+                        "The entity's (%s) shadow variable (serviceStartTime) refers to a declarative shadow variable on a non-given entity (%s)"
+                                .formatted(a1,
                                 a2),
-                        "The entity's (%s) shadow variable (serviceReadyTime) refers to a non-given entity (%s)".formatted(a2,
+                        "The entity's (%s) shadow variable (serviceReadyTime) refers to a declarative shadow variable on a non-given entity (%s)"
+                                .formatted(a2,
                                 b2),
-                        "The entity's (%s) shadow variable (serviceStartTime) refers to a non-given entity (%s)"
+                        "The entity's (%s) shadow variable (serviceStartTime) refers to a declarative shadow variable on a non-given entity (%s)"
                                 .formatted(b2, b1));
     }
 
