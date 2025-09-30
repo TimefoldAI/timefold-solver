@@ -18,8 +18,10 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.IntFunction;
+import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.function.TriFunction;
+import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -71,8 +73,35 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         }
 
         public GraphDescriptor<Solution_> withDiscoveredReferencedEntities() {
+            record MissingEntity(Object sourceEntity,
+                    Object missingReferredEntity,
+                    DeclarativeShadowVariableDescriptor<?> referringShadowVariable,
+                    RootVariableSource<?, ?> referredVariableSource) {
+                String getMessage() {
+                    return """
+                            The entity's (%s) shadow variable (%s) refers to a non-given entity (%s)
+                            variable via the source path (%s).
+                            """.formatted(sourceEntity, referringShadowVariable.getVariableName(),
+                            missingReferredEntity,
+                            referredVariableSource.variablePath());
+                }
+
+                @Override
+                public boolean equals(Object object) {
+                    if (!(object instanceof MissingEntity that))
+                        return false;
+                    return missingReferredEntity == that.missingReferredEntity;
+                }
+
+                @Override
+                public int hashCode() {
+                    return System.identityHashCode(missingReferredEntity);
+                }
+            }
             var entitySet = CollectionUtils.newIdentityHashSet(entities.length);
             entitySet.addAll(Arrays.asList(entities));
+            var missingEntitySet = new HashSet<MissingEntity>();
+
             var declarativeShadowDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
 
             for (var entity : entities) {
@@ -81,13 +110,18 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                         for (var source : shadowDescriptor.getSources()) {
                             for (var variableSourceReference : source.variableSourceReferences()) {
                                 source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
-                                        .accept(entity, entitySet::add);
+                                        .accept(entity, maybeMissingEntity -> {
+                                            if (!entitySet.contains(maybeMissingEntity)) {
+                                                missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
+                                                        shadowDescriptor, source));
+                                            }
+                                        });
                             }
                         }
                     }
                 }
             }
-            if (entitySet.size() == entities.length) {
+            if (missingEntitySet.isEmpty()) {
                 // No new entities were discovered; reuse the original descriptor
                 return this;
             }
@@ -97,14 +131,16 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
             AtomicBoolean anyChanged = new AtomicBoolean(false);
             do {
                 anyChanged.setPlain(false);
-                for (var entity : new ArrayList<>(entitySet)) {
+                for (var entity : missingEntitySet.stream().map(MissingEntity::missingReferredEntity).toList()) {
                     for (var shadowDescriptor : declarativeShadowDescriptors) {
                         if (shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
                             for (var source : shadowDescriptor.getSources()) {
                                 for (var variableSourceReference : source.variableSourceReferences()) {
                                     source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
-                                            .accept(entity, newEntity -> {
-                                                if (entitySet.add(newEntity)) {
+                                            .accept(entity, maybeMissingEntity -> {
+                                                if (!entitySet.contains(maybeMissingEntity) &&
+                                                        missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
+                                                                shadowDescriptor, source))) {
                                                     anyChanged.setPlain(true);
                                                 }
                                             });
@@ -115,8 +151,19 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                 }
             } while (anyChanged.getPlain());
 
-            return new GraphDescriptor<>(consistencyTracker, solutionDescriptor,
-                    variableReferenceGraphBuilder, entitySet.toArray(), graphCreator);
+            throw new IllegalArgumentException("""
+                    Found referenced entities that were not given:
+                    %s
+                    When ConstraintVerifier.verifyThat().given(...) or
+                    %s.updateShadowVariables(solutionClass, ...) is used,
+                    all referenced entities must be passed in as arguments.
+                    Maybe add the missing entities as arguments?
+                    """.formatted(missingEntitySet.stream()
+                    .map(MissingEntity::getMessage)
+                    .sorted()
+                    .limit(5)
+                    .collect(Collectors.joining("  - ", "  - ", "")),
+                    SolutionManager.class.getSimpleName()));
         }
 
         public ChangedVariableNotifier<Solution_> changedVariableNotifier() {

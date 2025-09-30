@@ -16,7 +16,6 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
-import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
@@ -142,7 +141,7 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
-    void updatesVariablesReachableFromGivenEntities() {
+    void failsIfNonGivenEntitiesAreReferenced() {
         var startTime = LocalDate.of(2000, 1, 1).atTime(LocalTime.MIDNIGHT);
         var entity = new TestdataDependencyEntity(startTime);
         var dependency = new TestdataDependencyValue("dependency", Duration.ofHours(1));
@@ -156,14 +155,16 @@ class SingleConstraintAssertionTest {
         dependency.setPreviousValue(previous);
         current.setPreviousValue(dependency);
 
-        SolutionManager.updateShadowVariables(TestdataDependencySolution.class, current, entity);
-
         assertThatCode(() -> constraintVerifierForConsistency
                 .verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
                 .given(current)
                 // current should have an end time 3 hours pass the start time of the entity
                 .penalizesBy(180))
-                .doesNotThrowAnyException();
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll(
+                        "Found referenced entities that were not given",
+                        "The entity's (current{endTime=null}) shadow variable (startTime) refers to a non-given entity (dependency{endTime=null})",
+                        "The entity's (dependency{endTime=null}) shadow variable (startTime) refers to a non-given entity (previous{endTime=null})");
     }
 
     @Test
