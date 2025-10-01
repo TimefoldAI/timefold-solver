@@ -17,7 +17,8 @@ Java::
 [source,java,options="nowrap"]
 ----
 SolutionManager<VehicleRoutePlan, HardSoftLongScore> solutionManager = SolutionManager.create(solverFactory);
-System.out.println(solutionManager.explain(vehicleRoutePlan));
+ScoreAnalysis<HardSoftLongScore> scoreAnalysis = solutionManager.analyze(vehicleRoutePlan);
+System.out.println(scoreAnalysis.summarize());
 ----
 ====
 
@@ -28,13 +29,13 @@ Explanation of score (0hard/-10343soft):
     Constraint matches:
         -10343soft: constraint (minimizeTravelTime) has 6 matches:
             -2335soft: justified with (MinimizeTravelTimeJustification[vehicleName=1, totalDrivingTimeSeconds=2335, description=Vehicle '1' total travel time is 0 hours 39 minutes.])
-            ...
-        ...
-    Indictments (top 5 of 6):
-        -2335soft: indicted with (1) has 1 matches:
-            -2335soft: constraint (minimizeTravelTime)
+            ... [2 more displayed constraint matches]
+            ... and 3 more matches
         ...
 ----
+
+**Note:**  
+The number of matches shown per constraint can be controlled by calling `analyze(vehicleRoutePlan).summarize(topLimit)`, where `topLimit` is the maximum number of matches to display for each constraint. For example, `summarize(5)` will show up to 5 matches per constraint. To show all matches use `Integer.MAX_VALUE` as parameter.
 
 [IMPORTANT]
 ====
