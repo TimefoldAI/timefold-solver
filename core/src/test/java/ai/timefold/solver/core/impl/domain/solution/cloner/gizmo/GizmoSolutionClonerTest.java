@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -16,7 +17,7 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.AbstractSolutionClonerTest;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.util.MutableReference;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
@@ -40,7 +41,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
     @Override
     protected <Solution_> SolutionCloner<Solution_> createSolutionCloner(SolutionDescriptor<Solution_> solutionDescriptor) {
         var className = GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor);
-        var classBytecodeHolder = new MutableReference<byte[]>(null);
+        var classBytecodeHolder = new ArrayList<Pair<String, byte[]>>();
         var classOutput =
                 GizmoSolutionClonerImplementor.createClassOutputWithDebuggingCapability(classBytecodeHolder);
         var classCreator = ClassCreator.builder()
@@ -66,7 +67,6 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                 Collections.singleton(solutionDescriptor.getSolutionClass()),
                 memoizedSolutionOrEntityDescriptorMap, deepClonedClassSet);
         classCreator.close();
-        final var byteCode = classBytecodeHolder.getValue();
 
         var gizmoClassLoader = new ClassLoader() {
             // getName() is an abstract method in Java 11 but not in Java 8
@@ -77,12 +77,13 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
 
             @Override
             public Class<?> findClass(String name) throws ClassNotFoundException {
-                if (className.equals(name)) {
-                    return defineClass(name, byteCode, 0, byteCode.length);
-                } else {
-                    // Not a Gizmo generated class; load from context class loader
-                    return Thread.currentThread().getContextClassLoader().loadClass(name);
+                for (var entry : classBytecodeHolder) {
+                    if (entry.key().equals(name)) {
+                        return defineClass(name, entry.value(), 0, entry.value().length);
+                    }
                 }
+                // Not a Gizmo generated class; load from context class loader
+                return Thread.currentThread().getContextClassLoader().loadClass(name);
             }
         };
 

@@ -1330,15 +1330,15 @@ class SingleConstraintAssertionTest {
         dependent.setPreviousValue(null);
         dependency.setPreviousValue(dependent);
 
-        dependent.setInvalid(null);
-        dependency.setInvalid(null);
+        dependent.setIsInvalid(null);
+        dependency.setIsInvalid(null);
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
                 .given(dependency, dependent)
                 .penalizes(0);
 
-        assertThat(dependent.isInvalid()).isNull();
-        assertThat(dependency.isInvalid()).isNull();
+        assertThat(dependent.getIsInvalid()).isNull();
+        assertThat(dependency.getIsInvalid()).isNull();
 
         dependent.setPreviousValue(dependency);
         dependency.setPreviousValue(null);
@@ -1352,8 +1352,8 @@ class SingleConstraintAssertionTest {
                 // 60 + 120 = 180
                 .penalizesBy(180);
 
-        assertThat(dependent.isInvalid()).isNull();
-        assertThat(dependency.isInvalid()).isNull();
+        assertThat(dependent.getIsInvalid()).isNull();
+        assertThat(dependency.getIsInvalid()).isNull();
     }
 
     @Test
@@ -1368,7 +1368,7 @@ class SingleConstraintAssertionTest {
         dependent.setPreviousValue(null);
         dependency.setPreviousValue(dependent);
 
-        dependency.setInvalid(false);
+        dependency.setIsInvalid(false);
         dependency.setStartTime(LocalDateTime.MIN.plusHours(1));
         dependency.setEndTime(LocalDateTime.MIN.plusHours(2));
 
@@ -1377,13 +1377,13 @@ class SingleConstraintAssertionTest {
                 .penalizesBy(120);
 
         var singleValue = new TestdataDependencyValue("single", Duration.ofHours(1L));
-        singleValue.setInvalid(false);
+        singleValue.setIsInvalid(false);
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
                 .given(singleValue)
                 .penalizes(0);
 
-        singleValue.setInvalid(true);
+        singleValue.setIsInvalid(true);
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
                 .given(singleValue)
@@ -1407,15 +1407,15 @@ class SingleConstraintAssertionTest {
         dependent.setPreviousValue(null);
         dependency.setPreviousValue(dependent);
 
-        dependent.setInvalid(null);
-        dependency.setInvalid(null);
+        dependent.setIsInvalid(null);
+        dependency.setIsInvalid(null);
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
                 .givenSolution(solution)
                 .penalizes(0);
 
-        assertThat(dependent.isInvalid()).isNull();
-        assertThat(dependency.isInvalid()).isNull();
+        assertThat(dependent.getIsInvalid()).isNull();
+        assertThat(dependency.getIsInvalid()).isNull();
 
         entity.setValues(List.of(dependency, dependent));
         dependent.setPreviousValue(dependency);
@@ -1430,8 +1430,8 @@ class SingleConstraintAssertionTest {
                 // 60 + 120 = 180
                 .penalizesBy(180);
 
-        assertThat(dependent.isInvalid()).isNull();
-        assertThat(dependency.isInvalid()).isNull();
+        assertThat(dependent.getIsInvalid()).isNull();
+        assertThat(dependency.getIsInvalid()).isNull();
     }
 
     @Test
@@ -1450,7 +1450,7 @@ class SingleConstraintAssertionTest {
         dependent.setPreviousValue(null);
         dependency.setPreviousValue(dependent);
 
-        dependency.setInvalid(false);
+        dependency.setIsInvalid(false);
         dependency.setStartTime(LocalDateTime.MIN.plusHours(1));
         dependency.setEndTime(LocalDateTime.MIN.plusHours(2));
 
@@ -1469,14 +1469,14 @@ class SingleConstraintAssertionTest {
         solution.setEntities(List.of(entity));
         solution.setValues(List.of(singleValue));
 
-        singleValue.setInvalid(false);
+        singleValue.setIsInvalid(false);
         singleValue.setEntity(entity);
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
                 .givenSolution(solution)
                 .penalizes(0);
 
-        singleValue.setInvalid(true);
+        singleValue.setIsInvalid(true);
 
         constraintVerifierForConsistency.verifyThat(TestdataDependencyConstraintProvider::penalizeInconsistentTasks)
                 .givenSolution(solution)

@@ -20,7 +20,7 @@ public class TestdataDependencyConstraintProvider implements ConstraintProvider 
 
     public Constraint penalizeInconsistentTasks(@NonNull ConstraintFactory constraintFactory) {
         return constraintFactory.forEachUnfiltered(TestdataDependencyValue.class)
-                .filter(TestdataDependencyValue::isInvalid)
+                .filter(TestdataDependencyValue::getIsInvalid)
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Invalid task");
     }

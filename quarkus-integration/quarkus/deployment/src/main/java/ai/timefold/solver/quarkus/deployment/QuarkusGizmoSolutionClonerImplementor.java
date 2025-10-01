@@ -2,7 +2,6 @@ package ai.timefold.solver.quarkus.deployment;
 
 import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.SortedSet;
 
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionClonerImplementor;
@@ -11,20 +10,20 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 
 import io.quarkus.gizmo.BranchResult;
 import io.quarkus.gizmo.BytecodeCreator;
-import io.quarkus.gizmo.ClassCreator;
 import io.quarkus.gizmo.MethodCreator;
 import io.quarkus.gizmo.MethodDescriptor;
 import io.quarkus.gizmo.ResultHandle;
 
 class QuarkusGizmoSolutionClonerImplementor extends GizmoSolutionClonerImplementor {
     @Override
-    protected void createFields(ClassCreator classCreator) {
+    protected void createFields(ClonerDescriptor clonerDescriptor) {
         // do nothing, we don't need a shallow cloner
     }
 
-    protected void createSetSolutionDescriptor(ClassCreator classCreator, SolutionDescriptor<?> solutionDescriptor) {
+    @Override
+    protected void createSetSolutionDescriptor(ClonerDescriptor clonerDescriptor) {
         // do nothing, we don't need to create a shallow cloner
-        MethodCreator methodCreator = classCreator.getMethodCreator(
+        MethodCreator methodCreator = clonerDescriptor.classCreator().getMethodCreator(
                 MethodDescriptor.ofMethod(GizmoSolutionCloner.class, "setSolutionDescriptor", void.class,
                         SolutionDescriptor.class));
 
@@ -32,28 +31,25 @@ class QuarkusGizmoSolutionClonerImplementor extends GizmoSolutionClonerImplement
     }
 
     @Override
-    protected BytecodeCreator createUnknownClassHandler(BytecodeCreator bytecodeCreator,
-            SolutionDescriptor<?> solutionDescriptor,
+    protected BytecodeCreator createUnknownClassHandler(ClonerDescriptor clonerDescriptor,
+            ClonerMethodDescriptor clonerMethodDescriptor,
             Class<?> entityClass,
-            ResultHandle toClone,
-            ResultHandle cloneMap) {
+            ResultHandle toClone) {
         // do nothing, since we cannot encounter unknown classes
-        return bytecodeCreator;
+        return clonerMethodDescriptor.bytecodeCreator();
     }
 
     @Override
-    protected void createAbstractDeepCloneHelperMethod(ClassCreator classCreator,
-            Class<?> entityClass,
-            SolutionDescriptor<?> solutionDescriptor,
-            Map<Class<?>, GizmoSolutionOrEntityDescriptor> memoizedSolutionOrEntityDescriptorMap,
-            SortedSet<Class<?>> deepClonedClassesSortedSet) {
+    protected void createAbstractDeepCloneHelperMethod(ClonerDescriptor clonerDescriptor,
+            Class<?> entityClass) {
         MethodCreator methodCreator =
-                classCreator.getMethodCreator(getEntityHelperMethodName(entityClass), entityClass, entityClass, Map.class);
+                clonerDescriptor.classCreator().getMethodCreator(getEntityHelperMethodName(entityClass), entityClass,
+                        entityClass, Map.class);
         methodCreator.setModifiers(Modifier.STATIC | Modifier.PRIVATE);
 
         GizmoSolutionOrEntityDescriptor entityDescriptor =
-                memoizedSolutionOrEntityDescriptorMap.computeIfAbsent(entityClass,
-                        (key) -> new GizmoSolutionOrEntityDescriptor(solutionDescriptor, entityClass));
+                clonerDescriptor.memoizedSolutionOrEntityDescriptorMap().computeIfAbsent(entityClass,
+                        (key) -> new GizmoSolutionOrEntityDescriptor(clonerDescriptor.solutionDescriptor(), entityClass));
 
         ResultHandle toClone = methodCreator.getMethodParam(0);
         ResultHandle cloneMap = methodCreator.getMethodParam(1);
