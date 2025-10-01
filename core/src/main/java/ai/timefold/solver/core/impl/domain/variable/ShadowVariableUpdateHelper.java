@@ -136,7 +136,8 @@ public final class ShadowVariableUpdateHelper<Solution_> {
             return new InternalShadowVariableSession<>(solutionDescriptor,
                     DefaultShadowVariableSessionFactory.buildGraph(
                             new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
-                                    ChangedVariableNotifier.empty(), entities).withDiscoveredReferencedEntities()));
+                                    ChangedVariableNotifier.empty(), entities)
+                                    .assertingNoReferencedMissingEntities()));
         }
 
         /**

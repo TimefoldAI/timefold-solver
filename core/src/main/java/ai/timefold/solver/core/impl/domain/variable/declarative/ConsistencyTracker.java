@@ -58,8 +58,9 @@ public record ConsistencyTracker<Solution_>(
                         // if the user specified a specific inconsistency value.
                         new GraphStructure.GraphStructureAndDirection(GraphStructure.ARBITRARY, null, null),
                         new DefaultShadowVariableSessionFactory.GraphDescriptor<>(solutionDescriptor,
-                                ChangedVariableNotifier.empty(),
-                                entities).withConsistencyTracker(this).withDiscoveredReferencedEntities());
+                                ChangedVariableNotifier.empty(), entities)
+                                .withConsistencyTracker(this)
+                                .assertingNoReferencedMissingEntities());
 
         // Graph will either be DefaultVariableReferenceGraph or EmptyVariableReferenceGraph
         // If it is empty, we don't need to do anything.

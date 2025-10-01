@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
@@ -50,6 +49,33 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         this.graphCreator = graphCreator;
     }
 
+    private record MissingEntity(Object sourceEntity,
+            Object missingReferredEntity,
+            DeclarativeShadowVariableDescriptor<?> referringShadowVariable,
+            RootVariableSource<?, ?> referredVariableSource) {
+        String getMessage() {
+            return """
+                    The entity's (%s) shadow variable (%s) refers to a declarative shadow variable on a non-given entity (%s)
+                    variable via the source path (%s).
+                    """
+                    .formatted(sourceEntity, referringShadowVariable.getVariableName(),
+                            missingReferredEntity,
+                            referredVariableSource.variablePath());
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (!(object instanceof MissingEntity that))
+                return false;
+            return missingReferredEntity == that.missingReferredEntity;
+        }
+
+        @Override
+        public int hashCode() {
+            return System.identityHashCode(missingReferredEntity);
+        }
+    }
+
     public record GraphDescriptor<Solution_>(ConsistencyTracker<Solution_> consistencyTracker,
             SolutionDescriptor<Solution_> solutionDescriptor,
             VariableReferenceGraphBuilder<Solution_> variableReferenceGraphBuilder,
@@ -72,92 +98,30 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     variableReferenceGraphBuilder, entities, graphCreator);
         }
 
-        public GraphDescriptor<Solution_> withDiscoveredReferencedEntities() {
-            record MissingEntity(Object sourceEntity,
-                    Object missingReferredEntity,
-                    DeclarativeShadowVariableDescriptor<?> referringShadowVariable,
-                    RootVariableSource<?, ?> referredVariableSource) {
-                String getMessage() {
-                    return """
-                            The entity's (%s) shadow variable (%s) refers to a declarative shadow variable on a non-given entity (%s)
-                            variable via the source path (%s).
-                            """
-                            .formatted(sourceEntity, referringShadowVariable.getVariableName(),
-                                    missingReferredEntity,
-                                    referredVariableSource.variablePath());
-                }
-
-                @Override
-                public boolean equals(Object object) {
-                    if (!(object instanceof MissingEntity that))
-                        return false;
-                    return missingReferredEntity == that.missingReferredEntity;
-                }
-
-                @Override
-                public int hashCode() {
-                    return System.identityHashCode(missingReferredEntity);
-                }
-            }
+        public GraphDescriptor<Solution_> assertingNoReferencedMissingEntities() {
             var entitySet = CollectionUtils.newIdentityHashSet(entities.length);
             entitySet.addAll(Arrays.asList(entities));
             var missingEntitySet = new HashSet<MissingEntity>();
 
             var declarativeShadowDescriptors = solutionDescriptor.getDeclarativeShadowVariableDescriptors();
 
-            for (var entity : entities) {
-                for (var shadowDescriptor : declarativeShadowDescriptors) {
-                    if (shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
-                        for (var source : shadowDescriptor.getSources()) {
-                            for (var variableSourceReference : source.variableSourceReferences()) {
-                                if (variableSourceReference.isDeclarative()) {
-                                    source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
-                                            .accept(entity, maybeMissingEntity -> {
-                                                if (!entitySet.contains(maybeMissingEntity)) {
-                                                    missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
-                                                            shadowDescriptor, source));
-                                                }
-                                            });
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            do {
+                // iterate when new entities are discovered, so
+                // we can include any missing entities they reference in the error message
+                missingEntitySet.stream()
+                        .map(MissingEntity::missingReferredEntity)
+                        .forEach(entitySet::add);
+            } while (addDiscoveredEntities(declarativeShadowDescriptors, entitySet, missingEntitySet));
+
             if (missingEntitySet.isEmpty()) {
-                // No new entities were discovered; reuse the original descriptor
                 return this;
             }
 
-            // The newly discovered entities might also reference unknown entities,
-            // so visit them too
-            AtomicBoolean anyChanged = new AtomicBoolean(false);
-            do {
-                anyChanged.setPlain(false);
-                for (var entity : missingEntitySet.stream().map(MissingEntity::missingReferredEntity).toList()) {
-                    for (var shadowDescriptor : declarativeShadowDescriptors) {
-                        if (shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
-                            for (var source : shadowDescriptor.getSources()) {
-                                for (var variableSourceReference : source.variableSourceReferences()) {
-                                    if (variableSourceReference.isDeclarative()) {
-                                        source.getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
-                                                .accept(entity, maybeMissingEntity -> {
-                                                    if (!entitySet.contains(maybeMissingEntity) &&
-                                                            missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
-                                                                    shadowDescriptor, source))) {
-                                                        anyChanged.setPlain(true);
-                                                    }
-                                                });
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } while (anyChanged.getPlain());
-
+            var LIMIT = 5;
             throw new IllegalArgumentException("""
                     Found referenced entities that were not given:
+
+                    %s
                     %s
                     When ConstraintVerifier.verifyThat().given(...) or
                     %s.updateShadowVariables(solutionClass, ...) is used,
@@ -166,9 +130,31 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     """.formatted(missingEntitySet.stream()
                     .map(MissingEntity::getMessage)
                     .sorted()
-                    .limit(5)
+                    .limit(LIMIT)
                     .collect(Collectors.joining("  - ", "  - ", "")),
+                    (missingEntitySet.size() > LIMIT) ? // Comments to force formatter to not put the conditional on one line
+                            "(%d more...)\n".formatted(missingEntitySet.size() - LIMIT) : //
+                            "", //
                     SolutionManager.class.getSimpleName()));
+        }
+
+        private boolean addDiscoveredEntities(List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowDescriptors,
+                Set<Object> entitySet, HashSet<MissingEntity> missingEntitySet) {
+            var originalMissingCount = missingEntitySet.size();
+            for (var entity : entitySet) {
+                for (var shadowDescriptor : declarativeShadowDescriptors) {
+                    if (!shadowDescriptor.getEntityDescriptor().getEntityClass().isAssignableFrom(entity.getClass())) {
+                        continue;
+                    }
+                    shadowDescriptor.visitAllReferencedEntities(entity, (source, maybeMissingEntity) -> {
+                        if (!entitySet.contains(maybeMissingEntity)) {
+                            missingEntitySet.add(new MissingEntity(entity, maybeMissingEntity,
+                                    shadowDescriptor, source));
+                        }
+                    });
+                }
+            }
+            return missingEntitySet.size() != originalMissingCount;
         }
 
         public ChangedVariableNotifier<Solution_> changedVariableNotifier() {
