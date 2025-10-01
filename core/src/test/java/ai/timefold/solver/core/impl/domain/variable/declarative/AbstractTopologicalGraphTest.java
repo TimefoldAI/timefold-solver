@@ -12,10 +12,7 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.function.TriConsumer;
 
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
-@Execution(ExecutionMode.CONCURRENT)
 public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrderGraph> {
     /**
      * Create a topological graph of the given size
