@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import java.util.function.Consumer;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
-
-import java.util.function.Consumer;
 
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
