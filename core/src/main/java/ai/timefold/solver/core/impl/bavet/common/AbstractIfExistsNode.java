@@ -148,6 +148,10 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
             // and requires adding null checks to the filter for something that should intuitively be impossible.
             // We avoid this situation as it is clear that the outTuple must be retracted anyway,
             // and therefore any further updates to it are pointless.
+            //
+            // It is possible that the same problem would exist coming from the other side as well,
+            // and therefore the right tuple would have to be checked for active state as well.
+            // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
         if (testFiltering(counter.leftTuple, rightTuple)) {

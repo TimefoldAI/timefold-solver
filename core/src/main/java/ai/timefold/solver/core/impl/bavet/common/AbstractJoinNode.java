@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import java.util.function.Consumer;
-
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+
+import java.util.function.Consumer;
 
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
@@ -126,6 +126,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
             // and requires adding null checks to the filter for something that should intuitively be impossible.
             // We avoid this situation as it is clear that the outTuple must be retracted anyway,
             // and therefore any further updates to it are pointless.
+            //
+            // It is possible that the same problem would exist coming from the other side as well,
+            // and therefore the right tuple would have to be checked for active state as well.
+            // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
         var outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
