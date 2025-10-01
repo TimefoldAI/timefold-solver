@@ -1,5 +1,28 @@
 package ai.timefold.solver.core.impl.score.stream.common.bi;
 
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countBi;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countDistinct;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.toSet;
+import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
+import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
+import static java.util.Arrays.asList;
+import static java.util.Collections.singleton;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.SoftAssertions.assertSoftly;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Stream;
+
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.buildin.simplebigdecimal.SimpleBigDecimalScore;
@@ -29,30 +52,8 @@ import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishExtra;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishSolution;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
+
 import org.junit.jupiter.api.TestTemplate;
-
-import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Stream;
-
-import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countBi;
-import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countDistinct;
-import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
-import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
-import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.toSet;
-import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
-import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
-import static java.util.Arrays.asList;
-import static java.util.Collections.singleton;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintStreamTest
         implements ConstraintStreamFunctionalTest {
@@ -142,25 +143,23 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         var value2 = solution.getValueList().get(1);
 
         try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
-                     buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
-                             factory -> new Constraint[] {
-                                     factory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
-                                             .join(TestdataAllowsUnassignedValuesListValue.class)
-                                             .join(TestdataAllowsUnassignedValuesListValue.class,
-                                                     equal((e, value) -> value.getEntity(),
-                                                             TestdataAllowsUnassignedValuesListValue::getEntity),
-                                                     filtering((e, a, b) -> {
-                                                         Objects.requireNonNull(a.getEntity());
-                                                         Objects.requireNonNull(b.getEntity());
-                                                         return true;
-                                                     }))
-                                             .penalize(SimpleScore.ONE)
-                                             .asConstraint(TEST_CONSTRAINT_NAME)
-                             })) {
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
+                                        .join(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(TestdataAllowsUnassignedValuesListValue.class,
+                                                equal((e, value) -> value.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((e, a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        })) {
 
             scoreDirector.setWorkingSolution(solution);
-            assertScore(scoreDirector);
-
             scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
             scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value2);
             scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
@@ -176,11 +175,14 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                     assertMatch(entity, value2, value2));
 
             scoreDirector.executeTemporaryMove(new LegacyMoveAdapter<>(
-                            new ListUnassignMove<>(scoreDirector.getSolutionDescriptor().getListVariableDescriptor(), entity, 1)),
+                    new ListUnassignMove<>(scoreDirector.getSolutionDescriptor().getListVariableDescriptor(), entity, 1)),
                     false);
 
             assertScore(scoreDirector,
-                    assertMatch(entity, value1, value1));
+                    assertMatch(entity, value1, value1),
+                    assertMatch(entity, value1, value2),
+                    assertMatch(entity, value2, value1),
+                    assertMatch(entity, value2, value2));
         }
 
     }

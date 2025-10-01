@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import java.util.function.Consumer;
-
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+
+import java.util.function.Consumer;
 
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
@@ -115,6 +115,19 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
 
     private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ElementAwareList<OutTuple_> outList,
             ElementAwareList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
+        if (!leftTuple.state.isActive() || !rightTuple.state.isActive()) {
+            // Assume the following scenario:
+            // - The join is of two entities, both filtering out unassigned.
+            // - Right side became unassigned, so the outTuple is getting retracted.
+            // - Left side is still assigned, and is being updated.
+            //
+            // This means the filter would be called with (assignedEntity, unassignedEntity),
+            // which breaks the expectation that the filter is only called on two assigned entities,
+            // and requires adding null checks to the filter for something that should intuitively be impossible.
+            // We avoid this situation as it is clear that the outTuple must be retracted anyway,
+            // and therefore any further updates to it are pointless.
+            return;
+        }
         var outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
