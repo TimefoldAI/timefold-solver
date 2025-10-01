@@ -133,7 +133,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
                     .limit(LIMIT)
                     .collect(Collectors.joining("  - ", "  - ", "")),
                     (missingEntitySet.size() > LIMIT) ? // Comments to force formatter to not put the conditional on one line
-                            "(%d more...)\n".formatted(missingEntitySet.size() - LIMIT) : //
+                            "(%d more...)%n".formatted(missingEntitySet.size() - LIMIT) : //
                             "", //
                     SolutionManager.class.getSimpleName()));
         }
