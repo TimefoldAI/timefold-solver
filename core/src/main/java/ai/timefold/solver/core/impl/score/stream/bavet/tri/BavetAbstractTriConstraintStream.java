@@ -93,6 +93,12 @@ public abstract class BavetAbstractTriConstraintStream<Solution_, A, B, C> exten
         return shareAndAddChild(new BavetFilterTriConstraintStream<>(constraintFactory, this, predicate));
     }
 
+    @Override
+    public @NonNull BavetAbstractTriConstraintStream<Solution_, A, B, C>
+            filterByFact(@NonNull TriPredicate<A, B, C> predicate) {
+        return shareAndAddChild(new BavetFilterByFactTriConstraintStream<>(constraintFactory, this, predicate));
+    }
+
     // ************************************************************************
     // Join
     // ************************************************************************

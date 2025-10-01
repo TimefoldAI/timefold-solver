@@ -63,7 +63,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        propagationQueue.retract(outTuple, outTuple.state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+        propagationQueue.retract(outTuple);
     }
 
     @Override
