@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.math.BigDecimal;
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Collections;
 import java.util.List;
 
@@ -136,6 +138,33 @@ class SingleConstraintAssertionTest {
                 .settingAllShadowVariables()
                 .indictsWith(solution.getValueList().get(1)))
                 .doesNotThrowAnyException();
+    }
+
+    @Test
+    void failsIfNonGivenEntitiesAreReferenced() {
+        var startTime = LocalDate.of(2000, 1, 1).atTime(LocalTime.MIDNIGHT);
+        var entity = new TestdataDependencyEntity(startTime);
+        var dependency = new TestdataDependencyValue("dependency", Duration.ofHours(1));
+        var previous = new TestdataDependencyValue("previous", Duration.ofHours(1));
+        var current = new TestdataDependencyValue("current", Duration.ofHours(1), List.of(dependency));
+
+        dependency.setEntity(entity);
+        previous.setEntity(entity);
+        current.setEntity(entity);
+
+        dependency.setPreviousValue(previous);
+        current.setPreviousValue(dependency);
+
+        assertThatCode(() -> constraintVerifierForConsistency
+                .verifyThat(TestdataDependencyConstraintProvider::finishTasksAsSoonAsPossible)
+                .given(current)
+                // current should have an end time 3 hours pass the start time of the entity
+                .penalizesBy(180))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll(
+                        "Found referenced entities that were not given",
+                        "The entity's (current{endTime=null}) shadow variable (startTime) refers to a declarative shadow variable on a non-given entity (dependency{endTime=null})",
+                        "The entity's (dependency{endTime=null}) shadow variable (startTime) refers to a declarative shadow variable on a non-given entity (previous{endTime=null})");
     }
 
     @Test

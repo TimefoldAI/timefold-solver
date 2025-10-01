@@ -4,6 +4,7 @@ import java.lang.reflect.Member;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.variable.ShadowSources;
@@ -159,6 +160,12 @@ public class DeclarativeShadowVariableDescriptor<Solution_> extends ShadowVariab
                                     propertyName));
         }
         return member;
+    }
+
+    void visitAllReferencedEntities(Object entity, BiConsumer<RootVariableSource<?, ?>, Object> visitor) {
+        for (var source : sources) {
+            source.visitAllReferencedEntities(entity, referencedEntity -> visitor.accept(source, referencedEntity));
+        }
     }
 
     @Override

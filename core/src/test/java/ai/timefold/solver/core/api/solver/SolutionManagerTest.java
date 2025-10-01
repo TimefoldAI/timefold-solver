@@ -53,6 +53,7 @@ import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassigned
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 
 import org.assertj.core.api.SoftAssertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
@@ -338,6 +339,52 @@ public class SolutionManagerTest {
         var score = solutionManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);
         assertThat(score).isEqualTo(HardSoftScore.ofHard(-4));
         assertThat(solution.getScore()).isEqualTo(HardSoftScore.ofHard(-4));
+    }
+
+    @Test
+    void updateShadowVariableFailsIfReferencedEntitiesAreNotGiven() {
+        var e1 = new TestdataConcurrentEntity("e1");
+        var e2 = new TestdataConcurrentEntity("e2");
+
+        var a1 = new TestdataConcurrentValue("a1");
+        var a2 = new TestdataConcurrentValue("a2");
+        var b1 = new TestdataConcurrentValue("b1");
+        var b2 = new TestdataConcurrentValue("b2");
+
+        var groupA = List.of(a1, a2);
+        var groupB = List.of(b1, b2);
+
+        a1.setConcurrentValueGroup(groupA);
+        a2.setConcurrentValueGroup(groupA);
+
+        b1.setConcurrentValueGroup(groupB);
+        b2.setConcurrentValueGroup(groupB);
+
+        e1.setValues(List.of(a1, b1));
+        e2.setValues(List.of(b2, a2));
+
+        b1.setPreviousValue(a1);
+        a2.setPreviousValue(b2);
+
+        a1.setNextValue(b1);
+        b2.setNextValue(a2);
+
+        a1.setEntity(e1);
+        b1.setEntity(e1);
+        a2.setEntity(e2);
+        b2.setEntity(e2);
+
+        assertThatCode(() -> SolutionManager.updateShadowVariables(TestdataConcurrentSolution.class, a1, e1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContainingAll(
+                        "The entity's (%s) shadow variable (serviceStartTime) refers to a declarative shadow variable on a non-given entity (%s)"
+                                .formatted(a1,
+                                        a2),
+                        "The entity's (%s) shadow variable (serviceReadyTime) refers to a declarative shadow variable on a non-given entity (%s)"
+                                .formatted(a2,
+                                        b2),
+                        "The entity's (%s) shadow variable (serviceStartTime) refers to a declarative shadow variable on a non-given entity (%s)"
+                                .formatted(b2, b1));
     }
 
     @ParameterizedTest

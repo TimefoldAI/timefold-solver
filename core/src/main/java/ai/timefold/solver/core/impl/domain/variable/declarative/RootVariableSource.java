@@ -232,6 +232,16 @@ public record RootVariableSource<Entity_, Value_>(
         }
     }
 
+    void visitAllReferencedEntities(Object rootObject, Consumer<Object> visitor) {
+        for (var variableSourceReference : variableSourceReferences) {
+            if (!variableSourceReference.isDeclarative()) {
+                continue;
+            }
+            getEntityVisitor(variableSourceReference.chainFromRootEntityToVariableEntity())
+                    .accept(rootObject, visitor);
+        }
+    }
+
     private static <Value_> @NonNull BiConsumer<Object, Consumer<Value_>> getRegularSourceEntityVisitor(
             List<MemberAccessor> finalChainToVariable) {
         return (entity, consumer) -> {
