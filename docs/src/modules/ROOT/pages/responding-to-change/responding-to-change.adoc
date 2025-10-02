@@ -297,6 +297,7 @@ but the list can still be extended by adding to the end of the list.
 
 To pin the entire list, preventing any modifications to the list whatsoever,
 <<pinDownPlanningEntities, `@PlanningPin`>> needs to be used on the entity itself.
+In that case, the value of `@PlanningPinToIndex` must be zero (`0`).
 
 NOTE: Value of the index must never change during planning.
 To change how far the list is pinned,
