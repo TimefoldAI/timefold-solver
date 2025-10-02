@@ -76,6 +76,9 @@ public abstract class AbstractSolutionClonerTest {
     protected abstract <Solution_> SolutionCloner<Solution_> createSolutionCloner(
             SolutionDescriptor<Solution_> solutionDescriptor);
 
+    // Add 128 to account for possibly different stack depth/memory usage when used
+    private static final int MAX_STACK_FRAMES = new MaxStackFrameFinder().getMaxStackFrames() + 128;
+
     @Test
     void cloneSolution() {
         var solutionDescriptor = TestdataSolution.buildSolutionDescriptor();
@@ -340,7 +343,7 @@ public abstract class AbstractSolutionClonerTest {
         var solutionValue = new TestdataDependencyValue("root", Duration.ofHours(1L));
 
         var outer = solutionValue;
-        var NESTED_COUNT = 10_000;
+        var NESTED_COUNT = MAX_STACK_FRAMES;
 
         for (var i = 0; i < NESTED_COUNT; i++) {
             var newValue = new TestdataDependencyValue(Integer.toString(i), Duration.ofHours(1L));
@@ -1227,6 +1230,26 @@ public abstract class AbstractSolutionClonerTest {
 
         assertThat(clone.codeToEntity.get("C"))
                 .isSameAs(clone.entityList.get(2));
+    }
+
+    private static class MaxStackFrameFinder {
+        int maxStackFrames = 0;
+
+        public int getMaxStackFrames() {
+            if (maxStackFrames != 0) {
+                return maxStackFrames;
+            }
+            return getMaxStackFramesHelper();
+        }
+
+        private int getMaxStackFramesHelper() {
+            maxStackFrames++;
+            try {
+                return getMaxStackFramesHelper();
+            } catch (StackOverflowError e) {
+                return maxStackFrames;
+            }
+        }
     }
 
 }

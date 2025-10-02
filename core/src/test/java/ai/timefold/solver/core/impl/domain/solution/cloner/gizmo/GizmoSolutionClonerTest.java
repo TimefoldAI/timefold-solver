@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,10 +13,10 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
+import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoClassLoader;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.cloner.AbstractSolutionClonerTest;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.childnot.TestdataOnlyBaseAnnotatedExtendedSolution;
@@ -41,7 +40,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
     @Override
     protected <Solution_> SolutionCloner<Solution_> createSolutionCloner(SolutionDescriptor<Solution_> solutionDescriptor) {
         var className = GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor);
-        var classBytecodeHolder = new ArrayList<Pair<String, byte[]>>();
+        var classBytecodeHolder = new HashMap<String, byte[]>();
         var classOutput =
                 GizmoSolutionClonerImplementor.createClassOutputWithDebuggingCapability(classBytecodeHolder);
         var classCreator = ClassCreator.builder()
@@ -68,24 +67,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                 memoizedSolutionOrEntityDescriptorMap, deepClonedClassSet);
         classCreator.close();
 
-        var gizmoClassLoader = new ClassLoader() {
-            // getName() is an abstract method in Java 11 but not in Java 8
-            @Override
-            public String getName() {
-                return "Timefold Gizmo SolutionCloner Test ClassLoader";
-            }
-
-            @Override
-            public Class<?> findClass(String name) throws ClassNotFoundException {
-                for (var entry : classBytecodeHolder) {
-                    if (entry.key().equals(name)) {
-                        return defineClass(name, entry.value(), 0, entry.value().length);
-                    }
-                }
-                // Not a Gizmo generated class; load from context class loader
-                return Thread.currentThread().getContextClassLoader().loadClass(name);
-            }
-        };
+        var gizmoClassLoader = new GizmoClassLoader(classBytecodeHolder);
 
         try {
             @SuppressWarnings("unchecked")
@@ -211,11 +193,11 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
 
         assertThatCode(() -> cloner.cloneSolution(original))
                 .isInstanceOf(IllegalArgumentException.class)
-                .hasMessage(
-                        "Failed to create clone: encountered (" + original.getClass() + ") which is not a known subclass of " +
-                                "the solution class (" + TestdataOnlyBaseAnnotatedSolution.class
-                                + "). The known subclasses are " +
-                                "[" + TestdataOnlyBaseAnnotatedSolution.class.getName()
-                                + "].\nMaybe use DomainAccessType.REFLECTION?");
+                .hasMessageContainingAll(
+                        "Failed to create clone: encountered (%s)".formatted(original.getClass()),
+                        "which is not a known subclass of the solution class (%s)."
+                                .formatted(TestdataOnlyBaseAnnotatedSolution.class),
+                        "The known subclasses are: [%s]".formatted(TestdataOnlyBaseAnnotatedSolution.class.getName()),
+                        "Maybe use DomainAccessType.REFLECTION?");
     }
 }
