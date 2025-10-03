@@ -48,6 +48,14 @@ public class TestdataDependencyValue {
         this.dependencies = dependencies;
     }
 
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public List<TestdataDependencyValue> getDependencies() {
         return dependencies;
     }
@@ -111,11 +119,11 @@ public class TestdataDependencyValue {
         this.duration = duration;
     }
 
-    public Boolean isInvalid() {
+    public Boolean getIsInvalid() {
         return isInvalid;
     }
 
-    public void setInvalid(Boolean invalid) {
+    public void setIsInvalid(Boolean invalid) {
         isInvalid = invalid;
     }
 

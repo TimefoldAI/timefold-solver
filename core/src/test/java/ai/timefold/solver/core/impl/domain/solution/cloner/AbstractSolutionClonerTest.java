@@ -4,6 +4,9 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertCode;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -61,6 +64,9 @@ import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.reflect.accessmodifier.TestdataAccessModifierSolution;
 import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedEntity;
 import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedSolution;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyEntity;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencySolution;
+import ai.timefold.solver.core.testdomain.shadow.dependency.TestdataDependencyValue;
 
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
@@ -69,6 +75,9 @@ public abstract class AbstractSolutionClonerTest {
 
     protected abstract <Solution_> SolutionCloner<Solution_> createSolutionCloner(
             SolutionDescriptor<Solution_> solutionDescriptor);
+
+    // Add 128 to account for possibly different stack depth/memory usage when used
+    private static final int MAX_STACK_FRAMES = new MaxStackFrameFinder().getMaxStackFrames() + 128;
 
     @Test
     void cloneSolution() {
@@ -322,6 +331,52 @@ public abstract class AbstractSolutionClonerTest {
         assertCode("2", b.getValue());
         // Clone remains unchanged
         assertCode("1", cloneB.getValue());
+    }
+
+    @Test
+    protected void cloneDeeplyNestedSolution() {
+        var solutionDescriptor = TestdataDependencySolution.buildSolutionDescriptor();
+        var cloner = createSolutionCloner(solutionDescriptor);
+
+        var startTime = LocalDate.of(2000, 1, 1).atTime(LocalTime.MIDNIGHT);
+        var solutionEntity = new TestdataDependencyEntity(LocalDate.of(2000, 1, 1).atTime(LocalTime.MIDNIGHT));
+        var solutionValue = new TestdataDependencyValue("root", Duration.ofHours(1L));
+
+        var outer = solutionValue;
+        var NESTED_COUNT = MAX_STACK_FRAMES;
+
+        for (var i = 0; i < NESTED_COUNT; i++) {
+            var newValue = new TestdataDependencyValue(Integer.toString(i), Duration.ofHours(1L));
+            outer.setDependencies(List.of(newValue));
+            outer = newValue;
+        }
+
+        var original = new TestdataDependencySolution(List.of(solutionEntity), List.of(solutionValue));
+        var clone = cloner.cloneSolution(original);
+        assertThat(clone).isNotSameAs(original);
+        assertThat(clone.getEntities()).isNotSameAs(original.getEntities());
+        assertThat(clone.getEntities()).hasSize(1);
+        assertThat(clone.getEntities().get(0)).isNotSameAs(solutionEntity);
+        assertThat(clone.getEntities().get(0).getStartTime()).isEqualTo(startTime);
+
+        assertThat(clone.getValues()).isNotSameAs(original.getValues());
+        assertThat(clone.getValues()).hasSize(1);
+        assertThat(clone.getValues().get(0)).isNotSameAs(solutionValue);
+        assertThat(clone.getValues().get(0).getId()).isEqualTo(solutionValue.getId());
+
+        var cloneValue = clone.getValues().get(0);
+        var originalValue = solutionValue;
+
+        for (var i = 0; i < NESTED_COUNT; i++) {
+            assertThat(cloneValue).isNotNull();
+            assertThat(cloneValue).isNotSameAs(solutionValue);
+            assertThat(cloneValue.getId()).isEqualTo(originalValue.getId());
+            cloneValue = cloneValue.getDependencies().get(0);
+            originalValue = originalValue.getDependencies().get(0);
+        }
+        assertThat(cloneValue).isNotNull()
+                .isNotSameAs(solutionValue);
+        assertThat(cloneValue.getId()).isEqualTo(originalValue.getId());
     }
 
     @Test
@@ -1175,6 +1230,26 @@ public abstract class AbstractSolutionClonerTest {
 
         assertThat(clone.codeToEntity.get("C"))
                 .isSameAs(clone.entityList.get(2));
+    }
+
+    private static class MaxStackFrameFinder {
+        int maxStackFrames = 0;
+
+        public int getMaxStackFrames() {
+            if (maxStackFrames != 0) {
+                return maxStackFrames;
+            }
+            return getMaxStackFramesHelper();
+        }
+
+        private int getMaxStackFramesHelper() {
+            maxStackFrames++;
+            try {
+                return getMaxStackFramesHelper();
+            } catch (StackOverflowError e) {
+                return maxStackFrames;
+            }
+        }
     }
 
 }

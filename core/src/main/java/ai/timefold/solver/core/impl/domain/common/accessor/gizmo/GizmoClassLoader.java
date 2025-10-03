@@ -10,15 +10,20 @@ import java.util.Map;
  */
 public final class GizmoClassLoader extends ClassLoader {
 
-    private final Map<String, byte[]> classNameToBytecodeMap = new HashMap<>();
+    private final Map<String, byte[]> classNameToBytecodeMap;
 
     public GizmoClassLoader() {
+        this(new HashMap<>());
+    }
+
+    public GizmoClassLoader(Map<String, byte[]> classNameToBytecodeMap) {
         /*
          * As parent, Gizmo needs to use the same ClassLoader that loaded its own class.
          * Otherwise, issues will arise in Quarkus with MemberAccessors which were first loaded by Quarkus
          * and then loaded again by Gizmo, which uses the default parent ClassLoader.
          */
         super(GizmoClassLoader.class.getClassLoader());
+        this.classNameToBytecodeMap = classNameToBytecodeMap;
     }
 
     @Override
