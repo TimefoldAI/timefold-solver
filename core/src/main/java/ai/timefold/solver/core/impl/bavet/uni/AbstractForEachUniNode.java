@@ -6,6 +6,7 @@ import java.util.Map;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
+import ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -24,6 +25,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
+        implements TupleSourceRoot<A>
         permits ForEachFilteredUniNode, ForEachUnfilteredUniNode {
 
     private final Class<A> forEachClass;
@@ -38,6 +40,17 @@ public abstract sealed class AbstractForEachUniNode<A>
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
+    @Override
+    public boolean allowsInstancesOf(Class<?> clazz) {
+        return forEachClass.isAssignableFrom(clazz);
+    }
+
+    @Override
+    public Class<?>[] getSourceClasses() {
+        return new Class[] { forEachClass };
+    }
+
+    @Override
     public void insert(@Nullable A a) {
         var tuple = new UniTuple<>(a, outputStoreSize);
         var old = tupleMap.put(a, tuple);
@@ -47,8 +60,6 @@ public abstract sealed class AbstractForEachUniNode<A>
         }
         propagationQueue.insert(tuple);
     }
-
-    public abstract void update(@Nullable A a);
 
     protected final void updateExisting(@Nullable A a, UniTuple<A> tuple) {
         var state = tuple.state;
@@ -63,6 +74,7 @@ public abstract sealed class AbstractForEachUniNode<A>
         }
     }
 
+    @Override
     public void retract(@Nullable A a) {
         var tuple = tupleMap.remove(a);
         if (tuple == null) {
@@ -94,45 +106,10 @@ public abstract sealed class AbstractForEachUniNode<A>
         return forEachClass;
     }
 
-    /**
-     * Determines if this node supports the given lifecycle operation.
-     * Unsupported nodes will not be called during that lifecycle operation.
-     *
-     * @param lifecycleOperation the lifecycle operation to check
-     * @return {@code true} if the given lifecycle operation is supported; otherwise, {@code false}.
-     */
-    public abstract boolean supports(LifecycleOperation lifecycleOperation);
-
     @Override
     public final String toString() {
         return "%s(%s)"
                 .formatted(getClass().getSimpleName(), forEachClass.getSimpleName());
-    }
-
-    /**
-     * Represents the various lifecycle operations that can be performed
-     * on tuples within a node in Bavet.
-     */
-    public enum LifecycleOperation {
-        /**
-         * Represents the operation of inserting a new tuple into the node.
-         * This operation is typically performed when a new fact is added to the working solution
-         * and needs to be propagated through the node network.
-         */
-        INSERT,
-        /**
-         * Represents the operation of updating an existing tuple within the node.
-         * This operation is typically triggered when a fact in the working solution
-         * is modified, requiring the corresponding tuple to be updated and its changes
-         * propagated through the node network.
-         */
-        UPDATE,
-        /**
-         * Represents the operation of retracting or removing an existing tuple from the node.
-         * This operation is typically used when a fact is removed from the working solution
-         * and its corresponding tuple needs to be removed from the node network.
-         */
-        RETRACT
     }
 
 }

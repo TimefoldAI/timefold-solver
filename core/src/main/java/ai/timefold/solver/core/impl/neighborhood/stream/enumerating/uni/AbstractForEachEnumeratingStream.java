@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
-import static ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
+import static ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot.LifecycleOperation;
 
 import java.util.Objects;
 import java.util.Set;
