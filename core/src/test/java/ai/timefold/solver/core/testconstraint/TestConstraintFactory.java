@@ -44,6 +44,11 @@ public final class TestConstraintFactory<Solution_, Score_ extends Score<Score_>
     }
 
     @Override
+    public @NonNull <A> UniConstraintStream<A> staticData(UniConstraintStream<A> stream) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public <A> @NonNull UniConstraintStream<A> from(@NonNull Class<A> fromClass) {
         throw new UnsupportedOperationException();
     }

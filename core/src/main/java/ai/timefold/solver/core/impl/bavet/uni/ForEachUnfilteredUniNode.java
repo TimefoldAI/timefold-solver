@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.uni;
 
+import ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -26,7 +27,7 @@ public final class ForEachUnfilteredUniNode<A>
     }
 
     @Override
-    public boolean supports(LifecycleOperation lifecycleOperation) {
+    public boolean supports(TupleSourceRoot.LifecycleOperation lifecycleOperation) {
         return true;
     }
 

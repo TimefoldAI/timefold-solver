@@ -3,15 +3,15 @@ package ai.timefold.solver.core.impl.bavet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
-import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
-import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode.LifecycleOperation;
+import ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot;
+import ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot.LifecycleOperation;
 
 public abstract class AbstractSession {
 
     private final NodeNetwork nodeNetwork;
-    private final Map<Class<?>, AbstractForEachUniNode<Object>[]> insertEffectiveClassToNodeArrayMap;
-    private final Map<Class<?>, AbstractForEachUniNode<Object>[]> updateEffectiveClassToNodeArrayMap;
-    private final Map<Class<?>, AbstractForEachUniNode<Object>[]> retractEffectiveClassToNodeArrayMap;
+    private final Map<Class<?>, TupleSourceRoot<Object>[]> insertEffectiveClassToNodeArrayMap;
+    private final Map<Class<?>, TupleSourceRoot<Object>[]> updateEffectiveClassToNodeArrayMap;
+    private final Map<Class<?>, TupleSourceRoot<Object>[]> retractEffectiveClassToNodeArrayMap;
 
     protected AbstractSession(NodeNetwork nodeNetwork) {
         this.nodeNetwork = nodeNetwork;
@@ -22,13 +22,13 @@ public abstract class AbstractSession {
 
     public final void insert(Object fact) {
         var factClass = fact.getClass();
-        for (var node : findNodes(factClass, LifecycleOperation.INSERT)) {
+        for (var node : findNodes(factClass, TupleSourceRoot.LifecycleOperation.INSERT)) {
             node.insert(fact);
         }
     }
 
     @SuppressWarnings("unchecked")
-    private AbstractForEachUniNode<Object>[] findNodes(Class<?> factClass, LifecycleOperation lifecycleOperation) {
+    private TupleSourceRoot<Object>[] findNodes(Class<?> factClass, LifecycleOperation lifecycleOperation) {
         var effectiveClassToNodeArrayMap = switch (lifecycleOperation) {
             case INSERT -> insertEffectiveClassToNodeArrayMap;
             case UPDATE -> updateEffectiveClassToNodeArrayMap;
@@ -37,9 +37,9 @@ public abstract class AbstractSession {
         // Map.computeIfAbsent() would have created lambdas on the hot path, this will not.
         var nodeArray = effectiveClassToNodeArrayMap.get(factClass);
         if (nodeArray == null) {
-            nodeArray = nodeNetwork.getForEachNodes(factClass)
+            nodeArray = nodeNetwork.getTupleSourceRootNodes(factClass)
                     .filter(node -> node.supports(lifecycleOperation))
-                    .toArray(AbstractForEachUniNode[]::new);
+                    .toArray(TupleSourceRoot[]::new);
             effectiveClassToNodeArrayMap.put(factClass, nodeArray);
         }
         return nodeArray;
@@ -47,14 +47,14 @@ public abstract class AbstractSession {
 
     public final void update(Object fact) {
         var factClass = fact.getClass();
-        for (var node : findNodes(factClass, LifecycleOperation.UPDATE)) {
+        for (var node : findNodes(factClass, TupleSourceRoot.LifecycleOperation.UPDATE)) {
             node.update(fact);
         }
     }
 
     public final void retract(Object fact) {
         var factClass = fact.getClass();
-        for (var node : findNodes(factClass, LifecycleOperation.RETRACT)) {
+        for (var node : findNodes(factClass, TupleSourceRoot.LifecycleOperation.RETRACT)) {
             node.retract(fact);
         }
     }

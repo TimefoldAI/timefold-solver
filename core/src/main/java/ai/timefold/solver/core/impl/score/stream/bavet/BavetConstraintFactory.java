@@ -16,7 +16,10 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetAbstractUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetStaticDataUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
@@ -177,6 +180,14 @@ public final class BavetConstraintFactory<Solution_>
         } else {
             return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
         }
+    }
+
+    @Override
+    public @NonNull <A> UniConstraintStream<A> staticData(UniConstraintStream<A> stream) {
+        var bavetStream = (BavetAbstractUniConstraintStream<Solution_, A>) stream;
+        var out = new BavetStaticDataUniConstraintStream<>(this, bavetStream);
+        return (UniConstraintStream<A>) share(new BavetAftBridgeUniConstraintStream<>(this, out),
+                out::setAftBridge);
     }
 
     @Override

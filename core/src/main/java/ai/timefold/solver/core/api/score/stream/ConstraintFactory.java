@@ -193,6 +193,17 @@ public interface ConstraintFactory {
     <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass, @NonNull BiJoiner<A, A>... joiners);
 
     // ************************************************************************
+    // staticData
+    //************************************************************************
+
+    /**
+     * Computes and caches the tuples that would be produced by the given stream.
+     * As this is cached, it is vital the stream does not reference any variables
+     * (genuine or otherwise).
+     */
+    <A> @NonNull UniConstraintStream<A> staticData(UniConstraintStream<A> stream);
+
+    // ************************************************************************
     // from* (deprecated)
     // ************************************************************************
 
