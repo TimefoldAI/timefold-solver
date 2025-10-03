@@ -134,7 +134,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
     }
 
     @TestTemplate
-    public void join_filtering_on_assigned() {
+    public void join_filterOnAssignedValue_unassignOne() {
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
         var entity = solution.getEntityList().get(0);
         var value1 = solution.getValueList().get(0);
@@ -196,6 +196,69 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                     assertMatch(entity, value1, value2),
                     assertMatch(entity, value2, value1),
                     assertMatch(entity, value2, value2));
+        }
+
+    }
+
+    @TestTemplate
+    public void join_filterOnAssignedValue_unassignOneReassignOther() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().get(0);
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
+                                        .join(TestdataAllowsUnassignedValuesListValue.class)
+                                        .join(TestdataAllowsUnassignedValuesListValue.class,
+                                                equal((e, value) -> value.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((e, a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 1);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(entity, value1, value1));
+
+            // Unassign+assign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value2);
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+            entity.setValueList(List.of(value2));
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.afterListVariableElementAssigned(variableDescriptor, value2);
+
+            assertScore(scoreDirector,
+                    assertMatch(entity, value2, value2));
+
+            // Reassign and check result.
+            scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value2);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+            entity.setValueList(List.of(value1));
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value2);
+            scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(entity, value1, value1));
         }
 
     }
@@ -529,7 +592,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
     }
 
     @TestTemplate
-    public void ifExists_filtering_on_assigned() {
+    public void ifExists_filterOnAssignedValue_unassignOne() {
         var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
         var entity = solution.getEntityList().get(0);
         var value1 = solution.getValueList().get(0);
@@ -587,6 +650,69 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
             assertScore(scoreDirector,
                     assertMatch(entity, value1),
                     assertMatch(entity, value2));
+        }
+
+    }
+
+    @TestTemplate
+    public void ifExists_filterOnAssignedValue_unassignOneReassignOther() {
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(2, 1);
+        var entity = solution.getEntityList().get(0);
+        var value1 = solution.getValueList().get(0);
+        var value2 = solution.getValueList().get(1);
+
+        try (InnerScoreDirector<TestdataAllowsUnassignedValuesListSolution, SimpleScore> scoreDirector =
+                buildScoreDirector(TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor(),
+                        factory -> new Constraint[] {
+                                factory.forEach(TestdataAllowsUnassignedValuesListEntity.class)
+                                        .join(TestdataAllowsUnassignedValuesListValue.class)
+                                        .ifExists(TestdataAllowsUnassignedValuesListValue.class,
+                                                equal((e, value) -> value.getEntity(),
+                                                        TestdataAllowsUnassignedValuesListValue::getEntity),
+                                                filtering((e, a, b) -> {
+                                                    Objects.requireNonNull(a.getEntity());
+                                                    Objects.requireNonNull(b.getEntity());
+                                                    return true;
+                                                }))
+                                        .penalize(SimpleScore.ONE)
+                                        .asConstraint(TEST_CONSTRAINT_NAME)
+                        })) {
+
+            scoreDirector.setWorkingSolution(solution);
+            scoreDirector.beforeListVariableElementAssigned(entity, "valueList", value1);
+            scoreDirector.beforeListVariableChanged(entity, "valueList", 0, 0);
+            entity.getValueList().addAll(List.of(value1));
+            scoreDirector.afterListVariableChanged(entity, "valueList", 0, 1);
+            scoreDirector.afterListVariableElementAssigned(entity, "valueList", value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(entity, value1));
+
+            // Unassign+assign and check result.
+            var variableDescriptor = scoreDirector.getSolutionDescriptor()
+                    .getListVariableDescriptor();
+            scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value2);
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+            entity.setValueList(List.of(value2));
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value1);
+            scoreDirector.afterListVariableElementAssigned(variableDescriptor, value2);
+
+            assertScore(scoreDirector,
+                    assertMatch(entity, value2));
+
+            // Reassign and check result.
+            scoreDirector.beforeListVariableElementAssigned(variableDescriptor, value1);
+            scoreDirector.beforeListVariableElementUnassigned(variableDescriptor, value2);
+            scoreDirector.beforeListVariableChanged(variableDescriptor, entity, 0, 1);
+            entity.setValueList(List.of(value1));
+            scoreDirector.afterListVariableChanged(variableDescriptor, entity, 0, 1);
+            scoreDirector.afterListVariableElementUnassigned(variableDescriptor, value2);
+            scoreDirector.afterListVariableElementAssigned(variableDescriptor, value1);
+
+            assertScore(scoreDirector,
+                    assertMatch(entity, value1));
         }
 
     }
