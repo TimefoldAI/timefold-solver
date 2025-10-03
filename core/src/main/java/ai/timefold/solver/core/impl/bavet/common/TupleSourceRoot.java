@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import org.jspecify.annotations.Nullable;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public interface TupleSourceRoot<A> {
-    void insert(@Nullable A a);
+    void insert(A a);
 
-    void update(@Nullable A a);
+    void update(A a);
 
-    void retract(@Nullable A a);
+    void retract(A a);
 
     boolean allowsInstancesOf(Class<?> clazz);
 
