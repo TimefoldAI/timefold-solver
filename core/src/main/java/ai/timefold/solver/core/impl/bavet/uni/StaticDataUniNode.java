@@ -68,6 +68,7 @@ public final class StaticDataUniNode<A> extends AbstractNode implements TupleSou
         if (tupleMap.containsKey(a)) {
             return;
         }
+        tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
         tupleMap.put(a, new ArrayList<>());
         insertIntoNodeNetwork(a);
         recalculateTuples();
@@ -96,6 +97,7 @@ public final class StaticDataUniNode<A> extends AbstractNode implements TupleSou
         if (!tupleMap.containsKey(a)) {
             return;
         }
+        tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
         tupleMap.remove(a);
         retractFromNodeNetwork(a);
         recalculateTuples();
@@ -135,8 +137,6 @@ public final class StaticDataUniNode<A> extends AbstractNode implements TupleSou
     }
 
     private void recalculateTuples() {
-        tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
-
         var recorder = recordingTupleNode.getTupleRecorder();
         recorder.reset();
         for (var mappedTupleEntry : tupleMap.entrySet()) {
