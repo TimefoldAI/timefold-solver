@@ -9,6 +9,7 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
+import ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
@@ -38,7 +39,7 @@ public final class DatasetSessionFactory<Solution_> {
 
     private NodeNetwork buildNodeNetwork(Set<AbstractEnumeratingStream<Solution_>> enumeratingStreamSet,
             DataNodeBuildHelper<Solution_> buildHelper, Consumer<String> nodeNetworkVisualizationConsumer) {
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<TupleSourceRoot<?>>>();
         var nodeList = buildHelper.buildNodeList(enumeratingStreamSet, buildHelper,
                 AbstractEnumeratingStream::buildNode, node -> {
                     if (!(node instanceof AbstractForEachUniNode<?> forEachUniNode)) {
