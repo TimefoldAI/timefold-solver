@@ -64,17 +64,19 @@ public final class StaticDataUniNode<A> extends AbstractNode implements TupleSou
         return propagationQueue;
     }
 
-    public void insert(@Nullable Object a) {
+    @Override
+    public void insert(Object a) {
         if (tupleMap.containsKey(a)) {
             return;
         }
-        tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
+        invalidateCache();
         tupleMap.put(a, new ArrayList<>());
         insertIntoNodeNetwork(a);
         recalculateTuples();
     }
 
-    public void update(@Nullable Object a) {
+    @Override
+    public void update(Object a) {
         for (var mappedTuple : tupleMap.get(a)) {
             updateExisting(a, mappedTuple);
         }
@@ -93,11 +95,12 @@ public final class StaticDataUniNode<A> extends AbstractNode implements TupleSou
         }
     }
 
-    public void retract(@Nullable Object a) {
+    @Override
+    public void retract(Object a) {
         if (!tupleMap.containsKey(a)) {
             return;
         }
-        tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
+        invalidateCache();
         tupleMap.remove(a);
         retractFromNodeNetwork(a);
         recalculateTuples();
@@ -125,29 +128,30 @@ public final class StaticDataUniNode<A> extends AbstractNode implements TupleSou
     }
 
     private void insertIntoNodeNetwork(Object toInsert) {
-        nodeNetwork.getTupleSourceRootNodes(toInsert.getClass()).forEach(node -> {
-            ((AbstractForEachUniNode) node).insert(toInsert);
-        });
+        nodeNetwork.getTupleSourceRootNodes(toInsert.getClass())
+                .forEach(node -> ((AbstractForEachUniNode) node).insert(toInsert));
     }
 
     private void retractFromNodeNetwork(Object toRetract) {
-        nodeNetwork.getTupleSourceRootNodes(toRetract.getClass()).forEach(node -> {
-            ((AbstractForEachUniNode) node).retract(toRetract);
-        });
+        nodeNetwork.getTupleSourceRootNodes(toRetract.getClass())
+                .forEach(node -> ((AbstractForEachUniNode) node).retract(toRetract));
+    }
+
+    private void invalidateCache() {
+        tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
+        recordingTupleNode.getTupleRecorder().reset();
     }
 
     private void recalculateTuples() {
         var recorder = recordingTupleNode.getTupleRecorder();
-        recorder.reset();
         for (var mappedTupleEntry : tupleMap.entrySet()) {
             mappedTupleEntry.getValue().clear();
             var invalidated = mappedTupleEntry.getKey();
             recorder.recordingInto(mappedTupleEntry.getValue(), this::remapTuple, () -> {
                 // Do an update on the object and settle the network; this will update precisely the
                 // tuples mapped to this node, which will then be recorded
-                nodeNetwork.getTupleSourceRootNodes(invalidated.getClass()).forEach(node -> {
-                    ((AbstractForEachUniNode) node).update(invalidated);
-                });
+                nodeNetwork.getTupleSourceRootNodes(invalidated.getClass())
+                        .forEach(node -> ((AbstractForEachUniNode) node).update(invalidated));
                 nodeNetwork.settle();
             });
         }
