@@ -374,8 +374,8 @@ public abstract class AbstractSolutionClonerTest {
             cloneValue = cloneValue.getDependencies().get(0);
             originalValue = originalValue.getDependencies().get(0);
         }
-        assertThat(cloneValue).isNotNull();
-        assertThat(cloneValue).isNotSameAs(solutionValue);
+        assertThat(cloneValue).isNotNull()
+                .isNotSameAs(solutionValue);
         assertThat(cloneValue.getId()).isEqualTo(originalValue.getId());
     }
 

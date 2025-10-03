@@ -47,9 +47,8 @@ class QuarkusGizmoSolutionClonerImplementor extends GizmoSolutionClonerImplement
                         entityClass, Map.class);
         methodCreator.setModifiers(Modifier.STATIC | Modifier.PRIVATE);
 
-        GizmoSolutionOrEntityDescriptor entityDescriptor =
-                clonerDescriptor.memoizedSolutionOrEntityDescriptorMap().computeIfAbsent(entityClass,
-                        (key) -> new GizmoSolutionOrEntityDescriptor(clonerDescriptor.solutionDescriptor(), entityClass));
+        clonerDescriptor.memoizedSolutionOrEntityDescriptorMap().computeIfAbsent(entityClass,
+                key -> new GizmoSolutionOrEntityDescriptor(clonerDescriptor.solutionDescriptor(), entityClass));
 
         ResultHandle toClone = methodCreator.getMethodParam(0);
         ResultHandle cloneMap = methodCreator.getMethodParam(1);
