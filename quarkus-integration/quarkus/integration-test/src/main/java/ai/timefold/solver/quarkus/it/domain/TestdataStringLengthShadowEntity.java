@@ -1,13 +1,10 @@
 package ai.timefold.solver.quarkus.it.domain;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
-import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 
 @PlanningEntity
-public class TestdataStringLengthShadowEntity {
-
-    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+public class TestdataStringLengthShadowEntity implements TestdataStringLengthShadowEntityInterface {
     private String value;
 
     @ShadowVariable(variableListenerClass = StringLengthVariableListener.class,
@@ -18,10 +15,12 @@ public class TestdataStringLengthShadowEntity {
     // Getters/setters
     // ************************************************************************
 
+    @Override
     public String getValue() {
         return value;
     }
 
+    @Override
     public void setValue(String value) {
         this.value = value;
     }

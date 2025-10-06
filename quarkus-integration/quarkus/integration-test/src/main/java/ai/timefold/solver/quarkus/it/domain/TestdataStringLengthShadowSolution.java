@@ -16,7 +16,7 @@ public class TestdataStringLengthShadowSolution {
     @ValueRangeProvider(id = "valueRange")
     private List<String> valueList;
     @PlanningEntityCollectionProperty
-    private List<TestdataStringLengthShadowEntity> entityList;
+    private List<TestdataStringLengthShadowEntityInterface> entityList;
 
     ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
             Map.of("Don't assign 2 entities the same value.", HardSoftScore.ofHard(1)));
@@ -36,11 +36,11 @@ public class TestdataStringLengthShadowSolution {
         this.valueList = valueList;
     }
 
-    public List<TestdataStringLengthShadowEntity> getEntityList() {
+    public List<TestdataStringLengthShadowEntityInterface> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataStringLengthShadowEntity> entityList) {
+    public void setEntityList(List<TestdataStringLengthShadowEntityInterface> entityList) {
         this.entityList = entityList;
     }
 
