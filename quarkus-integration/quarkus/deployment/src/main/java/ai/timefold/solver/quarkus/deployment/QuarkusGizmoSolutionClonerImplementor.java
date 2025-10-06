@@ -1,6 +1,7 @@
 package ai.timefold.solver.quarkus.deployment;
 
 import java.lang.reflect.Modifier;
+import java.util.ArrayDeque;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.domain.solution.cloner.gizmo.GizmoSolutionCloner;
@@ -44,8 +45,8 @@ class QuarkusGizmoSolutionClonerImplementor extends GizmoSolutionClonerImplement
             Class<?> entityClass) {
         MethodCreator methodCreator =
                 clonerDescriptor.classCreator().getMethodCreator(getEntityHelperMethodName(entityClass), entityClass,
-                        entityClass, Map.class);
-        methodCreator.setModifiers(Modifier.STATIC | Modifier.PRIVATE);
+                        entityClass, Map.class, boolean.class, ArrayDeque.class);
+        methodCreator.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
 
         clonerDescriptor.memoizedSolutionOrEntityDescriptorMap().computeIfAbsent(entityClass,
                 key -> new GizmoSolutionOrEntityDescriptor(clonerDescriptor.solutionDescriptor(), entityClass));
