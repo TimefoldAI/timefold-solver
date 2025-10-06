@@ -42,7 +42,7 @@
     <version.asciidoctor.plugin.pdf>2.3.19</version.asciidoctor.plugin.pdf>
     <version.assembly.plugin>3.7.1</version.assembly.plugin>
     <version.compiler.plugin>3.14.1</version.compiler.plugin>
-    <version.dependency.plugin>3.8.1</version.dependency.plugin>
+    <version.dependency.plugin>3.9.0</version.dependency.plugin>
     <version.exec.plugin>3.6.1</version.exec.plugin>
     <version.enforcer.plugin>3.6.1</version.enforcer.plugin>
     <version.jacoco.plugin>0.8.13</version.jacoco.plugin>
