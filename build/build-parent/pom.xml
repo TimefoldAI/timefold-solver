@@ -20,8 +20,8 @@
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
-    <version.ch.qos.logback>1.5.18</version.ch.qos.logback>
-    <version.io.quarkus>3.28.1</version.io.quarkus>
+    <version.ch.qos.logback>1.5.19</version.ch.qos.logback>
+    <version.io.quarkus>3.28.2</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.2</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.6</version.org.assertj>
@@ -39,12 +39,12 @@
     <!-- ************************************************************************ -->
     <version.antrun.plugin>3.1.0</version.antrun.plugin>
     <version.asciidoctor.plugin>3.2.0</version.asciidoctor.plugin>
-    <version.asciidoctor.plugin.pdf>2.3.19</version.asciidoctor.plugin.pdf>
+    <version.asciidoctor.plugin.pdf>2.3.20</version.asciidoctor.plugin.pdf>
     <version.assembly.plugin>3.7.1</version.assembly.plugin>
     <version.compiler.plugin>3.14.1</version.compiler.plugin>
     <version.dependency.plugin>3.9.0</version.dependency.plugin>
     <version.exec.plugin>3.6.1</version.exec.plugin>
-    <version.enforcer.plugin>3.6.1</version.enforcer.plugin>
+    <version.enforcer.plugin>3.6.2</version.enforcer.plugin>
     <version.jacoco.plugin>0.8.13</version.jacoco.plugin>
     <version.jar.plugin>3.4.2</version.jar.plugin>
     <version.jaxb2.plugin>3.3.0</version.jaxb2.plugin>
