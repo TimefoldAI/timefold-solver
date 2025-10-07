@@ -15,7 +15,8 @@ import org.jspecify.annotations.NullMarked;
  * and user code must explicitly decide how to handle this case.
  * This prevents accidental use of {@link UnassignedElement} in places where {@link PositionInList} is expected,
  * If the code guarantees that unassigned values will never appear,
- * you can use {@link ElementPosition#ensureAssigned()} to avoid instanceof checks and casting.
+ * you can use {@link ElementPosition#ensureAssigned()} to avoid instanceof checks and casting,
+ * catching this error as early as possible.
  * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
