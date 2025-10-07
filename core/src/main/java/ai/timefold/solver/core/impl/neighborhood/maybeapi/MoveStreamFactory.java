@@ -67,22 +67,8 @@ public interface MoveStreamFactory<Solution_> {
      * @param variableMetaModel the meta model of the variable to enumerate
      * @return enumerating stream with all possible values of a given variable
      */
-    default <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_>
-            forEachEntityValuePair(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return forEachEntityValuePair(variableMetaModel, forEach(variableMetaModel.entity().type(), false));
-    }
-
-    /**
-     * Enumerate possible values for any given entity.
-     * If the variable allows unassigned values, the resulting stream will include a null value.
-     *
-     * @param variableMetaModel the meta model of the variable to enumerate
-     * @param entityEnumeratingStream the enumerating stream of entities to enumerate values for
-     * @return enumerating stream with all possible values of a given variable
-     */
-    <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_> forEachEntityValuePair(
-            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniEnumeratingStream<Solution_, Entity_> entityEnumeratingStream);
+    <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_>
+            forEachEntityValuePair(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
     <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream);
 

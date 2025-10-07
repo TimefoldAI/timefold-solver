@@ -75,15 +75,15 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     @Override
     public <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_> forEachEntityValuePair(
-            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniEnumeratingStream<Solution_, Entity_> entityEnumeratingStream) {
+            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         var includeNull =
                 variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariableMetaModel
                         ? planningVariableMetaModel.allowsUnassigned()
                         : variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariableMetaModel
                                 && planningListVariableMetaModel.allowsUnassignedValues();
         var stream = enumeratingStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
-        return entityEnumeratingStream.join(stream, EnumeratingJoiners.<Solution_, Entity_, Value_> filtering(
+        return forEach(variableMetaModel.entity().type(), false)
+                .join(stream, EnumeratingJoiners.<Solution_, Entity_, Value_> filtering(
                 (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value)));
     }
 
