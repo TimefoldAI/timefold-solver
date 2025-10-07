@@ -11,8 +11,11 @@ import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.Uni
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.sampling.BiSamplingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.sampling.UniSamplingStream;
+import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -67,22 +70,22 @@ public interface MoveStreamFactory<Solution_> {
      * @param variableMetaModel the meta model of the variable to enumerate
      * @return enumerating stream with all possible values of a given variable
      */
-    default <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_>
-            forEachEntityValuePair(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return forEachEntityValuePair(variableMetaModel, forEach(variableMetaModel.entity().type(), false));
-    }
+    <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_>
+            forEachEntityValuePair(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
     /**
-     * Enumerate possible values for any given entity.
-     * If the variable allows unassigned values, the resulting stream will include a null value.
+     * Enumerate all possible positions of a list variable to which a value can be assigned.
+     * This will eliminate all positions on {@link PlanningPin pinned entities},
+     * as well as all {@link PlanningPinToIndex pinned indexes}.
+     * If the list variable {@link PlanningListVariable#allowsUnassignedValues() allows unassigned values},
+     * the resulting stream will include a single instance of {@link UnassignedElement} instance.
      *
-     * @param variableMetaModel the meta model of the variable to enumerate
-     * @param entityEnumeratingStream the enumerating stream of entities to enumerate values for
-     * @return enumerating stream with all possible values of a given variable
+     * @param variableMetaModel the meta model of the list variable to enumerate
+     * @return enumerating stream with all assignable positions of a given list variable
+     * @see ElementPosition Read more about element positions.
      */
-    <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_> forEachEntityValuePair(
-            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            UniEnumeratingStream<Solution_, Entity_> entityEnumeratingStream);
+    <Entity_, Value_> UniEnumeratingStream<Solution_, ElementPosition>
+            forEachAssignablePosition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
     <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream);
 

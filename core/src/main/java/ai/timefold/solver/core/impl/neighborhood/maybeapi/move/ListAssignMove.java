@@ -19,7 +19,7 @@ public final class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMo
     private final Entity_ destinationEntity;
     private final int destinationIndex;
 
-    protected ListAssignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
+    ListAssignMove(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ planningValue,
             Entity_ destinationEntity, int destinationIndex) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.planningValue = Objects.requireNonNull(planningValue);
