@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.preview.api.domain.metamodel;
 
-import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.function.Supplier;
+
+import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A supertype for {@link PositionInList} and {@link UnassignedElement}.
