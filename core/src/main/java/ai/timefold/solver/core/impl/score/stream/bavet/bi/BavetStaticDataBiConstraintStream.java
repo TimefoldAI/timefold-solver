@@ -1,42 +1,42 @@
-package ai.timefold.solver.core.impl.score.stream.bavet.uni;
+package ai.timefold.solver.core.impl.score.stream.bavet.bi;
 
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.impl.bavet.bi.StaticDataBiNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.bavet.uni.StaticDataUniNode;
+import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetStaticDataBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
-import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
-public class BavetStaticDataUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A>
+public class BavetStaticDataBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements TupleSource {
     private final BavetAbstractConstraintStream<Solution_> recordingStaticConstraintStream;
-    private BavetAftBridgeUniConstraintStream<Solution_, A> aftStream;
+    private BavetAftBridgeBiConstraintStream<Solution_, A, B> aftStream;
 
-    public BavetStaticDataUniConstraintStream(
+    public BavetStaticDataBiConstraintStream(
             BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
         super(constraintFactory, RetrievalSemantics.STANDARD);
-        this.recordingStaticConstraintStream = new BavetRecordingUniConstraintStream<>(constraintFactory,
+        this.recordingStaticConstraintStream = new BavetRecordingBiConstraintStream<>(constraintFactory,
                 staticConstraintStream);
         staticConstraintStream.getChildStreamList().add(recordingStaticConstraintStream);
     }
 
-    public void setAftBridge(BavetAftBridgeUniConstraintStream<Solution_, A> aftStream) {
+    public void setAftBridge(BavetAftBridgeBiConstraintStream<Solution_, A, B> aftStream) {
         this.aftStream = aftStream;
     }
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        var staticDataBuildHelper = new BavetStaticDataBuildHelper<UniTuple<A>>(recordingStaticConstraintStream);
+        var staticDataBuildHelper = new BavetStaticDataBuildHelper<BiTuple<A, B>>(recordingStaticConstraintStream);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
-        buildHelper.addNode(new StaticDataUniNode<>(staticDataBuildHelper.getNodeNetwork(),
+        buildHelper.addNode(new StaticDataBiNode<>(staticDataBuildHelper.getNodeNetwork(),
                 staticDataBuildHelper.getRecordingTupleLifecycle(),
                 outputStoreSize,
                 buildHelper.getAggregatedTupleLifecycle(aftStream.getChildStreamList()),

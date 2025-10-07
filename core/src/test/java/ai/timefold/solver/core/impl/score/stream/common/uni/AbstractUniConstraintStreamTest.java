@@ -3829,7 +3829,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().add(entity3);
 
         var scoreDirector =
-                buildScoreDirector(factory -> factory.staticData(factory.forEachUnfiltered(TestdataLavishEntity.class)
+                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() == entityGroup))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -3905,8 +3905,8 @@ public abstract class AbstractUniConstraintStreamTest
         record EntityValuePair(TestdataLavishEntity entity, TestdataLavishValue value) {
         }
         var scoreDirector =
-                buildScoreDirector(factory -> factory.staticData(factory.forEachUnfiltered(TestdataLavishEntity.class)
-                        .join(factory.forEachUnfiltered(TestdataLavishValue.class))
+                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
                         .filter((entity, value) -> entity.getEntityGroup() == entityGroup
                                 && value.getValueGroup() == valueGroup)
                         .map(EntityValuePair::new))
@@ -3989,8 +3989,8 @@ public abstract class AbstractUniConstraintStreamTest
         record EntityValuePair(TestdataLavishValue value, TestdataLavishEntity entity) {
         }
         var scoreDirector =
-                buildScoreDirector(factory -> factory.staticData(factory.forEachUnfiltered(TestdataLavishValue.class)
-                        .join(factory.forEachUnfiltered(TestdataLavishEntity.class))
+                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishValue.class)
+                        .join(TestdataLavishEntity.class)
                         .filter((value, entity) -> entity.getEntityGroup() == entityGroup
                                 && value.getValueGroup() == valueGroup)
                         .map(EntityValuePair::new))

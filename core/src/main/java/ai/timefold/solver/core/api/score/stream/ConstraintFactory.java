@@ -201,7 +201,8 @@ public interface ConstraintFactory {
      * As this is cached, it is vital the stream does not reference any variables
      * (genuine or otherwise).
      */
-    <A> @NonNull UniConstraintStream<A> staticData(UniConstraintStream<A> stream);
+    <Stream_ extends ConstraintStream> @NonNull Stream_
+            staticData(StaticDataSupplier<@NonNull Stream_> staticDataSupplier);
 
     // ************************************************************************
     // from* (deprecated)
