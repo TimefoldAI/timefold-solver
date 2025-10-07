@@ -77,7 +77,7 @@ public interface MoveStreamFactory<Solution_> {
      * Enumerate all possible positions of a list variable to which a value can be assigned.
      * This will eliminate all positions on {@link PlanningPin pinned entities},
      * as well as all {@link PlanningPinToIndex pinned indexes}.
-     * If the list variable {@link PlanningListVariable#allowsUnassignedValues()} allows unassigned values},
+     * If the list variable {@link PlanningListVariable#allowsUnassignedValues() allows unassigned values},
      * the resulting stream will include a single instance of {@link UnassignedElement} instance.
      *
      * @param variableMetaModel the meta model of the list variable to enumerate
