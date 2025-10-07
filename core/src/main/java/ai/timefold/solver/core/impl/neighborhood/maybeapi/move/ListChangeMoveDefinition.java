@@ -6,7 +6,6 @@ import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -39,50 +38,15 @@ public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
         implements MoveDefinition<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    private final BiEnumeratingFilter<Solution_, Entity_, Value_> isValueInListFilter;
 
     public ListChangeMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.isValueInListFilter = (solution, entity, value) -> {
-            if (entity == null || value == null) {
-                // Necessary for the null to survive until the later stage,
-                // where we will use it as a special marker to either unassign the value,
-                // or move it to the end of list.
-                return true;
-            }
-            return solution.isValueInRange(variableMetaModel, entity, value);
-        };
     }
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
-        // Stream with unpinned entities;
-        // includes null if the variable allows unassigned values.
-        var unpinnedEntities =
-                moveStreamFactory.forEach(variableMetaModel.entity().type(), variableMetaModel.allowsUnassignedValues());
-        // Stream with unpinned values, which are assigned to any list variable;
-        // always includes null so that we can later create a position at the end of the list,
-        // i.e. with no value after it.
-        var unpinnedValues = moveStreamFactory.forEach(variableMetaModel.type(), true)
-                .filter((solutionView, value) -> value == null
-                        || solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
-        // Joins the two previous streams to create pairs of (entity, value),
-        // eliminating values which do not match that entity's value range.
-        // It maps these pairs to expected target positions in that entity's list variable.
-        var entityValuePairs = unpinnedEntities.join(unpinnedValues, EnumeratingJoiners.filtering(isValueInListFilter))
-                .map((solutionView, entity, value) -> {
-                    if (entity == null) { // Null entity means we need to unassign the value.
-                        return ElementPosition.unassigned();
-                    }
-                    var valueCount = solutionView.countValues(variableMetaModel, entity);
-                    if (value == null || valueCount == 0) { // This will trigger assignment of the value at the end of the list.
-                        return ElementPosition.of(entity, valueCount);
-                    } else { // This will trigger assignment of the value immediately before this value.
-                        return solutionView.getPositionOf(variableMetaModel, value);
-                    }
-                })
-                .distinct();
-        // Finally the stream of these positions is joined with the stream of all existing values,
+        var entityValuePairs = moveStreamFactory.forEachAssignablePosition(variableMetaModel);
+        // The stream of these positions is joined with the stream of all existing values,
         // filtering out those which would not result in a valid move.
         var enumeratingStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
                 .join(entityValuePairs, EnumeratingJoiners.filtering(this::isValidChange));
