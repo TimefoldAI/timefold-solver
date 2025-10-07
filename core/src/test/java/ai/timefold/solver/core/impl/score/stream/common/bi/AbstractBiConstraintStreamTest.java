@@ -32,8 +32,11 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.score.stream.StaticDataFactory;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
@@ -52,6 +55,7 @@ import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
 
 import org.junit.jupiter.api.TestTemplate;
+import org.mockito.Mockito;
 
 public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintStreamTest
         implements ConstraintStreamFunctionalTest {
@@ -3306,4 +3310,101 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 assertMatch(entity3, entity2));
     }
 
+    private BiConstraintStream<TestdataLavishValue, TestdataLavishEntity> exampleStaticData(StaticDataFactory dataFactory) {
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+
+        return dataFactory.forEachUnfiltered(TestdataLavishValue.class)
+                .join(TestdataLavishEntity.class)
+                .filter((value, entity) -> entity.getEntityGroup() == entityGroup
+                        && value.getValueGroup() == valueGroup);
+    }
+
+    private Constraint exampleConstraint(ConstraintFactory constraintFactory) {
+        return constraintFactory.staticData(this::exampleStaticData)
+                .filter((value, entity) -> entity.getValue() == value)
+                .penalize(SimpleScore.ONE)
+                .asConstraint("example");
+    }
+
+    @TestTemplate
+    public void staticData_join_filter_map_entity_right() {
+        var solution = TestdataLavishSolution.generateSolution();
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+        solution.getEntityGroupList().add(entityGroup);
+        solution.getValueGroupList().add(valueGroup);
+
+        var value1 = Mockito.spy(new TestdataLavishValue("MyValue 1", valueGroup));
+        solution.getValueList().add(value1);
+        var value2 = Mockito.spy(new TestdataLavishValue("MyValue 2", valueGroup));
+        solution.getValueList().add(value2);
+        var value3 = Mockito.spy(new TestdataLavishValue("MyValue 3", null));
+        solution.getValueList().add(value3);
+
+        var entity1 = Mockito.spy(new TestdataLavishEntity("MyEntity 1", entityGroup, value1));
+        solution.getEntityList().add(entity1);
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup, value1);
+        solution.getEntityList().add(entity2);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value1);
+        solution.getEntityList().add(entity3);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishValue.class)
+                        .join(TestdataLavishEntity.class)
+                        .filter((value, entity) -> entity.getEntityGroup() == entityGroup
+                                && value.getValueGroup() == valueGroup))
+                        .filter((value, entity) -> entity.getValue() == value1)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        Mockito.reset(entity1);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(value1, entity1),
+                assertMatch(value2, entity1),
+                assertMatch(value1, entity2),
+                assertMatch(value2, entity2));
+        Mockito.verify(entity1, Mockito.atLeastOnce()).getEntityGroup();
+
+        // Incrementally update a variable
+        Mockito.reset(entity1);
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(solution.getFirstValue());
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector,
+                assertMatch(value1, entity2),
+                assertMatch(value2, entity2));
+        Mockito.verify(entity1, Mockito.never()).getEntityGroup();
+
+        // Incrementally update a fact
+        scoreDirector.beforeProblemPropertyChanged(entity3);
+        entity3.setEntityGroup(entityGroup);
+        scoreDirector.afterProblemPropertyChanged(entity3);
+        assertScore(scoreDirector,
+                assertMatch(value1, entity2),
+                assertMatch(value2, entity2),
+                assertMatch(value1, entity3),
+                assertMatch(value2, entity3));
+
+        // Remove entity
+        scoreDirector.beforeEntityRemoved(entity3);
+        solution.getEntityList().remove(entity3);
+        scoreDirector.afterEntityRemoved(entity3);
+        assertScore(scoreDirector,
+                assertMatch(value1, entity2),
+                assertMatch(value2, entity2));
+
+        // Add it back again, to make sure it was properly removed before
+        scoreDirector.beforeEntityAdded(entity3);
+        solution.getEntityList().add(entity3);
+        scoreDirector.afterEntityAdded(entity3);
+        assertScore(scoreDirector,
+                assertMatch(value1, entity2),
+                assertMatch(value2, entity2),
+                assertMatch(value1, entity3),
+                assertMatch(value2, entity3));
+    }
 }

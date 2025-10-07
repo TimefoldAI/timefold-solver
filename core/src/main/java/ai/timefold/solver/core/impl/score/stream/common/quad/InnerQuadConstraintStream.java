@@ -44,43 +44,45 @@ public interface InnerQuadConstraintStream<A, B, C, D> extends QuadConstraintStr
     @Override
     default @NonNull <E> QuadConstraintStream<A, B, C, D> ifExists(@NonNull Class<E> otherClass,
             @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(getConstraintFactory().forEach(otherClass), joiners);
-        } else {
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifExists(getConstraintFactory().forEach(otherClass), joiners);
+            case STATIC -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
-            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+            case LEGACY -> ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override
     default @NonNull <E> QuadConstraintStream<A, B, C, D> ifExistsIncludingUnassigned(@NonNull Class<E> otherClass,
             @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+            case STATIC -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            // Calls fromUnfiltered() for backward compatibility only
+            case LEGACY -> ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override
     default @NonNull <E> QuadConstraintStream<A, B, C, D> ifNotExists(@NonNull Class<E> otherClass,
             @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
-        } else {
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
+            case STATIC -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
-            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+            case LEGACY -> ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override
     default @NonNull <E> QuadConstraintStream<A, B, C, D> ifNotExistsIncludingUnassigned(@NonNull Class<E> otherClass,
             @NonNull PentaJoiner<A, B, C, D, E> @NonNull... joiners) {
-        if (getRetrievalSemantics() == RetrievalSemantics.STANDARD) {
-            return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+            case STATIC -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            // Calls fromUnfiltered() for backward compatibility only
+            case LEGACY -> ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override

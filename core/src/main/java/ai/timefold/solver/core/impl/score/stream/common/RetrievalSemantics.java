@@ -2,12 +2,13 @@ package ai.timefold.solver.core.impl.score.stream.common;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.StaticDataFactory;
 
 /**
  * Determines the behavior of joins and conditional propagation
  * based on whether they are coming off of a constraint stream started by
- * either {@link ConstraintFactory#from(Class)}
- * or {@link ConstraintFactory#forEach(Class)}
+ * either {@link ConstraintFactory#from(Class)}, {@link ConstraintFactory#forEach(Class)},
+ * or {@link StaticDataFactory#forEachUnfiltered(Class)}
  * family of methods.
  *
  * <p>
@@ -29,6 +30,15 @@ public enum RetrievalSemantics {
      * Applies when the stream comes off of a {@link ConstraintFactory#forEach(Class)} family of methods.
      */
     STANDARD,
+
+    /**
+     * Joins and conditional propagation always include entities with null planning variables,
+     * regardless of whether their planning variables allow unassigned values.
+     * <p>
+     * Applies when the stream comes off of a {@link StaticDataFactory#forEachUnfiltered(Class)} (Class)} family of methods.
+     */
+    STATIC,
+
     /**
      * Joins include entities with null planning variables if these variables allow unassigned values.
      * Conditional propagation always includes entities with null planning variables,

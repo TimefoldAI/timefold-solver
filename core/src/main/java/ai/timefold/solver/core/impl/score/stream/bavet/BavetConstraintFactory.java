@@ -7,7 +7,9 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
+import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.api.score.stream.StaticDataSupplier;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
@@ -15,8 +17,17 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.stream.bavet.bi.BavetAbstractBiConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.bi.BavetStaticDataBiConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeTriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetAbstractQuadConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetStaticDataQuadConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetAbstractTriConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetStaticDataTriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetAbstractUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetStaticDataUniConstraintStream;
@@ -111,18 +122,23 @@ public final class BavetConstraintFactory<Solution_>
 
     private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
             ForEachFilteringCriteria criteria) {
+        return forEachForCriteria(sourceClass, criteria, RetrievalSemantics.STANDARD);
+    }
+
+    private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
+            ForEachFilteringCriteria criteria, RetrievalSemantics retrievalSemantics) {
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
         if (entityDescriptor == null || criteria == ForEachFilteringCriteria.ALL) {
             // Not genuine or shadow entity, or filtering was not requested; no need for filtering.
-            return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, RetrievalSemantics.STANDARD));
+            return share(new BavetForEachUniConstraintStream<>(this, sourceClass, null, retrievalSemantics));
         }
         var listVariableDescriptor = solutionDescriptor.getListVariableDescriptor();
         if (listVariableDescriptor == null || !listVariableDescriptor.acceptsValueType(sourceClass)) {
             // No applicable list variable; don't need to check inverse relationships.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
                     new ForEachFilteringCriteriaPredicateFunction<>(entityDescriptor, criteria),
-                    RetrievalSemantics.STANDARD));
+                    retrievalSemantics));
         }
         var entityClass = listVariableDescriptor.getEntityDescriptor().getEntityClass();
         if (entityClass == sourceClass) {
@@ -141,7 +157,7 @@ public final class BavetConstraintFactory<Solution_>
         } else { // We have the inverse relation variable, so we can read its value directly.
             return share(new BavetForEachUniConstraintStream<>(this, sourceClass,
                     new ForEachFilteringCriteriaPredicateFunction<>(entityDescriptor, criteria),
-                    RetrievalSemantics.STANDARD));
+                    retrievalSemantics));
         }
     }
 
@@ -158,6 +174,10 @@ public final class BavetConstraintFactory<Solution_>
     @Override
     public <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass) {
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL);
+    }
+
+    <A> @NonNull UniConstraintStream<A> forEachUnfilteredStatic(@NonNull Class<A> sourceClass) {
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL, RetrievalSemantics.STATIC);
     }
 
     // Required for node sharing, since using a lambda will create different instances
@@ -183,11 +203,36 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public @NonNull <A> UniConstraintStream<A> staticData(UniConstraintStream<A> stream) {
-        var bavetStream = (BavetAbstractUniConstraintStream<Solution_, A>) stream;
-        var out = new BavetStaticDataUniConstraintStream<>(this, bavetStream);
-        return (UniConstraintStream<A>) share(new BavetAftBridgeUniConstraintStream<>(this, out),
-                out::setAftBridge);
+    @SuppressWarnings("unchecked")
+    public @NonNull <Stream_ extends @NonNull ConstraintStream> Stream_
+            staticData(StaticDataSupplier<Stream_> staticDataSupplier) {
+        var bavetStream = Objects.requireNonNull(staticDataSupplier.get(new BavetStaticDataFactory<>(this)));
+        // TODO: Use switch here in JDK 21
+        if (bavetStream instanceof BavetAbstractUniConstraintStream<?, ?> uniStream) {
+            var out = new BavetStaticDataUniConstraintStream<>(this,
+                    (BavetAbstractUniConstraintStream<Solution_, ?>) uniStream);
+            return (Stream_) share(new BavetAftBridgeUniConstraintStream<>(this, out),
+                    out::setAftBridge);
+        } else if (bavetStream instanceof BavetAbstractBiConstraintStream<?, ?, ?> biStream) {
+            var out = new BavetStaticDataBiConstraintStream<>(this,
+                    (BavetAbstractBiConstraintStream<Solution_, ?, ?>) biStream);
+            return (Stream_) share(new BavetAftBridgeBiConstraintStream<>(this, out),
+                    out::setAftBridge);
+        } else if (bavetStream instanceof BavetAbstractTriConstraintStream<?, ?, ?, ?> triStream) {
+            var out = new BavetStaticDataTriConstraintStream<>(this,
+                    (BavetAbstractTriConstraintStream<Solution_, ?, ?, ?>) triStream);
+            return (Stream_) share(new BavetAftBridgeTriConstraintStream<>(this, out),
+                    out::setAftBridge);
+        } else if (bavetStream instanceof BavetAbstractQuadConstraintStream<?, ?, ?, ?, ?> quadStream) {
+            var out = new BavetStaticDataQuadConstraintStream<>(this,
+                    (BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>) quadStream);
+            return (Stream_) share(new BavetAftBridgeQuadConstraintStream<>(this, out),
+                    out::setAftBridge);
+        } else {
+            throw new IllegalStateException(
+                    "impossible state: the supplier (%s) returned a stream (%s) that not an instance of any Bavet ConstraintStream"
+                            .formatted(staticDataSupplier, bavetStream));
+        }
     }
 
     @Override

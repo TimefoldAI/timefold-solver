@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.common.bi;
 
-import static ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics.STANDARD;
-
 import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collection;
@@ -45,53 +43,55 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
 
     @Override
     default <C> @NonNull TriConstraintStream<A, B, C> join(@NonNull Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
-        if (getRetrievalSemantics() == STANDARD) {
-            return join(getConstraintFactory().forEach(otherClass), joiners);
-        } else {
-            return join(getConstraintFactory().from(otherClass), joiners);
-        }
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> join(getConstraintFactory().forEach(otherClass), joiners);
+            case STATIC -> join(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            case LEGACY -> join(getConstraintFactory().from(otherClass), joiners);
+        };
     }
 
     @Override
     default @NonNull <C> BiConstraintStream<A, B> ifExists(@NonNull Class<C> otherClass,
             TriJoiner<A, B, C> @NonNull... joiners) {
-        if (getRetrievalSemantics() == STANDARD) {
-            return ifExists(getConstraintFactory().forEach(otherClass), joiners);
-        } else {
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifExists(getConstraintFactory().forEach(otherClass), joiners);
+            case STATIC -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
-            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+            case LEGACY -> ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override
     default @NonNull <C> BiConstraintStream<A, B> ifExistsIncludingUnassigned(@NonNull Class<C> otherClass,
             @NonNull TriJoiner<A, B, C> @NonNull... joiners) {
-        if (getRetrievalSemantics() == STANDARD) {
-            return ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+            case STATIC -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            // Calls fromUnfiltered() for backward compatibility only
+            case LEGACY -> ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override
     default <C> @NonNull BiConstraintStream<A, B> ifNotExists(@NonNull Class<C> otherClass,
             @NonNull TriJoiner<A, B, C>... joiners) {
-        if (getRetrievalSemantics() == STANDARD) {
-            return ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
-        } else {
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
+            case STATIC -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
-            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+            case LEGACY -> ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override
     default <C> @NonNull BiConstraintStream<A, B> ifNotExistsIncludingUnassigned(@NonNull Class<C> otherClass,
             @NonNull TriJoiner<A, B, C>... joiners) {
-        if (getRetrievalSemantics() == STANDARD) {
-            return ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
-        } else {
-            return ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
-        }
+        return switch (getRetrievalSemantics()) {
+            case STANDARD -> ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
+            case STATIC -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            // Calls fromUnfiltered() for backward compatibility only
+            case LEGACY -> ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
+        };
     }
 
     @Override

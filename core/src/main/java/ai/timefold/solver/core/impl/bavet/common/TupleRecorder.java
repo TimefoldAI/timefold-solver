@@ -2,12 +2,11 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.IdentityHashMap;
 import java.util.List;
-import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
-public final class TupleRecorder<Tuple_ extends AbstractTuple> implements Consumer<Tuple_> {
+public final class TupleRecorder<Tuple_ extends AbstractTuple> {
     List<Tuple_> recordedTupleList;
     UnaryOperator<Tuple_> mapper;
     IdentityHashMap<Tuple_, Tuple_> inputTupleToOutputTuple = new IdentityHashMap<>();
@@ -25,8 +24,11 @@ public final class TupleRecorder<Tuple_ extends AbstractTuple> implements Consum
         this.mapper = null;
     }
 
-    @Override
-    public void accept(Tuple_ tuple) {
+    public boolean isRecording() {
+        return recordedTupleList != null;
+    }
+
+    public void record(Tuple_ tuple) {
         if (recordedTupleList != null) {
             recordedTupleList.add(inputTupleToOutputTuple.computeIfAbsent(tuple, mapper));
         }

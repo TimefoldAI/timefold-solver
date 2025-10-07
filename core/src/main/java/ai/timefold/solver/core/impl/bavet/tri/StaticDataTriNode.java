@@ -1,28 +1,28 @@
-package ai.timefold.solver.core.impl.bavet.uni;
+package ai.timefold.solver.core.impl.bavet.tri;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractStaticDataNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class StaticDataUniNode<A> extends AbstractStaticDataNode<UniTuple<A>> {
+public final class StaticDataTriNode<A, B, C> extends AbstractStaticDataNode<TriTuple<A, B, C>> {
     private final int outputStoreSize;
 
-    public StaticDataUniNode(NodeNetwork nodeNetwork,
-            RecordingTupleLifecycle<UniTuple<A>> recordingTupleNode,
+    public StaticDataTriNode(NodeNetwork nodeNetwork,
+            RecordingTupleLifecycle<TriTuple<A, B, C>> recordingTupleNode,
             int outputStoreSize,
-            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
+            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
         super(nodeNetwork, recordingTupleNode, nextNodesTupleLifecycle, sourceClasses);
         this.outputStoreSize = outputStoreSize;
     }
 
     @Override
-    protected UniTuple<A> remapTuple(UniTuple<A> tuple) {
-        return new UniTuple<>(tuple.factA, outputStoreSize);
+    protected TriTuple<A, B, C> remapTuple(TriTuple<A, B, C> tuple) {
+        return new TriTuple<>(tuple.factA, tuple.factB, tuple.factC, outputStoreSize);
     }
 }
