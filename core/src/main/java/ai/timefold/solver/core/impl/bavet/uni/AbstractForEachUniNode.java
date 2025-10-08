@@ -4,9 +4,9 @@ import java.util.IdentityHashMap;
 import java.util.Map;
 
 import ai.timefold.solver.core.impl.bavet.common.AbstractNode;
+import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.Propagator;
 import ai.timefold.solver.core.impl.bavet.common.StaticPropagationQueue;
-import ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public abstract sealed class AbstractForEachUniNode<A>
         extends AbstractNode
-        implements TupleSourceRoot<A>
+        implements BavetRootNode<A>
         permits ForEachFilteredUniNode, ForEachUnfilteredUniNode {
 
     private final Class<A> forEachClass;
@@ -95,6 +95,11 @@ public abstract sealed class AbstractForEachUniNode<A>
         } else {
             propagationQueue.retract(tuple, TupleState.DYING);
         }
+    }
+
+    @Override
+    public final void settle() {
+        // We don't need to do any operations
     }
 
     @Override

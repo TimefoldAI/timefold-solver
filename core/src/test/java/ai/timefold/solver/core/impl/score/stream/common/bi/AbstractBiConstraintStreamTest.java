@@ -32,11 +32,8 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
-import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
-import ai.timefold.solver.core.api.score.stream.StaticDataFactory;
-import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
@@ -3308,23 +3305,6 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 assertMatch(entity2, entity3),
                 assertMatch(entity3, entity1),
                 assertMatch(entity3, entity2));
-    }
-
-    private BiConstraintStream<TestdataLavishValue, TestdataLavishEntity> exampleStaticData(StaticDataFactory dataFactory) {
-        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
-        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
-
-        return dataFactory.forEachUnfiltered(TestdataLavishValue.class)
-                .join(TestdataLavishEntity.class)
-                .filter((value, entity) -> entity.getEntityGroup() == entityGroup
-                        && value.getValueGroup() == valueGroup);
-    }
-
-    private Constraint exampleConstraint(ConstraintFactory constraintFactory) {
-        return constraintFactory.staticData(this::exampleStaticData)
-                .filter((value, entity) -> entity.getValue() == value)
-                .penalize(SimpleScore.ONE)
-                .asConstraint("example");
     }
 
     @TestTemplate

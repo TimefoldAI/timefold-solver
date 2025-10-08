@@ -28,7 +28,7 @@ public final class TupleRecorder<Tuple_ extends AbstractTuple> {
         return recordedTupleList != null;
     }
 
-    public void record(Tuple_ tuple) {
+    public void recordTuple(Tuple_ tuple) {
         if (recordedTupleList != null) {
             recordedTupleList.add(inputTupleToOutputTuple.computeIfAbsent(tuple, mapper));
         }

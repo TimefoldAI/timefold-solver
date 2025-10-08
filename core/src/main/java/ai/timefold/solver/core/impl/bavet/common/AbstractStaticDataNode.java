@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
@@ -11,24 +12,28 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> extends AbstractNode
-        implements TupleSourceRoot<Object> {
+        implements BavetRootNode<Object> {
     private final StaticPropagationQueue<Tuple_> propagationQueue;
     private final Map<Object, List<Tuple_>> tupleMap = new IdentityHashMap<>(1000);
-    private final NodeNetwork nodeNetwork;
+    private final NodeNetwork innerNodeNetwork;
     private final RecordingTupleLifecycle<Tuple_> recordingTupleNode;
     private final Class<?>[] sourceClasses;
+    private final Set<Object> queuedInsertSet = CollectionUtils.newIdentityHashSet(32);
+    private final Set<Object> queuedUpdateSet = CollectionUtils.newIdentityHashSet(32);
+    private final Set<Object> queuedRetractSet = CollectionUtils.newIdentityHashSet(32);
 
-    public AbstractStaticDataNode(NodeNetwork nodeNetwork,
+    protected AbstractStaticDataNode(NodeNetwork innerNodeNetwork,
             RecordingTupleLifecycle<Tuple_> recordingTupleNode,
             TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
-        this.nodeNetwork = nodeNetwork;
+        this.innerNodeNetwork = innerNodeNetwork;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
         this.sourceClasses = sourceClasses;
         this.recordingTupleNode = recordingTupleNode;
@@ -55,26 +60,18 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
     }
 
     @Override
-    public final boolean supports(TupleSourceRoot.LifecycleOperation lifecycleOperation) {
+    public final boolean supports(BavetRootNode.LifecycleOperation lifecycleOperation) {
         return true;
     }
 
     @Override
     public final void insert(Object a) {
-        if (tupleMap.containsKey(a)) {
-            return;
-        }
-        invalidateCache();
-        tupleMap.put(a, new ArrayList<>());
-        insertIntoNodeNetwork(a);
-        recalculateTuples();
+        queuedInsertSet.add(a);
     }
 
     @Override
     public final void update(Object a) {
-        for (var mappedTuple : tupleMap.get(a)) {
-            updateExisting(a, mappedTuple);
-        }
+        queuedUpdateSet.add(a);
     }
 
     private void updateExisting(@Nullable Object a, Tuple_ tuple) {
@@ -92,13 +89,32 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
 
     @Override
     public final void retract(Object a) {
-        if (!tupleMap.containsKey(a)) {
-            return;
+        queuedRetractSet.add(a);
+    }
+
+    @Override
+    public final void settle() {
+        if (!queuedRetractSet.isEmpty() || !queuedInsertSet.isEmpty()) {
+            invalidateCache();
+            queuedUpdateSet.removeAll(queuedRetractSet);
+            // Do not remove queued retracts from inserts; if a fact property
+            // change, there will be both a retract and insert for that fact
+            queuedRetractSet.forEach(this::retractFromInnerNodeNetwork);
+            queuedInsertSet.forEach(this::insertIntoInnerNodeNetwork);
+            queuedRetractSet.clear();
+            queuedInsertSet.clear();
+
+            // settle the inner node network, so the inserts/retracts do not interfere
+            // with the recording of the first object's tuples
+            innerNodeNetwork.settle();
+            recalculateTuples();
         }
-        invalidateCache();
-        tupleMap.remove(a);
-        retractFromNodeNetwork(a);
-        recalculateTuples();
+        for (var updatedObject : queuedUpdateSet) {
+            for (var updatedTuple : tupleMap.get(updatedObject)) {
+                updateExisting(updatedObject, updatedTuple);
+            }
+        }
+        queuedUpdateSet.clear();
     }
 
     private void insertNew(Tuple_ tuple) {
@@ -122,34 +138,34 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
         }
     }
 
-    private void insertIntoNodeNetwork(Object toInsert) {
-        nodeNetwork.getTupleSourceRootNodes(toInsert.getClass())
+    private void insertIntoInnerNodeNetwork(Object toInsert) {
+        tupleMap.put(toInsert, new ArrayList<>());
+        innerNodeNetwork.getTupleSourceRootNodes(toInsert.getClass())
                 .forEach(node -> ((AbstractForEachUniNode) node).insert(toInsert));
     }
 
-    private void retractFromNodeNetwork(Object toRetract) {
-        nodeNetwork.getTupleSourceRootNodes(toRetract.getClass())
+    private void retractFromInnerNodeNetwork(Object toRetract) {
+        tupleMap.remove(toRetract);
+        innerNodeNetwork.getTupleSourceRootNodes(toRetract.getClass())
                 .forEach(node -> ((AbstractForEachUniNode) node).retract(toRetract));
     }
 
     private void invalidateCache() {
         tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
-        recordingTupleNode.getTupleRecorder().reset();
+        recordingTupleNode.tupleRecorder().reset();
     }
 
     private void recalculateTuples() {
-        // Settle all the inserts/retracts that happen
-        nodeNetwork.settle();
-        var recorder = recordingTupleNode.getTupleRecorder();
+        var recorder = recordingTupleNode.tupleRecorder();
         for (var mappedTupleEntry : tupleMap.entrySet()) {
             mappedTupleEntry.getValue().clear();
             var invalidated = mappedTupleEntry.getKey();
             recorder.recordingInto(mappedTupleEntry.getValue(), this::remapTuple, () -> {
-                // Do an update on the object and settle the network; this will update precisely the
+                // Do a fake update on the object and settle the network; this will update precisely the
                 // tuples mapped to this node, which will then be recorded
-                nodeNetwork.getTupleSourceRootNodes(invalidated.getClass())
+                innerNodeNetwork.getTupleSourceRootNodes(invalidated.getClass())
                         .forEach(node -> ((AbstractForEachUniNode) node).update(invalidated));
-                nodeNetwork.settle();
+                innerNodeNetwork.settle();
             });
         }
         tupleMap.values().stream().flatMap(List::stream).forEach(this::insertNew);
