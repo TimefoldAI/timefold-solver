@@ -3,12 +3,14 @@ package ai.timefold.solver.core.impl.bavet.common;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public interface TupleSourceRoot<A> {
+public interface BavetRootNode<A> {
     void insert(A a);
 
     void update(A a);
 
     void retract(A a);
+
+    void settle();
 
     boolean allowsInstancesOf(Class<?> clazz);
 
@@ -21,7 +23,7 @@ public interface TupleSourceRoot<A> {
      * @param lifecycleOperation the lifecycle operation to check
      * @return {@code true} if the given lifecycle operation is supported; otherwise, {@code false}.
      */
-    boolean supports(TupleSourceRoot.LifecycleOperation lifecycleOperation);
+    boolean supports(BavetRootNode.LifecycleOperation lifecycleOperation);
 
     /**
      * Represents the various lifecycle operations that can be performed
@@ -46,6 +48,10 @@ public interface TupleSourceRoot<A> {
          * This operation is typically used when a fact is removed from the working solution
          * and its corresponding tuple needs to be removed from the node network.
          */
-        RETRACT
+        RETRACT,
+        /**
+         * Represents the operation of recalculating the score, just prior to all queued operations being propagated.
+         */
+        SETTLE
     }
 }

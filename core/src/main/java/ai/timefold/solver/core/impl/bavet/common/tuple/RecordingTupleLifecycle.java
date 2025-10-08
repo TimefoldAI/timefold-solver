@@ -2,16 +2,9 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import ai.timefold.solver.core.impl.bavet.common.TupleRecorder;
 
-public final class RecordingTupleLifecycle<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_> {
-    private final TupleRecorder<Tuple_> tupleRecorder;
-
-    public RecordingTupleLifecycle(TupleRecorder<Tuple_> tupleRecorder) {
-        this.tupleRecorder = tupleRecorder;
-    }
-
-    public TupleRecorder<Tuple_> getTupleRecorder() {
-        return tupleRecorder;
-    }
+public record RecordingTupleLifecycle<Tuple_ extends AbstractTuple>(TupleRecorder<Tuple_> tupleRecorder)
+        implements
+            TupleLifecycle<Tuple_> {
 
     @Override
     public void insert(Tuple_ tuple) {
@@ -22,7 +15,7 @@ public final class RecordingTupleLifecycle<Tuple_ extends AbstractTuple> impleme
 
     @Override
     public void update(Tuple_ tuple) {
-        tupleRecorder.record(tuple);
+        tupleRecorder.recordTuple(tuple);
     }
 
     @Override

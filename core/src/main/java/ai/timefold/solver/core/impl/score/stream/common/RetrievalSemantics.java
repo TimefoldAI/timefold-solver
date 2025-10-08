@@ -35,7 +35,7 @@ public enum RetrievalSemantics {
      * Joins and conditional propagation always include entities with null planning variables,
      * regardless of whether their planning variables allow unassigned values.
      * <p>
-     * Applies when the stream comes off of a {@link StaticDataFactory#forEachUnfiltered(Class)} (Class)} family of methods.
+     * Applies when the stream comes off of a {@link StaticDataFactory#forEachUnfiltered(Class)} family of methods.
      */
     STATIC,
 

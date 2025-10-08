@@ -10,7 +10,7 @@ import java.util.List;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
-import ai.timefold.solver.core.impl.bavet.common.TupleSourceRoot;
+import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
@@ -47,16 +47,16 @@ public final class BavetStaticDataBuildHelper<Tuple_ extends AbstractTuple> {
                 AbstractScoreInliner.buildScoreInliner(new SimpleScoreDefinition(), Collections.emptyMap(),
                         ConstraintMatchPolicy.DISABLED));
 
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<TupleSourceRoot<?>>>();
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(streamSet, buildHelper,
                 BavetAbstractConstraintStream::buildNode,
                 node -> {
-                    if (!(node instanceof TupleSourceRoot<?> sourceRootNode)) {
+                    if (!(node instanceof BavetRootNode<?> sourceRootNode)) {
                         return;
                     }
-                    var sourceClasses = sourceRootNode.getSourceClasses();
-                    for (Class<?> sourceClass : sourceClasses) {
-                        var sourceNodeList = declaredClassToNodeMap.computeIfAbsent(sourceClass, k -> new ArrayList<>(2));
+                    var nodeSourceClasses = sourceRootNode.getSourceClasses();
+                    for (Class<?> nodeSourceClass : nodeSourceClasses) {
+                        var sourceNodeList = declaredClassToNodeMap.computeIfAbsent(nodeSourceClass, k -> new ArrayList<>(2));
                         sourceNodeList.add(sourceRootNode);
                     }
                 });
