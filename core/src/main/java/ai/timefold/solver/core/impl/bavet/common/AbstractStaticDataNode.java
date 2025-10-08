@@ -66,6 +66,7 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
 
     @Override
     public final void insert(Object a) {
+        // do not remove a retract of the same fact (a fact was updated)
         queuedInsertSet.add(a);
     }
 
@@ -89,7 +90,11 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
 
     @Override
     public final void retract(Object a) {
-        queuedRetractSet.add(a);
+        // remove an insert then retract (a fact was inserted but retracted before settling)
+        // do not remove a retract then insert (a fact was updated)
+        if (!queuedInsertSet.remove(a)) {
+            queuedRetractSet.add(a);
+        }
     }
 
     @Override
@@ -97,6 +102,7 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
         if (!queuedRetractSet.isEmpty() || !queuedInsertSet.isEmpty()) {
             invalidateCache();
             queuedUpdateSet.removeAll(queuedRetractSet);
+            queuedUpdateSet.removeAll(queuedInsertSet);
             // Do not remove queued retracts from inserts; if a fact property
             // change, there will be both a retract and insert for that fact
             queuedRetractSet.forEach(this::retractFromInnerNodeNetwork);
