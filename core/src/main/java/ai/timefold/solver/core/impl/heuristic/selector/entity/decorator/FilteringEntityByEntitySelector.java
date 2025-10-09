@@ -298,7 +298,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             this.selected = null;
             while (entityIterator.hasNext()) {
                 var entity = entityIterator.next();
-                if (isReachable(entity)) {
+                if (entity != null && isReachable(entity)) {
                     return entity;
                 }
             }
@@ -364,7 +364,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             }
             while (entityIterator.hasNext()) {
                 var otherEntity = entityIterator.next();
-                if (isReachable(replayedEntity, otherEntity)) {
+                if (otherEntity != null && isReachable(replayedEntity, otherEntity)) {
                     return otherEntity;
                 }
             }
@@ -378,7 +378,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             }
             while (entityIterator.hasPrevious()) {
                 var otherEntity = entityIterator.previous();
-                if (isReachable(replayedEntity, otherEntity)) {
+                if (otherEntity != null && isReachable(replayedEntity, otherEntity)) {
                     return otherEntity;
                 }
             }
@@ -442,10 +442,10 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 bailoutSize--;
                 // We expect the iterator to apply a random selection
                 var next = entityIterator.next();
-                if (isReachable(currentReplayedEntity, next)) {
+                if (next != null && isReachable(currentReplayedEntity, next)) {
                     return next;
                 }
-            } while (bailoutSize > 0);
+            } while (bailoutSize > 0 && entityIterator.hasNext());
             // If no reachable entity is found, we return the currently selected entity,
             // which will result in a non-doable move
             return currentReplayedEntity;
