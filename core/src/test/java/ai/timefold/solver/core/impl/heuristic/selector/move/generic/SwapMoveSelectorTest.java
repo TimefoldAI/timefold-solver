@@ -383,10 +383,34 @@ class SwapMoveSelectorTest {
         // No more moves
         assertThat(iterator.hasNext()).isFalse();
 
+        leftEntitySelector.setRecordedEntity(e1);
+        iterator = rightEntitySelector.endingIterator();
+        assertThat(iterator.hasNext()).isFalse();
+        // The left selector chooses B, and the right selector returns A
+        leftEntitySelector.setRecordedEntity(e2);
+        iterator = rightEntitySelector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).hasToString("A");
+        // No more moves
+        assertThat(iterator.hasNext()).isFalse();
+
         // ListIterator
         // The left selector chooses A, and the right selector returns no value
         leftEntitySelector.setRecordedEntity(e1);
         var listIterator = rightEntitySelector.listIterator();
+        assertThat(listIterator.hasNext()).isFalse();
+        // B <-> A
+        leftEntitySelector.setRecordedEntity(e2);
+        listIterator = rightEntitySelector.listIterator();
+        assertThat(listIterator.hasNext()).isTrue();
+        assertThat(listIterator.next()).hasToString("A");
+        assertThat(listIterator.hasNext()).isFalse();
+        // Backward move
+        assertThat(listIterator.hasPrevious()).isTrue();
+        assertThat(listIterator.previous()).hasToString("A");
+
+        leftEntitySelector.setRecordedEntity(e1);
+        listIterator = rightEntitySelector.listIterator(0);
         assertThat(listIterator.hasNext()).isFalse();
         // B <-> A
         leftEntitySelector.setRecordedEntity(e2);
