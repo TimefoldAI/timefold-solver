@@ -17,11 +17,14 @@ import ai.timefold.solver.spring.boot.autoconfigure.inheritance.solution.OnlyChi
 import ai.timefold.solver.spring.boot.autoconfigure.inheritance.solution.ReplaceAnnotatedMemberSpringTestConfiguration;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
+@Execution(ExecutionMode.CONCURRENT)
 class TimefoldSolverSolutionInheritanceTest {
 
     private final ApplicationContextRunner bothClassesAnnotatedContextRunner;

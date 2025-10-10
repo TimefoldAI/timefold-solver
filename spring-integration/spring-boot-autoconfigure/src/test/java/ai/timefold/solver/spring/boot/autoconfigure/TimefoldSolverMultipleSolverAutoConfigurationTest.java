@@ -46,6 +46,8 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpring
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -54,6 +56,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
+@Execution(ExecutionMode.CONCURRENT)
 class TimefoldSolverMultipleSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
@@ -105,9 +108,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
         emptyContextRunner
                 .withPropertyValues("timefold.solver.solver1.termination.spent-limit=4h")
                 .withPropertyValues("timefold.solver.solver2.termination.spent-limit=4h")
-                .run(context -> {
-                    assertThat(context.getStartupFailure()).isNull();
-                });
+                .run(context -> assertThat(context.getStartupFailure()).isNull());
     }
 
     @Test
@@ -354,10 +355,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean(SolverConfig.class)))
                 .rootCause().message().contains("The properties", "solverConfigXml", "environmentMode", "moveThreadCount",
                         "domainAccessType", "are not valid", "Maybe try changing the property name to kebab-case");
-    }
-
-    @Test
-    void invalidTerminationYaml() {
         assertThatCode(() -> contextRunner
                 .withInitializer(new ConfigDataApplicationContextInitializer())
                 .withSystemProperties(
@@ -393,13 +390,13 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                                         .withConfigOverride(
                                                 new SolverConfigOverride<TestdataSpringSolution>()
                                                         .withTerminationConfig(new TerminationConfig()
-                                                                .withSpentLimit(Duration.ofSeconds(10L))))
+                                                                .withSpentLimit(Duration.ofSeconds(2L))))
                                         .run();
                         SolverScope<TestdataSpringSolution> customScope = new SolverScope<>() {
                             @Override
                             public long calculateTimeMillisSpentUpToNow() {
-                                // Return five seconds to make the time gradient predictable
-                                return 5000L;
+                                // Return one second to make the time gradient predictable
+                                return 1000L;
                             }
                         };
                         // We ensure the best-score limit won't take priority
@@ -409,7 +406,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                         var solution = solverJob.getFinalBestSolution();
                         assertThat(solution).isNotNull();
                         assertThat(solution.getScore().score()).isNotNegative();
-                        // Spent-time is 30s by default, but it is overridden with 10. The gradient time must be 50%
+                        // Spent-time is 30s by default, but it is overridden with 2. The gradient time must be 50%
                         assertThat(gradientTime).isEqualTo(0.5);
                     }
                 });
@@ -483,9 +480,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
                 .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
                 .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
-                .run(context -> {
-                    context.getBean(PlannerBenchmarkFactory.class);
-                }))
+                .run(context -> context.getBean(PlannerBenchmarkFactory.class)))
                 .hasRootCauseMessage("""
                         When defining multiple solvers, the benchmark feature is not enabled.
                         Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");

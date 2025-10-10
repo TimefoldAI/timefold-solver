@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -12,7 +13,9 @@ import java.util.function.ToIntFunction;
 import ai.timefold.solver.core.api.function.TriConsumer;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
 
+@Execution(CONCURRENT)
 public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrderGraph> {
     /**
      * Create a topological graph of the given size

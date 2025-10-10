@@ -29,11 +29,14 @@ import ai.timefold.solver.spring.boot.autoconfigure.inheritance.entity.ReplaceVa
 import ai.timefold.solver.spring.boot.autoconfigure.inheritance.entity.ReplaceVarSpringTestConfiguration;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
+@Execution(ExecutionMode.CONCURRENT)
 class TimefoldSolverEntityInheritanceTest {
 
     private final ApplicationContextRunner bothClassesAnnotatedContextRunner;

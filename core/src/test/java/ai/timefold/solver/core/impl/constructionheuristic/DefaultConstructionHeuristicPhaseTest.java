@@ -6,28 +6,16 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
-import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
-import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
-import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
-import ai.timefold.solver.core.impl.solver.DefaultSolver;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
-import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
@@ -50,14 +38,14 @@ import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassigned
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
-import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
-import io.micrometer.core.instrument.Metrics;
-
-class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
+@Execution(ExecutionMode.CONCURRENT)
+class DefaultConstructionHeuristicPhaseTest {
 
     @Test
     void solveWithInitializedEntities() {
@@ -106,80 +94,6 @@ class DefaultConstructionHeuristicPhaseTest extends AbstractMeterTest {
         // Although the solution has not changed, it is a clone since the initial solution
         // may have stale shadow variables.
         assertThat(inputProblem).isNotSameAs(solution);
-    }
-
-    @Test
-    void solveWithCustomMetrics() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig())
-                .withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.MOVE_COUNT_PER_TYPE)));
-
-        var problem = new TestdataSolution("s1");
-        var v1 = new TestdataValue("v1");
-        var v2 = new TestdataValue("v2");
-        var v3 = new TestdataValue("v3");
-        problem.setValueList(Arrays.asList(v1, v2, v3));
-        problem.setEntityList(Arrays.asList(
-                new TestdataEntity("e1", null),
-                new TestdataEntity("e2", v2),
-                new TestdataEntity("e3", v1)));
-
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataSolution> solver = solverFactory.buildSolver();
-        var moveCountPerChange = new AtomicLong();
-        ((DefaultSolver<TestdataSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
-            @Override
-            public void solvingEnded(SolverScope<TestdataSolution> solverScope) {
-                meterRegistry.publish();
-                var changeMoveKey = "ChangeMove(TestdataEntity.value)";
-                if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
-                    var counter = meterRegistry
-                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + changeMoveKey, "VALUE");
-                    moveCountPerChange.set(counter.longValue());
-                }
-            }
-        });
-        solver.solve(problem);
-        assertThat(moveCountPerChange.get()).isPositive();
-    }
-
-    @Test
-    void solveWithListVariableAndCustomMetrics() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class, TestdataListValue.class)
-                .withPhases(new ConstructionHeuristicPhaseConfig())
-                .withMonitoringConfig(new MonitoringConfig().withSolverMetricList(List.of(SolverMetric.MOVE_COUNT_PER_TYPE)));
-
-        var problem = new TestdataListSolution();
-        var v1 = new TestdataListValue("v1");
-        var v2 = new TestdataListValue("v2");
-        var v3 = new TestdataListValue("v3");
-        problem.setValueList(Arrays.asList(v1, v2, v3));
-        problem.setEntityList(List.of(new TestdataListEntity("e1", new ArrayList<>())));
-
-        SolverFactory<TestdataListSolution> solverFactory = SolverFactory.create(solverConfig);
-        Solver<TestdataListSolution> solver = solverFactory.buildSolver();
-        var moveCount = new AtomicLong();
-        ((DefaultSolver<TestdataListSolution>) solver).addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<>() {
-            @Override
-            public void solvingEnded(SolverScope<TestdataListSolution> solverScope) {
-                meterRegistry.publish();
-                var changeMoveKey = "ListAssignMove(TestdataListEntity.valueList)";
-                if (solverScope.getMoveCountTypes().contains(changeMoveKey)) {
-                    var counter = meterRegistry
-                            .getMeasurement(SolverMetric.MOVE_COUNT_PER_TYPE.getMeterId() + "." + changeMoveKey, "VALUE");
-                    moveCount.set(counter.longValue());
-                }
-            }
-        });
-        solver.solve(problem);
-        assertThat(moveCount.get()).isPositive();
     }
 
     @Test

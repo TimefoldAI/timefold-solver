@@ -73,6 +73,8 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
@@ -83,6 +85,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
+@Execution(ExecutionMode.CONCURRENT)
 class TimefoldSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
@@ -169,9 +172,7 @@ class TimefoldSolverAutoConfigurationTest {
     @Test
     void noSolutionOrEntityClasses() {
         emptyContextRunner
-                .run(context -> {
-                    assertThat(context.getStartupFailure()).isNull();
-                });
+                .run(context -> assertThat(context.getStartupFailure()).isNull());
     }
 
     @Test
@@ -423,10 +424,6 @@ class TimefoldSolverAutoConfigurationTest {
                         "environmentMode", "moveThreadCount",
                         "domainAccessType", "Expected all values to be maps, but values for key(s)",
                         "Maybe try changing the property name to kebab-case");
-    }
-
-    @Test
-    void invalidTerminationYaml() {
         assertThatCode(() -> contextRunner
                 .withInitializer(new ConfigDataApplicationContextInitializer())
                 .withSystemProperties(
@@ -616,13 +613,13 @@ class TimefoldSolverAutoConfigurationTest {
                                     .withConfigOverride(
                                             new SolverConfigOverride<TestdataSpringSolution>()
                                                     .withTerminationConfig(new TerminationConfig()
-                                                            .withSpentLimit(Duration.ofSeconds(10L))))
+                                                            .withSpentLimit(Duration.ofSeconds(2L))))
                                     .run();
                     SolverScope<TestdataSpringSolution> customScope = new SolverScope<>() {
                         @Override
                         public long calculateTimeMillisSpentUpToNow() {
-                            // Return five seconds to make the time gradient predictable
-                            return 5000L;
+                            // Return one second to make the time gradient predictable
+                            return 1000L;
                         }
                     };
                     // We ensure the best-score limit won't take priority
@@ -632,7 +629,7 @@ class TimefoldSolverAutoConfigurationTest {
                     var solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
                     assertThat(solution.getScore().score()).isNotNegative();
-                    // Spent-time is 30s by default, but it is overridden with 10. The gradient time must be 50%
+                    // Spent-time is 30s by default, but it is overridden with 2. The gradient time must be 50%
                     assertThat(gradientTime).isEqualTo(0.5);
                 });
     }
@@ -698,7 +695,7 @@ class TimefoldSolverAutoConfigurationTest {
     void benchmarkWithXml() {
         benchmarkContextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
+                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=100ms")
                 .withPropertyValues(
                         "timefold.benchmark.solver-benchmark-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverBenchmarkConfig.xml")
                 .run(context -> {
@@ -801,15 +798,11 @@ class TimefoldSolverAutoConfigurationTest {
     @Disabled("Test works when run by itself, but errors when run in suite;" +
             " it appears it still find the class when run in a suite, but not alone.")
     void gizmo_throws_if_gizmo_not_present() {
-        assertThatCode(() -> {
-            gizmoContextRunner
-                    .withClassLoader(noGizmoFilteredClassLoader)
-                    .withPropertyValues(
-                            "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/gizmoSpringBootSolverConfig.xml")
-                    .run(context -> {
-                        context.getBean(SolverFactory.class);
-                    });
-        })
+        assertThatCode(() -> gizmoContextRunner
+                .withClassLoader(noGizmoFilteredClassLoader)
+                .withPropertyValues(
+                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/gizmoSpringBootSolverConfig.xml")
+                .run(context -> context.getBean(SolverFactory.class)))
                 .hasRootCauseMessage("When using the domainAccessType (" +
                         DomainAccessType.GIZMO +
                         ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo.\n" +
@@ -986,9 +979,8 @@ class TimefoldSolverAutoConfigurationTest {
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .withPropertyValues(
                         "timefold.solver.termination.best-score-limit=0")
-                .run(context -> {
-                    context.getBean(SolverFactory.class);
-                })).hasMessageContainingAll("@ShadowVariable (value1AndValue2)",
+                .run(context -> context.getBean(SolverFactory.class)))
+                .hasMessageContainingAll("@ShadowVariable (value1AndValue2)",
                         "supplierMethod (value1AndValue2Supplier) that does not exist",
                         "inside its declaring class (ai.timefold.solver.spring.boot.autoconfigure.missingsuppliervariable.domain.TestdataSpringMissingSupplierVariableEntity).",
                         "Maybe you misspelled the supplierMethod name?");
