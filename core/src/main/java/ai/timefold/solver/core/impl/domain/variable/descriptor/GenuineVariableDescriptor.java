@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFactorySorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
 /**
@@ -30,8 +30,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescriptor<Solution_> {
 
     private ValueRangeDescriptor<Solution_> valueRangeDescriptor;
-    private SelectionSorter<Solution_, Object> increasingStrengthSorter;
-    private SelectionSorter<Solution_, Object> decreasingStrengthSorter;
+    private SelectionSorter<Solution_, Object> ascendingSorter;
+    private SelectionSorter<Solution_, Object> descendingSorter;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -173,17 +173,17 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         }
         if (comparatorClass != null) {
             Comparator<Object> strengthComparator = newInstance(this::toString, comparatorPropertyName, comparatorClass);
-            increasingStrengthSorter = new ComparatorSelectionSorter<>(strengthComparator,
+            ascendingSorter = new ComparatorSelectionSorter<>(strengthComparator,
                     SelectionSorterOrder.ASCENDING);
-            decreasingStrengthSorter = new ComparatorSelectionSorter<>(strengthComparator,
+            descendingSorter = new ComparatorSelectionSorter<>(strengthComparator,
                     SelectionSorterOrder.DESCENDING);
         }
         if (comparatorFactoryClass != null) {
-            SorterFactory<Solution_, Object> strengthWeightFactory =
+            SorterFactory<Solution_, Object> comparatorFactory =
                     newInstance(this::toString, comparatorFactoryPropertyName, comparatorFactoryClass);
-            increasingStrengthSorter = new SelectionFactorySorter<>(strengthWeightFactory,
+            ascendingSorter = new FactorySelectionSorter<>(comparatorFactory,
                     SelectionSorterOrder.ASCENDING);
-            decreasingStrengthSorter = new SelectionFactorySorter<>(strengthWeightFactory,
+            descendingSorter = new FactorySelectionSorter<>(comparatorFactory,
                     SelectionSorterOrder.DESCENDING);
         }
     }
@@ -238,12 +238,12 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         return value == null;
     }
 
-    public SelectionSorter<Solution_, Object> getIncreasingStrengthSorter() {
-        return increasingStrengthSorter;
+    public SelectionSorter<Solution_, Object> getAscendingSorter() {
+        return ascendingSorter;
     }
 
-    public SelectionSorter<Solution_, Object> getDecreasingStrengthSorter() {
-        return decreasingStrengthSorter;
+    public SelectionSorter<Solution_, Object> getDescendingSorter() {
+        return descendingSorter;
     }
 
     @Override

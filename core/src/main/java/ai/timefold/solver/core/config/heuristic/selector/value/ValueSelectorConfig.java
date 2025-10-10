@@ -349,9 +349,9 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
             case DECREASING_STRENGTH:
                 return true;
             case INCREASING_STRENGTH_IF_AVAILABLE:
-                return variableDescriptor.getIncreasingStrengthSorter() != null;
+                return variableDescriptor.getAscendingSorter() != null;
             case DECREASING_STRENGTH_IF_AVAILABLE:
-                return variableDescriptor.getDecreasingStrengthSorter() != null;
+                return variableDescriptor.getDescendingSorter() != null;
             default:
                 throw new IllegalStateException("The sorterManner ("
                         + valueSorterManner + ") is not implemented.");
@@ -366,11 +366,11 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
                 throw new IllegalStateException("Impossible state: hasSorter() should have returned null.");
             case INCREASING_STRENGTH:
             case INCREASING_STRENGTH_IF_AVAILABLE:
-                sorter = variableDescriptor.getIncreasingStrengthSorter();
+                sorter = variableDescriptor.getAscendingSorter();
                 break;
             case DECREASING_STRENGTH:
             case DECREASING_STRENGTH_IF_AVAILABLE:
-                sorter = variableDescriptor.getDecreasingStrengthSorter();
+                sorter = variableDescriptor.getDescendingSorter();
                 break;
             default:
                 throw new IllegalStateException("The sorterManner ("
