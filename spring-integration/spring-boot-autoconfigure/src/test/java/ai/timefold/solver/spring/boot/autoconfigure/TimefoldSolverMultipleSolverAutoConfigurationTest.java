@@ -108,9 +108,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
         emptyContextRunner
                 .withPropertyValues("timefold.solver.solver1.termination.spent-limit=4h")
                 .withPropertyValues("timefold.solver.solver2.termination.spent-limit=4h")
-                .run(context -> {
-                    assertThat(context.getStartupFailure()).isNull();
-                });
+                .run(context -> assertThat(context.getStartupFailure()).isNull());
     }
 
     @Test
@@ -357,10 +355,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean(SolverConfig.class)))
                 .rootCause().message().contains("The properties", "solverConfigXml", "environmentMode", "moveThreadCount",
                         "domainAccessType", "are not valid", "Maybe try changing the property name to kebab-case");
-    }
-
-    @Test
-    void invalidTerminationYaml() {
         assertThatCode(() -> contextRunner
                 .withInitializer(new ConfigDataApplicationContextInitializer())
                 .withSystemProperties(
@@ -486,9 +480,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
                 .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
                 .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
-                .run(context -> {
-                    context.getBean(PlannerBenchmarkFactory.class);
-                }))
+                .run(context -> context.getBean(PlannerBenchmarkFactory.class)))
                 .hasRootCauseMessage("""
                         When defining multiple solvers, the benchmark feature is not enabled.
                         Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");
