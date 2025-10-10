@@ -15,13 +15,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BooleanSupplier;
@@ -39,7 +34,6 @@ import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
-import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -70,24 +64,17 @@ import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConf
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.chained.SubChainSelectorConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
-import ai.timefold.solver.core.config.localsearch.LocalSearchType;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
-import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
-import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
-import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.Neighborhood;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodBuilder;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodProvider;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.ChangeMoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.ListChangeMoveDefinition;
-import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
-import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
@@ -140,7 +127,6 @@ import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarEntity;
 import ai.timefold.solver.core.testdomain.multivar.TestdataMultiVarSolution;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
-import ai.timefold.solver.core.testdomain.score.TestdataHardSoftScoreSolution;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentConstraintProvider;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentEntity;
 import ai.timefold.solver.core.testdomain.shadow.concurrent.TestdataConcurrentSolution;
@@ -152,7 +138,6 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
-import ai.timefold.solver.core.testutil.AbstractMeterTest;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
@@ -165,15 +150,14 @@ import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import io.micrometer.core.instrument.Meter;
-import io.micrometer.core.instrument.Metrics;
-import io.micrometer.core.instrument.Tags;
-
 @ExtendWith(SoftAssertionsExtension.class)
-class DefaultSolverTest extends AbstractMeterTest {
+@Execution(ExecutionMode.CONCURRENT)
+class DefaultSolverTest {
 
     @Test
     void solve() {
@@ -383,565 +367,6 @@ class DefaultSolverTest extends AbstractMeterTest {
                 .hasMessageContaining("workingScore")
                 .hasMessageContaining("uncorruptedScore")
                 .hasMessageContaining("Score corruption analysis:");
-    }
-
-    @Test
-    void checkDefaultMeters() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataSolution.class, TestdataEntity.class);
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-
-        var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        meterRegistry.publish();
-        assertThat(meterRegistry.getMeters().stream().map(Meter::getId)).isEmpty();
-
-        var solution = new TestdataSolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-
-        var updatedTime = new AtomicBoolean();
-        var latch = new CountDownLatch(1);
-        solver.addEventListener(event -> {
-            if (!updatedTime.get()) {
-                assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
-                        .containsExactlyInAnyOrder(
-                                new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.LONG_TASK_TIMER),
-                                new Meter.Id(SolverMetric.ERROR_COUNT.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.COUNTER),
-                                new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE));
-                updatedTime.set(true);
-            }
-            latch.countDown();
-        });
-        solver.solve(solution);
-
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
-
-        // Score calculation and problem scale counts should be removed
-        // since registering multiple gauges with the same id
-        // make it return the average, and the solver holds
-        // onto the solver scope, meaning it won't automatically
-        // be deregistered.
-        assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
-                .containsExactlyInAnyOrder(
-                        new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
-                                Tags.empty(),
-                                null,
-                                null,
-                                Meter.Type.LONG_TASK_TIMER),
-                        new Meter.Id(SolverMetric.ERROR_COUNT.getMeterId(),
-                                Tags.empty(),
-                                null,
-                                null,
-                                Meter.Type.COUNTER));
-    }
-
-    @Test
-    void checkDefaultMetersTags() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-
-        var solver = (DefaultSolver<TestdataSolution>) solverFactory.buildSolver();
-        solver.setMonitorTagMap(Map.of("tag.key", "tag.value"));
-        meterRegistry.publish();
-        assertThat(meterRegistry.getMeters().stream().map(Meter::getId)).isEmpty();
-
-        var solution = new TestdataSolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-
-        var updatedTime = new AtomicBoolean();
-        var latch = new CountDownLatch(1);
-        solver.addEventListener(event -> {
-            if (!updatedTime.get()) {
-                assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
-                        .containsExactlyInAnyOrder(
-                                new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.LONG_TASK_TIMER),
-                                new Meter.Id(SolverMetric.ERROR_COUNT.getMeterId(),
-                                        Tags.empty(),
-                                        null,
-                                        null,
-                                        Meter.Type.COUNTER),
-                                new Meter.Id(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE),
-                                new Meter.Id(SolverMetric.PROBLEM_SIZE_LOG.getMeterId(),
-                                        Tags.of("tag.key", "tag.value"),
-                                        null,
-                                        null,
-                                        Meter.Type.GAUGE));
-                updatedTime.set(true);
-            }
-            latch.countDown();
-        });
-        solver.solve(solution);
-
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
-
-        // Score calculation and problem scale counts should be removed
-        // since registering multiple gauges with the same id
-        // make it return the average, and the solver holds
-        // onto the solver scope, meaning it won't automatically
-        // be deregistered.
-        assertThat(meterRegistry.getMeters().stream().map(Meter::getId))
-                .containsExactlyInAnyOrder(
-                        new Meter.Id(SolverMetric.SOLVE_DURATION.getMeterId(),
-                                Tags.empty(),
-                                null,
-                                null,
-                                Meter.Type.LONG_TASK_TIMER),
-                        new Meter.Id(SolverMetric.ERROR_COUNT.getMeterId(),
-                                Tags.empty(),
-                                null,
-                                null,
-                                Meter.Type.COUNTER));
-    }
-
-    @Test
-    void solveMetrics() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataSolution.class, TestdataEntity.class);
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-
-        var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
-        meterRegistry.publish();
-
-        var solution = new TestdataSolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-
-        var latch = new CountDownLatch(1);
-        var updatedTime = new AtomicBoolean();
-        solver.addEventListener(event -> {
-            if (!updatedTime.get()) {
-                meterRegistry.getClock().addSeconds(2);
-                meterRegistry.publish();
-                assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isOne();
-                assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION").longValue())
-                        .isEqualTo(2L);
-
-                // 2 Entities
-                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
-                        .isEqualTo(2L);
-                // 1 Genuine variable on 2 entities = 2 total variables
-                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
-                        .isEqualTo(2L);
-                // The maximum assignable value count of any variable is 2
-                assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
-                        .isEqualTo(2L);
-                updatedTime.set(true);
-            }
-            latch.countDown();
-        });
-        solution = solver.solve(solution);
-
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            Assertions.fail("Failed waiting for the event to happen.", e);
-        }
-        meterRegistry.publish();
-        assertThat(solution).isNotNull();
-        assertThat(solution.getEntityList().stream()
-                .filter(e -> e.getValue() == null)).isEmpty();
-
-        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.SCORE_CALCULATION_COUNT.getMeterId(), "VALUE")).isPositive();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.MOVE_EVALUATION_COUNT.getMeterId(), "VALUE")).isPositive();
-    }
-
-    @Test
-    void solveMetricsProblemChange() throws InterruptedException, ExecutionException {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataSolution.class, TestdataEntity.class);
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-
-        var solver = solverFactory.buildSolver();
-        meterRegistry.publish();
-
-        final var solution = new TestdataSolution("s1");
-        solution.setValueList(new ArrayList<>(List.of(new TestdataValue("v1"), new TestdataValue("v2"))));
-        solution.setEntityList(new ArrayList<>(List.of(new TestdataEntity("e1"), new TestdataEntity("e2"))));
-
-        var latch = new CountDownLatch(1);
-        solver.addEventListener(bestSolutionChangedEvent -> {
-            try {
-                latch.await();
-                meterRegistry.publish();
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            }
-        });
-
-        var executorService = Executors.newSingleThreadExecutor();
-        var job = executorService.submit(() -> {
-            solver.solve(solution);
-        });
-
-        solver.addProblemChange((workingSolution, problemChangeDirector) -> {
-            problemChangeDirector.addEntity(new TestdataEntity("added entity"), workingSolution.getEntityList()::add);
-            problemChangeDirector.addProblemFact(new TestdataValue("added value"), workingSolution.getValueList()::add);
-        });
-
-        latch.countDown();
-        job.get();
-        // 3 Entities
-        assertThat(
-                meterRegistry.getMeasurement(SolverMetric.PROBLEM_ENTITY_COUNT.getMeterId(), "VALUE").longValue())
-                .isEqualTo(3L);
-        // 1 Genuine variable on 3 entities = 3 total variables
-        assertThat(
-                meterRegistry.getMeasurement(SolverMetric.PROBLEM_VARIABLE_COUNT.getMeterId(), "VALUE").longValue())
-                .isEqualTo(3L);
-        assertThat(meterRegistry.getMeasurement(SolverMetric.PROBLEM_VALUE_COUNT.getMeterId(), "VALUE").longValue())
-                .isEqualTo(3L);
-    }
-
-    public static class BestScoreMetricEasyScoreCalculator
-            implements EasyScoreCalculator<TestdataHardSoftScoreSolution, HardSoftScore> {
-
-        @Override
-        public @NonNull HardSoftScore calculateScore(@NonNull TestdataHardSoftScoreSolution testdataSolution) {
-            var count = testdataSolution.getEntityList()
-                    .stream()
-                    .filter(e -> e.getValue() != null)
-                    .filter(e -> e.getValue().getCode().startsWith("reward"))
-                    .count();
-            return HardSoftScore.ofSoft((int) count);
-        }
-    }
-
-    public static class NoneValueSelectionFilter
-            implements SelectionFilter<TestdataHardSoftScoreSolution, ChangeMove<TestdataHardSoftScoreSolution>> {
-        @Override
-        public boolean accept(ScoreDirector<TestdataHardSoftScoreSolution> scoreDirector,
-                ChangeMove<TestdataHardSoftScoreSolution> selection) {
-            return ((TestdataValue) (selection.getToPlanningValue())).getCode().equals("none");
-        }
-    }
-
-    @Test
-    void solveBestScoreMetrics() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataHardSoftScoreSolution.class, TestdataEntity.class);
-        solverConfig.setScoreDirectorFactoryConfig(
-                new ScoreDirectorFactoryConfig().withEasyScoreCalculatorClass(BestScoreMetricEasyScoreCalculator.class));
-        solverConfig.setTerminationConfig(new TerminationConfig().withBestScoreLimit("0hard/2soft"));
-        solverConfig.setMonitoringConfig(new MonitoringConfig()
-                .withSolverMetricList(List.of(SolverMetric.BEST_SCORE)));
-        solverConfig.setPhaseConfigList(List.of(
-                // Force Timefold to select "none" value which reward 0 soft
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT)
-                        .withMoveSelectorConfigList(
-                                List.of(new ChangeMoveSelectorConfig()
-                                        .withFilterClass(NoneValueSelectionFilter.class))),
-                // Then do a local search, which allow Timefold to select "reward" value
-                // which reward 1 soft per entity
-                new LocalSearchPhaseConfig()
-                        .withLocalSearchType(LocalSearchType.HILL_CLIMBING)));
-        SolverFactory<TestdataHardSoftScoreSolution> solverFactory = SolverFactory.create(solverConfig);
-
-        var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
-        meterRegistry.publish();
-        var solution = new TestdataHardSoftScoreSolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("none"), new TestdataValue("reward")));
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-        var step = new AtomicInteger(-1);
-
-        var latch = new CountDownLatch(1);
-        solver.addEventListener(event -> {
-            meterRegistry.publish();
-
-            // This event listener is added before the best score event listener
-            // so it is one step behind
-            if (step.get() != -1) {
-                assertThat(
-                        meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                        .isZero();
-            }
-            if (step.get() == 0) {
-                assertThat(
-                        meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
-                        .isZero();
-            } else if (step.get() == 1) {
-                assertThat(
-                        meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
-                        .isEqualTo(1);
-            } else if (step.get() == 2) {
-                assertThat(
-                        meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
-                        .isEqualTo(2);
-            }
-            step.incrementAndGet();
-            latch.countDown();
-        });
-        solution = solver.solve(solution);
-
-        try {
-            latch.await(10, TimeUnit.SECONDS);
-        } catch (InterruptedException e) {
-            fail("Failed waiting for the event to happen.", e);
-        }
-        assertThat(step.get()).isEqualTo(2);
-        meterRegistry.publish();
-        assertThat(solution).isNotNull();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                .isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.BEST_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
-                .isEqualTo(2);
-    }
-
-    private static class SetTestdataEntityValueCustomPhaseCommand implements PhaseCommand<TestdataHardSoftScoreSolution> {
-        final TestdataEntity entity;
-        final TestdataValue value;
-
-        public SetTestdataEntityValueCustomPhaseCommand(TestdataEntity entity, TestdataValue value) {
-            this.entity = entity;
-            this.value = value;
-        }
-
-        @Override
-        public void changeWorkingSolution(ScoreDirector<TestdataHardSoftScoreSolution> scoreDirector,
-                BooleanSupplier isPhaseTerminated) {
-            var workingEntity = scoreDirector.lookUpWorkingObject(entity);
-            var workingValue = scoreDirector.lookUpWorkingObject(value);
-
-            scoreDirector.beforeVariableChanged(workingEntity, "value");
-            workingEntity.setValue(workingValue);
-            scoreDirector.afterVariableChanged(workingEntity, "value");
-            scoreDirector.triggerVariableListeners();
-        }
-    }
-
-    @Test
-    void solveStepScoreMetrics() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(
-                TestdataHardSoftScoreSolution.class, TestdataEntity.class);
-        solverConfig.setScoreDirectorFactoryConfig(
-                new ScoreDirectorFactoryConfig().withEasyScoreCalculatorClass(BestScoreMetricEasyScoreCalculator.class));
-        solverConfig.setTerminationConfig(new TerminationConfig().withBestScoreLimit("0hard/3soft"));
-        solverConfig.setMonitoringConfig(new MonitoringConfig()
-                .withSolverMetricList(List.of(SolverMetric.STEP_SCORE)));
-
-        var solution = new TestdataHardSoftScoreSolution("s1");
-        var e1 = new TestdataEntity("e1");
-        var e2 = new TestdataEntity("e2");
-        var e3 = new TestdataEntity("e3");
-        var none = new TestdataValue("none");
-        var reward = new TestdataValue("reward");
-        solution.setValueList(Arrays.asList(none, reward));
-        solution.setEntityList(Arrays.asList(e1, e2, e3));
-
-        solverConfig.setPhaseConfigList(List.of(
-                // Force Timefold to select "none" value which reward 0 soft
-                new ConstructionHeuristicPhaseConfig()
-                        .withConstructionHeuristicType(ConstructionHeuristicType.FIRST_FIT)
-                        .withMoveSelectorConfigList(
-                                List.of(new ChangeMoveSelectorConfig()
-                                        .withFilterClass(NoneValueSelectionFilter.class))),
-                // Then do a custom phase, to force certain steps to be taken
-                new CustomPhaseConfig()
-                        .withCustomPhaseCommands(
-                                new SetTestdataEntityValueCustomPhaseCommand(e1, reward),
-                                new SetTestdataEntityValueCustomPhaseCommand(e2, reward),
-                                new SetTestdataEntityValueCustomPhaseCommand(e1, none),
-                                new SetTestdataEntityValueCustomPhaseCommand(e1, reward),
-                                new SetTestdataEntityValueCustomPhaseCommand(e3, reward))));
-        SolverFactory<TestdataHardSoftScoreSolution> solverFactory = SolverFactory.create(solverConfig);
-
-        var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
-        var step = new AtomicInteger(-1);
-
-        ((DefaultSolver<TestdataHardSoftScoreSolution>) solver)
-                .addPhaseLifecycleListener(new PhaseLifecycleListenerAdapter<TestdataHardSoftScoreSolution>() {
-                    @Override
-                    public void stepEnded(AbstractStepScope<TestdataHardSoftScoreSolution> stepScope) {
-                        super.stepEnded(stepScope);
-                        meterRegistry.publish();
-
-                        // first 3 steps are construction heuristic steps and don't have a step score since it uninitialized
-                        if (step.get() < 2) {
-                            step.incrementAndGet();
-                            return;
-                        }
-
-                        assertThat(
-                                meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".hard.score", "VALUE")
-                                        .intValue())
-                                .isZero();
-
-                        if (step.get() == 2) {
-                            assertThat(
-                                    meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
-                                            .intValue())
-                                    .isZero();
-                        } else if (step.get() == 3) {
-                            assertThat(
-                                    meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
-                                            .intValue())
-                                    .isEqualTo(1);
-                        } else if (step.get() == 4) {
-                            assertThat(
-                                    meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
-                                            .intValue())
-                                    .isEqualTo(2);
-                        } else if (step.get() == 5) {
-                            assertThat(
-                                    meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
-                                            .intValue())
-                                    .isEqualTo(1);
-                        } else if (step.get() == 6) {
-                            assertThat(
-                                    meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE")
-                                            .intValue())
-                                    .isEqualTo(2);
-                        }
-                        step.incrementAndGet();
-                    }
-                });
-        solution = solver.solve(solution);
-
-        assertThat(step.get()).isEqualTo(7);
-        meterRegistry.publish();
-        assertThat(solution).isNotNull();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".hard.score", "VALUE").intValue())
-                .isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.STEP_SCORE.getMeterId() + ".soft.score", "VALUE").intValue())
-                .isEqualTo(3);
-    }
-
-    public static class ErrorThrowingEasyScoreCalculator implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
-
-        @Override
-        public @NonNull SimpleScore calculateScore(@NonNull TestdataSolution testdataSolution) {
-            throw new IllegalStateException("Thrown exception in constraint provider");
-        }
-    }
-
-    @Test
-    void solveMetricsError() {
-        var meterRegistry = new TestMeterRegistry();
-        Metrics.addRegistry(meterRegistry);
-
-        var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
-                .withScoreDirectorFactory(
-                        new ScoreDirectorFactoryConfig().withEasyScoreCalculatorClass(ErrorThrowingEasyScoreCalculator.class));
-        SolverFactory<TestdataSolution> solverFactory = SolverFactory.create(solverConfig);
-
-        var solver = solverFactory.buildSolver();
-        ((DefaultSolver<TestdataSolution>) solver).setMonitorTagMap(Map.of("solver.id", UUID.randomUUID().toString()));
-        meterRegistry.publish();
-
-        var solution = new TestdataSolution("s1");
-        solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
-        solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
-
-        meterRegistry.publish();
-
-        assertThatCode(() -> solver.solve(solution))
-                .hasStackTraceContaining("Thrown exception in constraint provider");
-
-        meterRegistry.getClock().addSeconds(1);
-        meterRegistry.publish();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "ACTIVE_TASKS")).isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.SOLVE_DURATION.getMeterId(), "DURATION")).isZero();
-        assertThat(meterRegistry.getMeasurement(SolverMetric.ERROR_COUNT.getMeterId(), "COUNT")).isOne();
     }
 
     @Test

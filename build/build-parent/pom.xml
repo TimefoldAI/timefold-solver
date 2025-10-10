@@ -566,6 +566,14 @@
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
         </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <!-- Do not move to full profile. Otherwise upstream dependency changes can break our build without CI catching it. -->
       <plugin>

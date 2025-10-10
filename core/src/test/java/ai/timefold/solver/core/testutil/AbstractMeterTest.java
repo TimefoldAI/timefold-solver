@@ -17,7 +17,12 @@ import io.micrometer.core.instrument.config.NamingConvention;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 
-// We also want to ensure that tests of the same suite do not update the registry concurrently
+/**
+ * Running these tests while other tests are running the solver is a bad idea,
+ * because the other solver will mess with the metrics.
+ * It is recommended to run these tests as integration tests,
+ * completely separate from the other tests.
+ */
 @Execution(ExecutionMode.SAME_THREAD)
 public abstract class AbstractMeterTest {
 
