@@ -7,6 +7,7 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.impl.bavet.common.TupleRecorder;
 
 public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
 
@@ -49,6 +50,10 @@ public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
             conditionally(TupleLifecycle<QuadTuple<A, B, C, D>> tupleLifecycle, QuadPredicate<A, B, C, D> predicate) {
         return new ConditionalTupleLifecycle<>(tupleLifecycle,
                 tuple -> predicate.test(tuple.factA, tuple.factB, tuple.factC, tuple.factD));
+    }
+
+    static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> recording() {
+        return new RecordingTupleLifecycle<>(new TupleRecorder<>());
     }
 
     void insert(Tuple_ tuple);
