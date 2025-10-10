@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.move.generic;
 
+import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.mockEntitySelector;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.phaseStarted;
 import static ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils.solvingStarted;
 import static ai.timefold.solver.core.testdomain.list.TestdataListUtils.getEntityDescriptor;
@@ -15,18 +16,23 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.FromSolutionEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntitySelector;
+import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.ManualEntityMimicRecorder;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicRecordingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.mimic.MimicReplayingEntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.TestdataEntityProvidingSolution;
@@ -337,6 +343,125 @@ class SwapMoveSelectorTest {
     }
 
     @Test
+    void originalEntitiesPinned() {
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        var v4 = new TestdataValue("4");
+        var e1 = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v1, v4));
+        var e2 = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3));
+        var e3 = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v1, v4));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var leftEntitySelector = new ManualEntityMimicRecorder<>(
+                mockEntitySelector(TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3));
+
+        var replayingEntitySelector = new MimicReplayingEntitySelector<>(leftEntitySelector);
+        var filteringEntitySelector =
+                FilteringEntitySelector.of(
+                        mockEntitySelector(TestdataAllowsUnassignedEntityProvidingEntity.buildEntityDescriptor(), e1, e2, e3),
+                        new EntityCodeFiltering<>(List.of("B", "C")));
+        var rightEntitySelector =
+                new FilteringEntityByEntitySelector<>(filteringEntitySelector, replayingEntitySelector, false);
+        var solverScope = solvingStarted(rightEntitySelector, scoreDirector);
+        phaseStarted(rightEntitySelector, solverScope);
+
+        // Regular iterator
+        // The left selector chooses A, and the right selector returns no value
+        leftEntitySelector.setRecordedEntity(e1);
+        var iterator = rightEntitySelector.iterator();
+        assertThat(iterator.hasNext()).isFalse();
+        // The left selector chooses B, and the right selector returns A
+        leftEntitySelector.setRecordedEntity(e2);
+        iterator = rightEntitySelector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).hasToString("A");
+        // No more moves
+        assertThat(iterator.hasNext()).isFalse();
+
+        leftEntitySelector.setRecordedEntity(e1);
+        iterator = rightEntitySelector.endingIterator();
+        assertThat(iterator.hasNext()).isFalse();
+        // The left selector chooses B, and the right selector returns A
+        leftEntitySelector.setRecordedEntity(e2);
+        iterator = rightEntitySelector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        assertThat(iterator.next()).hasToString("A");
+        // No more moves
+        assertThat(iterator.hasNext()).isFalse();
+
+        // ListIterator
+        // The left selector chooses A, and the right selector returns no value
+        leftEntitySelector.setRecordedEntity(e1);
+        var listIterator = rightEntitySelector.listIterator();
+        assertThat(listIterator.hasNext()).isFalse();
+        // B <-> A
+        leftEntitySelector.setRecordedEntity(e2);
+        listIterator = rightEntitySelector.listIterator();
+        assertThat(listIterator.hasNext()).isTrue();
+        assertThat(listIterator.next()).hasToString("A");
+        assertThat(listIterator.hasNext()).isFalse();
+        // Backward move
+        assertThat(listIterator.hasPrevious()).isTrue();
+        assertThat(listIterator.previous()).hasToString("A");
+
+        leftEntitySelector.setRecordedEntity(e1);
+        listIterator = rightEntitySelector.listIterator(0);
+        assertThat(listIterator.hasNext()).isFalse();
+        // B <-> A
+        leftEntitySelector.setRecordedEntity(e2);
+        listIterator = rightEntitySelector.listIterator();
+        assertThat(listIterator.hasNext()).isTrue();
+        assertThat(listIterator.next()).hasToString("A");
+        assertThat(listIterator.hasNext()).isFalse();
+        // Backward move
+        assertThat(listIterator.hasPrevious()).isTrue();
+        assertThat(listIterator.previous()).hasToString("A");
+    }
+
+    @Test
+    void randomEntitiesPinned() {
+        var v1 = new TestdataValue("1");
+        var v2 = new TestdataValue("2");
+        var v3 = new TestdataValue("3");
+        var v4 = new TestdataValue("4");
+        var e1 = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v1, v4), v1);
+        var e2 = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3), v2);
+        var e3 = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v1, v4));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution("s1");
+        solution.setEntityList(List.of(e1, e2, e3));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var baseEntitySelector =
+                new FromSolutionEntitySelector<>(getEntityDescriptor(scoreDirector), SelectionCacheType.JUST_IN_TIME, true);
+        var leftEntitySelector = new ManualEntityMimicRecorder<>(baseEntitySelector);
+
+        var replayingEntitySelector = new MimicReplayingEntitySelector<>(leftEntitySelector);
+        var filteringEntitySelector =
+                FilteringEntitySelector.of(baseEntitySelector, new EntityCodeFiltering<>(List.of("B", "C")));
+        var rightEntitySelector =
+                new FilteringEntityByEntitySelector<>(filteringEntitySelector, replayingEntitySelector, true);
+        var solverScope = solvingStarted(rightEntitySelector, scoreDirector,
+                new TestRandom(0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1));
+        phaseStarted(rightEntitySelector, solverScope);
+
+        // Random iterator
+        // The left selector chooses B,
+        // and the right selector chooses A (not reachable), and then only B (excluded by the filter)
+        leftEntitySelector.setRecordedEntity(e2);
+        var iterator = rightEntitySelector.iterator();
+        assertThat(iterator.hasNext()).isTrue();
+        // Return the same as the left selector
+        assertThat(iterator.next()).hasToString("B");
+    }
+
+    @Test
     void singleVarRandomSelectionWithEntityValueRange() {
         var v1 = new TestdataValue("1");
         var v2 = new TestdataValue("2");
@@ -491,5 +616,19 @@ class SwapMoveSelectorTest {
         assertThat(iterator.hasNext()).isTrue();
         var swapMove = (SwapMove<TestdataEntityProvidingSolution>) iterator.next();
         assertThat(swapMove.getLeftEntity()).isSameAs(swapMove.getRightEntity());
+    }
+
+    private static class EntityCodeFiltering<Solution_> implements SelectionFilter<Solution_, Object> {
+
+        private final List<String> excludedCodes;
+
+        public EntityCodeFiltering(List<String> excludedCodes) {
+            this.excludedCodes = excludedCodes;
+        }
+
+        @Override
+        public boolean accept(ScoreDirector<Solution_> scoreDirector, Object selection) {
+            return !excludedCodes.contains(((TestdataObject) selection).getCode());
+        }
     }
 }
