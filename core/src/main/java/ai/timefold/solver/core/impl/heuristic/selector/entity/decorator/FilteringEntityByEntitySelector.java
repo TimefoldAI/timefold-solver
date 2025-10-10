@@ -479,7 +479,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 if (isReachable(currentReplayedEntity, next, oneSideValidation)) {
                     return next;
                 }
-            } while (bailoutSize > 0 && entityIterator.hasNext());
+            } while (bailoutSize > 0);
             // If no reachable entity is found, we return the currently selected entity,
             // which will result in a non-doable move
             return currentReplayedEntity;
@@ -538,7 +538,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
                 if (isReachable(currentReplayedEntity, next)) {
                     return next;
                 }
-            } while (bailoutSize > 0 && entityIterator.hasNext());
+            } while (bailoutSize > 0);
             // If no reachable entity is found, we return the currently selected entity,
             // which will result in a non-doable move
             return currentReplayedEntity;
