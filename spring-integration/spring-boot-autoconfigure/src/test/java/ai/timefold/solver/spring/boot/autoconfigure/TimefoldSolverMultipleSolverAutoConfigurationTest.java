@@ -412,7 +412,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                         var solution = solverJob.getFinalBestSolution();
                         assertThat(solution).isNotNull();
                         assertThat(solution.getScore().score()).isNotNegative();
-                        // Spent-time is 30s by default, but it is overridden with 1. The gradient time must be 50%
+                        // Spent-time is 30s by default, but it is overridden with 2. The gradient time must be 50%
                         assertThat(gradientTime).isEqualTo(0.5);
                     }
                 });
