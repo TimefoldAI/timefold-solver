@@ -107,7 +107,7 @@
       <plugin>
         <artifactId>maven-resources-plugin</artifactId>
         <executions>
-          <!-- Substitutes properties in antora-template.yml that is copied to src/antora.yml during a release. -->
+          <!-- Substitutes properties in antora.yml that is copied to src/antora.yml during a release. -->
           <execution>
             <id>generate-antora-yml</id>
             <goals>
@@ -120,7 +120,7 @@
                   <directory>${project.basedir}/src</directory>
                   <targetPath>${project.build.directory}</targetPath>
                   <includes>
-                    <include>antora-template.yml</include>
+                    <include>antora.yml</include>
                   </includes>
                   <filtering>true</filtering>
                 </resource>
