@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.declarative;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.parallel.ExecutionMode.*;
+import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
 
 import java.util.ArrayList;
 import java.util.BitSet;
