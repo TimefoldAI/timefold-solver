@@ -1,5 +1,17 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.IntStream;
+
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.ScoreManager;
@@ -57,6 +69,7 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataS
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
+
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -70,18 +83,6 @@ import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.core.NativeDetector;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @TestExecutionListeners
 @Execution(ExecutionMode.CONCURRENT)
@@ -978,7 +979,8 @@ class TimefoldSolverAutoConfigurationTest {
                 .withClassLoader(allDefaultsFilteredClassLoader)
                 .withPropertyValues(
                         "timefold.solver.termination.best-score-limit=0")
-                .run(context -> context.getBean(SolverFactory.class))).hasMessageContainingAll("@ShadowVariable (value1AndValue2)",
+                .run(context -> context.getBean(SolverFactory.class)))
+                .hasMessageContainingAll("@ShadowVariable (value1AndValue2)",
                         "supplierMethod (value1AndValue2Supplier) that does not exist",
                         "inside its declaring class (ai.timefold.solver.spring.boot.autoconfigure.missingsuppliervariable.domain.TestdataSpringMissingSupplierVariableEntity).",
                         "Maybe you misspelled the supplierMethod name?");
