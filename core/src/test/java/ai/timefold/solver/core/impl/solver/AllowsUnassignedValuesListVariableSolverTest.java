@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.solver;
 
+import static org.junit.jupiter.api.parallel.ExecutionMode.CONCURRENT;
+
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -23,9 +25,11 @@ import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnass
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 
 import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+@Execution(CONCURRENT)
 class AllowsUnassignedValuesListVariableSolverTest {
 
     @ParameterizedTest

@@ -73,6 +73,8 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.mockito.Mockito;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
@@ -83,6 +85,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
+@Execution(ExecutionMode.CONCURRENT)
 class TimefoldSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
@@ -616,13 +619,13 @@ class TimefoldSolverAutoConfigurationTest {
                                     .withConfigOverride(
                                             new SolverConfigOverride<TestdataSpringSolution>()
                                                     .withTerminationConfig(new TerminationConfig()
-                                                            .withSpentLimit(Duration.ofSeconds(10L))))
+                                                            .withSpentLimit(Duration.ofSeconds(2L))))
                                     .run();
                     SolverScope<TestdataSpringSolution> customScope = new SolverScope<>() {
                         @Override
                         public long calculateTimeMillisSpentUpToNow() {
-                            // Return five seconds to make the time gradient predictable
-                            return 5000L;
+                            // Return one second to make the time gradient predictable
+                            return 1000L;
                         }
                     };
                     // We ensure the best-score limit won't take priority
@@ -632,7 +635,7 @@ class TimefoldSolverAutoConfigurationTest {
                     var solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
                     assertThat(solution.getScore().score()).isNotNegative();
-                    // Spent-time is 30s by default, but it is overridden with 10. The gradient time must be 50%
+                    // Spent-time is 30s by default, but it is overridden with 2. The gradient time must be 50%
                     assertThat(gradientTime).isEqualTo(0.5);
                 });
     }
@@ -698,7 +701,7 @@ class TimefoldSolverAutoConfigurationTest {
     void benchmarkWithXml() {
         benchmarkContextRunner
                 .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
+                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=100ms")
                 .withPropertyValues(
                         "timefold.benchmark.solver-benchmark-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverBenchmarkConfig.xml")
                 .run(context -> {
