@@ -7,7 +7,7 @@ import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -16,25 +16,25 @@ import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 
 /**
- * Sorts a selection {@link List} based on a {@link SorterWeightFactory}.
+ * Sorts a selection {@link List} based on a {@link SorterFactory}.
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
-public final class WeightFactorySelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
+public final class SelectionFactorySorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
-    private final SorterWeightFactory<Solution_, T> selectionSorterWeightFactory;
-    private final Comparator<Comparable> appliedWeightComparator;
+    private final SorterFactory<Solution_, T> selectionSorterFactory;
+    private final Comparator<Comparable> comparator;
 
-    public WeightFactorySelectionSorter(SorterWeightFactory<Solution_, T> selectionSorterWeightFactory,
+    public SelectionFactorySorter(SorterFactory<Solution_, T> selectionSorterFactory,
             SelectionSorterOrder selectionSorterOrder) {
-        this.selectionSorterWeightFactory = selectionSorterWeightFactory;
+        this.selectionSorterFactory = selectionSorterFactory;
         switch (selectionSorterOrder) {
             case ASCENDING:
-                this.appliedWeightComparator = Comparator.naturalOrder();
+                this.comparator = Comparator.naturalOrder();
                 break;
             case DESCENDING:
-                this.appliedWeightComparator = Collections.reverseOrder();
+                this.comparator = Collections.reverseOrder();
                 break;
             default:
                 throw new IllegalStateException("The selectionSorterOrder (" + selectionSorterOrder
@@ -53,9 +53,9 @@ public final class WeightFactorySelectionSorter<Solution_, T> implements Selecti
      *        of {@link PlanningEntity}, planningValue, {@link Move} or {@link Selector}
      */
     public void sort(Solution_ solution, List<T> selectionList) {
-        SortedMap<Comparable, T> selectionMap = new TreeMap<>(appliedWeightComparator);
+        SortedMap<Comparable, T> selectionMap = new TreeMap<>(comparator);
         for (T selection : selectionList) {
-            Comparable difficultyWeight = selectionSorterWeightFactory.createSorterWeight(solution, selection);
+            Comparable difficultyWeight = selectionSorterFactory.createSorter(solution, selection);
             T previous = selectionMap.put(difficultyWeight, selection);
             if (previous != null) {
                 throw new IllegalStateException("The selectionList contains 2 times the same selection ("
@@ -72,13 +72,13 @@ public final class WeightFactorySelectionSorter<Solution_, T> implements Selecti
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        WeightFactorySelectionSorter<?, ?> that = (WeightFactorySelectionSorter<?, ?>) other;
-        return Objects.equals(selectionSorterWeightFactory, that.selectionSorterWeightFactory)
-                && Objects.equals(appliedWeightComparator, that.appliedWeightComparator);
+        SelectionFactorySorter<?, ?> that = (SelectionFactorySorter<?, ?>) other;
+        return Objects.equals(selectionSorterFactory, that.selectionSorterFactory)
+                && Objects.equals(comparator, that.comparator);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(selectionSorterWeightFactory, appliedWeightComparator);
+        return Objects.hash(selectionSorterFactory, comparator);
     }
 }

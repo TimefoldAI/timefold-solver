@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -24,17 +25,9 @@ import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelecto
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
-import ai.timefold.solver.core.config.solver.monitoring.MonitoringConfig;
-import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
-import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
-import ai.timefold.solver.core.impl.solver.DefaultSolver;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
-import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
-import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.list.sort.comparator.OneValuePerEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableEntity;
 import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableSolution;

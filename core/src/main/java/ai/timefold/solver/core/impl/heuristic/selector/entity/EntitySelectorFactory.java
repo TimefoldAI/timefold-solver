@@ -6,7 +6,7 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -20,10 +20,10 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ValueRangeRecorderId;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFactorySorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.CachingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByValueSelector;
@@ -316,9 +316,9 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (config.getSorterWeightFactoryClass() != null) {
-                SorterWeightFactory<Solution_, Object> sorterWeightFactory =
+                SorterFactory<Solution_, Object> sorterFactory =
                         instanceCache.newInstance(config, "sorterWeightFactoryClass", config.getSorterWeightFactoryClass());
-                sorter = new WeightFactorySelectionSorter<>(sorterWeightFactory,
+                sorter = new SelectionFactorySorter<>(sorterFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (config.getSorterClass() != null) {
                 sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());

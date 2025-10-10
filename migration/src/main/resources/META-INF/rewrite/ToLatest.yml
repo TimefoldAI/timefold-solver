@@ -34,9 +34,13 @@ recipeList:
   - ai.timefold.solver.migration.v8.AsConstraintRecipe
   - ai.timefold.solver.migration.v8.RemoveConstraintPackageRecipe
   - ai.timefold.solver.migration.v8.SolutionManagerRecommendAssignmentRecipe
-  - org.openrewrite.java.RemoveUnusedImports
-  - ai.timefold.solver.migration.ChangeVersion
+  - org.openrewrite.java.ChangeMethodName:
+      matchOverrides: true
+      methodPattern: ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory createSorterWeight(..)
+      newMethodName: createSorter
   - org.openrewrite.java.ChangeType:
       oldFullyQualifiedTypeName: ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory
-      newFullyQualifiedTypeName: ai.timefold.solver.core.api.domain.common.SorterWeightFactory
+      newFullyQualifiedTypeName: ai.timefold.solver.core.api.domain.common.SorterFactory
       ignoreDefinition: true
+  - org.openrewrite.java.RemoveUnusedImports
+  - ai.timefold.solver.migration.ChangeVersion

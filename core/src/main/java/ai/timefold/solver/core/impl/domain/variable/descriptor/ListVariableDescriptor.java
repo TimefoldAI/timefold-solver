@@ -60,8 +60,8 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         PlanningListVariable planningVariableAnnotation = variableMemberAccessor.getAnnotation(PlanningListVariable.class);
         allowsUnassignedValues = planningVariableAnnotation.allowsUnassignedValues();
         processValueRangeRefs(descriptorPolicy, planningVariableAnnotation.valueRangeProviderRefs());
-        processStrength(planningVariableAnnotation.strengthComparatorClass(),
-                planningVariableAnnotation.strengthWeightFactoryClass());
+        processSorting("comparatorClass", planningVariableAnnotation.comparatorClass(), "comparatorFactoryClass",
+                planningVariableAnnotation.comparatorFactoryClass());
     }
 
     @Override

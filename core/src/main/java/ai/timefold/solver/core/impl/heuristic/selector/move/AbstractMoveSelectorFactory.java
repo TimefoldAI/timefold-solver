@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move;
 
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -12,10 +12,10 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFactorySorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.CachingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ProbabilityMoveSelector;
@@ -195,9 +195,9 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterWeightFactoryClass != null) {
-                SorterWeightFactory<Solution_, Move<Solution_>> sorterWeightFactory =
+                SorterFactory<Solution_, Move<Solution_>> sorterFactory =
                         ConfigUtils.newInstance(config, "sorterWeightFactoryClass", sorterWeightFactoryClass);
-                sorter = new WeightFactorySelectionSorter<>(sorterWeightFactory,
+                sorter = new SelectionFactorySorter<>(sorterFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterClass != null) {
                 sorter = ConfigUtils.newInstance(config, "sorterClass", sorterClass);

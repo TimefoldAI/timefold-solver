@@ -41,8 +41,8 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
         processAllowsUnassigned(planningVariableAnnotation);
         processChained(planningVariableAnnotation);
         processValueRangeRefs(descriptorPolicy, planningVariableAnnotation.valueRangeProviderRefs());
-        processStrength(planningVariableAnnotation.strengthComparatorClass(),
-                planningVariableAnnotation.strengthWeightFactoryClass());
+        processSorting("strengthComparatorClass", planningVariableAnnotation.strengthComparatorClass(),
+                "strengthWeightFactoryClass", planningVariableAnnotation.strengthWeightFactoryClass());
     }
 
     private void processAllowsUnassigned(PlanningVariable planningVariableAnnotation) {

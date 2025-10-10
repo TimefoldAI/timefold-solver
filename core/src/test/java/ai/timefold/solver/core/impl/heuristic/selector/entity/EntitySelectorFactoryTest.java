@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -156,7 +156,7 @@ class EntitySelectorFactoryTest {
     @Test
     void applySorting_withSorterWeightFactoryClass() {
         EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
-                .withSorterWeightFactoryClass(DummySelectionSorterWeightFactory.class);
+                .withSorterWeightFactoryClass(DummySelectionSorterFactory.class);
         applySorting(entitySelectorConfig);
     }
 
@@ -207,10 +207,10 @@ class EntitySelectorFactoryTest {
         }
     }
 
-    public static class DummySelectionSorterWeightFactory
-            implements SorterWeightFactory<TestdataSolution, TestdataEntity> {
+    public static class DummySelectionSorterFactory
+            implements SorterFactory<TestdataSolution, TestdataEntity> {
         @Override
-        public Comparable createSorterWeight(TestdataSolution testdataSolution, TestdataEntity selection) {
+        public Comparable createSorter(TestdataSolution testdataSolution, TestdataEntity selection) {
             return 0;
         }
     }

@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -21,8 +21,8 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFactorySorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -156,35 +156,34 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
     }
 
     @SuppressWarnings("rawtypes")
-    protected void processStrength(Class<? extends Comparator> strengthComparatorClass,
-            Class<? extends SorterWeightFactory> strengthWeightFactoryClass) {
-        if (strengthComparatorClass == PlanningVariable.NullStrengthComparator.class) {
-            strengthComparatorClass = null;
+    protected void processSorting(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,
+            String comparatorFactoryPropertyName, Class<? extends SorterFactory> comparatorFactoryClass) {
+        if (comparatorClass != null && PlanningVariable.NullComparator.class.isAssignableFrom(comparatorClass)) {
+            comparatorClass = null;
         }
-        if (strengthWeightFactoryClass == PlanningVariable.NullStrengthWeightFactory.class) {
-            strengthWeightFactoryClass = null;
+        if (comparatorFactoryClass != null
+                && PlanningVariable.NullComparatorFactory.class.isAssignableFrom(comparatorFactoryClass)) {
+            comparatorFactoryClass = null;
         }
-        if (strengthComparatorClass != null && strengthWeightFactoryClass != null) {
-            throw new IllegalStateException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") property (" + variableMemberAccessor.getName()
-                    + ") cannot have a strengthComparatorClass (" + strengthComparatorClass.getName()
-                    + ") and a strengthWeightFactoryClass (" + strengthWeightFactoryClass.getName()
-                    + ") at the same time.");
+        if (comparatorClass != null && comparatorFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) property (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(
+                            entityDescriptor.getEntityClass(), variableMemberAccessor.getName(), comparatorPropertyName,
+                            comparatorClass.getName(), comparatorFactoryPropertyName, comparatorFactoryClass.getName()));
         }
-        if (strengthComparatorClass != null) {
-            Comparator<Object> strengthComparator = newInstance(this::toString,
-                    "strengthComparatorClass", strengthComparatorClass);
+        if (comparatorClass != null) {
+            Comparator<Object> strengthComparator = newInstance(this::toString, comparatorPropertyName, comparatorClass);
             increasingStrengthSorter = new ComparatorSelectionSorter<>(strengthComparator,
                     SelectionSorterOrder.ASCENDING);
             decreasingStrengthSorter = new ComparatorSelectionSorter<>(strengthComparator,
                     SelectionSorterOrder.DESCENDING);
         }
-        if (strengthWeightFactoryClass != null) {
-            SorterWeightFactory<Solution_, Object> strengthWeightFactory = newInstance(this::toString,
-                    "strengthWeightFactoryClass", strengthWeightFactoryClass);
-            increasingStrengthSorter = new WeightFactorySelectionSorter<>(strengthWeightFactory,
+        if (comparatorFactoryClass != null) {
+            SorterFactory<Solution_, Object> strengthWeightFactory =
+                    newInstance(this::toString, comparatorFactoryPropertyName, comparatorFactoryClass);
+            increasingStrengthSorter = new SelectionFactorySorter<>(strengthWeightFactory,
                     SelectionSorterOrder.ASCENDING);
-            decreasingStrengthSorter = new WeightFactorySelectionSorter<>(strengthWeightFactory,
+            decreasingStrengthSorter = new SelectionFactorySorter<>(strengthWeightFactory,
                     SelectionSorterOrder.DESCENDING);
         }
     }

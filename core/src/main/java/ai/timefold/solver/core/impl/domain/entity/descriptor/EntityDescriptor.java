@@ -64,8 +64,8 @@ import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelat
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFactorySorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
@@ -290,7 +290,7 @@ public class EntityDescriptor<Solution_> {
         if (difficultyWeightFactoryClass != null) {
             var difficultyWeightFactory = ConfigUtils.newInstance(this::toString,
                     "difficultyWeightFactoryClass", difficultyWeightFactoryClass);
-            decreasingDifficultySorter = new WeightFactorySelectionSorter<>(
+            decreasingDifficultySorter = new SelectionFactorySorter<>(
                     difficultyWeightFactory, SelectionSorterOrder.DESCENDING);
         }
     }

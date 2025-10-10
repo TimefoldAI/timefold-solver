@@ -8,10 +8,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 /**
  * Specifies that a bean property (or a field) can be changed and should be optimized by the optimization algorithms.
@@ -84,21 +84,27 @@ public @interface PlanningVariable {
     Class<? extends Comparator> strengthComparatorClass() default NullStrengthComparator.class;
 
     /** Workaround for annotation limitation in {@link #strengthComparatorClass()}. */
-    interface NullStrengthComparator extends Comparator {
+    interface NullStrengthComparator extends NullComparator {
+    }
+
+    interface NullComparator extends Comparator {
     }
 
     /**
-     * The {@link SorterWeightFactory} alternative for {@link #strengthComparatorClass()}.
+     * The {@link SelectionSorterWeightFactory} alternative for {@link #strengthComparatorClass()}.
      * <p>
      * Do not use together with {@link #strengthComparatorClass()}.
      *
      * @return {@link NullStrengthWeightFactory} when it is null (workaround for annotation limitation)
      * @see #strengthComparatorClass()
      */
-    Class<? extends SorterWeightFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
+    Class<? extends SelectionSorterWeightFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
 
     /** Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}. */
-    interface NullStrengthWeightFactory<Solution_, T> extends SorterWeightFactory<Solution_, T> {
+    interface NullStrengthWeightFactory extends NullComparatorFactory {
+    }
+
+    interface NullComparatorFactory<Solution_, T> extends SelectionSorterWeightFactory<Solution_, T> {
     }
 
 }

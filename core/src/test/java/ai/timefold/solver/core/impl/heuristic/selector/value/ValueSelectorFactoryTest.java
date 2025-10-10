@@ -11,7 +11,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -218,7 +218,7 @@ class ValueSelectorFactoryTest {
     @Test
     void applySorting_withSorterWeightFactoryClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
-                .withSorterWeightFactoryClass(DummySelectionSorterWeightFactory.class);
+                .withSorterWeightFactoryClass(DummySelectionSorterFactory.class);
         applySorting(valueSelectorConfig);
     }
 
@@ -310,10 +310,10 @@ class ValueSelectorFactoryTest {
         }
     }
 
-    public static class DummySelectionSorterWeightFactory
-            implements SorterWeightFactory<TestdataSolution, TestdataValue> {
+    public static class DummySelectionSorterFactory
+            implements SorterFactory<TestdataSolution, TestdataValue> {
         @Override
-        public Comparable createSorterWeight(TestdataSolution testdataSolution, TestdataValue selection) {
+        public Comparable createSorter(TestdataSolution testdataSolution, TestdataValue selection) {
             return 0;
         }
     }

@@ -1,12 +1,12 @@
 package ai.timefold.solver.core.testdomain.list.sort.factory;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 
 public class ListSortableEntityFactory
-        implements SorterWeightFactory<TestdataListFactorySortableSolution, TestdataListFactorySortableEntity> {
+        implements SorterFactory<TestdataListFactorySortableSolution, TestdataListFactorySortableEntity> {
 
     @Override
-    public Comparable<TestdataListFactorySortableEntity> createSorterWeight(TestdataListFactorySortableSolution solution,
+    public Comparable<TestdataListFactorySortableEntity> createSorter(TestdataListFactorySortableSolution solution,
             TestdataListFactorySortableEntity selection) {
         return selection;
     }

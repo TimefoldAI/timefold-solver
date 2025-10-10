@@ -11,9 +11,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Creates a weight to decide the order of a collections of selections
+ * Creates a {@link Comparable} to decide the order of a collection of selections
  * (a selection is a {@link PlanningEntity}, a planningValue, a {@link Move} or a {@link Selector}).
- * The selections are then sorted by their weight,
+ * The selections are then sorted by some specific metric,
  * normally ascending unless it's configured descending.
  * The property {@code sortManner},
  * present in the selector configurations such as {@link ValueSelectorConfig} and {@link EntitySelectorConfig},
@@ -34,13 +34,13 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 @FunctionalInterface
-public interface SorterWeightFactory<Solution_, T> {
+public interface SorterFactory<Solution_, T> {
 
     /**
      * @param solution never null, the {@link PlanningSolution} to which the selection belongs or applies to
      * @param selection never null, a {@link PlanningEntity}, a planningValue, a {@link Move} or a {@link Selector}
      * @return never null, for example a {@link Integer}, {@link Double} or a more complex {@link Comparable}
      */
-    Comparable createSorterWeight(Solution_ solution, T selection);
+    Comparable createSorter(Solution_ solution, T selection);
 
 }
