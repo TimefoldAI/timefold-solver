@@ -78,8 +78,11 @@ then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#c
 [#pointlessConstraints]
 == Unused constraints
 
-If a constraint is only relevant when certain data is present on the input (for example, if you want a capacity constraint to only be evaluated when capacity information is present), set the xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero.
-In xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams], this will result in the constraint not being added to the node network and therefore have no performance impact at all.
+If a constraint is only relevant when certain data is present on the input
+(for example, if you want a capacity constraint to only be evaluated when capacity information is present),
+set the xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero.
+In xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
+this will result in the constraint not being added to the node network and therefore have no performance impact at all.
 
 [#buildInHardConstraint]
 == Built-in hard constraint
