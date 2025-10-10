@@ -7,7 +7,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -61,7 +61,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
 
     protected ValueSorterManner sorterManner = null;
     protected Class<? extends Comparator> sorterComparatorClass = null;
-    protected Class<? extends SorterWeightFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends SorterFactory> sorterWeightFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -162,11 +162,11 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public @Nullable Class<? extends SorterWeightFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends SorterFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterWeightFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
@@ -258,7 +258,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     }
 
     public @NonNull ValueSelectorConfig
-            withSorterWeightFactoryClass(@NonNull Class<? extends SorterWeightFactory> weightFactoryClass) {
+            withSorterWeightFactoryClass(@NonNull Class<? extends SorterFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }

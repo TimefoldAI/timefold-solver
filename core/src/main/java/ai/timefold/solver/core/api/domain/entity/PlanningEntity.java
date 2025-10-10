@@ -7,7 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
@@ -79,17 +79,17 @@ public @interface PlanningEntity {
     }
 
     /**
-     * The {@link SorterWeightFactory} alternative for {@link #difficultyComparatorClass()}.
+     * The {@link SorterFactory} alternative for {@link #difficultyComparatorClass()}.
      * <p>
      * Do not use together with {@link #difficultyComparatorClass()}.
      *
      * @return {@link NullDifficultyWeightFactory} when it is null (workaround for annotation limitation)
      * @see #difficultyComparatorClass()
      */
-    Class<? extends SorterWeightFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
+    Class<? extends SorterFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
 
     /** Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}. */
-    interface NullDifficultyWeightFactory<Solution_, T> extends SorterWeightFactory<Solution_, T> {
+    interface NullDifficultyWeightFactory<Solution_, T> extends SorterFactory<Solution_, T> {
     }
 
 }

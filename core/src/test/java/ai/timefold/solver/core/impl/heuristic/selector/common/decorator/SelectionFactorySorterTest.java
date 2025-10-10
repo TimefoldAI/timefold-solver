@@ -6,7 +6,7 @@ import static org.mockito.Mockito.mock;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -14,13 +14,13 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
-class WeightFactorySelectionSorterTest {
+class SelectionFactorySorterTest {
 
     @Test
     void sortAscending() {
-        SorterWeightFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
+        SorterFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
-        WeightFactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new WeightFactorySelectionSorter<>(
+        SelectionFactorySorter<TestdataSolution, TestdataEntity> selectionSorter = new SelectionFactorySorter<>(
                 weightFactory, SelectionSorterOrder.ASCENDING);
         ScoreDirector<TestdataSolution> scoreDirector = mock(ScoreDirector.class);
         List<TestdataEntity> selectionList = new ArrayList<>();
@@ -34,9 +34,9 @@ class WeightFactorySelectionSorterTest {
 
     @Test
     void sortDescending() {
-        SorterWeightFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
+        SorterFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
-        WeightFactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new WeightFactorySelectionSorter<>(
+        SelectionFactorySorter<TestdataSolution, TestdataEntity> selectionSorter = new SelectionFactorySorter<>(
                 weightFactory, SelectionSorterOrder.DESCENDING);
         ScoreDirector<TestdataSolution> scoreDirector = mock(ScoreDirector.class);
         List<TestdataEntity> selectionList = new ArrayList<>();

@@ -13,7 +13,7 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 public class TestdataListFactorySortableEntityProvidingEntity extends TestdataObject
         implements Comparable<TestdataListFactorySortableEntityProvidingEntity> {
 
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange", strengthWeightFactoryClass = ListSortableValueFactory.class)
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = ListSortableValueFactory.class)
     private List<TestdataListFactorySortableEntityProvidingValue> valueList;
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty

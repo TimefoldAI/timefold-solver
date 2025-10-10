@@ -1600,15 +1600,15 @@ The solver may choose to reuse them in different contexts.
 
 
 [#sortedSelectionBySelectionSorterWeightFactory]
-===== Sorted selection by `SorterWeightFactory`
+===== Sorted selection by `SorterFactory`
 
-If you need the entire solution to sort a ``Selector``, use a `SorterWeightFactory` instead:
+If you need the entire solution to sort a ``Selector``, use a `SorterFactory` instead:
 
 [source,java,options="nowrap"]
 ----
-public interface SorterWeightFactory<Solution_, T> {
+public interface SorterFactory<Solution_, T> {
 
-    Comparable createSorterWeight(Solution_ solution, T selection);
+    Comparable createSorter(Solution_ solution, T selection);
 
 }
 ----
@@ -1627,7 +1627,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
 
 [NOTE]
 ====
-`SorterWeightFactory` implementations are expected to be stateless.
+`SorterFactory` implementations are expected to be stateless.
 The solver may choose to reuse them in different contexts.
 ====
 

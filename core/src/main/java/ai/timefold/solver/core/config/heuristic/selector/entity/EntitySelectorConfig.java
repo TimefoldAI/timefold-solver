@@ -7,7 +7,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -63,7 +63,7 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
 
     protected EntitySorterManner sorterManner = null;
     protected Class<? extends Comparator> sorterComparatorClass = null;
-    protected Class<? extends SorterWeightFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends SorterFactory> sorterWeightFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -156,11 +156,11 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public @Nullable Class<? extends SorterWeightFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends SorterFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterWeightFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
@@ -247,7 +247,7 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
     }
 
     public @NonNull EntitySelectorConfig
-            withSorterWeightFactoryClass(@NonNull Class<? extends SorterWeightFactory> weightFactoryClass) {
+            withSorterWeightFactoryClass(@NonNull Class<? extends SorterFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }
@@ -350,8 +350,7 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         switch (entitySorterManner) {
             case NONE:
                 throw new IllegalStateException("Impossible state: hasSorter() should have returned null.");
-            case DECREASING_DIFFICULTY:
-            case DECREASING_DIFFICULTY_IF_AVAILABLE:
+            case DECREASING_DIFFICULTY, DECREASING_DIFFICULTY_IF_AVAILABLE:
                 sorter = (SelectionSorter<Solution_, T>) entityDescriptor.getDecreasingDifficultySorter();
                 if (sorter == null) {
                     throw new IllegalArgumentException("The sorterManner (" + entitySorterManner

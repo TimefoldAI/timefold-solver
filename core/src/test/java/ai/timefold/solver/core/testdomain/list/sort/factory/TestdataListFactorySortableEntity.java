@@ -10,7 +10,7 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 @PlanningEntity(difficultyWeightFactoryClass = ListSortableEntityFactory.class)
 public class TestdataListFactorySortableEntity extends TestdataObject implements Comparable<TestdataListFactorySortableEntity> {
 
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange", strengthWeightFactoryClass = ListSortableValueFactory.class)
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = ListSortableValueFactory.class)
     private List<TestdataListFactorySortableValue> valueList;
     private int difficulty;
 

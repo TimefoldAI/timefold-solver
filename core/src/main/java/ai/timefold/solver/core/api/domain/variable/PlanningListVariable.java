@@ -9,10 +9,12 @@ import java.lang.annotation.Target;
 import java.util.Comparator;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.common.SorterWeightFactory;
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable.NullComparator;
+import ai.timefold.solver.core.api.domain.variable.PlanningVariable.NullComparatorFactory;
 
 /**
  * Specifies that a bean property (or a field) can be changed and should be optimized by the optimization algorithms.
@@ -58,36 +60,28 @@ public @interface PlanningListVariable {
     String[] valueRangeProviderRefs() default {};
 
     /**
-     * Allows a collection of planning values for this variable to be sorted by strength.
-     * A strengthWeight estimates how strong a planning value is.
-     * Some algorithms benefit from planning on weaker planning values first or from focusing on them.
+     * Allows sorting a collection of planning values for this variable.
+     * Some algorithms perform better when the values are sorted based on specific metrics.
      * <p>
-     * The {@link Comparator} should sort in ascending strength.
-     * For example: sorting 3 computers on strength based on their RAM capacity:
-     * Computer B (1GB RAM), Computer A (2GB RAM), Computer C (7GB RAM),
+     * The {@link Comparator} should sort the data in ascending order.
+     * For example, prioritize three visits by sorting them based on their importance:
+     * Visit C (SMALL_PRIORITY), Visit A (MEDIUM_PRIORITY), Visit B (HIGH_PRIORITY)
      * <p>
-     * Do not use together with {@link #strengthWeightFactoryClass()}.
+     * Do not use together with {@link #comparatorFactoryClass()}.
      *
-     * @return {@link PlanningVariable.NullStrengthComparator} when it is null (workaround for annotation limitation)
-     * @see #strengthWeightFactoryClass()
+     * @return {@link NullComparator} when it is null (workaround for annotation limitation)
+     * @see #comparatorFactoryClass()
      */
-    Class<? extends Comparator> strengthComparatorClass() default PlanningVariable.NullStrengthComparator.class;
-
-    /** Workaround for annotation limitation in {@link #strengthComparatorClass()}. */
-    interface NullStrengthComparator extends Comparator {
-    }
+    Class<? extends Comparator> comparatorClass() default NullComparator.class;
 
     /**
-     * The {@link SorterWeightFactory} alternative for {@link #strengthComparatorClass()}.
+     * The {@link SorterFactory} alternative for {@link #comparatorClass()}.
      * <p>
-     * Do not use together with {@link #strengthComparatorClass()}.
+     * Do not use together with {@link #comparatorClass()}.
      *
-     * @return {@link PlanningVariable.NullStrengthWeightFactory} when it is null (workaround for annotation limitation)
-     * @see #strengthComparatorClass()
+     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
+     * @see #comparatorClass()
      */
-    Class<? extends SorterWeightFactory> strengthWeightFactoryClass() default PlanningVariable.NullStrengthWeightFactory.class;
+    Class<? extends SorterFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
-    /** Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}. */
-    interface NullStrengthWeightFactory<Solution_, T> extends SorterWeightFactory<Solution_, T> {
-    }
 }
