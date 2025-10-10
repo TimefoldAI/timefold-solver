@@ -245,7 +245,6 @@ jobs:
         working-directory: "./timefold-solver"
         run: |
           echo "=== Updating antora.yml"
-          cp docs/src/antora-template.yml docs/src/antora.yml
           sed -i "s/\${project\.version}b0/SNAPSHOT/g" docs/src/antora.yml
           sed -i "s/\${project\.version}/SNAPSHOT/g" docs/src/antora.yml
           sed -i "s/\${maven\.compiler\.release}/$(find build/build-parent/ -name pom.xml -exec grep '<maven.compiler.release>' {} \;|tail -n 1|cut -d\> -f1 --complement|cut -d\< -f1)/g" docs/src/antora.yml

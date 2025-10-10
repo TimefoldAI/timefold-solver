@@ -1,4 +1,4 @@
-// Attributes derived from the maven build, typically versions, are defined in the pom.xml and antora-template.yml.
+// Attributes derived from the maven build, typically versions, are defined in the pom.xml and antora.yml.
 :quickstarts-clone-url: https://github.com/TimefoldAI/timefold-quickstarts
 :quickstarts-archive-url: https://github.com/TimefoldAI/timefold-quickstarts/archive/refs/heads/stable.tar.gz
 :hello-world-java-quickstart-url: https://github.com/TimefoldAI/timefold-quickstarts/tree/stable/java/hello-world

@@ -26,7 +26,7 @@ When improving your solver's performance,
 focus on maximizing the score calculation speed while keeping the existing moves,
 instead of maximizing the best score.
 A big improvement in score calculation can sometimes yield little or no best score improvement,
-for example when the algorithm is stuck in a local or global optima.
+for example when the algorithm is stuck in a local or global optimum.
 If you are watching the calculation speed instead, score calculation improvements are far more visible.
 
 Furthermore, watching the calculation speed allows you to remove or add score constraints,
@@ -76,25 +76,13 @@ then turn them into xref:using-timefold-solver/modeling-planning-problems.adoc#c
 
 
 [#pointlessConstraints]
-== Pointless constraints
+== Unused constraints
 
-If you know a certain constraint can never be broken, or it is always broken,
-do not write a score constraint for it.
-For example, in vehicle routing, if you know that a vehicle can never visit a certain location,
-do not include it in the value range and it will never become a valid option for the solver to try.
-
-[NOTE]
-====
-Do not go overboard with this.
-If some datasets do not use a specific constraint but others do,
-just return out of the constraint as soon as you can.
-There is no need to dynamically change your score calculation based on the dataset.
-====
-
+If a constraint is only relevant when certain data is present on the input
+(for example, if you want a capacity constraint to only be evaluated when capacity information is present),
+set the xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero.
 In xref:constraints-and-score/score-calculation.adoc#constraintStreams[Constraint Streams],
-if you set the xref:constraints-and-score/constraint-configuration.adoc#definingAndOverridingConstraintWeights[constraint weight] to zero,
-the constraint will be disabled and have no performance impact at all.
-
+this will result in the constraint not being added to the node network and therefore have no performance impact at all.
 
 [#buildInHardConstraint]
 == Built-in hard constraint
@@ -307,6 +295,29 @@ leading to much more iteration every time a lesson changes.
 
 For that reason, it is generally recommended putting Joiners based on enum fields or boolean fields last.
 
+[#indexingHashingLooping]
+== Indexing, Hashing, Looping
+The code on the hot path of your application needs to be as fast as possible.
+
+* When you use xref:using-timefold-solver/modeling-planning-problems.adoc#shadowVariable[Shadow Variables], you will provide a `supplier` method that computes the value of the shadow variable.
+* This method will be called very often during score calculation, so it needs to be fast.
+* If you need to do a lookup in a collection to find an element, ideally you are indexing into an array.
+* The second best option is to use a `HashMap` or `HashSet`.
+* Avoid using `java.util.Stream` or any other form of explicit iteration in constraints, as that is much slower.
+
+[#enableAutomaticNodeSharing]
+== Enable automatic node sharing (Enterprise Edition only)
+If you are using the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition], you should xref:enterprise-edition/enterprise-edition.adoc#automaticNodeSharing[enable automatic node sharing] as it can significantly speed up score calculation.
+
+[#benchmark]
+== Benchmark
+Whatever you do, benchmark on a large and diverse set of inputs.
+
+JVM performance may differ by as much as 20% between runs. To decide whether your changes helped or made things worse, make sure to always average the move evaluation speed from multiple runs on the same machine with the same solver configuration. We provide a xref:using-timefold-solver/benchmarking-and-tweaking.adoc#benchmarker[Benchmarker] to help you with that.
+
+[#fullAssert]
+== Validate the implementation using FULL_ASSERT
+When you are done optimizing your score calculation, make sure to validate it using xref:using-timefold-solver/running-the-solver.adoc#environmentModeFullAssert[`FULL_ASSERT`] mode. Make sure not to run with this mode in production.
 
 [#otherScoreCalculationPerformanceTricks]
 == Other score calculation performance tricks

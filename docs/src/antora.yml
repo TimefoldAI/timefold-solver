@@ -1,5 +1,5 @@
-# This file is a template for antora.yml.
-# During a release, Maven substitutes the properties and stores result into target/antora-template.yml.
+# This file is a template that will be filled with real values.
+# During a release, Maven substitutes the properties and stores result into target/antora.yml.
 # That file is then copied to src/modules/antora.yml and committed to Git on the release branch.
 # The timefold.ai website can then be refreshed from the release branch and/or tag.
 name: timefold-solver

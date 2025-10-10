@@ -65,7 +65,7 @@ jobs:
         run: |
           ./mvnw -Dfull versions:set -DnewVersion=${{ github.event.inputs.version }}
           ./mvnw -Dfull deploy -DskipTests=${{ github.event.inputs.dryRun }} -DaltDeploymentRepository=local::default::file://`pwd`/target/staging-deploy
-          cp docs/target/antora-template.yml docs/src/antora.yml
+          cp docs/target/antora.yml docs/src/antora.yml
           git add docs/src/antora.yml
           find . -name 'pom.xml' | xargs git add
           git commit -m "build: release version ${{ github.event.inputs.version }}"
