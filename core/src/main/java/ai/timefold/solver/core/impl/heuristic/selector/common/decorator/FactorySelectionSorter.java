@@ -21,13 +21,13 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
-public final class SelectionFactorySorter<Solution_, T> implements SelectionSorter<Solution_, T> {
+public final class FactorySelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
     private final SorterFactory<Solution_, T> selectionSorterFactory;
     private final Comparator<Comparable> comparator;
 
-    public SelectionFactorySorter(SorterFactory<Solution_, T> selectionSorterFactory,
-            SelectionSorterOrder selectionSorterOrder) {
+    public FactorySelectionSorter(SorterFactory<Solution_, T> selectionSorterFactory,
+                                  SelectionSorterOrder selectionSorterOrder) {
         this.selectionSorterFactory = selectionSorterFactory;
         switch (selectionSorterOrder) {
             case ASCENDING:
@@ -72,7 +72,7 @@ public final class SelectionFactorySorter<Solution_, T> implements SelectionSort
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        SelectionFactorySorter<?, ?> that = (SelectionFactorySorter<?, ?>) other;
+        FactorySelectionSorter<?, ?> that = (FactorySelectionSorter<?, ?>) other;
         return Objects.equals(selectionSorterFactory, that.selectionSorterFactory)
                 && Objects.equals(comparator, that.comparator);
     }

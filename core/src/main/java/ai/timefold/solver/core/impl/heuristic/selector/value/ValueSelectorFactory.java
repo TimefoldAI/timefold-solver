@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFactorySorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
@@ -338,7 +338,7 @@ public class ValueSelectorFactory<Solution_>
             } else if (config.getSorterWeightFactoryClass() != null) {
                 SorterFactory<Solution_, Object> sorterFactory =
                         instanceCache.newInstance(config, "sorterWeightFactoryClass", config.getSorterWeightFactoryClass());
-                sorter = new SelectionFactorySorter<>(sorterFactory,
+                sorter = new FactorySelectionSorter<>(sorterFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (config.getSorterClass() != null) {
                 sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());

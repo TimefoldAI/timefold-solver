@@ -14,13 +14,13 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
-class SelectionFactorySorterTest {
+class FactorySelectionSorterTest {
 
     @Test
     void sortAscending() {
         SorterFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
-        SelectionFactorySorter<TestdataSolution, TestdataEntity> selectionSorter = new SelectionFactorySorter<>(
+        FactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new FactorySelectionSorter<>(
                 weightFactory, SelectionSorterOrder.ASCENDING);
         ScoreDirector<TestdataSolution> scoreDirector = mock(ScoreDirector.class);
         List<TestdataEntity> selectionList = new ArrayList<>();
@@ -36,7 +36,7 @@ class SelectionFactorySorterTest {
     void sortDescending() {
         SorterFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
-        SelectionFactorySorter<TestdataSolution, TestdataEntity> selectionSorter = new SelectionFactorySorter<>(
+        FactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new FactorySelectionSorter<>(
                 weightFactory, SelectionSorterOrder.DESCENDING);
         ScoreDirector<TestdataSolution> scoreDirector = mock(ScoreDirector.class);
         List<TestdataEntity> selectionList = new ArrayList<>();
