@@ -304,7 +304,8 @@ The code on the hot path of your application needs to be as fast as possible.
 * If you need to do a lookup in a collection to find an element, ideally you are indexing into an array.
 * The second best option is to use a `HashMap` or `HashSet`.
 * Avoid using `java.util.Stream` or any other form of explicit iteration in constraints, as that is much slower.
-[#automaticNodeSharing]
+
+[#enableAutomaticNodeSharing]
 == Enable automatic node sharing (Enterprise Edition only)
 If you are using the xref:enterprise-edition/enterprise-edition.adoc[Enterprise Edition], you should xref:enterprise-edition/enterprise-edition.adoc#automaticNodeSharing[enable automatic node sharing] as it can significantly speed up score calculation.
 
