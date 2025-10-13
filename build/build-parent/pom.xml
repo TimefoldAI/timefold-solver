@@ -21,7 +21,7 @@
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
     <version.ch.qos.logback>1.5.19</version.ch.qos.logback>
-    <version.io.quarkus>3.28.2</version.io.quarkus>
+    <version.io.quarkus>3.28.3</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.2</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.6</version.org.assertj>
@@ -45,7 +45,7 @@
     <version.dependency.plugin>3.9.0</version.dependency.plugin>
     <version.exec.plugin>3.6.1</version.exec.plugin>
     <version.enforcer.plugin>3.6.2</version.enforcer.plugin>
-    <version.jacoco.plugin>0.8.13</version.jacoco.plugin>
+    <version.jacoco.plugin>0.8.14</version.jacoco.plugin>
     <version.jar.plugin>3.4.2</version.jar.plugin>
     <version.jaxb2.plugin>3.3.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
