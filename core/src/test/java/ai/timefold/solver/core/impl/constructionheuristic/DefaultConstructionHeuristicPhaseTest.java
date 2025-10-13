@@ -16,23 +16,25 @@ import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristi
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicType;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicForagerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.decider.forager.ConstructionHeuristicPickEarlyType;
+import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.list.sort.comparator.OneValuePerEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.sort.comparator.ListOneValuePerEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableEntity;
 import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableSolution;
 import ai.timefold.solver.core.testdomain.list.sort.comparator.TestdataListSortableValue;
-import ai.timefold.solver.core.testdomain.list.sort.factory.OneValuePerEntityFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.sort.factory.ListOneValuePerEntityFactoryEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.sort.factory.TestdataListFactorySortableEntity;
 import ai.timefold.solver.core.testdomain.list.sort.factory.TestdataListFactorySortableSolution;
 import ai.timefold.solver.core.testdomain.list.sort.factory.TestdataListFactorySortableValue;
@@ -44,11 +46,11 @@ import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProv
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingValue;
-import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.OneValuePerEntityRangeEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.ListOneValuePerEntityRangeEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.TestdataListSortableEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.TestdataListSortableEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator.TestdataListSortableEntityProvidingValue;
-import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.OneValuePerEntityRangeFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.ListOneValuePerEntityRangeFactoryEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.TestdataListFactorySortableEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.TestdataListFactorySortableEntityProvidingSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.sort.factory.TestdataListFactorySortableEntityProvidingValue;
@@ -60,12 +62,24 @@ import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
+import ai.timefold.solver.core.testdomain.sort.comparator.OneValuePerEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.comparator.TestdataSortableEntity;
+import ai.timefold.solver.core.testdomain.sort.comparator.TestdataSortableSolution;
+import ai.timefold.solver.core.testdomain.sort.factory.OneValuePerEntityFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.factory.TestdataFactorySortableEntity;
+import ai.timefold.solver.core.testdomain.sort.factory.TestdataFactorySortableSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.OneValuePerEntityRangeEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.TestdataSortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.TestdataSortableEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factory.OneValuePerEntityRangeFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factory.TestdataFactorySortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factory.TestdataFactorySortableEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.junit.jupiter.api.Test;
@@ -349,6 +363,174 @@ class DefaultConstructionHeuristicPhaseTest {
                 .filter(e -> e.getValue() == null)).isEmpty();
     }
 
+    private static List<ConstructionHeuristicTestConfig>
+    generateBasicConstructionHeuristicAdvancedConfiguration(SelectionCacheType entityDestinationCacheType) {
+        var values = new ArrayList<ConstructionHeuristicTestConfig>();
+        // Advanced configuration
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                        .withId("sortedEntitySelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(entityDestinationCacheType)
+                                                        .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // Since we are starting from decreasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                        .withId("sortedEntitySelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(entityDestinationCacheType)
+                                                        .withSorterManner(ValueSorterManner.INCREASING_STRENGTH))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // Since we are starting from increasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[3], e2[2], and e3[1]
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        return values;
+    }
+
+    private static List<ConstructionHeuristicTestConfig> generateBasicConstructionHeuristicConfiguration() {
+        var values = new ArrayList<ConstructionHeuristicTestConfig>();
+        values.addAll(generateConstructionHeuristicSimpleConfiguration());
+        values.addAll(generateBasicConstructionHeuristicAdvancedConfiguration(SelectionCacheType.PHASE));
+        return values;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateBasicConstructionHeuristicConfiguration")
+    void constructionHeuristicBasicVarAllocateValueFromQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataSortableSolution.class, TestdataSortableEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityEasyScoreCalculator.class);
+        solverConfig.withPhases(phaseConfig.config());
+
+        var solution = TestdataSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValue()).isNotNull();
+                assertThat(entity.getValue().getStrength()).isEqualTo(phaseConfig.expected[i]);
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateBasicConstructionHeuristicConfiguration")
+    void constructionHeuristicBasicVarAllocateValueFromQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataFactorySortableSolution.class, TestdataFactorySortableEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityFactoryEasyScoreCalculator.class);
+        solverConfig.withPhases(phaseConfig.config());
+
+        var solution = TestdataFactorySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValue()).isNotNull();
+                assertThat(entity.getValue().getStrength()).isEqualTo(phaseConfig.expected[i]);
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateBasicConstructionHeuristicConfiguration")
+    void constructionHeuristicVarEntityRangeAllocateToValueFromQueueComparator(
+            ConstructionHeuristicTestConfig phaseConfig) {
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataSortableEntityProvidingSolution.class,
+                                TestdataSortableEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityRangeEasyScoreCalculator.class)
+                        .withPhases(phaseConfig.config());
+
+        var solution = TestdataSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValue()).isNotNull();
+                assertThat(entity.getValue().getStrength()).isEqualTo(phaseConfig.expected[i]);
+            }
+        }
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateBasicConstructionHeuristicConfiguration")
+    void constructionHeuristicVarEntityRangeAllocateToValueFromQueueFactory(
+            ConstructionHeuristicTestConfig phaseConfig) {
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataFactorySortableEntityProvidingSolution.class,
+                                TestdataFactorySortableEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityRangeFactoryEasyScoreCalculator.class)
+                        .withPhases(phaseConfig.config());
+
+        var solution = TestdataFactorySortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValue()).isNotNull();
+                assertThat(entity.getValue().getStrength()).isEqualTo(phaseConfig.expected[i]);
+            }
+        }
+    }
+
     private static List<ConstructionHeuristicTestConfig> generateConstructionHeuristicSimpleConfiguration() {
         var values = new ArrayList<ConstructionHeuristicTestConfig>();
         values.add(new ConstructionHeuristicTestConfig(
@@ -473,11 +655,29 @@ class DefaultConstructionHeuristicPhaseTest {
                 new int[] { 0, 1, 2 },
                 // Only the values are sorted, and shuffling the entities will alter the expected result
                 false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.CHEAPEST_INSERTION),
+                // Since we are starting from increasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 2, 1, 0 },
+                // Both are sorted by default
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_FROM_POOL),
+                // Since we are starting from increasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 2, 1, 0 },
+                // Both are sorted by default
+                true));
         return values;
     }
 
     private static List<ConstructionHeuristicTestConfig>
-            generateConstructionHeuristicAdvancedConfiguration(SelectionCacheType entityDestinationCacheType) {
+            generateListConstructionHeuristicAdvancedConfiguration(SelectionCacheType entityDestinationCacheType) {
         var values = new ArrayList<ConstructionHeuristicTestConfig>();
         // Advanced configuration
         values.add(new ConstructionHeuristicTestConfig(
@@ -583,21 +783,21 @@ class DefaultConstructionHeuristicPhaseTest {
         return values;
     }
 
-    private static List<ConstructionHeuristicTestConfig> generateConstructionHeuristicConfiguration() {
+    private static List<ConstructionHeuristicTestConfig> generateListConstructionHeuristicConfiguration() {
         var values = new ArrayList<ConstructionHeuristicTestConfig>();
         values.addAll(generateConstructionHeuristicSimpleConfiguration());
-        values.addAll(generateConstructionHeuristicAdvancedConfiguration(SelectionCacheType.PHASE));
+        values.addAll(generateListConstructionHeuristicAdvancedConfiguration(SelectionCacheType.PHASE));
         return values;
     }
 
     @ParameterizedTest
-    @MethodSource("generateConstructionHeuristicConfiguration")
+    @MethodSource("generateListConstructionHeuristicConfiguration")
     void constructionHeuristicListVarAllocateValueFromQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataListSortableSolution.class, TestdataListSortableEntity.class,
                                 TestdataListSortableValue.class)
-                        .withEasyScoreCalculatorClass(OneValuePerEntityEasyScoreCalculator.class)
+                        .withEasyScoreCalculatorClass(ListOneValuePerEntityEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
         var solution = TestdataListSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
@@ -618,13 +818,13 @@ class DefaultConstructionHeuristicPhaseTest {
     }
 
     @ParameterizedTest
-    @MethodSource("generateConstructionHeuristicConfiguration")
+    @MethodSource("generateListConstructionHeuristicConfiguration")
     void constructionHeuristicListVarAllocateValueFromQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataListFactorySortableSolution.class, TestdataListFactorySortableEntity.class,
                                 TestdataListFactorySortableValue.class)
-                        .withEasyScoreCalculatorClass(OneValuePerEntityFactoryEasyScoreCalculator.class)
+                        .withEasyScoreCalculatorClass(ListOneValuePerEntityFactoryEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
         var solution = TestdataListFactorySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
@@ -644,15 +844,15 @@ class DefaultConstructionHeuristicPhaseTest {
         }
     }
 
-    private static List<ConstructionHeuristicTestConfig> generateEntityRangeConstructionHeuristicConfiguration() {
+    private static List<ConstructionHeuristicTestConfig> generateListEntityRangeConstructionHeuristicConfiguration() {
         var values = new ArrayList<ConstructionHeuristicTestConfig>();
         values.addAll(generateConstructionHeuristicSimpleConfiguration());
-        values.addAll(generateConstructionHeuristicAdvancedConfiguration(SelectionCacheType.STEP));
+        values.addAll(generateListConstructionHeuristicAdvancedConfiguration(SelectionCacheType.STEP));
         return values;
     }
 
     @ParameterizedTest
-    @MethodSource("generateEntityRangeConstructionHeuristicConfiguration")
+    @MethodSource("generateListEntityRangeConstructionHeuristicConfiguration")
     void constructionHeuristicListVarEntityRangeAllocateToValueFromQueueComparator(
             ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
@@ -660,7 +860,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .buildSolverConfig(TestdataListSortableEntityProvidingSolution.class,
                                 TestdataListSortableEntityProvidingEntity.class,
                                 TestdataListSortableEntityProvidingValue.class)
-                        .withEasyScoreCalculatorClass(OneValuePerEntityRangeEasyScoreCalculator.class)
+                        .withEasyScoreCalculatorClass(ListOneValuePerEntityRangeEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
         var solution = TestdataListSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
@@ -681,14 +881,14 @@ class DefaultConstructionHeuristicPhaseTest {
     }
 
     @ParameterizedTest
-    @MethodSource("generateEntityRangeConstructionHeuristicConfiguration")
+    @MethodSource("generateListEntityRangeConstructionHeuristicConfiguration")
     void constructionHeuristicListVarEntityRangeAllocateToValueFromQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataListFactorySortableEntityProvidingSolution.class,
                                 TestdataListFactorySortableEntityProvidingEntity.class,
                                 TestdataListFactorySortableEntityProvidingValue.class)
-                        .withEasyScoreCalculatorClass(OneValuePerEntityRangeFactoryEasyScoreCalculator.class)
+                        .withEasyScoreCalculatorClass(ListOneValuePerEntityRangeFactoryEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
         var solution = TestdataListFactorySortableEntityProvidingSolution.generateSolution(3, 3,
@@ -716,7 +916,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .buildSolverConfig(TestdataListSortableEntityProvidingSolution.class,
                                 TestdataListSortableEntityProvidingEntity.class,
                                 TestdataListSortableEntityProvidingValue.class)
-                        .withEasyScoreCalculatorClass(OneValuePerEntityRangeEasyScoreCalculator.class)
+                        .withEasyScoreCalculatorClass(ListOneValuePerEntityRangeEasyScoreCalculator.class)
                         .withPhases(
                                 new ConstructionHeuristicPhaseConfig()
                                         .withEntityPlacerConfig(new QueuedValuePlacerConfig()

@@ -5,14 +5,14 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-public class OneValuePerEntityEasyScoreCalculator
+public class ListOneValuePerEntityEasyScoreCalculator
         implements EasyScoreCalculator<TestdataListSortableSolution, HardSoftScore> {
 
     @Override
-    public @NonNull HardSoftScore calculateScore(@NonNull TestdataListSortableSolution testdataListSortableSolution) {
+    public @NonNull HardSoftScore calculateScore(@NonNull TestdataListSortableSolution solution) {
         var softScore = 0;
         var hardScore = 0;
-        for (var entity : testdataListSortableSolution.getEntityList()) {
+        for (var entity : solution.getEntityList()) {
             if (entity.getValueList().size() == 1) {
                 softScore -= 10;
             } else {

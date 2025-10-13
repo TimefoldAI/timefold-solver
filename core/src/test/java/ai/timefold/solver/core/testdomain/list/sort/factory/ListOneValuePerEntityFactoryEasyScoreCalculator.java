@@ -1,19 +1,19 @@
-package ai.timefold.solver.core.testdomain.list.valuerange.sort.comparator;
+package ai.timefold.solver.core.testdomain.list.sort.factory;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-public class OneValuePerEntityRangeEasyScoreCalculator
-        implements EasyScoreCalculator<TestdataListSortableEntityProvidingSolution, HardSoftScore> {
+public class ListOneValuePerEntityFactoryEasyScoreCalculator
+        implements EasyScoreCalculator<TestdataListFactorySortableSolution, HardSoftScore> {
 
     @Override
     public @NonNull HardSoftScore
-            calculateScore(@NonNull TestdataListSortableEntityProvidingSolution testdataListSortableEntityProvidingSolution) {
+            calculateScore(@NonNull TestdataListFactorySortableSolution solution) {
         var softScore = 0;
         var hardScore = 0;
-        for (var entity : testdataListSortableEntityProvidingSolution.getEntityList()) {
+        for (var entity : solution.getEntityList()) {
             if (entity.getValueList().size() == 1) {
                 softScore -= 10;
             } else {

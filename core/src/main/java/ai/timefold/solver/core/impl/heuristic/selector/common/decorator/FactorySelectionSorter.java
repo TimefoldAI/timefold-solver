@@ -24,17 +24,17 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 public final class FactorySelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
     private final SorterFactory<Solution_, T> selectionSorterFactory;
-    private final Comparator<Comparable> comparator;
+    private final Comparator<Comparable> appliedComparator;
 
     public FactorySelectionSorter(SorterFactory<Solution_, T> selectionSorterFactory,
                                   SelectionSorterOrder selectionSorterOrder) {
         this.selectionSorterFactory = selectionSorterFactory;
         switch (selectionSorterOrder) {
             case ASCENDING:
-                this.comparator = Comparator.naturalOrder();
+                this.appliedComparator = Comparator.naturalOrder();
                 break;
             case DESCENDING:
-                this.comparator = Collections.reverseOrder();
+                this.appliedComparator = Collections.reverseOrder();
                 break;
             default:
                 throw new IllegalStateException("The selectionSorterOrder (" + selectionSorterOrder
@@ -53,7 +53,7 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
      *        of {@link PlanningEntity}, planningValue, {@link Move} or {@link Selector}
      */
     public void sort(Solution_ solution, List<T> selectionList) {
-        SortedMap<Comparable, T> selectionMap = new TreeMap<>(comparator);
+        SortedMap<Comparable, T> selectionMap = new TreeMap<>(appliedComparator);
         for (T selection : selectionList) {
             Comparable difficultyWeight = selectionSorterFactory.createSorter(solution, selection);
             T previous = selectionMap.put(difficultyWeight, selection);
@@ -74,11 +74,11 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
             return false;
         FactorySelectionSorter<?, ?> that = (FactorySelectionSorter<?, ?>) other;
         return Objects.equals(selectionSorterFactory, that.selectionSorterFactory)
-                && Objects.equals(comparator, that.comparator);
+                && Objects.equals(appliedComparator, that.appliedComparator);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(selectionSorterFactory, comparator);
+        return Objects.hash(selectionSorterFactory, appliedComparator);
     }
 }
