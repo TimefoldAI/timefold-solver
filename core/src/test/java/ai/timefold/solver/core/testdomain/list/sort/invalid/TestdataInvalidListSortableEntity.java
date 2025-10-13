@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.list.sort.comparator;
+package ai.timefold.solver.core.testdomain.list.sort.invalid;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,21 +6,22 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.common.TestSortableComparator;
-import ai.timefold.solver.core.testdomain.common.TestSortableObject;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparator;
+import ai.timefold.solver.core.testdomain.common.DummyValueFactory;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity(difficultyComparatorClass = TestSortableComparator.class)
-public class TestdataListSortableEntity extends TestdataObject implements TestSortableObject {
+@PlanningEntity
+public class TestdataInvalidListSortableEntity extends TestdataObject {
 
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorClass = TestSortableComparator.class)
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorClass = DummyValueComparator.class,
+            comparatorFactoryClass = DummyValueFactory.class)
     private List<TestdataSortableValue> valueList;
     private int difficulty;
 
-    public TestdataListSortableEntity() {
+    public TestdataInvalidListSortableEntity() {
     }
 
-    public TestdataListSortableEntity(String code, int difficulty) {
+    public TestdataInvalidListSortableEntity(String code, int difficulty) {
         super(code);
         this.difficulty = difficulty;
         this.valueList = new ArrayList<>();
@@ -34,8 +35,11 @@ public class TestdataListSortableEntity extends TestdataObject implements TestSo
         this.valueList = valueList;
     }
 
-    @Override
-    public int getComparatorValue() {
+    public int getDifficulty() {
         return difficulty;
+    }
+
+    public void setDifficulty(int difficulty) {
+        this.difficulty = difficulty;
     }
 }

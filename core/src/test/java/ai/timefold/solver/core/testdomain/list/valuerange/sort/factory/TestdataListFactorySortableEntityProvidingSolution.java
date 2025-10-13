@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
 @PlanningSolution
 public class TestdataListFactorySortableEntityProvidingSolution {
@@ -19,7 +20,7 @@ public class TestdataListFactorySortableEntityProvidingSolution {
         return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataListFactorySortableEntityProvidingSolution.class,
                 TestdataListFactorySortableEntityProvidingEntity.class,
-                TestdataListFactorySortableEntityProvidingValue.class);
+                TestdataSortableValue.class);
     }
 
     public static TestdataListFactorySortableEntityProvidingSolution generateSolution(int valueCount, int entityCount,
@@ -28,7 +29,7 @@ public class TestdataListFactorySortableEntityProvidingSolution {
                 .mapToObj(i -> new TestdataListFactorySortableEntityProvidingEntity("Generated Entity " + i, i))
                 .toList());
         var valueList = IntStream.range(0, valueCount)
-                .mapToObj(i -> new TestdataListFactorySortableEntityProvidingValue("Generated Value " + i, i))
+                .mapToObj(i -> new TestdataSortableValue("Generated Value " + i, i))
                 .toList();
         var solution = new TestdataListFactorySortableEntityProvidingSolution();
         var random = new Random(0);

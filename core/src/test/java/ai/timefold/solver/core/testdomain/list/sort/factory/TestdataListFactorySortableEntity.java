@@ -6,12 +6,15 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.common.TestSortableFactory;
+import ai.timefold.solver.core.testdomain.common.TestSortableObject;
+import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity(difficultyWeightFactoryClass = ListSortableEntityFactory.class)
-public class TestdataListFactorySortableEntity extends TestdataObject implements Comparable<TestdataListFactorySortableEntity> {
+@PlanningEntity(difficultyWeightFactoryClass = TestSortableFactory.class)
+public class TestdataListFactorySortableEntity extends TestdataObject implements TestSortableObject {
 
-    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = ListSortableValueFactory.class)
-    private List<TestdataListFactorySortableValue> valueList;
+    @PlanningListVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = TestSortableFactory.class)
+    private List<TestdataSortableValue> valueList;
     private int difficulty;
 
     public TestdataListFactorySortableEntity() {
@@ -23,24 +26,16 @@ public class TestdataListFactorySortableEntity extends TestdataObject implements
         this.valueList = new ArrayList<>();
     }
 
-    public List<TestdataListFactorySortableValue> getValueList() {
+    public List<TestdataSortableValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListFactorySortableValue> valueList) {
+    public void setValueList(List<TestdataSortableValue> valueList) {
         this.valueList = valueList;
     }
 
-    public int getDifficulty() {
-        return difficulty;
-    }
-
-    public void setDifficulty(int difficulty) {
-        this.difficulty = difficulty;
-    }
-
     @Override
-    public int compareTo(TestdataListFactorySortableEntity o) {
-        return difficulty - o.difficulty;
+    public int getComparatorValue() {
+        return difficulty;
     }
 }
