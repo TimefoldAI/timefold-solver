@@ -27,7 +27,7 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
     private final Comparator<Comparable> appliedComparator;
 
     public FactorySelectionSorter(SorterFactory<Solution_, T> selectionSorterFactory,
-                                  SelectionSorterOrder selectionSorterOrder) {
+            SelectionSorterOrder selectionSorterOrder) {
         this.selectionSorterFactory = selectionSorterFactory;
         switch (selectionSorterOrder) {
             case ASCENDING:

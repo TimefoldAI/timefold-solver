@@ -21,7 +21,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
-@Deprecated(forRemoval = true, since = "1.27.0")
+@Deprecated(forRemoval = true, since = "1.28.0")
 public interface SelectionSorterWeightFactory<Solution_, T> extends SorterFactory<Solution_, T> {
 
     Comparable createSorterWeight(Solution_ solution, T selection);

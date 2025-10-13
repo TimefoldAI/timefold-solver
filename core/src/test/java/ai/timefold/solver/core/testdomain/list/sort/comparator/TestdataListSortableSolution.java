@@ -9,9 +9,11 @@ import java.util.stream.IntStream;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
 @PlanningSolution
 public class TestdataListSortableSolution {
@@ -20,7 +22,7 @@ public class TestdataListSortableSolution {
         return SolutionDescriptor.buildSolutionDescriptor(
                 TestdataListSortableSolution.class,
                 TestdataListSortableEntity.class,
-                TestdataListSortableValue.class);
+                TestdataSortableValue.class);
     }
 
     public static TestdataListSortableSolution generateSolution(int valueCount, int entityCount, boolean shuffle) {
@@ -28,7 +30,7 @@ public class TestdataListSortableSolution {
                 .mapToObj(i -> new TestdataListSortableEntity("Generated Entity " + i, i))
                 .toList());
         var valueList = new ArrayList<>(IntStream.range(0, valueCount)
-                .mapToObj(i -> new TestdataListSortableValue("Generated Value " + i, i))
+                .mapToObj(i -> new TestdataSortableValue("Generated Value " + i, i))
                 .toList());
         if (shuffle) {
             var random = new Random(0);
@@ -41,17 +43,17 @@ public class TestdataListSortableSolution {
         return solution;
     }
 
-    private List<TestdataListSortableValue> valueList;
+    private List<TestdataSortableValue> valueList;
     private List<TestdataListSortableEntity> entityList;
     private HardSoftScore score;
 
     @ValueRangeProvider(id = "valueRange")
-    @PlanningEntityCollectionProperty
-    public List<TestdataListSortableValue> getValueList() {
+    @ProblemFactCollectionProperty
+    public List<TestdataSortableValue> getValueList() {
         return valueList;
     }
 
-    public void setValueList(List<TestdataListSortableValue> valueList) {
+    public void setValueList(List<TestdataSortableValue> valueList) {
         this.valueList = valueList;
     }
 

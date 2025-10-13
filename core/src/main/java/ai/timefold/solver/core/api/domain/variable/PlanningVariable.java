@@ -8,6 +8,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
@@ -78,10 +79,28 @@ public @interface PlanningVariable {
      * <p>
      * Do not use together with {@link #strengthWeightFactoryClass()}.
      *
+     * @deprecated Deprecated in favor of {@link #comparatorClass()}.
+     *
      * @return {@link NullStrengthComparator} when it is null (workaround for annotation limitation)
      * @see #strengthWeightFactoryClass()
      */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     Class<? extends Comparator> strengthComparatorClass() default NullStrengthComparator.class;
+
+    /**
+     * Allows sorting a collection of planning values for this variable.
+     * Some algorithms perform better when the values are sorted based on specific metrics.
+     * <p>
+     * The {@link Comparator} should sort the data in ascending order.
+     * For example, prioritize three visits by sorting them based on their importance:
+     * Visit C (SMALL_PRIORITY), Visit A (MEDIUM_PRIORITY), Visit B (HIGH_PRIORITY)
+     * <p>
+     * Do not use together with {@link #comparatorFactoryClass()}.
+     *
+     * @return {@link NullComparator} when it is null (workaround for annotation limitation)
+     * @see #comparatorFactoryClass()
+     */
+    Class<? extends Comparator> comparatorClass() default NullComparator.class;
 
     /** Workaround for annotation limitation in {@link #strengthComparatorClass()}. */
     interface NullStrengthComparator extends NullComparator {
@@ -95,10 +114,23 @@ public @interface PlanningVariable {
      * <p>
      * Do not use together with {@link #strengthComparatorClass()}.
      *
+     * @deprecated Deprecated in favor of {@link #comparatorFactoryClass()}.
+     *
      * @return {@link NullStrengthWeightFactory} when it is null (workaround for annotation limitation)
      * @see #strengthComparatorClass()
      */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     Class<? extends SelectionSorterWeightFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
+
+    /**
+     * The {@link SorterFactory} alternative for {@link #comparatorClass()}.
+     * <p>
+     * Do not use together with {@link #comparatorClass()}.
+     * 
+     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
+     * @see #comparatorClass()
+     */
+    Class<? extends SorterFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
     /** Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}. */
     interface NullStrengthWeightFactory extends NullComparatorFactory {

@@ -1,5 +1,8 @@
 package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
+import java.util.Comparator;
+
+import ai.timefold.solver.core.api.domain.common.SorterFactory;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -41,8 +44,60 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
         processAllowsUnassigned(planningVariableAnnotation);
         processChained(planningVariableAnnotation);
         processValueRangeRefs(descriptorPolicy, planningVariableAnnotation.valueRangeProviderRefs());
-        processSorting("strengthComparatorClass", planningVariableAnnotation.strengthComparatorClass(),
-                "strengthWeightFactoryClass", planningVariableAnnotation.strengthWeightFactoryClass());
+        var sortingProperties = assertSortingProperties(planningVariableAnnotation);
+        processSorting(sortingProperties.comparatorPropertyName(), sortingProperties.comparatorClass(),
+                sortingProperties.comparatorFactoryPropertyName(), sortingProperties.comparatorFactoryClass());
+    }
+
+    private SortingProperties assertSortingProperties(PlanningVariable planningVariableAnnotation) {
+        // Comparator property
+        var strengthComparatorClass = planningVariableAnnotation.strengthComparatorClass();
+        var comparatorClass = planningVariableAnnotation.comparatorClass();
+        if (strengthComparatorClass != null
+                && PlanningVariable.NullComparator.class.isAssignableFrom(strengthComparatorClass)) {
+            strengthComparatorClass = null;
+        }
+        if (comparatorClass != null && PlanningVariable.NullComparator.class.isAssignableFrom(comparatorClass)) {
+            comparatorClass = null;
+        }
+        if (strengthComparatorClass != null && comparatorClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) property (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(
+                            entityDescriptor.getEntityClass(), variableMemberAccessor.getName(), "strengthComparatorClass",
+                            strengthComparatorClass.getName(), "comparatorClass", comparatorClass.getName()));
+        }
+        // Comparator factory property
+        var strengthWeightFactoryClass = planningVariableAnnotation.strengthWeightFactoryClass();
+        var comparatorFactoryClass = planningVariableAnnotation.comparatorFactoryClass();
+        if (strengthWeightFactoryClass != null
+                && PlanningVariable.NullComparatorFactory.class.isAssignableFrom(strengthWeightFactoryClass)) {
+            strengthWeightFactoryClass = null;
+        }
+        if (comparatorFactoryClass != null
+                && PlanningVariable.NullComparatorFactory.class.isAssignableFrom(comparatorFactoryClass)) {
+            comparatorFactoryClass = null;
+        }
+        if (strengthWeightFactoryClass != null && comparatorFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) property (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(
+                            entityDescriptor.getEntityClass(), variableMemberAccessor.getName(), "strengthWeightFactoryClass",
+                            strengthWeightFactoryClass.getName(), "comparatorFactoryClass", comparatorFactoryClass.getName()));
+        }
+        // Final properties
+        var comparatorPropertyName = "comparatorClass";
+        var comparatorPropertyClass = comparatorClass;
+        var factoryPropertyName = "comparatorFactoryClass";
+        var factoryPropertyClass = comparatorFactoryClass;
+        if (strengthComparatorClass != null) {
+            comparatorPropertyName = "strengthComparatorClass";
+            comparatorPropertyClass = strengthComparatorClass;
+        }
+        if (strengthWeightFactoryClass != null) {
+            factoryPropertyName = "strengthWeightFactoryClass";
+            factoryPropertyClass = strengthWeightFactoryClass;
+        }
+        return new SortingProperties(comparatorPropertyName, comparatorPropertyClass, factoryPropertyName,
+                factoryPropertyClass);
     }
 
     private void processAllowsUnassigned(PlanningVariable planningVariableAnnotation) {
@@ -128,6 +183,11 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
 
     public SelectionFilter<Solution_, Object> getMovableChainedTrailingValueFilter() {
         return movableChainedTrailingValueFilter;
+    }
+
+    private record SortingProperties(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,
+            String comparatorFactoryPropertyName, Class<? extends SorterFactory> comparatorFactoryClass) {
+
     }
 
 }
