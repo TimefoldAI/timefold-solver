@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.impl.neighborhood.maybeapi.move;
+package ai.timefold.solver.core.impl.neighborhood.move;
 
 import java.util.List;
 
@@ -17,7 +17,7 @@ import ai.timefold.solver.core.preview.api.move.Move;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-abstract class AbstractMove<Solution_> implements Move<Solution_> {
+public abstract class AbstractMove<Solution_> implements Move<Solution_> {
 
     private static final char OPENING_PARENTHESES = '(';
     private static final char CLOSING_PARENTHESES = ')';
