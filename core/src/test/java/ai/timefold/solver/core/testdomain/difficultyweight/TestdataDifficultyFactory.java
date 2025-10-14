@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.testdomain.difficultyweight;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 
 public class TestdataDifficultyFactory implements
-        SorterFactory<TestdataDifficultyWeightSolution, TestdataDifficultyWeightEntity> {
+        ComparatorFactory<TestdataDifficultyWeightSolution, TestdataDifficultyWeightEntity> {
 
     @Override
     public TestdataDifficultyWeightComparable createSorter(TestdataDifficultyWeightSolution solution,

@@ -7,7 +7,7 @@ import java.util.function.Consumer;
 import jakarta.xml.bind.annotation.XmlSeeAlso;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -82,7 +82,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     protected Class<? extends SelectionFilter> filterClass = null;
 
     protected Class<? extends Comparator> sorterComparatorClass = null;
-    protected Class<? extends SorterFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -128,11 +128,11 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public @Nullable Class<? extends SorterFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
@@ -202,7 +202,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     public @NonNull Config_ withSorterWeightFactoryClass(
-            @NonNull Class<? extends SorterFactory> sorterWeightFactoryClass) {
+            @NonNull Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
         return (Config_) this;
     }

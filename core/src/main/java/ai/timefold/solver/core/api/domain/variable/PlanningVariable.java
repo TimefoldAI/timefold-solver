@@ -8,11 +8,10 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 /**
  * Specifies that a bean property (or a field) can be changed and should be optimized by the optimization algorithms.
@@ -110,7 +109,7 @@ public @interface PlanningVariable {
     }
 
     /**
-     * The {@link SelectionSorterWeightFactory} alternative for {@link #strengthComparatorClass()}.
+     * The {@link ComparatorFactory} alternative for {@link #strengthComparatorClass()}.
      * <p>
      * Do not use together with {@link #strengthComparatorClass()}.
      *
@@ -120,23 +119,23 @@ public @interface PlanningVariable {
      * @see #strengthComparatorClass()
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    Class<? extends SelectionSorterWeightFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
+    Class<? extends ComparatorFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
 
     /**
-     * The {@link SorterFactory} alternative for {@link #comparatorClass()}.
+     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
      * <p>
      * Do not use together with {@link #comparatorClass()}.
      * 
      * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
      * @see #comparatorClass()
      */
-    Class<? extends SorterFactory> comparatorFactoryClass() default NullComparatorFactory.class;
+    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
     /** Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}. */
     interface NullStrengthWeightFactory extends NullComparatorFactory {
     }
 
-    interface NullComparatorFactory<Solution_, T> extends SelectionSorterWeightFactory<Solution_, T> {
+    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
     }
 
 }

@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
@@ -16,13 +16,13 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  * Implementations are expected to be stateless.
  * The solver may choose to reuse instances.
  *
- * @deprecated Deprecated in favor of {@link SorterFactory}.
+ * @deprecated Deprecated in favor of {@link ComparatorFactory}.
  * 
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
 @Deprecated(forRemoval = true, since = "1.28.0")
-public interface SelectionSorterWeightFactory<Solution_, T> extends SorterFactory<Solution_, T> {
+public interface SelectionSorterWeightFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
 
     Comparable createSorterWeight(Solution_ solution, T selection);
 

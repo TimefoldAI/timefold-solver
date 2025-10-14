@@ -77,10 +77,14 @@ import ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator.Testdata
 import ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator.TestdataInvalidMixedComparatorSortableSolution;
 import ai.timefold.solver.core.testdomain.sort.invalid.mixed.strength.TestdataInvalidMixedStrengthSortableEntity;
 import ai.timefold.solver.core.testdomain.sort.invalid.mixed.strength.TestdataInvalidMixedStrengthSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.TestdataInvalidTwoComparatorSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.TestdataInvalidTwoComparatorSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.TestdataInvalidTwoFactorySortableEntity;
-import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.TestdataInvalidTwoFactorySortableSolution;
+import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.entity.TestdataInvalidTwoEntityComparatorSortableEntity;
+import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.entity.TestdataInvalidTwoEntityComparatorSortableSolution;
+import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.value.TestdataInvalidTwoValueComparatorSortableEntity;
+import ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.value.TestdataInvalidTwoValueComparatorSortableSolution;
+import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.entity.TestdataInvalidTwoEntityFactorySortableEntity;
+import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.entity.TestdataInvalidTwoEntityFactorySortableSolution;
+import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.value.TestdataInvalidTwoValueFactorySortableEntity;
+import ai.timefold.solver.core.testdomain.sort.invalid.twofactory.value.TestdataInvalidTwoValueFactorySortableSolution;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedSolution;
@@ -438,8 +442,32 @@ class DefaultConstructionHeuristicPhaseTest {
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING)
+                        .withValueSorterManner(ValueSorterManner.DESCENDING)
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // Since we are starting from decreasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
                         .withEntitySorterManner(EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE)
                         .withValueSorterManner(ValueSorterManner.DECREASING_STRENGTH_IF_AVAILABLE)
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING_IF_AVAILABLE)
+                        .withValueSorterManner(ValueSorterManner.DESCENDING_IF_AVAILABLE)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[1], e2[2], and e3[3]
@@ -460,8 +488,30 @@ class DefaultConstructionHeuristicPhaseTest {
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
+                        .withEntitySorterManner(EntitySorterManner.NONE)
+                        .withValueSorterManner(ValueSorterManner.DESCENDING)
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[3], e2[2], and e3[1]
+                new int[] { 2, 1, 0 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
                         .withEntitySorterManner(EntitySorterManner.DECREASING_DIFFICULTY)
                         .withValueSorterManner(ValueSorterManner.INCREASING_STRENGTH)
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[3], e2[2], and e3[1]
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING)
+                        .withValueSorterManner(ValueSorterManner.ASCENDING)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[3], e2[2], and e3[1]
@@ -482,8 +532,30 @@ class DefaultConstructionHeuristicPhaseTest {
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
                         .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
+                        .withEntitySorterManner(EntitySorterManner.DESCENDING_IF_AVAILABLE)
+                        .withValueSorterManner(ValueSorterManner.ASCENDING_IF_AVAILABLE)
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[3], e2[2], and e3[1]
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
                         .withEntitySorterManner(EntitySorterManner.NONE)
                         .withValueSorterManner(ValueSorterManner.INCREASING_STRENGTH)
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 0, 1, 2 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withConstructionHeuristicType(ConstructionHeuristicType.ALLOCATE_TO_VALUE_FROM_QUEUE)
+                        .withEntitySorterManner(EntitySorterManner.NONE)
+                        .withValueSorterManner(ValueSorterManner.ASCENDING)
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // this is expected: e1[1], e2[2], and e3[3]
@@ -546,6 +618,30 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedEntitySelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(EntitySorterManner.DESCENDING))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(entityDestinationCacheType)
+                                                        .withSorterManner(ValueSorterManner.DESCENDING))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // Since we are starting from decreasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                        .withId("sortedEntitySelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
                                         .withSorterManner(EntitySorterManner.DECREASING_DIFFICULTY))
                                 .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
                                         .withEntitySelectorConfig(
@@ -555,6 +651,30 @@ class DefaultConstructionHeuristicPhaseTest {
                                                         .withSelectionOrder(SelectionOrder.SORTED)
                                                         .withCacheType(entityDestinationCacheType)
                                                         .withSorterManner(ValueSorterManner.INCREASING_STRENGTH))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // Since we are starting from increasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[3], e2[2], and e3[1]
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                        .withId("sortedEntitySelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(EntitySorterManner.DESCENDING))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(entityDestinationCacheType)
+                                                        .withSorterManner(ValueSorterManner.ASCENDING))))
                         .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
                                 ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
                 // Since we are starting from increasing strength
@@ -810,6 +930,31 @@ class DefaultConstructionHeuristicPhaseTest {
                 new int[] { 0, 1, 2 },
                 // Both are sorted and the expected result won't be affected
                 true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                        .withId("sortedValueSelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(ValueSorterManner.DESCENDING))
+                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
+                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                .withValueSelectorConfig(new ValueSelectorConfig())
+                                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(entityDestinationCacheType)
+                                                        .withSorterManner(EntitySorterManner.DESCENDING)))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // Since we are starting from decreasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
         var nonSortedEntityConfig = new EntitySelectorConfig();
         var isPhaseScope = entityDestinationCacheType == SelectionCacheType.PHASE;
         if (isPhaseScope) {
@@ -828,6 +973,27 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
                                         .withSorterManner(ValueSorterManner.DECREASING_STRENGTH))
+                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
+                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                .withValueSelectorConfig(new ValueSelectorConfig())
+                                                .withEntitySelectorConfig(nonSortedEntityConfig))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[3], e2[2], and e3[1]
+                // The step scope will apply the default entity sort manner
+                isPhaseScope ? new int[] { 2, 1, 0 } : new int[] { 0, 1, 2 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                        .withId("sortedValueSelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(ValueSorterManner.DESCENDING))
                                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
@@ -871,7 +1037,51 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withId("sortedValueSelector")
                                         .withSelectionOrder(SelectionOrder.SORTED)
                                         .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(ValueSorterManner.ASCENDING))
+                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
+                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                .withValueSelectorConfig(new ValueSelectorConfig())
+                                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(entityDestinationCacheType)
+                                                        .withSorterManner(EntitySorterManner.DESCENDING)))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[3], e2[2], and e3[1]
+                new int[] { 2, 1, 0 },
+                // Both are sorted and the expected result won't be affected
+                true));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                        .withId("sortedValueSelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
                                         .withSorterManner(ValueSorterManner.INCREASING_STRENGTH))
+                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
+                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                .withValueSelectorConfig(new ValueSelectorConfig())
+                                                .withEntitySelectorConfig(nonSortedEntityConfig))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // this is expected: e1[1], e2[2], and e3[3]
+                // The step scope will apply the default entity sort manner
+                isPhaseScope ? new int[] { 0, 1, 2 } : new int[] { 2, 1, 0 },
+                // Only the values are sorted, and shuffling the entities will alter the expected result
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                        .withId("sortedValueSelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(ValueSorterManner.ASCENDING))
                                 .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
@@ -1039,6 +1249,34 @@ class DefaultConstructionHeuristicPhaseTest {
         assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
                 .hasMessageContaining("resolvedSelectionOrder (SORTED) which does not support the resolvedCacheType (PHASE)")
                 .hasMessageContaining("Maybe set the \"cacheType\" to STEP.");
+
+        var solverConfig2 =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataListSortableEntityProvidingSolution.class,
+                                TestdataListSortableEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(ListOneValuePerEntityRangeEasyScoreCalculator.class)
+                        .withPhases(
+                                new ConstructionHeuristicPhaseConfig()
+                                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                                        .withId("sortedValueSelector")
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                        .withSorterManner(ValueSorterManner.DESCENDING))
+                                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                                                        .withValueSelectorConfig(
+                                                                new ValueSelectorConfig()
+                                                                        .withMimicSelectorRef("sortedValueSelector"))
+                                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                                .withValueSelectorConfig(new ValueSelectorConfig())
+                                                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                                        .withCacheType(SelectionCacheType.PHASE)
+                                                                        .withSorterManner(
+                                                                                EntitySorterManner.DESCENDING))))));
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig2, solution))
+                .hasMessageContaining("resolvedSelectionOrder (SORTED) which does not support the resolvedCacheType (PHASE)")
+                .hasMessageContaining("Maybe set the \"cacheType\" to STEP.");
     }
 
     @Test
@@ -1093,35 +1331,70 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @Test
     void failConstructionHeuristicBothProperties() {
-        // Two comparator properties
-        var solverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataInvalidTwoComparatorSortableSolution.class,
-                                TestdataInvalidTwoComparatorSortableEntity.class)
-                        .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-        var solution = new TestdataInvalidTwoComparatorSortableSolution();
-        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
-                .hasMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.TestdataInvalidTwoComparatorSortableEntity) property (value)")
-                .hasMessageContaining(
-                        "cannot have a strengthComparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
-                .hasMessageContaining(
-                        "nd a comparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator) at the same time.");
+        // Value
+        {
+            // Two comparator properties
+            var solverConfig =
+                    PlannerTestUtils
+                            .buildSolverConfig(TestdataInvalidTwoValueComparatorSortableSolution.class,
+                                    TestdataInvalidTwoValueComparatorSortableEntity.class)
+                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
+            var solution = new TestdataInvalidTwoValueComparatorSortableSolution();
+            assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
+                    .hasMessageContaining(
+                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.value.TestdataInvalidTwoValueComparatorSortableEntity) property (value)")
+                    .hasMessageContaining(
+                            "cannot have a strengthComparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
+                    .hasMessageContaining(
+                            "and a comparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator) at the same time.");
 
-        // Comparator and Factory properties
-        var otherSolverConfig =
-                PlannerTestUtils
-                        .buildSolverConfig(TestdataInvalidTwoFactorySortableSolution.class,
-                                TestdataInvalidTwoFactorySortableEntity.class)
-                        .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
-        var otherSolution = new TestdataInvalidTwoFactorySortableSolution();
-        assertThatCode(() -> PlannerTestUtils.solve(otherSolverConfig, otherSolution))
-                .hasMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twofactory.TestdataInvalidTwoFactorySortableEntity) property (value)")
-                .hasMessageContaining(
-                        "cannot have a strengthWeightFactoryClass (ai.timefold.solver.core.testdomain.common.DummyWeightValueFactory)")
-                .hasMessageContaining(
-                        "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
+            // Comparator and Factory properties
+            var otherSolverConfig =
+                    PlannerTestUtils
+                            .buildSolverConfig(TestdataInvalidTwoValueFactorySortableSolution.class,
+                                    TestdataInvalidTwoValueFactorySortableEntity.class)
+                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
+            var otherSolution = new TestdataInvalidTwoValueFactorySortableSolution();
+            assertThatCode(() -> PlannerTestUtils.solve(otherSolverConfig, otherSolution))
+                    .hasMessageContaining(
+                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twofactory.value.TestdataInvalidTwoValueFactorySortableEntity) property (value)")
+                    .hasMessageContaining(
+                            "cannot have a strengthWeightFactoryClass (ai.timefold.solver.core.testdomain.common.DummyWeightValueFactory)")
+                    .hasMessageContaining(
+                            "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
+        }
+        // Entity
+        {
+            // Two comparator properties
+            var solverConfig =
+                    PlannerTestUtils
+                            .buildSolverConfig(TestdataInvalidTwoEntityComparatorSortableSolution.class,
+                                    TestdataInvalidTwoEntityComparatorSortableEntity.class)
+                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
+            var solution = new TestdataInvalidTwoEntityComparatorSortableSolution();
+            assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
+                    .hasMessageContaining(
+                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.entity.TestdataInvalidTwoEntityComparatorSortableEntity)")
+                    .hasMessageContaining(
+                            "cannot have a difficultyComparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator)")
+                    .hasMessageContaining(
+                            "and a comparatorClass (ai.timefold.solver.core.testdomain.common.DummyValueComparator) at the same time.");
+
+            // Comparator and Factory properties
+            var otherSolverConfig =
+                    PlannerTestUtils
+                            .buildSolverConfig(TestdataInvalidTwoEntityFactorySortableSolution.class,
+                                    TestdataInvalidTwoEntityFactorySortableEntity.class)
+                            .withEasyScoreCalculatorClass(DummyHardSoftEasyScoreCalculator.class);
+            var otherSolution = new TestdataInvalidTwoEntityFactorySortableSolution();
+            assertThatCode(() -> PlannerTestUtils.solve(otherSolverConfig, otherSolution))
+                    .hasMessageContaining(
+                            "The entityClass (class ai.timefold.solver.core.testdomain.sort.invalid.twofactory.entity.TestdataInvalidTwoEntityFactorySortableEntity)")
+                    .hasMessageContaining(
+                            "cannot have a difficultyWeightFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory)")
+                    .hasMessageContaining(
+                            "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
+        }
     }
 
     @Test

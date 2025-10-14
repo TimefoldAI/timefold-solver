@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -83,21 +83,22 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
                             entityDescriptor.getEntityClass(), variableMemberAccessor.getName(), "strengthWeightFactoryClass",
                             strengthWeightFactoryClass.getName(), "comparatorFactoryClass", comparatorFactoryClass.getName()));
         }
-        // Final properties
-        var comparatorPropertyName = "comparatorClass";
-        var comparatorPropertyClass = comparatorClass;
-        var factoryPropertyName = "comparatorFactoryClass";
-        var factoryPropertyClass = comparatorFactoryClass;
+        // Selected settings
+        var selectedComparatorPropertyName = "comparatorClass";
+        var selectedComparatorClass = comparatorClass;
+        var selectedComparatorFactoryPropertyName = "comparatorFactoryClass";
+        var selectedComparatorFactoryClass = comparatorFactoryClass;
         if (strengthComparatorClass != null) {
-            comparatorPropertyName = "strengthComparatorClass";
-            comparatorPropertyClass = strengthComparatorClass;
+            selectedComparatorPropertyName = "strengthComparatorClass";
+            selectedComparatorClass = strengthComparatorClass;
         }
         if (strengthWeightFactoryClass != null) {
-            factoryPropertyName = "strengthWeightFactoryClass";
-            factoryPropertyClass = strengthWeightFactoryClass;
+            selectedComparatorFactoryPropertyName = "strengthWeightFactoryClass";
+            selectedComparatorFactoryClass = strengthWeightFactoryClass;
         }
-        return new SortingProperties(comparatorPropertyName, comparatorPropertyClass, factoryPropertyName,
-                factoryPropertyClass);
+        return new SortingProperties(selectedComparatorPropertyName, selectedComparatorClass,
+                selectedComparatorFactoryPropertyName,
+                selectedComparatorFactoryClass);
     }
 
     private void processAllowsUnassigned(PlanningVariable planningVariableAnnotation) {
@@ -186,7 +187,7 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     }
 
     private record SortingProperties(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,
-            String comparatorFactoryPropertyName, Class<? extends SorterFactory> comparatorFactoryClass) {
+            String comparatorFactoryPropertyName, Class<? extends ComparatorFactory> comparatorFactoryClass) {
 
     }
 

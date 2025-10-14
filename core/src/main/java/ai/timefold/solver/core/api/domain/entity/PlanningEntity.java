@@ -7,7 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
@@ -69,27 +69,64 @@ public @interface PlanningEntity {
      * <p>
      * Do not use together with {@link #difficultyWeightFactoryClass()}.
      *
+     * @deprecated Deprecated in favor of {@link #comparatorClass()}.
+     *
      * @return {@link NullDifficultyComparator} when it is null (workaround for annotation limitation)
      * @see #difficultyWeightFactoryClass()
      */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     Class<? extends Comparator> difficultyComparatorClass() default NullDifficultyComparator.class;
 
+    /**
+     * Allows sorting a collection of planning entities for this variable.
+     * Some algorithms perform better when the entities are sorted based on specific metrics.
+     * <p>
+     * The {@link Comparator} should sort the data in ascending order.
+     * For example, prioritize three vehicles by sorting them based on their capacity:
+     * Vehicle C (4 people), Vehicle A (6 people), Vehicle B (32 people)
+     * <p>
+     * Do not use together with {@link #comparatorFactoryClass()}.
+     *
+     * @return {@link PlanningVariable.NullComparator} when it is null (workaround for annotation limitation)
+     * @see #comparatorFactoryClass()
+     */
+    Class<? extends Comparator> comparatorClass() default NullComparator.class;
+
     /** Workaround for annotation limitation in {@link #difficultyComparatorClass()}. */
-    interface NullDifficultyComparator extends Comparator {
+    interface NullDifficultyComparator extends NullComparator {
+    }
+
+    interface NullComparator extends Comparator {
     }
 
     /**
-     * The {@link SorterFactory} alternative for {@link #difficultyComparatorClass()}.
+     * The {@link ComparatorFactory} alternative for {@link #difficultyComparatorClass()}.
      * <p>
      * Do not use together with {@link #difficultyComparatorClass()}.
+     *
+     * @deprecated Deprecated in favor of {@link #comparatorFactoryClass()}.
      *
      * @return {@link NullDifficultyWeightFactory} when it is null (workaround for annotation limitation)
      * @see #difficultyComparatorClass()
      */
-    Class<? extends SorterFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    Class<? extends ComparatorFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
+
+    /**
+     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
+     * <p>
+     * Do not use together with {@link #comparatorClass()}.
+     *
+     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
+     * @see #comparatorClass()
+     */
+    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
     /** Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}. */
-    interface NullDifficultyWeightFactory<Solution_, T> extends SorterFactory<Solution_, T> {
+    interface NullDifficultyWeightFactory extends NullComparatorFactory {
+    }
+
+    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
     }
 
 }

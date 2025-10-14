@@ -7,7 +7,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -63,7 +63,7 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
 
     protected EntitySorterManner sorterManner = null;
     protected Class<? extends Comparator> sorterComparatorClass = null;
-    protected Class<? extends SorterFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -156,11 +156,11 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public @Nullable Class<? extends SorterFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
@@ -247,7 +247,7 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
     }
 
     public @NonNull EntitySelectorConfig
-            withSorterWeightFactoryClass(@NonNull Class<? extends SorterFactory> weightFactoryClass) {
+            withSorterWeightFactoryClass(@NonNull Class<? extends ComparatorFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }
@@ -331,38 +331,29 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
 
     public static <Solution_> boolean hasSorter(@NonNull EntitySorterManner entitySorterManner,
             @NonNull EntityDescriptor<Solution_> entityDescriptor) {
-        switch (entitySorterManner) {
-            case NONE:
-                return false;
-            case DECREASING_DIFFICULTY:
-                return true;
-            case DECREASING_DIFFICULTY_IF_AVAILABLE:
-                return entityDescriptor.getDecreasingDifficultySorter() != null;
-            default:
-                throw new IllegalStateException("The sorterManner ("
-                        + entitySorterManner + ") is not implemented.");
-        }
+        return switch (entitySorterManner) {
+            case NONE -> false;
+            case DECREASING_DIFFICULTY, DESCENDING -> true;
+            case DECREASING_DIFFICULTY_IF_AVAILABLE, DESCENDING_IF_AVAILABLE ->
+                entityDescriptor.getDescendingSorter() != null;
+        };
     }
 
     public static <Solution_, T> @NonNull SelectionSorter<Solution_, T> determineSorter(
             @NonNull EntitySorterManner entitySorterManner, @NonNull EntityDescriptor<Solution_> entityDescriptor) {
-        SelectionSorter<Solution_, T> sorter;
-        switch (entitySorterManner) {
+        return switch (entitySorterManner) {
             case NONE:
                 throw new IllegalStateException("Impossible state: hasSorter() should have returned null.");
-            case DECREASING_DIFFICULTY, DECREASING_DIFFICULTY_IF_AVAILABLE:
-                sorter = (SelectionSorter<Solution_, T>) entityDescriptor.getDecreasingDifficultySorter();
+            case DECREASING_DIFFICULTY, DECREASING_DIFFICULTY_IF_AVAILABLE, DESCENDING, DESCENDING_IF_AVAILABLE:
+                var sorter = (SelectionSorter<Solution_, T>) entityDescriptor.getDescendingSorter();
                 if (sorter == null) {
-                    throw new IllegalArgumentException("The sorterManner (" + entitySorterManner
-                            + ") on entity class (" + entityDescriptor.getEntityClass()
-                            + ") fails because that entity class's @" + PlanningEntity.class.getSimpleName()
-                            + " annotation does not declare any difficulty comparison.");
+                    throw new IllegalArgumentException(
+                            "The sorterManner (%s) on entity class (%s) fails because that entity class's @%s annotation does not declare any difficulty comparison."
+                                    .formatted(entitySorterManner, entityDescriptor.getEntityClass(),
+                                            PlanningEntity.class.getSimpleName()));
                 }
-                return sorter;
-            default:
-                throw new IllegalStateException("The sorterManner ("
-                        + entitySorterManner + ") is not implemented.");
-        }
+                yield sorter;
+        };
     }
 
     @Override

@@ -41,8 +41,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
         var hasSortManner = configPolicy.getEntitySorterManner() != null
                 && configPolicy.getEntitySorterManner() != NONE;
         var entityDescriptor = deduceEntityDescriptor(configPolicy, entitySelectorConfig.getEntityClass());
-        var hasDifficultySorter = entityDescriptor.getDecreasingDifficultySorter() != null;
-        if (hasSortManner && hasDifficultySorter && entitySelectorConfig.getSorterManner() == null) {
+        var hasSorter = entityDescriptor.getDescendingSorter() != null;
+        if (hasSortManner && hasSorter && entitySelectorConfig.getSorterManner() == null) {
             if (entityValueRangeRecorderId == null) {
                 // Solution-range model
                 entitySelectorConfig.setCacheType(SelectionCacheType.PHASE);
