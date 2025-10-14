@@ -42,7 +42,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.constraints.ea
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.constraints.incremental.DummyChainedSpringIncrementalScore;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.easy.DummySpringEasyScore;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.incremental.DummySpringIncrementalScore;
-import ai.timefold.solver.spring.boot.autoconfigure.gizmo.GizmoSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
@@ -57,7 +56,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpring
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import org.assertj.core.api.AssertionsForClassTypes;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -94,12 +92,10 @@ class TimefoldSolverAutoConfigurationTest {
     private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner supplierVariableContextRunner;
     private final ApplicationContextRunner missingSupplierVariableContextRunner;
-    private final ApplicationContextRunner gizmoContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
     private final ApplicationContextRunner multiConstraintProviderRunner;
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
     private final FilteredClassLoader testFilteredClassLoader;
-    private final FilteredClassLoader noGizmoFilteredClassLoader;
 
     public TimefoldSolverAutoConfigurationTest() {
         contextRunner = new ApplicationContextRunner()
@@ -122,10 +118,6 @@ class TimefoldSolverAutoConfigurationTest {
                 .withUserConfiguration(NormalSpringTestConfiguration.class)
                 .withPropertyValues("timefold.solver.%s=false"
                         .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
-        gizmoContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(GizmoSpringTestConfiguration.class);
         chainedContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -152,9 +144,6 @@ class TimefoldSolverAutoConfigurationTest {
                                 .of(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
         testFilteredClassLoader =
                 new FilteredClassLoader(new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL));
-        noGizmoFilteredClassLoader = new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("io.quarkus.gizmo"),
-                FilteredClassLoader.ClassPathResourceFilter.of(
-                        new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
         noUserConfigurationContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class));
@@ -325,13 +314,6 @@ class TimefoldSolverAutoConfigurationTest {
                 .run(context -> {
                     var solverConfig = context.getBean(SolverConfig.class);
                     assertThat(solverConfig.getEnvironmentMode()).isEqualTo(EnvironmentMode.FULL_ASSERT);
-                    assertThat(context.getBean(SolverFactory.class)).isNotNull();
-                });
-        gizmoContextRunner
-                .withPropertyValues("timefold.solver.domain-access-type=GIZMO")
-                .run(context -> {
-                    var solverConfig = context.getBean(SolverConfig.class);
-                    assertThat(solverConfig.getDomainAccessType()).isEqualTo(DomainAccessType.GIZMO);
                     assertThat(context.getBean(SolverFactory.class)).isNotNull();
                 });
         contextRunner
@@ -727,21 +709,6 @@ class TimefoldSolverAutoConfigurationTest {
                     assertThat(solverFactory).isNotNull();
                     assertThat(solverFactory.buildSolver()).isNotNull();
                 });
-    }
-
-    @Test
-    @Disabled("Test works when run by itself, but errors when run in suite;" +
-            " it appears it still find the class when run in a suite, but not alone.")
-    void gizmo_throws_if_gizmo_not_present() {
-        assertThatCode(() -> gizmoContextRunner
-                .withClassLoader(noGizmoFilteredClassLoader)
-                .withPropertyValues(
-                        "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/gizmoSpringBootSolverConfig.xml")
-                .run(context -> context.getBean(SolverFactory.class)))
-                .hasRootCauseMessage("When using the domainAccessType (" +
-                        DomainAccessType.GIZMO +
-                        ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo.\n" +
-                        "Maybe add a dependency to io.quarkus.gizmo:gizmo.");
     }
 
     @Test
