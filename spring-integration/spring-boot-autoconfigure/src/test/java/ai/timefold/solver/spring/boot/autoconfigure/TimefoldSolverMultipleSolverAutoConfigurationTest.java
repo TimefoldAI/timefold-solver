@@ -7,7 +7,6 @@ import java.time.Duration;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolutionManager;
@@ -32,7 +31,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.constraints.ea
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.chained.constraints.incremental.DummyChainedSpringIncrementalScore;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.easy.DummySpringEasyScore;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.incremental.DummySpringIncrementalScore;
-import ai.timefold.solver.spring.boot.autoconfigure.gizmo.GizmoSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.entity.InvalidEntitySpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.type.InvalidEntityTypeSpringTestConfiguration;
@@ -62,9 +60,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner emptyContextRunner;
     private final ApplicationContextRunner noUserConfigurationContextRunner;
-    private final ApplicationContextRunner benchmarkContextRunner;
     private final ApplicationContextRunner chainedContextRunner;
-    private final ApplicationContextRunner gizmoContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
 
@@ -77,15 +73,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(EmptySpringTestConfiguration.class);
-        benchmarkContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class,
-                                TimefoldBenchmarkAutoConfiguration.class))
-                .withUserConfiguration(NormalSpringTestConfiguration.class);
-        gizmoContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
-                .withUserConfiguration(GizmoSpringTestConfiguration.class);
         chainedContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -216,17 +203,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
         contextRunner
                 .withPropertyValues("timefold.solver.solver1.environment-mode=FULL_ASSERT")
                 .withPropertyValues("timefold.solver.solver2.environment-mode=TRACKED_FULL_ASSERT")
-                .run(context -> {
-                    var solver1 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
-                    var solver2 =
-                            (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver2");
-                    assertThat(solver1).isNotNull();
-                    assertThat(solver2).isNotNull();
-                });
-        gizmoContextRunner
-                .withPropertyValues("timefold.solver.solver1.domain-access-type=GIZMO")
-                .withPropertyValues("timefold.solver.solver2.domain-access-type=REFLECTION")
                 .run(context -> {
                     var solver1 =
                             (SolverManager<TestdataSpringSolution, Long>) context.getBean("solver1");
@@ -475,15 +451,6 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                 .run(context -> context.getBean(ConstraintVerifier.class)))
                 .hasMessageContaining(
                         "No qualifying bean of type 'ai.timefold.solver.core.api.score.stream.ConstraintProvider' available");
-        assertThatCode(() -> benchmarkContextRunner
-                .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
-                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
-                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
-                .run(context -> context.getBean(PlannerBenchmarkFactory.class)))
-                .hasRootCauseMessage("""
-                        When defining multiple solvers, the benchmark feature is not enabled.
-                        Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");
     }
 
     @Test

@@ -91,10 +91,30 @@ jobs:
           java-version: 25 # Latest LTS
           distribution: 'temurin'
           cache: 'maven'
-      - name: Set Spring Boot version
+
+      # Reading the latest Spring Boot version from Maven Central often fails.
+      # Since this information rarely changes, we can cache it, preventing CI failures.
+      - name: Cache Spring Boot version
+        id: cache-spring-boot-version
+        uses: actions/cache@v4
+        with:
+          path: spring-boot-version
+          key: spring-boot-version-${{ matrix.spring-version }}
+      - name: Get Spring Boot version if not cached
+        if: steps.cache-spring-boot-version.outputs.cache-hit != 'true'
+        run: | 
+          echo "$(curl -s 'https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter+AND+v:${{ matrix.spring-version }}.*' | jq -r '.response.docs[0].v')" >> spring-boot-version
+          if [ "$(head -n 1 spring-boot-version | cut -c1-3)" = "${{ matrix.spring-version }}" ]; then
+            exit 0
+          else
+            exit 1
+          fi
+      - name: Set Spring Boot version in Maven
         run: |
-          SPRING_VERSION="$(curl -s 'https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter+AND+v:${{ matrix.spring-version }}.*' | jq -r '.response.docs[0].v')"
+          SPRING_VERSION=$(cat spring-boot-version)
+          echo "Using Spring Boot version $SPRING_VERSION"
           ./mvnw versions:set-property -Dproperty=version.org.springframework.boot -DnewVersion=$SPRING_VERSION
+
       - name: Quickly build timefold-solver
         run: ./mvnw -B -Dquickly clean install
       - name: Test Spring Boot
