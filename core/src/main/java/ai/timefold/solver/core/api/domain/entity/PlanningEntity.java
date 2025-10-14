@@ -93,10 +93,10 @@ public @interface PlanningEntity {
     Class<? extends Comparator> comparatorClass() default NullComparator.class;
 
     /** Workaround for annotation limitation in {@link #difficultyComparatorClass()}. */
-    interface NullDifficultyComparator extends NullComparator {
+    interface NullDifficultyComparator<T> extends NullComparator<T> {
     }
 
-    interface NullComparator extends Comparator {
+    interface NullComparator<T> extends Comparator<T> {
     }
 
     /**
@@ -123,7 +123,7 @@ public @interface PlanningEntity {
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
     /** Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}. */
-    interface NullDifficultyWeightFactory extends NullComparatorFactory {
+    interface NullDifficultyWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
     }
 
     interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {

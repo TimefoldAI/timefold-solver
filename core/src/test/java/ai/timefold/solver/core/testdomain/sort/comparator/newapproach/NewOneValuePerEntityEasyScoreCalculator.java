@@ -1,11 +1,9 @@
-package ai.timefold.solver.core.testdomain.sort.comparator;
+package ai.timefold.solver.core.testdomain.sort.comparator.newapproach;
 
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.TestdataNewSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.TestdataNewSortableSolution;
 
 import org.jspecify.annotations.NonNull;
 

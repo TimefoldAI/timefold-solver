@@ -53,10 +53,10 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
      *        of {@link PlanningEntity}, planningValue, {@link Move} or {@link Selector}
      */
     public void sort(Solution_ solution, List<T> selectionList) {
-        SortedMap<Comparable, T> selectionMap = new TreeMap<>(appliedComparator);
-        for (T selection : selectionList) {
-            Comparable difficultyWeight = selectionComparatorFactory.createSorter(solution, selection);
-            T previous = selectionMap.put(difficultyWeight, selection);
+        SortedMap<Comparable<?>, T> selectionMap = new TreeMap<>(appliedComparator);
+        for (var selection : selectionList) {
+            var difficultyWeight = selectionComparatorFactory.createSorter(solution, selection);
+            var previous = selectionMap.put(difficultyWeight, selection);
             if (previous != null) {
                 throw new IllegalStateException("The selectionList contains 2 times the same selection ("
                         + previous + ") and (" + selection + ").");
@@ -72,7 +72,7 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
             return true;
         if (other == null || getClass() != other.getClass())
             return false;
-        FactorySelectionSorter<?, ?> that = (FactorySelectionSorter<?, ?>) other;
+        var that = (FactorySelectionSorter<?, ?>) other;
         return Objects.equals(selectionComparatorFactory, that.selectionComparatorFactory)
                 && Objects.equals(appliedComparator, that.appliedComparator);
     }
