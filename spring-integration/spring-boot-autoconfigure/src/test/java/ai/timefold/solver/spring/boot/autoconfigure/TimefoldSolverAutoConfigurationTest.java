@@ -1,18 +1,5 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.time.Duration;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.IntStream;
-
-import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.ScoreManager;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
@@ -69,7 +56,6 @@ import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataS
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringEntity;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.domain.TestdataSpringSolution;
 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
-
 import org.assertj.core.api.AssertionsForClassTypes;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -84,6 +70,18 @@ import org.springframework.core.NativeDetector;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.TestExecutionListeners;
 
+import java.time.Duration;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.IntStream;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
 @TestExecutionListeners
 @Execution(ExecutionMode.CONCURRENT)
 class TimefoldSolverAutoConfigurationTest {
@@ -92,7 +90,6 @@ class TimefoldSolverAutoConfigurationTest {
     private final ApplicationContextRunner emptyContextRunner;
     private final ApplicationContextRunner fakeNativeWithNodeSharingContextRunner;
     private final ApplicationContextRunner fakeNativeWithoutNodeSharingContextRunner;
-    private final ApplicationContextRunner benchmarkContextRunner;
     private final ApplicationContextRunner noUserConfigurationContextRunner;
     private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner supplierVariableContextRunner;
@@ -125,12 +122,6 @@ class TimefoldSolverAutoConfigurationTest {
                 .withUserConfiguration(NormalSpringTestConfiguration.class)
                 .withPropertyValues("timefold.solver.%s=false"
                         .formatted(SolverProperty.CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING.getPropertyName()));
-        benchmarkContextRunner = new ApplicationContextRunner()
-                .withConfiguration(
-                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class,
-                                TimefoldBenchmarkAutoConfiguration.class))
-                .withUserConfiguration(NormalSpringTestConfiguration.class);
-
         gizmoContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -309,7 +300,7 @@ class TimefoldSolverAutoConfigurationTest {
 
     @Test
     void solverConfigXml_property_noGlobalTermination() {
-        benchmarkContextRunner
+        contextRunner
                 .withPropertyValues(
                         "timefold.solver-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverConfigWithoutGlobalTermination.xml")
                 .run(context -> {
@@ -652,62 +643,6 @@ class TimefoldSolverAutoConfigurationTest {
                     var solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
                     assertThat(solution.getScore().score()).isNotNegative();
-                });
-    }
-
-    @Test
-    void benchmarkWithSpentLimit() {
-        benchmarkContextRunner
-                .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
-                .run(context -> {
-                    var benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
-                    var problem = new TestdataSpringSolution();
-                    problem.setValueList(IntStream.range(1, 3)
-                            .mapToObj(i -> "v" + i)
-                            .toList());
-                    problem.setEntityList(IntStream.range(1, 3)
-                            .mapToObj(i -> new TestdataSpringEntity())
-                            .toList());
-                    assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
-                });
-    }
-
-    @Test
-    void benchmark() {
-        benchmarkContextRunner
-                .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
-                .run(context -> {
-                    var benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
-                    var problem = new TestdataSpringSolution();
-                    problem.setValueList(IntStream.range(1, 3)
-                            .mapToObj(i -> "v" + i)
-                            .toList());
-                    problem.setEntityList(IntStream.range(1, 3)
-                            .mapToObj(i -> new TestdataSpringEntity())
-                            .toList());
-                    assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
-                });
-    }
-
-    @Test
-    void benchmarkWithXml() {
-        benchmarkContextRunner
-                .withClassLoader(allDefaultsFilteredClassLoader)
-                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=100ms")
-                .withPropertyValues(
-                        "timefold.benchmark.solver-benchmark-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverBenchmarkConfig.xml")
-                .run(context -> {
-                    var benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
-                    var problem = new TestdataSpringSolution();
-                    problem.setValueList(IntStream.range(1, 3)
-                            .mapToObj(i -> "v" + i)
-                            .toList());
-                    problem.setEntityList(IntStream.range(1, 3)
-                            .mapToObj(i -> new TestdataSpringEntity())
-                            .toList());
-                    assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
                 });
     }
 
