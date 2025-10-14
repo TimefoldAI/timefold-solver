@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import java.util.Comparator;
 import java.util.List;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
@@ -75,13 +75,13 @@ public @interface PlanningListVariable {
     Class<? extends Comparator> comparatorClass() default NullComparator.class;
 
     /**
-     * The {@link SorterFactory} alternative for {@link #comparatorClass()}.
+     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
      * <p>
      * Do not use together with {@link #comparatorClass()}.
      *
      * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
      * @see #comparatorClass()
      */
-    Class<? extends SorterFactory> comparatorFactoryClass() default NullComparatorFactory.class;
+    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
 }

@@ -8,7 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -157,7 +157,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     @SuppressWarnings("rawtypes")
     protected void processSorting(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,
-            String comparatorFactoryPropertyName, Class<? extends SorterFactory> comparatorFactoryClass) {
+            String comparatorFactoryPropertyName, Class<? extends ComparatorFactory> comparatorFactoryClass) {
         if (comparatorClass != null && PlanningVariable.NullComparator.class.isAssignableFrom(comparatorClass)) {
             comparatorClass = null;
         }
@@ -179,7 +179,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                     SelectionSorterOrder.DESCENDING);
         }
         if (comparatorFactoryClass != null) {
-            SorterFactory<Solution_, Object> comparatorFactory =
+            ComparatorFactory<Solution_, Object> comparatorFactory =
                     newInstance(this::toString, comparatorFactoryPropertyName, comparatorFactoryClass);
             ascendingSorter = new FactorySelectionSorter<>(comparatorFactory,
                     SelectionSorterOrder.ASCENDING);

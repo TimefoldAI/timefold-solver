@@ -34,7 +34,7 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 @FunctionalInterface
-public interface SorterFactory<Solution_, T> {
+public interface ComparatorFactory<Solution_, T> {
 
     /**
      * @param solution never null, the {@link PlanningSolution} to which the selection belongs or applies to

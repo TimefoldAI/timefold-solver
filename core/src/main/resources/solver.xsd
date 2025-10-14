@@ -1742,6 +1742,10 @@
       <xs:enumeration value="DECREASING_DIFFICULTY"/>
             
       <xs:enumeration value="DECREASING_DIFFICULTY_IF_AVAILABLE"/>
+            
+      <xs:enumeration value="DESCENDING"/>
+            
+      <xs:enumeration value="DESCENDING_IF_AVAILABLE"/>
           
     </xs:restriction>
       
@@ -1760,6 +1764,14 @@
       <xs:enumeration value="DECREASING_STRENGTH"/>
             
       <xs:enumeration value="DECREASING_STRENGTH_IF_AVAILABLE"/>
+            
+      <xs:enumeration value="ASCENDING"/>
+            
+      <xs:enumeration value="ASCENDING_IF_AVAILABLE"/>
+            
+      <xs:enumeration value="DESCENDING"/>
+            
+      <xs:enumeration value="DESCENDING_IF_AVAILABLE"/>
           
     </xs:restriction>
       

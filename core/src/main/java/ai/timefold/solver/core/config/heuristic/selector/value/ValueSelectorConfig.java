@@ -7,7 +7,7 @@ import jakarta.xml.bind.annotation.XmlAttribute;
 import jakarta.xml.bind.annotation.XmlElement;
 import jakarta.xml.bind.annotation.XmlType;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.heuristic.selector.SelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
@@ -61,7 +61,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
 
     protected ValueSorterManner sorterManner = null;
     protected Class<? extends Comparator> sorterComparatorClass = null;
-    protected Class<? extends SorterFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -162,11 +162,11 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public @Nullable Class<? extends SorterFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
-    public void setSorterWeightFactoryClass(@Nullable Class<? extends SorterFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
@@ -258,7 +258,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     }
 
     public @NonNull ValueSelectorConfig
-            withSorterWeightFactoryClass(@NonNull Class<? extends SorterFactory> weightFactoryClass) {
+            withSorterWeightFactoryClass(@NonNull Class<? extends ComparatorFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }
@@ -342,46 +342,30 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
 
     public static <Solution_> boolean hasSorter(@NonNull ValueSorterManner valueSorterManner,
             @NonNull GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        switch (valueSorterManner) {
-            case NONE:
-                return false;
-            case INCREASING_STRENGTH:
-            case DECREASING_STRENGTH:
-                return true;
-            case INCREASING_STRENGTH_IF_AVAILABLE:
-                return variableDescriptor.getAscendingSorter() != null;
-            case DECREASING_STRENGTH_IF_AVAILABLE:
-                return variableDescriptor.getDescendingSorter() != null;
-            default:
-                throw new IllegalStateException("The sorterManner ("
-                        + valueSorterManner + ") is not implemented.");
-        }
+        return switch (valueSorterManner) {
+            case NONE -> false;
+            case INCREASING_STRENGTH, DECREASING_STRENGTH, ASCENDING, DESCENDING -> true;
+            case INCREASING_STRENGTH_IF_AVAILABLE, ASCENDING_IF_AVAILABLE ->
+                variableDescriptor.getAscendingSorter() != null;
+            case DECREASING_STRENGTH_IF_AVAILABLE, DESCENDING_IF_AVAILABLE ->
+                variableDescriptor.getDescendingSorter() != null;
+        };
     }
 
     public static <Solution_> @NonNull SelectionSorter<Solution_, Object> determineSorter(
             @NonNull ValueSorterManner valueSorterManner, @NonNull GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        SelectionSorter<Solution_, Object> sorter;
-        switch (valueSorterManner) {
-            case NONE:
-                throw new IllegalStateException("Impossible state: hasSorter() should have returned null.");
-            case INCREASING_STRENGTH:
-            case INCREASING_STRENGTH_IF_AVAILABLE:
-                sorter = variableDescriptor.getAscendingSorter();
-                break;
-            case DECREASING_STRENGTH:
-            case DECREASING_STRENGTH_IF_AVAILABLE:
-                sorter = variableDescriptor.getDescendingSorter();
-                break;
-            default:
-                throw new IllegalStateException("The sorterManner ("
-                        + valueSorterManner + ") is not implemented.");
-        }
+        SelectionSorter<Solution_, Object> sorter = switch (valueSorterManner) {
+            case NONE -> throw new IllegalStateException("Impossible state: hasSorter() should have returned null.");
+            case INCREASING_STRENGTH, INCREASING_STRENGTH_IF_AVAILABLE, ASCENDING, ASCENDING_IF_AVAILABLE ->
+                variableDescriptor.getAscendingSorter();
+            case DECREASING_STRENGTH, DECREASING_STRENGTH_IF_AVAILABLE, DESCENDING, DESCENDING_IF_AVAILABLE ->
+                variableDescriptor.getDescendingSorter();
+        };
         if (sorter == null) {
-            throw new IllegalArgumentException("The sorterManner (" + valueSorterManner
-                    + ") on entity class (" + variableDescriptor.getEntityDescriptor().getEntityClass()
-                    + ")'s variable (" + variableDescriptor.getVariableName()
-                    + ") fails because that variable getter's @" + PlanningVariable.class.getSimpleName()
-                    + " annotation does not declare any strength comparison.");
+            throw new IllegalArgumentException(
+                    "The sorterManner (%s) on entity class (%s)'s variable (%s) fails because that variable getter's @%s annotation does not declare any strength comparison."
+                            .formatted(valueSorterManner, variableDescriptor.getEntityDescriptor().getEntityClass(),
+                                    variableDescriptor.getVariableName(), PlanningVariable.class.getSimpleName()));
         }
         return sorter;
     }

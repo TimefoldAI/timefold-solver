@@ -1,24 +1,22 @@
-package ai.timefold.solver.core.testdomain.sort.invalid.twofactory;
+package ai.timefold.solver.core.testdomain.sort.invalid.twocomparator.entity;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.common.DummyValueFactory;
-import ai.timefold.solver.core.testdomain.common.DummyWeightValueFactory;
+import ai.timefold.solver.core.testdomain.common.DummyValueComparator;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity
-public class TestdataInvalidTwoFactorySortableEntity extends TestdataObject {
+@PlanningEntity(comparatorClass = DummyValueComparator.class, difficultyComparatorClass = DummyValueComparator.class)
+public class TestdataInvalidTwoEntityComparatorSortableEntity extends TestdataObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = DummyValueFactory.class,
-            strengthWeightFactoryClass = DummyWeightValueFactory.class)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", comparatorClass = DummyValueComparator.class)
     private TestdataSortableValue value;
     private int difficulty;
 
-    public TestdataInvalidTwoFactorySortableEntity() {
+    public TestdataInvalidTwoEntityComparatorSortableEntity() {
     }
 
-    public TestdataInvalidTwoFactorySortableEntity(String code, int difficulty) {
+    public TestdataInvalidTwoEntityComparatorSortableEntity(String code, int difficulty) {
         super(code);
         this.difficulty = difficulty;
     }

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.sort.invalid.twocomparator;
+package ai.timefold.solver.core.testdomain.sort.invalid.twofactory.entity;
 
 import java.util.List;
 
@@ -10,10 +10,10 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
 @PlanningSolution
-public class TestdataInvalidTwoComparatorSortableSolution {
+public class TestdataInvalidTwoEntityFactorySortableSolution {
 
     private List<TestdataSortableValue> valueList;
-    private List<TestdataInvalidTwoComparatorSortableEntity> entityList;
+    private List<TestdataInvalidTwoEntityFactorySortableEntity> entityList;
     private HardSoftScore score;
 
     @ValueRangeProvider(id = "valueRange")
@@ -27,11 +27,11 @@ public class TestdataInvalidTwoComparatorSortableSolution {
     }
 
     @PlanningEntityCollectionProperty
-    public List<TestdataInvalidTwoComparatorSortableEntity> getEntityList() {
+    public List<TestdataInvalidTwoEntityFactorySortableEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataInvalidTwoComparatorSortableEntity> entityList) {
+    public void setEntityList(List<TestdataInvalidTwoEntityFactorySortableEntity> entityList) {
         this.entityList = entityList;
     }
 
@@ -44,7 +44,7 @@ public class TestdataInvalidTwoComparatorSortableSolution {
         this.score = score;
     }
 
-    public void removeEntity(TestdataInvalidTwoComparatorSortableEntity entity) {
+    public void removeEntity(TestdataInvalidTwoEntityFactorySortableEntity entity) {
         this.entityList = entityList.stream()
                 .filter(e -> e != entity)
                 .toList();

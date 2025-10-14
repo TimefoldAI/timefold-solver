@@ -2,7 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move;
 
 import java.util.Comparator;
 
-import ai.timefold.solver.core.api.domain.common.SorterFactory;
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -195,9 +195,9 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterWeightFactoryClass != null) {
-                SorterFactory<Solution_, Move<Solution_>> sorterFactory =
+                ComparatorFactory<Solution_, Move<Solution_>> comparatorFactory =
                         ConfigUtils.newInstance(config, "sorterWeightFactoryClass", sorterWeightFactoryClass);
-                sorter = new FactorySelectionSorter<>(sorterFactory,
+                sorter = new FactorySelectionSorter<>(comparatorFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterClass != null) {
                 sorter = ConfigUtils.newInstance(config, "sorterClass", sorterClass);

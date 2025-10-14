@@ -353,46 +353,46 @@
           "ignore": true,
           "code": "java.method.returnTypeTypeParametersChanged",
           "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::getSorterWeightFactoryClass()",
-          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterFactory> ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::getSorterWeightFactoryClass()",
-          "justification": "New weight factory base class"
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory> ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::getSorterWeightFactoryClass()",
+          "justification": "New comparator factory class"
         },
         {
           "ignore": true,
           "code": "java.method.parameterTypeParameterChanged",
           "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
-          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory>===)",
           "parameterIndex": "0",
-          "justification": "New weight factory base class"
+          "justification": "New comparator factory class"
         },
         {
           "ignore": true,
           "code": "java.method.returnTypeTypeParametersChanged",
           "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::getSorterWeightFactoryClass()",
-          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterFactory> ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::getSorterWeightFactoryClass()",
-          "justification": "New weight factory base class"
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory> ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::getSorterWeightFactoryClass()",
+          "justification": "New comparator factory class"
         },
         {
           "ignore": true,
           "code": "java.method.parameterTypeParameterChanged",
           "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
-          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory>===)",
           "parameterIndex": "0",
-          "justification": "New weight factory base class"
+          "justification": "New comparator factory class"
         },
         {
           "ignore": true,
           "code": "java.method.returnTypeTypeParametersChanged",
           "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::getSorterWeightFactoryClass()",
-          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterFactory> ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::getSorterWeightFactoryClass()",
-          "justification": "New weight factory base class"
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory> ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::getSorterWeightFactoryClass()",
+          "justification": "New comparator factory class"
         },
         {
           "ignore": true,
           "code": "java.method.parameterTypeParameterChanged",
           "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
-          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.SorterFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory>===)",
           "parameterIndex": "0",
-          "justification": "New weight factory base class"
+          "justification": "New comparator factory class"
         }
       ]
     }
