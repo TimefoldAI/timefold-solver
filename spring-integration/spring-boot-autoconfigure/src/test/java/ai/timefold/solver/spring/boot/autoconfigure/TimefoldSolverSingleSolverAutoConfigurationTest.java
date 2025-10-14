@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 
+import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
@@ -44,16 +45,17 @@ import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
 @Execution(ExecutionMode.CONCURRENT)
-class TimefoldSolverWithoutSolverConfigXmlAutoConfigurationTest {
+class TimefoldSolverSingleSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
     private final ApplicationContextRunner chainedContextRunner;
     private final ApplicationContextRunner supplierVariableContextRunner;
     private final ApplicationContextRunner missingSupplierVariableContextRunner;
     private final ApplicationContextRunner multimoduleRunner;
+    private final ApplicationContextRunner benchmarkContextRunner;
     private final FilteredClassLoader allDefaultsFilteredClassLoader;
 
-    public TimefoldSolverWithoutSolverConfigXmlAutoConfigurationTest() {
+    public TimefoldSolverSingleSolverAutoConfigurationTest() {
         contextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
@@ -74,6 +76,11 @@ class TimefoldSolverWithoutSolverConfigXmlAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(MultiModuleSpringTestConfiguration.class);
+        benchmarkContextRunner = new ApplicationContextRunner()
+                .withConfiguration(
+                        AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class,
+                                TimefoldBenchmarkAutoConfiguration.class))
+                .withUserConfiguration(NormalSpringTestConfiguration.class);
         allDefaultsFilteredClassLoader =
                 new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("ai.timefold.solver.test"),
                         FilteredClassLoader.ClassPathResourceFilter
@@ -248,6 +255,75 @@ class TimefoldSolverWithoutSolverConfigXmlAutoConfigurationTest {
                         "supplierMethod (value1AndValue2Supplier) that does not exist",
                         "inside its declaring class (ai.timefold.solver.spring.boot.autoconfigure.missingsuppliervariable.domain.TestdataSpringMissingSupplierVariableEntity).",
                         "Maybe you misspelled the supplierMethod name?");
+    }
+
+    @Test
+    void benchmarkWithSpentLimit() {
+        benchmarkContextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
+                .run(context -> {
+                    var benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
+                    var problem = new TestdataSpringSolution();
+                    problem.setValueList(IntStream.range(1, 3)
+                            .mapToObj(i -> "v" + i)
+                            .toList());
+                    problem.setEntityList(IntStream.range(1, 3)
+                            .mapToObj(i -> new TestdataSpringEntity())
+                            .toList());
+                    assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
+                });
+    }
+
+    @Test
+    void benchmark() {
+        benchmarkContextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.solver.termination.best-score-limit=0")
+                .run(context -> {
+                    var benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
+                    var problem = new TestdataSpringSolution();
+                    problem.setValueList(IntStream.range(1, 3)
+                            .mapToObj(i -> "v" + i)
+                            .toList());
+                    problem.setEntityList(IntStream.range(1, 3)
+                            .mapToObj(i -> new TestdataSpringEntity())
+                            .toList());
+                    assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
+                });
+    }
+
+    @Test
+    void benchmarkWithXml() {
+        benchmarkContextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=100ms")
+                .withPropertyValues(
+                        "timefold.benchmark.solver-benchmark-config-xml=ai/timefold/solver/spring/boot/autoconfigure/solverBenchmarkConfig.xml")
+                .run(context -> {
+                    var benchmarkFactory = context.getBean(PlannerBenchmarkFactory.class);
+                    var problem = new TestdataSpringSolution();
+                    problem.setValueList(IntStream.range(1, 3)
+                            .mapToObj(i -> "v" + i)
+                            .toList());
+                    problem.setEntityList(IntStream.range(1, 3)
+                            .mapToObj(i -> new TestdataSpringEntity())
+                            .toList());
+                    assertThat(benchmarkFactory.buildPlannerBenchmark(problem).benchmark()).isNotEmptyDirectory();
+                });
+    }
+
+    @Test
+    void resoucesInjectionFailure() {
+        assertThatCode(() -> benchmarkContextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.solver.solver1.termination.best-score-limit=0")
+                .withPropertyValues("timefold.solver.solver2.termination.best-score-limit=0")
+                .withPropertyValues("timefold.benchmark.solver.termination.spent-limit=1s")
+                .run(context -> context.getBean(PlannerBenchmarkFactory.class)))
+                .hasRootCauseMessage("""
+                        When defining multiple solvers, the benchmark feature is not enabled.
+                        Consider using separate <solverBenchmark> instances for evaluating different solver configurations.""");
     }
 
 }

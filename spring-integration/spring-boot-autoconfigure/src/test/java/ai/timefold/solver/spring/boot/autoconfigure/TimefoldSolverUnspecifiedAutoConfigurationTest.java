@@ -26,11 +26,11 @@ import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
 @Execution(ExecutionMode.CONCURRENT)
-class TimefoldSolverNoUserAutoConfigurationTest {
+class TimefoldSolverUnspecifiedAutoConfigurationTest {
 
     private final ApplicationContextRunner noUserConfigurationContextRunner;
 
-    public TimefoldSolverNoUserAutoConfigurationTest() {
+    public TimefoldSolverUnspecifiedAutoConfigurationTest() {
         noUserConfigurationContextRunner = new ApplicationContextRunner()
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class));
