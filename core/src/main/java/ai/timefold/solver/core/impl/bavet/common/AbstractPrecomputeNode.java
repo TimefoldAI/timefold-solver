@@ -18,7 +18,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> extends AbstractNode
+public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> extends AbstractNode
         implements BavetRootNode<Object> {
     private final StaticPropagationQueue<Tuple_> propagationQueue;
     private final Map<Object, List<Tuple_>> tupleMap = new IdentityHashMap<>(1000);
@@ -29,7 +29,7 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
     private final Set<Object> queuedUpdateSet = CollectionUtils.newIdentityHashSet(32);
     private final Set<Object> queuedRetractSet = CollectionUtils.newIdentityHashSet(32);
 
-    protected AbstractStaticDataNode(NodeNetwork innerNodeNetwork,
+    protected AbstractPrecomputeNode(NodeNetwork innerNodeNetwork,
             RecordingTupleLifecycle<Tuple_> recordingTupleNode,
             TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
@@ -146,13 +146,13 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
 
     private void insertIntoInnerNodeNetwork(Object toInsert) {
         tupleMap.put(toInsert, new ArrayList<>());
-        innerNodeNetwork.getTupleSourceRootNodes(toInsert.getClass())
+        innerNodeNetwork.getRootNodesAcceptingType(toInsert.getClass())
                 .forEach(node -> ((AbstractForEachUniNode) node).insert(toInsert));
     }
 
     private void retractFromInnerNodeNetwork(Object toRetract) {
         tupleMap.remove(toRetract);
-        innerNodeNetwork.getTupleSourceRootNodes(toRetract.getClass())
+        innerNodeNetwork.getRootNodesAcceptingType(toRetract.getClass())
                 .forEach(node -> ((AbstractForEachUniNode) node).retract(toRetract));
     }
 
@@ -169,7 +169,7 @@ public abstract class AbstractStaticDataNode<Tuple_ extends AbstractTuple> exten
             recorder.recordingInto(mappedTupleEntry.getValue(), this::remapTuple, () -> {
                 // Do a fake update on the object and settle the network; this will update precisely the
                 // tuples mapped to this node, which will then be recorded
-                innerNodeNetwork.getTupleSourceRootNodes(invalidated.getClass())
+                innerNodeNetwork.getRootNodesAcceptingType(invalidated.getClass())
                         .forEach(node -> ((AbstractForEachUniNode) node).update(invalidated));
                 innerNodeNetwork.settle();
             });

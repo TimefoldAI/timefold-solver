@@ -3308,7 +3308,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
     }
 
     @TestTemplate
-    public void staticData_join_filter_map_entity_right() {
+    public void precompute_join_filter_map_entity_right() {
         var solution = TestdataLavishSolution.generateSolution();
         var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
@@ -3331,7 +3331,7 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
         solution.getEntityList().add(entity3);
 
         var scoreDirector =
-                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishValue.class)
+                buildScoreDirector(factory -> factory.precompute(data -> data.forEachUnfiltered(TestdataLavishValue.class)
                         .join(TestdataLavishEntity.class)
                         .filter((value, entity) -> entity.getEntityGroup() == entityGroup
                                 && value.getValueGroup() == valueGroup))

@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.quad;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.AbstractStaticDataNode;
+import ai.timefold.solver.core.impl.bavet.common.AbstractPrecomputeNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -9,10 +9,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public final class StaticDataQuadNode<A, B, C, D> extends AbstractStaticDataNode<QuadTuple<A, B, C, D>> {
+public final class PrecomputeQuadNode<A, B, C, D> extends AbstractPrecomputeNode<QuadTuple<A, B, C, D>> {
     private final int outputStoreSize;
 
-    public StaticDataQuadNode(NodeNetwork nodeNetwork,
+    public PrecomputeQuadNode(NodeNetwork nodeNetwork,
             RecordingTupleLifecycle<QuadTuple<A, B, C, D>> recordingTupleNode,
             int outputStoreSize,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,

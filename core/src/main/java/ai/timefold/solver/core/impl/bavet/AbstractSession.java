@@ -19,7 +19,7 @@ public abstract class AbstractSession {
         this.insertEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
         this.updateEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
         this.retractEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
-        this.settleNodes = nodeNetwork.getAllTupleSourceRootNodes()
+        this.settleNodes = nodeNetwork.getRootNodes()
                 .filter(node -> node.supports(LifecycleOperation.SETTLE))
                 .toArray(BavetRootNode[]::new);
     }
@@ -43,7 +43,7 @@ public abstract class AbstractSession {
         // Map.computeIfAbsent() would have created lambdas on the hot path, this will not.
         var nodeArray = effectiveClassToNodeArrayMap.get(factClass);
         if (nodeArray == null) {
-            nodeArray = nodeNetwork.getTupleSourceRootNodes(factClass)
+            nodeArray = nodeNetwork.getRootNodesAcceptingType(factClass)
                     .filter(node -> node.supports(lifecycleOperation))
                     .toArray(BavetRootNode[]::new);
             effectiveClassToNodeArrayMap.put(factClass, nodeArray);

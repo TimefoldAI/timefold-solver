@@ -3816,7 +3816,7 @@ public abstract class AbstractUniConstraintStreamTest
     }
 
     @TestTemplate
-    public void staticData_filter_entity() {
+    public void precompute_filter_entity() {
         var solution = TestdataLavishSolution.generateSolution();
         var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         solution.getEntityGroupList().add(entityGroup);
@@ -3829,7 +3829,7 @@ public abstract class AbstractUniConstraintStreamTest
         solution.getEntityList().add(entity3);
 
         var scoreDirector =
-                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
+                buildScoreDirector(factory -> factory.precompute(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
                         .filter(entity -> entity.getEntityGroup() == entityGroup))
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
@@ -3880,7 +3880,7 @@ public abstract class AbstractUniConstraintStreamTest
     }
 
     @TestTemplate
-    public void staticData_join_filter_map_entity_left() {
+    public void precompute_join_filter_map_entity_left() {
         var solution = TestdataLavishSolution.generateSolution();
         var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
@@ -3905,7 +3905,7 @@ public abstract class AbstractUniConstraintStreamTest
         record EntityValuePair(TestdataLavishEntity entity, TestdataLavishValue value) {
         }
         var scoreDirector =
-                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
+                buildScoreDirector(factory -> factory.precompute(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
                         .filter((entity, value) -> entity.getEntityGroup() == entityGroup
                                 && value.getValueGroup() == valueGroup)
@@ -3964,7 +3964,7 @@ public abstract class AbstractUniConstraintStreamTest
     }
 
     @TestTemplate
-    public void staticData_join_filter_map_entity_right() {
+    public void precompute_join_filter_map_entity_right() {
         var solution = TestdataLavishSolution.generateSolution();
         var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
@@ -3989,7 +3989,7 @@ public abstract class AbstractUniConstraintStreamTest
         record EntityValuePair(TestdataLavishValue value, TestdataLavishEntity entity) {
         }
         var scoreDirector =
-                buildScoreDirector(factory -> factory.staticData(data -> data.forEachUnfiltered(TestdataLavishValue.class)
+                buildScoreDirector(factory -> factory.precompute(data -> data.forEachUnfiltered(TestdataLavishValue.class)
                         .join(TestdataLavishEntity.class)
                         .filter((value, entity) -> entity.getEntityGroup() == entityGroup
                                 && value.getValueGroup() == valueGroup)

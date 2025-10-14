@@ -202,7 +202,7 @@ public interface ConstraintFactory {
      * (genuine or otherwise).
      */
     <Stream_ extends ConstraintStream> @NonNull Stream_
-            staticData(StaticDataSupplier<@NonNull Stream_> staticDataSupplier);
+            precompute(@NonNull Function<@NonNull PrecomputeFactory, @NonNull Stream_> precomputeSupplier);
 
     // ************************************************************************
     // from* (deprecated)

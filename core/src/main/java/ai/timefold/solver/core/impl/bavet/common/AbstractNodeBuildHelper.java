@@ -205,7 +205,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     @SuppressWarnings("unchecked")
     private static <Stream_ extends BavetStream> long determineLayerIndex(AbstractNode node,
             AbstractNodeBuildHelper<Stream_> buildHelper) {
-        if (node instanceof BavetRootNode<?>) { // TupleSourceRoot nodes, and only they, are in layer 0.
+        if (node instanceof BavetRootNode<?>) { // Root nodes, and only they, are in layer 0.
             return 0;
         } else if (node instanceof AbstractTwoInputNode<?, ?> joinNode) {
             var nodeCreator = (BavetStreamBinaryOperation<?>) buildHelper.getNodeCreatingStream(joinNode);

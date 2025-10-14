@@ -18,12 +18,12 @@ import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
-public final class BavetStaticDataBuildHelper<Tuple_ extends AbstractTuple> {
+public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
     private final NodeNetwork nodeNetwork;
     private final RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle;
     private final Class<?>[] sourceClasses;
 
-    public <Solution_> BavetStaticDataBuildHelper(BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
+    public <Solution_> BavetPrecomputeBuildHelper(BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
         var streamList = new ArrayList<BavetAbstractConstraintStream<Solution_>>();
         var queue = new ArrayDeque<BavetAbstractConstraintStream<Solution_>>();
         queue.addLast(staticConstraintStream);

@@ -32,15 +32,13 @@ public record NodeNetwork(Map<Class<?>, List<BavetRootNode<?>>> declaredClassToN
         return layeredNodes.length;
     }
 
-    public Stream<BavetRootNode<?>> getAllTupleSourceRootNodes() {
-        // The node needs to match the fact, or the node needs to be applicable to the entire solution.
-        // The latter is for FromSolution nodes.
+    public Stream<BavetRootNode<?>> getRootNodes() {
         return declaredClassToNodeMap.entrySet()
                 .stream()
                 .flatMap(entry -> entry.getValue().stream());
     }
 
-    public Stream<BavetRootNode<?>> getTupleSourceRootNodes(Class<?> factClass) {
+    public Stream<BavetRootNode<?>> getRootNodesAcceptingType(Class<?> factClass) {
         // The node needs to match the fact, or the node needs to be applicable to the entire solution.
         // The latter is for FromSolution nodes.
         return declaredClassToNodeMap.entrySet()

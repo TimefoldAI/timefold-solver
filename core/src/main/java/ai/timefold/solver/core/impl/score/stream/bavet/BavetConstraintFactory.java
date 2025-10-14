@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
 import ai.timefold.solver.core.api.score.stream.Joiners;
-import ai.timefold.solver.core.api.score.stream.StaticDataSupplier;
+import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
@@ -18,19 +18,19 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.bavet.bi.BavetAbstractBiConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.bi.BavetStaticDataBiConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.bi.BavetPrecomputeBiConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeBiConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeTriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.bridge.BavetAftBridgeUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetAbstractQuadConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetStaticDataQuadConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.quad.BavetPrecomputeQuadConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetAbstractTriConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetStaticDataTriConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.tri.BavetPrecomputeTriConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetAbstractUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetForEachUniConstraintStream;
-import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetStaticDataUniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.bavet.uni.BavetPrecomputeUniConstraintStream;
 import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria;
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
@@ -205,33 +205,33 @@ public final class BavetConstraintFactory<Solution_>
     @Override
     @SuppressWarnings("unchecked")
     public @NonNull <Stream_ extends @NonNull ConstraintStream> Stream_
-            staticData(StaticDataSupplier<Stream_> staticDataSupplier) {
-        var bavetStream = Objects.requireNonNull(staticDataSupplier.get(new BavetStaticDataFactory<>(this)));
+            precompute(@NonNull Function<@NonNull PrecomputeFactory, @NonNull Stream_> precomputeSupplier) {
+        var bavetStream = Objects.requireNonNull(precomputeSupplier.apply(new BavetStaticDataFactory<>(this)));
         // TODO: Use switch here in JDK 21
         if (bavetStream instanceof BavetAbstractUniConstraintStream<?, ?> uniStream) {
-            var out = new BavetStaticDataUniConstraintStream<>(this,
+            var out = new BavetPrecomputeUniConstraintStream<>(this,
                     (BavetAbstractUniConstraintStream<Solution_, ?>) uniStream);
             return (Stream_) share(new BavetAftBridgeUniConstraintStream<>(this, out),
                     out::setAftBridge);
         } else if (bavetStream instanceof BavetAbstractBiConstraintStream<?, ?, ?> biStream) {
-            var out = new BavetStaticDataBiConstraintStream<>(this,
+            var out = new BavetPrecomputeBiConstraintStream<>(this,
                     (BavetAbstractBiConstraintStream<Solution_, ?, ?>) biStream);
             return (Stream_) share(new BavetAftBridgeBiConstraintStream<>(this, out),
                     out::setAftBridge);
         } else if (bavetStream instanceof BavetAbstractTriConstraintStream<?, ?, ?, ?> triStream) {
-            var out = new BavetStaticDataTriConstraintStream<>(this,
+            var out = new BavetPrecomputeTriConstraintStream<>(this,
                     (BavetAbstractTriConstraintStream<Solution_, ?, ?, ?>) triStream);
             return (Stream_) share(new BavetAftBridgeTriConstraintStream<>(this, out),
                     out::setAftBridge);
         } else if (bavetStream instanceof BavetAbstractQuadConstraintStream<?, ?, ?, ?, ?> quadStream) {
-            var out = new BavetStaticDataQuadConstraintStream<>(this,
+            var out = new BavetPrecomputeQuadConstraintStream<>(this,
                     (BavetAbstractQuadConstraintStream<Solution_, ?, ?, ?, ?>) quadStream);
             return (Stream_) share(new BavetAftBridgeQuadConstraintStream<>(this, out),
                     out::setAftBridge);
         } else {
             throw new IllegalStateException(
                     "impossible state: the supplier (%s) returned a stream (%s) that not an instance of any Bavet ConstraintStream"
-                            .formatted(staticDataSupplier, bavetStream));
+                            .formatted(precomputeSupplier, bavetStream));
         }
     }
 
