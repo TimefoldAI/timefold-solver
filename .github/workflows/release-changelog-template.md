@@ -13,7 +13,8 @@ _Timefold Solver Community Edition_ is an open source project, and you are more 
 For more, see [Contributing](https://github.com/TimefoldAI/timefold-solver/blob/main/CONTRIBUTING.adoc).
 
 Should your business need to scale to truly massive data sets or require enterprise-grade support,
-check out [_Timefold Solver Enterprise Edition_](https://timefold.ai/pricing). 
+check out [_Timefold Solver Enterprise Edition_](https://docs.timefold.ai/timefold-solver/latest/enterprise-edition/enterprise-edition). 
+Timefold Solver Enterprise Edition requires [a license](https://timefold.ai/pricing). 
 
 # How to use Timefold Solver
 
