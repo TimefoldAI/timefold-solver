@@ -21,7 +21,8 @@ import org.jspecify.annotations.Nullable;
 public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> extends AbstractNode
         implements BavetRootNode<Object> {
     private final StaticPropagationQueue<Tuple_> propagationQueue;
-    private final Map<Object, List<Tuple_>> tupleMap = new IdentityHashMap<>(1000);
+    private final Map<Object, List<Tuple_>> objectToOutputTuplesMap = new IdentityHashMap<>(1000);
+    private final IdentityHashMap<Tuple_, Tuple_> inputTupleToOutputTupleMap = new IdentityHashMap<>(1000);
     private final NodeNetwork innerNodeNetwork;
     private final RecordingTupleLifecycle<Tuple_> recordingTupleNode;
     private final Class<?>[] sourceClasses;
@@ -116,7 +117,7 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
             recalculateTuples();
         }
         for (var updatedObject : queuedUpdateSet) {
-            for (var updatedTuple : tupleMap.get(updatedObject)) {
+            for (var updatedTuple : objectToOutputTuplesMap.get(updatedObject)) {
                 updateExisting(updatedObject, updatedTuple);
             }
         }
@@ -145,36 +146,38 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
     }
 
     private void insertIntoInnerNodeNetwork(Object toInsert) {
-        tupleMap.put(toInsert, new ArrayList<>());
+        objectToOutputTuplesMap.put(toInsert, new ArrayList<>());
         innerNodeNetwork.getRootNodesAcceptingType(toInsert.getClass())
                 .forEach(node -> ((AbstractForEachUniNode) node).insert(toInsert));
     }
 
     private void retractFromInnerNodeNetwork(Object toRetract) {
-        tupleMap.remove(toRetract);
+        objectToOutputTuplesMap.remove(toRetract);
         innerNodeNetwork.getRootNodesAcceptingType(toRetract.getClass())
                 .forEach(node -> ((AbstractForEachUniNode) node).retract(toRetract));
     }
 
     private void invalidateCache() {
-        tupleMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
-        recordingTupleNode.tupleRecorder().reset();
+        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
+        inputTupleToOutputTupleMap.clear();
     }
 
     private void recalculateTuples() {
-        var recorder = recordingTupleNode.tupleRecorder();
-        for (var mappedTupleEntry : tupleMap.entrySet()) {
+        for (var mappedTupleEntry : objectToOutputTuplesMap.entrySet()) {
             mappedTupleEntry.getValue().clear();
             var invalidated = mappedTupleEntry.getKey();
-            recorder.recordingInto(mappedTupleEntry.getValue(), this::remapTuple, () -> {
-                // Do a fake update on the object and settle the network; this will update precisely the
-                // tuples mapped to this node, which will then be recorded
-                innerNodeNetwork.getRootNodesAcceptingType(invalidated.getClass())
-                        .forEach(node -> ((AbstractForEachUniNode) node).update(invalidated));
-                innerNodeNetwork.settle();
-            });
+            recordingTupleNode.startRecording(
+                    new TupleRecorder<>(mappedTupleEntry.getValue(), this::remapTuple, inputTupleToOutputTupleMap));
+
+            // Do a fake update on the object and settle the network; this will update precisely the
+            // tuples mapped to this node, which will then be recorded
+            innerNodeNetwork.getRootNodesAcceptingType(invalidated.getClass())
+                    .forEach(node -> ((AbstractForEachUniNode) node).update(invalidated));
+            innerNodeNetwork.settle();
+
+            recordingTupleNode.stopRecording();
         }
-        tupleMap.values().stream().flatMap(List::stream).forEach(this::insertNew);
+        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::insertNew);
     }
 
     protected abstract Tuple_ remapTuple(Tuple_ tuple);

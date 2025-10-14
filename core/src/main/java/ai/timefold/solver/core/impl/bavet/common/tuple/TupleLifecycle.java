@@ -7,7 +7,6 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.TriPredicate;
-import ai.timefold.solver.core.impl.bavet.common.TupleRecorder;
 
 public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
 
@@ -53,7 +52,7 @@ public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
     }
 
     static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> recording() {
-        return new RecordingTupleLifecycle<>(new TupleRecorder<>());
+        return new RecordingTupleLifecycle<>();
     }
 
     void insert(Tuple_ tuple);

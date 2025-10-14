@@ -2,20 +2,34 @@ package ai.timefold.solver.core.impl.bavet.common.tuple;
 
 import ai.timefold.solver.core.impl.bavet.common.TupleRecorder;
 
-public record RecordingTupleLifecycle<Tuple_ extends AbstractTuple>(TupleRecorder<Tuple_> tupleRecorder)
-        implements
-            TupleLifecycle<Tuple_> {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
+public class RecordingTupleLifecycle<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_> {
+    @Nullable
+    TupleRecorder<Tuple_> tupleRecorder;
+
+    public void startRecording(TupleRecorder<Tuple_> tupleRecorder) {
+        this.tupleRecorder = tupleRecorder;
+    }
+
+    public void stopRecording() {
+        this.tupleRecorder = null;
+    }
 
     @Override
     public void insert(Tuple_ tuple) {
-        if (tupleRecorder.isRecording()) {
+        if (tupleRecorder != null) {
             throw new IllegalStateException("Impossible state: tuple %s was inserted during recording".formatted(tuple));
         }
     }
 
     @Override
     public void update(Tuple_ tuple) {
-        tupleRecorder.recordTuple(tuple);
+        if (tupleRecorder != null) {
+            tupleRecorder.recordTuple(tuple);
+        }
     }
 
     @Override
