@@ -25,7 +25,6 @@ import org.awaitility.pollinterval.FibonacciPollInterval;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.RepeatedTest;
 
-
 class ProblemChangeBarrageIT {
 
     // Run it multiple times to increase the chance of catching a concurrency issue.
