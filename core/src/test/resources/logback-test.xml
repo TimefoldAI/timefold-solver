@@ -3,9 +3,12 @@
 
   <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
     <encoder>
-      <!-- %L lowers performance, %C and %c break indentation and therefore reduce readability, normal %t is verbose -->
       <pattern>%d{HH:mm:ss.SSS} [%-12.12t] %-5p %m%n</pattern>
     </encoder>
+  </appender>
+
+  <appender name="asyncAppender" class="ch.qos.logback.classic.AsyncAppender">
+    <appender-ref ref="consoleAppender" />
   </appender>
 
   <!-- To override the info log level from the command line, use the VM option "-Dlogback.level.ai.timefold.solver=trace" -->
@@ -13,8 +16,8 @@
   <!-- Don't pollute the test log with a stacktrace -->
   <logger name="ai.timefold.solver.benchmark.impl.DefaultPlannerBenchmark.singleBenchmarkRunnerException" level="error"/>
 
-  <root level="debug">
-    <appender-ref ref="consoleAppender" />
+  <root level="info">
+    <appender-ref ref="asyncAppender" />
   </root>
 
 </configuration>

@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverManager;
@@ -25,6 +26,7 @@ import ai.timefold.solver.core.testdomain.TestdataEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
+import org.awaitility.pollinterval.FibonacciPollInterval;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
@@ -92,7 +94,7 @@ class BestSolutionHolderTest {
         assertThat(problemChange).isCancelled();
     }
 
-    private CompletableFuture<Void> addProblemChange(BestSolutionHolder<TestdataSolution> bestSolutionHolder) {
+    private static CompletableFuture<Void> addProblemChange(BestSolutionHolder<TestdataSolution> bestSolutionHolder) {
         Solver<TestdataSolution> solver = mock(Solver.class);
         ProblemChange<TestdataSolution> problemChange = mock(ProblemChange.class);
         CompletableFuture<Void> futureChange = bestSolutionHolder.addProblemChange(solver, List.of(problemChange));
@@ -101,7 +103,7 @@ class BestSolutionHolderTest {
         return futureChange;
     }
 
-    @RepeatedTest(value = 10, failureThreshold = 1) // Run it multiple times to increase the chance of catching a concurrency issue.
+    @RepeatedTest(value = 1000, failureThreshold = 1) // Run it multiple times to increase the chance of catching a concurrency issue.
     void problemChangeBarrageIntermediateBestSolutionConsumer() throws InterruptedException {
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
@@ -147,14 +149,7 @@ class BestSolutionHolderTest {
 
             // A best solution should have been produced for all the processed changes.
             // Any incomplete futures here means some problem change was "lost".
-            var lostFutureList = futureList.stream()
-                    .filter(future -> {
-                        await().atMost(Duration.ofSeconds(1))
-                                .pollInterval(Duration.ofMillis(1))
-                                .until(future::isDone);
-                        return !future.isDone();
-                    })
-                    .toList();
+            var lostFutureList = getOutstandingFutures(futureList);
             var lostFutureCount = lostFutureList.size();
             if (lostFutureCount == 0) {
                 return;
@@ -171,14 +166,7 @@ class BestSolutionHolderTest {
             executorService.shutdownNow();
             // The solver is terminated.
             // All incomplete futures should have been canceled.
-            var incompleteFutureList = futureList.stream()
-                    .filter(future -> {
-                        await().atMost(Duration.ofSeconds(1))
-                                .pollInterval(Duration.ofMillis(1))
-                                .until(future::isDone);
-                        return !future.isDone();
-                    })
-                    .toList();
+            var incompleteFutureList = getOutstandingFutures(futureList);
             assertThat(incompleteFutureList)
                     .as("All futures should have been completed by now.")
                     .isEmpty();
@@ -186,6 +174,22 @@ class BestSolutionHolderTest {
 
     }
 
+    private static List<RecordedFuture> getOutstandingFutures(List<RecordedFuture> futureList) {
+        // We wait for at most 10 seconds for each future to complete,
+        // but we expect the completion to be done almost immediately.
+        // The large timeout is just to avoid test flakes on congested environments;
+        // after such a long time, something is clearly wrong.
+        return futureList.stream()
+                .filter(future -> {
+                    await().atMost(Duration.ofSeconds(10))
+                            .pollInterval(FibonacciPollInterval.fibonacci(1, TimeUnit.MILLISECONDS))
+                            .until(future::isDone);
+                    return !future.isDone();
+                })
+                .toList();
+    }
+
+    @NullMarked
     private record RecordedFuture(int id, CompletableFuture<Void> future) {
 
         boolean isDone() {
