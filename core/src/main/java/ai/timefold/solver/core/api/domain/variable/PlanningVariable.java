@@ -102,10 +102,10 @@ public @interface PlanningVariable {
     Class<? extends Comparator> comparatorClass() default NullComparator.class;
 
     /** Workaround for annotation limitation in {@link #strengthComparatorClass()}. */
-    interface NullStrengthComparator extends NullComparator {
+    interface NullStrengthComparator<T> extends NullComparator<T> {
     }
 
-    interface NullComparator extends Comparator {
+    interface NullComparator<T> extends Comparator<T> {
     }
 
     /**
@@ -132,7 +132,7 @@ public @interface PlanningVariable {
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
     /** Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}. */
-    interface NullStrengthWeightFactory extends NullComparatorFactory {
+    interface NullStrengthWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
     }
 
     interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {

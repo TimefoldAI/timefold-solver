@@ -61,7 +61,7 @@ import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
-import ai.timefold.solver.core.testdomain.sort.comparator.NewOneValuePerEntityEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.NewOneValuePerEntityEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.TestdataNewSortableEntity;
 import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.TestdataNewSortableSolution;
 import ai.timefold.solver.core.testdomain.sort.comparator.oldapproach.OldOneValuePerEntityEasyScoreCalculator;
