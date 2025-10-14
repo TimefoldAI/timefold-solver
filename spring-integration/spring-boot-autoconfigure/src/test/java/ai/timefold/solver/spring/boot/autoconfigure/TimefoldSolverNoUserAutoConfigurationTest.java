@@ -1,5 +1,7 @@
 package ai.timefold.solver.spring.boot.autoconfigure;
 
+import static org.assertj.core.api.Assertions.assertThatCode;
+
 import ai.timefold.solver.spring.boot.autoconfigure.chained.constraints.TestdataChainedSpringConstraintProvider;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleConstraintProviderSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.dummy.MultipleEasyScoreConstraintSpringTestConfiguration;
@@ -14,14 +16,13 @@ import ai.timefold.solver.spring.boot.autoconfigure.dummy.normal.constraints.inc
 import ai.timefold.solver.spring.boot.autoconfigure.invalid.solution.InvalidSolutionSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.NoConstraintsSpringTestConfiguration;
 import ai.timefold.solver.spring.boot.autoconfigure.normal.constraints.TestdataSpringConstraintProvider;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.runner.ApplicationContextRunner;
 import org.springframework.test.context.TestExecutionListeners;
-
-import static org.assertj.core.api.Assertions.assertThatCode;
 
 @TestExecutionListeners
 @Execution(ExecutionMode.CONCURRENT)
