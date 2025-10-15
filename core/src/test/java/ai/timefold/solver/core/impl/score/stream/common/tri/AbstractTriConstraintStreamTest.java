@@ -2650,6 +2650,33 @@ public abstract class AbstractTriConstraintStreamTest
 
     @Override
     @TestTemplate
+    public void precompute_complement() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup1 = new TestdataLavishEntity();
+        var entityWithGroup2 = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup1.setEntityGroup(entityGroup);
+        entityWithGroup2.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup1, entityWithGroup2));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(
+                new Triple<>(entityWithGroup1, value, value),
+                new Triple<>(entityWithGroup2, value, value),
+                new Triple<>(entityWithoutGroup, null, null)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .join(TestdataLavishValue.class)
+                        .filter((entity, joinedValue1, joinedValue2) -> entity.getEntityGroup() != null)
+                        .complement(TestdataLavishEntity.class)
+                        .distinct());
+    }
+
+    @Override
+    @TestTemplate
     public void penalizeUnweighted() {
         TestdataLavishSolution solution = TestdataLavishSolution.generateSolution();
 

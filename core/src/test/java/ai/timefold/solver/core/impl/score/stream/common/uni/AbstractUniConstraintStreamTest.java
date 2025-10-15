@@ -4039,6 +4039,26 @@ public abstract class AbstractUniConstraintStreamTest
                         .distinct());
     }
 
+    @Override
+    @TestTemplate
+    public void precompute_complement() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup1 = new TestdataLavishEntity();
+        var entityWithGroup2 = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup1.setEntityGroup(entityGroup);
+        entityWithGroup2.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup1, entityWithGroup2));
+        solution.getEntityGroupList().add(entityGroup);
+        solution.getValueList().add(new TestdataLavishValue());
+
+        assertPrecompute(solution, List.of(entityWithGroup1, entityWithGroup2, entityWithoutGroup),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getEntityGroup() != null)
+                        .complement(TestdataLavishEntity.class));
+    }
+
     @TestTemplate
     public void constraintProvidedFromUnknownPackage() throws ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, IllegalAccessException {

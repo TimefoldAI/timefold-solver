@@ -202,6 +202,8 @@ public interface ConstraintStreamFunctionalTest {
 
     void precompute_distinct();
 
+    void precompute_complement();
+
     void penalizeUnweighted();
 
     void penalizeUnweightedLong();

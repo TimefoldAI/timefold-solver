@@ -3651,4 +3651,29 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                                 (entity, joinedValue) -> joinedValue)
                         .distinct());
     }
+
+    @Override
+    @TestTemplate
+    public void precompute_complement() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup1 = new TestdataLavishEntity();
+        var entityWithGroup2 = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup1.setEntityGroup(entityGroup);
+        entityWithGroup2.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup1, entityWithGroup2));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(
+                new Pair<>(entityWithGroup1, value),
+                new Pair<>(entityWithGroup2, value),
+                new Pair<>(entityWithoutGroup, null)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .filter((entity, joinedValue) -> entity.getEntityGroup() != null)
+                        .complement(TestdataLavishEntity.class));
+    }
 }

@@ -33,6 +33,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
 
 import org.jspecify.annotations.NonNull;
 
@@ -1727,9 +1728,17 @@ public interface UniConstraintStream<A> extends ConstraintStream {
      */
     default @NonNull UniConstraintStream<A> complement(@NonNull Class<A> otherClass) {
         var firstStream = this;
-        var secondStream = getConstraintFactory().forEach(otherClass)
-                .ifNotExists(firstStream, Joiners.equal());
-        return firstStream.concat(secondStream);
+        if (firstStream instanceof AbstractConstraintStream<?> abstractConstraintStream) {
+            var secondStream = switch (abstractConstraintStream.getRetrievalSemantics()) {
+                case STANDARD, LEGACY -> getConstraintFactory().forEach(otherClass);
+                case STATIC -> getConstraintFactory().forEachUnfiltered(otherClass);
+            };
+            return firstStream.concat(secondStream.ifNotExists(firstStream, Joiners.equal()));
+        } else {
+            var secondStream = getConstraintFactory().forEach(otherClass)
+                    .ifNotExists(firstStream, Joiners.equal());
+            return firstStream.concat(secondStream);
+        }
     }
 
     // ************************************************************************
