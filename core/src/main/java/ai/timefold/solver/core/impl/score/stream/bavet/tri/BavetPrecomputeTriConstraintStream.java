@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.bavet.bi.PrecomputeBiNode;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.TupleSource;
-import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.core.impl.bavet.tri.PrecomputeTriNode;
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetPrecomputeBuildHelper;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.ConstraintNodeBuildHelper;
@@ -33,10 +33,10 @@ public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends Bave
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        var staticDataBuildHelper = new BavetPrecomputeBuildHelper<BiTuple<A, B>>(recordingStaticConstraintStream);
+        var staticDataBuildHelper = new BavetPrecomputeBuildHelper<TriTuple<A, B, C>>(recordingStaticConstraintStream);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
-        buildHelper.addNode(new PrecomputeBiNode<>(staticDataBuildHelper.getNodeNetwork(),
+        buildHelper.addNode(new PrecomputeTriNode<>(staticDataBuildHelper.getNodeNetwork(),
                 staticDataBuildHelper.getRecordingTupleLifecycle(),
                 outputStoreSize,
                 buildHelper.getAggregatedTupleLifecycle(aftStream.getChildStreamList()),

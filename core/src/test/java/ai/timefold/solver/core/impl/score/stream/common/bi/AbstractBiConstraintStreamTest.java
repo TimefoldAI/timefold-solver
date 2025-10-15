@@ -34,10 +34,14 @@ import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintCollectors;
 import ai.timefold.solver.core.api.score.stream.ConstraintJustification;
 import ai.timefold.solver.core.api.score.stream.DefaultConstraintJustification;
+import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
+import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
@@ -3307,8 +3311,91 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 assertMatch(entity3, entity2));
     }
 
+    @Override
     @TestTemplate
-    public void precompute_join_filter_map_entity_right() {
+    public void precompute_filter_0_changed() {
+        var solution = TestdataLavishSolution.generateSolution();
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+        solution.getEntityGroupList().add(entityGroup);
+        solution.getValueGroupList().add(valueGroup);
+
+        var value1 = Mockito.spy(new TestdataLavishValue("MyValue 1", valueGroup));
+        solution.getValueList().add(value1);
+        var value2 = Mockito.spy(new TestdataLavishValue("MyValue 2", valueGroup));
+        solution.getValueList().add(value2);
+        var value3 = Mockito.spy(new TestdataLavishValue("MyValue 3", null));
+        solution.getValueList().add(value3);
+
+        var entity1 = Mockito.spy(new TestdataLavishEntity("MyEntity 1", entityGroup, value1));
+        solution.getEntityList().add(entity1);
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup, value1);
+        solution.getEntityList().add(entity2);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value1);
+        solution.getEntityList().add(entity3);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.precompute(data -> data.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .filter((entity, value) -> entity.getEntityGroup() == entityGroup
+                                && value.getValueGroup() == valueGroup))
+                        .filter((entity, value) -> entity.getValue() == value1)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        Mockito.reset(entity1);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, value1),
+                assertMatch(entity1, value2),
+                assertMatch(entity2, value1),
+                assertMatch(entity2, value2));
+        Mockito.verify(entity1, Mockito.atLeastOnce()).getEntityGroup();
+
+        // Incrementally update a variable
+        Mockito.reset(entity1);
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(solution.getFirstValue());
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity2, value1),
+                assertMatch(entity2, value2));
+        Mockito.verify(entity1, Mockito.never()).getEntityGroup();
+
+        // Incrementally update a fact
+        scoreDirector.beforeProblemPropertyChanged(entity3);
+        entity3.setEntityGroup(entityGroup);
+        scoreDirector.afterProblemPropertyChanged(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity2, value1),
+                assertMatch(entity2, value2),
+                assertMatch(entity3, value1),
+                assertMatch(entity3, value2));
+
+        // Remove entity
+        scoreDirector.beforeEntityRemoved(entity3);
+        solution.getEntityList().remove(entity3);
+        scoreDirector.afterEntityRemoved(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity2, value1),
+                assertMatch(entity2, value2));
+
+        // Add it back again, to make sure it was properly removed before
+        scoreDirector.beforeEntityAdded(entity3);
+        solution.getEntityList().add(entity3);
+        scoreDirector.afterEntityAdded(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity2, value1),
+                assertMatch(entity2, value2),
+                assertMatch(entity3, value1),
+                assertMatch(entity3, value2));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_filter_1_changed() {
         var solution = TestdataLavishSolution.generateSolution();
         var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
         var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
@@ -3386,5 +3473,182 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 assertMatch(value2, entity2),
                 assertMatch(value1, entity3),
                 assertMatch(value2, entity3));
+    }
+
+    private <A, B> void assertPrecompute(TestdataLavishSolution solution,
+            List<Pair<A, B>> expectedValues,
+            Function<PrecomputeFactory, BiConstraintStream<A, B>> entityStreamSupplier) {
+        var scoreDirector =
+                buildScoreDirector(factory -> factory.precompute(entityStreamSupplier)
+                        .ifExists(TestdataLavishEntity.class)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector);
+
+        for (var entity : solution.getEntityList()) {
+            scoreDirector.beforeVariableChanged(entity, "value");
+            entity.setValue(solution.getFirstValue());
+            scoreDirector.afterVariableChanged(entity, "value");
+        }
+
+        assertScore(scoreDirector, expectedValues.stream()
+                .map(pair -> new Object[] { pair.key(), pair.value() })
+                .map(AbstractConstraintStreamTest::assertMatch)
+                .toArray(AssertableMatch[]::new));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_ifExists() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Pair<>(entityWithGroup, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .ifExists(TestdataLavishEntityGroup.class, Joiners.equal(
+                                (a, b) -> a.getEntityGroup(), Function.identity())));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_ifNotExists() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
+        solution.getEntityGroupList().add(entityGroup);
+
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Pair<>(entityWithoutGroup, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .ifNotExists(TestdataLavishEntityGroup.class, Joiners.equal(
+                                (a, b) -> a.getEntityGroup(), Function.identity())));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_groupBy() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
+        solution.getEntityGroupList().add(entityGroup);
+
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Pair<>(entityGroup, 1)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .filter(entity -> entity.getEntityGroup() != null)
+                        .groupBy(TestdataLavishEntity::getEntityGroup, ConstraintCollectors.count()));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_flattenLast() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Pair<>(entityWithoutGroup, value),
+                new Pair<>(entityWithGroup, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .groupBy(ConstraintCollectors.toList())
+                        .flattenLast(entityList -> entityList)
+                        .join(TestdataLavishValue.class));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_map() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup1 = new TestdataLavishEntity();
+        var entityWithGroup2 = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup1.setEntityGroup(entityGroup);
+        entityWithGroup2.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup1, entityWithGroup2));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Pair<>(entityGroup, value),
+                new Pair<>(entityGroup, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .filter((entity, joinedValue) -> entity.getEntityGroup() != null)
+                        .map((entity, joinedValue) -> entity.getEntityGroup(),
+                                (entity, joinedValue) -> joinedValue));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_concat() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Pair<>(entityWithoutGroup, value), new Pair<>(entityWithGroup, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .filter((entity, joinedValue) -> entity.getEntityGroup() == null)
+                        .concat(pf.forEachUnfiltered(TestdataLavishEntity.class)
+                                .join(TestdataLavishValue.class)
+                                .filter((entity, joinedValue) -> entity.getEntityGroup() != null)));
+    }
+
+    @Override
+    @TestTemplate
+    public void precompute_distinct() {
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entityWithoutGroup = new TestdataLavishEntity();
+        var entityWithGroup1 = new TestdataLavishEntity();
+        var entityWithGroup2 = new TestdataLavishEntity();
+        var entityGroup = new TestdataLavishEntityGroup();
+        entityWithGroup1.setEntityGroup(entityGroup);
+        entityWithGroup2.setEntityGroup(entityGroup);
+        solution.getEntityList().addAll(List.of(entityWithoutGroup, entityWithGroup1, entityWithGroup2));
+        solution.getEntityGroupList().add(entityGroup);
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Pair<>(entityGroup, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .join(TestdataLavishValue.class)
+                        .filter((entity, joinedValue) -> entity.getEntityGroup() != null)
+                        .map((entity, joinedValue) -> entity.getEntityGroup(),
+                                (entity, joinedValue) -> joinedValue)
+                        .distinct());
     }
 }

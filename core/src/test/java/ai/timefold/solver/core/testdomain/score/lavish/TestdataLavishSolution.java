@@ -19,6 +19,10 @@ public class TestdataLavishSolution extends TestdataObject {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataLavishSolution.class, TestdataLavishEntity.class);
     }
 
+    public static TestdataLavishSolution generateEmptySolution() {
+        return generateSolution(0, 0, 0, 0);
+    }
+
     public static TestdataLavishSolution generateSolution() {
         return generateSolution(2, 5, 3, 7);
     }
