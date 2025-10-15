@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -11,11 +12,10 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.CachingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ProbabilityMoveSelector;
@@ -60,7 +60,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         SelectionOrder resolvedSelectionOrder =
                 SelectionOrder.resolve(config.getSelectionOrder(), inheritedSelectionOrder);
 
-        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder);
+        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder, false);
         validateSorting(resolvedSelectionOrder);
         validateProbability(resolvedSelectionOrder);
         validateSelectedLimit(minimumCacheType);
@@ -195,9 +195,9 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterWeightFactoryClass != null) {
-                SelectionSorterWeightFactory<Solution_, Move<Solution_>> sorterWeightFactory =
+                ComparatorFactory<Solution_, Move<Solution_>> comparatorFactory =
                         ConfigUtils.newInstance(config, "sorterWeightFactoryClass", sorterWeightFactoryClass);
-                sorter = new WeightFactorySelectionSorter<>(sorterWeightFactory,
+                sorter = new FactorySelectionSorter<>(comparatorFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterClass != null) {
                 sorter = ConfigUtils.newInstance(config, "sorterClass", sorterClass);

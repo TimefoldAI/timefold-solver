@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -21,7 +22,6 @@ import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
@@ -218,7 +218,7 @@ class ValueSelectorFactoryTest {
     @Test
     void applySorting_withSorterWeightFactoryClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
-                .withSorterWeightFactoryClass(DummySelectionSorterWeightFactory.class);
+                .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class);
         applySorting(valueSelectorConfig);
     }
 
@@ -310,10 +310,10 @@ class ValueSelectorFactoryTest {
         }
     }
 
-    public static class DummySelectionSorterWeightFactory
-            implements SelectionSorterWeightFactory<TestdataSolution, TestdataValue> {
+    public static class DummySelectionComparatorFactory
+            implements ComparatorFactory<TestdataSolution, TestdataValue> {
         @Override
-        public Comparable createSorterWeight(TestdataSolution testdataSolution, TestdataValue selection) {
+        public Comparable createSorter(TestdataSolution testdataSolution, TestdataValue selection) {
             return 0;
         }
     }

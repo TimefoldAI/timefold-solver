@@ -893,6 +893,9 @@
           <xs:element minOccurs="0" name="sorterWeightFactoryClass" type="xs:string"/>
                               
           
+          <xs:element minOccurs="0" name="sorterComparatorFactoryClass" type="xs:string"/>
+                              
+          
           <xs:element minOccurs="0" name="sorterOrder" type="tns:selectionSorterOrder"/>
                               
           
@@ -2874,6 +2877,12 @@
                   
       
       <xs:enumeration value="DECREASING_DIFFICULTY_IF_AVAILABLE"/>
+                  
+      
+      <xs:enumeration value="DESCENDING"/>
+                  
+      
+      <xs:enumeration value="DESCENDING_IF_AVAILABLE"/>
                 
     
     </xs:restriction>
@@ -2901,6 +2910,18 @@
                   
       
       <xs:enumeration value="DECREASING_STRENGTH_IF_AVAILABLE"/>
+                  
+      
+      <xs:enumeration value="ASCENDING"/>
+                  
+      
+      <xs:enumeration value="ASCENDING_IF_AVAILABLE"/>
+                  
+      
+      <xs:enumeration value="DESCENDING"/>
+                  
+      
+      <xs:enumeration value="DESCENDING_IF_AVAILABLE"/>
                 
     
     </xs:restriction>

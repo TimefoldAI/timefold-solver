@@ -7,14 +7,15 @@ import static org.mockito.Mockito.mock;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ShufflingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingEntitySelector;
@@ -34,8 +35,7 @@ class EntitySelectorFactoryTest {
         EntitySelector<TestdataSolution> entitySelector = EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
                 .buildEntitySelector(buildHeuristicConfigPolicy(), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
         assertThat(entitySelector)
-                .isInstanceOf(FromSolutionEntitySelector.class);
-        assertThat(entitySelector)
+                .isInstanceOf(FromSolutionEntitySelector.class)
                 .isNotInstanceOf(ShufflingEntitySelector.class);
         assertThat(entitySelector.getCacheType()).isEqualTo(SelectionCacheType.PHASE);
     }
@@ -48,8 +48,7 @@ class EntitySelectorFactoryTest {
         EntitySelector<TestdataSolution> entitySelector = EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
                 .buildEntitySelector(buildHeuristicConfigPolicy(), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
         assertThat(entitySelector)
-                .isInstanceOf(FromSolutionEntitySelector.class);
-        assertThat(entitySelector)
+                .isInstanceOf(FromSolutionEntitySelector.class)
                 .isNotInstanceOf(ShufflingEntitySelector.class);
         assertThat(entitySelector.getCacheType()).isEqualTo(SelectionCacheType.STEP);
     }
@@ -75,8 +74,7 @@ class EntitySelectorFactoryTest {
         EntitySelector<TestdataSolution> entitySelector = EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
                 .buildEntitySelector(buildHeuristicConfigPolicy(), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
         assertThat(entitySelector)
-                .isInstanceOf(FromSolutionEntitySelector.class);
-        assertThat(entitySelector)
+                .isInstanceOf(FromSolutionEntitySelector.class)
                 .isNotInstanceOf(ShufflingEntitySelector.class);
         assertThat(entitySelector.getCacheType()).isEqualTo(SelectionCacheType.PHASE);
     }
@@ -89,8 +87,7 @@ class EntitySelectorFactoryTest {
         EntitySelector<TestdataSolution> entitySelector = EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
                 .buildEntitySelector(buildHeuristicConfigPolicy(), SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
         assertThat(entitySelector)
-                .isInstanceOf(FromSolutionEntitySelector.class);
-        assertThat(entitySelector)
+                .isInstanceOf(FromSolutionEntitySelector.class)
                 .isNotInstanceOf(ShufflingEntitySelector.class);
         assertThat(entitySelector.getCacheType()).isEqualTo(SelectionCacheType.STEP);
     }
@@ -156,7 +153,7 @@ class EntitySelectorFactoryTest {
     @Test
     void applySorting_withSorterWeightFactoryClass() {
         EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
-                .withSorterWeightFactoryClass(DummySelectionSorterWeightFactory.class);
+                .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class);
         applySorting(entitySelectorConfig);
     }
 
@@ -198,6 +195,24 @@ class EntitySelectorFactoryTest {
                 .withMessageContaining("has another property");
     }
 
+    @Test
+    void failFast_ifBothFactoriesUsed() {
+        EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
+                .withSorterManner(EntitySorterManner.DESCENDING)
+                .withCacheType(SelectionCacheType.PHASE)
+                .withSelectionOrder(SelectionOrder.SORTED)
+                .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class)
+                .withSorterComparatorFactoryClass(DummySelectionComparatorFactory.class);
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
+                        .buildEntitySelector(buildHeuristicConfigPolicy(), SelectionCacheType.PHASE, SelectionOrder.SORTED))
+                .withMessageContaining(
+                        "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummySelectionComparatorFactory)")
+                .withMessageContaining(
+                        "and sorterComparatorFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummySelectionComparatorFactory) at the same time");
+    }
+
     public static class DummySelectionProbabilityWeightFactory
             implements SelectionProbabilityWeightFactory<TestdataSolution, TestdataEntity> {
 
@@ -207,10 +222,10 @@ class EntitySelectorFactoryTest {
         }
     }
 
-    public static class DummySelectionSorterWeightFactory
-            implements SelectionSorterWeightFactory<TestdataSolution, TestdataEntity> {
+    public static class DummySelectionComparatorFactory
+            implements ComparatorFactory<TestdataSolution, TestdataEntity> {
         @Override
-        public Comparable createSorterWeight(TestdataSolution testdataSolution, TestdataEntity selection) {
+        public Comparable createSorter(TestdataSolution testdataSolution, TestdataEntity selection) {
             return 0;
         }
     }

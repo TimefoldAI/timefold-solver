@@ -1,9 +1,12 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Creates a weight to decide the order of a collections of selections
@@ -15,17 +18,22 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  * Implementations are expected to be stateless.
  * The solver may choose to reuse instances.
  *
+ * @deprecated Deprecated in favor of {@link ComparatorFactory}.
+ * 
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
-@FunctionalInterface
-public interface SelectionSorterWeightFactory<Solution_, T> {
+@Deprecated(forRemoval = true, since = "1.28.0")
+@NullMarked
+public interface SelectionSorterWeightFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
 
-    /**
-     * @param solution never null, the {@link PlanningSolution} to which the selection belongs or applies to
-     * @param selection never null, a {@link PlanningEntity}, a planningValue, a {@link Move} or a {@link Selector}
-     * @return never null, for example a {@link Integer}, {@link Double} or a more complex {@link Comparable}
-     */
     Comparable createSorterWeight(Solution_ solution, T selection);
 
+    /**
+     * The default implementation has been created to maintain compatibility with the old contract.
+     */
+    @Override
+    default Comparable createSorter(Solution_ solution, T selection) {
+        return createSorterWeight(solution, selection);
+    }
 }

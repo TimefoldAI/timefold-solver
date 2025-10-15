@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
@@ -20,9 +21,8 @@ import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -30,8 +30,8 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFa
 public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescriptor<Solution_> {
 
     private ValueRangeDescriptor<Solution_> valueRangeDescriptor;
-    private SelectionSorter<Solution_, Object> increasingStrengthSorter;
-    private SelectionSorter<Solution_, Object> decreasingStrengthSorter;
+    private SelectionSorter<Solution_, Object> ascendingSorter;
+    private SelectionSorter<Solution_, Object> descendingSorter;
 
     // ************************************************************************
     // Constructors and simple getters/setters
@@ -155,35 +155,35 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         }
     }
 
-    protected void processStrength(Class<? extends Comparator> strengthComparatorClass,
-            Class<? extends SelectionSorterWeightFactory> strengthWeightFactoryClass) {
-        if (strengthComparatorClass == PlanningVariable.NullStrengthComparator.class) {
-            strengthComparatorClass = null;
+    @SuppressWarnings("rawtypes")
+    protected void processSorting(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,
+            String comparatorFactoryPropertyName, Class<? extends ComparatorFactory> comparatorFactoryClass) {
+        if (comparatorClass != null && PlanningVariable.NullComparator.class.isAssignableFrom(comparatorClass)) {
+            comparatorClass = null;
         }
-        if (strengthWeightFactoryClass == PlanningVariable.NullStrengthWeightFactory.class) {
-            strengthWeightFactoryClass = null;
+        if (comparatorFactoryClass != null
+                && PlanningVariable.NullComparatorFactory.class.isAssignableFrom(comparatorFactoryClass)) {
+            comparatorFactoryClass = null;
         }
-        if (strengthComparatorClass != null && strengthWeightFactoryClass != null) {
-            throw new IllegalStateException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") property (" + variableMemberAccessor.getName()
-                    + ") cannot have a strengthComparatorClass (" + strengthComparatorClass.getName()
-                    + ") and a strengthWeightFactoryClass (" + strengthWeightFactoryClass.getName()
-                    + ") at the same time.");
+        if (comparatorClass != null && comparatorFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) property (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(
+                            entityDescriptor.getEntityClass(), variableMemberAccessor.getName(), comparatorPropertyName,
+                            comparatorClass.getName(), comparatorFactoryPropertyName, comparatorFactoryClass.getName()));
         }
-        if (strengthComparatorClass != null) {
-            Comparator<Object> strengthComparator = newInstance(this::toString,
-                    "strengthComparatorClass", strengthComparatorClass);
-            increasingStrengthSorter = new ComparatorSelectionSorter<>(strengthComparator,
+        if (comparatorClass != null) {
+            Comparator<Object> strengthComparator = newInstance(this::toString, comparatorPropertyName, comparatorClass);
+            ascendingSorter = new ComparatorSelectionSorter<>(strengthComparator,
                     SelectionSorterOrder.ASCENDING);
-            decreasingStrengthSorter = new ComparatorSelectionSorter<>(strengthComparator,
+            descendingSorter = new ComparatorSelectionSorter<>(strengthComparator,
                     SelectionSorterOrder.DESCENDING);
         }
-        if (strengthWeightFactoryClass != null) {
-            SelectionSorterWeightFactory<Solution_, Object> strengthWeightFactory = newInstance(this::toString,
-                    "strengthWeightFactoryClass", strengthWeightFactoryClass);
-            increasingStrengthSorter = new WeightFactorySelectionSorter<>(strengthWeightFactory,
+        if (comparatorFactoryClass != null) {
+            ComparatorFactory<Solution_, Object> comparatorFactory =
+                    newInstance(this::toString, comparatorFactoryPropertyName, comparatorFactoryClass);
+            ascendingSorter = new FactorySelectionSorter<>(comparatorFactory,
                     SelectionSorterOrder.ASCENDING);
-            decreasingStrengthSorter = new WeightFactorySelectionSorter<>(strengthWeightFactory,
+            descendingSorter = new FactorySelectionSorter<>(comparatorFactory,
                     SelectionSorterOrder.DESCENDING);
         }
     }
@@ -238,12 +238,12 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
         return value == null;
     }
 
-    public SelectionSorter<Solution_, Object> getIncreasingStrengthSorter() {
-        return increasingStrengthSorter;
+    public SelectionSorter<Solution_, Object> getAscendingSorter() {
+        return ascendingSorter;
     }
 
-    public SelectionSorter<Solution_, Object> getDecreasingStrengthSorter() {
-        return decreasingStrengthSorter;
+    public SelectionSorter<Solution_, Object> getDescendingSorter() {
+        return descendingSorter;
     }
 
     @Override
