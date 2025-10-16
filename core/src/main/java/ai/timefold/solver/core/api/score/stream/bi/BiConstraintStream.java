@@ -1592,9 +1592,11 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
             return firstStream.concat(secondStream.ifNotExists(remapped, Joiners.equal()),
                     paddingFunction);
         } else {
-            var secondStream = getConstraintFactory().forEach(otherClass)
-                    .ifNotExists(remapped, Joiners.equal());
-            return firstStream.concat(secondStream, paddingFunction);
+            throw new IllegalStateException("""
+                    Impossible state: the %s class (%s) does not extend %s.
+                    %s are not expected to be implemented by the user.
+                    """.formatted(ConstraintStream.class.getSimpleName(), this.getClass().getSimpleName(),
+                    AbstractConstraintStream.class.getSimpleName(), ConstraintStream.class.getSimpleName()));
         }
     }
 

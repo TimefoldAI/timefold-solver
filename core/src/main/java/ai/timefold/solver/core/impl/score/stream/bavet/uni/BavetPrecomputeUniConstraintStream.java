@@ -15,16 +15,16 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
 public class BavetPrecomputeUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A>
         implements TupleSource {
-    private final BavetAbstractConstraintStream<Solution_> recordingStaticConstraintStream;
+    private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
     private BavetAftBridgeUniConstraintStream<Solution_, A> aftStream;
 
     public BavetPrecomputeUniConstraintStream(
             BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
+            BavetAbstractConstraintStream<Solution_> precomputedConstraintStream) {
         super(constraintFactory, RetrievalSemantics.STANDARD);
-        this.recordingStaticConstraintStream = new BavetRecordingUniConstraintStream<>(constraintFactory,
-                staticConstraintStream);
-        staticConstraintStream.getChildStreamList().add(recordingStaticConstraintStream);
+        this.recordingPrecomputedConstraintStream = new BavetRecordingUniConstraintStream<>(constraintFactory,
+                precomputedConstraintStream);
+        precomputedConstraintStream.getChildStreamList().add(recordingPrecomputedConstraintStream);
     }
 
     public void setAftBridge(BavetAftBridgeUniConstraintStream<Solution_, A> aftStream) {
@@ -33,14 +33,14 @@ public class BavetPrecomputeUniConstraintStream<Solution_, A> extends BavetAbstr
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        var staticDataBuildHelper = new BavetPrecomputeBuildHelper<UniTuple<A>>(recordingStaticConstraintStream);
+        var precomputeBuildHelper = new BavetPrecomputeBuildHelper<UniTuple<A>>(recordingPrecomputedConstraintStream);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
-        buildHelper.addNode(new PrecomputeUniNode<>(staticDataBuildHelper.getNodeNetwork(),
-                staticDataBuildHelper.getRecordingTupleLifecycle(),
+        buildHelper.addNode(new PrecomputeUniNode<>(precomputeBuildHelper.getNodeNetwork(),
+                precomputeBuildHelper.getRecordingTupleLifecycle(),
                 outputStoreSize,
                 buildHelper.getAggregatedTupleLifecycle(aftStream.getChildStreamList()),
-                staticDataBuildHelper.getSourceClasses()),
+                precomputeBuildHelper.getSourceClasses()),
                 this);
     }
 

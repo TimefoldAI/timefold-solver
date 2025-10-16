@@ -15,16 +15,16 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
 public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends BavetAbstractTriConstraintStream<Solution_, A, B, C>
         implements TupleSource {
-    private final BavetAbstractConstraintStream<Solution_> recordingStaticConstraintStream;
+    private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
     private BavetAftBridgeTriConstraintStream<Solution_, A, B, C> aftStream;
 
     public BavetPrecomputeTriConstraintStream(
             BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
+            BavetAbstractConstraintStream<Solution_> precomputedConstraintStream) {
         super(constraintFactory, RetrievalSemantics.STANDARD);
-        this.recordingStaticConstraintStream = new BavetRecordingTriConstraintStream<>(constraintFactory,
-                staticConstraintStream);
-        staticConstraintStream.getChildStreamList().add(recordingStaticConstraintStream);
+        this.recordingPrecomputedConstraintStream = new BavetRecordingTriConstraintStream<>(constraintFactory,
+                precomputedConstraintStream);
+        precomputedConstraintStream.getChildStreamList().add(recordingPrecomputedConstraintStream);
     }
 
     public void setAftBridge(BavetAftBridgeTriConstraintStream<Solution_, A, B, C> aftStream) {
@@ -33,14 +33,14 @@ public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends Bave
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        var staticDataBuildHelper = new BavetPrecomputeBuildHelper<TriTuple<A, B, C>>(recordingStaticConstraintStream);
+        var precomputedBuildHelper = new BavetPrecomputeBuildHelper<TriTuple<A, B, C>>(recordingPrecomputedConstraintStream);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
-        buildHelper.addNode(new PrecomputeTriNode<>(staticDataBuildHelper.getNodeNetwork(),
-                staticDataBuildHelper.getRecordingTupleLifecycle(),
+        buildHelper.addNode(new PrecomputeTriNode<>(precomputedBuildHelper.getNodeNetwork(),
+                precomputedBuildHelper.getRecordingTupleLifecycle(),
                 outputStoreSize,
                 buildHelper.getAggregatedTupleLifecycle(aftStream.getChildStreamList()),
-                staticDataBuildHelper.getSourceClasses()),
+                precomputedBuildHelper.getSourceClasses()),
                 this);
     }
 

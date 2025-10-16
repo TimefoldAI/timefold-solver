@@ -15,16 +15,16 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
 public class BavetPrecomputeBiConstraintStream<Solution_, A, B> extends BavetAbstractBiConstraintStream<Solution_, A, B>
         implements TupleSource {
-    private final BavetAbstractConstraintStream<Solution_> recordingStaticConstraintStream;
+    private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
     private BavetAftBridgeBiConstraintStream<Solution_, A, B> aftStream;
 
     public BavetPrecomputeBiConstraintStream(
             BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
+            BavetAbstractConstraintStream<Solution_> precomputedConstraintStream) {
         super(constraintFactory, RetrievalSemantics.STANDARD);
-        this.recordingStaticConstraintStream = new BavetRecordingBiConstraintStream<>(constraintFactory,
-                staticConstraintStream);
-        staticConstraintStream.getChildStreamList().add(recordingStaticConstraintStream);
+        this.recordingPrecomputedConstraintStream = new BavetRecordingBiConstraintStream<>(constraintFactory,
+                precomputedConstraintStream);
+        precomputedConstraintStream.getChildStreamList().add(recordingPrecomputedConstraintStream);
     }
 
     public void setAftBridge(BavetAftBridgeBiConstraintStream<Solution_, A, B> aftStream) {
@@ -33,14 +33,14 @@ public class BavetPrecomputeBiConstraintStream<Solution_, A, B> extends BavetAbs
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        var staticDataBuildHelper = new BavetPrecomputeBuildHelper<BiTuple<A, B>>(recordingStaticConstraintStream);
+        var precomputeBuildHelper = new BavetPrecomputeBuildHelper<BiTuple<A, B>>(recordingPrecomputedConstraintStream);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
-        buildHelper.addNode(new PrecomputeBiNode<>(staticDataBuildHelper.getNodeNetwork(),
-                staticDataBuildHelper.getRecordingTupleLifecycle(),
+        buildHelper.addNode(new PrecomputeBiNode<>(precomputeBuildHelper.getNodeNetwork(),
+                precomputeBuildHelper.getRecordingTupleLifecycle(),
                 outputStoreSize,
                 buildHelper.getAggregatedTupleLifecycle(aftStream.getChildStreamList()),
-                staticDataBuildHelper.getSourceClasses()),
+                precomputeBuildHelper.getSourceClasses()),
                 this);
     }
 

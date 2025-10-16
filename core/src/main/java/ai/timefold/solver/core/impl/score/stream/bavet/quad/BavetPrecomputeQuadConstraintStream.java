@@ -16,16 +16,16 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 public class BavetPrecomputeQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         implements TupleSource {
-    private final BavetAbstractConstraintStream<Solution_> recordingStaticConstraintStream;
+    private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
     private BavetAftBridgeQuadConstraintStream<Solution_, A, B, C, D> aftStream;
 
     public BavetPrecomputeQuadConstraintStream(
             BavetConstraintFactory<Solution_> constraintFactory,
-            BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
+            BavetAbstractConstraintStream<Solution_> precomputedConstraintStream) {
         super(constraintFactory, RetrievalSemantics.STANDARD);
-        this.recordingStaticConstraintStream = new BavetRecordingQuadConstraintStream<>(constraintFactory,
-                staticConstraintStream);
-        staticConstraintStream.getChildStreamList().add(recordingStaticConstraintStream);
+        this.recordingPrecomputedConstraintStream = new BavetRecordingQuadConstraintStream<>(constraintFactory,
+                precomputedConstraintStream);
+        precomputedConstraintStream.getChildStreamList().add(recordingPrecomputedConstraintStream);
     }
 
     public void setAftBridge(BavetAftBridgeQuadConstraintStream<Solution_, A, B, C, D> aftStream) {
@@ -34,14 +34,14 @@ public class BavetPrecomputeQuadConstraintStream<Solution_, A, B, C, D>
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        var staticDataBuildHelper = new BavetPrecomputeBuildHelper<QuadTuple<A, B, C, D>>(recordingStaticConstraintStream);
+        var precomputeBuildHelper = new BavetPrecomputeBuildHelper<QuadTuple<A, B, C, D>>(recordingPrecomputedConstraintStream);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
-        buildHelper.addNode(new PrecomputeQuadNode<>(staticDataBuildHelper.getNodeNetwork(),
-                staticDataBuildHelper.getRecordingTupleLifecycle(),
+        buildHelper.addNode(new PrecomputeQuadNode<>(precomputeBuildHelper.getNodeNetwork(),
+                precomputeBuildHelper.getRecordingTupleLifecycle(),
                 outputStoreSize,
                 buildHelper.getAggregatedTupleLifecycle(aftStream.getChildStreamList()),
-                staticDataBuildHelper.getSourceClasses()),
+                precomputeBuildHelper.getSourceClasses()),
                 this);
     }
 

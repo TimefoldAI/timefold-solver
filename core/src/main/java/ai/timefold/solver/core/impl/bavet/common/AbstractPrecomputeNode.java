@@ -124,14 +124,14 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
         queuedUpdateSet.clear();
     }
 
-    private void insertNew(Tuple_ tuple) {
+    private void insertIfAbsent(Tuple_ tuple) {
         var state = tuple.state;
         if (state != TupleState.CREATING) {
             propagationQueue.insert(tuple);
         }
     }
 
-    private void retractExisting(Tuple_ tuple) {
+    private void retractIfPresent(Tuple_ tuple) {
         var state = tuple.state;
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
@@ -158,7 +158,7 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
     }
 
     private void invalidateCache() {
-        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::retractExisting);
+        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::retractIfPresent);
         inputTupleToOutputTupleMap.clear();
     }
 
@@ -177,7 +177,7 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
 
             recordingTupleNode.stopRecording();
         }
-        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::insertNew);
+        objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::insertIfAbsent);
     }
 
     protected abstract Tuple_ remapTuple(Tuple_ tuple);

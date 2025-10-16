@@ -1735,9 +1735,11 @@ public interface UniConstraintStream<A> extends ConstraintStream {
             };
             return firstStream.concat(secondStream.ifNotExists(firstStream, Joiners.equal()));
         } else {
-            var secondStream = getConstraintFactory().forEach(otherClass)
-                    .ifNotExists(firstStream, Joiners.equal());
-            return firstStream.concat(secondStream);
+            throw new IllegalStateException("""
+                    Impossible state: the %s class (%s) does not extend %s.
+                    %s are not expected to be implemented by the user.
+                    """.formatted(ConstraintStream.class.getSimpleName(), this.getClass().getSimpleName(),
+                    AbstractConstraintStream.class.getSimpleName(), ConstraintStream.class.getSimpleName()));
         }
     }
 

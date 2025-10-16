@@ -1093,9 +1093,11 @@ public interface QuadConstraintStream<A, B, C, D> extends ConstraintStream {
             return firstStream.concat(secondStream.ifNotExists(remapped, Joiners.equal()),
                     paddingFunctionB, paddingFunctionC, paddingFunctionD);
         } else {
-            var secondStream = getConstraintFactory().forEach(otherClass)
-                    .ifNotExists(remapped, Joiners.equal());
-            return firstStream.concat(secondStream, paddingFunctionB, paddingFunctionC, paddingFunctionD);
+            throw new IllegalStateException("""
+                    Impossible state: the %s class (%s) does not extend %s.
+                    %s are not expected to be implemented by the user.
+                    """.formatted(ConstraintStream.class.getSimpleName(), this.getClass().getSimpleName(),
+                    AbstractConstraintStream.class.getSimpleName(), ConstraintStream.class.getSimpleName()));
         }
     }
 
