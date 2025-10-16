@@ -6,15 +6,17 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class RecordingTupleLifecycle<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_> {
+public class RecordingTupleLifecycle<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_>, AutoCloseable {
     @Nullable
     TupleRecorder<Tuple_> tupleRecorder;
 
-    public void startRecording(TupleRecorder<Tuple_> tupleRecorder) {
+    public RecordingTupleLifecycle<Tuple_> recordInto(TupleRecorder<Tuple_> tupleRecorder) {
         this.tupleRecorder = tupleRecorder;
+        return this;
     }
 
-    public void stopRecording() {
+    @Override
+    public void close() {
         this.tupleRecorder = null;
     }
 

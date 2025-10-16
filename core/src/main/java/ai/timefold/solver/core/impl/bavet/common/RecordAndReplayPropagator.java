@@ -165,17 +165,15 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
         for (var mappedTupleEntry : objectToOutputTuplesMap.entrySet()) {
             mappedTupleEntry.getValue().clear();
             var invalidated = mappedTupleEntry.getKey();
-            recordingTupleLifecycle.startRecording(
+            try (var unusedActiveRecordingLifecycle = recordingTupleLifecycle.recordInto(
                     new TupleRecorder<>(mappedTupleEntry.getValue(), internalTupleToOutputTupleMapper,
-                            (IdentityHashMap<Tuple_, Tuple_>) internalTupleToOutputTupleMap));
-
-            // Do a fake update on the object and settle the network; this will update precisely the
-            // tuples mapped to this node, which will then be recorded
-            internalNodeNetwork.getRootNodesAcceptingType(invalidated.getClass())
-                    .forEach(node -> ((BavetRootNode<Object>) node).update(invalidated));
-            internalNodeNetwork.settle();
-
-            recordingTupleLifecycle.stopRecording();
+                            (IdentityHashMap<Tuple_, Tuple_>) internalTupleToOutputTupleMap))) {
+                // Do a fake update on the object and settle the network; this will update precisely the
+                // tuples mapped to this node, which will then be recorded
+                internalNodeNetwork.getRootNodesAcceptingType(invalidated.getClass())
+                        .forEach(node -> ((BavetRootNode<Object>) node).update(invalidated));
+                internalNodeNetwork.settle();
+            }
         }
         objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::insertIfAbsent);
     }
