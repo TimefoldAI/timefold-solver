@@ -98,11 +98,6 @@ public abstract sealed class AbstractForEachUniNode<A>
     }
 
     @Override
-    public final void settle() {
-        // We don't need to do any operations
-    }
-
-    @Override
     public Propagator getPropagator() {
         return propagationQueue;
     }

@@ -12,16 +12,12 @@ public abstract class AbstractSession {
     private final Map<Class<?>, BavetRootNode<Object>[]> insertEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, BavetRootNode<Object>[]> updateEffectiveClassToNodeArrayMap;
     private final Map<Class<?>, BavetRootNode<Object>[]> retractEffectiveClassToNodeArrayMap;
-    private final BavetRootNode<Object>[] settleNodes;
 
     protected AbstractSession(NodeNetwork nodeNetwork) {
         this.nodeNetwork = nodeNetwork;
         this.insertEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
         this.updateEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
         this.retractEffectiveClassToNodeArrayMap = new IdentityHashMap<>(nodeNetwork.forEachNodeCount());
-        this.settleNodes = nodeNetwork.getRootNodes()
-                .filter(node -> node.supports(LifecycleOperation.SETTLE))
-                .toArray(BavetRootNode[]::new);
     }
 
     public final void insert(Object fact) {
@@ -37,8 +33,6 @@ public abstract class AbstractSession {
             case INSERT -> insertEffectiveClassToNodeArrayMap;
             case UPDATE -> updateEffectiveClassToNodeArrayMap;
             case RETRACT -> retractEffectiveClassToNodeArrayMap;
-            case SETTLE ->
-                throw new IllegalArgumentException("impossible state: findNodes should not be called for settle nodes");
         };
         // Map.computeIfAbsent() would have created lambdas on the hot path, this will not.
         var nodeArray = effectiveClassToNodeArrayMap.get(factClass);
@@ -66,9 +60,6 @@ public abstract class AbstractSession {
     }
 
     public void settle() {
-        for (var node : settleNodes) {
-            node.settle();
-        }
         nodeNetwork.settle();
     }
 

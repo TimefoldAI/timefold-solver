@@ -11,8 +11,6 @@ public interface BavetRootNode<A> {
 
     void retract(@Nullable A a);
 
-    void settle();
-
     boolean allowsInstancesOf(Class<?> clazz);
 
     Class<?>[] getSourceClasses();
@@ -49,10 +47,6 @@ public interface BavetRootNode<A> {
          * This operation is typically used when a fact is removed from the working solution
          * and its corresponding tuple needs to be removed from the node network.
          */
-        RETRACT,
-        /**
-         * Represents the operation of recalculating the score, just prior to all queued operations being propagated.
-         */
-        SETTLE
+        RETRACT
     }
 }
