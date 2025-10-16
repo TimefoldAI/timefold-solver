@@ -550,7 +550,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
     @TestTemplate
     public void sameDataPrecompute() {
         BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((BiConstraintStream<?, ?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .join(TestdataEntity.class)
                         .filter(filter1)))
@@ -566,7 +566,7 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
         BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
         BiPredicate<TestdataEntity, TestdataEntity> filter2 = (a, b) -> false;
 
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((BiConstraintStream<?, ?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .join(TestdataEntity.class)
                         .filter(filter1)))

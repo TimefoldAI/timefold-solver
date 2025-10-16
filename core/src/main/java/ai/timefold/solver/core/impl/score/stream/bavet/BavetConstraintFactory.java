@@ -72,7 +72,7 @@ public final class BavetConstraintFactory<Solution_>
         }
     }
 
-    private static String determineDefaultConstraintPackage(Package pkg) {
+    private static String determineDefaultConstraintPackage(@Nullable Package pkg) {
         var asString = pkg == null ? "" : pkg.getName();
         return determineDefaultConstraintPackage(asString);
     }

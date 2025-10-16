@@ -701,7 +701,7 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     @TestTemplate
     public void sameDataPrecompute() {
         Predicate<TestdataEntity> filter1 = a -> true;
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((UniConstraintStream<?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .filter(filter1)))
                 .isSameAs(constraintFactory.precompute(
@@ -715,7 +715,7 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
         Predicate<TestdataEntity> filter1 = a -> true;
         Predicate<TestdataEntity> filter2 = a -> false;
 
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((UniConstraintStream<?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .filter(filter1)))
                 .isNotSameAs(constraintFactory.precompute(

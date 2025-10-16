@@ -579,7 +579,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
     @TestTemplate
     public void sameDataPrecompute() {
         TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((TriConstraintStream<?, ?, ?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .join(TestdataEntity.class)
                         .join(TestdataEntity.class)
@@ -597,7 +597,7 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
         TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
         TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter2 = (a, b, c) -> false;
 
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((TriConstraintStream<?, ?, ?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .join(TestdataEntity.class)
                         .join(TestdataEntity.class)

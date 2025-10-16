@@ -482,7 +482,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
     @TestTemplate
     public void sameDataPrecompute() {
         QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c, d) -> true;
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((QuadConstraintStream<?, ?, ?, ?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .join(TestdataEntity.class)
                         .join(TestdataEntity.class)
@@ -502,7 +502,7 @@ public abstract class AbstractQuadConstraintStreamNodeSharingTest extends Abstra
         QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c, d) -> true;
         QuadPredicate<TestdataEntity, TestdataEntity, TestdataEntity, TestdataEntity> filter2 = (a, b, c, d) -> false;
 
-        Assertions.assertThat((Object) constraintFactory.precompute(
+        Assertions.assertThat((QuadConstraintStream<?, ?, ?, ?>) constraintFactory.precompute(
                 precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
                         .join(TestdataEntity.class)
                         .join(TestdataEntity.class)
