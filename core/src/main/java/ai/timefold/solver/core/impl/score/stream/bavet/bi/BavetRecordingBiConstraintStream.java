@@ -18,4 +18,24 @@ public class BavetRecordingBiConstraintStream<Solution_, A, B> extends BavetAbst
         assertEmptyChildStreamList();
         buildHelper.putInsertUpdateRetract(this, TupleLifecycle.recording());
     }
+
+    // ************************************************************************
+    // Equality for node sharing
+    // ************************************************************************
+
+    @Override
+    public int hashCode() {
+        return parent.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        } else if (o instanceof BavetRecordingBiConstraintStream<?, ?, ?> other) {
+            return parent.equals(other.parent);
+        } else {
+            return false;
+        }
+    }
 }

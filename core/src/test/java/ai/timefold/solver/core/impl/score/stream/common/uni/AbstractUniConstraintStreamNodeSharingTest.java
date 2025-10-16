@@ -20,6 +20,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 
@@ -694,5 +695,31 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
         assertThat(baseStream
                 .concat(baseStream.filter(filter1)))
                 .isSameAs(baseStream.concat(baseStream.filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameDataPrecompute() {
+        Predicate<TestdataEntity> filter1 = a -> true;
+        Assertions.assertThat((Object) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .filter(filter1)))
+                .isSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentDataPrecompute() {
+        Predicate<TestdataEntity> filter1 = a -> true;
+        Predicate<TestdataEntity> filter2 = a -> false;
+
+        Assertions.assertThat((Object) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .filter(filter1)))
+                .isNotSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .filter(filter2)));
     }
 }

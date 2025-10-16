@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.quad;
 
+import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -48,5 +49,25 @@ public class BavetPrecomputeQuadConstraintStream<Solution_, A, B, C, D>
     @Override
     public void collectActiveConstraintStreams(Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet) {
         constraintStreamSet.add(this);
+    }
+
+    // ************************************************************************
+    // Equality for node sharing
+    // ************************************************************************
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(recordingPrecomputedConstraintStream);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        } else if (o instanceof BavetPrecomputeQuadConstraintStream<?, ?, ?, ?, ?> other) {
+            return recordingPrecomputedConstraintStream.equals(other.recordingPrecomputedConstraintStream);
+        } else {
+            return false;
+        }
     }
 }

@@ -66,13 +66,19 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
     }
 
     @Override
-    public final void insert(Object a) {
+    public final void insert(@Nullable Object a) {
+        if (a == null) {
+            return;
+        }
         // do not remove a retract of the same fact (a fact was updated)
         queuedInsertSet.add(a);
     }
 
     @Override
-    public final void update(Object a) {
+    public final void update(@Nullable Object a) {
+        if (a == null) {
+            return;
+        }
         queuedUpdateSet.add(a);
     }
 
@@ -90,7 +96,10 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
     }
 
     @Override
-    public final void retract(Object a) {
+    public final void retract(@Nullable Object a) {
+        if (a == null) {
+            return;
+        }
         // remove an insert then retract (a fact was inserted but retracted before settling)
         // do not remove a retract then insert (a fact was updated)
         if (!queuedInsertSet.remove(a)) {

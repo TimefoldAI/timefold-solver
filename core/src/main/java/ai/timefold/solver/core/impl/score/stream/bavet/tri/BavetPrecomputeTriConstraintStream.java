@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.tri;
 
+import java.util.Objects;
 import java.util.Set;
 
 import ai.timefold.solver.core.api.score.Score;
@@ -47,5 +48,25 @@ public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends Bave
     @Override
     public void collectActiveConstraintStreams(Set<BavetAbstractConstraintStream<Solution_>> constraintStreamSet) {
         constraintStreamSet.add(this);
+    }
+
+    // ************************************************************************
+    // Equality for node sharing
+    // ************************************************************************
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(recordingPrecomputedConstraintStream);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        } else if (o instanceof BavetPrecomputeTriConstraintStream<?, ?, ?, ?> other) {
+            return recordingPrecomputedConstraintStream.equals(other.recordingPrecomputedConstraintStream);
+        } else {
+            return false;
+        }
     }
 }

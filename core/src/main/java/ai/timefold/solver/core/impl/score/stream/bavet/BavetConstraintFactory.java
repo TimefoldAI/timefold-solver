@@ -35,8 +35,10 @@ import ai.timefold.solver.core.impl.score.stream.common.ForEachFilteringCriteria
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class BavetConstraintFactory<Solution_>
         extends InnerConstraintFactory<Solution_, BavetConstraint<Solution_>> {
 
@@ -75,7 +77,7 @@ public final class BavetConstraintFactory<Solution_>
         return determineDefaultConstraintPackage(asString);
     }
 
-    private static String determineDefaultConstraintPackage(String constraintPackage) {
+    private static String determineDefaultConstraintPackage(@Nullable String constraintPackage) {
         return constraintPackage == null || constraintPackage.isEmpty() ? DEFAULT_CONSTRAINT_PACKAGE : constraintPackage;
     }
 
@@ -115,17 +117,17 @@ public final class BavetConstraintFactory<Solution_>
     // Required for node sharing, since using a lambda will create different instances
     private record ForEachFilteringCriteriaPredicateFunction<Solution_, A>(EntityDescriptor<Solution_> entityDescriptor,
             ForEachFilteringCriteria criteria) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
-        public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
+        public Predicate<A> apply(ConstraintNodeBuildHelper<Solution_, ?> helper) {
             return helper.getForEachPredicateForEntityDescriptorAndCriteria(entityDescriptor, criteria);
         }
     }
 
-    private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
+    private <A> UniConstraintStream<A> forEachForCriteria(Class<A> sourceClass,
             ForEachFilteringCriteria criteria) {
         return forEachForCriteria(sourceClass, criteria, RetrievalSemantics.STANDARD);
     }
 
-    private <A> @NonNull UniConstraintStream<A> forEachForCriteria(@NonNull Class<A> sourceClass,
+    private <A> UniConstraintStream<A> forEachForCriteria(Class<A> sourceClass,
             ForEachFilteringCriteria criteria, RetrievalSemantics retrievalSemantics) {
         assertValidFromType(sourceClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(sourceClass);
@@ -162,34 +164,34 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass) {
+    public <A> UniConstraintStream<A> forEach(Class<A> sourceClass) {
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ASSIGNED_AND_CONSISTENT);
     }
 
     @Override
-    public <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass) {
+    public <A> UniConstraintStream<A> forEachIncludingUnassigned(Class<A> sourceClass) {
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.CONSISTENT);
     }
 
     @Override
-    public <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass) {
+    public <A> UniConstraintStream<A> forEachUnfiltered(Class<A> sourceClass) {
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL);
     }
 
-    <A> @NonNull UniConstraintStream<A> forEachUnfilteredStatic(@NonNull Class<A> sourceClass) {
+    <A> UniConstraintStream<A> forEachUnfilteredStatic(Class<A> sourceClass) {
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL, RetrievalSemantics.STATIC);
     }
 
     // Required for node sharing, since using a lambda will create different instances
     private record PredicateSupplier<Solution_, A>(
             Predicate<A> suppliedPredicate) implements Function<ConstraintNodeBuildHelper<Solution_, ?>, Predicate<A>> {
-        public Predicate<A> apply(@NonNull ConstraintNodeBuildHelper<Solution_, ?> helper) {
+        public Predicate<A> apply(ConstraintNodeBuildHelper<Solution_, ?> helper) {
             return suppliedPredicate;
         }
     }
 
     @Override
-    public @NonNull <A> UniConstraintStream<A> from(@NonNull Class<A> fromClass) {
+    public <A> UniConstraintStream<A> from(Class<A> fromClass) {
         assertValidFromType(fromClass);
         var entityDescriptor = solutionDescriptor.findEntityDescriptor(fromClass);
         if (entityDescriptor != null && entityDescriptor.isGenuine()) {
@@ -204,8 +206,8 @@ public final class BavetConstraintFactory<Solution_>
 
     @Override
     @SuppressWarnings("unchecked")
-    public @NonNull <Stream_ extends @NonNull ConstraintStream> Stream_
-            precompute(@NonNull Function<@NonNull PrecomputeFactory, @NonNull Stream_> precomputeSupplier) {
+    public <Stream_ extends ConstraintStream> Stream_
+            precompute(Function<PrecomputeFactory, Stream_> precomputeSupplier) {
         var bavetStream = Objects.requireNonNull(precomputeSupplier.apply(new BavetStaticDataFactory<>(this)));
         // TODO: Use switch here in JDK 21
         if (bavetStream instanceof BavetAbstractUniConstraintStream<?, ?> uniStream) {
@@ -236,7 +238,7 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public @NonNull <A> UniConstraintStream<A> fromUnfiltered(@NonNull Class<A> fromClass) {
+    public <A> UniConstraintStream<A> fromUnfiltered(Class<A> fromClass) {
         assertValidFromType(fromClass);
         return share(new BavetForEachUniConstraintStream<>(this, fromClass, null, RetrievalSemantics.LEGACY));
     }
@@ -255,7 +257,7 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     @Override
-    public @NonNull String getDefaultConstraintPackage() {
+    public String getDefaultConstraintPackage() {
         return defaultConstraintPackage;
     }
 

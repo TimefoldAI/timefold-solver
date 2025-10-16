@@ -19,4 +19,24 @@ public class BavetRecordingTriConstraintStream<Solution_, A, B, C>
         assertEmptyChildStreamList();
         buildHelper.putInsertUpdateRetract(this, TupleLifecycle.recording());
     }
+
+    // ************************************************************************
+    // Equality for node sharing
+    // ************************************************************************
+
+    @Override
+    public int hashCode() {
+        return parent.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        } else if (o instanceof BavetRecordingTriConstraintStream<?, ?, ?, ?> other) {
+            return parent.equals(other.parent);
+        } else {
+            return false;
+        }
+    }
 }

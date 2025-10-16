@@ -21,6 +21,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 
@@ -572,5 +573,39 @@ public abstract class AbstractTriConstraintStreamNodeSharingTest extends Abstrac
         assertThat(baseStream
                 .concat(baseStream.filter(filter1)))
                 .isSameAs(baseStream.concat(baseStream.filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameDataPrecompute() {
+        TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
+        Assertions.assertThat((Object) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .join(TestdataEntity.class)
+                        .join(TestdataEntity.class)
+                        .filter(filter1)))
+                .isSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .join(TestdataEntity.class)
+                                .join(TestdataEntity.class)
+                                .filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentDataPrecompute() {
+        TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter1 = (a, b, c) -> true;
+        TriPredicate<TestdataEntity, TestdataEntity, TestdataEntity> filter2 = (a, b, c) -> false;
+
+        Assertions.assertThat((Object) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .join(TestdataEntity.class)
+                        .join(TestdataEntity.class)
+                        .filter(filter1)))
+                .isNotSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .join(TestdataEntity.class)
+                                .join(TestdataEntity.class)
+                                .filter(filter2)));
     }
 }

@@ -46,6 +46,7 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -297,6 +298,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
     }
 
     @Test
+    @ResourceLock("yaml")
     void solverWithYaml() {
         contextRunner
                 .withInitializer(new ConfigDataApplicationContextInitializer())
@@ -323,6 +325,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
     }
 
     @Test
+    @ResourceLock("yaml")
     void invalidYaml() {
         assertThatCode(() -> contextRunner
                 .withInitializer(new ConfigDataApplicationContextInitializer())

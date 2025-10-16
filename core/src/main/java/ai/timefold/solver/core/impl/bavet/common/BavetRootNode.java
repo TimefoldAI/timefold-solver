@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public interface BavetRootNode<A> {
-    void insert(A a);
+    void insert(@Nullable A a);
 
-    void update(A a);
+    void update(@Nullable A a);
 
-    void retract(A a);
+    void retract(@Nullable A a);
 
     void settle();
 
