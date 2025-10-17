@@ -1731,7 +1731,7 @@ public interface UniConstraintStream<A> extends ConstraintStream {
         if (firstStream instanceof AbstractConstraintStream<?> abstractConstraintStream) {
             var secondStream = switch (abstractConstraintStream.getRetrievalSemantics()) {
                 case STANDARD, LEGACY -> getConstraintFactory().forEach(otherClass);
-                case STATIC -> getConstraintFactory().forEachUnfiltered(otherClass);
+                case PRECOMPUTE -> getConstraintFactory().forEachUnfiltered(otherClass);
             };
             return firstStream.concat(secondStream.ifNotExists(firstStream, Joiners.equal()));
         } else {

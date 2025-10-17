@@ -77,12 +77,13 @@ public final class BavetForEachUniConstraintStream<Solution_, A>
             return false;
         }
         BavetForEachUniConstraintStream<?, ?> that = (BavetForEachUniConstraintStream<?, ?>) other;
-        return Objects.equals(forEachClass, that.forEachClass) && Objects.equals(filterFunction, that.filterFunction);
+        return Objects.equals(forEachClass, that.forEachClass) && Objects.equals(filterFunction, that.filterFunction)
+                && getRetrievalSemantics().equals(that.getRetrievalSemantics());
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(forEachClass, filterFunction);
+        return Objects.hash(forEachClass, filterFunction, getRetrievalSemantics());
     }
 
     @Override

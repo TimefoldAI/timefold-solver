@@ -45,7 +45,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
     default <C> @NonNull TriConstraintStream<A, B, C> join(@NonNull Class<C> otherClass, TriJoiner<A, B, C>... joiners) {
         return switch (getRetrievalSemantics()) {
             case STANDARD -> join(getConstraintFactory().forEach(otherClass), joiners);
-            case STATIC -> join(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            case PRECOMPUTE -> join(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             case LEGACY -> join(getConstraintFactory().from(otherClass), joiners);
         };
     }
@@ -55,7 +55,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
             TriJoiner<A, B, C> @NonNull... joiners) {
         return switch (getRetrievalSemantics()) {
             case STANDARD -> ifExists(getConstraintFactory().forEach(otherClass), joiners);
-            case STATIC -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            case PRECOMPUTE -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
             case LEGACY -> ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
         };
@@ -66,7 +66,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
             @NonNull TriJoiner<A, B, C> @NonNull... joiners) {
         return switch (getRetrievalSemantics()) {
             case STANDARD -> ifExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
-            case STATIC -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            case PRECOMPUTE -> ifExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
             case LEGACY -> ifExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
         };
@@ -77,7 +77,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
             @NonNull TriJoiner<A, B, C>... joiners) {
         return switch (getRetrievalSemantics()) {
             case STANDARD -> ifNotExists(getConstraintFactory().forEach(otherClass), joiners);
-            case STATIC -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            case PRECOMPUTE -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
             case LEGACY -> ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
         };
@@ -88,7 +88,7 @@ public interface InnerBiConstraintStream<A, B> extends BiConstraintStream<A, B> 
             @NonNull TriJoiner<A, B, C>... joiners) {
         return switch (getRetrievalSemantics()) {
             case STANDARD -> ifNotExists(getConstraintFactory().forEachIncludingUnassigned(otherClass), joiners);
-            case STATIC -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
+            case PRECOMPUTE -> ifNotExists(getConstraintFactory().forEachUnfiltered(otherClass), joiners);
             // Calls fromUnfiltered() for backward compatibility only
             case LEGACY -> ifNotExists(getConstraintFactory().fromUnfiltered(otherClass), joiners);
         };

@@ -179,7 +179,7 @@ public final class BavetConstraintFactory<Solution_>
     }
 
     <A> UniConstraintStream<A> forEachUnfilteredStatic(Class<A> sourceClass) {
-        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL, RetrievalSemantics.STATIC);
+        return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL, RetrievalSemantics.PRECOMPUTE);
     }
 
     // Required for node sharing, since using a lambda will create different instances

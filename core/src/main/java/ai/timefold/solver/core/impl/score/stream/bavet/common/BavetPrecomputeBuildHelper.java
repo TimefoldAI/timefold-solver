@@ -7,6 +7,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 
+import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
+import ai.timefold.solver.core.api.score.stream.ConstraintStream;
+import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
@@ -16,6 +19,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
+import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
 public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
@@ -23,10 +27,20 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
     private final RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle;
     private final Class<?>[] sourceClasses;
 
-    public <Solution_> BavetPrecomputeBuildHelper(BavetAbstractConstraintStream<Solution_> staticConstraintStream) {
+    public <Solution_> BavetPrecomputeBuildHelper(
+            BavetAbstractConstraintStream<Solution_> recordingPrecomputeConstraintStream) {
+        if (recordingPrecomputeConstraintStream.getRetrievalSemantics() != RetrievalSemantics.PRECOMPUTE) {
+            throw new IllegalStateException(
+                    "Impossible state: %s is not %s but is instead %s. Maybe you accidentally used a %s from %s instead of %s?"
+                            .formatted(RetrievalSemantics.class.getSimpleName(), RetrievalSemantics.PRECOMPUTE,
+                                    recordingPrecomputeConstraintStream.getRetrievalSemantics(),
+                                    ConstraintStream.class.getSimpleName(), ConstraintFactory.class.getSimpleName(),
+                                    PrecomputeFactory.class.getSimpleName()));
+        }
+
         var streamList = new ArrayList<BavetAbstractConstraintStream<Solution_>>();
         var queue = new ArrayDeque<BavetAbstractConstraintStream<Solution_>>();
-        queue.addLast(staticConstraintStream);
+        queue.addLast(recordingPrecomputeConstraintStream);
 
         while (!queue.isEmpty()) {
             var current = queue.pollFirst();
@@ -63,7 +77,8 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
 
         this.nodeNetwork = AbstractNodeBuildHelper.buildNodeNetwork(nodeList, declaredClassToNodeMap);
         this.recordingTupleLifecycle =
-                (RecordingTupleLifecycle<Tuple_>) buildHelper.getAggregatedTupleLifecycle(List.of(staticConstraintStream));
+                (RecordingTupleLifecycle<Tuple_>) buildHelper
+                        .getAggregatedTupleLifecycle(List.of(recordingPrecomputeConstraintStream));
         this.sourceClasses = declaredClassToNodeMap.keySet().toArray(new Class<?>[0]);
     }
 

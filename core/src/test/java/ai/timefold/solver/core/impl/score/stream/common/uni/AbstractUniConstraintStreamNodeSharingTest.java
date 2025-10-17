@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -39,6 +40,27 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     public void setup() {
         constraintFactory = buildConstraintFactory(TestdataSolution.buildSolutionDescriptor());
         baseStream = constraintFactory.forEach(TestdataEntity.class);
+    }
+
+    // ************************************************************************
+    // ForEach
+    // ************************************************************************
+    @TestTemplate
+    public void sameRetrivalSemanticsForEach() {
+        assertThat(constraintFactory.forEachUnfiltered(TestdataEntity.class))
+                .isSameAs(constraintFactory.forEachUnfiltered(TestdataEntity.class));
+    }
+
+    @TestTemplate
+    public void differentRetrivalSemanticsForEach() {
+        var precomputeStream = new AtomicReference<UniConstraintStream<TestdataEntity>>();
+        constraintFactory.precompute(pf -> {
+            var out = pf.forEachUnfiltered(TestdataEntity.class);
+            precomputeStream.set(out);
+            return out;
+        });
+        assertThat(constraintFactory.forEachUnfiltered(TestdataEntity.class))
+                .isNotSameAs(precomputeStream.get());
     }
 
     // ************************************************************************

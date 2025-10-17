@@ -37,7 +37,7 @@ public enum RetrievalSemantics {
      * <p>
      * Applies when the stream comes off of a {@link PrecomputeFactory#forEachUnfiltered(Class)} family of methods.
      */
-    STATIC,
+    PRECOMPUTE,
 
     /**
      * Joins include entities with null planning variables if these variables allow unassigned values.
