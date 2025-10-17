@@ -1,33 +1,33 @@
 package ai.timefold.solver.core.impl.score.stream.common;
 
 public interface ConstraintStreamPrecomputeTest {
-    void precompute_filter_0_changed();
+    void filter_0_changed();
 
-    default void precompute_filter_1_changed() {
+    default void filter_1_changed() {
         // requires two elements, so Bi, Tri and Quad
     }
 
-    default void precompute_filter_2_changed() {
+    default void filter_2_changed() {
         // requires three elements, so Tri and Quad
     }
 
-    default void precompute_filter_3_changed() {
+    default void filter_3_changed() {
         // requires four elements, Quad
     }
 
-    void precompute_ifExists();
+    void ifExists();
 
-    void precompute_ifNotExists();
+    void ifNotExists();
 
-    void precompute_groupBy();
+    void groupBy();
 
-    void precompute_flattenLast();
+    void flattenLast();
 
-    void precompute_map();
+    void map();
 
-    void precompute_concat();
+    void concat();
 
-    void precompute_distinct();
+    void distinct();
 
-    void precompute_complement();
+    void complement();
 }

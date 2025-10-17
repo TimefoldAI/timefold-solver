@@ -122,7 +122,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_filter_0_changed() {
+    public void filter_0_changed() {
         assertPrecomputeFilterChanged(
                 (precomputeFactory, entityGroup, valueGroup) -> precomputeFactory.forEachUnfiltered(TestdataLavishEntity.class)
                         .join(TestdataLavishValue.class)
@@ -136,7 +136,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_filter_1_changed() {
+    public void filter_1_changed() {
         assertPrecomputeFilterChanged(
                 (precomputeFactory, entityGroup, valueGroup) -> precomputeFactory.forEachUnfiltered(TestdataLavishValue.class)
                         .join(TestdataLavishEntity.class)
@@ -150,7 +150,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_filter_2_changed() {
+    public void filter_2_changed() {
         assertPrecomputeFilterChanged(
                 (precomputeFactory, entityGroup, valueGroup) -> precomputeFactory.forEachUnfiltered(TestdataLavishValue.class)
                         .join(TestdataLavishEntityGroup.class)
@@ -189,7 +189,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_ifExists() {
+    public void ifExists() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup = new TestdataLavishEntity();
@@ -210,7 +210,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_ifNotExists() {
+    public void ifNotExists() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup = new TestdataLavishEntity();
@@ -232,7 +232,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_groupBy() {
+    public void groupBy() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup = new TestdataLavishEntity();
@@ -254,7 +254,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_flattenLast() {
+    public void flattenLast() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup = new TestdataLavishEntity();
@@ -276,7 +276,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_map() {
+    public void map() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup1 = new TestdataLavishEntity();
@@ -302,7 +302,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_concat() {
+    public void concat() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup = new TestdataLavishEntity();
@@ -327,7 +327,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_distinct() {
+    public void distinct() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup1 = new TestdataLavishEntity();
@@ -353,7 +353,7 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
-    public void precompute_complement() {
+    public void complement() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();
         var entityWithGroup1 = new TestdataLavishEntity();

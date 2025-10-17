@@ -15,7 +15,6 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -199,8 +198,48 @@ public interface ConstraintFactory {
 
     /**
      * Computes and caches the tuples that would be produced by the given stream.
-     * As this is cached, it is vital the stream does not reference any variables
-     * (genuine or otherwise).
+     * <p>
+     * IMPORTANT: As this is cached, it is vital the stream does not reference any variables
+     * (genuine or otherwise), as a score corruption would occur.
+     * <p>
+     * For example, if employee is a {@link PlanningVariable} on Shift (a {@link PlanningEntity}),
+     * and start/end are facts on Shift, the following Constraint would cause a score corruption:
+     * 
+     * <pre>
+     * BiConstraintStream&lt;Shift, Shift&gt; overlappingShifts(PrecomputeFactory precomputeFactory) {
+     *     return precomputeFactory.forEachUnfiltered(Shift.class)
+     *             .join(Shift.class,
+     *                     Joiners.overlapping(Shift::getStart, Shift::getEnd),
+     *                     Joiners.equal(Shift::getEmployee))
+     *             .filter((left, right) -> left != right);
+     * }
+     *
+     * Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
+     *     return constraintFactory.precompute(this::overlappingShifts)
+     *             .penalize(HardSoftScore.ONE_HARD)
+     *             .asConstraint("Overlapping shifts");
+     * }
+     * </pre>
+     * <p>
+     * You can (and should) use variables after the precompute. So the example above
+     * can be rewritten correctly like this and would not cause score corruptions:
+     * <p>
+     * 
+     * <pre>
+     * BiConstraintStream&lt;Shift, Shift&gt; overlappingShifts(PrecomputeFactory precomputeFactory) {
+     *     return precomputeFactory.forEachUnfiltered(Shift.class)
+     *             .join(Shift.class,
+     *                     Joiners.overlapping(Shift::getStart, Shift::getEnd))
+     *             .filter((left, right) -> left != right);
+     * }
+     *
+     * Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
+     *     return constraintFactory.precompute(this::overlappingShifts)
+     *             .filter((left, right) -> left.getEmployee() != null &amp;&amp; left.getEmployee().equals(right.getEmployee()))
+     *             .penalize(HardSoftScore.ONE_HARD)
+     *             .asConstraint("Overlapping shifts");
+     * }
+     * </pre>
      */
     <Stream_ extends ConstraintStream> Stream_
             precompute(Function<PrecomputeFactory, Stream_> precomputeSupplier);
@@ -263,7 +302,6 @@ public interface ConstraintFactory {
      * @deprecated Prefer {@link #forEachIncludingUnassigned(Class)}.
      */
     @Deprecated(forRemoval = true)
-    @NonNull
     <A> UniConstraintStream<A> fromUnfiltered(Class<A> fromClass);
 
     /**
@@ -414,7 +452,6 @@ public interface ConstraintFactory {
      *             which both allow and don't allow unassigned values.
      */
     @Deprecated(forRemoval = true)
-    @NonNull
     <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A>... joiners);
 
 }
