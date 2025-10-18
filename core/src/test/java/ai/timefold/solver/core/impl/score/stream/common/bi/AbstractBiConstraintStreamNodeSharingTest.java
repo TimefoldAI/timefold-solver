@@ -21,6 +21,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 
@@ -543,5 +544,35 @@ public abstract class AbstractBiConstraintStreamNodeSharingTest extends Abstract
         assertThat(baseStream
                 .concat(baseStream.filter(filter1)))
                 .isSameAs(baseStream.concat(baseStream.filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameDataPrecompute() {
+        BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
+        Assertions.assertThat((BiConstraintStream<?, ?>) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .join(TestdataEntity.class)
+                        .filter(filter1)))
+                .isSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .join(TestdataEntity.class)
+                                .filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentDataPrecompute() {
+        BiPredicate<TestdataEntity, TestdataEntity> filter1 = (a, b) -> true;
+        BiPredicate<TestdataEntity, TestdataEntity> filter2 = (a, b) -> false;
+
+        Assertions.assertThat((BiConstraintStream<?, ?>) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .join(TestdataEntity.class)
+                        .filter(filter1)))
+                .isNotSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .join(TestdataEntity.class)
+                                .filter(filter2)));
     }
 }

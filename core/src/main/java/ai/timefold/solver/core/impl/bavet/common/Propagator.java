@@ -38,7 +38,7 @@ import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
  *
  * @see PropagationQueue More information about propagation.
  */
-public sealed interface Propagator permits PropagationQueue {
+public sealed interface Propagator permits PropagationQueue, RecordAndReplayPropagator {
 
     /**
      * Starts the propagation event. Must be followed by {@link #propagateUpdates()}.

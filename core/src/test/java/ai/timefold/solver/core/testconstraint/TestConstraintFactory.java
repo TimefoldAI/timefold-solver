@@ -1,8 +1,11 @@
 package ai.timefold.solver.core.testconstraint;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.score.stream.ConstraintStream;
+import ai.timefold.solver.core.api.score.stream.PrecomputeFactory;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.stream.common.InnerConstraintFactory;
@@ -40,6 +43,12 @@ public final class TestConstraintFactory<Solution_, Score_ extends Score<Score_>
 
     @Override
     public <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public @NonNull <Stream_ extends @NonNull ConstraintStream> Stream_
+            precompute(@NonNull Function<@NonNull PrecomputeFactory, @NonNull Stream_> stream) {
         throw new UnsupportedOperationException();
     }
 

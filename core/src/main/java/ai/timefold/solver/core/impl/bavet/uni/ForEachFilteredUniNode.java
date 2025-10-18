@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -51,7 +52,7 @@ public final class ForEachFilteredUniNode<A>
     }
 
     @Override
-    public boolean supports(LifecycleOperation lifecycleOperation) {
+    public boolean supports(BavetRootNode.LifecycleOperation lifecycleOperation) {
         return true;
     }
 

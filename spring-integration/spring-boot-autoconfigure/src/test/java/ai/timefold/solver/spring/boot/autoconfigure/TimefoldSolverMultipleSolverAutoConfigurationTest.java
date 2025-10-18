@@ -320,10 +320,7 @@ class TimefoldSolverMultipleSolverAutoConfigurationTest {
                         assertThat(solution.getScore().score()).isNotNegative();
                     }
                 });
-    }
 
-    @Test
-    void invalidYaml() {
         assertThatCode(() -> contextRunner
                 .withInitializer(new ConfigDataApplicationContextInitializer())
                 .withSystemProperties(

@@ -15,6 +15,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
+import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
 import ai.timefold.solver.core.impl.bavet.uni.AbstractForEachUniNode;
 import ai.timefold.solver.core.impl.bavet.visual.NodeGraph;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -124,23 +125,33 @@ public final class BavetConstraintSessionFactory<Solution_, Score_ extends Score
             AbstractScoreInliner<Score_> scoreInliner,
             Consumer<String> nodeNetworkVisualizationConsumer) {
         var buildHelper = new ConstraintNodeBuildHelper<>(consistencyTracker, constraintStreamSet, scoreInliner);
-        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<AbstractForEachUniNode<?>>>();
+        var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(constraintStreamSet, buildHelper,
                 BavetAbstractConstraintStream::buildNode,
                 node -> {
-                    if (!(node instanceof AbstractForEachUniNode<?> forEachUniNode)) {
+                    if (!(node instanceof BavetRootNode<?> tupleSourceRoot)) {
                         return;
                     }
-                    var forEachClass = forEachUniNode.getForEachClass();
-                    var forEachUniNodeList =
-                            declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>(2));
-                    if (forEachUniNodeList.size() == 3) {
-                        // Each class can have at most three forEach nodes: one including everything, one including consistent + null vars, the last consistent + no null vars.
-                        throw new IllegalStateException(
-                                "Impossible state: For class (%s) there are already 3 nodes (%s), not adding another (%s)."
-                                        .formatted(forEachClass, forEachUniNodeList, forEachUniNode));
+
+                    if (tupleSourceRoot instanceof AbstractForEachUniNode<?> forEachUniNode) {
+                        var forEachClass = forEachUniNode.getForEachClass();
+                        var forEachUniNodeList =
+                                declaredClassToNodeMap.computeIfAbsent(forEachClass, k -> new ArrayList<>(2));
+                        if (forEachUniNodeList.stream().filter(sourceNode -> sourceNode instanceof AbstractForEachUniNode<?>)
+                                .count() == 3) {
+                            // Each class can have at most three forEach nodes: one including everything, one including consistent + null vars, the last consistent + no null vars.
+                            throw new IllegalStateException(
+                                    "Impossible state: For class (%s) there are already 3 nodes (%s), not adding another (%s)."
+                                            .formatted(forEachClass, forEachUniNodeList, forEachUniNode));
+                        }
+                        forEachUniNodeList.add(forEachUniNode);
+                    } else {
+                        for (var sourceClass : tupleSourceRoot.getSourceClasses()) {
+                            var forEachUniNodeList =
+                                    declaredClassToNodeMap.computeIfAbsent(sourceClass, k -> new ArrayList<>(2));
+                            forEachUniNodeList.add(tupleSourceRoot);
+                        }
                     }
-                    forEachUniNodeList.add(forEachUniNode);
                 });
         if (nodeNetworkVisualizationConsumer != null) {
             var constraintSet = scoreInliner.getConstraints();

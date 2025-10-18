@@ -33,6 +33,7 @@ import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
 import ai.timefold.solver.core.api.score.stream.tri.TriJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 import org.jspecify.annotations.NonNull;
@@ -1582,9 +1583,21 @@ public interface BiConstraintStream<A, B> extends ConstraintStream {
             @NonNull Function<A, B> paddingFunction) {
         var firstStream = this;
         var remapped = firstStream.map(ConstantLambdaUtils.biPickFirst());
-        var secondStream = getConstraintFactory().forEach(otherClass)
-                .ifNotExists(remapped, Joiners.equal());
-        return firstStream.concat(secondStream, paddingFunction);
+
+        if (firstStream instanceof AbstractConstraintStream<?> abstractConstraintStream) {
+            var secondStream = switch (abstractConstraintStream.getRetrievalSemantics()) {
+                case STANDARD, LEGACY -> getConstraintFactory().forEach(otherClass);
+                case PRECOMPUTE -> getConstraintFactory().forEachUnfiltered(otherClass);
+            };
+            return firstStream.concat(secondStream.ifNotExists(remapped, Joiners.equal()),
+                    paddingFunction);
+        } else {
+            throw new IllegalStateException("""
+                    Impossible state: the %s class (%s) does not extend %s.
+                    %s are not expected to be implemented by the user.
+                    """.formatted(ConstraintStream.class.getSimpleName(), this.getClass().getSimpleName(),
+                    AbstractConstraintStream.class.getSimpleName(), ConstraintStream.class.getSimpleName()));
+        }
     }
 
     // ************************************************************************

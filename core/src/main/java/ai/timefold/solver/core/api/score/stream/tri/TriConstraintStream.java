@@ -34,6 +34,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream;
 import ai.timefold.solver.core.api.score.stream.quad.QuadJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
+import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStream;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 import org.jspecify.annotations.NonNull;
@@ -1294,9 +1295,21 @@ public interface TriConstraintStream<A, B, C> extends ConstraintStream {
             @NonNull Function<A, B> paddingFunctionB, @NonNull Function<A, C> paddingFunctionC) {
         var firstStream = this;
         var remapped = firstStream.map(ConstantLambdaUtils.triPickFirst());
-        var secondStream = getConstraintFactory().forEach(otherClass)
-                .ifNotExists(remapped, Joiners.equal());
-        return firstStream.concat(secondStream, paddingFunctionB, paddingFunctionC);
+
+        if (firstStream instanceof AbstractConstraintStream<?> abstractConstraintStream) {
+            var secondStream = switch (abstractConstraintStream.getRetrievalSemantics()) {
+                case STANDARD, LEGACY -> getConstraintFactory().forEach(otherClass);
+                case PRECOMPUTE -> getConstraintFactory().forEachUnfiltered(otherClass);
+            };
+            return firstStream.concat(secondStream.ifNotExists(remapped, Joiners.equal()),
+                    paddingFunctionB, paddingFunctionC);
+        } else {
+            throw new IllegalStateException("""
+                    Impossible state: the %s class (%s) does not extend %s.
+                    %s are not expected to be implemented by the user.
+                    """.formatted(ConstraintStream.class.getSimpleName(), this.getClass().getSimpleName(),
+                    AbstractConstraintStream.class.getSimpleName(), ConstraintStream.class.getSimpleName()));
+        }
     }
 
     // ************************************************************************

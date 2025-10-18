@@ -180,11 +180,17 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
         super.afterProblemFactAdded(problemFact);
     }
 
-    // public void beforeProblemPropertyChanged(Object problemFactOrEntity) // Do nothing
+    @Override
+    public void beforeProblemPropertyChanged(Object problemFactOrEntity) {
+        // Since this is called when a fact (not a variable) changes,
+        // we need to retract and reinsert to update cached static data
+        super.beforeProblemPropertyChanged(problemFactOrEntity);
+        session.retract(problemFactOrEntity);
+    }
 
     @Override
     public void afterProblemPropertyChanged(Object problemFactOrEntity) {
-        session.update(problemFactOrEntity);
+        session.insert(problemFactOrEntity);
         super.afterProblemPropertyChanged(problemFactOrEntity);
     }
 

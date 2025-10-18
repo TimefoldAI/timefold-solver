@@ -38,6 +38,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
+import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamTestExtension;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
@@ -52,7 +53,12 @@ import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValue;
 import ai.timefold.solver.core.testdomain.score.lavish.TestdataLavishValueGroup;
 
 import org.junit.jupiter.api.TestTemplate;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
+@ExtendWith(ConstraintStreamTestExtension.class)
+@Execution(ExecutionMode.CONCURRENT)
 public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintStreamTest
         implements ConstraintStreamFunctionalTest {
 
@@ -3305,5 +3311,4 @@ public abstract class AbstractBiConstraintStreamTest extends AbstractConstraintS
                 assertMatch(entity3, entity1),
                 assertMatch(entity3, entity2));
     }
-
 }

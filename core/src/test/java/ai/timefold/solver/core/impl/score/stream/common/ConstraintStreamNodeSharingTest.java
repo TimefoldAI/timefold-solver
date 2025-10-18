@@ -210,4 +210,8 @@ public interface ConstraintStreamNodeSharingTest {
     void differentSecondSourceConcat();
 
     void sameSourcesConcat();
+
+    void sameDataPrecompute();
+
+    void differentDataPrecompute();
 }

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.Objects;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.ToIntFunction;
@@ -20,6 +21,7 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.TestTemplate;
 
@@ -38,6 +40,27 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
     public void setup() {
         constraintFactory = buildConstraintFactory(TestdataSolution.buildSolutionDescriptor());
         baseStream = constraintFactory.forEach(TestdataEntity.class);
+    }
+
+    // ************************************************************************
+    // ForEach
+    // ************************************************************************
+    @TestTemplate
+    public void sameRetrivalSemanticsForEach() {
+        assertThat(constraintFactory.forEachUnfiltered(TestdataEntity.class))
+                .isSameAs(constraintFactory.forEachUnfiltered(TestdataEntity.class));
+    }
+
+    @TestTemplate
+    public void differentRetrivalSemanticsForEach() {
+        var precomputeStream = new AtomicReference<UniConstraintStream<TestdataEntity>>();
+        constraintFactory.precompute(pf -> {
+            var out = pf.forEachUnfiltered(TestdataEntity.class);
+            precomputeStream.set(out);
+            return out;
+        });
+        assertThat(constraintFactory.forEachUnfiltered(TestdataEntity.class))
+                .isNotSameAs(precomputeStream.get());
     }
 
     // ************************************************************************
@@ -694,5 +717,31 @@ public abstract class AbstractUniConstraintStreamNodeSharingTest extends Abstrac
         assertThat(baseStream
                 .concat(baseStream.filter(filter1)))
                 .isSameAs(baseStream.concat(baseStream.filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void sameDataPrecompute() {
+        Predicate<TestdataEntity> filter1 = a -> true;
+        Assertions.assertThat((UniConstraintStream<?>) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .filter(filter1)))
+                .isSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .filter(filter1)));
+    }
+
+    @Override
+    @TestTemplate
+    public void differentDataPrecompute() {
+        Predicate<TestdataEntity> filter1 = a -> true;
+        Predicate<TestdataEntity> filter2 = a -> false;
+
+        Assertions.assertThat((UniConstraintStream<?>) constraintFactory.precompute(
+                precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                        .filter(filter1)))
+                .isNotSameAs(constraintFactory.precompute(
+                        precomputeFactory -> precomputeFactory.forEachUnfiltered(TestdataEntity.class)
+                                .filter(filter2)));
     }
 }

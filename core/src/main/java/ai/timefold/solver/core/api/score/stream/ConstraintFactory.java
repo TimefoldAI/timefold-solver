@@ -15,19 +15,19 @@ import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * The factory to create every {@link ConstraintStream} (for example with {@link #forEach(Class)})
  * which ends in a {@link Constraint} returned by {@link ConstraintProvider#defineConstraints(ConstraintFactory)}.
  */
+@NullMarked
 public interface ConstraintFactory {
 
     /**
      * @deprecated Do not rely on any constraint package in user code.
      */
     @Deprecated(forRemoval = true, since = "1.13.0")
-    @NonNull
     String getDefaultConstraintPackage();
 
     // ************************************************************************
@@ -65,7 +65,7 @@ public interface ConstraintFactory {
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      */
-    <A> @NonNull UniConstraintStream<A> forEach(@NonNull Class<A> sourceClass);
+    <A> UniConstraintStream<A> forEach(Class<A> sourceClass);
 
     /**
      * As defined by {@link #forEachIncludingUnassigned(Class)}.
@@ -73,7 +73,7 @@ public interface ConstraintFactory {
      * @deprecated Use {@link #forEachIncludingUnassigned(Class)} instead.
      */
     @Deprecated(forRemoval = true, since = "1.8.0")
-    default <A> @NonNull UniConstraintStream<A> forEachIncludingNullVars(@NonNull Class<A> sourceClass) {
+    default <A> UniConstraintStream<A> forEachIncludingNullVars(Class<A> sourceClass) {
         return forEachIncludingUnassigned(sourceClass);
     }
 
@@ -86,7 +86,7 @@ public interface ConstraintFactory {
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      */
-    <A> @NonNull UniConstraintStream<A> forEachIncludingUnassigned(@NonNull Class<A> sourceClass);
+    <A> UniConstraintStream<A> forEachIncludingUnassigned(Class<A> sourceClass);
 
     /**
      * As defined by {@link #forEach(Class)},
@@ -98,7 +98,7 @@ public interface ConstraintFactory {
      *
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      */
-    <A> @NonNull UniConstraintStream<A> forEachUnfiltered(@NonNull Class<A> sourceClass);
+    <A> UniConstraintStream<A> forEachUnfiltered(Class<A> sourceClass);
 
     /**
      * Create a new {@link BiConstraintStream} for every unique combination of A and another A with a higher {@link PlanningId}.
@@ -114,7 +114,7 @@ public interface ConstraintFactory {
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A
      */
-    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass) {
+    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass) {
         return forEachUniquePair(sourceClass, new BiJoiner[0]);
     }
 
@@ -135,8 +135,8 @@ public interface ConstraintFactory {
      * @param <A> the type of the matched problem fact or {@link PlanningEntity planning entity}
      * @return a stream that matches every unique combination of A and another A for which the {@link BiJoiner} is true
      */
-    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
-            @NonNull BiJoiner<A, A> joiner) {
+    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass,
+            BiJoiner<A, A> joiner) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner });
     }
 
@@ -147,9 +147,9 @@ public interface ConstraintFactory {
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
-            @NonNull BiJoiner<A, A> joiner1,
-            @NonNull BiJoiner<A, A> joiner2) {
+    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass,
+            BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
@@ -160,9 +160,9 @@ public interface ConstraintFactory {
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
-            @NonNull BiJoiner<A, A> joiner1, @NonNull BiJoiner<A, A> joiner2,
-            @NonNull BiJoiner<A, A> joiner3) {
+    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass,
+            BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2,
+            BiJoiner<A, A> joiner3) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -173,9 +173,9 @@ public interface ConstraintFactory {
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    default <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
-            @NonNull BiJoiner<A, A> joiner1, @NonNull BiJoiner<A, A> joiner2,
-            @NonNull BiJoiner<A, A> joiner3, @NonNull BiJoiner<A, A> joiner4) {
+    default <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass,
+            BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2,
+            BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
         return forEachUniquePair(sourceClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -190,7 +190,59 @@ public interface ConstraintFactory {
      * @return a stream that matches every unique combination of A and another A for which all the
      *         {@link BiJoiner joiners} are true
      */
-    <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass, @NonNull BiJoiner<A, A>... joiners);
+    <A> BiConstraintStream<A, A> forEachUniquePair(Class<A> sourceClass, BiJoiner<A, A>... joiners);
+
+    // ************************************************************************
+    // staticData
+    //************************************************************************
+
+    /**
+     * Computes and caches the tuples that would be produced by the given stream.
+     * <p>
+     * IMPORTANT: As this is cached, it is vital the stream does not reference any variables
+     * (genuine or otherwise), as a score corruption would occur.
+     * <p>
+     * For example, if employee is a {@link PlanningVariable} on Shift (a {@link PlanningEntity}),
+     * and start/end are facts on Shift, the following Constraint would cause a score corruption:
+     * 
+     * <pre>
+     * BiConstraintStream&lt;Shift, Shift&gt; overlappingShifts(PrecomputeFactory precomputeFactory) {
+     *     return precomputeFactory.forEachUnfiltered(Shift.class)
+     *             .join(Shift.class,
+     *                     Joiners.overlapping(Shift::getStart, Shift::getEnd),
+     *                     Joiners.equal(Shift::getEmployee))
+     *             .filter((left, right) -> left != right);
+     * }
+     *
+     * Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
+     *     return constraintFactory.precompute(this::overlappingShifts)
+     *             .penalize(HardSoftScore.ONE_HARD)
+     *             .asConstraint("Overlapping shifts");
+     * }
+     * </pre>
+     * <p>
+     * You can (and should) use variables after the precompute. So the example above
+     * can be rewritten correctly like this and would not cause score corruptions:
+     * <p>
+     * 
+     * <pre>
+     * BiConstraintStream&lt;Shift, Shift&gt; overlappingShifts(PrecomputeFactory precomputeFactory) {
+     *     return precomputeFactory.forEachUnfiltered(Shift.class)
+     *             .join(Shift.class,
+     *                     Joiners.overlapping(Shift::getStart, Shift::getEnd))
+     *             .filter((left, right) -> left != right);
+     * }
+     *
+     * Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
+     *     return constraintFactory.precompute(this::overlappingShifts)
+     *             .filter((left, right) -> left.getEmployee() != null &amp;&amp; left.getEmployee().equals(right.getEmployee()))
+     *             .penalize(HardSoftScore.ONE_HARD)
+     *             .asConstraint("Overlapping shifts");
+     * }
+     * </pre>
+     */
+    <Stream_ extends ConstraintStream> Stream_
+            precompute(Function<PrecomputeFactory, Stream_> precomputeSupplier);
 
     // ************************************************************************
     // from* (deprecated)
@@ -232,7 +284,7 @@ public interface ConstraintFactory {
      *             which both allow and don't allow unassigned values.
      */
     @Deprecated(forRemoval = true)
-    <A> @NonNull UniConstraintStream<A> from(@NonNull Class<A> fromClass);
+    <A> UniConstraintStream<A> from(Class<A> fromClass);
 
     /**
      * This method is deprecated.
@@ -250,8 +302,7 @@ public interface ConstraintFactory {
      * @deprecated Prefer {@link #forEachIncludingUnassigned(Class)}.
      */
     @Deprecated(forRemoval = true)
-    @NonNull
-    <A> UniConstraintStream<A> fromUnfiltered(@NonNull Class<A> fromClass);
+    <A> UniConstraintStream<A> fromUnfiltered(Class<A> fromClass);
 
     /**
      * This method is deprecated.
@@ -277,7 +328,7 @@ public interface ConstraintFactory {
      * @return a stream that matches every unique combination of A and another A
      */
     @Deprecated(forRemoval = true)
-    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass) {
+    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass) {
         return fromUniquePair(fromClass, new BiJoiner[0]);
     }
 
@@ -308,7 +359,7 @@ public interface ConstraintFactory {
      * @return a stream that matches every unique combination of A and another A for which the {@link BiJoiner} is true
      */
     @Deprecated(forRemoval = true)
-    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A> joiner) {
+    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A> joiner) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner });
     }
 
@@ -329,8 +380,8 @@ public interface ConstraintFactory {
      *         {@link BiJoiner joiners} are true
      */
     @Deprecated(forRemoval = true)
-    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A> joiner1,
-            @NonNull BiJoiner<A, A> joiner2) {
+    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner1, joiner2 });
     }
 
@@ -352,8 +403,8 @@ public interface ConstraintFactory {
      *         {@link BiJoiner joiners} are true
      */
     @Deprecated(forRemoval = true)
-    default <A> @NonNull BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A> joiner1,
-            @NonNull BiJoiner<A, A> joiner2, @NonNull BiJoiner<A, A> joiner3) {
+    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A> joiner1,
+            BiJoiner<A, A> joiner2, BiJoiner<A, A> joiner3) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner1, joiner2, joiner3 });
     }
 
@@ -374,9 +425,9 @@ public interface ConstraintFactory {
      *             which both allow and don't allow unassigned values.
      */
     @Deprecated(forRemoval = true)
-    default @NonNull <A> BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass,
-            @NonNull BiJoiner<A, A> joiner1, @NonNull BiJoiner<A, A> joiner2,
-            @NonNull BiJoiner<A, A> joiner3, @NonNull BiJoiner<A, A> joiner4) {
+    default <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass,
+            BiJoiner<A, A> joiner1, BiJoiner<A, A> joiner2,
+            BiJoiner<A, A> joiner3, BiJoiner<A, A> joiner4) {
         return fromUniquePair(fromClass, new BiJoiner[] { joiner1, joiner2, joiner3, joiner4 });
     }
 
@@ -401,7 +452,6 @@ public interface ConstraintFactory {
      *             which both allow and don't allow unassigned values.
      */
     @Deprecated(forRemoval = true)
-    @NonNull
-    <A> BiConstraintStream<A, A> fromUniquePair(@NonNull Class<A> fromClass, @NonNull BiJoiner<A, A>... joiners);
+    <A> BiConstraintStream<A, A> fromUniquePair(Class<A> fromClass, BiJoiner<A, A>... joiners);
 
 }

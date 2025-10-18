@@ -51,6 +51,10 @@ public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
                 tuple -> predicate.test(tuple.factA, tuple.factB, tuple.factC, tuple.factD));
     }
 
+    static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> recording() {
+        return new RecordingTupleLifecycle<>();
+    }
+
     void insert(Tuple_ tuple);
 
     void update(Tuple_ tuple);
