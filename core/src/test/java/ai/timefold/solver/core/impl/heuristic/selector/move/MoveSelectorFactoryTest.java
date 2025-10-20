@@ -22,6 +22,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.Probabilit
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ShufflingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.SortingMoveSelector;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
+import ai.timefold.solver.core.testdomain.common.DummyValueFactory;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -213,6 +214,34 @@ class MoveSelectorFactoryTest {
     }
 
     @Test
+    void applySorting_withSorterComparatorFactoryClass() {
+        // Old setting
+        {
+            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+            moveSelectorConfig.setSorterWeightFactoryClass(DummyValueFactory.class);
+
+            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+            MoveSelector<TestdataSolution> sortingMoveSelector =
+                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
+        }
+        // New setting
+        {
+            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+            moveSelectorConfig.setSorterComparatorFactoryClass(DummyValueFactory.class);
+
+            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+            MoveSelector<TestdataSolution> sortingMoveSelector =
+                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
+        }
+    }
+
+    @Test
     void applyProbability_withProbabilityWeightFactoryClass() {
         final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
@@ -248,6 +277,24 @@ class MoveSelectorFactoryTest {
         assertThat(moveSelector)
                 .isInstanceOf(FilteringMoveSelector.class);
         assertThat(moveSelector.iterator().hasNext()).isFalse();
+    }
+
+    @Test
+    void failFast_ifBothFactoriesUsed() {
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+        DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+        moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+        moveSelectorConfig.setSorterWeightFactoryClass(DummyValueFactory.class);
+        moveSelectorConfig.setSorterComparatorFactoryClass(DummyValueFactory.class);
+        DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED,
+                        baseMoveSelector))
+                .withMessageContaining("The moveSelectorConfig")
+                .withMessageContaining(
+                        "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.testdomain.common.DummyValueFactory)")
+                .withMessageContaining(
+                        "and sorterComparatorFactoryClass (class ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time");
     }
 
     static class DummyMoveSelectorConfig extends MoveSelectorConfig<DummyMoveSelectorConfig> {

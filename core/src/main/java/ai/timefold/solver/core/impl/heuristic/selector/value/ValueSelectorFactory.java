@@ -228,7 +228,7 @@ public class ValueSelectorFactory<Solution_>
         return weightFactoryClass != null ? "sorterWeightFactoryClass" : "sorterComparatorFactoryClass";
     }
 
-    private Class<? extends ComparatorFactory>
+    private static Class<? extends ComparatorFactory>
             determineSorterComparatorFactoryClass(ValueSelectorConfig valueSelectorConfig) {
         var propertyName = determineSorterComparatorFactoryPropertyName(valueSelectorConfig);
         if (propertyName.equals("sorterWeightFactoryClass")) {
@@ -309,11 +309,13 @@ public class ValueSelectorFactory<Solution_>
                             SelectionOrder.SORTED));
         }
         assertNotSorterMannerAnd(config, "sorterComparatorClass", ValueSelectorConfig::getSorterComparatorClass);
-        assertNotSorterMannerAnd(config, sorterComparatorFactoryPropertyName, this::determineSorterComparatorFactoryClass);
+        assertNotSorterMannerAnd(config, sorterComparatorFactoryPropertyName,
+                ValueSelectorFactory::determineSorterComparatorFactoryClass);
         assertNotSorterMannerAnd(config, "sorterClass", ValueSelectorConfig::getSorterClass);
         assertNotSorterMannerAnd(config, "sorterOrder", ValueSelectorConfig::getSorterOrder);
         assertNotSorterClassAnd(config, "sorterComparatorClass", ValueSelectorConfig::getSorterComparatorClass);
-        assertNotSorterClassAnd(config, sorterComparatorFactoryPropertyName, this::determineSorterComparatorFactoryClass);
+        assertNotSorterClassAnd(config, sorterComparatorFactoryPropertyName,
+                ValueSelectorFactory::determineSorterComparatorFactoryClass);
         assertNotSorterClassAnd(config, "sorterOrder", ValueSelectorConfig::getSorterOrder);
         if (sorterComparatorClass != null && sorterComparatorFactoryClass != null) {
             throw new IllegalArgumentException(

@@ -207,6 +207,7 @@ class EntitySelectorFactoryTest {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
                         .buildEntitySelector(buildHeuristicConfigPolicy(), SelectionCacheType.PHASE, SelectionOrder.SORTED))
+                .withMessageContaining("The entitySelectorConfig")
                 .withMessageContaining(
                         "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummySelectionComparatorFactory)")
                 .withMessageContaining(

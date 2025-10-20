@@ -415,6 +415,17 @@
           "oldValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
           "newValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterComparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
           "justification": "New comparator factory field"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"cacheType\", \"selectionOrder\", \"filterClass\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\", \"fixedProbabilityWeight\"}",
+          "newValue": "{\"cacheType\", \"selectionOrder\", \"filterClass\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterComparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\", \"fixedProbabilityWeight\"}",
+          "justification": "New comparator factory field"
         }
       ]
     }

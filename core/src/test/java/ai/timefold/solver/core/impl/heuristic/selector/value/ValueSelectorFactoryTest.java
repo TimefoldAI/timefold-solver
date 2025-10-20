@@ -274,6 +274,7 @@ class ValueSelectorFactoryTest {
                 .isThrownBy(() -> ValueSelectorFactory.<TestdataSolution> create(valueSelectorConfig)
                         .buildValueSelector(buildHeuristicConfigPolicy(), TestdataEntity.buildEntityDescriptor(),
                                 SelectionCacheType.PHASE, SelectionOrder.SORTED))
+                .withMessageContaining("The valueSelectorConfig")
                 .withMessageContaining(
                         "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactoryTest$DummySelectionComparatorFactory)")
                 .withMessageContaining(

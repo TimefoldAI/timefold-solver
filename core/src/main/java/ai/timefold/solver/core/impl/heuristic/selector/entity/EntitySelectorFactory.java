@@ -196,7 +196,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         return weightFactoryClass != null ? "sorterWeightFactoryClass" : "sorterComparatorFactoryClass";
     }
 
-    private Class<? extends ComparatorFactory>
+    private static Class<? extends ComparatorFactory>
             determineSorterComparatorFactoryClass(EntitySelectorConfig entitySelectorConfig) {
         var propertyName = determineSorterComparatorFactoryPropertyName(entitySelectorConfig);
         if (propertyName.equals("sorterWeightFactoryClass")) {
@@ -291,11 +291,13 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                             resolvedSelectionOrder, SelectionOrder.SORTED));
         }
         assertNotSorterMannerAnd(config, "sorterComparatorClass", EntitySelectorConfig::getSorterComparatorClass);
-        assertNotSorterMannerAnd(config, sorterComparatorFactoryPropertyName, this::determineSorterComparatorFactoryClass);
+        assertNotSorterMannerAnd(config, sorterComparatorFactoryPropertyName,
+                EntitySelectorFactory::determineSorterComparatorFactoryClass);
         assertNotSorterMannerAnd(config, "sorterClass", EntitySelectorConfig::getSorterClass);
         assertNotSorterMannerAnd(config, "sorterOrder", EntitySelectorConfig::getSorterOrder);
         assertNotSorterClassAnd(config, "sorterComparatorClass", EntitySelectorConfig::getSorterComparatorClass);
-        assertNotSorterClassAnd(config, sorterComparatorFactoryPropertyName, this::determineSorterComparatorFactoryClass);
+        assertNotSorterClassAnd(config, sorterComparatorFactoryPropertyName,
+                EntitySelectorFactory::determineSorterComparatorFactoryClass);
         assertNotSorterClassAnd(config, "sorterOrder", EntitySelectorConfig::getSorterOrder);
         if (sorterComparatorClass != null && sorterComparatorFactoryClass != null) {
             throw new IllegalArgumentException(

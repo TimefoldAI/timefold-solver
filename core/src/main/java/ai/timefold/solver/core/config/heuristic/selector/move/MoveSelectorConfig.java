@@ -68,6 +68,7 @@ import org.jspecify.annotations.Nullable;
         "filterClass",
         "sorterComparatorClass",
         "sorterWeightFactoryClass",
+        "sorterComparatorFactoryClass",
         "sorterOrder",
         "sorterClass",
         "probabilityWeightFactoryClass",
@@ -82,7 +83,12 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     protected Class<? extends SelectionFilter> filterClass = null;
 
     protected Class<? extends Comparator> sorterComparatorClass = null;
+    /**
+     * @deprecated Deprecated in favor of {@link #sorterComparatorFactoryClass}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends ComparatorFactory> sorterComparatorFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -128,12 +134,29 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #getSorterComparatorFactoryClass}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #setSorterComparatorFactoryClass}
+     * @param sorterWeightFactoryClass the class
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public void setSorterWeightFactoryClass(@Nullable Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
+    }
+
+    public Class<? extends ComparatorFactory> getSorterComparatorFactoryClass() {
+        return sorterComparatorFactoryClass;
+    }
+
+    public void setSorterComparatorFactoryClass(Class<? extends ComparatorFactory> sorterComparatorFactoryClass) {
+        this.sorterComparatorFactoryClass = sorterComparatorFactoryClass;
     }
 
     public @Nullable SelectionSorterOrder getSorterOrder() {
@@ -201,9 +224,20 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         return (Config_) this;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #withSorterComparatorFactoryClass(Class)}
+     * @param sorterWeightFactoryClass the factory class
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @NonNull Config_ withSorterWeightFactoryClass(
             @NonNull Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
+        return (Config_) this;
+    }
+
+    public @NonNull Config_
+            withSorterComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
+        this.setSorterComparatorFactoryClass(comparatorFactoryClass);
         return (Config_) this;
     }
 
@@ -259,6 +293,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         classVisitor.accept(filterClass);
         classVisitor.accept(sorterComparatorClass);
         classVisitor.accept(sorterWeightFactoryClass);
+        classVisitor.accept(sorterComparatorFactoryClass);
         classVisitor.accept(sorterClass);
         classVisitor.accept(probabilityWeightFactoryClass);
     }
@@ -271,6 +306,8 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
                 sorterComparatorClass, inheritedConfig.getSorterComparatorClass());
         sorterWeightFactoryClass = ConfigUtils.inheritOverwritableProperty(
                 sorterWeightFactoryClass, inheritedConfig.getSorterWeightFactoryClass());
+        sorterComparatorFactoryClass = ConfigUtils.inheritOverwritableProperty(
+                sorterComparatorFactoryClass, inheritedConfig.getSorterComparatorFactoryClass());
         sorterOrder = ConfigUtils.inheritOverwritableProperty(
                 sorterOrder, inheritedConfig.getSorterOrder());
         sorterClass = ConfigUtils.inheritOverwritableProperty(
