@@ -37,8 +37,8 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
                 this.appliedComparator = Collections.reverseOrder();
                 break;
             default:
-                throw new IllegalStateException("The selectionSorterOrder (" + selectionSorterOrder
-                        + ") is not implemented.");
+                throw new IllegalStateException(
+                        "The selectionSorterOrder (%s) is not implemented.".formatted(selectionSorterOrder));
         }
     }
 
@@ -55,11 +55,11 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
     public void sort(Solution_ solution, List<T> selectionList) {
         SortedMap<Comparable<?>, T> selectionMap = new TreeMap<>(appliedComparator);
         for (var selection : selectionList) {
-            var difficultyWeight = selectionComparatorFactory.createSorter(solution, selection);
-            var previous = selectionMap.put(difficultyWeight, selection);
+            var selectionSorter = selectionComparatorFactory.createSorter(solution, selection);
+            var previous = selectionMap.put(selectionSorter, selection);
             if (previous != null) {
-                throw new IllegalStateException("The selectionList contains 2 times the same selection ("
-                        + previous + ") and (" + selection + ").");
+                throw new IllegalStateException(
+                        "The selectionList contains 2 times the same selection (%s) and (%s).".formatted(previous, selection));
             }
         }
         selectionList.clear();

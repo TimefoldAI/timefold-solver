@@ -893,6 +893,9 @@
           <xs:element minOccurs="0" name="sorterWeightFactoryClass" type="xs:string"/>
                               
           
+          <xs:element minOccurs="0" name="sorterComparatorFactoryClass" type="xs:string"/>
+                              
+          
           <xs:element minOccurs="0" name="sorterOrder" type="tns:selectionSorterOrder"/>
                               
           
