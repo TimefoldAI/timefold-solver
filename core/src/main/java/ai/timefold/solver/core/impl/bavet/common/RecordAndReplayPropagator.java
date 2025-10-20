@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,31 +90,46 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
         if (!retractQueue.isEmpty() || !insertQueue.isEmpty()) {
             updateQueue.removeAll(retractQueue);
             updateQueue.removeAll(insertQueue);
+
+            var allObjectSet = CollectionUtils
+                    .newIdentityHashSet(insertQueue.size() + objectToOutputTuplesMap.size());
+
             // Do not remove queued retracts from inserts; if a fact property
             // change, there will be both a retract and insert for that fact
-            invalidateCache();
 
-            retractQueue.forEach(this::retractFromInternalNodeNetwork);
-            insertQueue.forEach(this::insertIntoInternalNodeNetwork);
+            allObjectSet.addAll(objectToOutputTuplesMap.keySet());
+            allObjectSet.removeAll(retractQueue);
+            allObjectSet.addAll(insertQueue);
+
+            invalidateCache();
+            retractQueue.forEach(objectToOutputTuplesMap::remove);
+
             retractQueue.clear();
             insertQueue.clear();
+
+            allObjectSet.forEach(this::insertIntoInternalNodeNetwork);
 
             // settle the inner node network, so the inserts/retracts do not interfere
             // with the recording of the first object's tuples
             internalNodeNetwork.settle();
-            recalculateTuples();
+            recalculateTuples(allObjectSet);
+
+            // Free the memory now the internal node network is no longer needed
+            allObjectSet.forEach(this::retractFromInternalNodeNetwork);
+            internalNodeNetwork.settle();
+
             propagationQueue.propagateRetracts();
         }
     }
 
     @Override
     public void propagateUpdates() {
+        Set<Tuple_> updatedTuples = CollectionUtils.newIdentityHashSet(2 * updateQueue.size());
         for (var update : updateQueue) {
-            for (var updatedTuple : objectToOutputTuplesMap.get(update)) {
-                propagationQueue.update(updatedTuple);
-            }
+            updatedTuples.addAll(objectToOutputTuplesMap.get(update));
         }
         updateQueue.clear();
+        updatedTuples.forEach(propagationQueue::update);
         propagationQueue.propagateUpdates();
     }
 
@@ -145,13 +161,11 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     }
 
     private void insertIntoInternalNodeNetwork(Object toInsert) {
-        objectToOutputTuplesMap.put(toInsert, new ArrayList<>());
         internalNodeNetwork.getRootNodesAcceptingType(toInsert.getClass())
                 .forEach(node -> ((BavetRootNode<Object>) node).insert(toInsert));
     }
 
     private void retractFromInternalNodeNetwork(Object toRetract) {
-        objectToOutputTuplesMap.remove(toRetract);
         internalNodeNetwork.getRootNodesAcceptingType(toRetract.getClass())
                 .forEach(node -> ((BavetRootNode<Object>) node).retract(toRetract));
     }
@@ -159,20 +173,25 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     private void invalidateCache() {
         objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::retractIfPresent);
         internalTupleToOutputTupleMap.clear();
+        objectToOutputTuplesMap.clear();
     }
 
-    private void recalculateTuples() {
-        for (var mappedTupleEntry : objectToOutputTuplesMap.entrySet()) {
-            mappedTupleEntry.getValue().clear();
-            var invalidated = mappedTupleEntry.getKey();
+    private void recalculateTuples(Set<Object> allObjectSet) {
+        for (var invalidated : allObjectSet) {
+            var mappedTuples = new ArrayList<Tuple_>();
             try (var unusedActiveRecordingLifecycle = recordingTupleLifecycle.recordInto(
-                    new TupleRecorder<>(mappedTupleEntry.getValue(), internalTupleToOutputTupleMapper,
+                    new TupleRecorder<>(mappedTuples, internalTupleToOutputTupleMapper,
                             (IdentityHashMap<Tuple_, Tuple_>) internalTupleToOutputTupleMap))) {
                 // Do a fake update on the object and settle the network; this will update precisely the
                 // tuples mapped to this node, which will then be recorded
                 internalNodeNetwork.getRootNodesAcceptingType(invalidated.getClass())
                         .forEach(node -> ((BavetRootNode<Object>) node).update(invalidated));
                 internalNodeNetwork.settle();
+            }
+            if (mappedTuples.isEmpty()) {
+                objectToOutputTuplesMap.put(invalidated, Collections.emptyList());
+            } else {
+                objectToOutputTuplesMap.put(invalidated, mappedTuples);
             }
         }
         objectToOutputTuplesMap.values().stream().flatMap(List::stream).forEach(this::insertIfAbsent);
