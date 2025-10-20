@@ -69,12 +69,15 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 [#firstFitDecreasingAlgorithm]
 === Algorithm description
 
-Like <<firstFit,First Fit>>, but assigns the more difficult planning entities first, because they are less likely to fit in the leftovers.
-So it sorts the planning entities on decreasing difficulty.
+Like <<firstFit,First Fit>>, but analyzes the "more difficult" planning entities first,
+because they are less likely to fit in the leftovers.
+It sorts the planning entities in descending order by any given metric,
+meaning that "more difficult" planning entities are added earlier in the list while "less difficult" values are included later.
 
 image::optimization-algorithms/construction-heuristics/firstFitDecreasingNQueens04.png[align="center"]
 
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison].
+Requires the model
+to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
 
 [NOTE]
 ====
@@ -118,10 +121,13 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 [#weakestFitAlgorithm]
 === Algorithm description
 
-Like First Fit, but uses the weaker planning values first, because the strong planning values are more likely to be able to accommodate later planning entities.
-So it sorts the planning values on increasing strength.
+Like <<firstFit,First Fit>>, but it analyzes the "weaker" planning values first,
+because the "stronger" planning values are more likely to be able to accommodate later planning entities.
+It sorts the planning values in ascending order by any given metric,
+meaning that "weaker" planning values are added earlier in the list while "stronger" values are included later.
 
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+Requires the model
+to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -165,11 +171,12 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 [#weakestFitDecreasingAlgorithm]
 === Algorithm description
 
-Combines First Fit Decreasing and Weakest Fit.
-So it sorts the planning entities on decreasing difficulty and the planning values on increasing strength.
+Combines <<firstFitDecreasing,First Fit Decreasing>> and <<weakestFit,Weakest Fit>>.
+It sorts the planning entities in descending order and the planning values in ascending order based on specified metrics.
 
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison]
-and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+Requires the model
+to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -214,10 +221,13 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 [#strongestFitAlgorithm]
 === Algorithm description
 
-Like First Fit, but uses the strong planning values first, because the strong planning values are more likely to have a lower soft cost to use.
-So it sorts the planning values on decreasing strength.
+Like <<firstFit, First Fit>>, but it analyzes the "stronger" planning values first,
+because the "stronger" planning values are more likely to have a lower soft cost to use.
+So it sorts the planning values in descending order by any given metric,
+meaning that "stronger" planning values are added earlier in the list.
 
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+Requires the model
+to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -261,11 +271,12 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 [#strongestFitDecreasingAlgorithm]
 === Algorithm description
 
-Combines First Fit Decreasing and Strongest Fit.
-So it sorts the planning entities on decreasing difficulty and the planning values on decreasing strength.
+Combines <<firstFitDecreasing, First Fit Decreasing>> and <<strongestFit, Strongest Fit>>.
+It sorts the planning entities and the planning values in descending order based on specified metrics.
 
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison]
-and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
+Requires the model
+to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
+and xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
 
 [NOTE]
 ====
@@ -310,8 +321,10 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 [#allocateEntityFromQueueAlgorithm]
 === Algorithm description
 
-Allocate Entity From Queue is a versatile, generic form of <<firstFit,First Fit>>, <<firstFitDecreasing,First Fit Decreasing>>,
-<<weakestFit,Weakest Fit>>, <<weakestFitDecreasing,Weakest Fit Decreasing>>,
+Allocate Entity From Queue is a versatile generic form of <<firstFit,First Fit>>,
+<<firstFitDecreasing,First Fit Decreasing>>,
+<<weakestFit,Weakest Fit>>,
+<<weakestFitDecreasing,Weakest Fit Decreasing>>,
 <<strongestFit,Strongest Fit>> and <<strongestFitDecreasing,Strongest Fit Decreasing>>.
 It works like this:
 
@@ -338,27 +351,29 @@ Verbose simple configuration:
 ----
   <constructionHeuristic>
     <constructionHeuristicType>ALLOCATE_ENTITY_FROM_QUEUE</constructionHeuristicType>
-    <entitySorterManner>DECREASING_DIFFICULTY_IF_AVAILABLE</entitySorterManner>
-    <valueSorterManner>INCREASING_STRENGTH_IF_AVAILABLE</valueSorterManner>
+    <entitySorterManner>DESCENDING_IF_AVAILABLE</entitySorterManner>
+    <valueSorterManner>ASCENDING_IF_AVAILABLE</valueSorterManner>
   </constructionHeuristic>
 ----
 
 The `entitySorterManner` options are:
 
-* ``DECREASING_DIFFICULTY``: Initialize the more difficult planning entities first.
+* ``DESCENDING``: Evaluate the planning entities in descending order based on a given metric.
 This usually increases pruning (and therefore improves scalability).
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison].
-* `DECREASING_DIFFICULTY_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty comparison], behave like ``DECREASING_DIFFICULTY``, else like ``NONE``.
+Requires the model
+to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting].
+* `DESCENDING_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Initialize the planning entities in original order.
 
 The `valueSorterManner` options are:
 
-* ``INCREASING_STRENGTH``: Evaluate the planning values in increasing strength.
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
-* `INCREASING_STRENGTH_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison], behave like ``INCREASING_STRENGTH``, else like ``NONE``.
-* ``DECREASING_STRENGTH``: Evaluate the planning values in decreasing strength.
-Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison].
-* ``DECREASING_STRENGTH_IF_AVAILABLE``: If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength comparison], behave like ``DECREASING_STRENGTH``, else like ``NONE``.
+* ``ASCENDING``: Evaluate the planning values in ascending order based on a given metric.
+Requires the model
+to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* `ASCENDING_IF_AVAILABLE` (default): If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``ASCENDING``, else like ``NONE``.
+* ``DESCENDING``: Evaluate the planning values in descending order based on a given metric.
+Requires the model to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting].
+* ``DESCENDING_IF_AVAILABLE``: If the model supports xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting], behave like ``DESCENDING``, else like ``NONE``.
 * ``NONE``: Try the planning values in original order.
 
 Advanced configuration with <<weakestFitDecreasing,Weakest Fit Decreasing>> for a single entity class with one variable:
@@ -370,14 +385,14 @@ Advanced configuration with <<weakestFitDecreasing,Weakest Fit Decreasing>> for 
       <entitySelector id="placerEntitySelector">
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
-        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+        <sorterManner>DESCENDING</sorterManner>
       </entitySelector>
       <changeMoveSelector>
         <entitySelector mimicSelectorRef="placerEntitySelector"/>
         <valueSelector>
           <cacheType>PHASE</cacheType>
           <selectionOrder>SORTED</selectionOrder>
-          <sorterManner>INCREASING_STRENGTH</sorterManner>
+          <sorterManner>ASCENDING</sorterManner>
         </valueSelector>
       </changeMoveSelector>
     </queuedEntityPlacer>
@@ -529,8 +544,8 @@ Verbose simple configuration:
 ----
   <constructionHeuristic>
     <constructionHeuristicType>ALLOCATE_TO_VALUE_FROM_QUEUE</constructionHeuristicType>
-    <entitySorterManner>DECREASING_DIFFICULTY_IF_AVAILABLE</entitySorterManner>
-    <valueSorterManner>INCREASING_STRENGTH_IF_AVAILABLE</valueSorterManner>
+    <entitySorterManner>DESCENDING_IF_AVAILABLE</entitySorterManner>
+    <valueSorterManner>ASCENDING_IF_AVAILABLE</valueSorterManner>
   </constructionHeuristic>
 ----
 
@@ -543,7 +558,7 @@ Advanced configuration for a single entity class with a single variable:
       <valueSelector id="placerValueSelector">
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
-        <sorterManner>INCREASING_STRENGTH</sorterManner>
+        <sorterManner>ASCENDING</sorterManner>
       </valueSelector>
       <listChangeMoveSelector>
           <valueSelector mimicSelectorRef="placerValueSelector">
@@ -552,7 +567,7 @@ Advanced configuration for a single entity class with a single variable:
             <entitySelector>
               <cacheType>PHASE</cacheType>
               <selectionOrder>SORTED</selectionOrder>
-              <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+              <sorterManner>DESCENDING</sorterManner>
             </entitySelector>
             <valueSelector>
             </valueSelector>
@@ -640,7 +655,7 @@ This algorithm has not been implemented yet.
 [#allocateFromPoolAlgorithm]
 === Algorithm description
 
-Allocate From Pool is a versatile, generic form of <<cheapestInsertion,Cheapest Insertion>> and <<regretInsertion,Regret Insertion>>.
+Allocate From Pool is a versatile generic form of <<cheapestInsertion,Cheapest Insertion>> and <<regretInsertion,Regret Insertion>>.
 It works like this:
 
 . Put all entity-value combinations in a pool.
@@ -666,8 +681,8 @@ Verbose simple configuration:
 ----
   <constructionHeuristic>
     <constructionHeuristicType>ALLOCATE_FROM_POOL</constructionHeuristicType>
-    <entitySorterManner>DECREASING_DIFFICULTY_IF_AVAILABLE</entitySorterManner>
-    <valueSorterManner>INCREASING_STRENGTH_IF_AVAILABLE</valueSorterManner>
+    <entitySorterManner>DESCENDING_IF_AVAILABLE</entitySorterManner>
+    <valueSorterManner>ASCENDING_IF_AVAILABLE</valueSorterManner>
   </constructionHeuristic>
 ----
 
@@ -683,12 +698,12 @@ Advanced configuration with <<cheapestInsertion,Cheapest Insertion>> for a singl
         <entitySelector id="placerEntitySelector">
           <cacheType>PHASE</cacheType>
           <selectionOrder>SORTED</selectionOrder>
-          <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+          <sorterManner>DESCENDING</sorterManner>
         </entitySelector>
         <valueSelector>
           <cacheType>PHASE</cacheType>
           <selectionOrder>SORTED</selectionOrder>
-          <sorterManner>INCREASING_STRENGTH</sorterManner>
+          <sorterManner>ASCENDING</sorterManner>
         </valueSelector>
       </changeMoveSelector>
     </pooledEntityPlacer>
@@ -755,14 +770,14 @@ Advanced configuration for a single entity class with a list variable and a sing
       <entitySelector id="placerEntitySelector">
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
-        <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+        <sorterManner>DESCENDING</sorterManner>
       </entitySelector>
       <changeMoveSelector>
         <entitySelector mimicSelectorRef="placerEntitySelector"/>
         <valueSelector>
           <cacheType>PHASE</cacheType>
           <selectionOrder>SORTED</selectionOrder>
-          <sorterManner>INCREASING_STRENGTH</sorterManner>
+          <sorterManner>ASCENDING</sorterManner>
         </valueSelector>
       </changeMoveSelector>
     </queuedEntityPlacer>
@@ -774,7 +789,7 @@ Advanced configuration for a single entity class with a list variable and a sing
       <valueSelector variableName="variableName">
         <cacheType>PHASE</cacheType>
         <selectionOrder>SORTED</selectionOrder>
-        <sorterManner>INCREASING_STRENGTH</sorterManner>
+        <sorterManner>ASCENDING</sorterManner>
       </valueSelector>
     </queuedValuePlacer>
   </constructionHeuristic>
