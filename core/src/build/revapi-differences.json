@@ -404,6 +404,17 @@
           "oldValue": "{\"id\", \"mimicSelectorRef\", \"entityClass\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
           "newValue": "{\"id\", \"mimicSelectorRef\", \"entityClass\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterComparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
           "justification": "New comparator factory field"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
+          "newValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterComparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
+          "justification": "New comparator factory field"
         }
       ]
     }

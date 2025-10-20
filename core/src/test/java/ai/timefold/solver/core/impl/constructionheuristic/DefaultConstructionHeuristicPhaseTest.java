@@ -10,8 +10,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
-import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
@@ -29,12 +29,11 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMove
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.common.DummyHardSoftEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableFactory;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -1293,6 +1292,66 @@ class DefaultConstructionHeuristicPhaseTest {
         }
     }
 
+    private static List<ConstructionHeuristicTestConfig> generateValueFactorySortingConfiguration() {
+        var values = new ArrayList<ConstructionHeuristicTestConfig>();
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig().withId("sortedEntitySelector"))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withSorterWeightFactoryClass(TestdataObjectSortableFactory.class)))),
+                new int[] { 2, 1, 0 },
+                // Only values are sorted
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig().withId("sortedEntitySelector"))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withSorterComparatorFactoryClass(TestdataObjectSortableFactory.class)))),
+                new int[] { 2, 1, 0 },
+                // Only values are sorted
+                false));
+        return values;
+    }
+
+    @ParameterizedTest
+    @MethodSource("generateValueFactorySortingConfiguration")
+    void solveValueFactorySorting(ConstructionHeuristicTestConfig phaseConfig) {
+        var solverConfig =
+                PlannerTestUtils
+                        .buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
+                        .withEasyScoreCalculatorClass(TestdataSolutionEasyScoreCalculator.class)
+                        .withPhases(phaseConfig.config());
+
+        var solution = TestdataSolution.generateUninitializedSolution(3, 3);
+
+        solution = PlannerTestUtils.solve(solverConfig, solution);
+        assertThat(solution).isNotNull();
+        if (phaseConfig.expected() != null) {
+            for (var i = 0; i < 3; i++) {
+                var id = "Generated Entity %d".formatted(i);
+                var entity = solution.getEntityList().stream()
+                        .filter(e -> e.getCode().equals(id))
+                        .findFirst()
+                        .orElseThrow(IllegalArgumentException::new);
+                assertThat(entity.getValue()).isNotNull();
+                assertThat(TestdataObjectSortableFactory.extractCode(entity.getValue().getCode()))
+                        .isEqualTo(phaseConfig.expected[i]);
+            }
+        }
+    }
+
     @Test
     void failConstructionHeuristicEntityRange() {
         var solverConfig =
@@ -1500,23 +1559,25 @@ class DefaultConstructionHeuristicPhaseTest {
         }
     }
 
-    public static class TestdataObjectSortableFactory
-            implements SelectionSorterWeightFactory<TestdataListSolution, TestdataObject>,
-            ComparatorFactory<TestdataListSolution, TestdataObject> {
+    public static class TestdataSolutionEasyScoreCalculator
+            implements EasyScoreCalculator<TestdataSolution, SimpleScore> {
 
         @Override
-        public Comparable createSorterWeight(TestdataListSolution solution, TestdataObject selection) {
-            return createSorter(solution, selection);
-        }
-
-        @Override
-        public Comparable createSorter(TestdataListSolution solution, TestdataObject selection) {
-            return -extractCode(selection.getCode());
-        }
-
-        public static int extractCode(String code) {
-            var idx = code.lastIndexOf(" ");
-            return Integer.parseInt(code.substring(idx + 1));
+        public @NonNull SimpleScore
+                calculateScore(@NonNull TestdataSolution solution) {
+            var score = 0;
+            var distinct = (int) solution.getEntityList().stream()
+                    .map(TestdataEntity::getValue)
+                    .filter(Objects::nonNull)
+                    .distinct()
+                    .count();
+            var assigned = solution.getEntityList().stream()
+                    .map(TestdataEntity::getValue)
+                    .filter(Objects::nonNull)
+                    .count();
+            var repeated = (int) (assigned - distinct);
+            score -= repeated;
+            return SimpleScore.of(score);
         }
     }
 

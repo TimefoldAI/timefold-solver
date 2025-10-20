@@ -197,7 +197,7 @@ class EntitySelectorFactoryTest {
 
     @Test
     void failFast_ifBothFactoriesUsed() {
-        EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
+        var entitySelectorConfig = new EntitySelectorConfig()
                 .withSorterManner(EntitySorterManner.DESCENDING)
                 .withCacheType(SelectionCacheType.PHASE)
                 .withSelectionOrder(SelectionOrder.SORTED)

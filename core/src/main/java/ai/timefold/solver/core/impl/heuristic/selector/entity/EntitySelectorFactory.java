@@ -184,7 +184,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         return true;
     }
 
-    private String determineSorterComparatorFactoryPropertyName(EntitySelectorConfig entitySelectorConfig) {
+    private static String determineSorterComparatorFactoryPropertyName(EntitySelectorConfig entitySelectorConfig) {
         var weightFactoryClass = entitySelectorConfig.getSorterWeightFactoryClass();
         var comparatorFactoryClass = entitySelectorConfig.getSorterComparatorFactoryClass();
         if (weightFactoryClass != null && comparatorFactoryClass != null) {

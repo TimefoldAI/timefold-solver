@@ -35,6 +35,7 @@ import org.jspecify.annotations.Nullable;
         "sorterManner",
         "sorterComparatorClass",
         "sorterWeightFactoryClass",
+        "sorterComparatorFactoryClass",
         "sorterOrder",
         "sorterClass",
         "probabilityWeightFactoryClass",
@@ -61,7 +62,12 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
 
     protected ValueSorterManner sorterManner = null;
     protected Class<? extends Comparator> sorterComparatorClass = null;
+    /**
+     * @deprecated Deprecated in favor of {@link #sorterComparatorFactoryClass}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends ComparatorFactory> sorterComparatorFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -162,12 +168,29 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #getSorterComparatorFactoryClass}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #setSorterComparatorFactoryClass}
+     * @param sorterWeightFactoryClass the class
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public void setSorterWeightFactoryClass(@Nullable Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
+    }
+
+    public Class<? extends ComparatorFactory> getSorterComparatorFactoryClass() {
+        return sorterComparatorFactoryClass;
+    }
+
+    public void setSorterComparatorFactoryClass(Class<? extends ComparatorFactory> sorterComparatorFactoryClass) {
+        this.sorterComparatorFactoryClass = sorterComparatorFactoryClass;
     }
 
     public @Nullable SelectionSorterOrder getSorterOrder() {
@@ -257,9 +280,20 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         return this;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #withSorterComparatorFactoryClass(Class)}
+     * @param weightFactoryClass the factory class
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @NonNull ValueSelectorConfig
             withSorterWeightFactoryClass(@NonNull Class<? extends ComparatorFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
+        return this;
+    }
+
+    public @NonNull ValueSelectorConfig
+            withSorterComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
+        this.setSorterComparatorFactoryClass(comparatorFactoryClass);
         return this;
     }
 
@@ -306,6 +340,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
                 sorterComparatorClass, inheritedConfig.getSorterComparatorClass());
         sorterWeightFactoryClass = ConfigUtils.inheritOverwritableProperty(
                 sorterWeightFactoryClass, inheritedConfig.getSorterWeightFactoryClass());
+        sorterComparatorFactoryClass = ConfigUtils.inheritOverwritableProperty(
+                sorterComparatorFactoryClass, inheritedConfig.getSorterComparatorFactoryClass());
         sorterOrder = ConfigUtils.inheritOverwritableProperty(
                 sorterOrder, inheritedConfig.getSorterOrder());
         sorterClass = ConfigUtils.inheritOverwritableProperty(
@@ -331,6 +367,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         classVisitor.accept(filterClass);
         classVisitor.accept(sorterComparatorClass);
         classVisitor.accept(sorterWeightFactoryClass);
+        classVisitor.accept(sorterComparatorFactoryClass);
         classVisitor.accept(sorterClass);
         classVisitor.accept(probabilityWeightFactoryClass);
     }

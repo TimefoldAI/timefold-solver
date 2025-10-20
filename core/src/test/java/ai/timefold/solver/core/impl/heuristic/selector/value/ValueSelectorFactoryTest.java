@@ -16,6 +16,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -258,6 +259,25 @@ class ValueSelectorFactoryTest {
                 () -> ValueSelectorFactory.create(valueSelectorConfig)
                         .buildMimicReplaying(mock(HeuristicConfigPolicy.class)))
                 .withMessageContaining("has another property");
+    }
+
+    @Test
+    void failFast_ifBothFactoriesUsed() {
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withSorterManner(ValueSorterManner.DESCENDING)
+                .withCacheType(SelectionCacheType.PHASE)
+                .withSelectionOrder(SelectionOrder.SORTED)
+                .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class)
+                .withSorterComparatorFactoryClass(DummySelectionComparatorFactory.class);
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> ValueSelectorFactory.<TestdataSolution> create(valueSelectorConfig)
+                        .buildValueSelector(buildHeuristicConfigPolicy(), TestdataEntity.buildEntityDescriptor(),
+                                SelectionCacheType.PHASE, SelectionOrder.SORTED))
+                .withMessageContaining(
+                        "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactoryTest$DummySelectionComparatorFactory)")
+                .withMessageContaining(
+                        "and sorterComparatorFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactoryTest$DummySelectionComparatorFactory) at the same time");
     }
 
     static Stream<Arguments> applyListValueFiltering() {
