@@ -79,7 +79,7 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
-    public void afterSetWorkingSolution() {
+    protected void afterSetWorkingSolution() {
         // Settle the node network to calculate precomputes
         // This is required so precomputes are not considered by terminations
         session.settle();

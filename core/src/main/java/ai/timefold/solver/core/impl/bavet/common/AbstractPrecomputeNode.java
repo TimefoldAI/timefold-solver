@@ -1,9 +1,10 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import java.util.function.Supplier;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetPrecomputeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -14,12 +15,10 @@ public abstract class AbstractPrecomputeNode<Tuple_ extends AbstractTuple> exten
     private final RecordAndReplayPropagator<Tuple_> recordAndReplayPropagator;
     private final Class<?>[] sourceClasses;
 
-    protected AbstractPrecomputeNode(NodeNetwork innerNodeNetwork,
-            RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle,
+    protected AbstractPrecomputeNode(Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier,
             TupleLifecycle<Tuple_> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
-        this.recordAndReplayPropagator = new RecordAndReplayPropagator<>(innerNodeNetwork,
-                recordingTupleLifecycle,
+        this.recordAndReplayPropagator = new RecordAndReplayPropagator<>(precomputeBuildHelperSupplier,
                 this::remapTuple,
                 nextNodesTupleLifecycle);
         this.sourceClasses = sourceClasses;
