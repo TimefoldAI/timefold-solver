@@ -35,6 +35,37 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 public @interface PlanningEntity {
 
     /**
+     * Allows sorting a collection of planning entities for this variable.
+     * Some algorithms perform better when the entities are sorted based on specific metrics.
+     * <p>
+     * The {@link Comparator} should sort the data in ascending order.
+     * For example, prioritize three vehicles by sorting them based on their capacity:
+     * Vehicle C (4 people), Vehicle A (6 people), Vehicle B (32 people)
+     * <p>
+     * Do not use together with {@link #comparatorFactoryClass()}.
+     *
+     * @return {@link PlanningVariable.NullComparator} when it is null (workaround for annotation limitation)
+     * @see #comparatorFactoryClass()
+     */
+    Class<? extends Comparator> comparatorClass() default NullComparator.class;
+
+    interface NullComparator<T> extends Comparator<T> {
+    }
+
+    /**
+     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
+     * <p>
+     * Do not use together with {@link #comparatorClass()}.
+     *
+     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
+     * @see #comparatorClass()
+     */
+    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
+
+    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
+    }
+
+    /**
      * A pinned planning entity is never changed during planning,
      * this is useful in repeated planning use cases (such as continuous planning and real-time planning).
      * This applies to all the planning variables of this planning entity.
@@ -50,7 +81,7 @@ public @interface PlanningEntity {
 
     /**
      * Workaround for annotation limitation in {@link #pinningFilter()}.
-     * 
+     *
      * @deprecated Prefer using {@link PlanningPin}.
      */
     @Deprecated(forRemoval = true, since = "1.23.0")
@@ -78,30 +109,12 @@ public @interface PlanningEntity {
     Class<? extends Comparator> difficultyComparatorClass() default NullDifficultyComparator.class;
 
     /**
-     * Allows sorting a collection of planning entities for this variable.
-     * Some algorithms perform better when the entities are sorted based on specific metrics.
-     * <p>
-     * The {@link Comparator} should sort the data in ascending order.
-     * For example, prioritize three vehicles by sorting them based on their capacity:
-     * Vehicle C (4 people), Vehicle A (6 people), Vehicle B (32 people)
-     * <p>
-     * Do not use together with {@link #comparatorFactoryClass()}.
-     *
-     * @return {@link PlanningVariable.NullComparator} when it is null (workaround for annotation limitation)
-     * @see #comparatorFactoryClass()
-     */
-    Class<? extends Comparator> comparatorClass() default NullComparator.class;
-
-    /**
      * Workaround for annotation limitation in {@link #difficultyComparatorClass()}.
      *
      * @deprecated Deprecated in favor of {@link NullComparator}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullDifficultyComparator<T> extends NullComparator<T> {
-    }
-
-    interface NullComparator<T> extends Comparator<T> {
     }
 
     /**
@@ -118,25 +131,12 @@ public @interface PlanningEntity {
     Class<? extends ComparatorFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
 
     /**
-     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
-     * <p>
-     * Do not use together with {@link #comparatorClass()}.
-     *
-     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
-     * @see #comparatorClass()
-     */
-    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
-
-    /**
      * Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}.
      *
      * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullDifficultyWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
-    }
-
-    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
     }
 
 }

@@ -51,6 +51,45 @@ public @interface PlanningVariable {
     boolean allowsUnassigned() default false;
 
     /**
+     * In some use cases, such as Vehicle Routing, planning entities form a specific graph type,
+     * as specified by {@link PlanningVariableGraphType}.
+     *
+     * @return never null, defaults to {@link PlanningVariableGraphType#NONE}
+     */
+    PlanningVariableGraphType graphType() default PlanningVariableGraphType.NONE;
+
+    /**
+     * Allows sorting a collection of planning values for this variable.
+     * Some algorithms perform better when the values are sorted based on specific metrics.
+     * <p>
+     * The {@link Comparator} should sort the data in ascending order.
+     * For example, prioritize three visits by sorting them based on their importance:
+     * Visit C (SMALL_PRIORITY), Visit A (MEDIUM_PRIORITY), Visit B (HIGH_PRIORITY)
+     * <p>
+     * Do not use together with {@link #comparatorFactoryClass()}.
+     *
+     * @return {@link NullComparator} when it is null (workaround for annotation limitation)
+     * @see #comparatorFactoryClass()
+     */
+    Class<? extends Comparator> comparatorClass() default NullComparator.class;
+
+    interface NullComparator<T> extends Comparator<T> {
+    }
+
+    /**
+     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
+     * <p>
+     * Do not use together with {@link #comparatorClass()}.
+     * 
+     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
+     * @see #comparatorClass()
+     */
+    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
+
+    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
+    }
+
+    /**
      * As defined by {@link #allowsUnassigned()}.
      *
      * @deprecated Use {@link #allowsUnassigned()} instead.
@@ -58,14 +97,6 @@ public @interface PlanningVariable {
      */
     @Deprecated(forRemoval = true, since = "1.8.0")
     boolean nullable() default false;
-
-    /**
-     * In some use cases, such as Vehicle Routing, planning entities form a specific graph type,
-     * as specified by {@link PlanningVariableGraphType}.
-     *
-     * @return never null, defaults to {@link PlanningVariableGraphType#NONE}
-     */
-    PlanningVariableGraphType graphType() default PlanningVariableGraphType.NONE;
 
     /**
      * Allows a collection of planning values for this variable to be sorted by strength.
@@ -87,30 +118,12 @@ public @interface PlanningVariable {
     Class<? extends Comparator> strengthComparatorClass() default NullStrengthComparator.class;
 
     /**
-     * Allows sorting a collection of planning values for this variable.
-     * Some algorithms perform better when the values are sorted based on specific metrics.
-     * <p>
-     * The {@link Comparator} should sort the data in ascending order.
-     * For example, prioritize three visits by sorting them based on their importance:
-     * Visit C (SMALL_PRIORITY), Visit A (MEDIUM_PRIORITY), Visit B (HIGH_PRIORITY)
-     * <p>
-     * Do not use together with {@link #comparatorFactoryClass()}.
-     *
-     * @return {@link NullComparator} when it is null (workaround for annotation limitation)
-     * @see #comparatorFactoryClass()
-     */
-    Class<? extends Comparator> comparatorClass() default NullComparator.class;
-
-    /**
      * Workaround for annotation limitation in {@link #strengthComparatorClass()}.
      *
      * @deprecated Deprecated in favor of {@link NullComparator}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullStrengthComparator<T> extends NullComparator<T> {
-    }
-
-    interface NullComparator<T> extends Comparator<T> {
     }
 
     /**
@@ -127,16 +140,6 @@ public @interface PlanningVariable {
     Class<? extends ComparatorFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
 
     /**
-     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
-     * <p>
-     * Do not use together with {@link #comparatorClass()}.
-     * 
-     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
-     * @see #comparatorClass()
-     */
-    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
-
-    /**
      * Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}.
      *
      * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
@@ -144,8 +147,4 @@ public @interface PlanningVariable {
     @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullStrengthWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
     }
-
-    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
-    }
-
 }
