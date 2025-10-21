@@ -289,7 +289,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
      * Note: by default does nothing. Subclasses should override this if they
      * need to compute something after shadow variables are set.
      */
-    public void afterSetWorkingSolution() {
+    protected void afterSetWorkingSolution() {
         // Do nothing
     }
 

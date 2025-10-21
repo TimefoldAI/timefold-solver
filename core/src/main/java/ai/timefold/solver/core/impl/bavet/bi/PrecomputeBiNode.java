@@ -1,10 +1,11 @@
 package ai.timefold.solver.core.impl.bavet.bi;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import java.util.function.Supplier;
+
 import ai.timefold.solver.core.impl.bavet.common.AbstractPrecomputeNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
-import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetPrecomputeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -12,12 +13,11 @@ import org.jspecify.annotations.NullMarked;
 public final class PrecomputeBiNode<A, B> extends AbstractPrecomputeNode<BiTuple<A, B>> {
     private final int outputStoreSize;
 
-    public PrecomputeBiNode(NodeNetwork nodeNetwork,
-            RecordingTupleLifecycle<BiTuple<A, B>> recordingTupleNode,
+    public PrecomputeBiNode(Supplier<BavetPrecomputeBuildHelper<BiTuple<A, B>>> precomputeBuildHelperSupplier,
             int outputStoreSize,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
-        super(nodeNetwork, recordingTupleNode, nextNodesTupleLifecycle, sourceClasses);
+        super(precomputeBuildHelperSupplier, nextNodesTupleLifecycle, sourceClasses);
         this.outputStoreSize = outputStoreSize;
     }
 
