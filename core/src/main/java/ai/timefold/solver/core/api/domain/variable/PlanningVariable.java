@@ -101,7 +101,12 @@ public @interface PlanningVariable {
      */
     Class<? extends Comparator> comparatorClass() default NullComparator.class;
 
-    /** Workaround for annotation limitation in {@link #strengthComparatorClass()}. */
+    /**
+     * Workaround for annotation limitation in {@link #strengthComparatorClass()}.
+     *
+     * @deprecated Deprecated in favor of {@link NullComparator}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullStrengthComparator<T> extends NullComparator<T> {
     }
 
@@ -131,7 +136,12 @@ public @interface PlanningVariable {
      */
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
-    /** Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}. */
+    /**
+     * Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}.
+     *
+     * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullStrengthWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
     }
 

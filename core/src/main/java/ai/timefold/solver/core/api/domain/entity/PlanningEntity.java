@@ -92,7 +92,12 @@ public @interface PlanningEntity {
      */
     Class<? extends Comparator> comparatorClass() default NullComparator.class;
 
-    /** Workaround for annotation limitation in {@link #difficultyComparatorClass()}. */
+    /**
+     * Workaround for annotation limitation in {@link #difficultyComparatorClass()}.
+     *
+     * @deprecated Deprecated in favor of {@link NullComparator}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullDifficultyComparator<T> extends NullComparator<T> {
     }
 
@@ -122,7 +127,12 @@ public @interface PlanningEntity {
      */
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
-    /** Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}. */
+    /**
+     * Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}.
+     *
+     * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     interface NullDifficultyWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
     }
 
