@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet.uni;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
@@ -34,14 +35,14 @@ public class BavetPrecomputeUniConstraintStream<Solution_, A> extends BavetAbstr
 
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
-        var precomputeBuildHelper = new BavetPrecomputeBuildHelper<UniTuple<A>>(recordingPrecomputedConstraintStream);
+        Supplier<BavetPrecomputeBuildHelper<UniTuple<A>>> precomputeBuildHelperSupplier =
+                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
-        buildHelper.addNode(new PrecomputeUniNode<>(precomputeBuildHelper.getNodeNetwork(),
-                precomputeBuildHelper.getRecordingTupleLifecycle(),
+        buildHelper.addNode(new PrecomputeUniNode<>(precomputeBuildHelperSupplier,
                 outputStoreSize,
                 buildHelper.getAggregatedTupleLifecycle(aftStream.getChildStreamList()),
-                precomputeBuildHelper.getSourceClasses()),
+                precomputeBuildHelperSupplier.get().getSourceClasses()),
                 this);
     }
 
