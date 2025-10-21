@@ -47,7 +47,8 @@ public final class DestinationSelectorFactory<Solution_> extends AbstractSelecto
                 // Solution-range model
                 entitySelectorConfig.setCacheType(SelectionCacheType.PHASE);
             } else {
-                // Entity-range model requires the sorting to be done in each step
+                // The entity-range model requires sorting at each step
+                // because the list of reachable entities can vary from one entity to another
                 entitySelectorConfig.setCacheType(SelectionCacheType.STEP);
             }
             entitySelectorConfig.setSelectionOrder(SelectionOrder.SORTED);
