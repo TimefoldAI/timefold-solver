@@ -172,7 +172,7 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 === Algorithm description
 
 Combines <<firstFitDecreasing,First Fit Decreasing>> and <<weakestFit,Weakest Fit>>.
-It sorts the planning entities in descending order and the planning values in ascending order based on specified metrics.
+It sorts the planning entities in descending order and the planning values in ascending order based on defined metrics.
 
 Requires the model
 to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
@@ -272,7 +272,7 @@ For a very advanced configuration, see <<allocateEntityFromQueue,Allocate Entity
 === Algorithm description
 
 Combines <<firstFitDecreasing, First Fit Decreasing>> and <<strongestFit, Strongest Fit>>.
-It sorts the planning entities and the planning values in descending order based on specified metrics.
+It sorts the planning entities and the planning values in descending order based on defined metrics.
 
 Requires the model
 to support xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
