@@ -6,8 +6,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 
-import org.jspecify.annotations.NullMarked;
-
 /**
  * Creates a weight to decide the order of a collections of selections
  * (a selection is a {@link PlanningEntity}, a planningValue, a {@link Move} or a {@link Selector}).
@@ -24,7 +22,6 @@ import org.jspecify.annotations.NullMarked;
  * @param <T> the selection type
  */
 @Deprecated(forRemoval = true, since = "1.28.0")
-@NullMarked
 public interface SelectionSorterWeightFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
 
     Comparable createSorterWeight(Solution_ solution, T selection);

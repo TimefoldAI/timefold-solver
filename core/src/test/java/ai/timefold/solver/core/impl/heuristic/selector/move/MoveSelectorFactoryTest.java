@@ -202,19 +202,34 @@ class MoveSelectorFactoryTest {
 
     @Test
     void applySorting_withSorterComparatorClass() {
-        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
-        DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
-        moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-        moveSelectorConfig.setSorterComparatorClass(DummyComparator.class);
+        // Old setting
+        {
+            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+            moveSelectorConfig.setSorterComparatorClass(DummyComparator.class);
 
-        DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
-        MoveSelector<TestdataSolution> sortingMoveSelector =
-                moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
-        assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
+            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+            MoveSelector<TestdataSolution> sortingMoveSelector =
+                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
+        }
+        // New setting
+        {
+            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+            moveSelectorConfig.setComparatorClass(DummyComparator.class);
+
+            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+            MoveSelector<TestdataSolution> sortingMoveSelector =
+                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
+        }
     }
 
     @Test
-    void applySorting_withSorterComparatorFactoryClass() {
+    void applySorting_withComparatorFactoryClass() {
         // Old setting
         {
             final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
@@ -232,7 +247,7 @@ class MoveSelectorFactoryTest {
             final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
             DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
             moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-            moveSelectorConfig.setSorterComparatorFactoryClass(DummyValueFactory.class);
+            moveSelectorConfig.setComparatorFactoryClass(DummyValueFactory.class);
 
             DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
             MoveSelector<TestdataSolution> sortingMoveSelector =
@@ -280,12 +295,30 @@ class MoveSelectorFactoryTest {
     }
 
     @Test
-    void failFast_ifBothFactoriesUsed() {
+    void failFast_ifBothComparatorFactoriesUsed() {
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+        DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+        moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+        moveSelectorConfig.setSorterComparatorClass(DummyComparator.class);
+        moveSelectorConfig.setComparatorClass(DummyComparator.class);
+        DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED,
+                        baseMoveSelector))
+                .withMessageContaining("The moveSelectorConfig")
+                .withMessageContaining(
+                        "cannot have a sorterComparatorClass (class ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactoryTest$DummyComparator)")
+                .withMessageContaining(
+                        "and comparatorClass (class ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelectorFactoryTest$DummyComparator) at the same time");
+    }
+
+    @Test
+    void failFast_ifBothComparatorsFactoriesUsed() {
         final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
         DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
         moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
         moveSelectorConfig.setSorterWeightFactoryClass(DummyValueFactory.class);
-        moveSelectorConfig.setSorterComparatorFactoryClass(DummyValueFactory.class);
+        moveSelectorConfig.setComparatorFactoryClass(DummyValueFactory.class);
         DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED,
@@ -294,7 +327,7 @@ class MoveSelectorFactoryTest {
                 .withMessageContaining(
                         "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.testdomain.common.DummyValueFactory)")
                 .withMessageContaining(
-                        "and sorterComparatorFactoryClass (class ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time");
+                        "and comparatorFactoryClass (class ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time");
     }
 
     static class DummyMoveSelectorConfig extends MoveSelectorConfig<DummyMoveSelectorConfig> {

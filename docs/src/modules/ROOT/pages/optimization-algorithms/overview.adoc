@@ -1588,7 +1588,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterComparatorClass>...VisitComparator</sorterComparatorClass>
+      <comparatorClass>...VisitComparator</comparatorClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----
@@ -1621,7 +1621,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterComparatorFactoryClass>...MySorterComparatorFactory</sorterComparatorFactoryClass>
+      <comparatorFactoryClass>...MySorterComparatorFactory</comparatorFactoryClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----

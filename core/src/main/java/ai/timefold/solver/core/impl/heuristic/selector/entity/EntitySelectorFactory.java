@@ -142,7 +142,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         final var anyConfigurationParameterDefined = Stream
                 .of(config.getId(), config.getEntityClass(), config.getCacheType(), config.getSelectionOrder(),
                         config.getNearbySelectionConfig(), config.getFilterClass(), config.getSorterManner(),
-                        config.getSorterComparatorClass(), determineSorterComparatorFactoryClass(config),
+                        determineComparatorClass(config), determineComparatorFactoryClass(config),
                         config.getSorterOrder(),
                         config.getSorterClass(), config.getProbabilityWeightFactoryClass(), config.getSelectedCountLimit())
                 .anyMatch(Objects::nonNull);
@@ -184,25 +184,46 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         return true;
     }
 
-    private static String determineSorterComparatorFactoryPropertyName(EntitySelectorConfig entitySelectorConfig) {
+    private static String determineComparatorPropertyName(EntitySelectorConfig entitySelectorConfig) {
+        var sorterComparatorClass = entitySelectorConfig.getSorterComparatorClass();
+        var comparatorClass = entitySelectorConfig.getComparatorClass();
+        if (sorterComparatorClass != null && comparatorClass != null) {
+            throw new IllegalArgumentException(
+                    "The entitySelectorConfig (%s) cannot have a %s (%s) and %s (%s) at the same time.".formatted(
+                            entitySelectorConfig, "sorterComparatorClass", sorterComparatorClass,
+                            "comparatorClass", comparatorClass));
+        }
+        return sorterComparatorClass != null ? "sorterComparatorClass" : "comparatorClass";
+    }
+
+    private static Class<? extends Comparator> determineComparatorClass(EntitySelectorConfig entitySelectorConfig) {
+        var propertyName = determineComparatorPropertyName(entitySelectorConfig);
+        if (propertyName.equals("sorterComparatorClass")) {
+            return entitySelectorConfig.getSorterComparatorClass();
+        } else {
+            return entitySelectorConfig.getComparatorClass();
+        }
+    }
+
+    private static String determineComparatorFactoryPropertyName(EntitySelectorConfig entitySelectorConfig) {
         var weightFactoryClass = entitySelectorConfig.getSorterWeightFactoryClass();
-        var comparatorFactoryClass = entitySelectorConfig.getSorterComparatorFactoryClass();
+        var comparatorFactoryClass = entitySelectorConfig.getComparatorFactoryClass();
         if (weightFactoryClass != null && comparatorFactoryClass != null) {
             throw new IllegalArgumentException(
                     "The entitySelectorConfig (%s) cannot have a %s (%s) and %s (%s) at the same time.".formatted(
                             entitySelectorConfig, "sorterWeightFactoryClass", weightFactoryClass,
-                            "sorterComparatorFactoryClass", comparatorFactoryClass));
+                            "comparatorFactoryClass", comparatorFactoryClass));
         }
-        return weightFactoryClass != null ? "sorterWeightFactoryClass" : "sorterComparatorFactoryClass";
+        return weightFactoryClass != null ? "sorterWeightFactoryClass" : "comparatorFactoryClass";
     }
 
     private static Class<? extends ComparatorFactory>
-            determineSorterComparatorFactoryClass(EntitySelectorConfig entitySelectorConfig) {
-        var propertyName = determineSorterComparatorFactoryPropertyName(entitySelectorConfig);
+            determineComparatorFactoryClass(EntitySelectorConfig entitySelectorConfig) {
+        var propertyName = determineComparatorFactoryPropertyName(entitySelectorConfig);
         if (propertyName.equals("sorterWeightFactoryClass")) {
             return entitySelectorConfig.getSorterWeightFactoryClass();
         } else {
-            return entitySelectorConfig.getSorterComparatorFactoryClass();
+            return entitySelectorConfig.getComparatorFactoryClass();
         }
     }
 
@@ -274,36 +295,36 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
 
     protected void validateSorting(SelectionOrder resolvedSelectionOrder) {
         var sorterManner = config.getSorterManner();
-        var sorterComparatorClass = config.getSorterComparatorClass();
-        var sorterComparatorFactoryPropertyName = determineSorterComparatorFactoryPropertyName(config);
-        var sorterComparatorFactoryClass = determineSorterComparatorFactoryClass(config);
+        var comparatorClass = determineComparatorClass(config);
+        var comparatorPropertyName = determineComparatorPropertyName(config);
+        var comparatorFactoryPropertyName = determineComparatorFactoryPropertyName(config);
+        var comparatorFactoryClass = determineComparatorFactoryClass(config);
         var sorterOrder = config.getSorterOrder();
         var sorterClass = config.getSorterClass();
-        if ((sorterManner != null || sorterComparatorClass != null || sorterComparatorFactoryClass != null
+        if ((sorterManner != null || comparatorClass != null || comparatorFactoryClass != null
                 || sorterOrder != null
                 || sorterClass != null) && resolvedSelectionOrder != SelectionOrder.SORTED) {
             throw new IllegalArgumentException("""
                     The entitySelectorConfig (%s) with sorterManner (%s) \
-                    and sorterComparatorClass (%s) and sorterWeightFactoryClass (%s) and sorterOrder (%s) and sorterClass (%s) \
+                    and %s (%s) and %s (%s) and sorterOrder (%s) and sorterClass (%s) \
                     has a resolvedSelectionOrder (%s) that is not %s."""
-                    .formatted(config, sorterManner, sorterComparatorClass, sorterComparatorFactoryClass, sorterOrder,
-                            sorterClass,
-                            resolvedSelectionOrder, SelectionOrder.SORTED));
+                    .formatted(config, sorterManner, comparatorPropertyName, comparatorClass, comparatorFactoryPropertyName,
+                            comparatorFactoryClass, sorterOrder, sorterClass, resolvedSelectionOrder, SelectionOrder.SORTED));
         }
-        assertNotSorterMannerAnd(config, "sorterComparatorClass", EntitySelectorConfig::getSorterComparatorClass);
-        assertNotSorterMannerAnd(config, sorterComparatorFactoryPropertyName,
-                EntitySelectorFactory::determineSorterComparatorFactoryClass);
+        assertNotSorterMannerAnd(config, comparatorPropertyName, EntitySelectorFactory::determineComparatorClass);
+        assertNotSorterMannerAnd(config, comparatorFactoryPropertyName,
+                EntitySelectorFactory::determineComparatorFactoryClass);
         assertNotSorterMannerAnd(config, "sorterClass", EntitySelectorConfig::getSorterClass);
         assertNotSorterMannerAnd(config, "sorterOrder", EntitySelectorConfig::getSorterOrder);
-        assertNotSorterClassAnd(config, "sorterComparatorClass", EntitySelectorConfig::getSorterComparatorClass);
-        assertNotSorterClassAnd(config, sorterComparatorFactoryPropertyName,
-                EntitySelectorFactory::determineSorterComparatorFactoryClass);
+        assertNotSorterClassAnd(config, comparatorPropertyName, EntitySelectorFactory::determineComparatorClass);
+        assertNotSorterClassAnd(config, comparatorFactoryPropertyName,
+                EntitySelectorFactory::determineComparatorFactoryClass);
         assertNotSorterClassAnd(config, "sorterOrder", EntitySelectorConfig::getSorterOrder);
-        if (sorterComparatorClass != null && sorterComparatorFactoryClass != null) {
+        if (comparatorClass != null && comparatorFactoryClass != null) {
             throw new IllegalArgumentException(
-                    "The entitySelectorConfig (%s) has both a sorterComparatorClass (%s) and a %s (%s)."
-                            .formatted(config, sorterComparatorClass, sorterComparatorFactoryPropertyName,
-                                    sorterComparatorFactoryClass));
+                    "The entitySelectorConfig (%s) has both a %s (%s) and a %s (%s)."
+                            .formatted(config, comparatorPropertyName, comparatorClass, comparatorFactoryPropertyName,
+                                    comparatorFactoryClass));
         }
     }
 
@@ -333,34 +354,35 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         if (resolvedSelectionOrder == SelectionOrder.SORTED) {
             SelectionSorter<Solution_, Object> sorter;
             var sorterManner = config.getSorterManner();
-            var comparatorFactoryClass = determineSorterComparatorFactoryClass(config);
+            var comparatorClass = determineComparatorClass(config);
+            var comparatorFactoryClass = determineComparatorFactoryClass(config);
             if (sorterManner != null) {
                 var entityDescriptor = entitySelector.getEntityDescriptor();
                 if (!EntitySelectorConfig.hasSorter(sorterManner, entityDescriptor)) {
                     return entitySelector;
                 }
                 sorter = EntitySelectorConfig.determineSorter(sorterManner, entityDescriptor);
-            } else if (config.getSorterComparatorClass() != null) {
+            } else if (comparatorClass != null) {
                 Comparator<Object> sorterComparator =
-                        instanceCache.newInstance(config, "sorterComparatorClass", config.getSorterComparatorClass());
+                        instanceCache.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (comparatorFactoryClass != null) {
-                var comparatorFactoryPropertyName = determineSorterComparatorFactoryPropertyName(config);
                 ComparatorFactory<Solution_, Object> comparatorFactory =
-                        instanceCache.newInstance(config, comparatorFactoryPropertyName, comparatorFactoryClass);
+                        instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
+                                comparatorFactoryClass);
                 sorter = new FactorySelectionSorter<>(comparatorFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (config.getSorterClass() != null) {
                 sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());
             } else {
-                var comparatorFactoryPropertyName = determineSorterComparatorFactoryPropertyName(config);
                 throw new IllegalArgumentException("""
                         The entitySelectorConfig (%s) with resolvedSelectionOrder (%s) needs \
-                        a sorterManner (%s) or a sorterComparatorClass (%s) or a %s (%s) \
+                        a sorterManner (%s) or a %s (%s) or a %s (%s) \
                         or a sorterClass (%s)."""
-                        .formatted(config, resolvedSelectionOrder, sorterManner, config.getSorterComparatorClass(),
-                                comparatorFactoryPropertyName, comparatorFactoryClass, config.getSorterClass()));
+                        .formatted(config, resolvedSelectionOrder, sorterManner, determineComparatorPropertyName(config),
+                                comparatorClass, determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
+                                config.getSorterClass()));
             }
             entitySelector = new SortingEntitySelector<>(entitySelector, resolvedCacheType, sorter);
         }

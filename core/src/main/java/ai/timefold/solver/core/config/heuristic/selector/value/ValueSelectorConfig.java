@@ -34,8 +34,9 @@ import org.jspecify.annotations.Nullable;
         "filterClass",
         "sorterManner",
         "sorterComparatorClass",
+        "comparatorClass",
         "sorterWeightFactoryClass",
-        "sorterComparatorFactoryClass",
+        "comparatorFactoryClass",
         "sorterOrder",
         "sorterClass",
         "probabilityWeightFactoryClass",
@@ -61,13 +62,18 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     protected Class<? extends SelectionFilter> filterClass = null;
 
     protected ValueSorterManner sorterManner = null;
-    protected Class<? extends Comparator> sorterComparatorClass = null;
     /**
-     * @deprecated Deprecated in favor of {@link #sorterComparatorFactoryClass}.
+     * @deprecated Deprecated in favor of {@link #comparatorClass}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    protected Class<? extends Comparator> sorterComparatorClass = null;
+    protected Class<? extends Comparator> comparatorClass = null;
+    /**
+     * @deprecated Deprecated in favor of {@link #comparatorFactoryClass}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
-    protected Class<? extends ComparatorFactory> sorterComparatorFactoryClass = null;
+    protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -160,16 +166,32 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         this.sorterManner = sorterManner;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #getComparatorClass()}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @Nullable Class<? extends Comparator> getSorterComparatorClass() {
         return sorterComparatorClass;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #setComparatorClass(Class)}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public void setSorterComparatorClass(@Nullable Class<? extends Comparator> sorterComparatorClass) {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
+    public Class<? extends Comparator> getComparatorClass() {
+        return comparatorClass;
+    }
+
+    public void setComparatorClass(Class<? extends Comparator> comparatorClass) {
+        this.comparatorClass = comparatorClass;
+    }
+
     /**
-     * @deprecated Deprecated in favor of {@link #getSorterComparatorFactoryClass}
+     * @deprecated Deprecated in favor of {@link #getComparatorFactoryClass()}
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
@@ -177,7 +199,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     }
 
     /**
-     * @deprecated Deprecated in favor of {@link #setSorterComparatorFactoryClass}
+     * @deprecated Deprecated in favor of {@link #setComparatorFactoryClass(Class)}
      * @param sorterWeightFactoryClass the class
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
@@ -185,12 +207,12 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
-    public Class<? extends ComparatorFactory> getSorterComparatorFactoryClass() {
-        return sorterComparatorFactoryClass;
+    public Class<? extends ComparatorFactory> getComparatorFactoryClass() {
+        return comparatorFactoryClass;
     }
 
-    public void setSorterComparatorFactoryClass(Class<? extends ComparatorFactory> sorterComparatorFactoryClass) {
-        this.sorterComparatorFactoryClass = sorterComparatorFactoryClass;
+    public void setComparatorFactoryClass(Class<? extends ComparatorFactory> comparatorFactoryClass) {
+        this.comparatorFactoryClass = comparatorFactoryClass;
     }
 
     public @Nullable SelectionSorterOrder getSorterOrder() {
@@ -275,13 +297,22 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         return this;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #withComparatorClass(Class)}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @NonNull ValueSelectorConfig withSorterComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
         this.setSorterComparatorClass(comparatorClass);
         return this;
     }
 
+    public @NonNull ValueSelectorConfig withComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
+        this.setComparatorClass(comparatorClass);
+        return this;
+    }
+
     /**
-     * @deprecated Deprecated in favor of {@link #withSorterComparatorFactoryClass(Class)}
+     * @deprecated Deprecated in favor of {@link #withComparatorFactoryClass(Class)}
      * @param weightFactoryClass the factory class
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
@@ -292,8 +323,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     }
 
     public @NonNull ValueSelectorConfig
-            withSorterComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
-        this.setSorterComparatorFactoryClass(comparatorFactoryClass);
+            withComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
+        this.setComparatorFactoryClass(comparatorFactoryClass);
         return this;
     }
 
@@ -338,10 +369,12 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
                 sorterManner, inheritedConfig.getSorterManner());
         sorterComparatorClass = ConfigUtils.inheritOverwritableProperty(
                 sorterComparatorClass, inheritedConfig.getSorterComparatorClass());
+        comparatorClass = ConfigUtils.inheritOverwritableProperty(
+                comparatorClass, inheritedConfig.getComparatorClass());
         sorterWeightFactoryClass = ConfigUtils.inheritOverwritableProperty(
                 sorterWeightFactoryClass, inheritedConfig.getSorterWeightFactoryClass());
-        sorterComparatorFactoryClass = ConfigUtils.inheritOverwritableProperty(
-                sorterComparatorFactoryClass, inheritedConfig.getSorterComparatorFactoryClass());
+        comparatorFactoryClass = ConfigUtils.inheritOverwritableProperty(
+                comparatorFactoryClass, inheritedConfig.getComparatorFactoryClass());
         sorterOrder = ConfigUtils.inheritOverwritableProperty(
                 sorterOrder, inheritedConfig.getSorterOrder());
         sorterClass = ConfigUtils.inheritOverwritableProperty(
@@ -366,8 +399,9 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         }
         classVisitor.accept(filterClass);
         classVisitor.accept(sorterComparatorClass);
+        classVisitor.accept(comparatorClass);
         classVisitor.accept(sorterWeightFactoryClass);
-        classVisitor.accept(sorterComparatorFactoryClass);
+        classVisitor.accept(comparatorFactoryClass);
         classVisitor.accept(sorterClass);
         classVisitor.accept(probabilityWeightFactoryClass);
     }

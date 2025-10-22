@@ -66,7 +66,13 @@ class SortingMoveSelectorTest {
                         .withSorterWeightFactoryClass(TestCodeAssertableComparatorFactory.class),
                 new DummySorterMoveSelectorConfig()
                         .withSorterOrder(SelectionSorterOrder.ASCENDING)
-                        .withSorterComparatorFactoryClass(TestCodeAssertableComparatorFactory.class));
+                        .withSorterComparatorClass(TestCodeAssertableComparator.class),
+                new DummySorterMoveSelectorConfig()
+                        .withSorterOrder(SelectionSorterOrder.ASCENDING)
+                        .withComparatorFactoryClass(TestCodeAssertableComparatorFactory.class),
+                new DummySorterMoveSelectorConfig()
+                        .withSorterOrder(SelectionSorterOrder.ASCENDING)
+                        .withComparatorClass(TestCodeAssertableComparator.class));
     }
 
     @ParameterizedTest
@@ -203,6 +209,13 @@ class SortingMoveSelectorTest {
         @Override
         public Comparable createSorter(Object o, CodeAssertable selection) {
             return selection.getCode();
+        }
+    }
+
+    public static class TestCodeAssertableComparator implements Comparator<CodeAssertable> {
+        @Override
+        public int compare(CodeAssertable o1, CodeAssertable o2) {
+            return o1.getCode().compareTo(o2.getCode());
         }
     }
 

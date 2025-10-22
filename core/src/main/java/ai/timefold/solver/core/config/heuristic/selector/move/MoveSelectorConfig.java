@@ -67,8 +67,9 @@ import org.jspecify.annotations.Nullable;
         "selectionOrder",
         "filterClass",
         "sorterComparatorClass",
+        "comparatorClass",
         "sorterWeightFactoryClass",
-        "sorterComparatorFactoryClass",
+        "comparatorFactoryClass",
         "sorterOrder",
         "sorterClass",
         "probabilityWeightFactoryClass",
@@ -82,13 +83,18 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
 
     protected Class<? extends SelectionFilter> filterClass = null;
 
-    protected Class<? extends Comparator> sorterComparatorClass = null;
     /**
-     * @deprecated Deprecated in favor of {@link #sorterComparatorFactoryClass}.
+     * @deprecated Deprecated in favor of {@link #comparatorClass}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    protected Class<? extends Comparator> sorterComparatorClass = null;
+    protected Class<? extends Comparator> comparatorClass = null;
+    /**
+     * @deprecated Deprecated in favor of {@link #comparatorFactoryClass}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
-    protected Class<? extends ComparatorFactory> sorterComparatorFactoryClass = null;
+    protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
     protected SelectionSorterOrder sorterOrder = null;
     protected Class<? extends SelectionSorter> sorterClass = null;
 
@@ -126,16 +132,32 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         this.filterClass = filterClass;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #getComparatorClass()}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @Nullable Class<? extends Comparator> getSorterComparatorClass() {
         return sorterComparatorClass;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #setComparatorClass(Class)}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public void setSorterComparatorClass(@Nullable Class<? extends Comparator> sorterComparatorClass) {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
+    public Class<? extends Comparator> getComparatorClass() {
+        return comparatorClass;
+    }
+
+    public void setComparatorClass(Class<? extends Comparator> comparatorClass) {
+        this.comparatorClass = comparatorClass;
+    }
+
     /**
-     * @deprecated Deprecated in favor of {@link #getSorterComparatorFactoryClass}
+     * @deprecated Deprecated in favor of {@link #getComparatorFactoryClass()}
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
@@ -143,7 +165,7 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     /**
-     * @deprecated Deprecated in favor of {@link #setSorterComparatorFactoryClass}
+     * @deprecated Deprecated in favor of {@link #setComparatorFactoryClass(Class)}
      * @param sorterWeightFactoryClass the class
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
@@ -151,12 +173,12 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
-    public Class<? extends ComparatorFactory> getSorterComparatorFactoryClass() {
-        return sorterComparatorFactoryClass;
+    public Class<? extends ComparatorFactory> getComparatorFactoryClass() {
+        return comparatorFactoryClass;
     }
 
-    public void setSorterComparatorFactoryClass(Class<? extends ComparatorFactory> sorterComparatorFactoryClass) {
-        this.sorterComparatorFactoryClass = sorterComparatorFactoryClass;
+    public void setComparatorFactoryClass(Class<? extends ComparatorFactory> comparatorFactoryClass) {
+        this.comparatorFactoryClass = comparatorFactoryClass;
     }
 
     public @Nullable SelectionSorterOrder getSorterOrder() {
@@ -219,13 +241,22 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         return (Config_) this;
     }
 
+    /**
+     * @deprecated Deprecated in favor of {@link #withComparatorClass(Class)}
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     public @NonNull Config_ withSorterComparatorClass(@NonNull Class<? extends Comparator> sorterComparatorClass) {
         this.sorterComparatorClass = sorterComparatorClass;
         return (Config_) this;
     }
 
+    public @NonNull Config_ withComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
+        this.setComparatorClass(comparatorClass);
+        return (Config_) this;
+    }
+
     /**
-     * @deprecated Deprecated in favor of {@link #withSorterComparatorFactoryClass(Class)}
+     * @deprecated Deprecated in favor of {@link #withComparatorFactoryClass(Class)}
      * @param sorterWeightFactoryClass the factory class
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
@@ -236,8 +267,8 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     }
 
     public @NonNull Config_
-            withSorterComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
-        this.setSorterComparatorFactoryClass(comparatorFactoryClass);
+            withComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
+        this.setComparatorFactoryClass(comparatorFactoryClass);
         return (Config_) this;
     }
 
@@ -292,8 +323,9 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
     protected void visitCommonReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(filterClass);
         classVisitor.accept(sorterComparatorClass);
+        classVisitor.accept(comparatorClass);
         classVisitor.accept(sorterWeightFactoryClass);
-        classVisitor.accept(sorterComparatorFactoryClass);
+        classVisitor.accept(comparatorFactoryClass);
         classVisitor.accept(sorterClass);
         classVisitor.accept(probabilityWeightFactoryClass);
     }
@@ -304,10 +336,12 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         filterClass = ConfigUtils.inheritOverwritableProperty(filterClass, inheritedConfig.getFilterClass());
         sorterComparatorClass = ConfigUtils.inheritOverwritableProperty(
                 sorterComparatorClass, inheritedConfig.getSorterComparatorClass());
+        comparatorClass = ConfigUtils.inheritOverwritableProperty(
+                comparatorClass, inheritedConfig.getComparatorClass());
         sorterWeightFactoryClass = ConfigUtils.inheritOverwritableProperty(
                 sorterWeightFactoryClass, inheritedConfig.getSorterWeightFactoryClass());
-        sorterComparatorFactoryClass = ConfigUtils.inheritOverwritableProperty(
-                sorterComparatorFactoryClass, inheritedConfig.getSorterComparatorFactoryClass());
+        comparatorFactoryClass = ConfigUtils.inheritOverwritableProperty(
+                comparatorFactoryClass, inheritedConfig.getComparatorFactoryClass());
         sorterOrder = ConfigUtils.inheritOverwritableProperty(
                 sorterOrder, inheritedConfig.getSorterOrder());
         sorterClass = ConfigUtils.inheritOverwritableProperty(

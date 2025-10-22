@@ -196,13 +196,32 @@ class EntitySelectorFactoryTest {
     }
 
     @Test
-    void failFast_ifBothFactoriesUsed() {
+    void failFast_ifBothComparatorsUsed() {
+        var entitySelectorConfig = new EntitySelectorConfig()
+                .withSorterManner(EntitySorterManner.DESCENDING)
+                .withCacheType(SelectionCacheType.PHASE)
+                .withSelectionOrder(SelectionOrder.SORTED)
+                .withComparatorClass(DummyEntityComparator.class)
+                .withSorterComparatorClass(DummyEntityComparator.class);
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
+                        .buildEntitySelector(buildHeuristicConfigPolicy(), SelectionCacheType.PHASE, SelectionOrder.SORTED))
+                .withMessageContaining("The entitySelectorConfig")
+                .withMessageContaining(
+                        "cannot have a sorterComparatorClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummyEntityComparator)")
+                .withMessageContaining(
+                        "and comparatorClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummyEntityComparator) at the same time");
+    }
+
+    @Test
+    void failFast_ifBothComparatorFactoriesUsed() {
         var entitySelectorConfig = new EntitySelectorConfig()
                 .withSorterManner(EntitySorterManner.DESCENDING)
                 .withCacheType(SelectionCacheType.PHASE)
                 .withSelectionOrder(SelectionOrder.SORTED)
                 .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class)
-                .withSorterComparatorFactoryClass(DummySelectionComparatorFactory.class);
+                .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
 
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> EntitySelectorFactory.<TestdataSolution> create(entitySelectorConfig)
@@ -211,7 +230,7 @@ class EntitySelectorFactoryTest {
                 .withMessageContaining(
                         "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummySelectionComparatorFactory)")
                 .withMessageContaining(
-                        "and sorterComparatorFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummySelectionComparatorFactory) at the same time");
+                        "and comparatorFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelectorFactoryTest$DummySelectionComparatorFactory) at the same time");
     }
 
     public static class DummySelectionProbabilityWeightFactory

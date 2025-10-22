@@ -76,31 +76,31 @@ recipeList:
       ignoreDefinition: true
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig getSorterWeightFactoryClass(..)
-      newMethodName: getSorterComparatorFactoryClass
+      newMethodName: getComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig setSorterWeightFactoryClass(..)
-      newMethodName: setSorterComparatorFactoryClass
+      newMethodName: setComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig withSorterWeightFactoryClass(..)
-      newMethodName: withSorterComparatorFactoryClass
+      newMethodName: withComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig getSorterWeightFactoryClass(..)
-      newMethodName: getSorterComparatorFactoryClass
+      newMethodName: getComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig setSorterWeightFactoryClass(..)
-      newMethodName: setSorterComparatorFactoryClass
+      newMethodName: setComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig withSorterWeightFactoryClass(..)
-      newMethodName: withSorterComparatorFactoryClass
+      newMethodName: withComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig getSorterWeightFactoryClass(..)
-      newMethodName: getSorterComparatorFactoryClass
+      newMethodName: getComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig setSorterWeightFactoryClass(..)
-      newMethodName: setSorterComparatorFactoryClass
+      newMethodName: setComparatorFactoryClass
   - org.openrewrite.java.ChangeMethodName:
       methodPattern: ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig withSorterWeightFactoryClass(..)
-      newMethodName: withSorterComparatorFactoryClass
+      newMethodName: withComparatorFactoryClass
   - org.openrewrite.java.ReplaceConstantWithAnotherConstant:
       existingFullyQualifiedConstantName: ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DECREASING_DIFFICULTY
       fullyQualifiedConstantName: ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner.DESCENDING

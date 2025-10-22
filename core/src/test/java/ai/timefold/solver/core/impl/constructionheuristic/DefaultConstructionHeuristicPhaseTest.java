@@ -33,7 +33,8 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.common.DummyHardSoftEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableFactory;
+import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingComparator;
+import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingFactory;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -1237,13 +1238,13 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withId("sortedEntitySelector")
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterWeightFactoryClass(TestdataObjectSortableFactory.class))
+                                                .withSorterWeightFactoryClass(TestdataObjectSortableDescendingFactory.class))
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig()
                                                         .withMimicSelectorRef("sortedValueSelector"))
                                         .withValueSelectorConfig(new ValueSelectorConfig()))),
                 new int[] { 2, 1, 0 },
-                // Only entities are sorted
+                // Only entities are sorted in descending order
                 false));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
@@ -1254,13 +1255,47 @@ class DefaultConstructionHeuristicPhaseTest {
                                                 .withId("sortedEntitySelector")
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterComparatorFactoryClass(TestdataObjectSortableFactory.class))
+                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class))
                                         .withValueSelectorConfig(
                                                 new ValueSelectorConfig()
                                                         .withMimicSelectorRef("sortedValueSelector"))
                                         .withValueSelectorConfig(new ValueSelectorConfig()))),
                 new int[] { 2, 1, 0 },
-                // Only entities are sorted
+                // Only entities are sorted in descending order
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withId("sortedValueSelector"))
+                                .withMoveSelectorConfig(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                .withId("sortedEntitySelector")
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withSorterComparatorClass(TestdataObjectSortableDescendingComparator.class))
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig()
+                                                        .withMimicSelectorRef("sortedValueSelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()))),
+                new int[] { 2, 1, 0 },
+                // Only entities are sorted in descending order
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withId("sortedValueSelector"))
+                                .withMoveSelectorConfig(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                .withId("sortedEntitySelector")
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withComparatorClass(TestdataObjectSortableDescendingComparator.class))
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig()
+                                                        .withMimicSelectorRef("sortedValueSelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()))),
+                new int[] { 2, 1, 0 },
+                // Only entities are sorted in descending order
                 false));
         return values;
     }
@@ -1286,7 +1321,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValueList()).hasSize(1);
-                assertThat(TestdataObjectSortableFactory.extractCode(entity.getValueList().get(0).getCode()))
+                assertThat(TestdataObjectSortableDescendingFactory.extractCode(entity.getValueList().get(0).getCode()))
                         .isEqualTo(phaseConfig.expected[i]);
             }
         }
@@ -1304,9 +1339,9 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterWeightFactoryClass(TestdataObjectSortableFactory.class)))),
+                                                .withSorterWeightFactoryClass(TestdataObjectSortableDescendingFactory.class)))),
                 new int[] { 2, 1, 0 },
-                // Only values are sorted
+                // Only values are sorted in descending order
                 false));
         values.add(new ConstructionHeuristicTestConfig(
                 new ConstructionHeuristicPhaseConfig()
@@ -1318,9 +1353,37 @@ class DefaultConstructionHeuristicPhaseTest {
                                         .withValueSelectorConfig(new ValueSelectorConfig()
                                                 .withSelectionOrder(SelectionOrder.SORTED)
                                                 .withCacheType(SelectionCacheType.PHASE)
-                                                .withSorterComparatorFactoryClass(TestdataObjectSortableFactory.class)))),
+                                                .withComparatorFactoryClass(TestdataObjectSortableDescendingFactory.class)))),
                 new int[] { 2, 1, 0 },
-                // Only values are sorted
+                // Only values are sorted in descending order
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig().withId("sortedEntitySelector"))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withSorterComparatorClass(TestdataObjectSortableDescendingComparator.class)))),
+                new int[] { 2, 1, 0 },
+                // Only values are sorted in descending order
+                false));
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig().withId("sortedEntitySelector"))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withComparatorClass(TestdataObjectSortableDescendingComparator.class)))),
+                new int[] { 2, 1, 0 },
+                // Only values are sorted in descending order
                 false));
         return values;
     }
@@ -1346,7 +1409,7 @@ class DefaultConstructionHeuristicPhaseTest {
                         .findFirst()
                         .orElseThrow(IllegalArgumentException::new);
                 assertThat(entity.getValue()).isNotNull();
-                assertThat(TestdataObjectSortableFactory.extractCode(entity.getValue().getCode()))
+                assertThat(TestdataObjectSortableDescendingFactory.extractCode(entity.getValue().getCode()))
                         .isEqualTo(phaseConfig.expected[i]);
             }
         }
