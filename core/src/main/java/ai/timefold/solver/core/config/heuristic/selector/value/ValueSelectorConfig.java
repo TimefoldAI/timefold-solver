@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
@@ -42,49 +42,67 @@ import org.jspecify.annotations.Nullable;
         "probabilityWeightFactoryClass",
         "selectedCountLimit"
 })
+@NullMarked
 public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
 
     @XmlAttribute
+    @Nullable
     protected String id = null;
     @XmlAttribute
+    @Nullable
     protected String mimicSelectorRef = null;
 
+    @Nullable
     protected Class<?> downcastEntityClass = null;
     @XmlAttribute
+    @Nullable
     protected String variableName = null;
 
+    @Nullable
     protected SelectionCacheType cacheType = null;
+    @Nullable
     protected SelectionOrder selectionOrder = null;
 
     @XmlElement(name = "nearbySelection")
+    @Nullable
     protected NearbySelectionConfig nearbySelectionConfig = null;
 
+    @Nullable
     protected Class<? extends SelectionFilter> filterClass = null;
 
+    @Nullable
     protected ValueSorterManner sorterManner = null;
     /**
      * @deprecated Deprecated in favor of {@link #comparatorClass}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
+    @Nullable
     protected Class<? extends Comparator> sorterComparatorClass = null;
+    @Nullable
     protected Class<? extends Comparator> comparatorClass = null;
     /**
      * @deprecated Deprecated in favor of {@link #comparatorFactoryClass}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
+    @Nullable
     protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
+    @Nullable
     protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
+    @Nullable
     protected SelectionSorterOrder sorterOrder = null;
+    @Nullable
     protected Class<? extends SelectionSorter> sorterClass = null;
 
+    @Nullable
     protected Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass = null;
 
+    @Nullable
     protected Long selectedCountLimit = null;
 
     public ValueSelectorConfig() {
     }
 
-    public ValueSelectorConfig(@NonNull String variableName) {
+    public ValueSelectorConfig(String variableName) {
         this.variableName = variableName;
     }
 
@@ -182,11 +200,11 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public Class<? extends Comparator> getComparatorClass() {
+    public @Nullable Class<? extends Comparator> getComparatorClass() {
         return comparatorClass;
     }
 
-    public void setComparatorClass(Class<? extends Comparator> comparatorClass) {
+    public void setComparatorClass(@Nullable Class<? extends Comparator> comparatorClass) {
         this.comparatorClass = comparatorClass;
     }
 
@@ -207,11 +225,11 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
-    public Class<? extends ComparatorFactory> getComparatorFactoryClass() {
+    public @Nullable Class<? extends ComparatorFactory> getComparatorFactoryClass() {
         return comparatorFactoryClass;
     }
 
-    public void setComparatorFactoryClass(Class<? extends ComparatorFactory> comparatorFactoryClass) {
+    public void setComparatorFactoryClass(@Nullable Class<? extends ComparatorFactory> comparatorFactoryClass) {
         this.comparatorFactoryClass = comparatorFactoryClass;
     }
 
@@ -252,47 +270,47 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     // With methods
     // ************************************************************************
 
-    public @NonNull ValueSelectorConfig withId(@NonNull String id) {
+    public ValueSelectorConfig withId(String id) {
         this.setId(id);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withMimicSelectorRef(@NonNull String mimicSelectorRef) {
+    public ValueSelectorConfig withMimicSelectorRef(String mimicSelectorRef) {
         this.setMimicSelectorRef(mimicSelectorRef);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withDowncastEntityClass(@NonNull Class<?> entityClass) {
+    public ValueSelectorConfig withDowncastEntityClass(Class<?> entityClass) {
         this.setDowncastEntityClass(entityClass);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withVariableName(@NonNull String variableName) {
+    public ValueSelectorConfig withVariableName(String variableName) {
         this.setVariableName(variableName);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withCacheType(@NonNull SelectionCacheType cacheType) {
+    public ValueSelectorConfig withCacheType(SelectionCacheType cacheType) {
         this.setCacheType(cacheType);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withSelectionOrder(@NonNull SelectionOrder selectionOrder) {
+    public ValueSelectorConfig withSelectionOrder(SelectionOrder selectionOrder) {
         this.setSelectionOrder(selectionOrder);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withNearbySelectionConfig(@NonNull NearbySelectionConfig nearbySelectionConfig) {
+    public ValueSelectorConfig withNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
         this.setNearbySelectionConfig(nearbySelectionConfig);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withFilterClass(@NonNull Class<? extends SelectionFilter> filterClass) {
+    public ValueSelectorConfig withFilterClass(Class<? extends SelectionFilter> filterClass) {
         this.setFilterClass(filterClass);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withSorterManner(@NonNull ValueSorterManner sorterManner) {
+    public ValueSelectorConfig withSorterManner(ValueSorterManner sorterManner) {
         this.setSorterManner(sorterManner);
         return this;
     }
@@ -301,12 +319,12 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
      * @deprecated Deprecated in favor of {@link #withComparatorClass(Class)}
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    public @NonNull ValueSelectorConfig withSorterComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
+    public ValueSelectorConfig withSorterComparatorClass(Class<? extends Comparator> comparatorClass) {
         this.setSorterComparatorClass(comparatorClass);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
+    public ValueSelectorConfig withComparatorClass(Class<? extends Comparator> comparatorClass) {
         this.setComparatorClass(comparatorClass);
         return this;
     }
@@ -316,35 +334,35 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
      * @param weightFactoryClass the factory class
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    public @NonNull ValueSelectorConfig
-            withSorterWeightFactoryClass(@NonNull Class<? extends ComparatorFactory> weightFactoryClass) {
+    public ValueSelectorConfig
+            withSorterWeightFactoryClass(Class<? extends ComparatorFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig
-            withComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
+    public ValueSelectorConfig
+            withComparatorFactoryClass(Class<? extends ComparatorFactory> comparatorFactoryClass) {
         this.setComparatorFactoryClass(comparatorFactoryClass);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withSorterOrder(@NonNull SelectionSorterOrder sorterOrder) {
+    public ValueSelectorConfig withSorterOrder(SelectionSorterOrder sorterOrder) {
         this.setSorterOrder(sorterOrder);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withSorterClass(@NonNull Class<? extends SelectionSorter> sorterClass) {
+    public ValueSelectorConfig withSorterClass(Class<? extends SelectionSorter> sorterClass) {
         this.setSorterClass(sorterClass);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig
-            withProbabilityWeightFactoryClass(@NonNull Class<? extends SelectionProbabilityWeightFactory> factoryClass) {
+    public ValueSelectorConfig
+            withProbabilityWeightFactoryClass(Class<? extends SelectionProbabilityWeightFactory> factoryClass) {
         this.setProbabilityWeightFactoryClass(factoryClass);
         return this;
     }
 
-    public @NonNull ValueSelectorConfig withSelectedCountLimit(long selectedCountLimit) {
+    public ValueSelectorConfig withSelectedCountLimit(long selectedCountLimit) {
         this.setSelectedCountLimit(selectedCountLimit);
         return this;
     }
@@ -354,7 +372,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     // ************************************************************************
 
     @Override
-    public @NonNull ValueSelectorConfig inherit(@NonNull ValueSelectorConfig inheritedConfig) {
+    public ValueSelectorConfig inherit(ValueSelectorConfig inheritedConfig) {
         id = ConfigUtils.inheritOverwritableProperty(id, inheritedConfig.getId());
         mimicSelectorRef = ConfigUtils.inheritOverwritableProperty(mimicSelectorRef,
                 inheritedConfig.getMimicSelectorRef());
@@ -387,12 +405,12 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
     }
 
     @Override
-    public @NonNull ValueSelectorConfig copyConfig() {
+    public ValueSelectorConfig copyConfig() {
         return new ValueSelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
         classVisitor.accept(downcastEntityClass);
         if (nearbySelectionConfig != null) {
             nearbySelectionConfig.visitReferencedClasses(classVisitor);
@@ -411,8 +429,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         return getClass().getSimpleName() + "(" + variableName + ")";
     }
 
-    public static <Solution_> boolean hasSorter(@NonNull ValueSorterManner valueSorterManner,
-            @NonNull GenuineVariableDescriptor<Solution_> variableDescriptor) {
+    public static <Solution_> boolean hasSorter(ValueSorterManner valueSorterManner,
+            GenuineVariableDescriptor<Solution_> variableDescriptor) {
         return switch (valueSorterManner) {
             case NONE -> false;
             case INCREASING_STRENGTH, DECREASING_STRENGTH, ASCENDING, DESCENDING -> true;
@@ -423,8 +441,8 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
         };
     }
 
-    public static <Solution_> @NonNull SelectionSorter<Solution_, Object> determineSorter(
-            @NonNull ValueSorterManner valueSorterManner, @NonNull GenuineVariableDescriptor<Solution_> variableDescriptor) {
+    public static <Solution_> SelectionSorter<Solution_, Object> determineSorter(
+            ValueSorterManner valueSorterManner, GenuineVariableDescriptor<Solution_> variableDescriptor) {
         SelectionSorter<Solution_, Object> sorter = switch (valueSorterManner) {
             case NONE -> throw new IllegalStateException("Impossible state: hasSorter() should have returned null.");
             case INCREASING_STRENGTH, INCREASING_STRENGTH_IF_AVAILABLE, ASCENDING, ASCENDING_IF_AVAILABLE ->

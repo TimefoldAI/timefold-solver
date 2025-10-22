@@ -20,7 +20,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @XmlType(propOrder = {
@@ -41,6 +41,7 @@ import org.jspecify.annotations.Nullable;
         "probabilityWeightFactoryClass",
         "selectedCountLimit"
 })
+@NullMarked
 public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
 
     public static EntitySelectorConfig newMimicSelectorConfig(String mimicSelectorRef) {
@@ -48,39 +49,54 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
                 .withMimicSelectorRef(mimicSelectorRef);
     }
 
+    @Nullable
     @XmlAttribute
     protected String id = null;
     @XmlAttribute
+    @Nullable
     protected String mimicSelectorRef = null;
 
+    @Nullable
     protected Class<?> entityClass = null;
-
+    @Nullable
     protected SelectionCacheType cacheType = null;
+    @Nullable
     protected SelectionOrder selectionOrder = null;
 
+    @Nullable
     @XmlElement(name = "nearbySelection")
     protected NearbySelectionConfig nearbySelectionConfig = null;
 
+    @Nullable
     protected Class<? extends SelectionFilter> filterClass = null;
 
+    @Nullable
     protected EntitySorterManner sorterManner = null;
     /**
      * @deprecated Deprecated in favor of {@link #comparatorClass}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
+    @Nullable
     protected Class<? extends Comparator> sorterComparatorClass = null;
+    @Nullable
     protected Class<? extends Comparator> comparatorClass = null;
     /**
      * @deprecated Deprecated in favor of {@link #comparatorFactoryClass}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
+    @Nullable
     protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
+    @Nullable
     protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
+    @Nullable
     protected SelectionSorterOrder sorterOrder = null;
+    @Nullable
     protected Class<? extends SelectionSorter> sorterClass = null;
 
+    @Nullable
     protected Class<? extends SelectionProbabilityWeightFactory> probabilityWeightFactoryClass = null;
 
+    @Nullable
     protected Long selectedCountLimit = null;
 
     public EntitySelectorConfig() {
@@ -176,11 +192,11 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public Class<? extends Comparator> getComparatorClass() {
+    public @Nullable Class<? extends Comparator> getComparatorClass() {
         return comparatorClass;
     }
 
-    public void setComparatorClass(Class<? extends Comparator> comparatorClass) {
+    public void setComparatorClass(@Nullable Class<? extends Comparator> comparatorClass) {
         this.comparatorClass = comparatorClass;
     }
 
@@ -201,11 +217,11 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
-    public Class<? extends ComparatorFactory> getComparatorFactoryClass() {
+    public @Nullable Class<? extends ComparatorFactory> getComparatorFactoryClass() {
         return comparatorFactoryClass;
     }
 
-    public void setComparatorFactoryClass(Class<? extends ComparatorFactory> comparatorFactoryClass) {
+    public void setComparatorFactoryClass(@Nullable Class<? extends ComparatorFactory> comparatorFactoryClass) {
         this.comparatorFactoryClass = comparatorFactoryClass;
     }
 
@@ -246,42 +262,42 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
     // With methods
     // ************************************************************************
 
-    public @NonNull EntitySelectorConfig withId(@NonNull String id) {
+    public EntitySelectorConfig withId(String id) {
         this.setId(id);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withMimicSelectorRef(@NonNull String mimicSelectorRef) {
+    public EntitySelectorConfig withMimicSelectorRef(String mimicSelectorRef) {
         this.setMimicSelectorRef(mimicSelectorRef);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
+    public EntitySelectorConfig withEntityClass(Class<?> entityClass) {
         this.setEntityClass(entityClass);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withCacheType(@NonNull SelectionCacheType cacheType) {
+    public EntitySelectorConfig withCacheType(SelectionCacheType cacheType) {
         this.setCacheType(cacheType);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withSelectionOrder(@NonNull SelectionOrder selectionOrder) {
+    public EntitySelectorConfig withSelectionOrder(SelectionOrder selectionOrder) {
         this.setSelectionOrder(selectionOrder);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withNearbySelectionConfig(@NonNull NearbySelectionConfig nearbySelectionConfig) {
+    public EntitySelectorConfig withNearbySelectionConfig(NearbySelectionConfig nearbySelectionConfig) {
         this.setNearbySelectionConfig(nearbySelectionConfig);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withFilterClass(@NonNull Class<? extends SelectionFilter> filterClass) {
+    public EntitySelectorConfig withFilterClass(Class<? extends SelectionFilter> filterClass) {
         this.setFilterClass(filterClass);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withSorterManner(@NonNull EntitySorterManner sorterManner) {
+    public EntitySelectorConfig withSorterManner(EntitySorterManner sorterManner) {
         this.setSorterManner(sorterManner);
         return this;
     }
@@ -290,12 +306,12 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
      * @deprecated Deprecated in favor of {@link #withComparatorClass(Class)}
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    public @NonNull EntitySelectorConfig withSorterComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
+    public EntitySelectorConfig withSorterComparatorClass(Class<? extends Comparator> comparatorClass) {
         this.setSorterComparatorClass(comparatorClass);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withComparatorClass(@NonNull Class<? extends Comparator> comparatorClass) {
+    public EntitySelectorConfig withComparatorClass(Class<? extends Comparator> comparatorClass) {
         this.setComparatorClass(comparatorClass);
         return this;
     }
@@ -305,35 +321,35 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
      * @param weightFactoryClass the factory class
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    public @NonNull EntitySelectorConfig
-            withSorterWeightFactoryClass(@NonNull Class<? extends ComparatorFactory> weightFactoryClass) {
+    public EntitySelectorConfig
+            withSorterWeightFactoryClass(Class<? extends ComparatorFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig
-            withComparatorFactoryClass(@NonNull Class<? extends ComparatorFactory> comparatorFactoryClass) {
+    public EntitySelectorConfig
+            withComparatorFactoryClass(Class<? extends ComparatorFactory> comparatorFactoryClass) {
         this.setComparatorFactoryClass(comparatorFactoryClass);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withSorterOrder(@NonNull SelectionSorterOrder sorterOrder) {
+    public EntitySelectorConfig withSorterOrder(SelectionSorterOrder sorterOrder) {
         this.setSorterOrder(sorterOrder);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withSorterClass(@NonNull Class<? extends SelectionSorter> sorterClass) {
+    public EntitySelectorConfig withSorterClass(Class<? extends SelectionSorter> sorterClass) {
         this.setSorterClass(sorterClass);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig
-            withProbabilityWeightFactoryClass(@NonNull Class<? extends SelectionProbabilityWeightFactory> factoryClass) {
+    public EntitySelectorConfig
+            withProbabilityWeightFactoryClass(Class<? extends SelectionProbabilityWeightFactory> factoryClass) {
         this.setProbabilityWeightFactoryClass(factoryClass);
         return this;
     }
 
-    public @NonNull EntitySelectorConfig withSelectedCountLimit(long selectedCountLimit) {
+    public EntitySelectorConfig withSelectedCountLimit(long selectedCountLimit) {
         this.setSelectedCountLimit(selectedCountLimit);
         return this;
     }
@@ -343,7 +359,7 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
     // ************************************************************************
 
     @Override
-    public @NonNull EntitySelectorConfig inherit(@NonNull EntitySelectorConfig inheritedConfig) {
+    public EntitySelectorConfig inherit(EntitySelectorConfig inheritedConfig) {
         id = ConfigUtils.inheritOverwritableProperty(id, inheritedConfig.getId());
         mimicSelectorRef = ConfigUtils.inheritOverwritableProperty(mimicSelectorRef,
                 inheritedConfig.getMimicSelectorRef());
@@ -376,12 +392,12 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
     }
 
     @Override
-    public @NonNull EntitySelectorConfig copyConfig() {
+    public EntitySelectorConfig copyConfig() {
         return new EntitySelectorConfig().inherit(this);
     }
 
     @Override
-    public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
+    public void visitReferencedClasses(Consumer<Class<?>> classVisitor) {
         classVisitor.accept(entityClass);
         if (nearbySelectionConfig != null) {
             nearbySelectionConfig.visitReferencedClasses(classVisitor);
@@ -400,8 +416,8 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         return getClass().getSimpleName() + "(" + entityClass + ")";
     }
 
-    public static <Solution_> boolean hasSorter(@NonNull EntitySorterManner entitySorterManner,
-            @NonNull EntityDescriptor<Solution_> entityDescriptor) {
+    public static <Solution_> boolean hasSorter(EntitySorterManner entitySorterManner,
+            EntityDescriptor<Solution_> entityDescriptor) {
         return switch (entitySorterManner) {
             case NONE -> false;
             case DECREASING_DIFFICULTY, DESCENDING -> true;
@@ -410,8 +426,8 @@ public class EntitySelectorConfig extends SelectorConfig<EntitySelectorConfig> {
         };
     }
 
-    public static <Solution_, T> @NonNull SelectionSorter<Solution_, T> determineSorter(
-            @NonNull EntitySorterManner entitySorterManner, @NonNull EntityDescriptor<Solution_> entityDescriptor) {
+    public static <Solution_, T> SelectionSorter<Solution_, T> determineSorter(
+            EntitySorterManner entitySorterManner, EntityDescriptor<Solution_> entityDescriptor) {
         return switch (entitySorterManner) {
             case NONE:
                 throw new IllegalStateException("Impossible state: hasSorter() should have returned null.");

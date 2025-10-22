@@ -67,12 +67,10 @@ public final class FactorySelectionSorter<Solution_, T> implements SelectionSort
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (this == other)
-            return true;
-        if (other == null || getClass() != other.getClass())
+    public boolean equals(Object o) {
+        if (!(o instanceof FactorySelectionSorter<?, ?> that)) {
             return false;
-        var that = (FactorySelectionSorter<?, ?>) other;
+        }
         return Objects.equals(selectionComparatorFactory, that.selectionComparatorFactory)
                 && Objects.equals(appliedComparator, that.appliedComparator);
     }
