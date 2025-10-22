@@ -1601,7 +1601,7 @@ The solver may choose to reuse them in different contexts.
 
 
 [#sortedSelectionByComparatorFactory]
-===== Sorted selection by `ComparatorFactory`
+===== [[sortedSelectionBySelectionSorterWeightFactory]]Sorted selection by `ComparatorFactory`
 
 If you need the entire solution to sort a ``Selector``, use a `ComparatorFactory` instead:
 

@@ -373,7 +373,7 @@ As Java's `enum` and `record` types are immutable by design, these can not be us
 
 
 [#planningEntitySorting]
-=== Planning entity sorting
+=== [[planningEntityDifficulty]]Planning entity sorting
 
 Some optimization algorithms are more efficient when planning entities are sorted based on a specific metric,
 which helps estimate the relative difficulty of each planning entity.
@@ -1433,7 +1433,7 @@ The `ValueRangeFactory` has creation methods for several value class types:
 
 
 [#planningValueSorting]
-=== Planning value sorting
+=== [[planningValueStrength]]Planning value sorting
 
 Some optimization algorithms work a bit more efficiently
 if the planning values are sorted according to a given metric,
