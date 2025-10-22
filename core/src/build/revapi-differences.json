@@ -426,6 +426,30 @@
           "oldValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
           "newValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"comparatorClass\", \"sorterWeightFactoryClass\", \"comparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
           "justification": "New comparator properties"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "Update config"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "Update config"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "Update config"
         }
       ]
     }
