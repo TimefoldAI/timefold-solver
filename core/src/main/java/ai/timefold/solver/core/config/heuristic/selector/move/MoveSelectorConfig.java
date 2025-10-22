@@ -162,11 +162,11 @@ public abstract class MoveSelectorConfig<Config_ extends MoveSelectorConfig<Conf
         this.sorterComparatorClass = sorterComparatorClass;
     }
 
-    public Class<? extends Comparator> getComparatorClass() {
+    public @Nullable Class<? extends Comparator> getComparatorClass() {
         return comparatorClass;
     }
 
-    public void setComparatorClass(Class<? extends Comparator> comparatorClass) {
+    public void setComparatorClass(@Nullable Class<? extends Comparator> comparatorClass) {
         this.comparatorClass = comparatorClass;
     }
 

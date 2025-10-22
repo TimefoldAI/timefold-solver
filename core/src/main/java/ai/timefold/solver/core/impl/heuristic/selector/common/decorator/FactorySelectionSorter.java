@@ -24,14 +24,14 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
 public final class FactorySelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
     private final ComparatorFactory<Solution_, T, ? extends Comparable<?>> selectionComparatorFactory;
-    private final Comparator<Comparable> appliedComparator;
+    private final Comparator<Comparable<?>> appliedComparator;
 
     public FactorySelectionSorter(ComparatorFactory<Solution_, T, ? extends Comparable<?>> selectionComparatorFactory,
             SelectionSorterOrder selectionSorterOrder) {
         this.selectionComparatorFactory = selectionComparatorFactory;
         switch (selectionSorterOrder) {
             case ASCENDING:
-                this.appliedComparator = Comparator.naturalOrder();
+                this.appliedComparator = (Comparator<Comparable<?>>) Comparator.naturalOrder();
                 break;
             case DESCENDING:
                 this.appliedComparator = Collections.reverseOrder();
