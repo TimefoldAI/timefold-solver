@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.sort.comparator.newapproach;
+package ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,24 +14,24 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescripto
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
 @PlanningSolution
-public class TestdataNewSortableEntityProvidingSolution {
+public class TestdataStrengthSortableEntityProvidingSolution {
 
-    public static SolutionDescriptor<TestdataNewSortableEntityProvidingSolution> buildSolutionDescriptor() {
+    public static SolutionDescriptor<TestdataStrengthSortableEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(
-                TestdataNewSortableEntityProvidingSolution.class,
-                TestdataNewSortableEntityProvidingEntity.class);
+                TestdataStrengthSortableEntityProvidingSolution.class,
+                TestdataStrengthSortableEntityProvidingEntity.class);
     }
 
-    public static TestdataNewSortableEntityProvidingSolution generateSolution(int valueCount, int entityCount,
+    public static TestdataStrengthSortableEntityProvidingSolution generateSolution(int valueCount, int entityCount,
             boolean shuffle) {
         var entityList = new ArrayList<>(IntStream.range(0, entityCount)
-                .mapToObj(i -> new TestdataNewSortableEntityProvidingEntity("Generated Entity " + i, i))
+                .mapToObj(i -> new TestdataStrengthSortableEntityProvidingEntity("Generated Entity " + i, i))
                 .toList());
         var valueList = IntStream.range(0, valueCount)
                 .mapToObj(i -> new TestdataSortableValue("Generated Value " + i, i))
                 .toList();
         var random = new Random(0);
-        var solution = new TestdataNewSortableEntityProvidingSolution();
+        var solution = new TestdataStrengthSortableEntityProvidingSolution();
         for (var entity : entityList) {
             var valueRange = new ArrayList<>(valueList);
             if (shuffle) {
@@ -46,15 +46,15 @@ public class TestdataNewSortableEntityProvidingSolution {
         return solution;
     }
 
-    private List<TestdataNewSortableEntityProvidingEntity> entityList;
+    private List<TestdataStrengthSortableEntityProvidingEntity> entityList;
     private HardSoftScore score;
 
     @PlanningEntityCollectionProperty
-    public List<TestdataNewSortableEntityProvidingEntity> getEntityList() {
+    public List<TestdataStrengthSortableEntityProvidingEntity> getEntityList() {
         return entityList;
     }
 
-    public void setEntityList(List<TestdataNewSortableEntityProvidingEntity> entityList) {
+    public void setEntityList(List<TestdataStrengthSortableEntityProvidingEntity> entityList) {
         this.entityList = entityList;
     }
 
@@ -67,7 +67,7 @@ public class TestdataNewSortableEntityProvidingSolution {
         this.score = score;
     }
 
-    public void removeEntity(TestdataNewSortableEntityProvidingEntity entity) {
+    public void removeEntity(TestdataStrengthSortableEntityProvidingEntity entity) {
         this.entityList = entityList.stream()
                 .filter(e -> e != entity)
                 .toList();

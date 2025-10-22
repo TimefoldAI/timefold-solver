@@ -68,18 +68,18 @@ import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedEntity;
 import ai.timefold.solver.core.testdomain.pinned.TestdataPinnedSolution;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.pinned.unassignedvar.TestdataPinnedAllowsUnassignedSolution;
-import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.NewOneValuePerEntityEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.TestdataNewSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.comparator.newapproach.TestdataNewSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.comparator.oldapproach.OldOneValuePerEntityEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.sort.comparator.oldapproach.TestdataOldSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.comparator.oldapproach.TestdataOldSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.factory.newapproach.NewOneValuePerEntityFactoryEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.sort.factory.newapproach.TestdataFactoryNewSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.factory.newapproach.TestdataFactoryNewSortableSolution;
-import ai.timefold.solver.core.testdomain.sort.factory.oldapproach.OldOneValuePerEntityFactoryEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.sort.factory.oldapproach.TestdataFactoryOldSortableEntity;
-import ai.timefold.solver.core.testdomain.sort.factory.oldapproach.TestdataFactoryOldSortableSolution;
+import ai.timefold.solver.core.testdomain.sort.comparator.OneValuePerEntityComparatorEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableEntity;
+import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
+import ai.timefold.solver.core.testdomain.sort.comparatordifficulty.OneValuePerEntityDifficultyEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.comparatordifficulty.TestdataDifficultySortableEntity;
+import ai.timefold.solver.core.testdomain.sort.comparatordifficulty.TestdataDifficultySortableSolution;
+import ai.timefold.solver.core.testdomain.sort.factory.OneValuePerEntityFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.factory.TestdataFactorySortableEntity;
+import ai.timefold.solver.core.testdomain.sort.factory.TestdataFactorySortableSolution;
+import ai.timefold.solver.core.testdomain.sort.factorydifficulty.OneValuePerEntityDifficultyFactoryEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.factorydifficulty.TestdataDifficultyFactorySortableEntity;
+import ai.timefold.solver.core.testdomain.sort.factorydifficulty.TestdataDifficultyFactorySortableSolution;
 import ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator.TestdataInvalidMixedComparatorSortableEntity;
 import ai.timefold.solver.core.testdomain.sort.invalid.mixed.comparator.TestdataInvalidMixedComparatorSortableSolution;
 import ai.timefold.solver.core.testdomain.sort.invalid.mixed.strength.TestdataInvalidMixedStrengthSortableEntity;
@@ -98,18 +98,18 @@ import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassigned
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.newapproach.NewOneValuePerEntityRangeEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.newapproach.TestdataNewSortableEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.newapproach.TestdataNewSortableEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.oldapproach.OldOneValuePerEntityRangeEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.oldapproach.TestdataOldSortableEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.oldapproach.TestdataOldSortableEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factory.newapproach.NewOneValuePerEntityRangeFactoryEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factory.newapproach.TestdataFactoryNewSortableEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factory.newapproach.TestdataFactoryNewSortableEntityProvidingSolution;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factory.oldapproach.OldOneValuePerEntityRangeFactoryEasyScoreCalculator;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factory.oldapproach.TestdataFactoryOldSortableEntityProvidingEntity;
-import ai.timefold.solver.core.testdomain.valuerange.sort.factory.oldapproach.TestdataFactoryOldSortableEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.OneValuePerEntityComparatorRangeEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.TestdataComparatorSortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparator.TestdataComparatorSortableEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength.OneValuePerEntityStrengthRangeEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength.TestdataStrengthSortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength.TestdataStrengthSortableEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factory.OneValuePerEntityFactoryRangeEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factory.TestdataFactorySortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factory.TestdataFactorySortableEntityProvidingSolution;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factorystrength.OneValuePerEntityStrengthFactoryRangeEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factorystrength.TestdataStrengthFactorySortableEntityProvidingEntity;
+import ai.timefold.solver.core.testdomain.valuerange.sort.factorystrength.TestdataStrengthFactorySortableEntityProvidingSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
 import org.jspecify.annotations.NonNull;
@@ -705,11 +705,11 @@ class DefaultConstructionHeuristicPhaseTest {
     @MethodSource("generateBasicVariableConfiguration")
     void solveOldBasicVariableQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataOldSortableSolution.class, TestdataOldSortableEntity.class);
-        solverConfig.withEasyScoreCalculatorClass(OldOneValuePerEntityEasyScoreCalculator.class);
+                .buildSolverConfig(TestdataDifficultySortableSolution.class, TestdataDifficultySortableEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityDifficultyEasyScoreCalculator.class);
         solverConfig.withPhases(phaseConfig.config());
 
-        var solution = TestdataOldSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataDifficultySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -730,11 +730,12 @@ class DefaultConstructionHeuristicPhaseTest {
     @MethodSource("generateBasicVariableConfiguration")
     void solveOldBasicVariableQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataFactoryOldSortableSolution.class, TestdataFactoryOldSortableEntity.class);
-        solverConfig.withEasyScoreCalculatorClass(OldOneValuePerEntityFactoryEasyScoreCalculator.class);
+                .buildSolverConfig(TestdataDifficultyFactorySortableSolution.class,
+                        TestdataDifficultyFactorySortableEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityDifficultyFactoryEasyScoreCalculator.class);
         solverConfig.withPhases(phaseConfig.config());
 
-        var solution = TestdataFactoryOldSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataDifficultyFactorySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -756,12 +757,12 @@ class DefaultConstructionHeuristicPhaseTest {
     void solveOldBasicVariableEntityRangeQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
-                        .buildSolverConfig(TestdataOldSortableEntityProvidingSolution.class,
-                                TestdataOldSortableEntityProvidingEntity.class)
-                        .withEasyScoreCalculatorClass(OldOneValuePerEntityRangeEasyScoreCalculator.class)
+                        .buildSolverConfig(TestdataStrengthSortableEntityProvidingSolution.class,
+                                TestdataStrengthSortableEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityStrengthRangeEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataOldSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataStrengthSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -783,12 +784,12 @@ class DefaultConstructionHeuristicPhaseTest {
     void solveOldBasicVariableEntityRangeQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
-                        .buildSolverConfig(TestdataFactoryOldSortableEntityProvidingSolution.class,
-                                TestdataFactoryOldSortableEntityProvidingEntity.class)
-                        .withEasyScoreCalculatorClass(OldOneValuePerEntityRangeFactoryEasyScoreCalculator.class)
+                        .buildSolverConfig(TestdataStrengthFactorySortableEntityProvidingSolution.class,
+                                TestdataStrengthFactorySortableEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityStrengthFactoryRangeEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataFactoryOldSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataStrengthFactorySortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -809,11 +810,11 @@ class DefaultConstructionHeuristicPhaseTest {
     @MethodSource("generateBasicVariableConfiguration")
     void solveNewBasicVariableQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataNewSortableSolution.class, TestdataNewSortableEntity.class);
-        solverConfig.withEasyScoreCalculatorClass(NewOneValuePerEntityEasyScoreCalculator.class);
+                .buildSolverConfig(TestdataComparatorSortableSolution.class, TestdataComparatorSortableEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityComparatorEasyScoreCalculator.class);
         solverConfig.withPhases(phaseConfig.config());
 
-        var solution = TestdataNewSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataComparatorSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -834,11 +835,11 @@ class DefaultConstructionHeuristicPhaseTest {
     @MethodSource("generateBasicVariableConfiguration")
     void solveNewBasicVariableQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
-                .buildSolverConfig(TestdataFactoryNewSortableSolution.class, TestdataFactoryNewSortableEntity.class);
-        solverConfig.withEasyScoreCalculatorClass(NewOneValuePerEntityFactoryEasyScoreCalculator.class);
+                .buildSolverConfig(TestdataFactorySortableSolution.class, TestdataFactorySortableEntity.class);
+        solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityFactoryEasyScoreCalculator.class);
         solverConfig.withPhases(phaseConfig.config());
 
-        var solution = TestdataFactoryNewSortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataFactorySortableSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -860,12 +861,12 @@ class DefaultConstructionHeuristicPhaseTest {
     void solveNewBasicVariableEntityRangeQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
-                        .buildSolverConfig(TestdataNewSortableEntityProvidingSolution.class,
-                                TestdataNewSortableEntityProvidingEntity.class)
-                        .withEasyScoreCalculatorClass(NewOneValuePerEntityRangeEasyScoreCalculator.class)
+                        .buildSolverConfig(TestdataComparatorSortableEntityProvidingSolution.class,
+                                TestdataComparatorSortableEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityComparatorRangeEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataNewSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataComparatorSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();
@@ -887,12 +888,12 @@ class DefaultConstructionHeuristicPhaseTest {
     void solveNewBasicVariableEntityRangeQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
-                        .buildSolverConfig(TestdataFactoryNewSortableEntityProvidingSolution.class,
-                                TestdataFactoryNewSortableEntityProvidingEntity.class)
-                        .withEasyScoreCalculatorClass(NewOneValuePerEntityRangeFactoryEasyScoreCalculator.class)
+                        .buildSolverConfig(TestdataFactorySortableEntityProvidingSolution.class,
+                                TestdataFactorySortableEntityProvidingEntity.class)
+                        .withEasyScoreCalculatorClass(OneValuePerEntityFactoryRangeEasyScoreCalculator.class)
                         .withPhases(phaseConfig.config());
 
-        var solution = TestdataFactoryNewSortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
+        var solution = TestdataFactorySortableEntityProvidingSolution.generateSolution(3, 3, phaseConfig.shuffle());
 
         solution = PlannerTestUtils.solve(solverConfig, solution);
         assertThat(solution).isNotNull();

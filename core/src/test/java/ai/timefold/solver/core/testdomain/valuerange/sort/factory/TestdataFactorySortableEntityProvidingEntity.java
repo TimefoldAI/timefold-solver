@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.sort.factory.newapproach;
+package ai.timefold.solver.core.testdomain.valuerange.sort.factory;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import ai.timefold.solver.core.testdomain.common.TestSortableObject;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
 @PlanningEntity(difficultyWeightFactoryClass = TestSortableFactory.class)
-public class TestdataFactoryNewSortableEntityProvidingEntity extends TestdataObject
+public class TestdataFactorySortableEntityProvidingEntity extends TestdataObject
         implements TestSortableObject {
 
     @PlanningVariable(valueRangeProviderRefs = "valueRange", comparatorFactoryClass = TestSortableFactory.class)
@@ -23,10 +23,10 @@ public class TestdataFactoryNewSortableEntityProvidingEntity extends TestdataObj
 
     private int difficulty;
 
-    public TestdataFactoryNewSortableEntityProvidingEntity() {
+    public TestdataFactorySortableEntityProvidingEntity() {
     }
 
-    public TestdataFactoryNewSortableEntityProvidingEntity(String code, int difficulty) {
+    public TestdataFactorySortableEntityProvidingEntity(String code, int difficulty) {
         super(code);
         this.difficulty = difficulty;
     }

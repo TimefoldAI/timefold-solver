@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.sort.factory.newapproach;
+package ai.timefold.solver.core.testdomain.valuerange.sort.comparator;
 
 import java.util.Objects;
 
@@ -7,20 +7,19 @@ import ai.timefold.solver.core.api.score.calculator.EasyScoreCalculator;
 
 import org.jspecify.annotations.NonNull;
 
-public class NewOneValuePerEntityRangeFactoryEasyScoreCalculator
-        implements EasyScoreCalculator<TestdataFactoryNewSortableEntityProvidingSolution, HardSoftScore> {
+public class OneValuePerEntityComparatorRangeEasyScoreCalculator
+        implements EasyScoreCalculator<TestdataComparatorSortableEntityProvidingSolution, HardSoftScore> {
 
     @Override
     public @NonNull HardSoftScore
-            calculateScore(
-                    @NonNull TestdataFactoryNewSortableEntityProvidingSolution solution) {
+            calculateScore(@NonNull TestdataComparatorSortableEntityProvidingSolution solution) {
         var distinct = (int) solution.getEntityList().stream()
-                .map(TestdataFactoryNewSortableEntityProvidingEntity::getValue)
+                .map(TestdataComparatorSortableEntityProvidingEntity::getValue)
                 .filter(Objects::nonNull)
                 .distinct()
                 .count();
         var assigned = solution.getEntityList().stream()
-                .map(TestdataFactoryNewSortableEntityProvidingEntity::getValue)
+                .map(TestdataComparatorSortableEntityProvidingEntity::getValue)
                 .filter(Objects::nonNull)
                 .count();
         var repeated = (int) (assigned - distinct);

@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.sort.factory.oldapproach;
+package ai.timefold.solver.core.testdomain.valuerange.sort.comparatorstrength;
 
 import java.util.List;
 
@@ -7,15 +7,14 @@ import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionPrope
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.common.TestSortableFactory;
+import ai.timefold.solver.core.testdomain.common.TestSortableComparator;
 import ai.timefold.solver.core.testdomain.common.TestSortableObject;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity(difficultyWeightFactoryClass = TestSortableFactory.class)
-public class TestdataFactoryOldSortableEntityProvidingEntity extends TestdataObject
-        implements TestSortableObject {
+@PlanningEntity(difficultyComparatorClass = TestSortableComparator.class)
+public class TestdataStrengthSortableEntityProvidingEntity extends TestdataObject implements TestSortableObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", strengthWeightFactoryClass = TestSortableFactory.class)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", strengthComparatorClass = TestSortableComparator.class)
     private TestdataSortableValue value;
     @ValueRangeProvider(id = "valueRange")
     @PlanningEntityCollectionProperty
@@ -23,10 +22,10 @@ public class TestdataFactoryOldSortableEntityProvidingEntity extends TestdataObj
 
     private int difficulty;
 
-    public TestdataFactoryOldSortableEntityProvidingEntity() {
+    public TestdataStrengthSortableEntityProvidingEntity() {
     }
 
-    public TestdataFactoryOldSortableEntityProvidingEntity(String code, int difficulty) {
+    public TestdataStrengthSortableEntityProvidingEntity(String code, int difficulty) {
         super(code);
         this.difficulty = difficulty;
     }

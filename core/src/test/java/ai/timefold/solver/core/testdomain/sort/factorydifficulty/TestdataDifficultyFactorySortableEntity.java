@@ -1,23 +1,23 @@
-package ai.timefold.solver.core.testdomain.sort.comparator.oldapproach;
+package ai.timefold.solver.core.testdomain.sort.factorydifficulty;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataObject;
-import ai.timefold.solver.core.testdomain.common.TestSortableComparator;
+import ai.timefold.solver.core.testdomain.common.TestSortableFactory;
 import ai.timefold.solver.core.testdomain.common.TestSortableObject;
 import ai.timefold.solver.core.testdomain.common.TestdataSortableValue;
 
-@PlanningEntity(difficultyComparatorClass = TestSortableComparator.class)
-public class TestdataOldSortableEntity extends TestdataObject implements TestSortableObject {
+@PlanningEntity(difficultyWeightFactoryClass = TestSortableFactory.class)
+public class TestdataDifficultyFactorySortableEntity extends TestdataObject implements TestSortableObject {
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange", strengthComparatorClass = TestSortableComparator.class)
+    @PlanningVariable(valueRangeProviderRefs = "valueRange", strengthWeightFactoryClass = TestSortableFactory.class)
     private TestdataSortableValue value;
     private int difficulty;
 
-    public TestdataOldSortableEntity() {
+    public TestdataDifficultyFactorySortableEntity() {
     }
 
-    public TestdataOldSortableEntity(String code, int difficulty) {
+    public TestdataDifficultyFactorySortableEntity(String code, int difficulty) {
         super(code);
         this.difficulty = difficulty;
     }
