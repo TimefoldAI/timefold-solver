@@ -199,7 +199,7 @@ class SortingMoveSelectorTest {
     }
 
     public static class TestCodeAssertableComparatorFactory
-            implements SelectionSorterWeightFactory<Object, CodeAssertable>, ComparatorFactory<Object, CodeAssertable> {
+            implements SelectionSorterWeightFactory<Object, CodeAssertable>, ComparatorFactory<Object, CodeAssertable, String> {
 
         @Override
         public Comparable createSorterWeight(Object o, CodeAssertable selection) {
@@ -207,7 +207,7 @@ class SortingMoveSelectorTest {
         }
 
         @Override
-        public Comparable createSorter(Object o, CodeAssertable selection) {
+        public String createSorter(Object o, CodeAssertable selection) {
             return selection.getCode();
         }
     }

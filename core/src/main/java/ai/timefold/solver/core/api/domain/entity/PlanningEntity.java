@@ -10,6 +10,7 @@ import java.util.Comparator;
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 /**
  * Specifies that the class is a planning entity.
@@ -62,7 +63,7 @@ public @interface PlanningEntity {
      */
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
-    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
+    interface NullComparatorFactory<Solution_, T, V extends Comparable<V>> extends ComparatorFactory<Solution_, T, V> {
     }
 
     /**
@@ -128,7 +129,7 @@ public @interface PlanningEntity {
      * @see #difficultyComparatorClass()
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    Class<? extends ComparatorFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
+    Class<? extends SelectionSorterWeightFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
 
     /**
      * Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}.
@@ -136,7 +137,8 @@ public @interface PlanningEntity {
      * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    interface NullDifficultyWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
+    interface NullDifficultyWeightFactory<Solution_, T, V extends Comparable<V>>
+            extends SelectionSorterWeightFactory<Solution_, T>, NullComparatorFactory<Solution_, T, V> {
     }
 
 }

@@ -18,7 +18,7 @@ class FactorySelectionSorterTest {
 
     @Test
     void sortAscending() {
-        ComparatorFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
+        ComparatorFactory<TestdataSolution, TestdataEntity, Integer> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
         FactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new FactorySelectionSorter<>(
                 weightFactory, SelectionSorterOrder.ASCENDING);
@@ -34,7 +34,7 @@ class FactorySelectionSorterTest {
 
     @Test
     void sortDescending() {
-        ComparatorFactory<TestdataSolution, TestdataEntity> weightFactory = (solution, selection) -> Integer
+        ComparatorFactory<TestdataSolution, TestdataEntity, Integer> weightFactory = (solution, selection) -> Integer
                 .valueOf(selection.getCode().charAt(0));
         FactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new FactorySelectionSorter<>(
                 weightFactory, SelectionSorterOrder.DESCENDING);

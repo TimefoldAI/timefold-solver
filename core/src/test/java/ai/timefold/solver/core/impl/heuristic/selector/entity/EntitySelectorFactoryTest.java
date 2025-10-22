@@ -16,6 +16,7 @@ import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterMann
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ProbabilityEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.ShufflingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.SortingEntitySelector;
@@ -243,10 +244,17 @@ class EntitySelectorFactoryTest {
     }
 
     public static class DummySelectionComparatorFactory
-            implements ComparatorFactory<TestdataSolution, TestdataEntity> {
+            implements SelectionSorterWeightFactory<TestdataSolution, TestdataEntity>,
+            ComparatorFactory<TestdataSolution, TestdataEntity, Integer> {
+
         @Override
-        public Comparable createSorter(TestdataSolution testdataSolution, TestdataEntity selection) {
+        public Integer createSorter(TestdataSolution testdataSolution, TestdataEntity selection) {
             return 0;
+        }
+
+        @Override
+        public Comparable createSorterWeight(TestdataSolution solution, TestdataEntity selection) {
+            return createSorter(solution, selection);
         }
     }
 

@@ -22,15 +22,14 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  * @param <T> the selection type
  */
 @Deprecated(forRemoval = true, since = "1.28.0")
-public interface SelectionSorterWeightFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
-
-    Comparable createSorterWeight(Solution_ solution, T selection);
+@FunctionalInterface
+public interface SelectionSorterWeightFactory<Solution_, T> {
 
     /**
-     * The default implementation has been created to maintain compatibility with the old contract.
+     * @param solution never null, the {@link PlanningSolution} to which the selection belongs or applies to
+     * @param selection never null, a {@link PlanningEntity}, a planningValue, a {@link Move} or a {@link Selector}
+     * @return never null, for example a {@link Integer}, {@link Double} or a more complex {@link Comparable}
      */
-    @Override
-    default Comparable createSorter(Solution_ solution, T selection) {
-        return createSorterWeight(solution, selection);
-    }
+    Comparable createSorterWeight(Solution_ solution, T selection);
+
 }

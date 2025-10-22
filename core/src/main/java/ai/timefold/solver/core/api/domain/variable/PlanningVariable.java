@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 /**
  * Specifies that a bean property (or a field) can be changed and should be optimized by the optimization algorithms.
@@ -86,7 +87,7 @@ public @interface PlanningVariable {
      */
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
-    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
+    interface NullComparatorFactory<Solution_, T, V extends Comparable<V>> extends ComparatorFactory<Solution_, T, V> {
     }
 
     /**
@@ -137,7 +138,7 @@ public @interface PlanningVariable {
      * @see #strengthComparatorClass()
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    Class<? extends ComparatorFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
+    Class<? extends SelectionSorterWeightFactory> strengthWeightFactoryClass() default NullStrengthWeightFactory.class;
 
     /**
      * Workaround for annotation limitation in {@link #strengthWeightFactoryClass()}.
@@ -145,6 +146,7 @@ public @interface PlanningVariable {
      * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    interface NullStrengthWeightFactory<Solution_, T> extends NullComparatorFactory<Solution_, T> {
+    interface NullStrengthWeightFactory<Solution_, T, V extends Comparable<V>>
+            extends SelectionSorterWeightFactory<Solution_, T>, NullComparatorFactory<Solution_, T, V> {
     }
 }

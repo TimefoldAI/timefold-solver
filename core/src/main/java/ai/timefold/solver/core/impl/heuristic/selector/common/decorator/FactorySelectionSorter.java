@@ -23,10 +23,10 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  */
 public final class FactorySelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
-    private final ComparatorFactory<Solution_, T> selectionComparatorFactory;
+    private final ComparatorFactory<Solution_, T, ? extends Comparable<?>> selectionComparatorFactory;
     private final Comparator<Comparable> appliedComparator;
 
-    public FactorySelectionSorter(ComparatorFactory<Solution_, T> selectionComparatorFactory,
+    public FactorySelectionSorter(ComparatorFactory<Solution_, T, ? extends Comparable<?>> selectionComparatorFactory,
             SelectionSorterOrder selectionSorterOrder) {
         this.selectionComparatorFactory = selectionComparatorFactory;
         switch (selectionSorterOrder) {

@@ -20,9 +20,11 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromSolutionPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactoryAdapter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 /**
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
@@ -157,7 +159,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
 
     @SuppressWarnings("rawtypes")
     protected void processSorting(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,
-            String comparatorFactoryPropertyName, Class<? extends ComparatorFactory> comparatorFactoryClass) {
+            String comparatorFactoryPropertyName, Class<?> comparatorFactoryClass) {
         if (comparatorClass != null && PlanningVariable.NullComparator.class.isAssignableFrom(comparatorClass)) {
             comparatorClass = null;
         }
@@ -179,12 +181,15 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                     SelectionSorterOrder.DESCENDING);
         }
         if (comparatorFactoryClass != null) {
-            ComparatorFactory<Solution_, Object> comparatorFactory =
-                    newInstance(this::toString, comparatorFactoryPropertyName, comparatorFactoryClass);
-            ascendingSorter = new FactorySelectionSorter<>(comparatorFactory,
-                    SelectionSorterOrder.ASCENDING);
-            descendingSorter = new FactorySelectionSorter<>(comparatorFactory,
-                    SelectionSorterOrder.DESCENDING);
+            var instance = newInstance(this::toString, comparatorFactoryPropertyName, comparatorFactoryClass);
+            ComparatorFactory<Solution_, Object, ?> comparatorFactory;
+            if (instance instanceof ComparatorFactory<?, ?, ?> factoryInstance) {
+                comparatorFactory = (ComparatorFactory<Solution_, Object, ?>) factoryInstance;
+            } else {
+                comparatorFactory = new ComparatorFactoryAdapter<>((SelectionSorterWeightFactory<Solution_, Object>) instance);
+            }
+            ascendingSorter = new FactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.ASCENDING);
+            descendingSorter = new FactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.DESCENDING);
         }
     }
 

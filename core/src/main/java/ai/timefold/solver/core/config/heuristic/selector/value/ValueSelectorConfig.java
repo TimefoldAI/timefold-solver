@@ -19,6 +19,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -85,7 +86,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     @Nullable
-    protected Class<? extends ComparatorFactory> sorterWeightFactoryClass = null;
+    protected Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass = null;
     @Nullable
     protected Class<? extends ComparatorFactory> comparatorFactoryClass = null;
     @Nullable
@@ -212,7 +213,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
      * @deprecated Deprecated in favor of {@link #getComparatorFactoryClass()}
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    public @Nullable Class<? extends ComparatorFactory> getSorterWeightFactoryClass() {
+    public @Nullable Class<? extends SelectionSorterWeightFactory> getSorterWeightFactoryClass() {
         return sorterWeightFactoryClass;
     }
 
@@ -221,7 +222,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
      * @param sorterWeightFactoryClass the class
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    public void setSorterWeightFactoryClass(@Nullable Class<? extends ComparatorFactory> sorterWeightFactoryClass) {
+    public void setSorterWeightFactoryClass(@Nullable Class<? extends SelectionSorterWeightFactory> sorterWeightFactoryClass) {
         this.sorterWeightFactoryClass = sorterWeightFactoryClass;
     }
 
@@ -335,7 +336,7 @@ public class ValueSelectorConfig extends SelectorConfig<ValueSelectorConfig> {
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
     public ValueSelectorConfig
-            withSorterWeightFactoryClass(Class<? extends ComparatorFactory> weightFactoryClass) {
+            withSorterWeightFactoryClass(Class<? extends SelectionSorterWeightFactory> weightFactoryClass) {
         this.setSorterWeightFactoryClass(weightFactoryClass);
         return this;
     }

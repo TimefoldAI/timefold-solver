@@ -4,8 +4,8 @@ import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-public class TestdataObjectSortableDescendingFactory implements SelectionSorterWeightFactory<Object, TestdataObject>,
-        ComparatorFactory<Object, TestdataObject> {
+public class TestdataObjectSortableDescendingFactory
+        implements ComparatorFactory<Object, TestdataObject, Integer>, SelectionSorterWeightFactory<Object, TestdataObject> {
 
     @Override
     public Comparable createSorterWeight(Object solution, TestdataObject selection) {
@@ -13,7 +13,7 @@ public class TestdataObjectSortableDescendingFactory implements SelectionSorterW
     }
 
     @Override
-    public Comparable createSorter(Object solution, TestdataObject selection) {
+    public Integer createSorter(Object solution, TestdataObject selection) {
         // Descending order
         return -extractCode(selection.getCode());
     }

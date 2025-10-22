@@ -27,20 +27,21 @@ import org.jspecify.annotations.NullMarked;
  *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
- * 
+ * @param <V> the returning type
+ *
  * @see ValueSelectorConfig
  * @see EntitySelectorConfig
  * @see ConstructionHeuristicPhaseConfig
  */
 @NullMarked
 @FunctionalInterface
-public interface ComparatorFactory<Solution_, T> {
+public interface ComparatorFactory<Solution_, T, V extends Comparable<V>> {
 
     /**
      * @param solution never null, the {@link PlanningSolution} to which the selection belongs or applies to
      * @param selection never null, a {@link PlanningEntity}, a planningValue, a {@link Move} or a {@link Selector}
      * @return never null, for example a {@link Integer}, {@link Double} or a more complex {@link Comparable}
      */
-    Comparable createSorter(Solution_ solution, T selection);
+    V createSorter(Solution_ solution, T selection);
 
 }
