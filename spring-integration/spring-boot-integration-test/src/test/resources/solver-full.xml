@@ -103,8 +103,8 @@
               <nearbySelection/>
               <filterClass>java.lang.Object</filterClass>
               <sorterManner>NONE</sorterManner>
-              <sorterComparatorClass>java.lang.Object</sorterComparatorClass>
-              <sorterWeightFactoryClass>java.lang.Object</sorterWeightFactoryClass>
+              <comparatorClass>java.lang.Object</comparatorClass>
+              <comparatorFactoryClass>java.lang.Object</comparatorFactoryClass>
               <sorterOrder>DESCENDING</sorterOrder>
               <sorterClass>java.lang.Object</sorterClass>
               <probabilityWeightFactoryClass>java.lang.Object</probabilityWeightFactoryClass>
@@ -121,8 +121,8 @@
             <nearbySelection/>
             <filterClass>java.lang.Object</filterClass>
             <sorterManner>INCREASING_STRENGTH</sorterManner>
-            <sorterComparatorClass>java.lang.Object</sorterComparatorClass>
-            <sorterWeightFactoryClass>java.lang.Object</sorterWeightFactoryClass>
+            <comparatorClass>java.lang.Object</comparatorClass>
+            <comparatorFactoryClass>java.lang.Object</comparatorFactoryClass>
             <sorterOrder>DESCENDING</sorterOrder>
             <sorterClass>java.lang.Object</sorterClass>
             <probabilityWeightFactoryClass>java.lang.Object</probabilityWeightFactoryClass>

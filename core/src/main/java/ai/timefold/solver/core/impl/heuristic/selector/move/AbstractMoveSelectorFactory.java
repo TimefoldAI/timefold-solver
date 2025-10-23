@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.move;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -10,12 +11,11 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.CachingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ProbabilityMoveSelector;
@@ -60,7 +60,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         SelectionOrder resolvedSelectionOrder =
                 SelectionOrder.resolve(config.getSelectionOrder(), inheritedSelectionOrder);
 
-        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder);
+        validateCacheTypeVersusSelectionOrder(resolvedCacheType, resolvedSelectionOrder, false);
         validateSorting(resolvedSelectionOrder);
         validateProbability(resolvedSelectionOrder);
         validateSelectedLimit(minimumCacheType);
@@ -120,6 +120,48 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         };
     }
 
+    private String determineComparatorPropertyName(MoveSelectorConfig_ moveSelectorConfig) {
+        var sorterComparatorClass = moveSelectorConfig.getSorterComparatorClass();
+        var comparatorClass = moveSelectorConfig.getComparatorClass();
+        if (sorterComparatorClass != null && comparatorClass != null) {
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfig (%s) cannot have a %s (%s) and %s (%s) at the same time.".formatted(
+                            moveSelectorConfig, "sorterComparatorClass", sorterComparatorClass,
+                            "comparatorClass", comparatorClass));
+        }
+        return sorterComparatorClass != null ? "sorterComparatorClass" : "comparatorClass";
+    }
+
+    private Class<? extends Comparator> determineComparatorClass(MoveSelectorConfig_ moveSelectorConfig) {
+        var propertyName = determineComparatorPropertyName(moveSelectorConfig);
+        if (propertyName.equals("sorterComparatorClass")) {
+            return moveSelectorConfig.getSorterComparatorClass();
+        } else {
+            return moveSelectorConfig.getComparatorClass();
+        }
+    }
+
+    private String determineComparatorFactoryPropertyName(MoveSelectorConfig_ moveSelectorConfig) {
+        var weightFactoryClass = moveSelectorConfig.getSorterWeightFactoryClass();
+        var comparatorFactoryClass = moveSelectorConfig.getComparatorFactoryClass();
+        if (weightFactoryClass != null && comparatorFactoryClass != null) {
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfig (%s) cannot have a %s (%s) and %s (%s) at the same time.".formatted(
+                            moveSelectorConfig, "sorterWeightFactoryClass", weightFactoryClass,
+                            "comparatorFactoryClass", comparatorFactoryClass));
+        }
+        return weightFactoryClass != null ? "sorterWeightFactoryClass" : "comparatorFactoryClass";
+    }
+
+    private Class<? extends ComparatorFactory> determineComparatorFactoryClass(MoveSelectorConfig_ moveSelectorConfig) {
+        var propertyName = determineComparatorFactoryPropertyName(moveSelectorConfig);
+        if (propertyName.equals("sorterWeightFactoryClass")) {
+            return moveSelectorConfig.getSorterWeightFactoryClass();
+        } else {
+            return moveSelectorConfig.getComparatorFactoryClass();
+        }
+    }
+
     protected boolean isBaseInherentlyCached() {
         return false;
     }
@@ -149,36 +191,41 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
     }
 
     protected void validateSorting(SelectionOrder resolvedSelectionOrder) {
-        if ((config.getSorterComparatorClass() != null || config.getSorterWeightFactoryClass() != null
+        var comparatorClass = determineComparatorClass(config);
+        var comparatorFactoryClass = determineComparatorFactoryClass(config);
+        if ((comparatorClass != null || comparatorFactoryClass != null
                 || config.getSorterOrder() != null || config.getSorterClass() != null)
                 && resolvedSelectionOrder != SelectionOrder.SORTED) {
-            throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                    + ") with sorterComparatorClass (" + config.getSorterComparatorClass()
-                    + ") and sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass()
-                    + ") and sorterOrder (" + config.getSorterOrder()
-                    + ") and sorterClass (" + config.getSorterClass()
-                    + ") has a resolvedSelectionOrder (" + resolvedSelectionOrder
-                    + ") that is not " + SelectionOrder.SORTED + ".");
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfig (%s) with %s (%s) and %s (%s) and sorterOrder (%s) and sorterClass (%s) has a resolvedSelectionOrder (%s) that is not %s."
+                            .formatted(config, determineComparatorPropertyName(config), comparatorClass,
+                                    determineComparatorFactoryPropertyName(config),
+                                    comparatorFactoryClass, config.getSorterOrder(), config.getSorterClass(),
+                                    resolvedSelectionOrder, SelectionOrder.SORTED));
         }
-        if (config.getSorterComparatorClass() != null && config.getSorterWeightFactoryClass() != null) {
-            throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                    + ") has both a sorterComparatorClass (" + config.getSorterComparatorClass()
-                    + ") and a sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass() + ").");
+        if (comparatorClass != null && comparatorFactoryClass != null) {
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfig (%s) has both a %s (%s) and a %s (%s).".formatted(config,
+                            determineComparatorPropertyName(config), comparatorClass,
+                            determineComparatorFactoryPropertyName(config),
+                            comparatorFactoryClass));
         }
-        if (config.getSorterComparatorClass() != null && config.getSorterClass() != null) {
-            throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                    + ") has both a sorterComparatorClass (" + config.getSorterComparatorClass()
-                    + ") and a sorterClass (" + config.getSorterClass() + ").");
+        if (comparatorClass != null && config.getSorterClass() != null) {
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfig (%s) has both a %s (%s) and a sorterClass (%s)."
+                            .formatted(config, determineComparatorPropertyName(config), comparatorClass,
+                                    config.getSorterClass()));
         }
-        if (config.getSorterWeightFactoryClass() != null && config.getSorterClass() != null) {
-            throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                    + ") has both a sorterWeightFactoryClass (" + config.getSorterWeightFactoryClass()
-                    + ") and a sorterClass (" + config.getSorterClass() + ").");
+        if (comparatorFactoryClass != null && config.getSorterClass() != null) {
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfig (%s) has both a %s (%s) and a sorterClass (%s).".formatted(config,
+                            determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
+                            config.getSorterClass()));
         }
         if (config.getSorterClass() != null && config.getSorterOrder() != null) {
-            throw new IllegalArgumentException("The moveSelectorConfig (" + config
-                    + ") with sorterClass (" + config.getSorterClass()
-                    + ") has a non-null sorterOrder (" + config.getSorterOrder() + ").");
+            throw new IllegalArgumentException(
+                    "The moveSelectorConfig (%s) with sorterClass (%s) has a non-null sorterOrder (%s).".formatted(config,
+                            config.getSorterClass(), config.getSorterOrder()));
         }
     }
 
@@ -186,25 +233,26 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
             SelectionOrder resolvedSelectionOrder, MoveSelector<Solution_> moveSelector) {
         if (resolvedSelectionOrder == SelectionOrder.SORTED) {
             SelectionSorter<Solution_, Move<Solution_>> sorter;
-            var sorterComparatorClass = config.getSorterComparatorClass();
-            var sorterWeightFactoryClass = config.getSorterWeightFactoryClass();
+            var comparatorClass = determineComparatorClass(config);
+            var comparatorFactoryClass = determineComparatorFactoryClass(config);
             var sorterClass = config.getSorterClass();
-            if (sorterComparatorClass != null) {
-                Comparator<Move<Solution_>> sorterComparator =
-                        ConfigUtils.newInstance(config, "sorterComparatorClass", sorterComparatorClass);
+            if (comparatorClass != null) {
+                var sorterComparator =
+                        ConfigUtils.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
-            } else if (sorterWeightFactoryClass != null) {
-                SelectionSorterWeightFactory<Solution_, Move<Solution_>> sorterWeightFactory =
-                        ConfigUtils.newInstance(config, "sorterWeightFactoryClass", sorterWeightFactoryClass);
-                sorter = new WeightFactorySelectionSorter<>(sorterWeightFactory,
+            } else if (comparatorFactoryClass != null) {
+                var comparatorFactory =
+                        ConfigUtils.newInstance(config, determineComparatorFactoryPropertyName(config), comparatorFactoryClass);
+                sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterClass != null) {
                 sorter = ConfigUtils.newInstance(config, "sorterClass", sorterClass);
             } else {
                 throw new IllegalArgumentException(
-                        "The moveSelectorConfig (%s) with resolvedSelectionOrder (%s) needs a sorterComparatorClass (%s) or a sorterWeightFactoryClass (%s) or a sorterClass (%s)."
-                                .formatted(config, resolvedSelectionOrder, sorterComparatorClass, sorterWeightFactoryClass,
+                        "The moveSelectorConfig (%s) with resolvedSelectionOrder (%s) needs a %s (%s) or a %s (%s) or a sorterClass (%s)."
+                                .formatted(config, resolvedSelectionOrder, determineComparatorPropertyName(config),
+                                        comparatorClass, determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
                                         sorterClass));
             }
             moveSelector = new SortingMoveSelector<>(moveSelector, resolvedCacheType, sorter);

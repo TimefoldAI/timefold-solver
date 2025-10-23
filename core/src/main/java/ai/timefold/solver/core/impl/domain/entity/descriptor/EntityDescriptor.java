@@ -63,9 +63,9 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.WeightFactorySelectionSorter;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
@@ -111,7 +111,7 @@ public class EntityDescriptor<Solution_> {
 
     // Only declared movable filter, excludes inherited and descending movable filters
     private MovableFilter<Solution_> declaredMovableEntityFilter;
-    private SelectionSorter<Solution_, Object> decreasingDifficultySorter;
+    private SelectionSorter<Solution_, Object> descendingSorter;
 
     // Only declared variable descriptors, excludes inherited variable descriptors
     private Map<String, GenuineVariableDescriptor<Solution_>> declaredGenuineVariableDescriptorMap;
@@ -243,7 +243,7 @@ public class EntityDescriptor<Solution_> {
                             () -> new IllegalStateException("Impossible state as the previous if block would fail first."));
         }
         processMovable(entityAnnotation);
-        processDifficulty(entityAnnotation);
+        processSorting(entityAnnotation);
     }
 
     /**
@@ -263,35 +263,67 @@ public class EntityDescriptor<Solution_> {
         }
     }
 
-    private void processDifficulty(PlanningEntity entityAnnotation) {
+    private void processSorting(PlanningEntity entityAnnotation) {
         if (entityAnnotation == null) {
             return;
         }
         var difficultyComparatorClass = entityAnnotation.difficultyComparatorClass();
-        if (difficultyComparatorClass == PlanningEntity.NullDifficultyComparator.class) {
+        if (difficultyComparatorClass != null
+                && PlanningEntity.NullComparator.class.isAssignableFrom(difficultyComparatorClass)) {
             difficultyComparatorClass = null;
         }
+        var comparatorClass = entityAnnotation.comparatorClass();
+        if (comparatorClass != null
+                && PlanningEntity.NullComparator.class.isAssignableFrom(comparatorClass)) {
+            comparatorClass = null;
+        }
+        if (difficultyComparatorClass != null && comparatorClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(getEntityClass(),
+                            "difficultyComparatorClass", difficultyComparatorClass.getName(), "comparatorClass",
+                            comparatorClass.getName()));
+        }
         var difficultyWeightFactoryClass = entityAnnotation.difficultyWeightFactoryClass();
-        if (difficultyWeightFactoryClass == PlanningEntity.NullDifficultyWeightFactory.class) {
+        if (difficultyWeightFactoryClass != null
+                && PlanningEntity.NullComparatorFactory.class.isAssignableFrom(difficultyWeightFactoryClass)) {
             difficultyWeightFactoryClass = null;
         }
-        if (difficultyComparatorClass != null && difficultyWeightFactoryClass != null) {
-            throw new IllegalStateException(
-                    "The entityClass (%s) cannot have a difficultyComparatorClass (%s) and a difficultyWeightFactoryClass (%s) at the same time."
-                            .formatted(entityClass, difficultyComparatorClass.getName(),
-                                    difficultyWeightFactoryClass.getName()));
+        var comparatorFactoryClass = entityAnnotation.comparatorFactoryClass();
+        if (comparatorFactoryClass != null
+                && PlanningEntity.NullComparatorFactory.class.isAssignableFrom(comparatorFactoryClass)) {
+            comparatorFactoryClass = null;
         }
+        if (difficultyWeightFactoryClass != null && comparatorFactoryClass != null) {
+            throw new IllegalStateException(
+                    "The entityClass (%s) cannot have a %s (%s) and a %s (%s) at the same time.".formatted(getEntityClass(),
+                            "difficultyWeightFactoryClass", difficultyWeightFactoryClass.getName(), "comparatorFactoryClass",
+                            comparatorFactoryClass.getName()));
+        }
+        // Selected settings
+        var selectedComparatorPropertyName = "comparatorClass";
+        var selectedComparatorClass = comparatorClass;
+        var selectedComparatorFactoryPropertyName = "comparatorFactoryClass";
+        var selectedComparatorFactoryClass = comparatorFactoryClass;
         if (difficultyComparatorClass != null) {
-            var difficultyComparator = ConfigUtils.newInstance(this::toString,
-                    "difficultyComparatorClass", difficultyComparatorClass);
-            decreasingDifficultySorter = new ComparatorSelectionSorter<>(
-                    difficultyComparator, SelectionSorterOrder.DESCENDING);
+            selectedComparatorPropertyName = "difficultyComparatorClass";
+            selectedComparatorClass = difficultyComparatorClass;
         }
         if (difficultyWeightFactoryClass != null) {
-            var difficultyWeightFactory = ConfigUtils.newInstance(this::toString,
-                    "difficultyWeightFactoryClass", difficultyWeightFactoryClass);
-            decreasingDifficultySorter = new WeightFactorySelectionSorter<>(
-                    difficultyWeightFactory, SelectionSorterOrder.DESCENDING);
+            selectedComparatorFactoryPropertyName = "difficultyWeightFactoryClass";
+            selectedComparatorFactoryClass = difficultyWeightFactoryClass;
+        }
+        if (selectedComparatorClass != null && selectedComparatorFactoryClass != null) {
+            throw new IllegalStateException("The entityClass (%s) cannot have a %s (%s) and a %s (%s) at the same time."
+                    .formatted(entityClass, selectedComparatorPropertyName, selectedComparatorClass.getName(),
+                            selectedComparatorFactoryPropertyName, selectedComparatorFactoryClass.getName()));
+        }
+        if (selectedComparatorClass != null) {
+            var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorPropertyName, selectedComparatorClass);
+            descendingSorter = new ComparatorSelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
+        } else if (selectedComparatorFactoryClass != null) {
+            var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorFactoryPropertyName,
+                    selectedComparatorFactoryClass);
+            descendingSorter = new ComparatorFactorySelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
         }
     }
 
@@ -643,8 +675,8 @@ public class EntityDescriptor<Solution_> {
         return (UniEnumeratingFilter<Solution_, A>) entityMovablePredicate;
     }
 
-    public SelectionSorter<Solution_, Object> getDecreasingDifficultySorter() {
-        return decreasingDifficultySorter;
+    public SelectionSorter<Solution_, Object> getDescendingSorter() {
+        return descendingSorter;
     }
 
     public Collection<String> getGenuineVariableNameSet() {

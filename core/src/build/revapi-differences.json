@@ -348,6 +348,108 @@
           "oldValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfig\", \"moveSelectorConfigList\", \"foragerConfig\"}",
           "newValue": "{\"constructionHeuristicType\", \"entitySorterManner\", \"valueSorterManner\", \"entityPlacerConfigList\", \"moveSelectorConfigList\", \"foragerConfig\"}",
           "justification": "New CH configuration with multiple placers"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::getSorterWeightFactoryClass()",
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory> ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::getSorterWeightFactoryClass()",
+          "justification": "New comparator factory class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory>===)",
+          "parameterIndex": "0",
+          "justification": "New comparator factory class"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"id\", \"mimicSelectorRef\", \"entityClass\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
+          "newValue": "{\"id\", \"mimicSelectorRef\", \"entityClass\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"comparatorClass\", \"sorterWeightFactoryClass\", \"comparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
+          "justification": "New comparator properties"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::getSorterWeightFactoryClass()",
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory> ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::getSorterWeightFactoryClass()",
+          "justification": "New comparator factory class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory>===)",
+          "parameterIndex": "0",
+          "justification": "New comparator factory class"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"cacheType\", \"selectionOrder\", \"filterClass\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\", \"fixedProbabilityWeight\"}",
+          "newValue": "{\"cacheType\", \"selectionOrder\", \"filterClass\", \"sorterComparatorClass\", \"comparatorClass\", \"sorterWeightFactoryClass\", \"comparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\", \"fixedProbabilityWeight\"}",
+          "justification": "New comparator properties"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.returnTypeTypeParametersChanged",
+          "old": "method java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory> ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::getSorterWeightFactoryClass()",
+          "new": "method java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory> ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::getSorterWeightFactoryClass()",
+          "justification": "New comparator factory class"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeParameterChanged",
+          "old": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory>===)",
+          "new": "parameter void ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig::setSorterWeightFactoryClass(===java.lang.Class<? extends ai.timefold.solver.core.api.domain.common.ComparatorFactory>===)",
+          "parameterIndex": "0",
+          "justification": "New comparator factory class"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.attributeValueChanged",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "annotationType": "jakarta.xml.bind.annotation.XmlType",
+          "attribute": "propOrder",
+          "oldValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"sorterWeightFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
+          "newValue": "{\"id\", \"mimicSelectorRef\", \"downcastEntityClass\", \"variableName\", \"cacheType\", \"selectionOrder\", \"nearbySelectionConfig\", \"filterClass\", \"sorterManner\", \"sorterComparatorClass\", \"comparatorClass\", \"sorterWeightFactoryClass\", \"comparatorFactoryClass\", \"sorterOrder\", \"sorterClass\", \"probabilityWeightFactoryClass\", \"selectedCountLimit\"}",
+          "justification": "New comparator properties"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "Update config"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_ extends ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig<Config_>>",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "Update config"
+        },
+        {
+          "ignore": true,
+          "code": "java.annotation.added",
+          "old": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "new": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
+          "annotation": "@org.jspecify.annotations.NullMarked",
+          "justification": "Update config"
         }
       ]
     }
