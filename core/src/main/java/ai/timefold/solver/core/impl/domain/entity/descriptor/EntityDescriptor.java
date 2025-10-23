@@ -22,7 +22,6 @@ import java.util.function.BiPredicate;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
-import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PinningFilter;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
@@ -64,11 +63,9 @@ import ai.timefold.solver.core.impl.domain.variable.index.IndexShadowVariableDes
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.NextElementShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactoryAdapter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
@@ -306,7 +303,7 @@ public class EntityDescriptor<Solution_> {
         var selectedComparatorPropertyName = "comparatorClass";
         var selectedComparatorClass = comparatorClass;
         var selectedComparatorFactoryPropertyName = "comparatorFactoryClass";
-        Class<?> selectedComparatorFactoryClass = comparatorFactoryClass;
+        var selectedComparatorFactoryClass = comparatorFactoryClass;
         if (difficultyComparatorClass != null) {
             selectedComparatorPropertyName = "difficultyComparatorClass";
             selectedComparatorClass = difficultyComparatorClass;
@@ -325,15 +322,9 @@ public class EntityDescriptor<Solution_> {
             descendingSorter = new ComparatorSelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
         }
         if (selectedComparatorFactoryClass != null) {
-            var instance = ConfigUtils.newInstance(this::toString, selectedComparatorFactoryPropertyName,
+            var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorFactoryPropertyName,
                     selectedComparatorFactoryClass);
-            ComparatorFactory<Solution_, Object, ?> comparatorFactory;
-            if (instance instanceof ComparatorFactory<?, ?, ?> factoryInstance) {
-                comparatorFactory = (ComparatorFactory<Solution_, Object, ?>) factoryInstance;
-            } else {
-                comparatorFactory = new ComparatorFactoryAdapter<>((SelectionSorterWeightFactory<Solution_, Object>) instance);
-            }
-            descendingSorter = new FactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.DESCENDING);
+            descendingSorter = new ComparatorFactorySelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
         }
     }
 

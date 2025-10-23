@@ -104,7 +104,8 @@ class SortingMigrationRecipeTest implements RewriteTest {
                 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 
                 @PlanningEntity(difficultyWeightFactoryClass = PlanningEntity.NullDifficultyWeightFactory.class, difficultyComparatorClass = PlanningEntity.NullDifficultyComparator.class)
-                public class Test implements SelectionSorterWeightFactory {
+                public class Test {
+                
                     @PlanningVariable(strengthComparatorClass = PlanningVariable.NullStrengthComparator.class)
                     private Object value;
                     @PlanningVariable(strengthWeightFactoryClass = PlanningVariable.NullStrengthWeightFactory.class)
@@ -112,8 +113,6 @@ class SortingMigrationRecipeTest implements RewriteTest {
                     public void validate(ChangeMoveSelectorConfig changeMoveConfig, ListSwapMoveSelectorConfig swapMoveConfig, EntitySelectorConfig entityConfig, ValueSelectorConfig valueConfig) {
                     %8s%s
                     }
-                    @Override
-                    public Comparable createSorterWeight(Object o, Object o2) { return null; }
                 }"""
                 .formatted("", content);
     }
@@ -135,7 +134,7 @@ class SortingMigrationRecipeTest implements RewriteTest {
                 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 
                 @PlanningEntity(comparatorFactoryClass = PlanningEntity.NullComparatorFactory.class, comparatorClass = PlanningEntity.NullComparator.class)
-                public class Test implements ComparatorFactory {
+                public class Test {
                     @PlanningVariable(comparatorClass = NullComparator.class)
                     private Object value;
                     @PlanningVariable(comparatorFactoryClass = NullComparatorFactory.class)
@@ -143,8 +142,6 @@ class SortingMigrationRecipeTest implements RewriteTest {
                     public void validate(ChangeMoveSelectorConfig changeMoveConfig, ListSwapMoveSelectorConfig swapMoveConfig, EntitySelectorConfig entityConfig, ValueSelectorConfig valueConfig) {
                     %8s%s
                     }
-                    @Override
-                    public Comparable createSorter(Object o, Object o2) { return null; }
                 }"""
                 .formatted("", content);
     }

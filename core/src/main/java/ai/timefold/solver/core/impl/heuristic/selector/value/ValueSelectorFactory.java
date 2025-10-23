@@ -18,13 +18,11 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDesc
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactoryAdapter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingValueSelector;
@@ -133,9 +131,11 @@ public class ValueSelectorFactory<Solution_>
             valueSelector = applyNearbySelection(configPolicy, entityDescriptor, minimumCacheType,
                     resolvedSelectionOrder, valueSelector);
         } else {
-            // The nearby selector will implement its own logic to filter out unreachable elements.
-            // Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
-            // otherwise, we would end up applying the filtering logic twice.
+            /*
+             * The nearby selector will implement its own logic to filter out unreachable elements.
+             * Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
+             * otherwise, we would end up applying the filtering logic twice.
+             */
             valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entityDescriptor, minimumCacheType,
                     inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId, assertBothSides);
         }
@@ -251,8 +251,7 @@ public class ValueSelectorFactory<Solution_>
         return weightFactoryClass != null ? "sorterWeightFactoryClass" : "comparatorFactoryClass";
     }
 
-    private static Class<?>
-            determineComparatorFactoryClass(ValueSelectorConfig valueSelectorConfig) {
+    private static Class<? extends ComparatorFactory> determineComparatorFactoryClass(ValueSelectorConfig valueSelectorConfig) {
         var propertyName = determineComparatorFactoryPropertyName(valueSelectorConfig);
         if (propertyName.equals("sorterWeightFactoryClass")) {
             return valueSelectorConfig.getSorterWeightFactoryClass();
@@ -389,16 +388,9 @@ public class ValueSelectorFactory<Solution_>
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (comparatorFactoryClass != null) {
-                var instance = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
+                var comparatorFactory = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
                         comparatorFactoryClass);
-                ComparatorFactory<Solution_, Object, ?> comparatorFactory;
-                if (instance instanceof ComparatorFactory<?, ?, ?> factoryInstance) {
-                    comparatorFactory = (ComparatorFactory<Solution_, Object, ?>) factoryInstance;
-                } else {
-                    comparatorFactory =
-                            new ComparatorFactoryAdapter<>((SelectionSorterWeightFactory<Solution_, Object>) instance);
-                }
-                sorter = new FactorySelectionSorter<>(comparatorFactory,
+                sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (config.getSorterClass() != null) {
                 sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());

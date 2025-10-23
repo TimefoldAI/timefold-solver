@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
+import java.util.Comparator;
+
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -23,7 +25,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.Selector;
  */
 @Deprecated(forRemoval = true, since = "1.28.0")
 @FunctionalInterface
-public interface SelectionSorterWeightFactory<Solution_, T> {
+public interface SelectionSorterWeightFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
 
     /**
      * @param solution never null, the {@link PlanningSolution} to which the selection belongs or applies to
@@ -32,4 +34,11 @@ public interface SelectionSorterWeightFactory<Solution_, T> {
      */
     Comparable createSorterWeight(Solution_ solution, T selection);
 
+    /**
+     * Default implementation for enabling interconnection between the two comparator contracts.
+     */
+    @Override
+    default Comparator<T> createComparator(Solution_ solution) {
+        return (v1, v2) -> createSorterWeight(solution, v1).compareTo(createSorterWeight(solution, v2));
+    }
 }

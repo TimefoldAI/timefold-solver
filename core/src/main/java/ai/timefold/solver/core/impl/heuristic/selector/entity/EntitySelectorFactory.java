@@ -19,13 +19,11 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ValueRangeRecorderId;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactoryAdapter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.CachingEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByEntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.decorator.FilteringEntityByValueSelector;
@@ -219,7 +217,7 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
         return weightFactoryClass != null ? "sorterWeightFactoryClass" : "comparatorFactoryClass";
     }
 
-    private static Class<?>
+    private static Class<? extends ComparatorFactory>
             determineComparatorFactoryClass(EntitySelectorConfig entitySelectorConfig) {
         var propertyName = determineComparatorFactoryPropertyName(entitySelectorConfig);
         if (propertyName.equals("sorterWeightFactoryClass")) {
@@ -365,21 +363,15 @@ public class EntitySelectorFactory<Solution_> extends AbstractSelectorFactory<So
                 }
                 sorter = EntitySelectorConfig.determineSorter(sorterManner, entityDescriptor);
             } else if (comparatorClass != null) {
-                Comparator<Object> sorterComparator =
+                var sorterComparator =
                         instanceCache.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (comparatorFactoryClass != null) {
-                var instance = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
+                var comparatorFactory = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
                         comparatorFactoryClass);
-                ComparatorFactory<Solution_, Object, ?> comparatorFactory;
-                if (instance instanceof ComparatorFactory<?, ?, ?> factoryInstance) {
-                    comparatorFactory = (ComparatorFactory<Solution_, Object, ?>) factoryInstance;
-                } else {
-                    comparatorFactory =
-                            new ComparatorFactoryAdapter<>((SelectionSorterWeightFactory<Solution_, Object>) instance);
-                }
-                sorter = new FactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.resolve(config.getSorterOrder()));
+                sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
+                        SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (config.getSorterClass() != null) {
                 sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());
             } else {

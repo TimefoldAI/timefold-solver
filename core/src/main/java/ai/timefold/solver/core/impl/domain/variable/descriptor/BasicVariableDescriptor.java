@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariableGraphType;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -86,7 +87,7 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
         var selectedComparatorPropertyName = "comparatorClass";
         var selectedComparatorClass = comparatorClass;
         var selectedComparatorFactoryPropertyName = "comparatorFactoryClass";
-        Class<?> selectedComparatorFactoryClass = comparatorFactoryClass;
+        var selectedComparatorFactoryClass = comparatorFactoryClass;
         if (strengthComparatorClass != null) {
             selectedComparatorPropertyName = "strengthComparatorClass";
             selectedComparatorClass = strengthComparatorClass;
@@ -96,8 +97,7 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
             selectedComparatorFactoryClass = strengthWeightFactoryClass;
         }
         return new SortingProperties(selectedComparatorPropertyName, selectedComparatorClass,
-                selectedComparatorFactoryPropertyName,
-                selectedComparatorFactoryClass);
+                selectedComparatorFactoryPropertyName, selectedComparatorFactoryClass);
     }
 
     private void processAllowsUnassigned(PlanningVariable planningVariableAnnotation) {
@@ -186,7 +186,7 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
     }
 
     private record SortingProperties(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,
-            String comparatorFactoryPropertyName, Class<?> comparatorFactoryClass) {
+            String comparatorFactoryPropertyName, Class<? extends ComparatorFactory> comparatorFactoryClass) {
 
     }
 

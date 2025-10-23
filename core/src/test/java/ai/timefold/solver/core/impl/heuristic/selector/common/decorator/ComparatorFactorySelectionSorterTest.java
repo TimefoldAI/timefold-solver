@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertCodesOfIterat
 import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
@@ -14,14 +15,15 @@ import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 
-class FactorySelectionSorterTest {
+class ComparatorFactorySelectionSorterTest {
 
     @Test
     void sortAscending() {
-        ComparatorFactory<TestdataSolution, TestdataEntity, Integer> weightFactory = (solution, selection) -> Integer
-                .valueOf(selection.getCode().charAt(0));
-        FactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new FactorySelectionSorter<>(
-                weightFactory, SelectionSorterOrder.ASCENDING);
+        ComparatorFactory<TestdataSolution, TestdataEntity> comparatorFactory =
+                sol -> Comparator.comparingInt(v -> Integer.valueOf(v.getCode().charAt(0)));
+        ComparatorFactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter =
+                new ComparatorFactorySelectionSorter<>(
+                        comparatorFactory, SelectionSorterOrder.ASCENDING);
         ScoreDirector<TestdataSolution> scoreDirector = mock(ScoreDirector.class);
         List<TestdataEntity> selectionList = new ArrayList<>();
         selectionList.add(new TestdataEntity("C"));
@@ -34,10 +36,11 @@ class FactorySelectionSorterTest {
 
     @Test
     void sortDescending() {
-        ComparatorFactory<TestdataSolution, TestdataEntity, Integer> weightFactory = (solution, selection) -> Integer
-                .valueOf(selection.getCode().charAt(0));
-        FactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter = new FactorySelectionSorter<>(
-                weightFactory, SelectionSorterOrder.DESCENDING);
+        ComparatorFactory<TestdataSolution, TestdataEntity> comparatorFactory =
+                sol -> Comparator.comparingInt(v -> Integer.valueOf(v.getCode().charAt(0)));
+        ComparatorFactorySelectionSorter<TestdataSolution, TestdataEntity> selectionSorter =
+                new ComparatorFactorySelectionSorter<>(
+                        comparatorFactory, SelectionSorterOrder.DESCENDING);
         ScoreDirector<TestdataSolution> scoreDirector = mock(ScoreDirector.class);
         List<TestdataEntity> selectionList = new ArrayList<>();
         selectionList.add(new TestdataEntity("C"));

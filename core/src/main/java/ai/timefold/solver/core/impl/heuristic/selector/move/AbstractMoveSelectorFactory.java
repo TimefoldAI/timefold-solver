@@ -11,13 +11,11 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractSelectorFactory;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactoryAdapter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.FactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionProbabilityWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.CachingMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.FilteringMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.decorator.ProbabilityMoveSelector;
@@ -155,7 +153,7 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
         return weightFactoryClass != null ? "sorterWeightFactoryClass" : "comparatorFactoryClass";
     }
 
-    private Class<?> determineComparatorFactoryClass(MoveSelectorConfig_ moveSelectorConfig) {
+    private Class<? extends ComparatorFactory> determineComparatorFactoryClass(MoveSelectorConfig_ moveSelectorConfig) {
         var propertyName = determineComparatorFactoryPropertyName(moveSelectorConfig);
         if (propertyName.equals("sorterWeightFactoryClass")) {
             return moveSelectorConfig.getSorterWeightFactoryClass();
@@ -239,21 +237,15 @@ public abstract class AbstractMoveSelectorFactory<Solution_, MoveSelectorConfig_
             var comparatorFactoryClass = determineComparatorFactoryClass(config);
             var sorterClass = config.getSorterClass();
             if (comparatorClass != null) {
-                Comparator<Move<Solution_>> sorterComparator =
+                var sorterComparator =
                         ConfigUtils.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
                 sorter = new ComparatorSelectionSorter<>(sorterComparator,
                         SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (comparatorFactoryClass != null) {
-                var instance =
+                var comparatorFactory =
                         ConfigUtils.newInstance(config, determineComparatorFactoryPropertyName(config), comparatorFactoryClass);
-                ComparatorFactory<Solution_, Move<Solution_>, ?> comparatorFactory;
-                if (instance instanceof ComparatorFactory<?, ?, ?> factoryInstance) {
-                    comparatorFactory = (ComparatorFactory<Solution_, Move<Solution_>, ?>) factoryInstance;
-                } else {
-                    comparatorFactory =
-                            new ComparatorFactoryAdapter<>((SelectionSorterWeightFactory<Solution_, Move<Solution_>>) instance);
-                }
-                sorter = new FactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.resolve(config.getSorterOrder()));
+                sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
+                        SelectionSorterOrder.resolve(config.getSorterOrder()));
             } else if (sorterClass != null) {
                 sorter = ConfigUtils.newInstance(config, "sorterClass", sorterClass);
             } else {

@@ -14,7 +14,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
@@ -198,24 +197,18 @@ class SortingMoveSelectorTest {
         }
     }
 
-    public static class TestCodeAssertableComparatorFactory
-            implements SelectionSorterWeightFactory<Object, CodeAssertable>, ComparatorFactory<Object, CodeAssertable, String> {
+    public static class TestCodeAssertableComparatorFactory implements SelectionSorterWeightFactory<Object, CodeAssertable> {
 
         @Override
         public Comparable createSorterWeight(Object o, CodeAssertable selection) {
-            return selection.getCode();
-        }
-
-        @Override
-        public String createSorter(Object o, CodeAssertable selection) {
             return selection.getCode();
         }
     }
 
     public static class TestCodeAssertableComparator implements Comparator<CodeAssertable> {
         @Override
-        public int compare(CodeAssertable o1, CodeAssertable o2) {
-            return o1.getCode().compareTo(o2.getCode());
+        public int compare(CodeAssertable v1, CodeAssertable v2) {
+            return v1.getCode().compareTo(v2.getCode());
         }
     }
 

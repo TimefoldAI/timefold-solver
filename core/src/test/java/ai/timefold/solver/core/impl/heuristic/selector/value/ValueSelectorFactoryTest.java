@@ -11,7 +11,6 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
@@ -352,16 +351,11 @@ class ValueSelectorFactoryTest {
     }
 
     public static class DummySelectionComparatorFactory
-            implements SelectionSorterWeightFactory<TestdataSolution, TestdataValue>,
-            ComparatorFactory<TestdataSolution, TestdataValue, Integer> {
-        @Override
-        public Integer createSorter(TestdataSolution testdataSolution, TestdataValue selection) {
-            return 0;
-        }
+            implements SelectionSorterWeightFactory<TestdataSolution, TestdataValue> {
 
         @Override
         public Comparable createSorterWeight(TestdataSolution solution, TestdataValue selection) {
-            return createSorter(solution, selection);
+            return 0;
         }
     }
 

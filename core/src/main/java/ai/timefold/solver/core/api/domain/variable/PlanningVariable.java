@@ -80,6 +80,9 @@ public @interface PlanningVariable {
     /**
      * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
      * <p>
+     * Differs from {@link #comparatorClass()}
+     * because it allows accessing the current solution when creating the comparator.
+     * <p>
      * Do not use together with {@link #comparatorClass()}.
      * 
      * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
@@ -87,7 +90,7 @@ public @interface PlanningVariable {
      */
     Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
 
-    interface NullComparatorFactory<Solution_, T, V extends Comparable<V>> extends ComparatorFactory<Solution_, T, V> {
+    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
     }
 
     /**
@@ -146,7 +149,7 @@ public @interface PlanningVariable {
      * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    interface NullStrengthWeightFactory<Solution_, T, V extends Comparable<V>>
-            extends SelectionSorterWeightFactory<Solution_, T>, NullComparatorFactory<Solution_, T, V> {
+    interface NullStrengthWeightFactory<Solution_, T>
+            extends SelectionSorterWeightFactory<Solution_, T>, NullComparatorFactory<Solution_, T> {
     }
 }

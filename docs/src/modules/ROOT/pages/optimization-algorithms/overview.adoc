@@ -1609,7 +1609,7 @@ If you need the entire solution to sort a ``Selector``, use a `ComparatorFactory
 ----
 public interface ComparatorFactory<Solution_, T> {
 
-    Comparable createSorter(Solution_ solution, T selection);
+    Comparator<T> createComparator(Solution_ solution, T selection);
 
 }
 ----

@@ -703,7 +703,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveOldBasicVariableQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveStrengthBasicVariableQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataDifficultySortableSolution.class, TestdataDifficultySortableEntity.class);
         solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityDifficultyEasyScoreCalculator.class);
@@ -728,7 +728,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveOldBasicVariableQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveStrengthBasicVariableQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataDifficultyFactorySortableSolution.class,
                         TestdataDifficultyFactorySortableEntity.class);
@@ -754,7 +754,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveOldBasicVariableEntityRangeQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveStrengthBasicVariableEntityRangeQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataStrengthSortableEntityProvidingSolution.class,
@@ -781,7 +781,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveOldBasicVariableEntityRangeQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveStrengthBasicVariableEntityRangeQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataStrengthFactorySortableEntityProvidingSolution.class,
@@ -808,7 +808,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveNewBasicVariableQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveBasicVariableQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataComparatorSortableSolution.class, TestdataComparatorSortableEntity.class);
         solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityComparatorEasyScoreCalculator.class);
@@ -833,7 +833,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveNewBasicVariableQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveBasicVariableQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig = PlannerTestUtils
                 .buildSolverConfig(TestdataFactorySortableSolution.class, TestdataFactorySortableEntity.class);
         solverConfig.withEasyScoreCalculatorClass(OneValuePerEntityFactoryEasyScoreCalculator.class);
@@ -858,7 +858,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveNewBasicVariableEntityRangeQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveBasicVariableEntityRangeQueueComparator(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataComparatorSortableEntityProvidingSolution.class,
@@ -885,7 +885,7 @@ class DefaultConstructionHeuristicPhaseTest {
 
     @ParameterizedTest
     @MethodSource("generateBasicVariableConfiguration")
-    void solveNewBasicVariableEntityRangeQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
+    void solveBasicVariableEntityRangeQueueFactory(ConstructionHeuristicTestConfig phaseConfig) {
         var solverConfig =
                 PlannerTestUtils
                         .buildSolverConfig(TestdataFactorySortableEntityProvidingSolution.class,
