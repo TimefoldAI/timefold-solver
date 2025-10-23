@@ -20,7 +20,7 @@ class SortingMigrationRecipeTest implements RewriteTest {
     }
 
     @Test
-    void constraintMethods() {
+    void migrate() {
         runTest(
                 """
                         changeMoveConfig.withSorterWeightFactoryClass(SelectionSorterWeightFactory.class);
@@ -105,7 +105,6 @@ class SortingMigrationRecipeTest implements RewriteTest {
 
                 @PlanningEntity(difficultyWeightFactoryClass = PlanningEntity.NullDifficultyWeightFactory.class, difficultyComparatorClass = PlanningEntity.NullDifficultyComparator.class)
                 public class Test {
-                
                     @PlanningVariable(strengthComparatorClass = PlanningVariable.NullStrengthComparator.class)
                     private Object value;
                     @PlanningVariable(strengthWeightFactoryClass = PlanningVariable.NullStrengthWeightFactory.class)

@@ -320,8 +320,7 @@ public class EntityDescriptor<Solution_> {
         if (selectedComparatorClass != null) {
             var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorPropertyName, selectedComparatorClass);
             descendingSorter = new ComparatorSelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);
-        }
-        if (selectedComparatorFactoryClass != null) {
+        } else if (selectedComparatorFactoryClass != null) {
             var comparator = ConfigUtils.newInstance(this::toString, selectedComparatorFactoryPropertyName,
                     selectedComparatorFactoryClass);
             descendingSorter = new ComparatorFactorySelectionSorter<>(comparator, SelectionSorterOrder.DESCENDING);

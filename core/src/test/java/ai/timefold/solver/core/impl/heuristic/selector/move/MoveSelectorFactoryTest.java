@@ -202,58 +202,54 @@ class MoveSelectorFactoryTest {
 
     @Test
     void applySorting_withSorterComparatorClass() {
-        // Old setting
-        {
-            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
-            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
-            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-            moveSelectorConfig.setSorterComparatorClass(DummyComparator.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+        DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+        moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+        moveSelectorConfig.setSorterComparatorClass(DummyComparator.class);
 
-            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
-            MoveSelector<TestdataSolution> sortingMoveSelector =
-                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
-            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
-        }
-        // New setting
-        {
-            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
-            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
-            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-            moveSelectorConfig.setComparatorClass(DummyComparator.class);
+        DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+        MoveSelector<TestdataSolution> sortingMoveSelector =
+                moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+        assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
+    }
 
-            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
-            MoveSelector<TestdataSolution> sortingMoveSelector =
-                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
-            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
-        }
+    @Test
+    void applySorting_withComparatorClass() {
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+        DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+        moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+        moveSelectorConfig.setComparatorClass(DummyComparator.class);
+
+        DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+        MoveSelector<TestdataSolution> sortingMoveSelector =
+                moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+        assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
+    }
+
+    @Test
+    void applySorting_withWeightFactoryClass() {
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+        DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+        moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+        moveSelectorConfig.setSorterWeightFactoryClass(DummyValueFactory.class);
+
+        DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+        MoveSelector<TestdataSolution> sortingMoveSelector =
+                moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+        assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
     }
 
     @Test
     void applySorting_withComparatorFactoryClass() {
-        // Old setting
-        {
-            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
-            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
-            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-            moveSelectorConfig.setSorterWeightFactoryClass(DummyValueFactory.class);
+        final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
+        DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
+        moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
+        moveSelectorConfig.setComparatorFactoryClass(DummyValueFactory.class);
 
-            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
-            MoveSelector<TestdataSolution> sortingMoveSelector =
-                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
-            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
-        }
-        // New setting
-        {
-            final MoveSelector<TestdataSolution> baseMoveSelector = SelectorTestUtils.mockMoveSelector();
-            DummyMoveSelectorConfig moveSelectorConfig = new DummyMoveSelectorConfig();
-            moveSelectorConfig.setSorterOrder(SelectionSorterOrder.ASCENDING);
-            moveSelectorConfig.setComparatorFactoryClass(DummyValueFactory.class);
-
-            DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
-            MoveSelector<TestdataSolution> sortingMoveSelector =
-                    moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
-            assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
-        }
+        DummyMoveSelectorFactory moveSelectorFactory = new DummyMoveSelectorFactory(moveSelectorConfig, baseMoveSelector);
+        MoveSelector<TestdataSolution> sortingMoveSelector =
+                moveSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseMoveSelector);
+        assertThat(sortingMoveSelector).isExactlyInstanceOf(SortingMoveSelector.class);
     }
 
     @Test

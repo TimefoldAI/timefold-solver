@@ -177,8 +177,7 @@ public abstract class GenuineVariableDescriptor<Solution_> extends VariableDescr
                     SelectionSorterOrder.ASCENDING);
             descendingSorter = new ComparatorSelectionSorter<>(comparator,
                     SelectionSorterOrder.DESCENDING);
-        }
-        if (comparatorFactoryClass != null) {
+        } else if (comparatorFactoryClass != null) {
             ComparatorFactory<Solution_, Object> comparatorFactory =
                     newInstance(this::toString, comparatorFactoryPropertyName, comparatorFactoryClass);
             ascendingSorter = new ComparatorFactorySelectionSorter<>(comparatorFactory, SelectionSorterOrder.ASCENDING);

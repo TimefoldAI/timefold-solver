@@ -122,7 +122,7 @@ public @interface PlanningEntity {
     }
 
     /**
-     * The {@link ComparatorFactory} alternative for {@link #difficultyComparatorClass()}.
+     * The {@link SelectionSorterWeightFactory} alternative for {@link #difficultyComparatorClass()}.
      * <p>
      * Do not use together with {@link #difficultyComparatorClass()}.
      *

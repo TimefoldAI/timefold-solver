@@ -131,7 +131,7 @@ public @interface PlanningVariable {
     }
 
     /**
-     * The {@link ComparatorFactory} alternative for {@link #strengthComparatorClass()}.
+     * The {@link SelectionSorterWeightFactory} alternative for {@link #strengthComparatorClass()}.
      * <p>
      * Do not use together with {@link #strengthComparatorClass()}.
      *
