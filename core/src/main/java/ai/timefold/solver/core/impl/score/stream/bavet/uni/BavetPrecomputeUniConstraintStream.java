@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 public class BavetPrecomputeUniConstraintStream<Solution_, A> extends BavetAbstractUniConstraintStream<Solution_, A>
         implements TupleSource {
     private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
+    private final Set<Class<?>> entityClassSet;
     private BavetAftBridgeUniConstraintStream<Solution_, A> aftStream;
 
     public BavetPrecomputeUniConstraintStream(
@@ -26,6 +27,7 @@ public class BavetPrecomputeUniConstraintStream<Solution_, A> extends BavetAbstr
         super(constraintFactory, RetrievalSemantics.STANDARD);
         this.recordingPrecomputedConstraintStream = new BavetRecordingUniConstraintStream<>(constraintFactory,
                 precomputedConstraintStream);
+        this.entityClassSet = constraintFactory.getSolutionDescriptor().getEntityClassSet();
         precomputedConstraintStream.getChildStreamList().add(recordingPrecomputedConstraintStream);
     }
 
@@ -36,7 +38,7 @@ public class BavetPrecomputeUniConstraintStream<Solution_, A> extends BavetAbstr
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         Supplier<BavetPrecomputeBuildHelper<UniTuple<A>>> precomputeBuildHelperSupplier =
-                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream);
+                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream, entityClassSet);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
         buildHelper.addNode(new PrecomputeUniNode<>(precomputeBuildHelperSupplier,

@@ -19,6 +19,7 @@ public class BavetPrecomputeQuadConstraintStream<Solution_, A, B, C, D>
         extends BavetAbstractQuadConstraintStream<Solution_, A, B, C, D>
         implements TupleSource {
     private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
+    private final Set<Class<?>> entityClassSet;
     private BavetAftBridgeQuadConstraintStream<Solution_, A, B, C, D> aftStream;
 
     public BavetPrecomputeQuadConstraintStream(
@@ -27,6 +28,7 @@ public class BavetPrecomputeQuadConstraintStream<Solution_, A, B, C, D>
         super(constraintFactory, RetrievalSemantics.STANDARD);
         this.recordingPrecomputedConstraintStream = new BavetRecordingQuadConstraintStream<>(constraintFactory,
                 precomputedConstraintStream);
+        this.entityClassSet = constraintFactory.getSolutionDescriptor().getEntityClassSet();
         precomputedConstraintStream.getChildStreamList().add(recordingPrecomputedConstraintStream);
     }
 
@@ -37,7 +39,7 @@ public class BavetPrecomputeQuadConstraintStream<Solution_, A, B, C, D>
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         Supplier<BavetPrecomputeBuildHelper<QuadTuple<A, B, C, D>>> precomputeBuildHelperSupplier =
-                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream);
+                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream, entityClassSet);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
         buildHelper.addNode(new PrecomputeQuadNode<>(precomputeBuildHelperSupplier,

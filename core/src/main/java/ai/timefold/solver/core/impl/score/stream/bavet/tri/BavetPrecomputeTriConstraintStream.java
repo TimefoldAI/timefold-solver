@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends BavetAbstractTriConstraintStream<Solution_, A, B, C>
         implements TupleSource {
     private final BavetAbstractConstraintStream<Solution_> recordingPrecomputedConstraintStream;
+    private final Set<Class<?>> entityClassSet;
     private BavetAftBridgeTriConstraintStream<Solution_, A, B, C> aftStream;
 
     public BavetPrecomputeTriConstraintStream(
@@ -26,6 +27,7 @@ public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends Bave
         super(constraintFactory, RetrievalSemantics.STANDARD);
         this.recordingPrecomputedConstraintStream = new BavetRecordingTriConstraintStream<>(constraintFactory,
                 precomputedConstraintStream);
+        this.entityClassSet = constraintFactory.getSolutionDescriptor().getEntityClassSet();
         precomputedConstraintStream.getChildStreamList().add(recordingPrecomputedConstraintStream);
     }
 
@@ -36,7 +38,7 @@ public class BavetPrecomputeTriConstraintStream<Solution_, A, B, C> extends Bave
     @Override
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         Supplier<BavetPrecomputeBuildHelper<TriTuple<A, B, C>>> precomputeBuildHelperSupplier =
-                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream);
+                () -> new BavetPrecomputeBuildHelper<>(recordingPrecomputedConstraintStream, entityClassSet);
         var outputStoreSize = buildHelper.extractTupleStoreSize(aftStream);
 
         buildHelper.addNode(new PrecomputeTriNode<>(precomputeBuildHelperSupplier,
