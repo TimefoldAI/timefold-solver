@@ -143,7 +143,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private <A> List<BavetRootNode<A>> getRootNodes(Object object, NodeNetwork internalNodeNetwork,
+    private static <A> List<BavetRootNode<A>> getRootNodes(Object object, NodeNetwork internalNodeNetwork,
             Map<Class<?>, List<BavetRootNode<?>>> objectClassToRootNodes) {
         return (List) objectClassToRootNodes.computeIfAbsent(object.getClass(), clazz -> {
             var out = new ArrayList<BavetRootNode<?>>();
