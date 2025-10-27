@@ -191,6 +191,169 @@ public abstract class AbstractBiConstraintStreamPrecomputeTest extends AbstractC
                 assertMatch(value2, entity3));
     }
 
+    @TestTemplate
+    public void filter_0_changed_forEachUnfilteredUniquePair() {
+        var solution = TestdataLavishSolution.generateSolution();
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+        solution.getEntityGroupList().add(entityGroup);
+        solution.getValueGroupList().add(valueGroup);
+
+        var value1 = Mockito.spy(new TestdataLavishValue("MyValue 1", valueGroup));
+        solution.getValueList().add(value1);
+        var value2 = Mockito.spy(new TestdataLavishValue("MyValue 2", valueGroup));
+        solution.getValueList().add(value2);
+        var value3 = Mockito.spy(new TestdataLavishValue("MyValue 3", null));
+        solution.getValueList().add(value3);
+
+        var entity1 = Mockito.spy(new TestdataLavishEntity("MyEntity 1", entityGroup, value1));
+        solution.getEntityList().add(entity1);
+        var entity2 = new TestdataLavishEntity("MyEntity 2", entityGroup, value1);
+        solution.getEntityList().add(entity2);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value1);
+        solution.getEntityList().add(entity3);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory
+                        .precompute(data -> data.forEachUnfilteredUniquePair(TestdataLavishEntity.class,
+                                Joiners.equal(TestdataLavishEntity::getEntityGroup)))
+                        .filter((a, b) -> a.getValue() == value1)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        Mockito.reset(entity1);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2));
+        Mockito.verify(entity1, Mockito.atLeastOnce()).getEntityGroup();
+
+        // Incrementally update a variable
+        Mockito.reset(entity1);
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(solution.getFirstValue());
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector);
+        Mockito.verify(entity1, Mockito.never()).getEntityGroup();
+
+        // Incrementally update a variable
+        Mockito.reset(entity1);
+        scoreDirector.beforeVariableChanged(entity1, "value");
+        entity1.setValue(value1);
+        scoreDirector.afterVariableChanged(entity1, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2));
+        Mockito.verify(entity1, Mockito.never()).getEntityGroup();
+
+        // Incrementally update a fact
+        scoreDirector.beforeProblemPropertyChanged(entity3);
+        entity3.setEntityGroup(entityGroup);
+        scoreDirector.afterProblemPropertyChanged(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity3));
+
+        // Remove entity
+        scoreDirector.beforeEntityRemoved(entity3);
+        solution.getEntityList().remove(entity3);
+        scoreDirector.afterEntityRemoved(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2));
+
+        // Add it back again, to make sure it was properly removed before
+        scoreDirector.beforeEntityAdded(entity3);
+        solution.getEntityList().add(entity3);
+        scoreDirector.afterEntityAdded(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity3));
+    }
+
+    @TestTemplate
+    public void filter_1_changed_forEachUnfilteredUniquePair() {
+        var solution = TestdataLavishSolution.generateSolution();
+        var entityGroup = new TestdataLavishEntityGroup("MyEntityGroup");
+        var valueGroup = new TestdataLavishValueGroup("MyValueGroup");
+        solution.getEntityGroupList().add(entityGroup);
+        solution.getValueGroupList().add(valueGroup);
+
+        var value1 = Mockito.spy(new TestdataLavishValue("MyValue 1", valueGroup));
+        solution.getValueList().add(value1);
+        var value2 = Mockito.spy(new TestdataLavishValue("MyValue 2", valueGroup));
+        solution.getValueList().add(value2);
+        var value3 = Mockito.spy(new TestdataLavishValue("MyValue 3", null));
+        solution.getValueList().add(value3);
+
+        var entity1 = new TestdataLavishEntity("MyEntity 1", entityGroup, value1);
+        solution.getEntityList().add(entity1);
+        var entity2 = Mockito.spy(new TestdataLavishEntity("MyEntity 2", entityGroup, value1));
+        solution.getEntityList().add(entity2);
+        var entity3 = new TestdataLavishEntity("MyEntity 3", solution.getFirstEntityGroup(),
+                value2);
+        solution.getEntityList().add(entity3);
+
+        var scoreDirector =
+                buildScoreDirector(factory -> factory
+                        .precompute(data -> data.forEachUnfilteredUniquePair(TestdataLavishEntity.class,
+                                Joiners.equal(TestdataLavishEntity::getEntityGroup)))
+                        .filter((a, b) -> b.getValue() == value1)
+                        .penalize(SimpleScore.ONE)
+                        .asConstraint(TEST_CONSTRAINT_NAME));
+
+        // From scratch
+        Mockito.reset(entity2);
+        scoreDirector.setWorkingSolution(solution);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2));
+        Mockito.verify(entity2, Mockito.atLeastOnce()).getEntityGroup();
+
+        // Incrementally update a variable
+        Mockito.reset(entity2);
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(solution.getFirstValue());
+        scoreDirector.afterVariableChanged(entity2, "value");
+        assertScore(scoreDirector);
+        Mockito.verify(entity2, Mockito.never()).getEntityGroup();
+
+        // Incrementally update a variable
+        Mockito.reset(entity2);
+        scoreDirector.beforeVariableChanged(entity2, "value");
+        entity2.setValue(value1);
+        scoreDirector.afterVariableChanged(entity2, "value");
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2));
+        Mockito.verify(entity2, Mockito.never()).getEntityGroup();
+
+        // Incrementally update a fact
+        scoreDirector.beforeProblemPropertyChanged(entity3);
+        entity3.setValue(value1);
+        entity3.setEntityGroup(entityGroup);
+        scoreDirector.afterProblemPropertyChanged(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity3));
+
+        // Remove entity
+        scoreDirector.beforeEntityRemoved(entity3);
+        solution.getEntityList().remove(entity3);
+        scoreDirector.afterEntityRemoved(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2));
+
+        // Add it back again, to make sure it was properly removed before
+        scoreDirector.beforeEntityAdded(entity3);
+        solution.getEntityList().add(entity3);
+        scoreDirector.afterEntityAdded(entity3);
+        assertScore(scoreDirector,
+                assertMatch(entity1, entity2),
+                assertMatch(entity1, entity3),
+                assertMatch(entity2, entity3));
+    }
+
     private <A, B> void assertPrecompute(TestdataLavishSolution solution,
             List<Pair<A, B>> expectedValues,
             Function<PrecomputeFactory, BiConstraintStream<A, B>> entityStreamSupplier) {

@@ -18,6 +18,7 @@ import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.BiJoinerComber;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
@@ -31,10 +32,16 @@ public abstract class InnerConstraintFactory<Solution_, Constraint_ extends Cons
     @Override
     public <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(@NonNull Class<A> sourceClass,
             BiJoiner<A, A> @NonNull... joiners) {
+        return forEachUniquePair(this::forEach, sourceClass, joiners);
+    }
+
+    public <A> @NonNull BiConstraintStream<A, A> forEachUniquePair(Function<Class<A>, UniConstraintStream<A>> streamFunction,
+            @NonNull Class<A> sourceClass,
+            BiJoiner<A, A> @NonNull... joiners) {
         BiJoinerComber<A, A> joinerComber = BiJoinerComber.comb(joiners);
         joinerComber.addJoiner(buildLessThanId(sourceClass));
-        return ((InnerUniConstraintStream<A>) forEach(sourceClass))
-                .join(forEach(sourceClass), joinerComber);
+        return ((InnerUniConstraintStream<A>) streamFunction.apply(sourceClass))
+                .join(streamFunction.apply(sourceClass), joinerComber);
     }
 
     private <A> DefaultBiJoiner<A, A> buildLessThanId(Class<A> sourceClass) {

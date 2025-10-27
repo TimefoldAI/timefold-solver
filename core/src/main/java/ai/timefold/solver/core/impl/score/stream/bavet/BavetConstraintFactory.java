@@ -178,7 +178,7 @@ public final class BavetConstraintFactory<Solution_>
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL);
     }
 
-    <A> UniConstraintStream<A> forEachUnfilteredStatic(Class<A> sourceClass) {
+    <A> UniConstraintStream<A> forEachUnfilteredPrecomputed(Class<A> sourceClass) {
         return forEachForCriteria(sourceClass, ForEachFilteringCriteria.ALL, RetrievalSemantics.PRECOMPUTE);
     }
 
