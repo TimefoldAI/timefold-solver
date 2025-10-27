@@ -136,7 +136,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
             // settle the inner node network, so the inserts/retracts do not interfere
             // with the recording of the first object's tuples
             internalNodeNetwork.settle();
-            recalculateTuples(internalNodeNetwork, recordingTupleLifecycle);
+            recalculateTuples(internalNodeNetwork, objectClassToRootNodes, recordingTupleLifecycle);
 
             propagationQueue.propagateRetracts();
         }
@@ -195,7 +195,9 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
         objectToOutputTuplesMap.clear();
     }
 
-    private void recalculateTuples(NodeNetwork internalNodeNetwork, RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
+    private void recalculateTuples(NodeNetwork internalNodeNetwork,
+            Map<Class<?>, List<BavetRootNode<?>>> classToRootNodeList,
+            RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle) {
         var internalTupleToOutputTupleMap = new IdentityHashMap<Tuple_, Tuple_>(seenEntitySet.size());
         for (var invalidated : seenEntitySet) {
             var mappedTuples = new ArrayList<Tuple_>();
@@ -203,7 +205,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
                     new TupleRecorder<>(mappedTuples, internalTupleToOutputTupleMapper, internalTupleToOutputTupleMap))) {
                 // Do a fake update on the object and settle the network; this will update precisely the
                 // tuples mapped to this node, which will then be recorded
-                internalNodeNetwork.getRootNodesAcceptingType(invalidated.getClass())
+                classToRootNodeList.get(invalidated.getClass())
                         .forEach(node -> ((BavetRootNode<Object>) node).update(invalidated));
                 internalNodeNetwork.settle();
             }
