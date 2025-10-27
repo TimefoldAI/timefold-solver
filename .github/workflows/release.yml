@@ -84,7 +84,7 @@ jobs:
           JRELEASER_MAVENCENTRAL_PASSWORD: ${{ secrets.JRELEASER_MAVEN_CENTRAL_TOKEN }}
 
       - name: JReleaser release output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always()
         with:
           name: jreleaser-release
