@@ -37,7 +37,7 @@
     <!-- ************************************************************************ -->
     <!-- Plugins -->
     <!-- ************************************************************************ -->
-    <version.antrun.plugin>3.1.0</version.antrun.plugin>
+    <version.antrun.plugin>3.2.0</version.antrun.plugin>
     <version.asciidoctor.plugin>3.2.0</version.asciidoctor.plugin>
     <version.asciidoctor.plugin.pdf>2.3.21</version.asciidoctor.plugin.pdf>
     <version.assembly.plugin>3.7.1</version.assembly.plugin>
