@@ -1,10 +1,11 @@
 package ai.timefold.solver.core.impl.bavet.tri;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import java.util.function.Supplier;
+
 import ai.timefold.solver.core.impl.bavet.common.AbstractPrecomputeNode;
-import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetPrecomputeBuildHelper;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -12,12 +13,11 @@ import org.jspecify.annotations.NullMarked;
 public final class PrecomputeTriNode<A, B, C> extends AbstractPrecomputeNode<TriTuple<A, B, C>> {
     private final int outputStoreSize;
 
-    public PrecomputeTriNode(NodeNetwork nodeNetwork,
-            RecordingTupleLifecycle<TriTuple<A, B, C>> recordingTupleNode,
+    public PrecomputeTriNode(Supplier<BavetPrecomputeBuildHelper<TriTuple<A, B, C>>> precomputeBuildHelperSupplier,
             int outputStoreSize,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
             Class<?>[] sourceClasses) {
-        super(nodeNetwork, recordingTupleNode, nextNodesTupleLifecycle, sourceClasses);
+        super(precomputeBuildHelperSupplier, nextNodesTupleLifecycle, sourceClasses);
         this.outputStoreSize = outputStoreSize;
     }
 

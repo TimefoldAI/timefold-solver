@@ -79,6 +79,13 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     }
 
     @Override
+    protected void afterSetWorkingSolution() {
+        // Settle the node network to calculate precomputes
+        // This is required so precomputes are not considered by terminations
+        session.settle();
+    }
+
+    @Override
     public InnerScore<Score_> calculateScore() {
         variableListenerSupport.assertNotificationQueuesAreEmpty();
         var score = session.calculateScore();

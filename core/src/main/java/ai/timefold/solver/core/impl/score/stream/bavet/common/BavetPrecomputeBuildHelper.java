@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintStream;
@@ -26,9 +27,11 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
     private final NodeNetwork nodeNetwork;
     private final RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle;
     private final Class<?>[] sourceClasses;
+    private final Set<Class<?>> entityClassSet;
 
     public <Solution_> BavetPrecomputeBuildHelper(
-            BavetAbstractConstraintStream<Solution_> recordingPrecomputeConstraintStream) {
+            BavetAbstractConstraintStream<Solution_> recordingPrecomputeConstraintStream,
+            Set<Class<?>> entityClassSet) {
         if (recordingPrecomputeConstraintStream.getRetrievalSemantics() != RetrievalSemantics.PRECOMPUTE) {
             throw new IllegalStateException(
                     "Impossible state: %s is not %s but is instead %s. Maybe you accidentally used a %s from %s instead of %s?"
@@ -37,6 +40,7 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
                                     ConstraintStream.class.getSimpleName(), ConstraintFactory.class.getSimpleName(),
                                     PrecomputeFactory.class.getSimpleName()));
         }
+        this.entityClassSet = entityClassSet;
 
         var streamList = new ArrayList<BavetAbstractConstraintStream<Solution_>>();
         var queue = new ArrayDeque<BavetAbstractConstraintStream<Solution_>>();
@@ -92,5 +96,14 @@ public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
 
     public Class<?>[] getSourceClasses() {
         return sourceClasses;
+    }
+
+    public boolean isSourceEntityClass(Class<?> maybeSourceEntityClass) {
+        for (var entityClass : entityClassSet) {
+            if (entityClass.isAssignableFrom(maybeSourceEntityClass)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

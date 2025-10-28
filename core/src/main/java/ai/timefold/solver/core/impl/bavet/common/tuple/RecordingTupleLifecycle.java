@@ -23,7 +23,13 @@ public class RecordingTupleLifecycle<Tuple_ extends AbstractTuple> implements Tu
     @Override
     public void insert(Tuple_ tuple) {
         if (tupleRecorder != null) {
-            throw new IllegalStateException("Impossible state: tuple %s was inserted during recording".formatted(tuple));
+            throw new IllegalStateException("""
+                    Illegal state: tuple %s was inserted during recording.
+                    Certain operations like flattenLast will create new tuples
+                    on update if its mapping function returns a new instance.
+                    Maybe refactor the code to avoid creating new instances,
+                    or avoid using precompute if that is not possible.
+                    """.formatted(tuple));
         }
     }
 
