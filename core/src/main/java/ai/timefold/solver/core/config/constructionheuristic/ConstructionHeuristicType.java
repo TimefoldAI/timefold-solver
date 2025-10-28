@@ -5,8 +5,9 @@ import jakarta.xml.bind.annotation.XmlEnum;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 @XmlEnum
 public enum ConstructionHeuristicType {
     /**
@@ -56,52 +57,30 @@ public enum ConstructionHeuristicType {
      */
     ALLOCATE_FROM_POOL;
 
-    public @NonNull EntitySorterManner getDefaultEntitySorterManner() {
-        switch (this) {
-            case FIRST_FIT:
-            case WEAKEST_FIT:
-            case STRONGEST_FIT:
-                return EntitySorterManner.NONE;
-            case FIRST_FIT_DECREASING:
-            case WEAKEST_FIT_DECREASING:
-            case STRONGEST_FIT_DECREASING:
-                return EntitySorterManner.DECREASING_DIFFICULTY;
-            case ALLOCATE_ENTITY_FROM_QUEUE:
-            case ALLOCATE_TO_VALUE_FROM_QUEUE:
-            case CHEAPEST_INSERTION:
-            case ALLOCATE_FROM_POOL:
-                return EntitySorterManner.DECREASING_DIFFICULTY_IF_AVAILABLE;
-            default:
-                throw new IllegalStateException("The constructionHeuristicType (" + this + ") is not implemented.");
-        }
+    public EntitySorterManner getDefaultEntitySorterManner() {
+        return switch (this) {
+            case FIRST_FIT, WEAKEST_FIT, STRONGEST_FIT -> EntitySorterManner.NONE;
+            case FIRST_FIT_DECREASING, WEAKEST_FIT_DECREASING, STRONGEST_FIT_DECREASING -> EntitySorterManner.DESCENDING;
+            case ALLOCATE_ENTITY_FROM_QUEUE, ALLOCATE_TO_VALUE_FROM_QUEUE, CHEAPEST_INSERTION, ALLOCATE_FROM_POOL ->
+                EntitySorterManner.DESCENDING_IF_AVAILABLE;
+        };
     }
 
-    public @NonNull ValueSorterManner getDefaultValueSorterManner() {
-        switch (this) {
-            case FIRST_FIT:
-            case FIRST_FIT_DECREASING:
-                return ValueSorterManner.NONE;
-            case WEAKEST_FIT:
-            case WEAKEST_FIT_DECREASING:
-                return ValueSorterManner.INCREASING_STRENGTH;
-            case STRONGEST_FIT:
-            case STRONGEST_FIT_DECREASING:
-                return ValueSorterManner.DECREASING_STRENGTH;
-            case ALLOCATE_ENTITY_FROM_QUEUE:
-            case ALLOCATE_TO_VALUE_FROM_QUEUE:
-            case CHEAPEST_INSERTION:
-            case ALLOCATE_FROM_POOL:
-                return ValueSorterManner.INCREASING_STRENGTH_IF_AVAILABLE;
-            default:
-                throw new IllegalStateException("The constructionHeuristicType (" + this + ") is not implemented.");
-        }
+    public ValueSorterManner getDefaultValueSorterManner() {
+        return switch (this) {
+            case FIRST_FIT, FIRST_FIT_DECREASING -> ValueSorterManner.NONE;
+            case WEAKEST_FIT, WEAKEST_FIT_DECREASING -> ValueSorterManner.ASCENDING;
+            case STRONGEST_FIT, STRONGEST_FIT_DECREASING -> ValueSorterManner.DESCENDING;
+            case ALLOCATE_ENTITY_FROM_QUEUE, ALLOCATE_TO_VALUE_FROM_QUEUE, CHEAPEST_INSERTION, ALLOCATE_FROM_POOL ->
+                ValueSorterManner.ASCENDING_IF_AVAILABLE;
+        };
     }
 
     /**
      * @return {@link ConstructionHeuristicType#values()} without duplicates (abstract types that end up behaving as one of the
      *         other types).
      */
-    public static @NonNull ConstructionHeuristicType @NonNull [] getBluePrintTypes() {
+    public static ConstructionHeuristicType[] getBluePrintTypes() {
         return new ConstructionHeuristicType[] {
                 FIRST_FIT,
                 FIRST_FIT_DECREASING,

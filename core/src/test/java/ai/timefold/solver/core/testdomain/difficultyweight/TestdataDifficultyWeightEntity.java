@@ -6,7 +6,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
 
-@PlanningEntity(difficultyWeightFactoryClass = TestdataDifficultyWeightFactory.class)
+@PlanningEntity(difficultyWeightFactoryClass = TestdataDifficultyFactory.class)
 public class TestdataDifficultyWeightEntity extends TestdataObject {
 
     public static EntityDescriptor<TestdataDifficultyWeightSolution> buildEntityDescriptor() {

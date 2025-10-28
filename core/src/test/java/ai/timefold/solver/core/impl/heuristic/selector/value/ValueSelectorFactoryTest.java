@@ -15,6 +15,7 @@ import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
@@ -102,8 +103,7 @@ class ValueSelectorFactoryTest {
         ValueSelector valueSelector = ValueSelectorFactory.create(valueSelectorConfig).buildValueSelector(configPolicy,
                 entityDescriptor, SelectionCacheType.JUST_IN_TIME, SelectionOrder.RANDOM);
         assertThat(valueSelector)
-                .isInstanceOf(IterableFromSolutionPropertyValueSelector.class);
-        assertThat(valueSelector)
+                .isInstanceOf(IterableFromSolutionPropertyValueSelector.class)
                 .isNotInstanceOf(ShufflingValueSelector.class);
         assertThat(valueSelector.getCacheType()).isEqualTo(SelectionCacheType.PHASE);
     }
@@ -216,9 +216,23 @@ class ValueSelectorFactoryTest {
     }
 
     @Test
+    void applySorting_withComparatorClass() {
+        ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withComparatorClass(DummyValueComparator.class);
+        applySorting(valueSelectorConfig);
+    }
+
+    @Test
     void applySorting_withSorterWeightFactoryClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
-                .withSorterWeightFactoryClass(DummySelectionSorterWeightFactory.class);
+                .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class);
+        applySorting(valueSelectorConfig);
+    }
+
+    @Test
+    void applySorting_withComparatorFactoryClass() {
+        ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
         applySorting(valueSelectorConfig);
     }
 
@@ -258,6 +272,46 @@ class ValueSelectorFactoryTest {
                 () -> ValueSelectorFactory.create(valueSelectorConfig)
                         .buildMimicReplaying(mock(HeuristicConfigPolicy.class)))
                 .withMessageContaining("has another property");
+    }
+
+    @Test
+    void failFast_ifBothComparatorsUsed() {
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withSorterManner(ValueSorterManner.DESCENDING)
+                .withCacheType(SelectionCacheType.PHASE)
+                .withSelectionOrder(SelectionOrder.SORTED)
+                .withSorterComparatorClass(DummyValueComparator.class)
+                .withComparatorClass(DummyValueComparator.class);
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> ValueSelectorFactory.<TestdataSolution> create(valueSelectorConfig)
+                        .buildValueSelector(buildHeuristicConfigPolicy(), TestdataEntity.buildEntityDescriptor(),
+                                SelectionCacheType.PHASE, SelectionOrder.SORTED))
+                .withMessageContaining("The valueSelectorConfig")
+                .withMessageContaining(
+                        "cannot have a sorterComparatorClass (class ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactoryTest$DummyValueComparator)")
+                .withMessageContaining(
+                        "and comparatorClass (class ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactoryTest$DummyValueComparator) at the same time");
+    }
+
+    @Test
+    void failFast_ifBothComparatorFactoriesUsed() {
+        var valueSelectorConfig = new ValueSelectorConfig()
+                .withSorterManner(ValueSorterManner.DESCENDING)
+                .withCacheType(SelectionCacheType.PHASE)
+                .withSelectionOrder(SelectionOrder.SORTED)
+                .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class)
+                .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
+
+        assertThatIllegalArgumentException()
+                .isThrownBy(() -> ValueSelectorFactory.<TestdataSolution> create(valueSelectorConfig)
+                        .buildValueSelector(buildHeuristicConfigPolicy(), TestdataEntity.buildEntityDescriptor(),
+                                SelectionCacheType.PHASE, SelectionOrder.SORTED))
+                .withMessageContaining("The valueSelectorConfig")
+                .withMessageContaining(
+                        "cannot have a sorterWeightFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactoryTest$DummySelectionComparatorFactory)")
+                .withMessageContaining(
+                        "and comparatorFactoryClass (class ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelectorFactoryTest$DummySelectionComparatorFactory) at the same time");
     }
 
     static Stream<Arguments> applyListValueFiltering() {
@@ -310,10 +364,11 @@ class ValueSelectorFactoryTest {
         }
     }
 
-    public static class DummySelectionSorterWeightFactory
+    public static class DummySelectionComparatorFactory
             implements SelectionSorterWeightFactory<TestdataSolution, TestdataValue> {
+
         @Override
-        public Comparable createSorterWeight(TestdataSolution testdataSolution, TestdataValue selection) {
+        public Comparable createSorterWeight(TestdataSolution solution, TestdataValue selection) {
             return 0;
         }
     }

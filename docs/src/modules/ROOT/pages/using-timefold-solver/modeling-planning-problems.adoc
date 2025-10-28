@@ -372,27 +372,28 @@ As Timefold Solver will mutate the <<planningVariable,genuine>> or <<shadowVaria
 As Java's `enum` and `record` types are immutable by design, these can not be used as planning entities.
 
 
-[#planningEntityDifficulty]
-=== Planning entity difficulty
+[#planningEntitySorting]
+=== [[planningEntityDifficulty]]Planning entity sorting
 
-Some optimization algorithms work more efficiently if they have an estimation of which planning entities are more difficult to plan.
+Some optimization algorithms are more efficient when planning entities are sorted based on a specific metric,
+which helps estimate the relative difficulty of each planning entity.
 For example: in bin packing bigger items are harder to fit.
 
 [NOTE]
 ====
-*Do not try to use planning entity difficulty to implement a business constraint.*
+*Do not try to use planning entity order to implement a business constraint.*
 It will not affect the score function: if we have infinite solving time, the returned solution will be the same.
 
 To attain a schedule in which certain entities are scheduled earlier in the schedule, xref:constraints-and-score/overview.adoc#formalizeTheBusinessConstraints[add a score constraint] to change the score function so it prefers such solutions.
-Only consider adding planning entity difficulty too if it can make the solver more efficient.
+Only consider adding planning entity sort order if it can make the solver more efficient.
 ====
 
 To allow the heuristics to take advantage of that domain specific information,
-set a `difficultyComparatorClass` to the `@PlanningEntity` annotation:
+set a `comparatorClass` to the `@PlanningEntity` annotation:
 
 [source,java,options="nowrap"]
 ----
-@PlanningEntity(difficultyComparatorClass = VisitDifficultyComparator.class)
+@PlanningEntity(comparatorClass = VisitComparator.class)
 public class Visit {
     // ...
 }
@@ -400,7 +401,7 @@ public class Visit {
 
 [source,java,options="nowrap"]
 ----
-public class VisitDifficultyComparator implements Comparator<Visit> {
+public class VisitComparator implements Comparator<Visit> {
 
     public int compare(Visit a, Visit b) {
         return new CompareToBuilder()
@@ -412,20 +413,20 @@ public class VisitDifficultyComparator implements Comparator<Visit> {
 }
 ----
 
-Alternatively, you can also set a `difficultyWeightFactoryClass` to the `@PlanningEntity` annotation,
+Alternatively, you can also set a `comparatorFactoryClass` to the `@PlanningEntity` annotation,
 so that you have access to the rest of the problem facts from the solution too.
 
 See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection] for more information.
 
 [IMPORTANT]
 ====
-Difficulty should be implemented ascending: easy entities are lower, difficult entities are higher.
+Entities should be sorted in ascending order: "easy" entities are lower, "difficult" entities are higher.
 For example, in bin packing: small item < medium item < big item.
 
-Although most algorithms start with the more difficult entities first, they just reverse the ordering.
+Although most algorithms start in descending order, they just reverse the ordering.
 ====
 
-_None of the current planning variable states should be used to compare planning entity difficulty._
+_None of the current planning variable states should be used to compare planning entities._
 During Construction Heuristics, those variables are likely to be `null` anyway.
 For example, a ``Lesson``'s `timeslot` variable should not be used.
 
@@ -663,422 +664,6 @@ Furthermore, it must be a mutable `Collection` because once Timefold Solver star
 it will add and remove elements to the ``Collection``s of those shadow variables accordingly.
 ====
 
-[#planningValueAndPlanningValueRange]
-== Planning value and planning value range
-
-[#planningValue]
-=== Planning value
-
-A planning value is a possible value for a genuine planning variable.
-Usually, a planning value is a problem fact, but it can also be any object, for example an ``Integer``.
-It can even be another planning entity or even an interface implemented by both a planning entity and a problem fact.
-
-[NOTE]
-====
-Primitive types (such as ``int``) are not allowed.
-====
-
-A planning value range is the set of possible planning values for a planning variable.
-Planning value ranges need to come from a finite collection.
-
-
-[#planningValueRangeProvider]
-=== Planning value range provider
-
-
-[#planningValueRangeProviderOverview]
-==== Overview
-
-The value range of a planning variable is defined with the `@ValueRangeProvider` annotation.
-A `@ValueRangeProvider` may carry a property ``id``, which is referenced by the ``@PlanningVariable``'s property ``valueRangeProviderRefs``.
-
-This annotation can be located on two types of methods:
-
-* On the Solution: All planning entities share the same value range.
-* On the planning entity: The value range differs per planning entity. This is less common.
-
-
-[NOTE]
-====
-A `@ValueRangeProvider` annotation needs to be on a member
-in a class with a `@PlanningSolution` or a `@PlanningEntity` annotation.
-It is ignored on parent classes or subclasses without those annotations.
-====
-
-The return type of that method can be three types:
-
-* ``Collection``: The value range is defined by a `Collection` (usually a ``List``) of its possible values.
-* Array: The value range is defined by an array of its possible values.
-* ``CountableValueRange``: The value range is defined by its bounds. This is less common.
-
-[#valueRangeProviderOnSolution]
-==== `ValueRangeProvider` on the solution
-
-All instances of the same planning entity class share the same set of possible planning values for that planning variable.
-This is the most common way to configure a value range.
-
-The `@PlanningSolution` implementation has a method that returns a `Collection` (or a ``CountableValueRange``).
-Any value from that `Collection` is a possible planning value for this planning variable.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningVariable
-public Timeslot getTimeslot() {
-    return timeslot;
-}
-----
-+
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class Timetable {
-    ...
-
-    @ValueRangeProvider
-    public List<Timeslot> getTimeslots() {
-        return timeslots;
-    }
-
-}
-----
-====
-
-[IMPORTANT]
-====
-That `Collection` (or ``CountableValueRange``) must not contain the value ``null``,
-not even for a <<planningVariableAllowingUnassigned,planning variable allowing unassigned values>>.
-====
-
-xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-@PlanningSolution
-public class Timetable {
-    ...
-
-    @ValueRangeProvider
-    private List<Timeslot> timeslots;
-
-}
-----
-
-
-====
-
-
-[#valueRangeProviderOnPlanningEntity]
-==== `ValueRangeProvider` on the Planning Entity
-
-Each planning entity has its own value range (a set of possible planning values) for the planning variable.
-For example, if a teacher can *never* teach in a room that does not belong to their department, lectures of that teacher can limit their room value range to the rooms of their department.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable
-    public Room getRoom() {
-        return room;
-    }
-
-    @ValueRangeProvider
-    public List<Room> getPossibleRoomList() {
-        return getCourse().getTeacher().getDepartment().getRoomList();
-    }
-----
-====
-
-Never use this to enforce a soft constraint (or even a hard constraint when the problem might not have a feasible solution). For example: __Unless there is no other way__, a teacher cannot teach in a room that does not belong to their department.
-In this case, the teacher should _not_ be limited in their room value range (because sometimes there is no other way).
-
-[NOTE]
-====
-By limiting the value range specifically of one planning entity, you are effectively creating a __built-in hard constraint__.
-This can have the benefit of severely lowering the number of possible solutions; however, it can also take away the freedom of the optimization algorithms to temporarily break that constraint in order to escape from a local optimum.
-====
-
-A planning entity should _not_ use other planning entities to determine its value range.
-That would only try to make the planning entity solve the planning problem itself and interfere with the optimization algorithms.
-
-Every entity has its own `List` instance, unless multiple entities have the same value range.
-For example, if teacher A and B belong to the same department, they use the same `List<Room>` instance.
-Furthermore, each `List` contains a subset of the same set of planning value instances.
-For example, if department A and B can both use room X, then their `List<Room>` instances contain the same `Room` instance.
-
-[NOTE]
-====
-A `ValueRangeProvider` on the planning entity consumes more memory than `ValueRangeProvider` on the Solution and disables certain automatic performance optimizations.
-====
-
-[WARNING]
-====
-A `ValueRangeProvider` on the planning entity is not currently compatible with a <<chainedPlanningVariable,chained>> variable.
-====
-
-[#referencingValueRangeProviders]
-==== Referencing ``ValueRangeProvider``s
-
-There are two ways how to match a planning variable to a value range provider.
-The simplest way is to have value range provider auto-detected.
-Another way is to explicitly reference the value range provider.
-
-[#anonymousValueRangeProviders]
-===== Anonymous ``ValueRangeProvider``s
-
-We already described the first approach.
-By not providing any `valueRangeProviderRefs` on the `@PlanningVariable` annotation,
-Timefold Solver will go over every ``@ValueRangeProvider``-annotated method or field which does not have an ``id`` property set,
-and will match planning variables with value ranges where their types match.
-
-In the following example,
-the planning variable ``car`` will be matched to the value range returned by ``getCompanyCarList()``,
-as they both use the ``Car`` type.
-It will not match ``getPersonalCarList()``,
-because that value range provider is not anonymous; it specifies an ``id``.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable
-    public Car getCar() {
-        return car;
-    }
-
-    @ValueRangeProvider
-    public List<Car> getCompanyCarList() {
-        return companyCarList;
-    }
-
-    @ValueRangeProvider(id = "personalCarRange")
-    public List<Car> getPersonalCarList() {
-        return personalCarList;
-    }
-----
-
-
-====
-
-Automatic matching also accounts for polymorphism.
-In the following example,
-the planning variable ``car`` will be matched to ``getCompanyCarList()`` and ``getPersonalCarList()``,
-as both ``CompanyCar`` and ``PersonalCar`` are ``Car``s.
-It will not match ``getAirplanes()``,
-as an ``Airplane`` is not a ``Car``.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable
-    public Car getCar() {
-        return car;
-    }
-
-    @ValueRangeProvider
-    public List<CompanyCar> getCompanyCarList() {
-        return companyCarList;
-    }
-
-    @ValueRangeProvider
-    public List<PersonalCar> getPersonalCarList() {
-        return personalCarList;
-    }
-
-    @ValueRangeProvider
-    public List<Airplane> getAirplanes() {
-        return airplaneList;
-    }
-----
-====
-
-[#explicitlyReferencingValueRangeProviders]
-===== Explicitly referenced ``ValueRangeProvider``s
-
-In more complicated cases where auto-detection is not sufficient or where clarity is preferred over simplicity,
-value range providers can also be referenced explicitly.
-
-In the following example,
-the ``car`` planning variable will only be matched to value range provided by methods ``getCompanyCarList()``.
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(valueRangeProviderRefs = {"companyCarRange"})
-    public Car getCar() {
-        return car;
-    }
-
-    @ValueRangeProvider(id = "companyCarRange")
-    public List<CompanyCar> getCompanyCarList() {
-        return companyCarList;
-    }
-
-    @ValueRangeProvider(id = "personalCarRange")
-    public List<PersonalCar> getPersonalCarList() {
-        return personalCarList;
-    }
-----
-
-
-====
-
-Explicitly referenced value range providers can also be combined, for example:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(valueRangeProviderRefs = { "companyCarRange", "personalCarRange" })
-    public Car getCar() {
-        return car;
-    }
-
-    @ValueRangeProvider(id = "companyCarRange")
-    public List<CompanyCar> getCompanyCarList() {
-        return companyCarList;
-    }
-
-    @ValueRangeProvider(id = "personalCarRange")
-    public List<PersonalCar> getPersonalCarList() {
-        return personalCarList;
-    }
-----
-====
-
-
-[#valueRangeFactory]
-==== `ValueRangeFactory`
-
-Instead of a ``Collection``, you can also return ``CountableValueRange``, built by the ``ValueRangeFactory``:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @ValueRangeProvider
-    public CountableValueRange<Integer> getDelayRange() {
-        return ValueRangeFactory.createIntValueRange(0, 5000);
-    }
-----
-
-
-====
-A `CountableValueRange` uses far less memory, because it only holds the bounds.
-In the example above, a `Collection` would need to hold all `5000` ints, instead of just the two bounds.
-
-Furthermore, an `incrementUnit` can be specified, for example if you have to buy stocks in units of 200 pieces:
-
-[tabs]
-====
-Java::
-+
-[source,java,options="nowrap"]
-----
-    @ValueRangeProvider
-    public CountableValueRange<Integer> getStockAmountRange() {
-         // Range: 0, 200, 400, 600, ..., 9999600, 9999800, 10000000
-        return ValueRangeFactory.createIntValueRange(0, 10000000, 200);
-    }
-----
-====
-
-The `ValueRangeFactory` has creation methods for several value class types:
-
-* ``boolean``: A boolean range.
-* ``int``: A 32bit integer range.
-* ``long``: A 64bit integer range.
-* ``BigInteger``: An arbitrary-precision integer range.
-* ``BigDecimal``: A decimal point range. By default, the increment unit is the lowest non-zero value in the scale of the bounds.
-* `Temporal` (such as ``LocalDate``, ``LocalDateTime``, ...): A time range.
-
-
-[#planningValueStrength]
-=== Planning value strength
-
-Some optimization algorithms work a bit more efficiently if they have an estimation of which planning values are stronger, which means they are more likely to satisfy a planning entity.
-For example: in bin packing bigger containers are more likely to fit an item.
-Usually, the efficiency gain of planning value strength is far less than that of <<planningEntityDifficulty,planning entity difficulty>>.
-
-[NOTE]
-====
-*Do not try to use planning value strength to implement a business constraint.*
-It will not affect the score function: if we have infinite solving time, the returned solution will be the same.
-
-To affect the score function, xref:constraints-and-score/overview.adoc#formalizeTheBusinessConstraints[add a score constraint].
-Only consider adding planning value strength too if it can make the solver more efficient.
-====
-
-To allow the heuristics to take advantage of that domain specific information,
-set a `strengthComparatorClass` to the `@PlanningVariable` annotation:
-
-[source,java,options="nowrap"]
-----
-    @PlanningVariable(..., strengthComparatorClass = VehicleStrengthComparator.class)
-    public Vehicle getVehicle() {
-        return vehicle;
-    }
-----
-
-[source,java,options="nowrap"]
-----
-public class VehicleStrengthComparator implements Comparator<Vehicle> {
-
-    public int compare(Vehicle a, Vehicle b) {
-        return new CompareToBuilder()
-                .append(a.getCapacity(), b.getCapacity())
-                .append(a.getId(), b.getId())
-                .toComparison();
-    }
-
-}
-----
-
-[NOTE]
-====
-If you have multiple planning value classes in the _same_ value range,
-the `strengthComparatorClass` needs to implement a `Comparator` of a common superclass (for example ``Comparator<Object>``)
-and be able to handle comparing instances of those different classes.
-====
-
-Alternatively, you can also set a `strengthWeightFactoryClass` to the `@PlanningVariable` annotation,
-so you have access to the rest of the problem facts from the solution too.
-
-See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection] for more information.
-
-[IMPORTANT]
-====
-Strength should be implemented ascending: weaker values are lower, stronger values are higher.
-In bin packing, small container < medium container < big container.
-====
-
-_None of the current planning variable state in any of the planning entities should be used to compare planning values._
-During construction heuristics, those variables are likely to be ``null``.
-For example, none of the `timeslot` variables of any `Lesson` may be used to determine the strength of a ``Timeslot``.
-
-
 [#planningListVariable]
 == Planning list variable (VRP, Task assigning, ...)
 
@@ -1090,7 +675,6 @@ This includes, for example, vehicle routing, traveling salesman, task assigning,
 Use a <<chainedPlanningVariable,chained planning variable>> instead of a planning list variable,
 if you need any of the following planning techniques:
 
-- <<planningEntityDifficulty,planning entity difficulty comparison>> or <<planningValueStrength,planning value strength comparison>>,
 - xref:optimization-algorithms/exhaustive-search.adoc#exhaustiveSearch[exhaustive search],
 - xref:enterprise-edition/enterprise-edition.adoc#partitionedSearch[partitioned search],
 - coexistence with another list variable.
@@ -1495,6 +1079,447 @@ public class Customer {
 
 Timefold Solver triggers the user-defined logic in `updateWeightAndArrivalTime` at the end of the event lifecycle.
 It stops when both `arrivalTime` and `weightAtVisit` values do not change or when it reaches the end.
+
+[#planningValueAndPlanningValueRange]
+== Planning value and planning value range
+
+[#planningValue]
+=== Planning value
+
+A planning value is a possible value for a genuine planning variable.
+Usually, a planning value is a problem fact, but it can also be any object, for example an ``Integer``.
+It can even be another planning entity or even an interface implemented by both a planning entity and a problem fact.
+
+[NOTE]
+====
+Primitive types (such as ``int``) are not allowed.
+====
+
+A planning value range is the set of possible planning values for a planning variable.
+Planning value ranges need to come from a finite collection.
+
+
+[#planningValueRangeProvider]
+=== Planning value range provider
+
+
+[#planningValueRangeProviderOverview]
+==== Overview
+
+The value range of a planning variable is defined with the `@ValueRangeProvider` annotation.
+A `@ValueRangeProvider` may carry a property ``id``, which is referenced by the ``@PlanningVariable``'s property ``valueRangeProviderRefs``.
+
+This annotation can be located on two types of methods:
+
+* On the Solution: All planning entities share the same value range.
+* On the planning entity: The value range differs per planning entity. This is less common.
+
+
+[NOTE]
+====
+A `@ValueRangeProvider` annotation needs to be on a member
+in a class with a `@PlanningSolution` or a `@PlanningEntity` annotation.
+It is ignored on parent classes or subclasses without those annotations.
+====
+
+The return type of that method can be three types:
+
+* ``Collection``: The value range is defined by a `Collection` (usually a ``List``) of its possible values.
+* Array: The value range is defined by an array of its possible values.
+* ``CountableValueRange``: The value range is defined by its bounds. This is less common.
+
+[#valueRangeProviderOnSolution]
+==== `ValueRangeProvider` on the solution
+
+All instances of the same planning entity class share the same set of possible planning values for that planning variable.
+This is the most common way to configure a value range.
+
+The `@PlanningSolution` implementation has a method that returns a `Collection` (or a ``CountableValueRange``).
+Any value from that `Collection` is a possible planning value for this planning variable.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningVariable
+public Timeslot getTimeslot() {
+    return timeslot;
+}
+----
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class Timetable {
+    ...
+
+    @ValueRangeProvider
+    public List<Timeslot> getTimeslots() {
+        return timeslots;
+    }
+
+}
+----
+====
+
+[IMPORTANT]
+====
+That `Collection` (or ``CountableValueRange``) must not contain the value ``null``,
+not even for a <<planningVariableAllowingUnassigned,planning variable allowing unassigned values>>.
+====
+
+xref:using-timefold-solver/configuration.adoc#annotationAlternatives[Annotating the field] instead of the property works too:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+@PlanningSolution
+public class Timetable {
+    ...
+
+    @ValueRangeProvider
+    private List<Timeslot> timeslots;
+
+}
+----
+
+
+====
+
+
+[#valueRangeProviderOnPlanningEntity]
+==== `ValueRangeProvider` on the Planning Entity
+
+Each planning entity has its own value range (a set of possible planning values) for the planning variable.
+For example, if a teacher can *never* teach in a room that does not belong to their department, lectures of that teacher can limit their room value range to the rooms of their department.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable
+    public Room getRoom() {
+        return room;
+    }
+
+    @ValueRangeProvider
+    public List<Room> getPossibleRoomList() {
+        return getCourse().getTeacher().getDepartment().getRoomList();
+    }
+----
+====
+
+Never use this to enforce a soft constraint (or even a hard constraint when the problem might not have a feasible solution). For example: __Unless there is no other way__, a teacher cannot teach in a room that does not belong to their department.
+In this case, the teacher should _not_ be limited in their room value range (because sometimes there is no other way).
+
+[NOTE]
+====
+By limiting the value range specifically of one planning entity, you are effectively creating a __built-in hard constraint__.
+This can have the benefit of severely lowering the number of possible solutions; however, it can also take away the freedom of the optimization algorithms to temporarily break that constraint in order to escape from a local optimum.
+====
+
+A planning entity should _not_ use other planning entities to determine its value range.
+That would only try to make the planning entity solve the planning problem itself and interfere with the optimization algorithms.
+
+Every entity has its own `List` instance, unless multiple entities have the same value range.
+For example, if teacher A and B belong to the same department, they use the same `List<Room>` instance.
+Furthermore, each `List` contains a subset of the same set of planning value instances.
+For example, if department A and B can both use room X, then their `List<Room>` instances contain the same `Room` instance.
+
+[NOTE]
+====
+A `ValueRangeProvider` on the planning entity consumes more memory than `ValueRangeProvider` on the Solution and disables certain automatic performance optimizations.
+====
+
+[WARNING]
+====
+A `ValueRangeProvider` on the planning entity is not currently compatible with a <<chainedPlanningVariable,chained>> variable.
+====
+
+[#referencingValueRangeProviders]
+==== Referencing ``ValueRangeProvider``s
+
+There are two ways how to match a planning variable to a value range provider.
+The simplest way is to have value range provider auto-detected.
+Another way is to explicitly reference the value range provider.
+
+[#anonymousValueRangeProviders]
+===== Anonymous ``ValueRangeProvider``s
+
+We already described the first approach.
+By not providing any `valueRangeProviderRefs` on the `@PlanningVariable` annotation,
+Timefold Solver will go over every ``@ValueRangeProvider``-annotated method or field which does not have an ``id`` property set,
+and will match planning variables with value ranges where their types match.
+
+In the following example,
+the planning variable ``car`` will be matched to the value range returned by ``getCompanyCarList()``,
+as they both use the ``Car`` type.
+It will not match ``getPersonalCarList()``,
+because that value range provider is not anonymous; it specifies an ``id``.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable
+    public Car getCar() {
+        return car;
+    }
+
+    @ValueRangeProvider
+    public List<Car> getCompanyCarList() {
+        return companyCarList;
+    }
+
+    @ValueRangeProvider(id = "personalCarRange")
+    public List<Car> getPersonalCarList() {
+        return personalCarList;
+    }
+----
+
+
+====
+
+Automatic matching also accounts for polymorphism.
+In the following example,
+the planning variable ``car`` will be matched to ``getCompanyCarList()`` and ``getPersonalCarList()``,
+as both ``CompanyCar`` and ``PersonalCar`` are ``Car``s.
+It will not match ``getAirplanes()``,
+as an ``Airplane`` is not a ``Car``.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable
+    public Car getCar() {
+        return car;
+    }
+
+    @ValueRangeProvider
+    public List<CompanyCar> getCompanyCarList() {
+        return companyCarList;
+    }
+
+    @ValueRangeProvider
+    public List<PersonalCar> getPersonalCarList() {
+        return personalCarList;
+    }
+
+    @ValueRangeProvider
+    public List<Airplane> getAirplanes() {
+        return airplaneList;
+    }
+----
+====
+
+[#explicitlyReferencingValueRangeProviders]
+===== Explicitly referenced ``ValueRangeProvider``s
+
+In more complicated cases where auto-detection is not sufficient or where clarity is preferred over simplicity,
+value range providers can also be referenced explicitly.
+
+In the following example,
+the ``car`` planning variable will only be matched to value range provided by methods ``getCompanyCarList()``.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable(valueRangeProviderRefs = {"companyCarRange"})
+    public Car getCar() {
+        return car;
+    }
+
+    @ValueRangeProvider(id = "companyCarRange")
+    public List<CompanyCar> getCompanyCarList() {
+        return companyCarList;
+    }
+
+    @ValueRangeProvider(id = "personalCarRange")
+    public List<PersonalCar> getPersonalCarList() {
+        return personalCarList;
+    }
+----
+
+
+====
+
+Explicitly referenced value range providers can also be combined, for example:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable(valueRangeProviderRefs = { "companyCarRange", "personalCarRange" })
+    public Car getCar() {
+        return car;
+    }
+
+    @ValueRangeProvider(id = "companyCarRange")
+    public List<CompanyCar> getCompanyCarList() {
+        return companyCarList;
+    }
+
+    @ValueRangeProvider(id = "personalCarRange")
+    public List<PersonalCar> getPersonalCarList() {
+        return personalCarList;
+    }
+----
+====
+
+
+[#valueRangeFactory]
+==== `ValueRangeFactory`
+
+Instead of a ``Collection``, you can also return ``CountableValueRange``, built by the ``ValueRangeFactory``:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @ValueRangeProvider
+    public CountableValueRange<Integer> getDelayRange() {
+        return ValueRangeFactory.createIntValueRange(0, 5000);
+    }
+----
+
+
+====
+A `CountableValueRange` uses far less memory, because it only holds the bounds.
+In the example above, a `Collection` would need to hold all `5000` ints, instead of just the two bounds.
+
+Furthermore, an `incrementUnit` can be specified, for example if you have to buy stocks in units of 200 pieces:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @ValueRangeProvider
+    public CountableValueRange<Integer> getStockAmountRange() {
+         // Range: 0, 200, 400, 600, ..., 9999600, 9999800, 10000000
+        return ValueRangeFactory.createIntValueRange(0, 10000000, 200);
+    }
+----
+====
+
+The `ValueRangeFactory` has creation methods for several value class types:
+
+* ``boolean``: A boolean range.
+* ``int``: A 32bit integer range.
+* ``long``: A 64bit integer range.
+* ``BigInteger``: An arbitrary-precision integer range.
+* ``BigDecimal``: A decimal point range. By default, the increment unit is the lowest non-zero value in the scale of the bounds.
+* `Temporal` (such as ``LocalDate``, ``LocalDateTime``, ...): A time range.
+
+
+[#planningValueSorting]
+=== [[planningValueStrength]]Planning value sorting
+
+Some optimization algorithms work a bit more efficiently
+if the planning values are sorted according to a given metric,
+which means they are more likely to satisfy a planning entity requirement.
+For example: in bin packing bigger containers are more likely to fit an item.
+
+[NOTE]
+====
+*Do not try to use planning value order to implement a business constraint.*
+It will not affect the score function: if we have infinite solving time, the returned solution will be the same.
+
+To affect the score function, xref:constraints-and-score/overview.adoc#formalizeTheBusinessConstraints[add a score constraint].
+Only consider adding planning value sort order if it can make the solver more efficient.
+====
+
+To allow the heuristics to take advantage of that domain specific information,
+set a `comparatorClass` to the `@PlanningVariable` annotation:
+
+[source,java,options="nowrap"]
+----
+    @PlanningVariable(..., comparatorClass = VehicleComparator.class)
+    public Vehicle getVehicle() {
+        return vehicle;
+    }
+----
+
+[source,java,options="nowrap"]
+----
+public class VehicleComparator implements Comparator<Vehicle> {
+
+    public int compare(Vehicle a, Vehicle b) {
+        return new CompareToBuilder()
+                .append(a.getCapacity(), b.getCapacity())
+                .append(a.getId(), b.getId())
+                .toComparison();
+    }
+
+}
+----
+
+[NOTE]
+====
+If you have multiple planning value classes in the _same_ value range,
+the `comparatorClass` needs to implement a `Comparator` of a common superclass (for example ``Comparator<Object>``)
+and be able to handle comparing instances of those different classes.
+====
+
+If the model uses a xref:using-timefold-solver/modeling-planning-problems#planningListVariable[list variable],
+the setting process is similar,
+and the property `comparatorClass` must be specified in the `@PlanningListVariable` annotation:
+
+[source,java,options="nowrap"]
+----
+    @PlanningListVariable(..., comparatorClass = CustomerComparator.class)
+    List<Customer> customers = new ArrayList<>();
+----
+
+[source,java,options="nowrap"]
+----
+public class CustomerComparator implements Comparator<Customer> {
+
+    public int compare(Customer a, Customer b) {
+        return new CompareToBuilder()
+                .append(a.getPriority(), b.getPriority())
+                .append(a.getId(), b.getId())
+                .toComparison();
+    }
+
+}
+----
+
+Alternatively,
+you can also set a `comparatorFactoryClass` to the `@PlanningVariable` or `@PlanningListVariable` annotations,
+so you have access to the rest of the problem facts from the solution too.
+
+See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection] for more information.
+
+[IMPORTANT]
+====
+Values should be sorted in ascending order: "weaker" values are lower, and "stronger" values are higher.
+In bin packing, small container < medium container < big container.
+====
+
+_None of the current planning variable state in any of the planning entities should be used to compare planning values._
+During construction heuristics, those variables are likely to be ``null``.
+For example, none of the `timeslot` variables of any `Lesson` may be used to determine the order of a ``Timeslot``.
 
 [#chainedPlanningVariable]
 == Chained planning variable (TSP, VRP, ...)

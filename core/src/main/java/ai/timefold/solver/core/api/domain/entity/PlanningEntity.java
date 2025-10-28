@@ -7,6 +7,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.Comparator;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
@@ -35,6 +36,40 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 public @interface PlanningEntity {
 
     /**
+     * Allows sorting a collection of planning entities for this variable.
+     * Some algorithms perform better when the entities are sorted based on specific metrics.
+     * <p>
+     * The {@link Comparator} should sort the data in ascending order.
+     * For example, prioritize three vehicles by sorting them based on their capacity:
+     * Vehicle C (4 people), Vehicle A (6 people), Vehicle B (32 people)
+     * <p>
+     * Do not use together with {@link #comparatorFactoryClass()}.
+     *
+     * @return {@link PlanningVariable.NullComparator} when it is null (workaround for annotation limitation)
+     * @see #comparatorFactoryClass()
+     */
+    Class<? extends Comparator> comparatorClass() default NullComparator.class;
+
+    interface NullComparator<T> extends Comparator<T> {
+    }
+
+    /**
+     * The {@link ComparatorFactory} alternative for {@link #comparatorClass()}.
+     * <p>
+     * Differs from {@link #comparatorClass()}
+     * because it allows accessing the current solution when creating the comparator.
+     * <p>
+     * Do not use together with {@link #comparatorClass()}.
+     *
+     * @return {@link NullComparatorFactory} when it is null (workaround for annotation limitation)
+     * @see #comparatorClass()
+     */
+    Class<? extends ComparatorFactory> comparatorFactoryClass() default NullComparatorFactory.class;
+
+    interface NullComparatorFactory<Solution_, T> extends ComparatorFactory<Solution_, T> {
+    }
+
+    /**
      * A pinned planning entity is never changed during planning,
      * this is useful in repeated planning use cases (such as continuous planning and real-time planning).
      * This applies to all the planning variables of this planning entity.
@@ -50,7 +85,7 @@ public @interface PlanningEntity {
 
     /**
      * Workaround for annotation limitation in {@link #pinningFilter()}.
-     * 
+     *
      * @deprecated Prefer using {@link PlanningPin}.
      */
     @Deprecated(forRemoval = true, since = "1.23.0")
@@ -69,13 +104,21 @@ public @interface PlanningEntity {
      * <p>
      * Do not use together with {@link #difficultyWeightFactoryClass()}.
      *
+     * @deprecated Deprecated in favor of {@link #comparatorClass()}.
+     *
      * @return {@link NullDifficultyComparator} when it is null (workaround for annotation limitation)
      * @see #difficultyWeightFactoryClass()
      */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     Class<? extends Comparator> difficultyComparatorClass() default NullDifficultyComparator.class;
 
-    /** Workaround for annotation limitation in {@link #difficultyComparatorClass()}. */
-    interface NullDifficultyComparator extends Comparator {
+    /**
+     * Workaround for annotation limitation in {@link #difficultyComparatorClass()}.
+     *
+     * @deprecated Deprecated in favor of {@link NullComparator}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    interface NullDifficultyComparator<T> extends NullComparator<T> {
     }
 
     /**
@@ -83,13 +126,23 @@ public @interface PlanningEntity {
      * <p>
      * Do not use together with {@link #difficultyComparatorClass()}.
      *
+     * @deprecated Deprecated in favor of {@link #comparatorFactoryClass()}.
+     *
      * @return {@link NullDifficultyWeightFactory} when it is null (workaround for annotation limitation)
      * @see #difficultyComparatorClass()
      */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     Class<? extends SelectionSorterWeightFactory> difficultyWeightFactoryClass() default NullDifficultyWeightFactory.class;
 
-    /** Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}. */
-    interface NullDifficultyWeightFactory extends SelectionSorterWeightFactory {
+    /**
+     * Workaround for annotation limitation in {@link #difficultyWeightFactoryClass()}.
+     *
+     * @deprecated Deprecated in favor of {@link NullComparatorFactory}.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    interface NullDifficultyWeightFactory<Solution_, T>
+            extends SelectionSorterWeightFactory<Solution_, T>,
+            NullComparatorFactory<Solution_, T> {
     }
 
 }

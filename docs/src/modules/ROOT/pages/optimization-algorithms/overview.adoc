@@ -125,7 +125,8 @@ However, this basic procedure provides a good starting configuration that will p
 . Start with a quick configuration that involves little or no configuration and optimization code:
 See xref:optimization-algorithms/construction-heuristics.adoc#firstFit[First Fit].
 
-. Next, implement xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty] comparison
+. Next,
+implement xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]
 and turn it into xref:optimization-algorithms/construction-heuristics.adoc#firstFitDecreasing[First Fit Decreasing].
 
 . Next, add Late Acceptance behind it:
@@ -1538,25 +1539,25 @@ If you do explicitly configure the ``Selector``, it overwrites the default setti
 Some `Selector` types implement a `SorterManner` out of the box:
 
 * `EntitySelector` supports:
-** ``DECREASING_DIFFICULTY``: Sorts the planning entities according to decreasing xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntityDifficulty[planning entity difficulty]. Requires that planning entity difficulty is annotated on the domain model.
+** ``DESCENDING``: Sorts the planning entities in descending order based on a give metric (xref:using-timefold-solver/modeling-planning-problems.adoc#planningEntitySorting[planning entity sorting]). Requires that planning entity is annotated on the domain model.
 +
 [source,xml,options="nowrap"]
 ----
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterManner>DECREASING_DIFFICULTY</sorterManner>
+      <sorterManner>DESCENDING</sorterManner>
     </entitySelector>
 ----
 * `ValueSelector` supports:
-** ``INCREASING_STRENGTH``: Sorts the planning values according to increasing xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueStrength[planning value strength]. Requires that planning value strength is annotated on the domain model.
+** ``ASCENDING``: Sorts the planning values in ascending order based on a given metric (xref:using-timefold-solver/modeling-planning-problems.adoc#planningValueSorting[planning value sorting]). Requires that planning value is annotated on the domain model.
 +
 [source,xml,options="nowrap"]
 ----
     <valueSelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterManner>INCREASING_STRENGTH</sorterManner>
+      <sorterManner>ASCENDING</sorterManner>
     </valueSelector>
 ----
 
@@ -1568,7 +1569,7 @@ An easy way to sort a `Selector` is with a plain old ``Comparator``:
 
 [source,java,options="nowrap"]
 ----
-public class VisitDifficultyComparator implements Comparator<Visit> {
+public class VisitComparator implements Comparator<Visit> {
 
     public int compare(Visit a, Visit b) {
         return new CompareToBuilder()
@@ -1587,7 +1588,7 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterComparatorClass>...VisitDifficultyComparator</sorterComparatorClass>
+      <comparatorClass>...VisitComparator</comparatorClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----
@@ -1599,16 +1600,16 @@ The solver may choose to reuse them in different contexts.
 ====
 
 
-[#sortedSelectionBySelectionSorterWeightFactory]
-===== Sorted selection by `SelectionSorterWeightFactory`
+[#sortedSelectionByComparatorFactory]
+===== [[sortedSelectionBySelectionSorterWeightFactory]]Sorted selection by `ComparatorFactory`
 
-If you need the entire solution to sort a ``Selector``, use a `SelectionSorterWeightFactory` instead:
+If you need the entire solution to sort a ``Selector``, use a `ComparatorFactory` instead:
 
 [source,java,options="nowrap"]
 ----
-public interface SelectionSorterWeightFactory<Solution_, T> {
+public interface ComparatorFactory<Solution_, T> {
 
-    Comparable createSorterWeight(Solution_ solution, T selection);
+    Comparator<T> createComparator(Solution_ solution);
 
 }
 ----
@@ -1620,14 +1621,14 @@ You'll also need to configure it (unless it's annotated on the domain model and 
     <entitySelector>
       <cacheType>PHASE</cacheType>
       <selectionOrder>SORTED</selectionOrder>
-      <sorterWeightFactoryClass>...MyDifficultyWeightFactory</sorterWeightFactoryClass>
+      <comparatorFactoryClass>...MyComparatorFactory</comparatorFactoryClass>
       <sorterOrder>DESCENDING</sorterOrder>
     </entitySelector>
 ----
 
 [NOTE]
 ====
-`SelectionSorterWeightFactory` implementations are expected to be stateless.
+`ComparatorFactory` implementations are expected to be stateless.
 The solver may choose to reuse them in different contexts.
 ====
 
