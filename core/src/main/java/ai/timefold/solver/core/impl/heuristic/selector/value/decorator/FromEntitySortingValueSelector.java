@@ -98,7 +98,7 @@ public final class FromEntitySortingValueSelector<Solution_>
         childValueSelector.iterator(entity).forEachRemaining(cachedValueList::add);
         logger.trace("    Created cachedValueList: size ({}), valueSelector ({}).",
                 cachedValueList.size(), this);
-        sorter.sort(scoreDirector, cachedValueList);
+        sorter.sort(scoreDirector.getWorkingSolution(), cachedValueList);
         logger.trace("    Sorted cachedValueList: size ({}), valueSelector ({}).",
                 cachedValueList.size(), this);
         return cachedValueList.iterator();
