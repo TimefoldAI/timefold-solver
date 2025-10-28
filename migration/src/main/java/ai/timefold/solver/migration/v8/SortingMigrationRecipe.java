@@ -24,12 +24,6 @@ public class SortingMigrationRecipe extends AbstractRecipe {
     @Override
     public List<Recipe> getRecipeList() {
         return List.of(
-                // Update ComparatorFactory
-                new ChangeMethodName(
-                        "ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory createSorterWeight(..)",
-                        "createComparator", true, null),
-                new ChangeType("ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory",
-                        "ai.timefold.solver.core.api.domain.common.ComparatorFactory", true),
                 // Update PlanningVariable sorting fields
                 new ChangeAnnotationAttributeName("ai.timefold.solver.core.api.domain.variable.PlanningVariable",
                         "strengthComparatorClass", "comparatorClass"),

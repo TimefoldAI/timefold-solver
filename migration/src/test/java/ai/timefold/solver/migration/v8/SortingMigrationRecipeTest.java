@@ -54,29 +54,29 @@ class SortingMigrationRecipeTest implements RewriteTest {
                         valueConfig.setSorterManner(ValueSorterManner.DECREASING_STRENGTH);
                         valueConfig.setSorterManner(ValueSorterManner.DECREASING_STRENGTH_IF_AVAILABLE);""",
                 """
-                        changeMoveConfig.withComparatorFactoryClass(ComparatorFactory.class);
+                        changeMoveConfig.withComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         changeMoveConfig.withComparatorClass(Comparator.class);
-                        changeMoveConfig.setComparatorFactoryClass(ComparatorFactory.class);
+                        changeMoveConfig.setComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         changeMoveConfig.setComparatorClass(Comparator.class);
                         changeMoveConfig.getComparatorFactoryClass();
                         changeMoveConfig.getComparatorClass();
-                        swapMoveConfig.withComparatorFactoryClass(ComparatorFactory.class);
+                        swapMoveConfig.withComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         swapMoveConfig.withComparatorClass(Comparator.class);
-                        swapMoveConfig.setComparatorFactoryClass(ComparatorFactory.class);
+                        swapMoveConfig.setComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         swapMoveConfig.setComparatorClass(Comparator.class);
                         swapMoveConfig.getComparatorFactoryClass();
                         swapMoveConfig.getComparatorClass();
-                        entityConfig.withComparatorFactoryClass(ComparatorFactory.class);
+                        entityConfig.withComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         entityConfig.withComparatorClass(Comparator.class);
-                        entityConfig.setComparatorFactoryClass(ComparatorFactory.class);
+                        entityConfig.setComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         entityConfig.setComparatorClass(Comparator.class);
                         entityConfig.getComparatorFactoryClass();
                         entityConfig.getComparatorClass();
                         entityConfig.setSorterManner(EntitySorterManner.DESCENDING_IF_AVAILABLE);
                         entityConfig.setSorterManner(EntitySorterManner.DESCENDING);
-                        valueConfig.withComparatorFactoryClass(ComparatorFactory.class);
+                        valueConfig.withComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         valueConfig.withComparatorClass(Comparator.class);
-                        valueConfig.setComparatorFactoryClass(ComparatorFactory.class);
+                        valueConfig.setComparatorFactoryClass(SelectionSorterWeightFactory.class);
                         valueConfig.setComparatorClass(Comparator.class);
                         valueConfig.getComparatorFactoryClass();
                         valueConfig.getComparatorClass();
@@ -119,8 +119,7 @@ class SortingMigrationRecipeTest implements RewriteTest {
     private static String adjustAfter(String content) {
         return """
                 import java.util.Comparator;
-
-                import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
+                import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
                 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
                 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
                 import ai.timefold.solver.core.api.domain.variable.PlanningVariable.NullComparator;

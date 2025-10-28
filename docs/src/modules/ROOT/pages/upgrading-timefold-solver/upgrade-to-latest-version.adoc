@@ -59,6 +59,17 @@ Every upgrade note indicates how likely your code will be affected by that chang
 The upgrade recipe often lists the changes as they apply to Java code.
 We kindly ask Kotlin users to translate the changes accordingly.
 
+=== Upgrade from 1.27.0 to 1.28.0
+
+.icon:info-circle[role=yellow] `SelectionSorterWeightFactory` deprecated for removal
+[%collapsible%open]
+====
+The `SelectionSorterWeightFactory` sorter class has been deprecated in favor of `ComparatorFactory`.
+The sorting settings now utilize a `Comparator` class rather than a `Comparable` class,
+ensuring all related settings are consistent and simpler.
+The old class remains valid and can be easily converted to use the `ComparatorFactory` instead.
+====
+
 === Upgrade from 1.22.0 to 1.23.0
 
 .icon:info-circle[role=yellow] `@PlanningEntity` `pinningFilter` deprecated for removal
