@@ -216,9 +216,23 @@ class ValueSelectorFactoryTest {
     }
 
     @Test
+    void applySorting_withComparatorClass() {
+        ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withComparatorClass(DummyValueComparator.class);
+        applySorting(valueSelectorConfig);
+    }
+
+    @Test
     void applySorting_withSorterWeightFactoryClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
                 .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class);
+        applySorting(valueSelectorConfig);
+    }
+
+    @Test
+    void applySorting_withComparatorFactoryClass() {
+        ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
         applySorting(valueSelectorConfig);
     }
 

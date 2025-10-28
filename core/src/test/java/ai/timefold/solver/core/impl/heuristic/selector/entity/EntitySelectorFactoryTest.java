@@ -151,9 +151,23 @@ class EntitySelectorFactoryTest {
     }
 
     @Test
+    void applySorting_withComparatorClass() {
+        EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
+                .withComparatorClass(DummyEntityComparator.class);
+        applySorting(entitySelectorConfig);
+    }
+
+    @Test
     void applySorting_withSorterWeightFactoryClass() {
         EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
                 .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class);
+        applySorting(entitySelectorConfig);
+    }
+
+    @Test
+    void applySorting_withComparatorFactoryClass() {
+        EntitySelectorConfig entitySelectorConfig = new EntitySelectorConfig()
+                .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
         applySorting(entitySelectorConfig);
     }
 
