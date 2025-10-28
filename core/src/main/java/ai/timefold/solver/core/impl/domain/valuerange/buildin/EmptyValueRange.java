@@ -4,7 +4,9 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -41,6 +43,12 @@ public final class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
     @Override
     public @NonNull Iterator<T> createOriginalIterator() {
         return (Iterator<T>) EmptyIterator.INSTANCE;
+    }
+
+    @Override
+    public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
+        // Sorting operation ignored
+        return this;
     }
 
     @Override

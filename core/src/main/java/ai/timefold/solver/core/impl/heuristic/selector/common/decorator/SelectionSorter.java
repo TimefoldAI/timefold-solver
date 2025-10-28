@@ -25,9 +25,11 @@ import org.jspecify.annotations.NullMarked;
 public interface SelectionSorter<Solution_, T> {
 
     /**
+     * Apply an in-place sorting operation.
+     *
      * @param solution never null, the current solution
      * @param selectionList never null, a {@link List}
-     *        of {@link PlanningEntity}, planningValue, {@link Move} or {@link Selector}
+     *        of {@link PlanningEntity}, planningValue, {@link Move} or {@link Selector} that will be sorted.
      */
     void sort(Solution_ solution, List<T> selectionList);
 
