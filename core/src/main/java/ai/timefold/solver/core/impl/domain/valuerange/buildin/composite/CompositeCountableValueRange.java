@@ -4,8 +4,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.ValueRangeCache;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -18,13 +20,13 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
 
     public CompositeCountableValueRange(List<? extends AbstractCountableValueRange<T>> childValueRangeList) {
         var maximumSize = 0L;
-        var isValueImmutable = true;
+        var isImmutable = true;
         for (AbstractCountableValueRange<T> childValueRange : childValueRangeList) {
-            isValueImmutable &= childValueRange.isValueImmutable();
+            isImmutable &= childValueRange.isValueImmutable();
             maximumSize += childValueRange.getSize();
         }
         // To eliminate duplicates, we immediately expand the child value ranges into a cache.
-        var cacheBuilder = isValueImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
+        var cacheBuilder = isImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
                 : ValueRangeCache.Builder.FOR_USER_VALUES;
         this.cache = cacheBuilder.buildCache((int) maximumSize);
         for (var childValueRange : childValueRangeList) {
@@ -35,7 +37,12 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
             }
             childValueRange.createOriginalIterator().forEachRemaining(cache::add);
         }
+        this.isValueImmutable = isImmutable;
+    }
+
+    private CompositeCountableValueRange(ValueRangeCache<T> cache, boolean isValueImmutable) {
         this.isValueImmutable = isValueImmutable;
+        this.cache = cache;
     }
 
     @Override
@@ -51,6 +58,12 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
     @Override
     public T get(long index) {
         return cache.get((int) index);
+    }
+
+    @Override
+    public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
+        var sortedCache = this.cache.sort(sorter);
+        return new CompositeCountableValueRange<>(sortedCache, isValueImmutable);
     }
 
     @Override
