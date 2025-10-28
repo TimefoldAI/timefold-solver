@@ -420,7 +420,7 @@ See xref:optimization-algorithms/overview.adoc#sortedSelection[sorted selection]
 
 [IMPORTANT]
 ====
-Entities should be sorted in ascending order: easy entities are lower, difficult entities are higher.
+Entities should be sorted in ascending order: "easy" entities are lower, "difficult" entities are higher.
 For example, in bin packing: small item < medium item < big item.
 
 Although most algorithms start in descending order, they just reverse the ordering.

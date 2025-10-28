@@ -569,8 +569,7 @@ Advanced configuration for a single entity class with a single variable:
               <selectionOrder>SORTED</selectionOrder>
               <sorterManner>DESCENDING</sorterManner>
             </entitySelector>
-            <valueSelector>
-            </valueSelector>
+            <valueSelector mimicSelectorRef="placerValueSelector"/>
           </destinationSelector>
       </listChangeMoveSelector>
     </queuedValuePlacer>
