@@ -7,7 +7,6 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 
 /**
@@ -35,9 +34,8 @@ public final class ComparatorFactorySelectionSorter<Solution_, T> implements Sel
     }
 
     @Override
-    public void sort(ScoreDirector<Solution_> scoreDirector, List<T> selectionList) {
-        var appliedComparator =
-                getAppliedComparator(selectionComparatorFactory.createComparator(scoreDirector.getWorkingSolution()));
+    public void sort(Solution_ solution, List<T> selectionList) {
+        var appliedComparator = getAppliedComparator(selectionComparatorFactory.createComparator(solution));
         selectionList.sort(appliedComparator);
     }
 
