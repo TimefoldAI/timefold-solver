@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.biginteger;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.math.BigInteger;
 
@@ -17,7 +18,7 @@ class BigIntegerValueRangeTest {
         assertThat(new BigIntegerValueRange(new BigInteger("0"), new BigInteger("10")).getSize()).isEqualTo(10L);
         assertThat(new BigIntegerValueRange(new BigInteger("100"), new BigInteger("120")).getSize()).isEqualTo(20L);
         assertThat(new BigIntegerValueRange(new BigInteger("-15"), new BigInteger("25")).getSize()).isEqualTo(40L);
-        assertThat(new BigIntegerValueRange(new BigInteger("7"), new BigInteger("7")).getSize()).isEqualTo(0L);
+        assertThat(new BigIntegerValueRange(new BigInteger("7"), new BigInteger("7")).getSize()).isZero();
         // IncrementUnit
         assertThat(new BigIntegerValueRange(new BigInteger("0"), new BigInteger("10"), new BigInteger("2")).getSize())
                 .isEqualTo(5L);
@@ -115,6 +116,12 @@ class BigIntegerValueRangeTest {
                 .createRandomIterator(new TestRandom(3, 0)), new BigInteger("5"), new BigInteger("-1"));
         assertElementsOfIterator(new BigIntegerValueRange(new BigInteger("100"), new BigInteger("120"), new BigInteger("5"))
                 .createRandomIterator(new TestRandom(3, 0)), new BigInteger("115"), new BigInteger("100"));
+    }
+
+    @Test
+    void sort() {
+        var range = new BigIntegerValueRange(new BigInteger("0"), new BigInteger("7"));
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
     }
 
 }

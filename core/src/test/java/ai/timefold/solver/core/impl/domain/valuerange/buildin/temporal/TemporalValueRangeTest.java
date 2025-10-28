@@ -40,7 +40,7 @@ class TemporalValueRangeTest {
         assertThat(new TemporalValueRange<>(from, to, 5, ChronoUnit.DAYS).getSize()).isEqualTo(2L);
         from = LocalDate.of(2016, 7, 7);
         to = LocalDate.of(2016, 7, 7);
-        assertThat(new TemporalValueRange<>(from, to, 1, ChronoUnit.MONTHS).getSize()).isEqualTo(0L);
+        assertThat(new TemporalValueRange<>(from, to, 1, ChronoUnit.MONTHS).getSize()).isZero();
 
         from = LocalDate.of(2017, 1, 31);
         to = LocalDate.of(2017, 2, 28); // Exactly 1 month later
@@ -80,11 +80,11 @@ class TemporalValueRangeTest {
     void getSizeForLocalDateTime() {
         LocalDateTime fromTime = LocalDateTime.of(2016, 7, 7, 7, 7, 7);
         LocalDateTime toTime = LocalDateTime.of(2016, 7, 7, 7, 7, 7);
-        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.MONTHS).getSize()).isEqualTo(0L);
-        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.DAYS).getSize()).isEqualTo(0L);
-        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.HOURS).getSize()).isEqualTo(0L);
-        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.MINUTES).getSize()).isEqualTo(0L);
-        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.SECONDS).getSize()).isEqualTo(0L);
+        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.MONTHS).getSize()).isZero();
+        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.DAYS).getSize()).isZero();
+        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.HOURS).getSize()).isZero();
+        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.MINUTES).getSize()).isZero();
+        assertThat(new TemporalValueRange<>(fromTime, toTime, 1, ChronoUnit.SECONDS).getSize()).isZero();
 
         fromTime = LocalDateTime.of(2016, 7, 7, 7, 7, 7);
         toTime = LocalDateTime.of(2016, 7, 7, 7, 7, 8);
@@ -477,15 +477,16 @@ class TemporalValueRangeTest {
         Year from = Year.of(Year.MIN_VALUE);
         Year to = Year.of(Year.MAX_VALUE - 0);
         // Maximum Year range is not divisible by 10
-        assertThat((to.getValue() - from.getValue()) % 10).isNotEqualTo(0);
+        assertThat((to.getValue() - from.getValue()) % 10).isNotZero();
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> new TemporalValueRange<>(from, to, 1, ChronoUnit.DECADES));
     }
 
     @Test
     void getIndexNegative() {
+        var range = new TemporalValueRange<>(Year.of(0), Year.of(1), 1, ChronoUnit.YEARS);
         assertThatExceptionOfType(IndexOutOfBoundsException.class)
-                .isThrownBy(() -> new TemporalValueRange<>(Year.of(0), Year.of(1), 1, ChronoUnit.YEARS).get(-1));
+                .isThrownBy(() -> range.get(-1));
     }
 
     @Test
@@ -495,7 +496,13 @@ class TemporalValueRangeTest {
         assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> range.get(1));
     }
 
-    private static interface TemporalMock extends Temporal, Comparable<Temporal> {
+    @Test
+    void sort() {
+        var range = new TemporalValueRange<>(Year.of(0), Year.of(1), 1, ChronoUnit.YEARS);
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
+    }
+
+    private interface TemporalMock extends Temporal, Comparable<Temporal> {
 
     }
 }

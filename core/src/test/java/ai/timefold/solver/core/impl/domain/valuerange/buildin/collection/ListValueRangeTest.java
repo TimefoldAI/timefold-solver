@@ -6,8 +6,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.SelectionSorterAdapter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.testutil.TestRandom;
 
 import org.junit.jupiter.api.Test;
@@ -20,7 +26,7 @@ class ListValueRangeTest {
         assertThat(new ListValueRange<>(Arrays.asList(100, 120, 5, 7, 8)).getSize()).isEqualTo(5L);
         assertThat(new ListValueRange<>(Arrays.asList(-15, 25, 0)).getSize()).isEqualTo(3L);
         assertThat(new ListValueRange<>(Arrays.asList("b", "z", "a")).getSize()).isEqualTo(3L);
-        assertThat(new ListValueRange<>(Collections.emptyList()).getSize()).isEqualTo(0L);
+        assertThat(new ListValueRange<>(Collections.emptyList()).getSize()).isZero();
     }
 
     @Test
@@ -66,6 +72,27 @@ class ListValueRangeTest {
                 "a",
                 "b");
         assertAllElementsOfIterator(new ListValueRange<>(Collections.emptyList()).createRandomIterator(new Random(0)));
+    }
+
+    @Test
+    void sort() {
+        var ascComparatorSorter = new SelectionSorterAdapter<>(null, new ComparatorSelectionSorter<>(
+                Comparator.comparingInt(Integer::intValue), SelectionSorterOrder.ASCENDING));
+        Comparator<Integer> integerComparator = Integer::compareTo;
+        var ascComparatorFactorySorter = new SelectionSorterAdapter<>(null,
+                new ComparatorFactorySelectionSorter<>(solution -> integerComparator, SelectionSorterOrder.ASCENDING));
+        var descComparatorSorter = new SelectionSorterAdapter<>(null, new ComparatorSelectionSorter<>(
+                Comparator.comparingInt(Integer::intValue), SelectionSorterOrder.DESCENDING));
+        var descComparatorFactorySorter = new SelectionSorterAdapter<>(null,
+                new ComparatorFactorySelectionSorter<>(solution -> integerComparator, SelectionSorterOrder.DESCENDING));
+        assertAllElementsOfIterator(((CountableValueRange<Integer>) new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1))
+                .sort(ascComparatorSorter)).createOriginalIterator(), -15, -1, 0, 1, 25);
+        assertAllElementsOfIterator(((CountableValueRange<Integer>) new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1))
+                .sort(ascComparatorFactorySorter)).createOriginalIterator(), -15, -1, 0, 1, 25);
+        assertAllElementsOfIterator(((CountableValueRange<Integer>) new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1))
+                .sort(descComparatorSorter)).createOriginalIterator(), 25, 1, 0, -1, -15);
+        assertAllElementsOfIterator(((CountableValueRange<Integer>) new ListValueRange<>(Arrays.asList(-15, 25, 0, 1, -1))
+                .sort(descComparatorFactorySorter)).createOriginalIterator(), 25, 1, 0, -1, -15);
     }
 
 }
