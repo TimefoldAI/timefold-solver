@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 
 /**
@@ -34,7 +33,7 @@ public final class ComparatorSelectionSorter<Solution_, T> implements SelectionS
     }
 
     @Override
-    public void sort(ScoreDirector<Solution_> scoreDirector, List<T> selectionList) {
+    public void sort(Solution_ solution, List<T> selectionList) {
         selectionList.sort(appliedComparator);
     }
 

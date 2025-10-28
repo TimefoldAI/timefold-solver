@@ -60,7 +60,7 @@ public final class SortingEntitySelector<Solution_> extends AbstractCachingEntit
             return;
         }
         super.constructCache(solverScope);
-        sorter.sort(solverScope.getScoreDirector(), cachedEntityList);
+        sorter.sort(solverScope.getScoreDirector().getWorkingSolution(), cachedEntityList);
         logger.trace("    Sorted cachedEntityList: size ({}), entitySelector ({}).",
                 cachedEntityList.size(), this);
     }

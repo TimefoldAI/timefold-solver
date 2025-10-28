@@ -25,7 +25,7 @@ public class SortingMoveSelector<Solution_> extends AbstractCachingMoveSelector<
     @Override
     public void constructCache(SolverScope<Solution_> solverScope) {
         super.constructCache(solverScope);
-        sorter.sort(solverScope.getScoreDirector(), cachedMoveList);
+        sorter.sort(solverScope.getScoreDirector().getWorkingSolution(), cachedMoveList);
         logger.trace("    Sorted cachedMoveList: size ({}), moveSelector ({}).",
                 cachedMoveList.size(), this);
     }

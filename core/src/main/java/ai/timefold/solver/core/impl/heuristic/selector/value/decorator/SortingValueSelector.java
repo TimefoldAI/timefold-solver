@@ -27,7 +27,7 @@ public final class SortingValueSelector<Solution_>
     @Override
     public void constructCache(SolverScope<Solution_> solverScope) {
         super.constructCache(solverScope);
-        sorter.sort(solverScope.getScoreDirector(), cachedValueList);
+        sorter.sort(solverScope.getScoreDirector().getWorkingSolution(), cachedValueList);
         logger.trace("    Sorted cachedValueList: size ({}), valueSelector ({}).",
                 cachedValueList.size(), this);
     }
