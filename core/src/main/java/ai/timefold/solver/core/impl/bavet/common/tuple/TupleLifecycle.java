@@ -7,6 +7,9 @@ import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.api.function.TriPredicate;
+import ai.timefold.solver.core.impl.bavet.common.BavetStream;
+import ai.timefold.solver.core.impl.bavet.common.ConstraintNodeProfileId;
+import ai.timefold.solver.core.impl.bavet.common.ConstraintProfiler;
 
 public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
 
@@ -53,6 +56,14 @@ public interface TupleLifecycle<Tuple_ extends AbstractTuple> {
 
     static <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> recording() {
         return new RecordingTupleLifecycle<>();
+    }
+
+    static <Stream_ extends BavetStream, Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> profiling(
+            ConstraintProfiler constraintProfiler, long lifecycleId, Stream_ stream,
+            TupleLifecycle<Tuple_> delegate) {
+        return new ProfilingTupleLifecycle<>(constraintProfiler,
+                new ConstraintNodeProfileId(lifecycleId, stream.getLocationSet()),
+                delegate);
     }
 
     void insert(Tuple_ tuple);

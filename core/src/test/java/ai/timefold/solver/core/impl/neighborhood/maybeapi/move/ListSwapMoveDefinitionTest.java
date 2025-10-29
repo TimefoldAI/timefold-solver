@@ -9,6 +9,7 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
@@ -125,7 +126,7 @@ class ListSwapMoveDefinitionTest {
         var firstEntityClass = solutionDescriptor.getMetaModel().genuineEntities().get(0).type();
         var constraintProvider = new TestingConstraintProvider(firstEntityClass);
         var scoreDirectorFactory = new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider,
-                EnvironmentMode.TRACKED_FULL_ASSERT);
+                EnvironmentMode.TRACKED_FULL_ASSERT, ConstraintProfilingMode.NONE);
         var scoreDirector = scoreDirectorFactory.buildScoreDirector();
         scoreDirector.setWorkingSolution(solution);
         return scoreDirector;

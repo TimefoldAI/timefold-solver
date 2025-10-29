@@ -1,14 +1,23 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
 import ai.timefold.solver.core.impl.score.stream.bavet.BavetConstraintSession;
+
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @see PropagationQueue Description of the propagation mechanism.
  */
+@NullMarked
 public abstract class AbstractNode {
 
     private long id;
     private long layerIndex = -1;
+    private @Nullable Set<ConstraintNodeLocation> locationSet;
 
     /**
      * Instead of calling the propagation directly from here,
@@ -27,6 +36,20 @@ public abstract class AbstractNode {
 
     public final void setId(long id) {
         this.id = id;
+    }
+
+    public Set<ConstraintNodeLocation> getLocationSet() {
+        if (locationSet == null) {
+            return Collections.emptySet();
+        }
+        return locationSet;
+    }
+
+    public void addLocationSet(Set<ConstraintNodeLocation> locationSet) {
+        if (this.locationSet == null) {
+            this.locationSet = new LinkedHashSet<>();
+        }
+        this.locationSet.addAll(locationSet);
     }
 
     public final void setLayerIndex(long layerIndex) {

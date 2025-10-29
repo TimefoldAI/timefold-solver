@@ -11,6 +11,7 @@ import ai.timefold.solver.core.api.score.constraint.ConstraintRef;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.stream.BavetConstraintStreamScoreDirectorFactory;
@@ -85,7 +86,8 @@ final class ScoreDirectorFactoryCache<ConstraintProvider_ extends ConstraintProv
             ConstraintRef constraintRef,
             ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
         return scoreDirectorFactoryMap.computeIfAbsent(constraintRef,
-                k -> new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode));
+                k -> new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode,
+                        ConstraintProfilingMode.NONE));
     }
 
 }

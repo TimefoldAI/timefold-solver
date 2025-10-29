@@ -12,6 +12,7 @@ import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -50,6 +51,8 @@ public enum SolverProperty {
     @Deprecated(forRemoval = true, since = "1.4.0")
     CONSTRAINT_STREAM_IMPL_TYPE("constraint-stream-impl-type", SolverProperties::setConstraintStreamImplType,
             value -> ConstraintStreamImplType.valueOf(value.toString())),
+    CONSTRAINT_STREAM_PROFILING_MODE("constraint-stream-profiling-mode", SolverProperties::setConstraintStreamProfilingMode,
+            value -> ConstraintProfilingMode.valueOf(value.toString())),
     CONSTRAINT_STREAM_AUTOMATIC_NODE_SHARING("constraint-stream-automatic-node-sharing",
             SolverProperties::setConstraintStreamAutomaticNodeSharing, value -> Boolean.valueOf(value.toString())),
     RANDOM_SEED("random-seed", SolverProperties::setRandomSeed, value -> Long.parseLong(value.toString())),

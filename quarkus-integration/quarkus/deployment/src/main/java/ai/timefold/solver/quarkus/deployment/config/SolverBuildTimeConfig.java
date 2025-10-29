@@ -5,6 +5,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.quarkus.config.SolverRuntimeConfig;
@@ -57,6 +58,11 @@ public interface SolverBuildTimeConfig {
      */
     @Deprecated(forRemoval = true, since = "1.4.0")
     Optional<ConstraintStreamImplType> constraintStreamImplType();
+
+    /**
+     * What profiling mode to use. Defaults to {@link ConstraintProfilingMode#NONE}.
+     */
+    Optional<ConstraintProfilingMode> constraintStreamProfilingMode();
 
     /**
      * Note: this setting is only available
