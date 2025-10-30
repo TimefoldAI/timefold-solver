@@ -1675,7 +1675,7 @@ Constraint streams are extremely efficient, so precomputing them may result in l
 Always measure the move evaluation speed before and after implementing precomputing to determine if it worth it for your use case.
 ====
 
-[IMPORTANT]
+[NOTE]
 ====
 Precomputed streams are unfiltered and will include both unassigned and inconsistent planning entities.
 If only assigned entities are desired, add a filter after the precompute to check if the entities' variables are assigned.
