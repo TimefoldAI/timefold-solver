@@ -37,11 +37,11 @@ class SingleCascadingUpdateShadowVariableListenerTest {
                         "Shadow variables such as @CascadingUpdateShadowVariable are not allowed to be used as source")
                 .withMessageContaining("Maybe check if cascadeValue is annotated with @CascadingUpdateShadowVariable");
         assertThatIllegalArgumentException().isThrownBy(TestdataCascadingInvalidPiggyback::buildEntityDescriptor)
-                .withMessageContaining(
-                        "The entityClass (class ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidPiggyback)")
-                .withMessageContaining("has a @PiggybackShadowVariable annotated property (cascadeValue2)")
-                .withMessageContaining(
-                        "with refVariable (TestdataCascadingInvalidPiggyback.cascadeValue) that lacks a @ShadowVariable annotation");
+                .withMessageContainingAll(
+                        "The entityClass (class ai.timefold.solver.core.testdomain.shadow.wrongcascade.TestdataCascadingInvalidPiggyback)",
+                        "has a @PiggybackShadowVariable annotated property (cascadeValue2)",
+                        "with refVariable (TestdataCascadingInvalidPiggyback.cascadeValue) that",
+                        "lacks a VariableListener @ShadowVariable annotation.");
     }
 
     @Test

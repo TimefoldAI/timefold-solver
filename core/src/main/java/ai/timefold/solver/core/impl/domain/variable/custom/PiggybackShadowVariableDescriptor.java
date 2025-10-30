@@ -7,6 +7,7 @@ import java.util.List;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.variable.PiggybackShadowVariable;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
+import ai.timefold.solver.core.api.domain.variable.VariableListener;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
@@ -70,11 +71,13 @@ public final class PiggybackShadowVariableDescriptor<Solution_> extends ShadowVa
                     + shadowEntityDescriptor.buildInvalidVariableNameExceptionMessage(shadowVariableName));
         }
         if (!(uncastShadowVariableDescriptor instanceof CustomShadowVariableDescriptor)) {
-            throw new IllegalArgumentException("The entityClass (" + entityDescriptor.getEntityClass()
-                    + ") has a @" + PiggybackShadowVariable.class.getSimpleName()
-                    + " annotated property (" + variableMemberAccessor.getName()
-                    + ") with refVariable (" + uncastShadowVariableDescriptor.getSimpleEntityAndVariableName()
-                    + ") that lacks a @" + ShadowVariable.class.getSimpleName() + " annotation.");
+            throw new IllegalArgumentException("""
+                    The entityClass (%s) has a @%s annotated property (%s) with refVariable (%s) that
+                    lacks a %s @%s annotation.
+                    """.formatted(entityDescriptor.getEntityClass(), PiggybackShadowVariable.class.getSimpleName(),
+                    variableMemberAccessor.getName(), uncastShadowVariableDescriptor.getSimpleEntityAndVariableName(),
+                    VariableListener.class.getSimpleName(),
+                    ShadowVariable.class.getSimpleName()));
         }
         shadowVariableDescriptor = (CustomShadowVariableDescriptor<Solution_>) uncastShadowVariableDescriptor;
         shadowVariableDescriptor.registerSinkVariableDescriptor(this);
