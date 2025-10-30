@@ -14,9 +14,12 @@ import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
  * variable listener.
  * <p>
  * It is specified on a getter of a java bean property (or a field) of a {@link PlanningEntity} class.
+ *
+ * @deprecated Use a {@link ShadowVariable#supplierName() supplier} with {@link ShadowSources sources} instead.
  */
 @Target({ METHOD, FIELD })
 @Retention(RUNTIME)
+@Deprecated(since = "1.28.0", forRemoval = true)
 public @interface PiggybackShadowVariable {
 
     /**
