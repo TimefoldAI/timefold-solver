@@ -1622,6 +1622,82 @@ This stream now contains all `Employee` instances, both with and without shifts 
 and can be passed to the <<collectorsLoadBalance,load balancing constraint collector>>,
 which will compute the unfairness metric.
 
+[#constraintStreamsPrecompute]
+=== Precomputing a stream
+
+When a stream depends only on properties of problem facts or entities, that stream can be precomputed to improve performance.
+Consider the following "no overlapping shifts" constraint:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
+    return constraintFactory.forEachUniquePair(Shift.class, Joiners.overlapping(Shift::getStart, Shift::getEnd), Joiners.equal(Shift::getEmployee))
+        .penalize(HardSoftScore.ONE_HARD, (shift1, shift2) -> shift1.getOverlap(shift2))
+        .asConstraint("No overlapping shifts");
+}
+----
+====
+
+If Shift's `start` and `end` are not variables (genuine or shadow), and Shift's `getOverlap` does not depend on any variables, then some parts of the constraint can be precomputed to improve performance:
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+TriConstraintStream<Shift, Shift, Integer> overlappingShifts(PrecomputeFactory precomputeFactory) {
+    return precomputeFactory.forEachUnfilteredUniquePair(Shift.class, Joiners.overlapping(Shift::getStart, Shift::getEnd))
+        .expand((shift1, shift2) -> shift1.getOverlap(shift2));
+}
+
+Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
+    return constraintFactory.precompute(this::overlappingShifts)
+        .filter((shift1, shift2, overlap) -> shift1.getEmployee() != null && shift1.getEmployee() == shift2.getEmployee())
+        .penalize(HardSoftScore.ONE_HARD, (shift1, shift2, overlap) -> overlap)
+        .asConstraint("No overlapping shifts");
+}
+----
+====
+
+[IMPORTANT]
+====
+Precomputed streams are unfiltered and will include both unassigned and inconsistent planning entities.
+If only assigned entities are desired, add a filter after the precompute to check if the entities' variables are assigned.
+====
+
+[IMPORTANT]
+====
+A score corruption will occur if a precomputed stream depends on variables (genuine or shadow).
+For example, if Shift's employee is a planning variable, then the following constraint will cause a score corruption:
+
+[tabs]
+=====
+Java::
++
+[source,java,options="nowrap"]
+----
+TriConstraintStream<Shift, Shift, Integer> overlappingShifts(PrecomputeFactory precomputeFactory) {
+    // This references Shift::getEmployee, which depends
+    // on a planning variable and thus is not valid to
+    // use in a precomputed stream
+    return precomputeFactory.forEachUnfilteredUniquePair(Shift.class, Joiners.overlapping(Shift::getStart, Shift::getEnd),
+        Joiners.equal(Shift::getEmployee))
+        .expand((shift1, shift2) -> shift1.getOverlap(shift2));
+}
+
+Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
+    return constraintFactory.precompute(this::overlappingShifts)
+        .penalize(HardSoftScore.ONE_HARD, (shift1, shift2, overlap) -> overlap)
+        .asConstraint("No overlapping shifts");
+}
+----
+=====
+====
 
 [#constraintStreamsTesting]
 == Testing a constraint stream
