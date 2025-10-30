@@ -14,7 +14,7 @@ import ai.timefold.solver.core.api.score.stream.bi.BiJoiner;
  */
 public final class BiJoinerComber<A, B> {
 
-    public static <A, B> BiJoinerComber<A, B> comb(BiJoiner<A, B>[] joiners) {
+    public static <A, B> BiJoinerComber<A, B> comb(BiJoiner<A, B>... joiners) {
         List<DefaultBiJoiner<A, B>> defaultJoinerList = new ArrayList<>(joiners.length);
         List<BiPredicate<A, B>> filteringList = new ArrayList<>(joiners.length);
 

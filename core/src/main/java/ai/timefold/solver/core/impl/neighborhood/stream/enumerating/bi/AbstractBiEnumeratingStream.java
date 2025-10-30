@@ -7,8 +7,8 @@ import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingMapper;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
@@ -32,7 +32,7 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
     }
 
     @Override
-    public final BiEnumeratingStream<Solution_, A, B> filter(BiEnumeratingFilter<Solution_, A, B> filter) {
+    public final BiEnumeratingStream<Solution_, A, B> filter(BiEnumeratingPredicate<Solution_, A, B> filter) {
         return shareAndAddChild(new FilterBiEnumeratingStream<>(enumeratingStreamFactory, this, filter));
     }
 
@@ -72,11 +72,6 @@ public abstract class AbstractBiEnumeratingStream<Solution_, A, B> extends Abstr
             return this; // Already distinct, no need to create a new stream.
         }
         return groupBy(ConstantLambdaUtils.biPickFirst(), ConstantLambdaUtils.biPickSecond());
-    }
-
-    public BiDataset<Solution_, A, B> createDataset() {
-        var stream = shareAndAddChild(new TerminalBiEnumeratingStream<>(enumeratingStreamFactory, this));
-        return stream.getDataset();
     }
 
 }

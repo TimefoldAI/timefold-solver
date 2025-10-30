@@ -5,6 +5,8 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * An indexer for entity or fact {@code X},
  * maps a property or a combination of properties of {@code X}, denoted by {@code indexKeys},
@@ -20,6 +22,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
  *        For example for {@code Bi<A, B>.join(C)}, the tuple is {@code BiTuple<A, B>} xor {@code UniTuple<C>}.
  */
+@NullMarked
 public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
 
     ElementAwareListEntry<T> put(Object indexKeys, T tuple);

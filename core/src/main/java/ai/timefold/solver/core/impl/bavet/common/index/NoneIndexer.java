@@ -5,6 +5,9 @@ import java.util.function.Consumer;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class NoneIndexer<T> implements Indexer<T> {
 
     private final ElementAwareList<T> tupleList = new ElementAwareList<>();

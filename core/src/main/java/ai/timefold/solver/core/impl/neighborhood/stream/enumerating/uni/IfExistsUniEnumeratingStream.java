@@ -9,7 +9,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.IndexedIfExistsUniNode;
 import ai.timefold.solver.core.impl.bavet.uni.UnindexedIfExistsUniNode;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
@@ -29,13 +29,13 @@ final class IfExistsUniEnumeratingStream<Solution_, A, B>
     private final ForeBridgeUniEnumeratingStream<Solution_, B> parentBridgeB;
     private final boolean shouldExist;
     private final DefaultBiEnumeratingJoiner<A, B> joiner;
-    private final @Nullable BiEnumeratingFilter<Solution_, A, B> filtering;
+    private final @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering;
 
     public IfExistsUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractUniEnumeratingStream<Solution_, A> parentA,
             ForeBridgeUniEnumeratingStream<Solution_, B> parentBridgeB, boolean shouldExist,
             DefaultBiEnumeratingJoiner<A, B> joiner,
-            @Nullable BiEnumeratingFilter<Solution_, A, B> filtering) {
+            @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering) {
         super(enumeratingStreamFactory);
         this.parentA = parentA;
         this.parentBridgeB = parentBridgeB;
