@@ -14,7 +14,7 @@ import org.jspecify.annotations.NullMarked;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 @NullMarked
-public final class DefaultBiEnumeratingJoiner<A, B> extends AbstractDataJoiner<B> implements BiEnumeratingJoiner<A, B> {
+public final class DefaultBiEnumeratingJoiner<A, B> extends AbstractJoiner<B> implements BiEnumeratingJoiner<A, B> {
 
     private static final DefaultBiEnumeratingJoiner NONE =
             new DefaultBiEnumeratingJoiner(new Function[0], new JoinerType[0], new Function[0]);

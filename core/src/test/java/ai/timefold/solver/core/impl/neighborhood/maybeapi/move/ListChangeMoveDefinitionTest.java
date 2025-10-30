@@ -69,36 +69,36 @@ class ListChangeMoveDefinitionTest {
                     .containsExactly(unassignedValue);
         });
 
-        var move2 = getListAssignMove(moveList, 1);
+        var move2 = getListChangeMove(moveList, 1);
         assertSoftly(softly -> {
-            softly.assertThat(move2.getDestinationEntity()).isEqualTo(e2);
-            softly.assertThat(move2.getDestinationIndex()).isEqualTo(1);
+            softly.assertThat(move2.getSourceEntity()).isEqualTo(e2);
+            softly.assertThat(move2.getSourceIndex()).isEqualTo(0);
+            softly.assertThat(move2.getDestinationEntity()).isEqualTo(e1);
+            softly.assertThat(move2.getDestinationIndex()).isEqualTo(0);
             softly.assertThat(move2.extractPlanningEntities())
-                    .containsExactly(e2);
+                    .containsExactly(e2, e1);
             softly.assertThat(move2.extractPlanningValues())
-                    .containsExactly(unassignedValue);
+                    .containsExactly(initiallyAssignedValue);
         });
 
         var move3 = getListAssignMove(moveList, 2);
         assertSoftly(softly -> {
             softly.assertThat(move3.getDestinationEntity()).isEqualTo(e2);
-            softly.assertThat(move3.getDestinationIndex()).isEqualTo(0);
+            softly.assertThat(move3.getDestinationIndex()).isEqualTo(1);
             softly.assertThat(move3.extractPlanningEntities())
                     .containsExactly(e2);
             softly.assertThat(move3.extractPlanningValues())
                     .containsExactly(unassignedValue);
         });
 
-        var move4 = getListChangeMove(moveList, 3);
+        var move4 = getListAssignMove(moveList, 3);
         assertSoftly(softly -> {
-            softly.assertThat(move4.getSourceEntity()).isEqualTo(e2);
-            softly.assertThat(move4.getSourceIndex()).isEqualTo(0);
-            softly.assertThat(move4.getDestinationEntity()).isEqualTo(e1);
+            softly.assertThat(move4.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move4.getDestinationIndex()).isEqualTo(0);
             softly.assertThat(move4.extractPlanningEntities())
-                    .containsExactly(e2, e1);
+                    .containsExactly(e2);
             softly.assertThat(move4.extractPlanningValues())
-                    .containsExactly(initiallyAssignedValue);
+                    .containsExactly(unassignedValue);
         });
     }
 

@@ -21,18 +21,14 @@ public enum JoinerType {
     }
 
     public JoinerType flip() {
-        switch (this) {
-            case LESS_THAN:
-                return GREATER_THAN;
-            case LESS_THAN_OR_EQUAL:
-                return GREATER_THAN_OR_EQUAL;
-            case GREATER_THAN:
-                return LESS_THAN;
-            case GREATER_THAN_OR_EQUAL:
-                return LESS_THAN_OR_EQUAL;
-            default:
-                throw new IllegalStateException("The joinerType (" + this + ") cannot be flipped.");
-        }
+        return switch (this) {
+            case LESS_THAN -> GREATER_THAN;
+            case LESS_THAN_OR_EQUAL -> GREATER_THAN_OR_EQUAL;
+            case GREATER_THAN -> LESS_THAN;
+            case GREATER_THAN_OR_EQUAL -> LESS_THAN_OR_EQUAL;
+            default -> throw new IllegalStateException("The joinerType (%s) cannot be flipped."
+                    .formatted(this));
+        };
     }
 
     public boolean matches(Object left, Object right) {
