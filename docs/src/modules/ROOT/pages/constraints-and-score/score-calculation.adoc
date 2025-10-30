@@ -1642,6 +1642,7 @@ Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
 ----
 ====
 
+This constraint will recalculate what shifts overlap and their overlap amount whenever any of their variable changes.
 If Shift's `start` and `end` are not variables (genuine or shadow), and Shift's `getOverlap` does not depend on any variables, then some parts of the constraint can be precomputed to improve performance:
 
 [tabs]
@@ -1662,6 +1663,16 @@ Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
         .asConstraint("No overlapping shifts");
 }
 ----
+====
+
+This will precompute both that shifts that overlap and the overlap amount.
+When any of the overlapping shifts' variables changes, only the filter is re-evaluated.
+That filter is never evaluated for non-overlapping shifts, since they will not be included in the overlapping shifts stream.
+
+[NOTE]
+====
+Constraint streams are extremely efficient, so precomputing them may result in little change.
+Always measure the move evaluation speed before and after implementing precomputing to determine if it worth it for your use case.
 ====
 
 [IMPORTANT]
