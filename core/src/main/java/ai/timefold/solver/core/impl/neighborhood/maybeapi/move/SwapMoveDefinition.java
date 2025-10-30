@@ -1,15 +1,20 @@
 package ai.timefold.solver.core.impl.neighborhood.maybeapi.move;
 
-import static ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners.filtering;
-
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 import java.util.stream.Stream;
 
+import ai.timefold.solver.core.api.domain.lookup.PlanningId;
+import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
+import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -60,39 +65,51 @@ public class SwapMoveDefinition<Solution_, Entity_>
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var entityType = entityMetaModel.type();
-        var enumeratingStream = moveStreamFactory.forEach(entityType, false)
-                .join(entityType,
-                        filtering((SolutionView<Solution_> solutionView, Entity_ leftEntity, Entity_ rightEntity) -> {
-                            if (leftEntity == rightEntity) {
-                                return false;
-                            }
-                            var change = false;
-                            for (var variableMetaModel : variableMetaModelList) {
-                                var defaultVariableMetaModel =
-                                        (DefaultPlanningVariableMetaModel<Solution_, Entity_, Object>) variableMetaModel;
-                                var variableDescriptor = defaultVariableMetaModel.variableDescriptor();
-                                var oldLeftValue = variableDescriptor.getValue(leftEntity);
-                                var oldRightValue = variableDescriptor.getValue(rightEntity);
-                                if (Objects.equals(oldLeftValue, oldRightValue)) {
-                                    continue;
-                                }
-                                if (solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
-                                        && solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)) {
-                                    change = true;
-                                } else {
-                                    // One of the swaps falls out of range, skip this pair altogether.
-                                    return false;
-                                }
-                            }
-                            return change;
-                        }))
-                // Ensure unique pairs; without demanding PlanningId, this becomes tricky.
-                .map((solutionView, leftEntity, rightEntity) -> new UniquePair<>(leftEntity, rightEntity))
-                .distinct()
-                .map((solutionView, pair) -> pair.first(), (solutionView, pair) -> pair.second());
-        return moveStreamFactory.pick(enumeratingStream)
+        var entityStream = moveStreamFactory.forEach(entityType, false);
+        // TODO this requires everything that is ever swapped to implement @PlanningID; likely not acceptable
+        return moveStreamFactory.pick(entityStream)
+                .pick(entityStream,
+                        buildLessThanId(entityType),
+                        EnumeratingJoiners.filtering(this::isValidSwap))
                 .asMove((solutionView, leftEntity, rightEntity) -> Moves.swap(leftEntity, rightEntity,
                         variableMetaModelList.toArray(new PlanningVariableMetaModel[0])));
+    }
+
+    private <A> DefaultBiEnumeratingJoiner<A, A> buildLessThanId(Class<A> sourceClass) {
+        SolutionDescriptor<Solution_> solutionDescriptor =
+                ((DefaultPlanningSolutionMetaModel<Solution_>) entityMetaModel.solution()).solutionDescriptor();
+        MemberAccessor planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(sourceClass);
+        if (planningIdMemberAccessor == null) {
+            throw new IllegalArgumentException(
+                    "The fromClass (%s) has no member with a @%s annotation, so the pairs cannot be made unique ([A,B] vs [B,A])."
+                            .formatted(sourceClass, PlanningId.class.getSimpleName()));
+        }
+        Function<A, Comparable> planningIdGetter = planningIdMemberAccessor.getGetterFunction();
+        return (DefaultBiEnumeratingJoiner<A, A>) EnumeratingJoiners.lessThan(planningIdGetter);
+    }
+
+    private boolean isValidSwap(SolutionView<Solution_> solutionView, Entity_ leftEntity, Entity_ rightEntity) {
+        if (leftEntity == rightEntity) {
+            return false;
+        }
+        var change = false;
+        for (var variableMetaModel : variableMetaModelList) {
+            var defaultVariableMetaModel = (DefaultPlanningVariableMetaModel<Solution_, Entity_, Object>) variableMetaModel;
+            var variableDescriptor = defaultVariableMetaModel.variableDescriptor();
+            var oldLeftValue = variableDescriptor.getValue(leftEntity);
+            var oldRightValue = variableDescriptor.getValue(rightEntity);
+            if (Objects.equals(oldLeftValue, oldRightValue)) {
+                continue;
+            }
+            if (solutionView.isValueInRange(variableMetaModel, leftEntity, oldRightValue)
+                    && solutionView.isValueInRange(variableMetaModel, rightEntity, oldLeftValue)) {
+                change = true;
+            } else {
+                // One of the swaps falls out of range, skip this pair altogether.
+                return false;
+            }
+        }
+        return change;
     }
 
 }

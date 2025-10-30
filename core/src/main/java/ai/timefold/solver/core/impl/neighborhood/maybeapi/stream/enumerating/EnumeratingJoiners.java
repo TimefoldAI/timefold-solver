@@ -5,8 +5,8 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingJoiner;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.FilteringBiEnumeratingJoiner;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
@@ -194,7 +194,7 @@ public final class EnumeratingJoiners {
      * @param <A> type of the first fact in the tuple
      * @param <B> type of the second fact in the tuple
      */
-    public static <Solution_, A, B> BiEnumeratingJoiner<A, B> filtering(BiEnumeratingFilter<Solution_, A, B> filter) {
+    public static <Solution_, A, B> BiEnumeratingJoiner<A, B> filtering(BiEnumeratingPredicate<Solution_, A, B> filter) {
         return new FilteringBiEnumeratingJoiner<>(filter);
     }
 

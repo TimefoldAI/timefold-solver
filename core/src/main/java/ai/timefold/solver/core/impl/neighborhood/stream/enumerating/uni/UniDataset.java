@@ -15,8 +15,8 @@ public final class UniDataset<Solution_, A> extends AbstractDataset<Solution_, U
     }
 
     @Override
-    public UniDatasetInstance<Solution_, A> instantiate(int storeIndex) {
-        return new UniDatasetInstance<>(this, storeIndex);
+    public UniDatasetInstance<Solution_, A> instantiate(int entryStoreIndex) {
+        return new UniDatasetInstance<>(this, entryStoreIndex);
     }
 
 }

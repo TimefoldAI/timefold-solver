@@ -54,17 +54,17 @@ class SwapMoveDefinitionTest {
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(firstMove.extractPlanningEntities())
-                    .containsExactly(e2, e1);
+                    .containsExactly(e1, e2);
             softly.assertThat(firstMove.extractPlanningValues())
-                    .containsExactly(v2, v1);
+                    .containsExactly(v1, v2);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(secondMove.extractPlanningEntities())
-                    .containsExactly(e3, e2);
+                    .containsExactly(e2, e3);
             softly.assertThat(secondMove.extractPlanningValues())
-                    .containsExactly(v1, v2);
+                    .containsExactly(v2, v1);
         });
     }
 
@@ -95,17 +95,17 @@ class SwapMoveDefinitionTest {
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(firstMove.extractPlanningEntities())
-                    .containsExactly(e2, e1);
+                    .containsExactly(e1, e2);
             softly.assertThat(firstMove.extractPlanningValues())
-                    .containsExactly(v2, v1, otherV2, otherV1);
+                    .containsExactly(v1, v2, otherV1, otherV2);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(secondMove.extractPlanningEntities())
-                    .containsExactly(e3, e2);
+                    .containsExactly(e2, e3);
             softly.assertThat(secondMove.extractPlanningValues())
-                    .containsExactly(v1, v2, otherV1, otherV2);
+                    .containsExactly(v2, v1, otherV2, otherV1);
         });
     }
 
