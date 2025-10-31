@@ -42,6 +42,7 @@ import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraintStreamTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamFunctionalTest;
 import ai.timefold.solver.core.impl.score.stream.common.ConstraintStreamImplSupport;
+import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
@@ -2414,34 +2415,49 @@ public abstract class AbstractUniConstraintStreamTest
     @Override
     @TestTemplate
     public void flattenLastWithDuplicates() {
-        var solution = TestdataLavishSolution.generateSolution(1, 1, 2, 2);
-        var group1 = solution.getFirstEntityGroup();
-        var group2 = solution.getEntityGroupList().get(1);
+        var solution = TestdataLavishSolution.generateSolution(1, 2, 2, 2);
+        var group1 = new Pair<>(solution.getFirstEntityGroup(), 1);
+        var group1Dup = new Pair<>(solution.getFirstEntityGroup(), 1);
+        var group2 = new Pair<>(solution.getEntityGroupList().get(1), 2);
+
+        var value1 = solution.getFirstValue();
+        var value2 = solution.getValueList().get(1);
 
         var scoreDirector =
                 buildScoreDirector(factory -> factory.forEach(TestdataLavishEntity.class)
-                        .flattenLast(entity -> Arrays.asList(group1, group1, group2))
+                        .flattenLast(entity -> entity.getValue() == value1 ? Arrays.asList(group1, group1Dup, group2)
+                                : Arrays.asList(group1, group2))
+                        .filter(flatten -> flatten == group1 || flatten == group2)
                         .penalize(SimpleScore.ONE)
                         .asConstraint(TEST_CONSTRAINT_NAME));
 
         // From scratch
+        // group1 is used instead of group1Dup because it equals to it
         scoreDirector.setWorkingSolution(solution);
         assertScore(scoreDirector,
                 assertMatch(group1),
                 assertMatch(group1),
                 assertMatch(group2),
                 assertMatch(group1),
-                assertMatch(group1),
                 assertMatch(group2));
 
         var entity = solution.getFirstEntity();
 
         // Incremental
+        scoreDirector.beforeVariableChanged(entity, "value");
+        entity.setValue(value2);
+        scoreDirector.afterVariableChanged(entity, "value");
+
+        assertScore(scoreDirector,
+                assertMatch(group1),
+                assertMatch(group2),
+                assertMatch(group1),
+                assertMatch(group2));
+
         scoreDirector.beforeEntityRemoved(entity);
         solution.getEntityList().remove(entity);
         scoreDirector.afterEntityRemoved(entity);
         assertScore(scoreDirector,
-                assertMatch(group1),
                 assertMatch(group1),
                 assertMatch(group2));
     }

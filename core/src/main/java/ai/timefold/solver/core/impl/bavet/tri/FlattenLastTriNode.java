@@ -27,8 +27,4 @@ public final class FlattenLastTriNode<A, B, C, NewC>
         return tuple.factC;
     }
 
-    @Override
-    protected NewC getEffectiveFactOut(TriTuple<A, B, NewC> outTuple) {
-        return outTuple.factC;
-    }
 }
