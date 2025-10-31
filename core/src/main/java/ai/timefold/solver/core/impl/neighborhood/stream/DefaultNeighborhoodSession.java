@@ -4,8 +4,6 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSession;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.BiDataset;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.BiDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniDatasetInstance;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -26,10 +24,6 @@ public final class DefaultNeighborhoodSession<Solution_>
 
     public <A> UniDatasetInstance<Solution_, A> getDatasetInstance(UniDataset<Solution_, A> dataset) {
         return (UniDatasetInstance<Solution_, A>) datasetSession.getInstance(dataset);
-    }
-
-    public <A, B> BiDatasetInstance<Solution_, A, B> getDatasetInstance(BiDataset<Solution_, A, B> dataset) {
-        return (BiDatasetInstance<Solution_, A, B>) datasetSession.getInstance(dataset);
     }
 
     public void insert(Object fact) {

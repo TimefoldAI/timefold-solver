@@ -5,14 +5,11 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.entity.PlanningPinToIndex;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.UniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.sampling.BiSamplingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.sampling.UniSamplingStream;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
-import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.UnassignedElement;
@@ -62,18 +59,6 @@ public interface MoveStreamFactory<Solution_> {
     <A> UniEnumeratingStream<Solution_, A> forEachUnfiltered(Class<A> sourceClass, boolean includeNull);
 
     /**
-     * Enumerate possible values for any given entity,
-     * where entities are obtained using {@link #forEach(Class, boolean)},
-     * with the class matching the entity type of the variable.
-     * If the variable allows unassigned values, the resulting stream will include a null value.
-     *
-     * @param variableMetaModel the meta model of the variable to enumerate
-     * @return enumerating stream with all possible values of a given variable
-     */
-    <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_>
-            forEachEntityValuePair(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
-
-    /**
      * Enumerate all possible positions of a list variable to which a value can be assigned.
      * This will eliminate all positions on {@link PlanningPin pinned entities},
      * as well as all {@link PlanningPinToIndex pinned indexes}.
@@ -88,7 +73,5 @@ public interface MoveStreamFactory<Solution_> {
             forEachAssignablePosition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel);
 
     <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream);
-
-    <A, B> BiSamplingStream<Solution_, A, B> pick(BiEnumeratingStream<Solution_, A, B> enumeratingStream);
 
 }

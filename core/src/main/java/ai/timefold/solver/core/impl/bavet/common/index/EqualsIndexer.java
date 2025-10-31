@@ -8,6 +8,9 @@ import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     private final KeyRetriever<Key_> keyRetriever;

@@ -256,69 +256,43 @@ class ChangeMoveDefinitionTest {
         // Filters out moves that would change the value to the value the entity already has.
         // Therefore this will have 4 moves (2 entities * 2 values) as opposed to 6 (2 entities * 3 values).
         var moveIterable = createMoveIterable(new ChangeMoveDefinition<>(variableMetaModel), solutionDescriptor, solution);
-        assertThat(moveIterable).hasSize(4);
-
         var moveList = StreamSupport.stream(moveIterable.spliterator(), false)
                 .map(m -> (ChangeMove<TestdataAllowsUnassignedSolution, TestdataAllowsUnassignedEntity, TestdataValue>) m)
                 .toList();
         assertThat(moveList).hasSize(4);
 
-        // TODO There is a strange issue here that needs to be investigated,
-        //   as it potentially breaks difficulty comparators.
-
-        // The node network receives:
-        // firstEntity + null; filtered out
-        // secondEntity + null
-        // firstEntity + firstValue
-        // secondEntity + firstValue
-        // firstEntity + secondValue
-        // secondEntity + secondValue; filtered out
-
-        // Therefore the iterator receives:
-        // secondEntity + null
-        // firstEntity + firstValue
-        // secondEntity + firstValue
-        // firstEntity + secondValue
-
-        // This means that secondEntity is actually encountered first, and therefore will be iterated first.
-        // A strange behavior of original iteration when combined with dataset caching before picking,
-        // where the node network (= cache) is fully built long before the iteration starts.
-        // A possible fix would be to refactor the node network to first iterate right inputs
-        // (values first in this case)
-        // but wouldn't that just create a similar issue in other places?
-
-        // Second entity is assigned to secondValue, therefore the applicable moves assign to null and firstValue.
+        // First entity is assigned to null, therefore the applicable moves assign to firstValue and secondValue.
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(firstMove.extractPlanningEntities())
-                    .containsExactly(secondEntity);
+                    .containsExactly(firstEntity);
             softly.assertThat(firstMove.extractPlanningValues())
-                    .containsExactly(new TestdataValue[] { null });
+                    .containsExactly(firstValue);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(secondMove.extractPlanningEntities())
-                    .containsExactly(secondEntity);
+                    .containsExactly(firstEntity);
             softly.assertThat(secondMove.extractPlanningValues())
-                    .containsExactly(firstValue);
+                    .containsExactly(secondValue);
         });
 
-        // First entity is assigned to null, therefore the applicable moves assign to firstValue and secondValue.
+        // Second entity is assigned to secondValue, therefore the applicable moves assign to null and firstValue.
         var thirdMove = moveList.get(2);
         assertSoftly(softly -> {
             softly.assertThat(thirdMove.extractPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(thirdMove.extractPlanningValues())
-                    .containsExactly(firstValue);
+                    .containsExactly(new TestdataValue[] { null });
         });
 
         var fourthMove = moveList.get(3);
         assertSoftly(softly -> {
             softly.assertThat(fourthMove.extractPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(fourthMove.extractPlanningValues())
-                    .containsExactly(secondValue);
+                    .containsExactly(firstValue);
         });
 
     }

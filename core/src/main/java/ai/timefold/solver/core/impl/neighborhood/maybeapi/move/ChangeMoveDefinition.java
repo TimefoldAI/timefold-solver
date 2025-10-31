@@ -5,6 +5,8 @@ import java.util.Objects;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
+import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 import org.jspecify.annotations.NullMarked;
@@ -21,13 +23,12 @@ public class ChangeMoveDefinition<Solution_, Entity_, Value_>
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
-        var enumeratingStream =
-                moveStreamFactory.forEachEntityValuePair(variableMetaModel)
-                        .filter((solutionView, entity, value) -> {
-                            Value_ currentValue = solutionView.getValue(variableMetaModel, Objects.requireNonNull(entity));
-                            return !Objects.equals(currentValue, value);
-                        });
-        return moveStreamFactory.pick(enumeratingStream)
+        var nodeSharingSupportFunctions =
+                ((DefaultMoveStreamFactory<Solution_>) moveStreamFactory).getNodeSharingSupportFunctions(variableMetaModel);
+        return moveStreamFactory.pick(moveStreamFactory.forEach(variableMetaModel.entity().type(), false))
+                .pick(moveStreamFactory.forEach(variableMetaModel.type(), variableMetaModel.allowsUnassigned()),
+                        EnumeratingJoiners.filtering(nodeSharingSupportFunctions.differentValueFilter()),
+                        EnumeratingJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter()))
                 .asMove((solution, entity, value) -> Moves.change(Objects.requireNonNull(entity), value, variableMetaModel));
     }
 
