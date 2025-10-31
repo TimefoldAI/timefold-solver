@@ -8,6 +8,7 @@ import java.util.Set;
 
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -44,6 +45,14 @@ public interface ValueRange<T> {
      * @return true if the ValueRange contains that value
      */
     boolean contains(@Nullable T value);
+
+    /**
+     * The sorting operation copies the current value range and sorts it using the provided sorter.
+     *
+     * @param sorter never null, the value range sorter
+     * @return A new instance of the value range, with the data sorted.
+     */
+    ValueRange<T> sort(ValueRangeSorter<T> sorter);
 
     /**
      * Select in random order, but without shuffling the elements.

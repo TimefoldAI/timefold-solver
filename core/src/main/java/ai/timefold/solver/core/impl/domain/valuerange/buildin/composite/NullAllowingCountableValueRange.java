@@ -4,7 +4,9 @@ import java.util.Iterator;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
@@ -23,11 +25,6 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
                             .formatted(childValueRange, NullAllowingCountableValueRange.class.getSimpleName()));
         }
         size = childValueRange.getSize() + 1L;
-    }
-
-    @Override
-    public boolean isValueImmutable() {
-        return super.isValueImmutable();
     }
 
     AbstractCountableValueRange<T> getChildValueRange() {
@@ -54,6 +51,11 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
             return true;
         }
         return childValueRange.contains(value);
+    }
+
+    @Override
+    public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
+        return childValueRange.sort(sorter);
     }
 
     @Override

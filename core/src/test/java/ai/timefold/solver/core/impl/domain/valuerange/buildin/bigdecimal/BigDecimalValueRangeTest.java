@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.math.BigDecimal;
 
@@ -17,7 +18,7 @@ class BigDecimalValueRangeTest {
         assertThat(new BigDecimalValueRange(new BigDecimal("0"), new BigDecimal("10")).getSize()).isEqualTo(10L);
         assertThat(new BigDecimalValueRange(new BigDecimal("100.0"), new BigDecimal("120.0")).getSize()).isEqualTo(200L);
         assertThat(new BigDecimalValueRange(new BigDecimal("-15.00"), new BigDecimal("25.07")).getSize()).isEqualTo(4007L);
-        assertThat(new BigDecimalValueRange(new BigDecimal("7.0"), new BigDecimal("7.0")).getSize()).isEqualTo(0L);
+        assertThat(new BigDecimalValueRange(new BigDecimal("7.0"), new BigDecimal("7.0")).getSize()).isZero();
         // IncrementUnit
         assertThat(new BigDecimalValueRange(new BigDecimal("0.0"), new BigDecimal("10.0"), new BigDecimal("2.0")).getSize())
                 .isEqualTo(5L);
@@ -121,6 +122,12 @@ class BigDecimalValueRangeTest {
                 new BigDecimalValueRange(new BigDecimal("100.0"), new BigDecimal("120.4"), new BigDecimal("5.1"))
                         .createRandomIterator(new TestRandom(3, 0)),
                 new BigDecimal("115.3"), new BigDecimal("100.0"));
+    }
+
+    @Test
+    void sort() {
+        var range = new BigDecimalValueRange(new BigDecimal("0"), new BigDecimal("4"));
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
     }
 
 }

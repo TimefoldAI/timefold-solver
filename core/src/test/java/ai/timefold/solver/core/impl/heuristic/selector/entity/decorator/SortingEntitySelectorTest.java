@@ -4,6 +4,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfEnt
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -17,6 +18,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataObject;
@@ -56,6 +58,9 @@ class SortingEntitySelectorTest {
         EntitySelector entitySelector = new SortingEntitySelector(childEntitySelector, cacheType, sorter);
 
         SolverScope solverScope = mock(SolverScope.class);
+        InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
+        doReturn(scoreDirector).when(solverScope).getScoreDirector();
+        doReturn(new TestdataSolution()).when(scoreDirector).getWorkingSolution();
         entitySelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);

@@ -1,11 +1,14 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.collection;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.ValueRangeCache;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 
 import org.jspecify.annotations.NullMarked;
@@ -53,6 +56,13 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
             cache = cacheBuilder.buildCache(list);
         }
         return cache.contains(value);
+    }
+
+    @Override
+    public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
+        var newList = new ArrayList<>(list);
+        sorter.sort(newList);
+        return new ListValueRange<>(newList, isValueImmutable);
     }
 
     @Override
