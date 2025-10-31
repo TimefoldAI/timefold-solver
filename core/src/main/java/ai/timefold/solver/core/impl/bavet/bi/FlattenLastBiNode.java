@@ -26,8 +26,4 @@ public final class FlattenLastBiNode<A, B, NewB> extends AbstractFlattenLastNode
         return tuple.factB;
     }
 
-    @Override
-    protected NewB getEffectiveFactOut(BiTuple<A, NewB> outTuple) {
-        return outTuple.factB;
-    }
 }

@@ -26,9 +26,4 @@ public final class FlattenLastUniNode<A, NewA> extends AbstractFlattenLastNode<U
         return tuple.factA;
     }
 
-    @Override
-    protected NewA getEffectiveFactOut(UniTuple<NewA> outTuple) {
-        return outTuple.factA;
-    }
-
 }

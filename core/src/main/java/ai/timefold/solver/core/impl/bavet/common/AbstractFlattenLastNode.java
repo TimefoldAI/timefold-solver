@@ -2,15 +2,20 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple, EffectiveItem_, FlattenedItem_>
         extends AbstractNode
@@ -41,117 +46,73 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
             if (size == 0) {
                 return;
             }
-            List<OutTuple_> outTupleList = new ArrayList<>(size);
+            Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outMap = CollectionUtils.newLinkedHashMap(size);
             for (FlattenedItem_ item : collection) {
-                addTuple(tuple, item, outTupleList);
+                addTuple(tuple, item, outMap);
             }
-            tuple.setStore(flattenLastStoreIndex, outTupleList);
+            tuple.setStore(flattenLastStoreIndex, outMap);
         } else {
             Iterator<FlattenedItem_> iterator = iterable.iterator();
             if (!iterator.hasNext()) {
                 return;
             }
-            List<OutTuple_> outTupleList = new ArrayList<>();
+            Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outMap = new LinkedHashMap<>();
             while (iterator.hasNext()) {
-                addTuple(tuple, iterator.next(), outTupleList);
+                addTuple(tuple, iterator.next(), outMap);
             }
-            tuple.setStore(flattenLastStoreIndex, outTupleList);
+            tuple.setStore(flattenLastStoreIndex, outMap);
         }
     }
 
-    private void addTuple(InTuple_ originalTuple, FlattenedItem_ item, List<OutTuple_> outTupleList) {
-        OutTuple_ tuple = createTuple(originalTuple, item);
-        outTupleList.add(tuple);
-        propagationQueue.insert(tuple);
+    private void addTuple(InTuple_ originalTuple, FlattenedItem_ item,
+            Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outTupleMap) {
+        var outTupleEntry = outTupleMap.computeIfAbsent(item, k -> new FlattenLastMapEntry<>(item));
+        outTupleEntry.add(() -> createTuple(originalTuple, outTupleEntry.value),
+                propagationQueue::insert,
+                propagationQueue::update);
     }
 
     protected abstract OutTuple_ createTuple(InTuple_ originalTuple, FlattenedItem_ item);
 
     @Override
     public final void update(InTuple_ tuple) {
-        List<OutTuple_> outTupleList = tuple.getStore(flattenLastStoreIndex);
-        if (outTupleList == null) {
+        Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outTupleMap = tuple.getStore(flattenLastStoreIndex);
+        if (outTupleMap == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s).
             insert(tuple);
             return;
         }
         Iterable<FlattenedItem_> iterable = mappingFunction.apply(getEffectiveFactIn(tuple));
-        List<FlattenedItem_> newFlattenedItemList = iterableToList(iterable);
-        if (newFlattenedItemList.isEmpty()) { // Everything has to be removed.
-            retract(tuple);
-            return;
+        for (var flattenLastEntry : outTupleMap.values()) {
+            flattenLastEntry.reset();
         }
-        if (!outTupleList.isEmpty()) {
-            // Remove all facts from the input that already have an out tuple.
-            Iterator<OutTuple_> outTupleIterator = outTupleList.iterator();
-            while (outTupleIterator.hasNext()) {
-                OutTuple_ outTuple = outTupleIterator.next();
-                FlattenedItem_ existingFlattenedItem = getEffectiveFactOut(outTuple);
-                boolean existsAlsoInNew = false;
-                if (!newFlattenedItemList.isEmpty()) {
-                    // A fact can be present more than once and every iteration should only remove one instance.
-                    Iterator<FlattenedItem_> newFlattenedItemIterator = newFlattenedItemList.iterator();
-                    while (newFlattenedItemIterator.hasNext()) {
-                        FlattenedItem_ newFlattenedItem = newFlattenedItemIterator.next();
-                        // We check for identity, not equality, to not introduce dependency on user equals().
-                        if (newFlattenedItem == existingFlattenedItem) {
-                            // Remove item from the list, as it means its tuple need not be added later.
-                            newFlattenedItemIterator.remove();
-                            existsAlsoInNew = true;
-                            break;
-                        }
-                    }
-                }
-                if (!existsAlsoInNew) {
-                    outTupleIterator.remove();
-                    removeTuple(outTuple);
-                } else {
-                    propagationQueue.update(outTuple);
-                }
-            }
-        }
-        // Whatever is left in the input needs to be added.
-        for (FlattenedItem_ newFlattenedItem : newFlattenedItemList) {
-            addTuple(tuple, newFlattenedItem, outTupleList);
-        }
-    }
 
-    private List<FlattenedItem_> iterableToList(Iterable<FlattenedItem_> iterable) {
-        if (iterable instanceof Collection<FlattenedItem_> collection) {
-            // Optimization for Collection, where we know the size.
-            int size = collection.size();
-            if (size == 0) {
-                return Collections.emptyList();
+        for (var item : iterable) {
+            addTuple(tuple, item, outTupleMap);
+        }
+
+        var flattenLastEntryIterator = outTupleMap.values().iterator();
+        while (flattenLastEntryIterator.hasNext()) {
+            var next = flattenLastEntryIterator.next();
+            next.retract(this::removeTuple);
+            if (next.newCount.intValue() == 0) {
+                flattenLastEntryIterator.remove();
             }
-            List<FlattenedItem_> result = new ArrayList<>(size);
-            iterable.forEach(result::add);
-            return result;
-        } else {
-            Iterator<FlattenedItem_> iterator = iterable.iterator();
-            if (!iterator.hasNext()) {
-                return Collections.emptyList();
-            }
-            List<FlattenedItem_> result = new ArrayList<>();
-            while (iterator.hasNext()) {
-                result.add(iterator.next());
-            }
-            return result;
         }
     }
 
     protected abstract EffectiveItem_ getEffectiveFactIn(InTuple_ tuple);
 
-    protected abstract FlattenedItem_ getEffectiveFactOut(OutTuple_ outTuple);
-
     @Override
     public final void retract(InTuple_ tuple) {
-        List<OutTuple_> outTupleList = tuple.removeStore(flattenLastStoreIndex);
-        if (outTupleList == null) {
+        Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outTupleMap = tuple.removeStore(flattenLastStoreIndex);
+        if (outTupleMap == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        for (OutTuple_ item : outTupleList) {
-            removeTuple(item);
+        for (FlattenLastMapEntry<FlattenedItem_, OutTuple_> flattenLastEntry : outTupleMap.values()) {
+            flattenLastEntry.reset();
+            flattenLastEntry.retract(this::removeTuple);
         }
     }
 
@@ -167,6 +128,38 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
     @Override
     public Propagator getPropagator() {
         return propagationQueue;
+    }
+
+    private record FlattenLastMapEntry<FlattenedItem_, OutTuple_>(FlattenedItem_ value, MutableInt newCount,
+            List<OutTuple_> outTupleList) {
+        FlattenLastMapEntry(FlattenedItem_ value) {
+            this(value, new MutableInt(), new ArrayList<>());
+        }
+
+        void add(Supplier<OutTuple_> outTupleSupplier,
+                Consumer<OutTuple_> insertConsumer,
+                Consumer<OutTuple_> updateConsumer) {
+            var listIndex = newCount.intValue();
+            newCount.increment();
+            if (newCount.intValue() > outTupleList.size()) {
+                var inserted = outTupleSupplier.get();
+                outTupleList.add(inserted);
+                insertConsumer.accept(inserted);
+            } else {
+                updateConsumer.accept(outTupleList.get(listIndex));
+            }
+        }
+
+        void retract(Consumer<OutTuple_> retractedConsumer) {
+            for (var i = newCount.intValue(); i < outTupleList.size(); i++) {
+                retractedConsumer.accept(outTupleList.get(i));
+            }
+            outTupleList.subList(newCount.intValue(), outTupleList.size()).clear();
+        }
+
+        void reset() {
+            newCount.setValue(0);
+        }
     }
 
 }
