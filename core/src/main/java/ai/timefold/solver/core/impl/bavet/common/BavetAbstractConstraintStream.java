@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -22,15 +23,22 @@ public abstract class BavetAbstractConstraintStream<Solution_>
         extends AbstractConstraintStream<Solution_>
         implements BavetStream {
 
+    private static final String BAVET_IMPL_PACKAGE = "ai.timefold.solver.core.impl.bavet";
+    private static final String BAVET_SCORE_IMPL_PACKAGE = "ai.timefold.solver.core.impl.score.stream";
+    private static final String BAVET_SCORE_API_PACKAGE = "ai.timefold.solver.core.api.score.stream";
+
     protected final BavetConstraintFactory<Solution_> constraintFactory;
     protected final BavetAbstractConstraintStream<Solution_> parent;
     protected final List<BavetAbstractConstraintStream<Solution_>> childStreamList = new ArrayList<>(2);
+    protected final Set<ConstraintNodeLocation> streamLocationSet;
 
     protected BavetAbstractConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractConstraintStream<Solution_> parent) {
         super(parent.getRetrievalSemantics());
         this.constraintFactory = constraintFactory;
         this.parent = parent;
+        this.streamLocationSet = new LinkedHashSet<>();
+        streamLocationSet.add(determineStreamLocation());
     }
 
     protected BavetAbstractConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
@@ -38,6 +46,28 @@ public abstract class BavetAbstractConstraintStream<Solution_>
         super(retrievalSemantics);
         this.constraintFactory = constraintFactory;
         this.parent = null;
+        this.streamLocationSet = new LinkedHashSet<>();
+        streamLocationSet.add(determineStreamLocation());
+    }
+
+    private static ConstraintNodeLocation determineStreamLocation() {
+        return StackWalker.getInstance().walk(stack -> stack
+                .dropWhile(stackFrame -> stackFrame.getClassName().startsWith(BAVET_IMPL_PACKAGE) ||
+                        stackFrame.getClassName().startsWith(BAVET_SCORE_IMPL_PACKAGE) ||
+                        stackFrame.getClassName().startsWith(BAVET_SCORE_API_PACKAGE))
+                .map(stackFrame -> new ConstraintNodeLocation(stackFrame.getClassName(),
+                        stackFrame.getMethodName(),
+                        stackFrame.getLineNumber()))
+                .findFirst()
+                .orElseGet(ConstraintNodeLocation::unknown));
+    }
+
+    public Set<ConstraintNodeLocation> getLocationSet() {
+        return streamLocationSet;
+    }
+
+    public void addLocationSet(Set<ConstraintNodeLocation> locationSet) {
+        streamLocationSet.addAll(locationSet);
     }
 
     /**

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.score.stream.bavet;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
@@ -18,7 +19,7 @@ public record BavetConstraintStreamImplSupport(ConstraintMatchPolicy constraintM
     public <Score_ extends Score<Score_>, Solution_> InnerScoreDirector<Solution_, Score_> buildScoreDirector(
             SolutionDescriptor<Solution_> solutionDescriptorSupplier, ConstraintProvider constraintProvider) {
         var scoreDirectorFactory = new BavetConstraintStreamScoreDirectorFactory<Solution_, Score_>(solutionDescriptorSupplier,
-                constraintProvider, EnvironmentMode.PHASE_ASSERT);
+                constraintProvider, EnvironmentMode.PHASE_ASSERT, ConstraintProfilingMode.NONE);
         return scoreDirectorFactory.createScoreDirectorBuilder()
                 .withConstraintMatchPolicy(constraintMatchPolicy)
                 .build();

@@ -1,11 +1,13 @@
 package ai.timefold.solver.core.impl.score.director.stream;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.stream.ConstraintMetaModel;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.score.director.ScoreDirectorFactoryConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.util.ConfigUtils;
@@ -36,9 +38,11 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         }
         var constraintProviderClass = getConstraintProviderClass(config, providedConstraintProviderClass);
         var constraintProvider = ConfigUtils.newInstance(config, "constraintProviderClass", constraintProviderClass);
+        var profilingMode = Objects.requireNonNullElse(config.getConstraintStreamProfilingMode(), ConstraintProfilingMode.NONE);
         ConfigUtils.applyCustomProperties(constraintProvider, "constraintProviderClass",
                 config.getConstraintProviderCustomProperties(), "constraintProviderCustomProperties");
-        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode);
+        return new BavetConstraintStreamScoreDirectorFactory<>(solutionDescriptor, constraintProvider, environmentMode,
+                profilingMode);
     }
 
     private static Class<? extends ConstraintProvider> getConstraintProviderClass(ScoreDirectorFactoryConfig config,
@@ -56,11 +60,12 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
     private final ConstraintMetaModel constraintMetaModel;
 
     public BavetConstraintStreamScoreDirectorFactory(SolutionDescriptor<Solution_> solutionDescriptor,
-            ConstraintProvider constraintProvider, EnvironmentMode environmentMode) {
+            ConstraintProvider constraintProvider, EnvironmentMode environmentMode, ConstraintProfilingMode profilingMode) {
         super(solutionDescriptor);
         var constraintFactory = new BavetConstraintFactory<>(solutionDescriptor, environmentMode);
         constraintMetaModel = DefaultConstraintMetaModel.of(constraintFactory.buildConstraints(constraintProvider));
-        constraintSessionFactory = new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel);
+        constraintSessionFactory =
+                new BavetConstraintSessionFactory<>(solutionDescriptor, constraintMetaModel, profilingMode);
     }
 
     public BavetConstraintSession<Score_> newSession(Solution_ workingSolution,

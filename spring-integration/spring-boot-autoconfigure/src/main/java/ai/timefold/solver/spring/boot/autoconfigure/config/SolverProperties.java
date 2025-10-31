@@ -6,6 +6,7 @@ import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.score.stream.ConstraintStreamImplType;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -65,6 +66,8 @@ public class SolverProperties {
      */
     @Deprecated(forRemoval = true, since = "1.4.0")
     private ConstraintStreamImplType constraintStreamImplType;
+
+    private ConstraintProfilingMode constraintStreamProfilingMode;
 
     /**
      * Note: this setting is only available
@@ -160,6 +163,14 @@ public class SolverProperties {
     @Deprecated(forRemoval = true, since = "1.4.0")
     public void setConstraintStreamImplType(ConstraintStreamImplType constraintStreamImplType) {
         this.constraintStreamImplType = constraintStreamImplType;
+    }
+
+    public ConstraintProfilingMode getConstraintStreamProfilingMode() {
+        return constraintStreamProfilingMode;
+    }
+
+    public void setConstraintStreamProfilingMode(ConstraintProfilingMode constraintStreamProfilingMode) {
+        this.constraintStreamProfilingMode = constraintStreamProfilingMode;
     }
 
     public Boolean getConstraintStreamAutomaticNodeSharing() {

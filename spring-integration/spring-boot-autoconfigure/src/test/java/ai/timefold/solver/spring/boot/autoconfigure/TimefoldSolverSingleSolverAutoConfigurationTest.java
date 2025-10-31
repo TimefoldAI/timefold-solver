@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.benchmark.api.PlannerBenchmarkFactory;
@@ -13,6 +14,7 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverManager;
+import ai.timefold.solver.core.config.score.director.ConstraintProfilingMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
@@ -125,6 +127,19 @@ class TimefoldSolverSingleSolverAutoConfigurationTest {
                     var solution = solverJob.getFinalBestSolution();
                     assertThat(solution).isNotNull();
                     assertThat(solution.getScore().score()).isNotNegative();
+                });
+    }
+
+    @Test
+    void solveWithProfilingMode() {
+        contextRunner
+                .withClassLoader(allDefaultsFilteredClassLoader)
+                .withPropertyValues("timefold.solver.constraint-stream-profiling-mode=BY_METHOD")
+                .run(context -> {
+                    var solverConfig = context.getBean(SolverConfig.class);
+                    assertThat(Objects.requireNonNull(solverConfig.getScoreDirectorFactoryConfig())
+                            .getConstraintStreamProfilingMode())
+                            .isEqualTo(ConstraintProfilingMode.BY_METHOD);
                 });
     }
 
