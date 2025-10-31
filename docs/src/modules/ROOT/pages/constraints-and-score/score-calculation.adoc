@@ -1625,8 +1625,10 @@ which will compute the unfairness metric.
 [#constraintStreamsPrecompute]
 === Precomputing a stream
 
-When a stream depends only on properties of problem facts or entities, that stream can be precomputed to improve performance.
-Consider the following "no overlapping shifts" constraint:
+When a stream depends only on properties of problem facts or entities,
+and not on any planning variables (genuine or shadow),
+that stream can be precomputed to improve performance.
+Consider the following `No overlapping shifts` constraint:
 
 [tabs]
 ====
@@ -1635,15 +1637,18 @@ Java::
 [source,java,options="nowrap"]
 ----
 Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
-    return constraintFactory.forEachUniquePair(Shift.class, Joiners.overlapping(Shift::getStart, Shift::getEnd), Joiners.equal(Shift::getEmployee))
+    return constraintFactory.forEachUniquePair(Shift.class,
+            Joiners.overlapping(Shift::getStart, Shift::getEnd),
+            Joiners.equal(Shift::getEmployee))
         .penalize(HardSoftScore.ONE_HARD, (shift1, shift2) -> shift1.getOverlap(shift2))
         .asConstraint("No overlapping shifts");
 }
 ----
 ====
 
-This constraint will recalculate what shifts overlap and their overlap amount whenever any of their variable changes.
-If Shift's `start` and `end` are not variables (genuine or shadow), and Shift's `getOverlap` does not depend on any variables, then some parts of the constraint can be precomputed to improve performance:
+Whenever any variable changes, this constraint will recalculate what shifts overlap and their overlap amount.
+Since `start` and `end` are not variables (genuine or shadow) and `getOverlap()` does not depend on any variables,
+some parts of the constraint can be precomputed to improve performance:
 
 [tabs]
 ====
@@ -1652,39 +1657,37 @@ Java::
 [source,java,options="nowrap"]
 ----
 TriConstraintStream<Shift, Shift, Integer> overlappingShifts(PrecomputeFactory precomputeFactory) {
-    return precomputeFactory.forEachUnfilteredUniquePair(Shift.class, Joiners.overlapping(Shift::getStart, Shift::getEnd))
+    return precomputeFactory.forEachUnfilteredUniquePair(Shift.class,
+            Joiners.overlapping(Shift::getStart, Shift::getEnd))
         .expand((shift1, shift2) -> shift1.getOverlap(shift2));
 }
 
 Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
     return constraintFactory.precompute(this::overlappingShifts)
-        .filter((shift1, shift2, overlap) -> shift1.getEmployee() != null && shift1.getEmployee() == shift2.getEmployee())
+        .filter((shift1, shift2, overlap) ->
+            shift1.getEmployee() != null &&
+            shift1.getEmployee() == shift2.getEmployee())
         .penalize(HardSoftScore.ONE_HARD, (shift1, shift2, overlap) -> overlap)
         .asConstraint("No overlapping shifts");
 }
 ----
 ====
 
-This will precompute both that shifts that overlap and the overlap amount.
-When any of the overlapping shifts' variables changes, only the filter is re-evaluated.
-That filter is never evaluated for non-overlapping shifts, since they will not be included in the overlapping shifts stream.
+This will precompute and store the overlapping shifts, and their amount of overlap.
+When any of the overlapping shifts' variables change, only the filter will be re-evaluated.
+That filter also won't be evaluated for non-overlapping shifts,
+since they were already eliminated by the precomputed stream.
 
-[NOTE]
-====
-Constraint streams are extremely efficient, so precomputing them may result in little change.
-Always measure the move evaluation speed before and after implementing precomputing to determine if it worth it for your use case.
-====
+==== Precomputing and planning variables
 
-[NOTE]
-====
 Precomputed streams are unfiltered and will include both unassigned and inconsistent planning entities.
-If only assigned entities are desired, add a filter after the precompute to check if the entities' variables are assigned.
-====
+If only assigned entities are desired,
+add a filter after the `precompute` call to check if the entities' variables are assigned.
 
 [IMPORTANT]
 ====
 A score corruption will occur if a precomputed stream depends on variables (genuine or shadow).
-For example, if Shift's employee is a planning variable, then the following constraint will cause a score corruption:
+For example, if `employee` is a planning variable, then the following constraint will cause a score corruption:
 
 [tabs]
 =====
@@ -1696,8 +1699,9 @@ TriConstraintStream<Shift, Shift, Integer> overlappingShifts(PrecomputeFactory p
     // This references Shift::getEmployee, which depends
     // on a planning variable and thus is not valid to
     // use in a precomputed stream
-    return precomputeFactory.forEachUnfilteredUniquePair(Shift.class, Joiners.overlapping(Shift::getStart, Shift::getEnd),
-        Joiners.equal(Shift::getEmployee))
+    return precomputeFactory.forEachUnfilteredUniquePair(Shift.class,
+            Joiners.overlapping(Shift::getStart, Shift::getEnd),
+            Joiners.equal(Shift::getEmployee))
         .expand((shift1, shift2) -> shift1.getOverlap(shift2));
 }
 
@@ -1709,6 +1713,18 @@ Constraint noOverlappingShifts(ConstraintFactory constraintFactory) {
 ----
 =====
 ====
+
+==== When to use precomputing
+
+Constraint streams are already very efficient, so precomputing them may result in little change.
+It can be useful in cases where the constraint stream needs to execute expensive operations,
+such as filters which look up data in large collections or which compute complex calculations.
+It also helps with large joins where the join condition doesn't depend on any variables.
+
+However, only the biggest of datasets typically struggle with these issues.
+Always measure move evaluation speed before and after implementing precomputing
+to determine if using it brings benefits for your use case.
+
 
 [#constraintStreamsTesting]
 == Testing a constraint stream
