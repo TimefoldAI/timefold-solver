@@ -194,6 +194,37 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
+    void noPenaltyAndNoReward() {
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given()
+                .noPenalty("There should be no penalties")).doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .noPenalty("There should be no penalties"))
+                .hasMessageContaining("There should be no penalties")
+                .hasMessageContaining("Expected penalty");
+
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
+                .given()
+                .noReward("There should be no rewards")).doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .noReward("There should be no rewards"))
+                .hasMessageContaining("There should be no rewards")
+                .hasMessageContaining("Expected reward");
+
+        // Test without custom message
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given()
+                .noPenalty()).doesNotThrowAnyException();
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
+                .given()
+                .noReward()).doesNotThrowAnyException();
+    }
+
+    @Test
     void impacts() {
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
