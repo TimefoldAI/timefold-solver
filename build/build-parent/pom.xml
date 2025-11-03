@@ -29,7 +29,7 @@
     <version.org.freemarker>2.3.34</version.org.freemarker>
     <version.org.jfree.jfreechart>1.5.6</version.org.jfree.jfreechart>
     <version.org.jspecify>1.0.0</version.org.jspecify>
-    <version.org.junit.jupiter>6.0.0</version.org.junit.jupiter>
+    <version.org.junit.jupiter>6.0.1</version.org.junit.jupiter>
     <version.org.openrewrite.recipe>3.17.0</version.org.openrewrite.recipe>
     <version.org.springframework.boot>3.5.7</version.org.springframework.boot>
     <version.ow2.asm>9.9</version.ow2.asm>
@@ -39,7 +39,7 @@
     <!-- ************************************************************************ -->
     <version.antrun.plugin>3.2.0</version.antrun.plugin>
     <version.asciidoctor.plugin>3.2.0</version.asciidoctor.plugin>
-    <version.asciidoctor.plugin.pdf>2.3.21</version.asciidoctor.plugin.pdf>
+    <version.asciidoctor.plugin.pdf>2.3.23</version.asciidoctor.plugin.pdf>
     <version.assembly.plugin>3.7.1</version.assembly.plugin>
     <version.compiler.plugin>3.14.1</version.compiler.plugin>
     <version.dependency.plugin>3.9.0</version.dependency.plugin>
