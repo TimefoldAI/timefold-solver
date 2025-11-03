@@ -360,6 +360,16 @@ public final class ValueRangeManager<Solution_> {
         return getFromSolution(valueRangeDescriptor, cachedWorkingSolution);
     }
 
+    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            @Nullable SelectionSorter<Solution_, T> sorter) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException(
+                    "Impossible state: value range (%s) requested before the working solution is known."
+                            .formatted(valueRangeDescriptor));
+        }
+        return getFromSolution(valueRangeDescriptor, cachedWorkingSolution, sorter);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {

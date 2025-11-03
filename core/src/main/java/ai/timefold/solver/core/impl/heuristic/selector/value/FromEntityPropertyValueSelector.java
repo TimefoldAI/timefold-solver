@@ -8,6 +8,7 @@ import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -22,13 +23,16 @@ public final class FromEntityPropertyValueSelector<Solution_>
         implements ValueSelector<Solution_> {
 
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private final SelectionSorter<Solution_, Object> selectionSorter;
     private final boolean randomSelection;
 
     private CountableValueRange<Object> countableValueRange;
     private InnerScoreDirector<Solution_, ?> scoreDirector;
 
-    public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor, boolean randomSelection) {
+    public FromEntityPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            SelectionSorter<Solution_, Object> selectionSorter, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
+        this.selectionSorter = selectionSorter;
         this.randomSelection = randomSelection;
     }
 
@@ -51,7 +55,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
-        this.countableValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor);
+        this.countableValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor, selectionSorter);
     }
 
     @Override
@@ -63,6 +67,9 @@ public final class FromEntityPropertyValueSelector<Solution_>
     // ************************************************************************
     // Worker methods
     // ************************************************************************
+    public SelectionSorter<Solution_, Object> getSelectionSorter() {
+        return selectionSorter;
+    }
 
     @Override
     public GenuineVariableDescriptor<Solution_> getVariableDescriptor() {
@@ -92,7 +99,7 @@ public final class FromEntityPropertyValueSelector<Solution_>
 
     @Override
     public Iterator<Object> iterator(Object entity) {
-        var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity);
+        var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity, selectionSorter);
         if (!randomSelection) {
             return valueRange.createOriginalIterator();
         } else {
@@ -107,24 +114,22 @@ public final class FromEntityPropertyValueSelector<Solution_>
             // This logic aligns with the requirements for Nearby in the enterprise repository
             return countableValueRange.createOriginalIterator();
         } else {
-            var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity);
+            var valueRange = scoreDirector.getValueRangeManager().getFromEntity(valueRangeDescriptor, entity, selectionSorter);
             return valueRange.createOriginalIterator();
         }
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o)
-            return true;
-        if (o == null || getClass() != o.getClass())
+        if (!(o instanceof FromEntityPropertyValueSelector<?> that))
             return false;
-        FromEntityPropertyValueSelector<?> that = (FromEntityPropertyValueSelector<?>) o;
-        return randomSelection == that.randomSelection && Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor);
+        return randomSelection == that.randomSelection && Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor)
+                && Objects.equals(selectionSorter, that.selectionSorter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valueRangeDescriptor, randomSelection);
+        return Objects.hash(valueRangeDescriptor, selectionSorter, randomSelection);
     }
 
     @Override
