@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.sort;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -18,8 +20,10 @@ public record SelectionSorterAdapter<Solution_, T>(Solution_ solution,
     }
 
     @Override
-    public void sort(List<T> selectionList) {
-        selectionSorter.sort(solution, selectionList);
+    public List<T> sort(List<T> selectionList) {
+        var newList = new ArrayList<>(selectionList);
+        selectionSorter.sort(solution, newList);
+        return Collections.unmodifiableList(newList);
     }
 
     @Override
