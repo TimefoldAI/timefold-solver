@@ -276,6 +276,34 @@ public abstract class AbstractTriConstraintStreamPrecomputeTest extends Abstract
 
     @Override
     @TestTemplate
+    public void flattenLastNewInstances() {
+        // Needed since Integers use a cache of instances that we don't want to accidentally use
+        record ValueHolder(int value) {
+        }
+
+        var solution = TestdataLavishSolution.generateEmptySolution();
+        var entity1 = new TestdataLavishEntity();
+        entity1.setIntegerProperty(1);
+        var entity2 = new TestdataLavishEntity();
+        entity2.setIntegerProperty(2);
+        solution.getEntityList().addAll(List.of(entity1, entity2));
+        var value = new TestdataLavishValue();
+        solution.getValueList().add(value);
+
+        assertPrecompute(solution, List.of(new Triple<>(new ValueHolder(1), value, value),
+                new Triple<>(new ValueHolder(2), value, value)),
+                pf -> pf.forEachUnfiltered(TestdataLavishEntity.class)
+                        .groupBy(ConstraintCollectors.toList())
+                        .flattenLast(entityList -> entityList
+                                .stream()
+                                .map(entity -> new ValueHolder(entity.getIntegerProperty()))
+                                .toList())
+                        .join(TestdataLavishValue.class)
+                        .join(TestdataLavishValue.class));
+    }
+
+    @Override
+    @TestTemplate
     public void map() {
         var solution = TestdataLavishSolution.generateEmptySolution();
         var entityWithoutGroup = new TestdataLavishEntity();

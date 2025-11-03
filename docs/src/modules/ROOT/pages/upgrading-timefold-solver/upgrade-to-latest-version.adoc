@@ -70,6 +70,96 @@ ensuring all related settings are consistent and simpler.
 The old class remains valid and can be easily converted to use the `ComparatorFactory` instead.
 ====
 
+.icon:info-circle[role=yellow] `flattenLast` behaviour on `equals` objects
+[%collapsible%open]
+====
+Previously, `flattenLast` uses object identity to determine when to create or retract tuples.
+This was particularly inefficient when a mapping function was used with records:
+
+[source,java]
+----
+record Interval(int start, int end) {}
+
+factory.forEach(Shift.class)
+    .map(shift -> new Interval(shift.getStart(), shift.getEnd()))
+    .flattenLast(interval -> List.of(interval))
+    // ...
+----
+
+Since the `map` create a new interval instance every update, the `flattenLast` does a retract of the old instance followed by an insert of the new instance.
+Now, `flattenLast` use object equality and `hashCode` to determine when to create or retract tuples.
+For the example given above, since the different intervals are `equals` to each other, `flattenLast` will reuse the old interval and do an `update` on it.
+For the vast majority of cases, this change is not noticeable.
+However, if an object overrides `equals` and `hashCode` such that some property is not considered for `equals` or `hashCode`, and your constraints check that property after `flattenLast`, score corruption can occur since a different `equals` instance with a different value for that property can be used.
+For example:
+
+[source,java]
+----
+record IntervalEqualByStart(int start, int end) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Interval interval) {
+            return start == interval.start;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return start;
+    }
+}
+
+factory.forEach(Shift.class)
+    .map(shift -> new IntervalEqualByStart(shift.getStart(), shift.getEnd()))
+    .flattenLast(interval -> List.of(interval))
+    // "end" is not considered in IntervalEqualByStart,
+    // so IntervalEqualByStart(1, 2) and IntervalEqualByStart(1, 3)
+    // are equals to one another, causing flattenLast to reuse
+    // IntervalEqualByStart(1, 2) (which is not accepted by this filter)
+    // instead of using IntervalEqualByStart(1, 3) (which would be accepted by this filter)
+    // if shift.getEnd() was changed from 2 to 3.
+    .filter(interval -> interval.end() > 2)
+    // ...
+----
+
+To fix this, ensure the objects returned by the iterable passed to `flattenLast` are not `equals` if any checked properties downstream are different.
+For instance:
+
+[source,java]
+----
+record IntervalEqualByStart(int start, int end) {
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Interval interval) {
+            return start == interval.start;
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return start;
+    }
+}
+
+record IntervalEqualByStartAndEnd(int start, int end) {}
+
+factory.forEach(Shift.class)
+    .map(shift -> new IntervalEqualByStart(shift.getStart(), shift.getEnd()))
+    .flattenLast(intervalEqualByStart -> List.of(intervalEqualByStart)
+        .stream()
+        .map(intervalEqualByStart -> new IntervalEqualByStartAndEnd(intervalEqualByStart.start(), intervalEqualByStart.end()))
+        .toList()
+    )
+    // "end" is considered by IntervalEqualByStartAndEnd,
+    // so no issue occurs
+    .filter(interval -> interval.end() > 2)
+    // ...
+----
+
+====
+
 === Upgrade from 1.22.0 to 1.23.0
 
 .icon:info-circle[role=yellow] `@PlanningEntity` `pinningFilter` deprecated for removal

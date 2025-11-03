@@ -46,28 +46,28 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
             if (size == 0) {
                 return;
             }
-            Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outMap = CollectionUtils.newLinkedHashMap(size);
+            FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = new FlattenBagByItem<>(size);
             for (FlattenedItem_ item : collection) {
-                addTuple(tuple, item, outMap);
+                addTuple(tuple, item, bagByItem);
             }
-            tuple.setStore(flattenLastStoreIndex, outMap);
+            tuple.setStore(flattenLastStoreIndex, bagByItem);
         } else {
             Iterator<FlattenedItem_> iterator = iterable.iterator();
             if (!iterator.hasNext()) {
                 return;
             }
-            Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outMap = new LinkedHashMap<>();
+            FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = new FlattenBagByItem<>();
             while (iterator.hasNext()) {
-                addTuple(tuple, iterator.next(), outMap);
+                addTuple(tuple, iterator.next(), bagByItem);
             }
-            tuple.setStore(flattenLastStoreIndex, outMap);
+            tuple.setStore(flattenLastStoreIndex, bagByItem);
         }
     }
 
     private void addTuple(InTuple_ originalTuple, FlattenedItem_ item,
-            Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outTupleMap) {
-        var outTupleEntry = outTupleMap.computeIfAbsent(item, k -> new FlattenLastMapEntry<>(item));
-        outTupleEntry.add(() -> createTuple(originalTuple, outTupleEntry.value),
+            FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem) {
+        var outTupleBag = bagByItem.getBag(item);
+        outTupleBag.add(() -> createTuple(originalTuple, outTupleBag.value),
                 propagationQueue::insert,
                 propagationQueue::update);
     }
@@ -76,27 +76,27 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
 
     @Override
     public final void update(InTuple_ tuple) {
-        Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outTupleMap = tuple.getStore(flattenLastStoreIndex);
-        if (outTupleMap == null) {
+        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.getStore(flattenLastStoreIndex);
+        if (bagByItem == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s).
             insert(tuple);
             return;
         }
         Iterable<FlattenedItem_> iterable = mappingFunction.apply(getEffectiveFactIn(tuple));
-        for (var flattenLastEntry : outTupleMap.values()) {
-            flattenLastEntry.reset();
+        for (var bag : bagByItem.getAllBags()) {
+            bag.reset();
         }
 
         for (var item : iterable) {
-            addTuple(tuple, item, outTupleMap);
+            addTuple(tuple, item, bagByItem);
         }
 
-        var flattenLastEntryIterator = outTupleMap.values().iterator();
-        while (flattenLastEntryIterator.hasNext()) {
-            var next = flattenLastEntryIterator.next();
-            next.retract(this::removeTuple);
-            if (next.newCount.intValue() == 0) {
-                flattenLastEntryIterator.remove();
+        var bagIterator = bagByItem.getAllBags().iterator();
+        while (bagIterator.hasNext()) {
+            var bag = bagIterator.next();
+            bag.removeExtras(this::removeTuple);
+            if (bag.newCount.intValue() == 0) {
+                bagIterator.remove();
             }
         }
     }
@@ -105,14 +105,14 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
 
     @Override
     public final void retract(InTuple_ tuple) {
-        Map<Object, FlattenLastMapEntry<FlattenedItem_, OutTuple_>> outTupleMap = tuple.removeStore(flattenLastStoreIndex);
-        if (outTupleMap == null) {
+        FlattenBagByItem<FlattenedItem_, OutTuple_> bagByItem = tuple.removeStore(flattenLastStoreIndex);
+        if (bagByItem == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        for (FlattenLastMapEntry<FlattenedItem_, OutTuple_> flattenLastEntry : outTupleMap.values()) {
+        for (var flattenLastEntry : bagByItem.getAllBags()) {
             flattenLastEntry.reset();
-            flattenLastEntry.retract(this::removeTuple);
+            flattenLastEntry.removeExtras(this::removeTuple);
         }
     }
 
@@ -130,12 +130,48 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
         return propagationQueue;
     }
 
-    private record FlattenLastMapEntry<FlattenedItem_, OutTuple_>(FlattenedItem_ value, MutableInt newCount,
+    private record FlattenBagByItem<FlattenedItem_, OutTuple_>(
+            Map<FlattenedItem_, FlattenItemBag<FlattenedItem_, OutTuple_>> delegate) {
+        FlattenBagByItem() {
+            this(new LinkedHashMap<>());
+        }
+
+        FlattenBagByItem(int size) {
+            this(CollectionUtils.newLinkedHashMap(size));
+        }
+
+        /**
+         * @return a {@link Collection} backed by {@link FlattenBagByItem}, so modifications
+         *         to it are reflected in {@link FlattenBagByItem}.
+         */
+        Collection<FlattenItemBag<FlattenedItem_, OutTuple_>> getAllBags() {
+            return delegate.values();
+        }
+
+        /**
+         * @param key the item to get the bag of
+         * @return the {@link FlattenItemBag} containing {@code key}, creating a new
+         *         {@link FlattenItemBag} if it does not exist.
+         */
+        FlattenItemBag<FlattenedItem_, OutTuple_> getBag(FlattenedItem_ key) {
+            return delegate.computeIfAbsent(key, FlattenItemBag::new);
+        }
+    }
+
+    private record FlattenItemBag<FlattenedItem_, OutTuple_>(FlattenedItem_ value, MutableInt newCount,
             List<OutTuple_> outTupleList) {
-        FlattenLastMapEntry(FlattenedItem_ value) {
+        FlattenItemBag(FlattenedItem_ value) {
             this(value, new MutableInt(), new ArrayList<>());
         }
 
+        /**
+         * Increments {@link #newCount}.
+         * If the updated {@link #newCount} is less than or equal to the size of {@link #outTupleList},
+         * the {@code updateConsumer} is called with the corresponding element from
+         * {@link #outTupleList}.
+         * Otherwise, the {@code insertConsumer} is called with a new tuple created
+         * with {@code outTupleSupplier}, and that tuple is added to {@link #outTupleList}.
+         */
         void add(Supplier<OutTuple_> outTupleSupplier,
                 Consumer<OutTuple_> insertConsumer,
                 Consumer<OutTuple_> updateConsumer) {
@@ -150,13 +186,21 @@ public abstract class AbstractFlattenLastNode<InTuple_ extends AbstractTuple, Ou
             }
         }
 
-        void retract(Consumer<OutTuple_> retractedConsumer) {
+        /**
+         * Calls {@code retractConsumer} on the tuples in {@link #outTupleList}
+         * that are position at or after {@link #newCount}, and remove them
+         * from the list (causing the size of the list to be {@link #newCount}).
+         */
+        void removeExtras(Consumer<OutTuple_> retractConsumer) {
             for (var i = newCount.intValue(); i < outTupleList.size(); i++) {
-                retractedConsumer.accept(outTupleList.get(i));
+                retractConsumer.accept(outTupleList.get(i));
             }
             outTupleList.subList(newCount.intValue(), outTupleList.size()).clear();
         }
 
+        /**
+         * Sets {@link #newCount} to 0, while retaining the created tuples in {@link #outTupleList}.
+         */
         void reset() {
             newCount.setValue(0);
         }
