@@ -15,11 +15,11 @@ import org.jspecify.annotations.NullMarked;
 public interface ValueRangeSorter<T> {
 
     /**
-     * Apply an in-place sorting operation.
+     * Creates a copy of the provided list and sort the data.
      * 
-     * @param selectionList never null, a {@link List} of value that will be sorted.
+     * @param selectionList never null, a {@link List} of values that will be used as input for sorting.
      */
-    void sort(List<T> selectionList);
+    List<T> sort(List<T> selectionList);
 
     /**
      * Creates a copy of the provided set and sort the data.

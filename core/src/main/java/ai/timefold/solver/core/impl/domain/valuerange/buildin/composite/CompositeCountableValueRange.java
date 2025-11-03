@@ -41,8 +41,8 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
     }
 
     private CompositeCountableValueRange(ValueRangeCache<T> cache, boolean isValueImmutable) {
-        this.isValueImmutable = isValueImmutable;
         this.cache = cache;
+        this.isValueImmutable = isValueImmutable;
     }
 
     @Override

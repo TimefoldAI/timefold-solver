@@ -82,8 +82,7 @@ public final class ValueRangeCache<Value_>
      * @param sorter never null, the sorter
      */
     public ValueRangeCache<Value_> sort(ValueRangeSorter<Value_> sorter) {
-        var valuesWithFastRandomAccessSorted = new ArrayList<>(valuesWithFastRandomAccess);
-        sorter.sort(valuesWithFastRandomAccessSorted);
+        var valuesWithFastRandomAccessSorted = sorter.sort(valuesWithFastRandomAccess);
         return switch (cacheType) {
             case USER_VALUES -> Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccessSorted);
             case TRUSTED_VALUES -> Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccessSorted);
