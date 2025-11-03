@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.testdomain.valuerange.entityproviding.composite;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +21,40 @@ public class TestdataCompositeEntityProvidingSolution extends TestdataObject {
     public static SolutionDescriptor<TestdataCompositeEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataCompositeEntityProvidingSolution.class,
                 TestdataCompositeEntityProvidingEntity.class);
+    }
+
+    public static TestdataCompositeEntityProvidingSolution generateSolution(int valueListSize,
+            int entityListSize) {
+        var solution = new TestdataCompositeEntityProvidingSolution("Generated Solution 0");
+        var valueList = new ArrayList<TestdataValue>(valueListSize);
+        for (var i = 0; i < valueListSize; i++) {
+            var value = new TestdataValue("Generated Value " + i);
+            valueList.add(value);
+        }
+        var entityList = new ArrayList<TestdataCompositeEntityProvidingEntity>(entityListSize);
+        for (var i = 0; i < entityListSize; i++) {
+            var idx = 0;
+            var expectedCount = Math.max(1, valueListSize / 2);
+            var valueRange = new ArrayList<TestdataValue>();
+            var secondValueRange = new ArrayList<TestdataValue>();
+            for (var j = 0; j < expectedCount; j++) {
+                if (idx >= valueListSize) {
+                    break;
+                }
+                valueRange.add(valueList.get(idx++));
+            }
+            for (var j = 0; j < expectedCount; j++) {
+                if (idx >= valueListSize) {
+                    break;
+                }
+                secondValueRange.add(valueList.get(idx++));
+            }
+            var entity = new TestdataCompositeEntityProvidingEntity("Generated Entity " + i, valueRange,
+                    secondValueRange);
+            entityList.add(entity);
+        }
+        solution.setEntityList(entityList);
+        return solution;
     }
 
     public static TestdataCompositeEntityProvidingSolution generateSolution() {
