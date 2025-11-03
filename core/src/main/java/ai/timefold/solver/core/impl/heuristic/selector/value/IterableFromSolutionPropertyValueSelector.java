@@ -10,6 +10,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 
@@ -21,6 +22,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         implements IterableValueSelector<Solution_> {
 
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
+    private final SelectionSorter<Solution_, Object> sorter;
     private final SelectionCacheType minimumCacheType;
     private final boolean randomSelection;
     private final boolean valueRangeMightContainEntity;
@@ -30,8 +32,9 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     private boolean cachedEntityListIsDirty = false;
 
     public IterableFromSolutionPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            SelectionCacheType minimumCacheType, boolean randomSelection) {
+            SelectionSorter<Solution_, Object> sorter, SelectionCacheType minimumCacheType, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
+        this.sorter = sorter;
         this.minimumCacheType = minimumCacheType;
         this.randomSelection = randomSelection;
         valueRangeMightContainEntity = valueRangeDescriptor.mightContainEntity();
@@ -57,7 +60,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         super.phaseStarted(phaseScope);
         var scoreDirector = phaseScope.getScoreDirector();
         cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
-                scoreDirector.getWorkingSolution());
+                scoreDirector.getWorkingSolution(), sorter);
         if (valueRangeMightContainEntity) {
             cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
             cachedEntityListIsDirty = false;
@@ -74,7 +77,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
                     cachedEntityListIsDirty = true;
                 } else {
                     cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
-                            scoreDirector.getWorkingSolution());
+                            scoreDirector.getWorkingSolution(), sorter);
                     cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
                 }
             }
@@ -153,19 +156,16 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     }
 
     @Override
-    public boolean equals(Object other) {
-        if (this == other)
-            return true;
-        if (other == null || getClass() != other.getClass())
+    public boolean equals(Object o) {
+        if (!(o instanceof IterableFromSolutionPropertyValueSelector<?> that))
             return false;
-        var that = (IterableFromSolutionPropertyValueSelector<?>) other;
-        return randomSelection == that.randomSelection &&
-                Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor) && minimumCacheType == that.minimumCacheType;
+        return randomSelection == that.randomSelection && Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor)
+                && Objects.equals(sorter, that.sorter) && minimumCacheType == that.minimumCacheType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valueRangeDescriptor, minimumCacheType, randomSelection);
+        return Objects.hash(valueRangeDescriptor, sorter, minimumCacheType, randomSelection);
     }
 
     @Override
