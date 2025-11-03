@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.testdomain.list.valuerange;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -14,6 +15,31 @@ public class TestdataListEntityProvidingSolution {
     public static SolutionDescriptor<TestdataListEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataListEntityProvidingSolution.class,
                 TestdataListEntityProvidingEntity.class, TestdataListEntityProvidingValue.class);
+    }
+
+    public static TestdataListEntityProvidingSolution generateSolution(int valueListSize, int entityListSize) {
+        var solution = new TestdataListEntityProvidingSolution();
+        var valueList = new ArrayList<TestdataListEntityProvidingValue>(valueListSize);
+        for (var i = 0; i < valueListSize; i++) {
+            var value = new TestdataListEntityProvidingValue("Generated Value " + i);
+            valueList.add(value);
+        }
+        var entityList = new ArrayList<TestdataListEntityProvidingEntity>(entityListSize);
+        var idx = 0;
+        for (var i = 0; i < entityListSize; i++) {
+            var expectedCount = Math.max(1, valueListSize / entityListSize);
+            var valueRange = new ArrayList<TestdataListEntityProvidingValue>();
+            for (var j = 0; j < expectedCount; j++) {
+                if (idx >= valueListSize) {
+                    break;
+                }
+                valueRange.add(valueList.get(idx++));
+            }
+            var entity = new TestdataListEntityProvidingEntity("Generated Entity " + i, valueRange);
+            entityList.add(entity);
+        }
+        solution.setEntityList(entityList);
+        return solution;
     }
 
     public static TestdataListEntityProvidingSolution generateSolution() {

@@ -13,6 +13,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import ai.timefold.solver.core.impl.constructionheuristic.event.ConstructionHeuristicPhaseLifecycleListener;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
@@ -232,6 +233,28 @@ public final class PlannerAssert {
                 .toIterable()
                 .map(PlannerAssert::codeIfNotNull)
                 .containsExactly(codes);
+    }
+
+    public static <O> void assertNonNullCodesOfIterator(Iterator<O> iterator, String... codes) {
+        assertThat(iterator).isNotNull();
+        assertThat(iterator)
+                .toIterable()
+                .filteredOn(Objects::nonNull)
+                .map(PlannerAssert::codeIfNotNull)
+                .containsExactly(codes);
+    }
+
+    public static <O> void assertReversedNonNullCodesOfIterator(Iterator<O> listIterator, String... codes) {
+        assertThat(listIterator).isNotNull();
+        var i = codes.length - 1;
+        while (i >= 0) {
+            var next = listIterator.next();
+            if (next == null) {
+                continue;
+            }
+            assertCode(codes[i], next);
+            i--;
+        }
     }
 
     public static void assertAllCodesOfIterator(Iterator<?> iterator, String... codes) {
