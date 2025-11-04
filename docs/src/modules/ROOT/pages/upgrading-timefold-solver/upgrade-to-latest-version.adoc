@@ -73,8 +73,9 @@ The old class remains valid and can be easily converted to use the `ComparatorFa
 .icon:info-circle[role=yellow] `flattenLast` behaviour on `equals` objects
 [%collapsible%open]
 ====
-Previously, `flattenLast` uses object identity to determine when to create or retract tuples.
-This was particularly inefficient when a mapping function was used with records:
+Previously, `flattenLast` mistakenly used object identity to determine when to create or retract tuples.
+This was particularly inefficient when a mapping function was used with Java records, 
+or value-based types such as `LocalDate`:
 
 [source,java]
 ----
@@ -86,11 +87,20 @@ factory.forEach(Shift.class)
     // ...
 ----
 
-Since the `map` create a new interval instance every update, the `flattenLast` does a retract of the old instance followed by an insert of the new instance.
+Since the `map` creates a new interval instance on every update, 
+the `flattenLast` did a retract of the old instance,
+followed by an insert of the new instance.
+
 Now, `flattenLast` use object equality and `hashCode` to determine when to create or retract tuples.
-For the example given above, since the different intervals are `equals` to each other, `flattenLast` will reuse the old interval and do an `update` on it.
-For the vast majority of cases, this change is not noticeable.
-However, if an object overrides `equals` and `hashCode` such that some property is not considered for `equals` or `hashCode`, and your constraints check that property after `flattenLast`, score corruption can occur since a different `equals` instance with a different value for that property can be used.
+For the example given above, since the different intervals are `equals` to each other, 
+`flattenLast` will reuse the old interval and do an `update` on it.
+For the vast majority of cases, this change is not noticeable;
+if two objects `equals` each other, they are equivalent and therefore interchangeable.
+
+However, if an object overrides `equals` and `hashCode` 
+such that some property is not considered for `equals` or `hashCode`, 
+and your constraints check that property after `flattenLast`, 
+score corruption can occur since a different instance with a different value for that property can be used.
 For example:
 
 [source,java]
@@ -123,41 +133,23 @@ factory.forEach(Shift.class)
     // ...
 ----
 
-To fix this, ensure the objects returned by the iterable passed to `flattenLast` are not `equals` if any checked properties downstream are different.
+To fix this, ensure the objects returned by the iterable passed to `flattenLast` 
+are not `equals` if any checked properties downstream are different.
+(In other words: make sure that `equals` means equal.)
 For instance:
 
 [source,java]
 ----
-record IntervalEqualByStart(int start, int end) {
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Interval interval) {
-            return start == interval.start;
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return start;
-    }
-}
-
 record IntervalEqualByStartAndEnd(int start, int end) {}
 
 factory.forEach(Shift.class)
-    .map(shift -> new IntervalEqualByStart(shift.getStart(), shift.getEnd()))
-    .flattenLast(intervalEqualByStart -> List.of(intervalEqualByStart)
-        .stream()
-        .map(intervalEqualByStart -> new IntervalEqualByStartAndEnd(intervalEqualByStart.start(), intervalEqualByStart.end()))
-        .toList()
-    )
+    .map(shift -> new IntervalEqualByStartAndEnd(shift.getStart(), shift.getEnd()))
+    .flattenLast(interval -> List.of(interval))
     // "end" is considered by IntervalEqualByStartAndEnd,
     // so no issue occurs
     .filter(interval -> interval.end() > 2)
     // ...
 ----
-
 ====
 
 === Upgrade from 1.22.0 to 1.23.0
