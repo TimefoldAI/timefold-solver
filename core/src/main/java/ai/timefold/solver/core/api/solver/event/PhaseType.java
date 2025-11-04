@@ -3,6 +3,7 @@ package ai.timefold.solver.core.api.solver.event;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.exhaustivesearch.ExhaustiveSearchPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
+import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.config.phase.NoChangePhaseConfig;
 import ai.timefold.solver.core.config.phase.custom.CustomPhaseConfig;
 import ai.timefold.solver.core.impl.phase.NoChangePhase;
@@ -30,6 +31,10 @@ public enum PhaseType {
      * The type of phase associated with {@link ExhaustiveSearchPhaseConfig}.
      */
     EXHAUSTIVE_SEARCH("Exhaustive Search"),
+    /**
+     * The type of phase associated with {@link PartitionedSearchPhaseConfig}.
+     */
+    PARTITIONED_SEARCH("Partitioned Search"),
     /**
      * The type of phase associated with {@link CustomPhaseConfig}.
      */

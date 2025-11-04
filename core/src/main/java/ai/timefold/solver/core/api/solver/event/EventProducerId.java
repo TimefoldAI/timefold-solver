@@ -71,6 +71,10 @@ public sealed interface EventProducerId permits PhaseEventProducerId, SolveEvent
         return new PhaseEventProducerId(PhaseType.EXHAUSTIVE_SEARCH, phaseIndex);
     }
 
+    static EventProducerId partitionedSearch(int phaseIndex) {
+        return new PhaseEventProducerId(PhaseType.PARTITIONED_SEARCH, phaseIndex);
+    }
+
     static EventProducerId customPhase(int phaseIndex) {
         return new PhaseEventProducerId(PhaseType.CUSTOM_PHASE, phaseIndex);
     }
