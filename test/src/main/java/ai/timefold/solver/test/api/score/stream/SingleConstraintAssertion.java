@@ -98,6 +98,25 @@ public interface SingleConstraintAssertion {
     SingleConstraintAssertion indictsWithExactly(@Nullable String message, @NonNull Object @NonNull... indictments);
 
     /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in no impact on the score.
+     * <p>
+     * This is equivalent to checking that there are neither penalties nor rewards.
+     *
+     * @throws AssertionError when there is any impact (penalty or reward)
+     */
+    default void hasNoImpact() {
+        hasNoImpact(null);
+    }
+
+    /**
+     * As defined by {@link #hasNoImpact()}.
+     *
+     * @param message description of the scenario being asserted
+     * @throws AssertionError when there is any impact (penalty or reward)
+     */
+    void hasNoImpact(@Nullable String message);
+
+    /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific penalty.
      * <p>
      * Ignores the constraint weight: it only asserts the match weights.
@@ -257,27 +276,6 @@ public interface SingleConstraintAssertion {
      * @throws AssertionError when there are no penalties
      */
     void penalizes(@Nullable String message);
-
-    /**
-     * Asserts that the {@link Constraint} being tested, given a set of facts, results in no penalties.
-     * <p>
-     * This is equivalent to calling {@link #penalizesBy(int)} with a value of 0.
-     *
-     * @throws AssertionError when there are penalties
-     */
-    default void noPenalty() {
-        noPenalty(null);
-    }
-
-    /**
-     * As defined by {@link #noPenalty()}.
-     *
-     * @param message description of the scenario being asserted
-     * @throws AssertionError when there are penalties
-     */
-    default void noPenalty(@Nullable String message) {
-        penalizesBy(message, 0);
-    }
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific reward.
@@ -440,27 +438,6 @@ public interface SingleConstraintAssertion {
      * @throws AssertionError when there are no rewards
      */
     void rewards(@Nullable String message);
-
-    /**
-     * Asserts that the {@link Constraint} being tested, given a set of facts, results in no rewards.
-     * <p>
-     * This is equivalent to calling {@link #rewardsWith(int)} with a value of 0.
-     *
-     * @throws AssertionError when there are rewards
-     */
-    default void noReward() {
-        noReward(null);
-    }
-
-    /**
-     * As defined by {@link #noReward()}.
-     *
-     * @param message description of the scenario being asserted
-     * @throws AssertionError when there are rewards
-     */
-    default void noReward(@Nullable String message) {
-        rewardsWith(message, 0);
-    }
 
     /**
      * Asserts that the {@link Constraint} being tested, given a set of facts,

@@ -271,6 +271,12 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         assertLessThanImpact(ScoreImpactType.REWARD, matchWeightTotal, message);
     }
 
+    @Override
+    public void hasNoImpact(@Nullable String message) {
+        ensureInitialized();
+        assertNoImpact(message);
+    }
+
     private static void validateLessThanMatchWeighTotal(Number matchWeightTotal) {
         if (matchWeightTotal.doubleValue() < 1) {
             throw new IllegalArgumentException("The matchWeightTotal (%s) must be greater than 0.".formatted(matchWeightTotal));
@@ -362,6 +368,24 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         var constraintId = constraint.getConstraintRef().constraintId();
         var assertionMessage = buildLessThanAssertionErrorMessage(scoreImpactType, matchWeightTotal, actualScoreImpactType,
                 impact, constraintId, message);
+        throw new AssertionError(assertionMessage);
+    }
+
+    private void assertNoImpact(String message) {
+        var deducedImpacts = deduceImpact();
+        var impact = deducedImpacts.key();
+        var negatedImpact = deducedImpacts.value();
+        var zeroScore = scoreDefinition.getZeroScore();
+        var zero = zeroScore.toLevelNumbers()[0];
+        var equalityPredicate = NumberEqualityUtil.getEqualityPredicate(scoreDefinition, zero);
+
+        // Check if both the impact and negated impact are zero
+        if (equalityPredicate.test(zero, impact) && equalityPredicate.test(zero, negatedImpact)) {
+            return;
+        }
+
+        var constraintId = constraint.getConstraintRef().constraintId();
+        var assertionMessage = buildNoImpactAssertionErrorMessage(impact, constraintId, message);
         throw new AssertionError(assertionMessage);
     }
 
@@ -712,6 +736,17 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
             });
         }
         return String.format(preformattedMessage.toString(), params.toArray());
+    }
+
+    private String buildNoImpactAssertionErrorMessage(Number actualImpact, String constraintId, String message) {
+        var expectation = message != null ? message : "Broken expectation.";
+        var preformattedMessage = "%s%n%18s: %s%n%18s: no impact%n%18s: %s (%s)%n%n  %s";
+        return String.format(preformattedMessage,
+                expectation,
+                "Constraint", constraintId,
+                "Expected",
+                "Actual impact", actualImpact, actualImpact.getClass(),
+                DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection, indictmentCollection));
     }
 
     private static String getImpactTypeLabel(ScoreImpactType scoreImpactType) {
