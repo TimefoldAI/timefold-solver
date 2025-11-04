@@ -5,6 +5,7 @@ import java.time.OffsetDateTime;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.SortableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
 import org.jspecify.annotations.NullMarked;
@@ -17,7 +18,7 @@ import org.jspecify.annotations.NullMarked;
  * @see ValueRangeFactory
  */
 @NullMarked
-public abstract class AbstractCountableValueRange<T> implements CountableValueRange<T> {
+public abstract class AbstractCountableValueRange<T> implements CountableValueRange<T>, SortableValueRange<T> {
 
     /**
      * Certain optimizations can be applied if {@link Object#equals(Object)} can be relied upon

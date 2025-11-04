@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.SortableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
 /**
@@ -15,7 +16,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
  *             Use {@link CountableValueRange} instead, and configure a step.
  */
 @Deprecated(forRemoval = true, since = "1.1.0")
-public abstract class AbstractUncountableValueRange<T> implements ValueRange<T> {
+public abstract class AbstractUncountableValueRange<T> implements ValueRange<T>, SortableValueRange<T> {
 
     @Override
     public ValueRange<T> sort(ValueRangeSorter<T> sorter) {

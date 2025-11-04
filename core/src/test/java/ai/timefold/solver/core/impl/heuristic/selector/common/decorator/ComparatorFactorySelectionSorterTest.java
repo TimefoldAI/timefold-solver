@@ -27,7 +27,7 @@ class ComparatorFactorySelectionSorterTest {
         selectionList.add(new TestdataEntity("A"));
         selectionList.add(new TestdataEntity("D"));
         selectionList.add(new TestdataEntity("B"));
-        selectionSorter.sort(new TestdataSolution(), selectionList);
+        selectionList = selectionSorter.sort(new TestdataSolution(), selectionList);
         assertCodesOfIterator(selectionList.iterator(), "A", "B", "C", "D");
     }
 
@@ -43,7 +43,7 @@ class ComparatorFactorySelectionSorterTest {
         selectionList.add(new TestdataEntity("A"));
         selectionList.add(new TestdataEntity("D"));
         selectionList.add(new TestdataEntity("B"));
-        selectionSorter.sort(new TestdataSolution(), selectionList);
+        selectionList = selectionSorter.sort(new TestdataSolution(), selectionList);
         assertCodesOfIterator(selectionList.iterator(), "D", "C", "B", "A");
     }
 
