@@ -98,6 +98,25 @@ public interface SingleConstraintAssertion {
     SingleConstraintAssertion indictsWithExactly(@Nullable String message, @NonNull Object @NonNull... indictments);
 
     /**
+     * Asserts that the {@link Constraint} being tested, given a set of facts, results in no impact on the score.
+     * <p>
+     * This is equivalent to checking that there are neither penalties nor rewards.
+     *
+     * @throws AssertionError when there is any impact (penalty or reward)
+     */
+    default void hasNoImpact() {
+        hasNoImpact(null);
+    }
+
+    /**
+     * As defined by {@link #hasNoImpact()}.
+     *
+     * @param message description of the scenario being asserted
+     * @throws AssertionError when there is any impact (penalty or reward)
+     */
+    void hasNoImpact(@Nullable String message);
+
+    /**
      * Asserts that the {@link Constraint} being tested, given a set of facts, results in a specific penalty.
      * <p>
      * Ignores the constraint weight: it only asserts the match weights.

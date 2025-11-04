@@ -194,6 +194,117 @@ class SingleConstraintAssertionTest {
     }
 
     @Test
+    void hasNoImpact() {
+        var solution = TestdataConstraintVerifierSolution.generateSolution(2, 3);
+
+        // Test with no entities - should have no impact
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given()
+                .hasNoImpact("There should be no impact")).doesNotThrowAnyException();
+
+        // Test without custom message - no entities
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given()
+                .hasNoImpact()).doesNotThrowAnyException();
+
+        // Test with entities that trigger penalties - should fail
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .hasNoImpact("There should be no impact"))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("There should be no impact")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+
+        // Test with entities that trigger penalties - without custom message
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::penalizeEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .hasNoImpact())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+
+        // Test with entities that trigger rewards - should fail
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .hasNoImpact("There should be no impact"))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("There should be no impact")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+
+        // Test with entities that trigger rewards - without custom message
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::rewardEveryEntity)
+                .given(solution.getEntityList().toArray())
+                .hasNoImpact())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+    }
+
+    @Test
+    void hasNoImpactWithMixedConstraint() {
+        // Test mixed constraint with no entities - should have no impact
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .hasNoImpact()).doesNotThrowAnyException();
+
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given()
+                .hasNoImpact("There should be no impact")).doesNotThrowAnyException();
+
+        // Test mixed constraint with entities that cause penalties - should fail
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .hasNoImpact("There should be no impact"))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("There should be no impact")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+
+        // Test mixed constraint with entities that cause penalties - without custom message
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("A", new TestdataValue()))
+                .hasNoImpact())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+
+        // Test mixed constraint with entities that cause rewards - should fail
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .hasNoImpact("There should be no impact"))
+                .isInstanceOf(AssertionError.class)
+                .hasMessageContaining("There should be no impact")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+
+        // Test mixed constraint with entities that cause rewards - without custom message
+        assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
+                .given(new TestdataConstraintVerifierFirstEntity("B", new TestdataValue()))
+                .hasNoImpact())
+                .hasMessageContaining("Broken expectation")
+                .hasMessageContaining("Constraint")
+                .hasMessageContaining("Expected")
+                .hasMessageContaining("no impact")
+                .hasMessageContaining("Actual impact");
+    }
+
+    @Test
     void impacts() {
         assertThatCode(() -> constraintVerifier.verifyThat(TestdataConstraintVerifierConstraintProvider::impactEveryEntity)
                 .given()
