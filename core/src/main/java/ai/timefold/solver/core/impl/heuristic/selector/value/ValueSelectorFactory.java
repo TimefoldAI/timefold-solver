@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value;
 
+import static ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder.SORTED;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -273,37 +275,38 @@ public class ValueSelectorFactory<Solution_>
 
     private SelectionSorter<Solution_, Object> determineSorter(GenuineVariableDescriptor<Solution_> variableDescriptor,
             SelectionOrder resolvedSelectionOrder, ClassInstanceCache instanceCache) {
-        SelectionSorter<Solution_, Object> sorter = null;
-        if (resolvedSelectionOrder == ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder.SORTED) {
-            var sorterManner = config.getSorterManner();
-            var comparatorClass = determineComparatorClass(config);
-            var comparatorFactoryClass = determineComparatorFactoryClass(config);
-            if (sorterManner != null) {
-                if (!ValueSelectorConfig.hasSorter(sorterManner, variableDescriptor)) {
-                    return null;
-                }
-                sorter = ValueSelectorConfig.determineSorter(sorterManner, variableDescriptor);
-            } else if (comparatorClass != null) {
-                Comparator<Object> sorterComparator =
-                        instanceCache.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
-                sorter = new ComparatorSelectionSorter<>(sorterComparator,
-                        SelectionSorterOrder.resolve(config.getSorterOrder()));
-            } else if (comparatorFactoryClass != null) {
-                var comparatorFactory = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
-                        comparatorFactoryClass);
-                sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
-                        SelectionSorterOrder.resolve(config.getSorterOrder()));
-            } else if (config.getSorterClass() != null) {
-                sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());
-            } else {
-                throw new IllegalArgumentException("""
-                        The valueSelectorConfig (%s) with resolvedSelectionOrder (%s) needs \
-                        a sorterManner (%s) or a %s (%s) or a %s (%s) \
-                        or a sorterClass (%s)."""
-                        .formatted(config, resolvedSelectionOrder, sorterManner, determineComparatorPropertyName(config),
-                                comparatorClass, determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
-                                config.getSorterClass()));
+        if (resolvedSelectionOrder != SORTED) {
+            return null;
+        }
+        SelectionSorter<Solution_, Object> sorter;
+        var sorterManner = config.getSorterManner();
+        var comparatorClass = determineComparatorClass(config);
+        var comparatorFactoryClass = determineComparatorFactoryClass(config);
+        if (sorterManner != null) {
+            if (!ValueSelectorConfig.hasSorter(sorterManner, variableDescriptor)) {
+                return null;
             }
+            sorter = ValueSelectorConfig.determineSorter(sorterManner, variableDescriptor);
+        } else if (comparatorClass != null) {
+            Comparator<Object> sorterComparator =
+                    instanceCache.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
+            sorter = new ComparatorSelectionSorter<>(sorterComparator,
+                    SelectionSorterOrder.resolve(config.getSorterOrder()));
+        } else if (comparatorFactoryClass != null) {
+            var comparatorFactory = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
+                    comparatorFactoryClass);
+            sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
+                    SelectionSorterOrder.resolve(config.getSorterOrder()));
+        } else if (config.getSorterClass() != null) {
+            sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());
+        } else {
+            throw new IllegalArgumentException("""
+                    The valueSelectorConfig (%s) with resolvedSelectionOrder (%s) needs \
+                    a sorterManner (%s) or a %s (%s) or a %s (%s) \
+                    or a sorterClass (%s)."""
+                    .formatted(config, resolvedSelectionOrder, sorterManner, determineComparatorPropertyName(config),
+                            comparatorClass, determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
+                            config.getSorterClass()));
         }
         return sorter;
     }
@@ -372,14 +375,14 @@ public class ValueSelectorFactory<Solution_>
         var sorterOrder = config.getSorterOrder();
         var sorterClass = config.getSorterClass();
         if ((sorterManner != null || comparatorClass != null || comparatorFactoryClass != null
-                || sorterOrder != null || sorterClass != null) && resolvedSelectionOrder != SelectionOrder.SORTED) {
+                || sorterOrder != null || sorterClass != null) && resolvedSelectionOrder != SORTED) {
             throw new IllegalArgumentException("""
                     The valueSelectorConfig (%s) with sorterManner (%s) \
                     and %s (%s) and %s (%s) and sorterOrder (%s) and sorterClass (%s) \
                     has a resolvedSelectionOrder (%s) that is not %s."""
                     .formatted(config, sorterManner, comparatorPropertyName, comparatorClass, comparatorFactoryPropertyName,
                             comparatorFactoryClass, sorterOrder, sorterClass, resolvedSelectionOrder,
-                            SelectionOrder.SORTED));
+                            SORTED));
         }
         assertNotSorterMannerAnd(config, comparatorPropertyName, ValueSelectorFactory::determineComparatorClass);
         assertNotSorterMannerAnd(config, comparatorFactoryPropertyName,
@@ -421,7 +424,7 @@ public class ValueSelectorFactory<Solution_>
 
     protected ValueSelector<Solution_> applySorting(SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder,
             ValueSelector<Solution_> valueSelector, ClassInstanceCache instanceCache) {
-        if (resolvedSelectionOrder == SelectionOrder.SORTED) {
+        if (resolvedSelectionOrder == SORTED) {
             var sorter = determineSorter(valueSelector.getVariableDescriptor(), resolvedSelectionOrder, instanceCache);
             if (!valueSelector.getVariableDescriptor().canExtractValueRangeFromSolution()
                     && resolvedCacheType == SelectionCacheType.STEP) {

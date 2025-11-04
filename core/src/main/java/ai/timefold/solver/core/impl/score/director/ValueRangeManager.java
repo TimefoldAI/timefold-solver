@@ -384,7 +384,6 @@ public final class ValueRangeManager<Solution_> {
         var valueRange =
                 item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
         var valueRangeSorter = item != null ? item.sorter() : null;
-        // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
         // We read and sort the data again if needed
         if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
@@ -438,7 +437,6 @@ public final class ValueRangeManager<Solution_> {
         var item = valueRangeList[valueRangeDescriptor.getOrdinal()];
         var valueRange = item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
         var valueRangeSorter = item != null ? item.sorter() : null;
-        // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
         // We read and sort the data again if needed
         if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
             var extractedValueRange =
