@@ -123,8 +123,9 @@ public final class FromEntityPropertyValueSelector<Solution_>
     public boolean equals(Object o) {
         if (!(o instanceof FromEntityPropertyValueSelector<?> that))
             return false;
-        return randomSelection == that.randomSelection && Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor)
-                && Objects.equals(selectionSorter, that.selectionSorter);
+        return Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor)
+                && Objects.equals(selectionSorter, that.selectionSorter)
+                && randomSelection == that.randomSelection;
     }
 
     @Override

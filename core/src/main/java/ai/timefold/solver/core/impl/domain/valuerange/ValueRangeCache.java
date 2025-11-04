@@ -26,19 +26,19 @@ public final class ValueRangeCache<Value_>
 
     private final List<Value_> valuesWithFastRandomAccess;
     private final Set<Value_> valuesWithFastLookup;
-    private final CacheType cacheType;
+    private final boolean trustedValues;
 
-    private ValueRangeCache(int size, Set<Value_> emptyCacheSet, CacheType cacheType) {
+    private ValueRangeCache(int size, Set<Value_> emptyCacheSet, boolean trustedValues) {
         this.valuesWithFastRandomAccess = new ArrayList<>(size);
         this.valuesWithFastLookup = emptyCacheSet;
-        this.cacheType = cacheType;
+        this.trustedValues = trustedValues;
     }
 
-    private ValueRangeCache(Collection<Value_> collection, Set<Value_> emptyCacheSet, CacheType cacheType) {
+    private ValueRangeCache(Collection<Value_> collection, Set<Value_> emptyCacheSet, boolean trustedValues) {
         this.valuesWithFastRandomAccess = new ArrayList<>(collection);
         this.valuesWithFastLookup = emptyCacheSet;
         this.valuesWithFastLookup.addAll(valuesWithFastRandomAccess);
-        this.cacheType = cacheType;
+        this.trustedValues = trustedValues;
     }
 
     public void add(@Nullable Value_ value) {
@@ -83,10 +83,11 @@ public final class ValueRangeCache<Value_>
      */
     public ValueRangeCache<Value_> sort(ValueRangeSorter<Value_> sorter) {
         var valuesWithFastRandomAccessSorted = sorter.sort(valuesWithFastRandomAccess);
-        return switch (cacheType) {
-            case USER_VALUES -> Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccessSorted);
-            case TRUSTED_VALUES -> Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccessSorted);
-        };
+        if (trustedValues) {
+            return Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccessSorted);
+        } else {
+            return Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccessSorted);
+        }
     }
 
     public enum Builder {
@@ -97,13 +98,12 @@ public final class ValueRangeCache<Value_>
         FOR_USER_VALUES {
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(int size) {
-                return new ValueRangeCache<>(size, CollectionUtils.newIdentityHashSet(size), CacheType.USER_VALUES);
+                return new ValueRangeCache<>(size, CollectionUtils.newIdentityHashSet(size), false);
             }
 
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection) {
-                return new ValueRangeCache<>(collection, CollectionUtils.newIdentityHashSet(collection.size()),
-                        CacheType.USER_VALUES);
+                return new ValueRangeCache<>(collection, CollectionUtils.newIdentityHashSet(collection.size()), false);
             }
 
         },
@@ -118,13 +118,12 @@ public final class ValueRangeCache<Value_>
         FOR_TRUSTED_VALUES {
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(int size) {
-                return new ValueRangeCache<>(size, CollectionUtils.newHashSet(size), CacheType.TRUSTED_VALUES);
+                return new ValueRangeCache<>(size, CollectionUtils.newHashSet(size), true);
             }
 
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection) {
-                return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()),
-                        CacheType.TRUSTED_VALUES);
+                return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()), true);
             }
 
         };
@@ -133,11 +132,6 @@ public final class ValueRangeCache<Value_>
 
         public abstract <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection);
 
-    }
-
-    private enum CacheType {
-        USER_VALUES,
-        TRUSTED_VALUES
     }
 
 }
