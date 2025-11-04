@@ -25,6 +25,7 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllo
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.SelectionSorterAdapter;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.SortableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
@@ -376,6 +377,7 @@ public final class ValueRangeManager<Solution_> {
         return getFromSolution(valueRangeDescriptor, solution, null);
     }
 
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution,
             @Nullable SelectionSorter<Solution_, T> sorter) {
         var item = fromSolution[valueRangeDescriptor.getOrdinal()];
@@ -398,8 +400,13 @@ public final class ValueRangeManager<Solution_> {
                 valueRange = countableValueRange;
             }
             if (sorter != null) {
+                if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
+                    throw new IllegalStateException(
+                            "Impossible state: value range (%s) on planning solution (%s) is not sortable."
+                                    .formatted(valueRangeDescriptor, solution));
+                }
                 var sorterAdapter = SelectionSorterAdapter.of(solution, sorter);
-                valueRange = (CountableValueRange<T>) valueRange.sort(sorterAdapter);
+                valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
             }
             fromSolution[valueRangeDescriptor.getOrdinal()] = new CountableValueRangeItem<>(valueRange, sorter);
         }
@@ -417,7 +424,7 @@ public final class ValueRangeManager<Solution_> {
     /**
      * @throws IllegalStateException if called before {@link #reset(Object)} is called
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     public <T> CountableValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity,
             @Nullable SelectionSorter<Solution_, T> sorter) {
         if (cachedWorkingSolution == null) {
@@ -448,8 +455,13 @@ public final class ValueRangeManager<Solution_> {
                 valueRange = countableValueRange;
             }
             if (sorter != null) {
+                if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
+                    throw new IllegalStateException(
+                            "Impossible state: value range (%s) on planning entity (%s) is not sortable."
+                                    .formatted(valueRangeDescriptor, entity));
+                }
                 var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
-                valueRange = (CountableValueRange<T>) valueRange.sort(sorterAdapter);
+                valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
             }
             valueRangeList[valueRangeDescriptor.getOrdinal()] = new CountableValueRangeItem<>(valueRange, sorter);
         }

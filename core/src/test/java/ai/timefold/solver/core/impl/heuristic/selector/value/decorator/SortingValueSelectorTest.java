@@ -8,18 +8,15 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Comparator;
-
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.TestdataObjectSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
@@ -48,9 +45,8 @@ class SortingValueSelectorTest {
                 new TestdataValue("jan"), new TestdataValue("feb"), new TestdataValue("mar"),
                 new TestdataValue("apr"), new TestdataValue("may"), new TestdataValue("jun"));
 
-        SelectionSorter<TestdataSolution, TestdataValue> sorter = (scoreDirector, selectionList) -> selectionList
-                .sort(Comparator.comparing(TestdataObject::getCode));
-        IterableValueSelector valueSelector = new SortingValueSelector(childValueSelector, cacheType, sorter);
+        IterableValueSelector valueSelector =
+                new SortingValueSelector(childValueSelector, cacheType, new TestdataObjectSorter<TestdataValue>());
 
         SolverScope solverScope = mock(SolverScope.class);
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);

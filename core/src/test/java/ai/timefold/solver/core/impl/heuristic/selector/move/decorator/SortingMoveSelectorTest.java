@@ -22,7 +22,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.CodeAssertableSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
@@ -106,9 +106,8 @@ class SortingMoveSelectorTest {
                 new DummyMove("jan"), new DummyMove("feb"), new DummyMove("mar"),
                 new DummyMove("apr"), new DummyMove("may"), new DummyMove("jun"));
 
-        SelectionSorter<TestdataSolution, DummyMove> sorter = (scoreDirector, selectionList) -> selectionList
-                .sort(Comparator.comparing(DummyMove::getCode));
-        MoveSelector moveSelector = new SortingMoveSelector(childMoveSelector, cacheType, sorter);
+        MoveSelector moveSelector =
+                new SortingMoveSelector(childMoveSelector, cacheType, new CodeAssertableSorter<DummyMove>());
 
         SolverScope solverScope = mock(SolverScope.class);
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);

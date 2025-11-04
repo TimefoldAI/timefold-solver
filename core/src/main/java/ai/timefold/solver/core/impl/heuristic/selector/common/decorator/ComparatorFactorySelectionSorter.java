@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -21,8 +22,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <T> the selection type
  */
 @NullMarked
-public final class ComparatorFactorySelectionSorter<Solution_, T>
-        implements SelectionSorter<Solution_, T>, SelectionSetSorter<Solution_, T> {
+public final class ComparatorFactorySelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
     private final ComparatorFactory<Solution_, T> selectionComparatorFactory;
     private final SelectionSorterOrder selectionSorterOrder;
@@ -41,9 +41,11 @@ public final class ComparatorFactorySelectionSorter<Solution_, T>
     }
 
     @Override
-    public void sort(Solution_ solution, List<T> selectionList) {
+    public List<T> sort(Solution_ solution, List<T> selectionList) {
         var appliedComparator = getAppliedComparator(selectionComparatorFactory.createComparator(solution));
-        selectionList.sort(appliedComparator);
+        var sortedList = new ArrayList<>(selectionList);
+        sortedList.sort(appliedComparator);
+        return Collections.unmodifiableList(sortedList);
     }
 
     @Override
