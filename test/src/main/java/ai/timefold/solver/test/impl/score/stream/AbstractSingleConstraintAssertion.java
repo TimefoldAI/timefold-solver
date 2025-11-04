@@ -742,9 +742,9 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
         var expectation = message != null ? message : "Broken expectation.";
         return """
                 %s
-                Constraint: %s
-                Expected: no impact
-                Actual impact: %s (%s)
+                        Constraint: %s
+                          Expected: no impact
+                     Actual impact: %s (%s)
 
                   %s""".formatted(
                 expectation,
