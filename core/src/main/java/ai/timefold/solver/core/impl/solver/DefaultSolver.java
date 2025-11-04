@@ -18,6 +18,7 @@ import ai.timefold.solver.core.impl.phase.Phase;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.score.director.ScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.change.ProblemChangeAdapter;
+import ai.timefold.solver.core.impl.solver.event.DefaultBestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.solver.random.RandomFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -226,7 +227,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         registerSolverSpecificMetrics();
 
         // Update the best solution, since problem's shadows and score were updated
-        bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
+        bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
+                DefaultBestSolutionChangedEvent.SOLVING_STARTED_EVENT_ID);
 
         logger.info("Solving {}: time spent ({}), best score ({}), "
                 + "environment mode ({}), move thread count ({}), random ({}).",
@@ -347,7 +349,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             // Everything is fine, proceed.
             var score = scoreDirector.calculateScore();
             basicPlumbingTermination.endProblemChangesProcessing();
-            bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
+            bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
+                    DefaultBestSolutionChangedEvent.PROBLEM_CHANGE_EVENT_ID);
             logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);
             return true;

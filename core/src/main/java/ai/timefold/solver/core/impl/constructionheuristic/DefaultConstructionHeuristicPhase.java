@@ -23,6 +23,7 @@ import org.slf4j.event.Level;
 public class DefaultConstructionHeuristicPhase<Solution_>
         extends AbstractPossiblyInitializingPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
+    public static final String CONSTRUCTION_HEURISTICS_STRING = "Construction Heuristics";
 
     protected final ConstructionHeuristicDecider<Solution_> decider;
     protected final PlacerBasedMoveRepository<Solution_> moveRepository;
@@ -45,7 +46,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
 
     @Override
     public String getPhaseTypeString() {
-        return "Construction Heuristics";
+        return CONSTRUCTION_HEURISTICS_STRING;
     }
 
     // ************************************************************************
@@ -196,7 +197,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         if (!isNested() && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
             // Only update the best solution if the CH made any change; nested phases don't update the best solution.
             var solver = phaseScope.getSolverScope().getSolver();
-            solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
+            solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope(), phaseScope);
         }
     }
 

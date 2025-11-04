@@ -18,12 +18,13 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
         this.solver = solver;
     }
 
-    public void fireBestSolutionChanged(SolverScope<Solution_> solverScope, Solution_ newBestSolution) {
+    public void fireBestSolutionChanged(SolverScope<Solution_> solverScope, String phaseId,
+            Solution_ newBestSolution) {
         var it = getEventListeners().iterator();
         var timeMillisSpent = solverScope.getBestSolutionTimeMillisSpent();
         var bestScore = solverScope.getBestScore();
         if (it.hasNext()) {
-            var event = new DefaultBestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolution, bestScore);
+            var event = new DefaultBestSolutionChangedEvent<>(solver, phaseId, timeMillisSpent, newBestSolution, bestScore);
             do {
                 it.next().bestSolutionChanged(event);
             } while (it.hasNext());

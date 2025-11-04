@@ -263,9 +263,14 @@ public abstract class AbstractPhaseScope<Solution_> {
         return getLastCompletedStepScope().getStepIndex() + 1;
     }
 
+    public String getPhaseId() {
+        return "%s (%d)".formatted(
+                solverScope.getSolver().getPhaseList().get(phaseIndex).getPhaseName(), phaseIndex);
+    }
+
     @Override
     public String toString() {
-        return getClass().getSimpleName() + "(" + phaseIndex + ")";
+        return "%s (%d)".formatted(getClass().getSimpleName(), phaseIndex);
     }
 
 }

@@ -23,6 +23,7 @@ import org.jspecify.annotations.NullMarked;
 public final class DefaultCustomPhase<Solution_>
         extends AbstractPossiblyInitializingPhase<Solution_>
         implements CustomPhase<Solution_> {
+    public static final String CUSTOM_STRING = "Custom";
 
     private final List<PhaseCommand<Solution_>> customPhaseCommandList;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
@@ -39,7 +40,7 @@ public final class DefaultCustomPhase<Solution_>
 
     @Override
     public String getPhaseTypeString() {
-        return "Custom";
+        return CUSTOM_STRING;
     }
 
     // ************************************************************************

@@ -36,4 +36,8 @@ public interface Phase<Solution_> extends PhaseLifecycleListener<Solution_> {
 
     void solve(SolverScope<Solution_> solverScope);
 
+    default String getPhaseName() {
+        return getClass().getSimpleName();
+    }
+
 }

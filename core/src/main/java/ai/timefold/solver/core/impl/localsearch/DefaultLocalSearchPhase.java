@@ -31,6 +31,7 @@ import io.micrometer.core.instrument.Tags;
  */
 public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_> implements LocalSearchPhase<Solution_>,
         LocalSearchPhaseLifecycleListener<Solution_> {
+    public static final String LOCAL_SEARCH_STRING = "Local Search";
 
     protected final LocalSearchDecider<Solution_> decider;
     protected final AtomicLong acceptedMoveCountPerStep = new AtomicLong(0);
@@ -47,7 +48,7 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
 
     @Override
     public String getPhaseTypeString() {
-        return "Local Search";
+        return LOCAL_SEARCH_STRING;
     }
 
     // ************************************************************************

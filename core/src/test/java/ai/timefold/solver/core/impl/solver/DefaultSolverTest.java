@@ -17,6 +17,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BooleanSupplier;
@@ -78,6 +79,7 @@ import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.ListChangeMoveDef
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
+import ai.timefold.solver.core.impl.solver.event.DefaultBestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -138,6 +140,7 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.BestScoreChangedEvent;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
@@ -167,7 +170,8 @@ class DefaultSolverTest {
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
@@ -379,7 +383,8 @@ class DefaultSolverTest {
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, true);
+        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                BestScoreChangedEvent.solvingStarted(SimpleScore.ZERO));
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
@@ -404,7 +409,8 @@ class DefaultSolverTest {
         solution.setChainedAnchorList(Arrays.asList(new TestdataChainedAnchor("v1"), new TestdataChainedAnchor("v2")));
         solution.setChainedEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, true);
+        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                BestScoreChangedEvent.solvingStarted(SimpleScore.ZERO));
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isNotNull();
     }
@@ -489,6 +495,7 @@ class DefaultSolverTest {
 
         var bestSolution = new AtomicReference<TestdataSolution>();
         var solutionWithProblemChangeReceived = new CountDownLatch(1);
+        var hasProblemChangeBestSolutionEvent = new AtomicBoolean(false);
         solver.addEventListener(bestSolutionChangedEvent -> {
             if (bestSolutionChangedEvent.isEveryProblemChangeProcessed()) {
                 var newBestSolution = bestSolutionChangedEvent.getNewBestSolution();
@@ -496,6 +503,9 @@ class DefaultSolverTest {
                     bestSolution.set(newBestSolution);
                     solutionWithProblemChangeReceived.countDown();
                 }
+            }
+            if (bestSolutionChangedEvent.getProducerId().equals(DefaultBestSolutionChangedEvent.PROBLEM_CHANGE_EVENT_ID)) {
+                hasProblemChangeBestSolutionEvent.set(true);
             }
         });
 
@@ -510,7 +520,7 @@ class DefaultSolverTest {
 
             solutionWithProblemChangeReceived.await();
             assertThat(bestSolution.get().getValueList()).hasSize(valueCount + 1);
-
+            assertThat(hasProblemChangeBestSolutionEvent.get()).isTrue();
             solver.terminateEarly();
         } finally {
             executorService.shutdownNow();
