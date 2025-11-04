@@ -2,10 +2,7 @@ package ai.timefold.solver.core.testutil;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
-import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
-import ai.timefold.solver.core.impl.localsearch.DefaultLocalSearchPhase;
-import ai.timefold.solver.core.impl.phase.custom.DefaultCustomPhase;
-import ai.timefold.solver.core.impl.solver.event.DefaultBestSolutionChangedEvent;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 
 import org.jspecify.annotations.NonNull;
 
@@ -13,7 +10,7 @@ import org.jspecify.annotations.NonNull;
  * Exists to avoid storing each best solution event's solution.
  */
 public record BestScoreChangedEvent<Score_ extends Score<@NonNull Score_>>(Score_ newScore, boolean isInitialized,
-        String eventId) {
+        EventProducerId eventProducerId) {
     @SuppressWarnings("unchecked")
     public BestScoreChangedEvent(BestSolutionChangedEvent<?> bestSolutionChangedEvent) {
         this((Score_) bestSolutionChangedEvent.getNewBestScore(), bestSolutionChangedEvent.isNewBestSolutionInitialized(),
@@ -21,32 +18,29 @@ public record BestScoreChangedEvent<Score_ extends Score<@NonNull Score_>>(Score
     }
 
     public BestScoreChangedEvent<Score_> uninitialized() {
-        return new BestScoreChangedEvent<>(newScore, false, eventId);
+        return new BestScoreChangedEvent<>(newScore, false, eventProducerId);
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> solvingStarted(Score_ newScore) {
-        return new BestScoreChangedEvent<>(newScore, true, DefaultBestSolutionChangedEvent.SOLVING_STARTED_EVENT_ID);
+        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.solvingStarted());
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> problemChange(Score_ newScore) {
-        return new BestScoreChangedEvent<>(newScore, true, DefaultBestSolutionChangedEvent.PROBLEM_CHANGE_EVENT_ID);
+        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.problemChange());
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_>
             constructionHeuristic(Score_ newScore, int index) {
-        return new BestScoreChangedEvent<>(newScore, true,
-                "%s (%d)".formatted(DefaultConstructionHeuristicPhase.CONSTRUCTION_HEURISTICS_STRING, index));
+        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.constructionHeuristic(index));
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> custom(Score_ newScore,
             int index) {
-        return new BestScoreChangedEvent<>(newScore, true,
-                "%s (%d)".formatted(DefaultCustomPhase.CUSTOM_STRING, index));
+        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.customPhase(index));
     }
 
     public static <Score_ extends Score<@NonNull Score_>> BestScoreChangedEvent<Score_> localSearch(Score_ newScore,
             int index) {
-        return new BestScoreChangedEvent<>(newScore, true,
-                "%s (%d)".formatted(DefaultLocalSearchPhase.LOCAL_SEARCH_STRING, index));
+        return new BestScoreChangedEvent<>(newScore, true, EventProducerId.localSearch(index));
     }
 }

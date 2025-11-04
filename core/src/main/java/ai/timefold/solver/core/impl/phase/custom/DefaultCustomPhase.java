@@ -1,8 +1,11 @@
 package ai.timefold.solver.core.impl.phase.custom;
 
 import java.util.List;
+import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.event.PhaseType;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
@@ -23,8 +26,6 @@ import org.jspecify.annotations.NullMarked;
 public final class DefaultCustomPhase<Solution_>
         extends AbstractPossiblyInitializingPhase<Solution_>
         implements CustomPhase<Solution_> {
-    public static final String CUSTOM_STRING = "Custom";
-
     private final List<PhaseCommand<Solution_>> customPhaseCommandList;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
 
@@ -40,7 +41,12 @@ public final class DefaultCustomPhase<Solution_>
 
     @Override
     public String getPhaseTypeString() {
-        return CUSTOM_STRING;
+        return PhaseType.CUSTOM_PHASE.getPhaseName();
+    }
+
+    @Override
+    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
+        return EventProducerId::customPhase;
     }
 
     // ************************************************************************

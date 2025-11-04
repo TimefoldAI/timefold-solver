@@ -33,6 +33,7 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
@@ -79,7 +80,6 @@ import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.ListChangeMoveDef
 import ai.timefold.solver.core.impl.score.DummySimpleScoreEasyScoreCalculator;
 import ai.timefold.solver.core.impl.score.constraint.DefaultConstraintMatchTotal;
 import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
-import ai.timefold.solver.core.impl.solver.event.DefaultBestSolutionChangedEvent;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -504,7 +504,7 @@ class DefaultSolverTest {
                     solutionWithProblemChangeReceived.countDown();
                 }
             }
-            if (bestSolutionChangedEvent.getProducerId().equals(DefaultBestSolutionChangedEvent.PROBLEM_CHANGE_EVENT_ID)) {
+            if (bestSolutionChangedEvent.getProducerId().equals(EventProducerId.problemChange())) {
                 hasProblemChangeBestSolutionEvent.set(true);
             }
         });

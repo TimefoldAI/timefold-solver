@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.solver.recaller;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -122,10 +123,10 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
     }
 
     public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope,
-            String eventId) {
+            EventProducerId eventProducerId) {
         updateBestSolutionWithoutFiring(solverScope);
         if (solverScope.isBestSolutionInitialized()) {
-            solverEventSupport.fireBestSolutionChanged(solverScope, eventId, solverScope.getBestSolution());
+            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution());
         }
     }
 

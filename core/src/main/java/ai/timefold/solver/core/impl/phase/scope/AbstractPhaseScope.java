@@ -4,6 +4,7 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
@@ -263,9 +264,8 @@ public abstract class AbstractPhaseScope<Solution_> {
         return getLastCompletedStepScope().getStepIndex() + 1;
     }
 
-    public String getPhaseId() {
-        return "%s (%d)".formatted(
-                solverScope.getSolver().getPhaseList().get(phaseIndex).getPhaseName(), phaseIndex);
+    public EventProducerId getPhaseId() {
+        return solverScope.getSolver().getPhaseList().get(phaseIndex).getEventProducerIdSupplier().apply(phaseIndex);
     }
 
     @Override

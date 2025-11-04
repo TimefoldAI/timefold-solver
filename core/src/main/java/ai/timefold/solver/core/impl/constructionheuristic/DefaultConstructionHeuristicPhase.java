@@ -1,6 +1,10 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
+import java.util.function.IntFunction;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.event.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
@@ -23,8 +27,6 @@ import org.slf4j.event.Level;
 public class DefaultConstructionHeuristicPhase<Solution_>
         extends AbstractPossiblyInitializingPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
-    public static final String CONSTRUCTION_HEURISTICS_STRING = "Construction Heuristics";
-
     protected final ConstructionHeuristicDecider<Solution_> decider;
     protected final PlacerBasedMoveRepository<Solution_> moveRepository;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
@@ -46,7 +48,12 @@ public class DefaultConstructionHeuristicPhase<Solution_>
 
     @Override
     public String getPhaseTypeString() {
-        return CONSTRUCTION_HEURISTICS_STRING;
+        return PhaseType.CONSTRUCTION_HEURISTIC.getPhaseName();
+    }
+
+    @Override
+    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
+        return EventProducerId::constructionHeuristic;
     }
 
     // ************************************************************************

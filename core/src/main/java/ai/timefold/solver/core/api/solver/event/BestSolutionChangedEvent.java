@@ -6,7 +6,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
-import ai.timefold.solver.core.config.solver.SolverConfig;
 
 import org.jspecify.annotations.NonNull;
 
@@ -18,10 +17,8 @@ import org.jspecify.annotations.NonNull;
  */
 // TODO In Solver 2.0, maybe convert this to an interface.
 public class BestSolutionChangedEvent<Solution_> extends EventObject {
-    private static final String UNKNOWN_PHASE_ID = "Unknown";
-
     private final Solver<Solution_> solver;
-    private final String producerId;
+    private final EventProducerId producerId;
     private final long timeMillisSpent;
     private final Solution_ newBestSolution;
     private final Score newBestScore;
@@ -34,7 +31,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     @Deprecated(forRemoval = true, since = "1.22.0")
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore) {
-        this(solver, UNKNOWN_PHASE_ID, timeMillisSpent, newBestSolution, newBestScore, true);
+        this(solver, EventProducerId.unknown(), timeMillisSpent, newBestSolution, newBestScore, true);
     }
 
     /**
@@ -45,7 +42,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore,
             boolean isNewBestSolutionInitialized) {
-        this(solver, UNKNOWN_PHASE_ID, timeMillisSpent, newBestSolution, newBestScore, isNewBestSolutionInitialized);
+        this(solver, EventProducerId.unknown(), timeMillisSpent, newBestSolution, newBestScore, isNewBestSolutionInitialized);
     }
 
     /**
@@ -53,7 +50,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
      * @deprecated Users should not manually construct instances of this event.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, String producerId, long timeMillisSpent,
+    public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, EventProducerId producerId, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore,
             boolean isNewBestSolutionInitialized) {
         super(solver);
@@ -74,12 +71,11 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     }
 
     /**
-     * @return A string identifying what generated the event, either of the form
-     *         "Event" where "Event" is a String describing the event that cause the update (like "Solving started")
-     *         or "Phase (index)", where "Phase" is a String identifying the type of phase (like "Construction Heuristics")
-     *         and index is the index of the phase in the {@link SolverConfig#getPhaseConfigList()}.
+     * @return A {@link EventProducerId} identifying what generated the event, either a
+     *         {@link SolveEventProducerId} if the cause is not associated with a Phase,
+     *         or {@link PhaseEventProducerId} if it is.
      */
-    public String getProducerId() {
+    public EventProducerId getProducerId() {
         return producerId;
     }
 

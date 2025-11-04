@@ -120,11 +120,6 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
     }
 
     @Override
-    public String getPhaseName() {
-        return getPhaseTypeString();
-    }
-
-    @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         if (!isNested()) {
             var solver = phaseScope.getSolverScope().getSolver();

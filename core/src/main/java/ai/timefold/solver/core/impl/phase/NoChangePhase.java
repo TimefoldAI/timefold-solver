@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.phase;
 
+import java.util.function.IntFunction;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -20,6 +23,11 @@ public class NoChangePhase<Solution_> extends AbstractPhase<Solution_> {
     @Override
     public String getPhaseTypeString() {
         return "No Change";
+    }
+
+    @Override
+    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
+        return EventProducerId::noChange;
     }
 
     // ************************************************************************

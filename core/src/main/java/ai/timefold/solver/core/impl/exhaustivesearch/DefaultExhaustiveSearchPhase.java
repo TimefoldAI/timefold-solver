@@ -4,9 +4,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.TreeSet;
+import java.util.function.IntFunction;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.event.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
@@ -47,7 +50,12 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
 
     @Override
     public String getPhaseTypeString() {
-        return "Exhaustive Search";
+        return PhaseType.EXHAUSTIVE_SEARCH.getPhaseName();
+    }
+
+    @Override
+    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
+        return EventProducerId::exhaustiveSearch;
     }
 
     // ************************************************************************
