@@ -23,6 +23,8 @@ public interface ConstraintStreamPrecomputeTest {
 
     void flattenLast();
 
+    void flattenLastNewInstances();
+
     void map();
 
     void concat();

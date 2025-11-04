@@ -28,8 +28,4 @@ public final class FlattenLastQuadNode<A, B, C, D, NewD>
         return tuple.factD;
     }
 
-    @Override
-    protected NewD getEffectiveFactOut(QuadTuple<A, B, C, NewD> outTuple) {
-        return outTuple.factD;
-    }
 }
