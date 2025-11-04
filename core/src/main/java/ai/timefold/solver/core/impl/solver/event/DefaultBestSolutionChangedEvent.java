@@ -8,9 +8,6 @@ import ai.timefold.solver.core.impl.score.director.InnerScore;
 import org.jspecify.annotations.NonNull;
 
 public final class DefaultBestSolutionChangedEvent<Solution_> extends BestSolutionChangedEvent<Solution_> {
-    public static String SOLVING_STARTED_EVENT_ID = "Solving started";
-    public static String PROBLEM_CHANGE_EVENT_ID = "Problem change";
-
     private final int unassignedCount;
 
     public DefaultBestSolutionChangedEvent(@NonNull Solver<Solution_> solver, EventProducerId eventProducerId,

@@ -1,8 +1,10 @@
 package ai.timefold.solver.core.api.solver.event;
 
+import java.io.Serializable;
 import java.util.OptionalInt;
 
 import ai.timefold.solver.core.config.solver.SolverConfig;
+import ai.timefold.solver.core.impl.phase.NoChangePhase;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -12,7 +14,7 @@ import org.jspecify.annotations.NullMarked;
  * with a phase, or a {@link SolveEventProducerId} otherwise.
  */
 @NullMarked
-public sealed interface EventProducerId permits PhaseEventProducerId, SolveEventProducerId {
+public sealed interface EventProducerId extends Serializable permits PhaseEventProducerId, SolveEventProducerId {
     /**
      * An unique string identifying what produced the event, either of the form
      * "Event" where "Event" is a string describing the event that cause the update (like "Solving started")
@@ -54,6 +56,9 @@ public sealed interface EventProducerId permits PhaseEventProducerId, SolveEvent
         return SolveEventProducerId.PROBLEM_CHANGE;
     }
 
+    /**
+     * @deprecated Deprecated on account of {@link NoChangePhase} having no use.
+     */
     @Deprecated(forRemoval = true, since = "1.28.0")
     static EventProducerId noChange(int phaseIndex) {
         return new PhaseEventProducerId(PhaseType.NO_CHANGE, phaseIndex);
