@@ -740,12 +740,16 @@ public abstract sealed class AbstractSingleConstraintAssertion<Solution_, Score_
 
     private String buildNoImpactAssertionErrorMessage(Number actualImpact, String constraintId, String message) {
         var expectation = message != null ? message : "Broken expectation.";
-        var preformattedMessage = "%s%n%18s: %s%n%18s: no impact%n%18s: %s (%s)%n%n  %s";
-        return String.format(preformattedMessage,
+        return """
+                %s
+                Constraint: %s
+                Expected: no impact
+                Actual impact: %s (%s)
+
+                  %s""".formatted(
                 expectation,
-                "Constraint", constraintId,
-                "Expected",
-                "Actual impact", actualImpact, actualImpact.getClass(),
+                constraintId,
+                actualImpact, actualImpact.getClass(),
                 DefaultScoreExplanation.explainScore(actualScore, constraintMatchTotalCollection, indictmentCollection));
     }
 
