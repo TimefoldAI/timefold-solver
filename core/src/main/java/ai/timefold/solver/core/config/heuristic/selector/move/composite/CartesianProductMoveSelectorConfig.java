@@ -11,6 +11,7 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.AdvancedRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
@@ -19,6 +20,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.SwapMoveSe
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.AdvancedListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
@@ -54,6 +56,10 @@ public class CartesianProductMoveSelectorConfig extends MoveSelectorConfig<Carte
                     type = RuinRecreateMoveSelectorConfig.class),
             @XmlElement(name = ListRuinRecreateMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = ListRuinRecreateMoveSelectorConfig.class),
+            @XmlElement(name = AdvancedRuinRecreateMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = AdvancedRuinRecreateMoveSelectorConfig.class),
+            @XmlElement(name = AdvancedListRuinRecreateMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = AdvancedListRuinRecreateMoveSelectorConfig.class),
             @XmlElement(name = SubChainChangeMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = SubChainChangeMoveSelectorConfig.class),
             @XmlElement(name = SubChainSwapMoveSelectorConfig.XML_ELEMENT_NAME,

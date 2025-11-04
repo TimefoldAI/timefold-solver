@@ -14,6 +14,8 @@ import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySel
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.AdvancedRuinRecreateMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.AdvancedListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -27,6 +29,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.ElementDestinationSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.RandomSubListSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubListSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.ValueSelector;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
@@ -141,12 +144,22 @@ public interface TimefoldSolverEnterpriseService {
             HeuristicConfigPolicy<Solution_> configPolicy, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ElementDestinationSelector<Solution_> destinationSelector);
 
+    <Solution_> AbstractMoveSelectorFactory<Solution_, AdvancedRuinRecreateMoveSelectorConfig>
+            buildBasicAdvancedRuinRecreateMoveSelectorFactory(
+                    AdvancedRuinRecreateMoveSelectorConfig moveSelectorConfig);
+
+    <Solution_> AbstractMoveSelectorFactory<Solution_, AdvancedListRuinRecreateMoveSelectorConfig>
+            buildListAdvancedRuinRecreateMoveSelectorFactory(
+                    AdvancedListRuinRecreateMoveSelectorConfig moveSelectorConfig);
+
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),
         PARTITIONED_SEARCH("Partitioned search", "remove partitioned search phase from solver configuration"),
         NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration"),
         AUTOMATIC_NODE_SHARING("Automatic node sharing",
-                "remove automatic node sharing from solver configuration");
+                "remove automatic node sharing from solver configuration"),
+        ADVANCED_RUIN_AND_RECREATE("Advanced ruin and recreate",
+                "remove advancedRuinRecreateMoveSelector and/or advancedListRuinRecreateMoveSelector from the solver configuration");
 
         private final String name;
         private final String workaround;

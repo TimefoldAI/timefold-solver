@@ -7,6 +7,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.Cartesia
 import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.AdvancedRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
@@ -16,12 +17,14 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.KO
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.AdvancedListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.kopt.KOptListMoveSelectorConfig;
+import ai.timefold.solver.core.enterprise.TimefoldSolverEnterpriseService;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.move.composite.CartesianProductMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.composite.UnionMoveSelectorFactory;
@@ -84,6 +87,15 @@ public interface MoveSelectorFactory<Solution_> {
             return new UnionMoveSelectorFactory<>(unionMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof CartesianProductMoveSelectorConfig cartesianProductMoveSelectorConfig) {
             return new CartesianProductMoveSelectorFactory<>(cartesianProductMoveSelectorConfig);
+        } else if (moveSelectorConfig instanceof AdvancedRuinRecreateMoveSelectorConfig advancedRuinRecreateMoveSelectorConfig) {
+            var enterpriseService = TimefoldSolverEnterpriseService
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.ADVANCED_RUIN_AND_RECREATE);
+            return enterpriseService.buildBasicAdvancedRuinRecreateMoveSelectorFactory(advancedRuinRecreateMoveSelectorConfig);
+        } else if (moveSelectorConfig instanceof AdvancedListRuinRecreateMoveSelectorConfig advancedListRuinRecreateMoveSelectorConfig) {
+            var enterpriseService = TimefoldSolverEnterpriseService
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.ADVANCED_RUIN_AND_RECREATE);
+            return enterpriseService
+                    .buildListAdvancedRuinRecreateMoveSelectorFactory(advancedListRuinRecreateMoveSelectorConfig);
         } else {
             throw new IllegalArgumentException(String.format("Unknown %s type: (%s).",
                     MoveSelectorConfig.class.getSimpleName(), moveSelectorConfig.getClass().getName()));
