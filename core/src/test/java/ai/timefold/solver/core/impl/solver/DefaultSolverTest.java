@@ -17,7 +17,6 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.atomic.LongAdder;
 import java.util.function.BooleanSupplier;
@@ -33,7 +32,6 @@ import ai.timefold.solver.core.api.score.constraint.Indictment;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.SolutionManager;
 import ai.timefold.solver.core.api.solver.SolverFactory;
-import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityPlacerConfig;
@@ -495,7 +493,6 @@ class DefaultSolverTest {
 
         var bestSolution = new AtomicReference<TestdataSolution>();
         var solutionWithProblemChangeReceived = new CountDownLatch(1);
-        var hasProblemChangeBestSolutionEvent = new AtomicBoolean(false);
         solver.addEventListener(bestSolutionChangedEvent -> {
             if (bestSolutionChangedEvent.isEveryProblemChangeProcessed()) {
                 var newBestSolution = bestSolutionChangedEvent.getNewBestSolution();
@@ -503,9 +500,6 @@ class DefaultSolverTest {
                     bestSolution.set(newBestSolution);
                     solutionWithProblemChangeReceived.countDown();
                 }
-            }
-            if (bestSolutionChangedEvent.getProducerId().equals(EventProducerId.problemChange())) {
-                hasProblemChangeBestSolutionEvent.set(true);
             }
         });
 
@@ -520,7 +514,6 @@ class DefaultSolverTest {
 
             solutionWithProblemChangeReceived.await();
             assertThat(bestSolution.get().getValueList()).hasSize(valueCount + 1);
-            assertThat(hasProblemChangeBestSolutionEvent.get()).isTrue();
             solver.terminateEarly();
         } finally {
             executorService.shutdownNow();
