@@ -69,7 +69,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private final boolean randomSelection;
 
     private Object replayedValue;
-    private ReachableValues<?, ?> reachableValues;
+    private ReachableValues<Object, Object> reachableValues;
     private long entitiesSize;
 
     public FilteringEntityByValueSelector(EntitySelector<Solution_> childEntitySelector,
@@ -187,10 +187,11 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private static class OriginalFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
 
         private final Supplier<Object> upcomingValueSupplier;
-        private final ReachableValues reachableValues;
+        private final ReachableValues<Object, Object> reachableValues;
         private Iterator<Object> valueIterator;
 
-        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues) {
+        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues) {
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.upcomingValueSupplier = Objects.requireNonNull(upcomingValueSupplier);
         }
@@ -222,11 +223,11 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
         private final Supplier<Object> upcomingValueSupplier;
         private final ListIterator<Object> entityIterator;
-        private final ReachableValues reachableValues;
+        private final ReachableValues<Object, Object> reachableValues;
         private Object replayedValue;
 
         private OriginalFilteringValueRangeListIterator(Supplier<Object> upcomingValueSupplier,
-                ListIterator<Object> entityIterator, ReachableValues reachableValues) {
+                ListIterator<Object> entityIterator, ReachableValues<Object, Object> reachableValues) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.entityIterator = entityIterator;
             this.reachableValues = reachableValues;
@@ -283,12 +284,13 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private static class RandomFilteringValueRangeIterator implements Iterator<Object> {
 
         private final Supplier<Object> upcomingValueSupplier;
-        private final ReachableValues reachableValues;
+        private final ReachableValues<Object, Object> reachableValues;
         private final Random workingRandom;
         private Object currentUpcomingValue;
         private List<Object> entityList;
 
-        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues,
                 Random workingRandom) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
