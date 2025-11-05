@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import java.util.Random;
@@ -11,13 +12,13 @@ class EmptyValueRangeTest {
 
     @Test
     void getSize() {
-        assertThat(EmptyValueRange.instance().getSize()).isEqualTo(0L);
+        assertThat(EmptyValueRange.instance().getSize()).isZero();
     }
 
     @Test
     void get() {
-        assertThatExceptionOfType(UnsupportedOperationException.class)
-                .isThrownBy(() -> EmptyValueRange.instance().get(0L));
+        var range = EmptyValueRange.instance();
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.get(0L));
     }
 
     @Test
@@ -39,6 +40,12 @@ class EmptyValueRangeTest {
         assertThat(EmptyValueRange.instance().createRandomIterator(workingRandom))
                 .toIterable()
                 .isEmpty();
+    }
+
+    @Test
+    void sort() {
+        var range = EmptyValueRange.instance();
+        assertThatCode(() -> range.sort(null)).doesNotThrowAnyException();
     }
 
 }

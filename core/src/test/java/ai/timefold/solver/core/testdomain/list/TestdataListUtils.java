@@ -314,7 +314,7 @@ public final class TestdataListUtils {
 
     public static <T> IterableFromEntityPropertyValueSelector<T>
             getIterableFromEntityPropertyValueSelector(ValueRangeDescriptor<T> valueRangeDescriptor, boolean randomSelection) {
-        var fromPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
+        var fromPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, null, randomSelection);
         return new IterableFromEntityPropertyValueSelector<>(fromPropertySelector, randomSelection);
     }
 

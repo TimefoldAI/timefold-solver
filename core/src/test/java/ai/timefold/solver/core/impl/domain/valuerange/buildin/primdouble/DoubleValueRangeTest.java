@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import ai.timefold.solver.core.testutil.TestRandom;
 
@@ -33,6 +34,12 @@ class DoubleValueRangeTest {
         assertElementsOfIterator(new DoubleValueRange(1000000.0, 2000000.0)
                 .createRandomIterator(new TestRandom(Math.nextAfter(1.0, Double.NEGATIVE_INFINITY),
                         Math.nextAfter(2000000.0, Double.NEGATIVE_INFINITY))));
+    }
+
+    @Test
+    void sort() {
+        var range = new DoubleValueRange(0.0, 10.0);
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
     }
 
 }

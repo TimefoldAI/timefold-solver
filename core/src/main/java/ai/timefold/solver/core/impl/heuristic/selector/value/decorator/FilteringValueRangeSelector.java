@@ -8,11 +8,13 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
@@ -74,12 +76,13 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     private final IterableValueSelector<Solution_> nonReplayingValueSelector;
     private final IterableValueSelector<Solution_> replayingValueSelector;
+    private final SelectionSorter<Solution_, Object> selectionSorter;
     private final boolean randomSelection;
 
     private Object replayedValue = null;
     private long valuesSize;
     private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
-    private ReachableValues reachableValues;
+    private ReachableValues<Object, Object> reachableValues;
 
     private final boolean checkSourceAndDestination;
 
@@ -88,6 +91,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             boolean checkSourceAndDestination) {
         this.nonReplayingValueSelector = nonReplayingValueSelector;
         this.replayingValueSelector = replayingValueSelector;
+        this.selectionSorter = nonReplayingValueSelector.getSelectionSorter();
         this.randomSelection = randomSelection;
         this.checkSourceAndDestination = checkSourceAndDestination;
     }
@@ -111,7 +115,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         this.nonReplayingValueSelector.phaseStarted(phaseScope);
         this.replayingValueSelector.phaseStarted(phaseScope);
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
-                .getReachableValues(listVariableStateSupply.getSourceVariableDescriptor());
+                .getReachableValues(listVariableStateSupply.getSourceVariableDescriptor(), selectionSorter);
         valuesSize = reachableValues.getSize();
     }
 
@@ -129,6 +133,16 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     public IterableValueSelector<Solution_> getChildValueSelector() {
         return nonReplayingValueSelector;
+    }
+
+    @Override
+    public <T> SelectionSorter<Solution_, T> getSelectionSorter() {
+        return nonReplayingValueSelector.getSelectionSorter();
+    }
+
+    @Override
+    public SelectionCacheType getCacheType() {
+        return nonReplayingValueSelector.getCacheType();
     }
 
     @Override
@@ -194,19 +208,20 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     public boolean equals(Object other) {
         return other instanceof FilteringValueRangeSelector<?> that
                 && Objects.equals(nonReplayingValueSelector, that.nonReplayingValueSelector)
-                && Objects.equals(replayingValueSelector, that.replayingValueSelector);
+                && Objects.equals(replayingValueSelector, that.replayingValueSelector)
+                && Objects.equals(selectionSorter, that.selectionSorter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nonReplayingValueSelector, replayingValueSelector);
+        return Objects.hash(nonReplayingValueSelector, replayingValueSelector, selectionSorter);
     }
 
     @NullMarked
     private abstract class AbstractFilteringValueRangeIterator implements Iterator<Object> {
         private final Supplier<Object> upcomingValueSupplier;
         private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
-        private final ReachableValues reachableValues;
+        private final ReachableValues<Object, Object> reachableValues;
         private final boolean checkSourceAndDestination;
         private boolean initialized = false;
         private boolean hasData = false;
@@ -217,7 +232,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         @Nullable
         private List<Object> currentUpcomingList;
 
-        AbstractFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+        AbstractFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues,
                 ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, boolean checkSourceAndDestination) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
@@ -311,7 +327,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         private Iterator<Object> reachableValueIterator;
         private Object selected = null;
 
-        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues,
                 ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
         }
@@ -361,7 +378,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         private Object replayedValue;
         private List<Object> reachableValueList = null;
 
-        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues,
                 ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, Random workingRandom,
                 boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);

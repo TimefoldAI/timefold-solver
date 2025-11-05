@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.testdomain.list.valuerange.unassignedvar.composite;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
@@ -15,6 +16,40 @@ public class TestdataListUnassignedCompositeEntityProvidingSolution {
     public static SolutionDescriptor<TestdataListUnassignedCompositeEntityProvidingSolution> buildSolutionDescriptor() {
         return SolutionDescriptor.buildSolutionDescriptor(TestdataListUnassignedCompositeEntityProvidingSolution.class,
                 TestdataListUnassignedCompositeEntityProvidingEntity.class);
+    }
+
+    public static TestdataListUnassignedCompositeEntityProvidingSolution generateSolution(int valueListSize,
+            int entityListSize) {
+        var solution = new TestdataListUnassignedCompositeEntityProvidingSolution();
+        var valueList = new ArrayList<TestdataListEntityProvidingValue>(valueListSize);
+        for (var i = 0; i < valueListSize; i++) {
+            var value = new TestdataListEntityProvidingValue("Generated Value " + i);
+            valueList.add(value);
+        }
+        var entityList = new ArrayList<TestdataListUnassignedCompositeEntityProvidingEntity>(entityListSize);
+        for (var i = 0; i < entityListSize; i++) {
+            var idx = 0;
+            var expectedCount = Math.max(1, valueListSize / 2);
+            var valueRange = new ArrayList<TestdataListEntityProvidingValue>();
+            var secondValueRange = new ArrayList<TestdataListEntityProvidingValue>();
+            for (var j = 0; j < expectedCount; j++) {
+                if (idx >= valueListSize) {
+                    break;
+                }
+                valueRange.add(valueList.get(idx++));
+            }
+            for (var j = 0; j < expectedCount; j++) {
+                if (idx >= valueListSize) {
+                    break;
+                }
+                secondValueRange.add(valueList.get(idx++));
+            }
+            var entity = new TestdataListUnassignedCompositeEntityProvidingEntity("Generated Entity " + i, valueRange,
+                    secondValueRange);
+            entityList.add(entity);
+        }
+        solution.setEntityList(entityList);
+        return solution;
     }
 
     public static TestdataListUnassignedCompositeEntityProvidingSolution generateSolution() {

@@ -21,20 +21,21 @@ import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDeci
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.SelectionSorterAdapter;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.SortableValueRange;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.ReachableItemValue;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.util.MathUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.impl.util.MutableLong;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Caches value ranges for the current working solution,
@@ -59,12 +60,10 @@ import org.slf4j.LoggerFactory;
 @NullMarked
 public final class ValueRangeManager<Solution_> {
 
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final CountableValueRange<?>[] fromSolution;
-    private final ReachableValues[] reachableValues;
-    private final Map<Object, CountableValueRange<?>[]> fromEntityMap =
+    private final @Nullable CountableValueRangeItem<Solution_, ?>[] fromSolution;
+    private final ReachableValues<?, ?>[] reachableValues;
+    private final Map<Object, CountableValueRangeItem<Solution_, ?>[]> fromEntityMap =
             new IdentityHashMap<>();
 
     private @Nullable Solution_ cachedWorkingSolution = null;
@@ -86,7 +85,7 @@ public final class ValueRangeManager<Solution_> {
      */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.fromSolution = new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()];
+        this.fromSolution = new CountableValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()];
         this.reachableValues = new ReachableValues[solutionDescriptor.getValueRangeDescriptorCount()];
     }
 
@@ -359,11 +358,41 @@ public final class ValueRangeManager<Solution_> {
         return getFromSolution(valueRangeDescriptor, cachedWorkingSolution);
     }
 
+    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            @Nullable SelectionSorter<Solution_, T> sorter) {
+        if (cachedWorkingSolution == null) {
+            throw new IllegalStateException(
+                    "Impossible state: value range (%s) requested before the working solution is known."
+                            .formatted(valueRangeDescriptor));
+        }
+        return getFromSolution(valueRangeDescriptor, cachedWorkingSolution, sorter);
+    }
+
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {
-        var valueRange = fromSolution[valueRangeDescriptor.getOrdinal()];
-        if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
+        return getFromSolution(valueRangeDescriptor, solution, null);
+    }
+
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution,
+            @Nullable SelectionSorter<Solution_, T> sorter) {
+        var item = fromSolution[valueRangeDescriptor.getOrdinal()];
+        var valueRange =
+                item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
+        var valueRangeSorter = item != null ? item.sorter() : null;
+        // The phase initialization logic can call operations like countOnSolution or countOnEntity,
+        // which do not consider sorting and initialize the value range without a sorter.
+        // Therefore, we return the range if there is no sorter or applied sorter is the same as the given sorter
+        if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
+            // We do not recalculate range if they have already been calculated
+            if (valueRange != null && valueRange instanceof SortableValueRange sortableValueRange) {
+                var newSortedValueRange = (CountableValueRange<T>) sortableValueRange
+                        .sort(SelectionSorterAdapter.of(solution, sorter));
+                var newValueRange = new CountableValueRangeItem<>(newSortedValueRange, sorter);
+                fromSolution[valueRangeDescriptor.getOrdinal()] = newValueRange;
+                return newSortedValueRange;
+            }
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
                 throw new UnsupportedOperationException("""
@@ -376,9 +405,18 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            fromSolution[valueRangeDescriptor.getOrdinal()] = valueRange;
+            if (sorter != null) {
+                if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
+                    throw new IllegalStateException(
+                            "Impossible state: value range (%s) on planning solution (%s) is not sortable."
+                                    .formatted(valueRangeDescriptor, solution));
+                }
+                var sorterAdapter = SelectionSorterAdapter.of(solution, sorter);
+                valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
+            }
+            fromSolution[valueRangeDescriptor.getOrdinal()] = new CountableValueRangeItem<>(valueRange, sorter);
         }
-        return (CountableValueRange<T>) valueRange;
+        return valueRange;
     }
 
     /**
@@ -386,6 +424,15 @@ public final class ValueRangeManager<Solution_> {
      */
     @SuppressWarnings("unchecked")
     public <T> CountableValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
+        return getFromEntity(valueRangeDescriptor, entity, null);
+    }
+
+    /**
+     * @throws IllegalStateException if called before {@link #reset(Object)} is called
+     */
+    @SuppressWarnings({ "unchecked", "rawtypes" })
+    public <T> CountableValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity,
+            @Nullable SelectionSorter<Solution_, T> sorter) {
         if (cachedWorkingSolution == null) {
             throw new IllegalStateException(
                     "Impossible state: value range (%s) on planning entity (%s) requested before the working solution is known."
@@ -393,9 +440,22 @@ public final class ValueRangeManager<Solution_> {
         }
         var valueRangeList =
                 fromEntityMap.computeIfAbsent(entity,
-                        e -> new CountableValueRange[solutionDescriptor.getValueRangeDescriptorCount()]);
-        var valueRange = valueRangeList[valueRangeDescriptor.getOrdinal()];
-        if (valueRange == null) { // Avoid computeIfAbsent on the hot path; creates capturing lambda instances.
+                        e -> new CountableValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()]);
+        var item = valueRangeList[valueRangeDescriptor.getOrdinal()];
+        var valueRange = item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
+        var valueRangeSorter = item != null ? item.sorter() : null;
+        // The phase initialization logic can call operations like countOnSolution or countOnEntity,
+        // which do not consider sorting and initialize the value range without a sorter.
+        // Therefore, we return the range if there is no sorter or applied sorter is the same as the given sorter
+        if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
+            // We do not recalculate range if they have already been calculated
+            if (valueRange != null && valueRange instanceof SortableValueRange sortableValueRange) {
+                var newSortedValueRange = (CountableValueRange<T>) sortableValueRange
+                        .sort(SelectionSorterAdapter.of(cachedWorkingSolution, sorter));
+                var newValueRange = new CountableValueRangeItem<>(newSortedValueRange, sorter);
+                valueRangeList[valueRangeDescriptor.getOrdinal()] = newValueRange;
+                return newSortedValueRange;
+            }
             var extractedValueRange =
                     valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
@@ -409,9 +469,18 @@ public final class ValueRangeManager<Solution_> {
             } else {
                 valueRange = countableValueRange;
             }
-            valueRangeList[valueRangeDescriptor.getOrdinal()] = valueRange;
+            if (sorter != null) {
+                if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
+                    throw new IllegalStateException(
+                            "Impossible state: value range (%s) on planning entity (%s) is not sortable."
+                                    .formatted(valueRangeDescriptor, entity));
+                }
+                var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
+                valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
+            }
+            valueRangeList[valueRangeDescriptor.getOrdinal()] = new CountableValueRangeItem<>(valueRange, sorter);
         }
-        return (CountableValueRange<T>) valueRange;
+        return valueRange;
     }
 
     public long countOnSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution) {
@@ -424,14 +493,27 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
-    public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        var values = reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
-        if (values != null) {
+    public <E, V> ReachableValues<E, V> getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
+        return getReachableValues(variableDescriptor, null);
+    }
+
+    public <E, V> ReachableValues<E, V> getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
+            @Nullable SelectionSorter<Solution_, V> sorter) {
+        var values =
+                (ReachableValues<E, V>) reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
+        // We return the value if there is no sorter or the applied sorter is the same as the given sorter
+        if (values != null && (sorter == null || Objects.equals(values.getValueSelectionSorter(), sorter))) {
             return values;
         }
         if (cachedWorkingSolution == null) {
             throw new IllegalStateException(
                     "Impossible state: value reachability requested before the working solution is known.");
+        }
+        // We do not recalculate all reachable values if they have already been calculated
+        if (values != null) {
+            var newValues = values.copy(SelectionSorterAdapter.of(cachedWorkingSolution, sorter));
+            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = newValues;
+            return newValues;
         }
         var entityDescriptor = variableDescriptor.getEntityDescriptor();
         var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
@@ -454,41 +536,42 @@ public final class ValueRangeManager<Solution_> {
             valueClass = value.getClass();
             break;
         }
-        Map<Object, ReachableItemValue> reachableValuesMap = ConfigUtils.isGenericTypeImmutable(valueClass)
+        Map<V, ReachableItemValue<E, V>> reachableValuesMap = ConfigUtils.isGenericTypeImmutable(valueClass)
                 ? new HashMap<>((int) valuesSize)
                 : new IdentityHashMap<>((int) valuesSize);
         for (var entity : entityList) {
             var range = getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             for (var i = 0; i < range.getSize(); i++) {
-                var value = range.get(i);
+                var value = (V) range.get(i);
                 if (value == null) {
                     continue;
                 }
                 var item = initReachableMap(reachableValuesMap, value, entityList.size(), (int) valuesSize);
-                item.addEntity(entity);
+                item.addEntity((E) entity);
                 for (int j = i + 1; j < range.getSize(); j++) {
-                    var otherValue = range.get(j);
+                    var otherValue = (V) range.get(j);
                     if (otherValue == null) {
                         continue;
                     }
                     item.addValue(otherValue);
-                    var otherValueItem =
-                            initReachableMap(reachableValuesMap, otherValue, entityList.size(), (int) valuesSize);
+                    var otherValueItem = initReachableMap(reachableValuesMap, otherValue, entityList.size(), (int) valuesSize);
                     otherValueItem.addValue(value);
                 }
             }
         }
-        values = new ReachableValues(reachableValuesMap, valueClass,
+        values = new ReachableValues<>(reachableValuesMap, valueClass,
+                sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null,
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
         reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
         return values;
     }
 
-    private static ReachableItemValue initReachableMap(Map<Object, ReachableItemValue> reachableValuesMap, Object value,
+    private static <E, V> ReachableItemValue<E, V> initReachableMap(Map<V, ReachableItemValue<E, V>> reachableValuesMap,
+            V value,
             int entityListSize, int valueListSize) {
         var item = reachableValuesMap.get(value);
         if (item == null) {
-            item = new ReachableItemValue(value, entityListSize, valueListSize);
+            item = new ReachableItemValue<>(value, entityListSize, valueListSize);
             reachableValuesMap.put(value, item);
         }
         return item;
@@ -504,6 +587,11 @@ public final class ValueRangeManager<Solution_> {
             cachedInitializationStatistics = null;
             cachedProblemSizeStatistics = null;
         }
+    }
+
+    private record CountableValueRangeItem<Solution_, T>(CountableValueRange<T> countableValueRange,
+            @Nullable SelectionSorter<Solution_, T> sorter) {
+
     }
 
 }

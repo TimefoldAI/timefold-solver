@@ -5,8 +5,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.ValueRangeCache;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -57,6 +59,12 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
     @Override
     public boolean contains(@Nullable T value) {
         return set.contains(value);
+    }
+
+    @Override
+    public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
+        var sortedSet = sorter.sort(set);
+        return new SetValueRange<>(sortedSet);
     }
 
     @Override

@@ -51,11 +51,19 @@ public class TestdataEntityProvidingSolution extends TestdataObject {
             valueList.add(value);
         }
         var entityList = new ArrayList<TestdataEntityProvidingEntity>(entityListSize);
+        var idx = 0;
         for (var i = 0; i < entityListSize; i++) {
             var expectedCount = Math.max(1, valueListSize / entityListSize);
             var valueRange = new ArrayList<TestdataValue>();
             for (var j = 0; j < expectedCount; j++) {
-                valueRange.add(valueList.get((i * j) % valueListSize));
+                if (initialized) {
+                    valueRange.add(valueList.get((i * j) % valueListSize));
+                } else {
+                    if (idx >= valueListSize) {
+                        break;
+                    }
+                    valueRange.add(valueList.get(idx++));
+                }
             }
             var entity = new TestdataEntityProvidingEntity("Generated Entity " + i, valueRange);
             entity.setValue(initialized ? valueList.get(i % valueListSize) : null);
