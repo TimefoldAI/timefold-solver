@@ -87,11 +87,11 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private final boolean checkSourceAndDestination;
 
     public FilteringValueRangeSelector(IterableValueSelector<Solution_> nonReplayingValueSelector,
-            IterableValueSelector<Solution_> replayingValueSelector, SelectionSorter<Solution_, ?> selectionSorter,
-            boolean randomSelection, boolean checkSourceAndDestination) {
+            IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection,
+            boolean checkSourceAndDestination) {
         this.nonReplayingValueSelector = nonReplayingValueSelector;
         this.replayingValueSelector = replayingValueSelector;
-        this.selectionSorter = (SelectionSorter<Solution_, Object>) selectionSorter;
+        this.selectionSorter = nonReplayingValueSelector.getSelectionSorter();
         this.randomSelection = randomSelection;
         this.checkSourceAndDestination = checkSourceAndDestination;
     }
@@ -133,6 +133,11 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     public IterableValueSelector<Solution_> getChildValueSelector() {
         return nonReplayingValueSelector;
+    }
+
+    @Override
+    public <T> SelectionSorter<Solution_, T> getSelectionSorter() {
+        return nonReplayingValueSelector.getSelectionSorter();
     }
 
     @Override

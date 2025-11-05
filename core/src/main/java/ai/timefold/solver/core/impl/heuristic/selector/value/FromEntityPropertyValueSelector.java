@@ -67,6 +67,8 @@ public final class FromEntityPropertyValueSelector<Solution_>
     // ************************************************************************
     // Worker methods
     // ************************************************************************
+
+    @Override
     public SelectionSorter<Solution_, Object> getSelectionSorter() {
         return selectionSorter;
     }

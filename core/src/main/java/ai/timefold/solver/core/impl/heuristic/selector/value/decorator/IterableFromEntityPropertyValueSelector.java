@@ -6,6 +6,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheTy
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.FromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -84,6 +85,11 @@ public final class IterableFromEntityPropertyValueSelector<Solution_> extends Ab
 
     public FromEntityPropertyValueSelector<Solution_> getChildValueSelector() {
         return childValueSelector;
+    }
+
+    @Override
+    public SelectionSorter<Solution_, Object> getSelectionSorter() {
+        return childValueSelector.getSelectionSorter();
     }
 
     @Override

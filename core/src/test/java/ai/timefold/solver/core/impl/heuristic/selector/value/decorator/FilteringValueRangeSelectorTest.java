@@ -51,7 +51,7 @@ class FilteringValueRangeSelectorTest {
         var mimicRecorder = new ManualValueMimicRecorder<>(iterableValueSelector);
         var replayingValueSelector = new MimicReplayingValueSelector<>(mimicRecorder);
         var valueSelector = new FilteringValueRangeSelector<>(iterableValueSelector, replayingValueSelector,
-                new TestdataObjectSorter<>(), false, false);
+                false, false);
 
         var solution = new TestdataListEntityProvidingSolution();
         var jan = new TestdataListEntityProvidingValue("jan");
