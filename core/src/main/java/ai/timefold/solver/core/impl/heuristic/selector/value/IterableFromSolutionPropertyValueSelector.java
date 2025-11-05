@@ -51,6 +51,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         return (intrinsicCacheType.compareTo(minimumCacheType) > 0) ? intrinsicCacheType : minimumCacheType;
     }
 
+    @Override
     public SelectionSorter<Solution_, Object> getSelectionSorter() {
         return selectionSorter;
     }

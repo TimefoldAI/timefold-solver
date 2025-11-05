@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.IterableSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.Selector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
 /**
  * Selects values from the {@link ValueRangeProvider} for a {@link PlanningVariable} annotated property.
@@ -50,5 +51,17 @@ public interface ValueSelector<Solution_> extends Selector<Solution_> {
      * @see #iterator(Object)
      */
     Iterator<Object> endingIterator(Object entity);
+
+    /**
+     * Returns the selection sorter applied to the node.
+     * By default, it returns null and must be overridden by the child class if necessary.
+     * 
+     * @return the selection sorter.
+     * 
+     * @param <T> the sorter value type.
+     */
+    default <T> SelectionSorter<Solution_, T> getSelectionSorter() {
+        return null;
+    }
 
 }

@@ -136,7 +136,7 @@ public class ValueSelectorFactory<Solution_>
              * Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
              * otherwise, we would end up applying the filtering logic twice.
              */
-            valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, sorter, entityDescriptor, minimumCacheType,
+            valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entityDescriptor, minimumCacheType,
                     inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId, assertBothSides);
         }
         valueSelector = applyFiltering(valueSelector, instanceCache);
@@ -557,11 +557,10 @@ public class ValueSelectorFactory<Solution_>
         return valueSelector;
     }
 
-    public static <Solution_, T> ValueSelector<Solution_> applyValueRangeFiltering(
+    public static <Solution_> ValueSelector<Solution_> applyValueRangeFiltering(
             HeuristicConfigPolicy<Solution_> configPolicy, ValueSelector<Solution_> valueSelector,
-            SelectionSorter<Solution_, T> selectionSorter, EntityDescriptor<Solution_> entityDescriptor,
-            SelectionCacheType minimumCacheType, SelectionOrder selectionOrder, boolean randomSelection,
-            String entityValueRangeRecorderId, boolean assertBothSides) {
+            EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType, SelectionOrder selectionOrder,
+            boolean randomSelection, String entityValueRangeRecorderId, boolean assertBothSides) {
         if (entityValueRangeRecorderId == null) {
             return valueSelector;
         }
@@ -571,7 +570,7 @@ public class ValueSelectorFactory<Solution_>
                 (IterableValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
         return new FilteringValueRangeSelector<>((IterableValueSelector<Solution_>) valueSelector, replayingValueSelector,
-                selectionSorter, randomSelection, assertBothSides);
+                randomSelection, assertBothSides);
     }
 
     public enum ListValueFilteringType {
