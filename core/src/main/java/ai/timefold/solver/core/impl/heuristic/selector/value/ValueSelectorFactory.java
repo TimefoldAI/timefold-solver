@@ -127,13 +127,6 @@ public class ValueSelectorFactory<Solution_>
         var valueSelector = buildBaseValueSelector(variableDescriptor, sorter,
                 SelectionCacheType.max(minimumCacheType, resolvedCacheType), randomSelection);
         if (nearbySelectionConfig != null) {
-            if (sorter != null) {
-                // The nearby node will sort the destinations according to their distance from the origin
-                // and using an additional sorter is not allowed
-                throw new IllegalArgumentException(
-                        "The valueSelectorConfig (%s) cannot enable both the Nearby feature and sorting features at the same time."
-                                .formatted(config));
-            }
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
             valueSelector = applyNearbySelection(configPolicy, entityDescriptor, minimumCacheType,
                     resolvedSelectionOrder, valueSelector);
