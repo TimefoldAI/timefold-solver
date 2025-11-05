@@ -76,13 +76,13 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     private final IterableValueSelector<Solution_> nonReplayingValueSelector;
     private final IterableValueSelector<Solution_> replayingValueSelector;
-    private final SelectionSorter<Solution_, ?> selectionSorter;
+    private final SelectionSorter<Solution_, Object> selectionSorter;
     private final boolean randomSelection;
 
     private Object replayedValue = null;
     private long valuesSize;
     private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
-    private ReachableValues<?, ?> reachableValues;
+    private ReachableValues<Object, Object> reachableValues;
 
     private final boolean checkSourceAndDestination;
 
@@ -91,7 +91,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
             boolean randomSelection, boolean checkSourceAndDestination) {
         this.nonReplayingValueSelector = nonReplayingValueSelector;
         this.replayingValueSelector = replayingValueSelector;
-        this.selectionSorter = selectionSorter;
+        this.selectionSorter = (SelectionSorter<Solution_, Object>) selectionSorter;
         this.randomSelection = randomSelection;
         this.checkSourceAndDestination = checkSourceAndDestination;
     }
@@ -216,7 +216,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     private abstract class AbstractFilteringValueRangeIterator implements Iterator<Object> {
         private final Supplier<Object> upcomingValueSupplier;
         private final ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
-        private final ReachableValues reachableValues;
+        private final ReachableValues<Object, Object> reachableValues;
         private final boolean checkSourceAndDestination;
         private boolean initialized = false;
         private boolean hasData = false;
@@ -227,7 +227,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         @Nullable
         private List<Object> currentUpcomingList;
 
-        AbstractFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+        AbstractFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues,
                 ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, boolean checkSourceAndDestination) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
@@ -321,7 +322,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         private Iterator<Object> reachableValueIterator;
         private Object selected = null;
 
-        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues,
                 ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
         }
@@ -371,7 +373,8 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         private Object replayedValue;
         private List<Object> reachableValueList = null;
 
-        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier, ReachableValues reachableValues,
+        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
+                ReachableValues<Object, Object> reachableValues,
                 ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply, Random workingRandom,
                 boolean checkSourceAndDestination) {
             super(upcomingValueSupplier, reachableValues, listVariableStateSupply, checkSourceAndDestination);
