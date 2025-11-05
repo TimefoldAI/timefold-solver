@@ -1,7 +1,8 @@
 package ai.timefold.solver.core.api.solver.event;
 
-import java.io.Serializable;
+import java.util.OptionalInt;
 
+import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.impl.phase.NoChangePhase;
 import ai.timefold.solver.core.impl.phase.PhaseType;
@@ -14,7 +15,7 @@ import org.jspecify.annotations.NullMarked;
  * Identifies the producer of a {@link BestSolutionChangedEvent}.
  */
 @NullMarked
-public interface EventProducerId extends Serializable {
+public interface EventProducerId {
     /**
      * An unique string identifying what produced the event, either of the form
      * "Event" where "Event" is a string describing the event that cause the update (like "Solving started")
@@ -34,6 +35,16 @@ public interface EventProducerId extends Serializable {
      * @return A (non-unique) string describing what produced the event.
      */
     String simpleProducerName();
+
+    /**
+     * If present, the index of the phase that produced the event in the {@link SolverConfig#getPhaseConfigList()}.
+     * Is absent when the producer does not correspond to a phase, for instance,
+     * an event triggered after {@link ProblemChange} were processed.
+     *
+     * @return The index of the corresponding phase in {@link SolverConfig#getPhaseConfigList()},
+     *         or {@link OptionalInt#empty()} if there is no corresponding phase.
+     */
+    OptionalInt phaseIndex();
 
     static EventProducerId unknown() {
         return SolveEventProducerId.UNKNOWN;

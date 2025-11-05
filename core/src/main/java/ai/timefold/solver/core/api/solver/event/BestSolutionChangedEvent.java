@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.api.solver.event;
 
-import java.util.EventObject;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -16,7 +14,7 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 // TODO In Solver 2.0, maybe convert this to an interface.
-public class BestSolutionChangedEvent<Solution_> extends EventObject {
+public class BestSolutionChangedEvent<Solution_> {
     private final Solver<Solution_> solver;
     private final EventProducerId producerId;
     private final long timeMillisSpent;
@@ -53,7 +51,6 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, EventProducerId producerId, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore,
             boolean isNewBestSolutionInitialized) {
-        super(solver);
         this.solver = solver;
         this.producerId = producerId;
         this.timeMillisSpent = timeMillisSpent;

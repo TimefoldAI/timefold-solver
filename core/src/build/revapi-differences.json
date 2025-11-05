@@ -450,6 +450,33 @@
           "new": "class ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig",
           "annotation": "@org.jspecify.annotations.NullMarked",
           "justification": "Update config"
+        },
+        {
+          "ignore": true,
+          "code": "java.field.removed",
+          "old": "field java.util.EventObject.source @ ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent<Solution_>",
+          "justification": "BestSolutionChangedEvent no longer extends java.util.EventObject"
+        },
+        {
+          "ignore": true,
+          "code": "java.method.removed",
+          "old": "method java.lang.Object java.util.EventObject::getSource() @ ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent<Solution_>",
+          "justification": "BestSolutionChangedEvent no longer extends java.util.EventObject"
+        },
+        {
+          "ignore": true,
+          "code": "java.class.noLongerInheritsFromClass",
+          "old": "class ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent<Solution_>",
+          "new": "class ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent<Solution_>",
+          "justification": "BestSolutionChangedEvent no longer extends java.util.EventObject"
+        },
+        {
+          "ignore": true,
+          "code": "java.class.noLongerImplementsInterface",
+          "old": "class ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent<Solution_>",
+          "new": "class ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent<Solution_>",
+          "interface": "java.io.Serializable",
+          "justification": "BestSolutionChangedEvent no longer extends java.util.EventObject"
         }
       ]
     }
