@@ -69,7 +69,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private final boolean randomSelection;
 
     private Object replayedValue;
-    private ReachableValues reachableValues;
+    private ReachableValues<?, ?> reachableValues;
     private long entitiesSize;
 
     public FilteringEntityByValueSelector(EntitySelector<Solution_> childEntitySelector,

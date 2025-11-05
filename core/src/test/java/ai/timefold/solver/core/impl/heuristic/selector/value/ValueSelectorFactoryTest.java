@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Stream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -17,6 +18,8 @@ import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSorterManner;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
@@ -25,9 +28,9 @@ import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.Selectio
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.AssignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -211,55 +214,66 @@ class ValueSelectorFactoryTest {
     @Test
     void applySorting_withSorterComparatorClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withCacheType(SelectionCacheType.PHASE)
                 .withSorterComparatorClass(DummyValueComparator.class);
-        applySorting(valueSelectorConfig);
+        applySorting(valueSelectorConfig, true);
+        applySorting(valueSelectorConfig, false);
     }
 
     @Test
     void applySorting_withComparatorClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withCacheType(SelectionCacheType.PHASE)
                 .withComparatorClass(DummyValueComparator.class);
-        applySorting(valueSelectorConfig);
+        applySorting(valueSelectorConfig, true);
+        applySorting(valueSelectorConfig, false);
     }
 
     @Test
     void applySorting_withSorterWeightFactoryClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withCacheType(SelectionCacheType.PHASE)
                 .withSorterWeightFactoryClass(DummySelectionComparatorFactory.class);
-        applySorting(valueSelectorConfig);
+        applySorting(valueSelectorConfig, true);
+        applySorting(valueSelectorConfig, false);
     }
 
     @Test
     void applySorting_withComparatorFactoryClass() {
         ValueSelectorConfig valueSelectorConfig = new ValueSelectorConfig()
+                .withCacheType(SelectionCacheType.PHASE)
                 .withComparatorFactoryClass(DummySelectionComparatorFactory.class);
-        applySorting(valueSelectorConfig);
+        applySorting(valueSelectorConfig, true);
+        applySorting(valueSelectorConfig, false);
     }
 
-    private void applySorting(ValueSelectorConfig valueSelectorConfig) {
+    private void applySorting(ValueSelectorConfig valueSelectorConfig, boolean canExtractValueRangeFromSolution) {
         ValueSelectorFactory valueSelectorFactory =
                 ValueSelectorFactory.create(valueSelectorConfig);
         valueSelectorFactory.validateSorting(SelectionOrder.SORTED);
-
-        ValueSelector baseValueSelector = mock(IterableValueSelector.class);
+        EntityDescriptor entityDescriptor = mock(EntityDescriptor.class);
         GenuineVariableDescriptor variableDescriptor = mock(GenuineVariableDescriptor.class);
-        when(baseValueSelector.getVariableDescriptor()).thenReturn(variableDescriptor);
-        when(variableDescriptor.canExtractValueRangeFromSolution()).thenReturn(true);
+        when(entityDescriptor.getGenuineVariableDescriptorList()).thenReturn(List.of(variableDescriptor));
+        ValueRangeDescriptor valueRangeDescriptor = mock(FromEntityPropertyValueRangeDescriptor.class);
+        when(variableDescriptor.getValueRangeDescriptor()).thenReturn(valueRangeDescriptor);
+        when(valueRangeDescriptor.getVariableDescriptor()).thenReturn(variableDescriptor);
+        when(valueRangeDescriptor.canExtractValueRangeFromSolution()).thenReturn(canExtractValueRangeFromSolution);
 
-        ValueSelector resultingValueSelector =
-                valueSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseValueSelector,
-                        ClassInstanceCache.create());
-        assertThat(resultingValueSelector).isExactlyInstanceOf(SortingValueSelector.class);
-    }
-
-    @Test
-    void applySortingFailsFast_withoutAnySorter() {
-        ValueSelectorFactory valueSelectorFactory = ValueSelectorFactory.create(new ValueSelectorConfig());
-        ValueSelector baseValueSelector = mock(ValueSelector.class);
-        assertThatIllegalArgumentException().isThrownBy(
-                () -> valueSelectorFactory.applySorting(SelectionCacheType.PHASE, SelectionOrder.SORTED, baseValueSelector,
-                        ClassInstanceCache.create()))
-                .withMessageContaining("needs a sorterManner");
+        if (canExtractValueRangeFromSolution) {
+            IterableFromSolutionPropertyValueSelector baseValueSelector =
+                    (IterableFromSolutionPropertyValueSelector) valueSelectorFactory.buildValueSelector(
+                            buildHeuristicConfigPolicy(),
+                            entityDescriptor, SelectionCacheType.PHASE, SelectionOrder.SORTED);
+            assertThat(baseValueSelector.getSelectionSorter()).isNotNull();
+            assertThat(baseValueSelector.getCacheType()).isEqualTo(SelectionCacheType.PHASE);
+        } else {
+            IterableFromEntityPropertyValueSelector baseValueSelector =
+                    (IterableFromEntityPropertyValueSelector) valueSelectorFactory.buildValueSelector(
+                            buildHeuristicConfigPolicy(),
+                            entityDescriptor, SelectionCacheType.PHASE, SelectionOrder.SORTED);
+            assertThat(baseValueSelector.getChildValueSelector().getSelectionSorter()).isNotNull();
+            assertThat(baseValueSelector.getCacheType()).isEqualTo(SelectionCacheType.PHASE);
+        }
     }
 
     @Test

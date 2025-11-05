@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 public record SelectionSorterAdapter<Solution_, T>(Solution_ solution,
-        SelectionSorter<Solution_, T> selectionSorter) implements ValueRangeSorter<T> {
+        SelectionSorter<Solution_, T> innerSelectionSorter) implements ValueRangeSorter<T> {
 
     public static <Solution_, T> ValueRangeSorter<T> of(Solution_ solution, SelectionSorter<Solution_, T> selectionSorter) {
         return new SelectionSorterAdapter<>(solution, selectionSorter);
@@ -18,11 +18,16 @@ public record SelectionSorterAdapter<Solution_, T>(Solution_ solution,
 
     @Override
     public List<T> sort(List<T> selectionList) {
-        return selectionSorter.sort(solution, selectionList);
+        return innerSelectionSorter.sort(solution, selectionList);
     }
 
     @Override
     public SortedSet<T> sort(Set<T> selectionSet) {
-        return selectionSorter.sort(solution, selectionSet);
+        return innerSelectionSorter.sort(solution, selectionSet);
+    }
+
+    @Override
+    public SelectionSorter<?, T> getInnerSorter() {
+        return innerSelectionSorter;
     }
 }

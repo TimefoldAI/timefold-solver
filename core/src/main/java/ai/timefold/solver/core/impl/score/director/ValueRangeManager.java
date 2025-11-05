@@ -62,7 +62,7 @@ public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final @Nullable CountableValueRangeItem<Solution_, ?>[] fromSolution;
-    private final ReachableValues[] reachableValues;
+    private final ReachableValues<?, ?>[] reachableValues;
     private final Map<Object, CountableValueRangeItem<Solution_, ?>[]> fromEntityMap =
             new IdentityHashMap<>();
 
@@ -381,8 +381,18 @@ public final class ValueRangeManager<Solution_> {
         var valueRange =
                 item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
         var valueRangeSorter = item != null ? item.sorter() : null;
-        // We read and sort the data again if needed
+        // The phase initialization logic can call operations like countOnSolution or countOnEntity,
+        // which do not consider sorting and initialize the value range without a sorter.
+        // Therefore, we return the range if there is no sorter or applied sorter is the same as the given sorter
         if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
+            // We do not recalculate range if they have already been calculated
+            if (valueRange != null && valueRange instanceof SortableValueRange sortableValueRange) {
+                var newSortedValueRange = (CountableValueRange<T>) sortableValueRange
+                        .sort(SelectionSorterAdapter.of(solution, sorter));
+                var newValueRange = new CountableValueRangeItem<>(newSortedValueRange, sorter);
+                fromSolution[valueRangeDescriptor.getOrdinal()] = newValueRange;
+                return newSortedValueRange;
+            }
             var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
                 throw new UnsupportedOperationException("""
@@ -434,8 +444,18 @@ public final class ValueRangeManager<Solution_> {
         var item = valueRangeList[valueRangeDescriptor.getOrdinal()];
         var valueRange = item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
         var valueRangeSorter = item != null ? item.sorter() : null;
-        // We read and sort the data again if needed
+        // The phase initialization logic can call operations like countOnSolution or countOnEntity,
+        // which do not consider sorting and initialize the value range without a sorter.
+        // Therefore, we return the range if there is no sorter or applied sorter is the same as the given sorter
         if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
+            // We do not recalculate range if they have already been calculated
+            if (valueRange != null && valueRange instanceof SortableValueRange sortableValueRange) {
+                var newSortedValueRange = (CountableValueRange<T>) sortableValueRange
+                        .sort(SelectionSorterAdapter.of(cachedWorkingSolution, sorter));
+                var newValueRange = new CountableValueRangeItem<>(newSortedValueRange, sorter);
+                valueRangeList[valueRangeDescriptor.getOrdinal()] = newValueRange;
+                return newSortedValueRange;
+            }
             var extractedValueRange =
                     valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
             if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
@@ -473,14 +493,27 @@ public final class ValueRangeManager<Solution_> {
                 .getSize();
     }
 
-    public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
-        var values = reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
-        if (values != null) {
+    public <E, V> ReachableValues<E, V> getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
+        return getReachableValues(variableDescriptor, null);
+    }
+
+    public <E, V> ReachableValues<E, V> getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
+            @Nullable SelectionSorter<Solution_, V> sorter) {
+        var values =
+                (ReachableValues<E, V>) reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
+        // We return the value if there is no sorter or the applied sorter is the same as the given sorter
+        if (values != null && (sorter == null || Objects.equals(values.getValueSelectionSorter(), sorter))) {
             return values;
         }
         if (cachedWorkingSolution == null) {
             throw new IllegalStateException(
                     "Impossible state: value reachability requested before the working solution is known.");
+        }
+        // We do not recalculate all reachable values if they have already been calculated
+        if (values != null) {
+            var newValues = values.copy(SelectionSorterAdapter.of(cachedWorkingSolution, sorter));
+            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = newValues;
+            return newValues;
         }
         var entityDescriptor = variableDescriptor.getEntityDescriptor();
         var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
@@ -503,41 +536,42 @@ public final class ValueRangeManager<Solution_> {
             valueClass = value.getClass();
             break;
         }
-        Map<Object, ReachableItemValue> reachableValuesMap = ConfigUtils.isGenericTypeImmutable(valueClass)
+        Map<V, ReachableItemValue<E, V>> reachableValuesMap = ConfigUtils.isGenericTypeImmutable(valueClass)
                 ? new HashMap<>((int) valuesSize)
                 : new IdentityHashMap<>((int) valuesSize);
         for (var entity : entityList) {
             var range = getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             for (var i = 0; i < range.getSize(); i++) {
-                var value = range.get(i);
+                var value = (V) range.get(i);
                 if (value == null) {
                     continue;
                 }
                 var item = initReachableMap(reachableValuesMap, value, entityList.size(), (int) valuesSize);
-                item.addEntity(entity);
+                item.addEntity((E) entity);
                 for (int j = i + 1; j < range.getSize(); j++) {
-                    var otherValue = range.get(j);
+                    var otherValue = (V) range.get(j);
                     if (otherValue == null) {
                         continue;
                     }
                     item.addValue(otherValue);
-                    var otherValueItem =
-                            initReachableMap(reachableValuesMap, otherValue, entityList.size(), (int) valuesSize);
+                    var otherValueItem = initReachableMap(reachableValuesMap, otherValue, entityList.size(), (int) valuesSize);
                     otherValueItem.addValue(value);
                 }
             }
         }
-        values = new ReachableValues(reachableValuesMap, valueClass,
+        values = new ReachableValues<>(reachableValuesMap, valueClass,
+                sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null,
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
         reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
         return values;
     }
 
-    private static ReachableItemValue initReachableMap(Map<Object, ReachableItemValue> reachableValuesMap, Object value,
+    private static <E, V> ReachableItemValue<E, V> initReachableMap(Map<V, ReachableItemValue<E, V>> reachableValuesMap,
+            V value,
             int entityListSize, int valueListSize) {
         var item = reachableValuesMap.get(value);
         if (item == null) {
-            item = new ReachableItemValue(value, entityListSize, valueListSize);
+            item = new ReachableItemValue<>(value, entityListSize, valueListSize);
             reachableValuesMap.put(value, item);
         }
         return item;

@@ -122,4 +122,63 @@ class ReachableValuesTest {
         // Null value is not accepted because the setting allowUnassigned is false
         assertThat(reachableValues.isValueReachable(v1, null)).isTrue();
     }
+
+    @Test
+    void sortAscendingReachableValues() {
+        var v1 = new TestdataValue("V1");
+        var v2 = new TestdataValue("V2");
+        var v3 = new TestdataValue("V3");
+        var v4 = new TestdataValue("V4");
+        var v5 = new TestdataValue("V5");
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v3, v2, v1));
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v3, v2));
+        var c = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v5, v4, v3, v2));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b, c));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataAllowsUnassignedEntityProvidingEntity.class);
+        var reachableValues = scoreDirector.getValueRangeManager()
+                .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0),
+                        new TestdataObjectSorter<TestdataAllowsUnassignedEntityProvidingSolution, TestdataValue>());
+
+        assertThat(reachableValues.extractValuesAsList(v1)).containsExactlyInAnyOrder(v2, v3);
+        assertThat(reachableValues.extractValuesAsList(v2)).containsExactlyInAnyOrder(v1, v3, v4, v5);
+        assertThat(reachableValues.extractValuesAsList(v3)).containsExactlyInAnyOrder(v1, v2, v4, v5);
+        assertThat(reachableValues.extractValuesAsList(v4)).containsExactlyInAnyOrder(v2, v3, v5);
+        assertThat(reachableValues.extractValuesAsList(v5)).containsExactlyInAnyOrder(v2, v3, v4);
+    }
+
+    @Test
+    void sortDescendingReachableValues() {
+        var v1 = new TestdataValue("V1");
+        var v2 = new TestdataValue("V2");
+        var v3 = new TestdataValue("V3");
+        var v4 = new TestdataValue("V4");
+        var v5 = new TestdataValue("V5");
+        var a = new TestdataAllowsUnassignedEntityProvidingEntity("A", List.of(v2, v3, v1));
+        var b = new TestdataAllowsUnassignedEntityProvidingEntity("B", List.of(v2, v3));
+        var c = new TestdataAllowsUnassignedEntityProvidingEntity("C", List.of(v2, v3, v4, v5));
+        var solution = new TestdataAllowsUnassignedEntityProvidingSolution();
+        solution.setEntityList(List.of(a, b, c));
+
+        var scoreDirector = mockScoreDirector(TestdataAllowsUnassignedEntityProvidingSolution.buildSolutionDescriptor());
+        scoreDirector.setWorkingSolution(solution);
+
+        var solutionDescriptor = scoreDirector.getSolutionDescriptor();
+        var entityDescriptor = solutionDescriptor.findEntityDescriptor(TestdataAllowsUnassignedEntityProvidingEntity.class);
+        var reachableValues = scoreDirector.getValueRangeManager()
+                .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0),
+                        new TestdataObjectSorter<TestdataAllowsUnassignedEntityProvidingSolution, TestdataValue>(false));
+
+        assertThat(reachableValues.extractValuesAsList(v1)).containsExactlyInAnyOrder(v3, v2);
+        assertThat(reachableValues.extractValuesAsList(v1)).containsExactlyInAnyOrder(v3, v2);
+        assertThat(reachableValues.extractValuesAsList(v2)).containsExactlyInAnyOrder(v5, v4, v3, v1);
+        assertThat(reachableValues.extractValuesAsList(v3)).containsExactlyInAnyOrder(v5, v4, v2, v1);
+        assertThat(reachableValues.extractValuesAsList(v4)).containsExactlyInAnyOrder(v5, v3, v2);
+        assertThat(reachableValues.extractValuesAsList(v5)).containsExactlyInAnyOrder(v4, v3, v2);
+    }
 }

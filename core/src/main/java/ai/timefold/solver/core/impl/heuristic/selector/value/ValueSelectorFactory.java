@@ -31,14 +31,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingVa
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FromEntitySortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.InitializedValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ReinitializeVariableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SelectedCountLimitValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
@@ -125,16 +123,7 @@ public class ValueSelectorFactory<Solution_>
         // baseValueSelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
         var randomSelection = determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder);
         var instanceCache = configPolicy.getClassInstanceCache();
-        /*
-         * When a filtering value range or nearby are used,
-         * we opt to sort the data using a sorting node selector instead of sorting at the value range level.
-         * This choice is required
-         * because the FilteringValueRangeSelector or the related Nearby selector does not respect the sort order
-         * provided by the child selectors.
-         */
-        var canSortAtValueRangeLevel = entityValueRangeRecorderId == null && nearbySelectionConfig == null;
-        var sorter =
-                canSortAtValueRangeLevel ? determineSorter(variableDescriptor, resolvedSelectionOrder, instanceCache) : null;
+        var sorter = determineSorter(variableDescriptor, resolvedSelectionOrder, instanceCache);
         var valueSelector = buildBaseValueSelector(variableDescriptor, sorter,
                 SelectionCacheType.max(minimumCacheType, resolvedCacheType), randomSelection);
         if (nearbySelectionConfig != null) {
@@ -147,14 +136,11 @@ public class ValueSelectorFactory<Solution_>
              * Therefore, we only apply entity value range filtering if the nearby feature is not enabled;
              * otherwise, we would end up applying the filtering logic twice.
              */
-            valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, entityDescriptor, minimumCacheType,
+            valueSelector = applyValueRangeFiltering(configPolicy, valueSelector, sorter, entityDescriptor, minimumCacheType,
                     inheritedSelectionOrder, randomSelection, entityValueRangeRecorderId, assertBothSides);
         }
         valueSelector = applyFiltering(valueSelector, instanceCache);
         valueSelector = applyInitializedChainedValueFilter(configPolicy, variableDescriptor, valueSelector);
-        if (!canSortAtValueRangeLevel) {
-            valueSelector = applySorting(resolvedCacheType, resolvedSelectionOrder, valueSelector, instanceCache);
-        }
         valueSelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, valueSelector, instanceCache);
         valueSelector = applyShuffling(resolvedCacheType, resolvedSelectionOrder, valueSelector);
         valueSelector = applyCaching(resolvedCacheType, resolvedSelectionOrder, valueSelector);
@@ -422,29 +408,6 @@ public class ValueSelectorFactory<Solution_>
         }
     }
 
-    protected ValueSelector<Solution_> applySorting(SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder,
-            ValueSelector<Solution_> valueSelector, ClassInstanceCache instanceCache) {
-        if (resolvedSelectionOrder == SORTED) {
-            var sorter = determineSorter(valueSelector.getVariableDescriptor(), resolvedSelectionOrder, instanceCache);
-            if (!valueSelector.getVariableDescriptor().canExtractValueRangeFromSolution()
-                    && resolvedCacheType == SelectionCacheType.STEP) {
-                valueSelector = new FromEntitySortingValueSelector<>(valueSelector, resolvedCacheType, sorter);
-            } else {
-                if (!(valueSelector instanceof IterableValueSelector)) {
-                    throw new IllegalArgumentException("The valueSelectorConfig (" + config
-                            + ") with resolvedCacheType (" + resolvedCacheType
-                            + ") and resolvedSelectionOrder (" + resolvedSelectionOrder
-                            + ") needs to be based on an "
-                            + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                            + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-                }
-                valueSelector = new SortingValueSelector<>((IterableValueSelector<Solution_>) valueSelector,
-                        resolvedCacheType, sorter);
-            }
-        }
-        return valueSelector;
-    }
-
     protected void validateProbability(SelectionOrder resolvedSelectionOrder) {
         if (config.getProbabilityWeightFactoryClass() != null
                 && resolvedSelectionOrder != SelectionOrder.PROBABILISTIC) {
@@ -594,10 +557,11 @@ public class ValueSelectorFactory<Solution_>
         return valueSelector;
     }
 
-    public static <Solution_> ValueSelector<Solution_> applyValueRangeFiltering(
+    public static <Solution_, T> ValueSelector<Solution_> applyValueRangeFiltering(
             HeuristicConfigPolicy<Solution_> configPolicy, ValueSelector<Solution_> valueSelector,
-            EntityDescriptor<Solution_> entityDescriptor, SelectionCacheType minimumCacheType, SelectionOrder selectionOrder,
-            boolean randomSelection, String entityValueRangeRecorderId, boolean assertBothSides) {
+            SelectionSorter<Solution_, T> selectionSorter, EntityDescriptor<Solution_> entityDescriptor,
+            SelectionCacheType minimumCacheType, SelectionOrder selectionOrder, boolean randomSelection,
+            String entityValueRangeRecorderId, boolean assertBothSides) {
         if (entityValueRangeRecorderId == null) {
             return valueSelector;
         }
@@ -607,7 +571,7 @@ public class ValueSelectorFactory<Solution_>
                 (IterableValueSelector<Solution_>) ValueSelectorFactory.<Solution_> create(valueSelectorConfig)
                         .buildValueSelector(configPolicy, entityDescriptor, minimumCacheType, selectionOrder);
         return new FilteringValueRangeSelector<>((IterableValueSelector<Solution_>) valueSelector, replayingValueSelector,
-                randomSelection, assertBothSides);
+                selectionSorter, randomSelection, assertBothSides);
     }
 
     public enum ListValueFilteringType {

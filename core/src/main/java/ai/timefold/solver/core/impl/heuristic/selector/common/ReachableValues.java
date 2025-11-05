@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -10,6 +11,8 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -21,22 +24,25 @@ import org.jspecify.annotations.Nullable;
  * @see FromEntityPropertyValueRangeDescriptor
  */
 @NullMarked
-public final class ReachableValues {
+public final class ReachableValues<E, V> {
 
-    private final Map<Object, ReachableItemValue> values;
+    private final Map<V, ReachableItemValue<E, V>> values;
     private final @Nullable Class<?> valueClass;
+    private final @Nullable ValueRangeSorter<V> valueRangeSorter;
     private final boolean acceptsNullValue;
-    private @Nullable ReachableItemValue firstCachedObject;
-    private @Nullable ReachableItemValue secondCachedObject;
+    private @Nullable ReachableItemValue<E, V> firstCachedObject;
+    private @Nullable ReachableItemValue<E, V> secondCachedObject;
 
-    public ReachableValues(Map<Object, ReachableItemValue> values, Class<?> valueClass, boolean acceptsNullValue) {
+    public ReachableValues(Map<V, ReachableItemValue<E, V>> values, @Nullable Class<?> valueClass,
+            @Nullable ValueRangeSorter<V> valueRangeSorter, boolean acceptsNullValue) {
         this.values = values;
         this.valueClass = valueClass;
+        this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
     }
 
-    private @Nullable ReachableItemValue fetchItemValue(Object value) {
-        ReachableItemValue selected = null;
+    private @Nullable ReachableItemValue<E, V> fetchItemValue(V value) {
+        ReachableItemValue<E, V> selected = null;
         if (firstCachedObject != null && firstCachedObject.value == value) {
             selected = firstCachedObject;
         } else if (secondCachedObject != null && secondCachedObject.value == value) {
@@ -54,7 +60,7 @@ public final class ReachableValues {
         return selected;
     }
 
-    public List<Object> extractEntitiesAsList(Object value) {
+    public List<E> extractEntitiesAsList(V value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
@@ -62,11 +68,12 @@ public final class ReachableValues {
         return itemValue.randomAccessEntityList;
     }
 
-    public List<Object> extractValuesAsList(Object value) {
+    public List<V> extractValuesAsList(V value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
+        itemValue.checkSorting(valueRangeSorter);
         return itemValue.randomAccessValueList;
     }
 
@@ -74,7 +81,7 @@ public final class ReachableValues {
         return values.size();
     }
 
-    public boolean isEntityReachable(@Nullable Object origin, @Nullable Object entity) {
+    public boolean isEntityReachable(@Nullable V origin, @Nullable E entity) {
         if (entity == null) {
             return true;
         }
@@ -88,7 +95,7 @@ public final class ReachableValues {
         return originItemValue.entityMap.containsKey(entity);
     }
 
-    public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
+    public boolean isValueReachable(V origin, @Nullable V otherValue) {
         var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
         if (originItemValue == null) {
             return false;
@@ -103,19 +110,34 @@ public final class ReachableValues {
         return acceptsNullValue;
     }
 
-    public boolean matchesValueClass(Object value) {
+    public boolean matchesValueClass(V value) {
         return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
     }
 
-    @NullMarked
-    public static final class ReachableItemValue {
-        private final Object value;
-        private final Map<Object, Object> entityMap;
-        private final Map<Object, Object> valueMap;
-        private final List<Object> randomAccessEntityList;
-        private final List<Object> randomAccessValueList;
+    public @Nullable SelectionSorter<?, V> getValueSelectionSorter() {
+        return valueRangeSorter != null ? valueRangeSorter.getInnerSorter() : null;
+    }
 
-        public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
+    public ReachableValues<E, V> copy(@Nullable ValueRangeSorter<V> valueRangeSorter) {
+        Map<V, ReachableItemValue<E, V>> newValues = ConfigUtils.isGenericTypeImmutable(valueClass)
+                ? new HashMap<>(values.size())
+                : new IdentityHashMap<>(values.size());
+        for (Map.Entry<V, ReachableItemValue<E, V>> entry : values.entrySet()) {
+            newValues.put(entry.getKey(), entry.getValue().copy());
+        }
+        return new ReachableValues<>(newValues, valueClass, valueRangeSorter, acceptsNullValue);
+    }
+
+    @NullMarked
+    public static final class ReachableItemValue<E, V> {
+        private final V value;
+        private final Map<E, E> entityMap;
+        private final Map<V, V> valueMap;
+        private final List<E> randomAccessEntityList;
+        private final List<V> randomAccessValueList;
+        private boolean sorted = false;
+
+        public ReachableItemValue(V value, int entityListSize, int valueListSize) {
             this.value = value;
             this.entityMap = new IdentityHashMap<>(entityListSize);
             this.randomAccessEntityList = new ArrayList<>(entityListSize);
@@ -124,16 +146,39 @@ public final class ReachableValues {
             this.randomAccessValueList = new ArrayList<>(valueListSize);
         }
 
-        public void addEntity(Object entity) {
+        private ReachableItemValue(V value, Map<E, E> entityMap, Map<V, V> valueMap, List<E> randomAccessEntityList,
+                List<V> randomAccessValueList) {
+            this.value = value;
+            this.entityMap = entityMap;
+            this.valueMap = valueMap;
+            this.randomAccessEntityList = randomAccessEntityList;
+            this.randomAccessValueList = randomAccessValueList;
+        }
+
+        public void addEntity(E entity) {
             if (entityMap.put(entity, entity) == null) {
                 randomAccessEntityList.add(entity);
             }
         }
 
-        public void addValue(Object value) {
+        public void addValue(V value) {
             if (valueMap.put(value, value) == null) {
                 randomAccessValueList.add(value);
             }
+        }
+
+        private void checkSorting(@Nullable ValueRangeSorter<V> valueRangeSorter) {
+            if (valueRangeSorter != null && !sorted) {
+                var sortedList = valueRangeSorter.sort(randomAccessValueList);
+                randomAccessValueList.clear();
+                randomAccessValueList.addAll(sortedList);
+                sorted = true;
+            }
+        }
+
+        public ReachableItemValue<E, V> copy() {
+            return new ReachableItemValue<>(value, entityMap, valueMap, new ArrayList<>(randomAccessEntityList),
+                    new ArrayList<>(randomAccessValueList));
         }
     }
 
