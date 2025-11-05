@@ -22,6 +22,7 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
@@ -35,6 +36,7 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.common.DummyHardSoftEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingComparator;
 import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingFactory;
+import ai.timefold.solver.core.testdomain.list.TestDistanceMeter;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -1622,6 +1624,39 @@ class DefaultConstructionHeuristicPhaseTest {
                     .hasMessageContaining(
                             "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
         }
+    }
+
+    @Test
+    void failConstructionHeuristicBothNearbyAndSorting() {
+        // Two comparator properties
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class)
+                .withEasyScoreCalculatorClass(TestdataListSolutionEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig().withId("sortedEntitySelector"))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withComparatorFactoryClass(
+                                                        TestdataObjectSortableDescendingFactory.class)
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("sortedEntitySelector"))
+                                                        .withNearbyDistanceMeterClass(TestDistanceMeter.class))))));
+        var solution = new TestdataListSolution();
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .hasMessageContaining(
+                        "The nearbySelectorConfig")
+                .hasMessageContaining(
+                        "Maybe remove difficultyComparatorClass or difficultyWeightFactoryClass from your @PlanningEntity annotation.")
+                .hasMessageContaining(
+                        "Maybe remove strengthComparatorClass or strengthWeightFactoryClass from your @PlanningVariable annotation.")
+                .hasMessageContaining(
+                        "Maybe disable nearby selection.");
     }
 
     @Test
