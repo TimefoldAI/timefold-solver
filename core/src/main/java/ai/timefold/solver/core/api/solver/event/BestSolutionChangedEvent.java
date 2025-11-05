@@ -71,9 +71,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     }
 
     /**
-     * @return A {@link EventProducerId} identifying what generated the event, either a
-     *         {@link SolveEventProducerId} if the cause is not associated with a Phase,
-     *         or {@link PhaseEventProducerId} if it is.
+     * @return A {@link EventProducerId} identifying what generated the event
      */
     public EventProducerId getProducerId() {
         return producerId;

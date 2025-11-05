@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.constraint.ConstraintMatchTotal;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
-import ai.timefold.solver.core.api.solver.event.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
@@ -17,6 +16,7 @@ import ai.timefold.solver.core.impl.localsearch.event.LocalSearchPhaseLifecycleL
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchPhaseScope;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchStepScope;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
+import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.solver.monitoring.ScoreLevels;
@@ -48,8 +48,8 @@ public class DefaultLocalSearchPhase<Solution_> extends AbstractPhase<Solution_>
     }
 
     @Override
-    public String getPhaseTypeString() {
-        return PhaseType.LOCAL_SEARCH.getPhaseName();
+    public PhaseType getPhaseType() {
+        return PhaseType.LOCAL_SEARCH;
     }
 
     @Override

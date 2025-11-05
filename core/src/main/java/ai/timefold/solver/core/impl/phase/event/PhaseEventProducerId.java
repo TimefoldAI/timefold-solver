@@ -1,6 +1,8 @@
-package ai.timefold.solver.core.api.solver.event;
+package ai.timefold.solver.core.impl.phase.event;
 
-import java.util.OptionalInt;
+import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.impl.phase.PhaseType;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -18,11 +20,6 @@ public record PhaseEventProducerId(PhaseType phaseType, int phaseIndex) implemen
     @Override
     public String simpleProducerName() {
         return phaseType.getPhaseName();
-    }
-
-    @Override
-    public OptionalInt eventPhaseIndex() {
-        return OptionalInt.of(phaseIndex);
     }
 
     @Override

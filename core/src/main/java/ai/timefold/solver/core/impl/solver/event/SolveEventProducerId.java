@@ -1,6 +1,7 @@
-package ai.timefold.solver.core.api.solver.event;
+package ai.timefold.solver.core.impl.solver.event;
 
-import java.util.OptionalInt;
+import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -44,10 +45,5 @@ public enum SolveEventProducerId implements EventProducerId {
     @Override
     public String simpleProducerName() {
         return producerId;
-    }
-
-    @Override
-    public OptionalInt eventPhaseIndex() {
-        return OptionalInt.empty();
     }
 }

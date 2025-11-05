@@ -21,8 +21,8 @@ public class NoChangePhase<Solution_> extends AbstractPhase<Solution_> {
     }
 
     @Override
-    public String getPhaseTypeString() {
-        return "No Change";
+    public PhaseType getPhaseType() {
+        return PhaseType.NO_CHANGE;
     }
 
     @Override

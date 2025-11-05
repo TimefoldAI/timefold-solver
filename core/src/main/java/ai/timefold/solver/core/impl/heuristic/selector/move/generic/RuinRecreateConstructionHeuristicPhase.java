@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.ConstructionHeuristicP
 import ai.timefold.solver.core.impl.constructionheuristic.DefaultConstructionHeuristicPhase;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
+import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.jspecify.annotations.NullMarked;
@@ -41,8 +42,8 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
     }
 
     @Override
-    public String getPhaseTypeString() {
-        return "Ruin & Recreate Construction Heuristics";
+    public PhaseType getPhaseType() {
+        return PhaseType.RUIN_AND_RECREATE_CONSTRUCTION_HEURISTIC;
     }
 
     @Override

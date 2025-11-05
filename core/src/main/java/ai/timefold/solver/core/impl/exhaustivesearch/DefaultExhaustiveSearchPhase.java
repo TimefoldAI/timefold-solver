@@ -9,7 +9,6 @@ import java.util.function.IntFunction;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.event.EventProducerId;
-import ai.timefold.solver.core.api.solver.event.PhaseType;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.exhaustivesearch.decider.ExhaustiveSearchDecider;
 import ai.timefold.solver.core.impl.exhaustivesearch.node.ExhaustiveSearchLayer;
@@ -19,6 +18,7 @@ import ai.timefold.solver.core.impl.exhaustivesearch.scope.ExhaustiveSearchStepS
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.Moves;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
+import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.preview.api.move.Move;
@@ -49,8 +49,8 @@ public class DefaultExhaustiveSearchPhase<Solution_> extends AbstractPhase<Solut
     }
 
     @Override
-    public String getPhaseTypeString() {
-        return PhaseType.EXHAUSTIVE_SEARCH.getPhaseName();
+    public PhaseType getPhaseType() {
+        return PhaseType.EXHAUSTIVE_SEARCH;
     }
 
     @Override

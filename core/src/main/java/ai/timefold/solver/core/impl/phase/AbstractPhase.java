@@ -77,7 +77,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         return assertShadowVariablesAreNotStaleAfterStep;
     }
 
-    public abstract String getPhaseTypeString();
+    public abstract PhaseType getPhaseType();
 
     // ************************************************************************
     // Lifecycle methods
@@ -130,7 +130,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         if (assertPhaseScoreFromScratch) {
             var score = phaseScope.getSolverScope().calculateScore();
             try {
-                phaseScope.assertWorkingScoreFromScratch(score, getPhaseTypeString() + " phase ended");
+                phaseScope.assertWorkingScoreFromScratch(score, getPhaseType() + " phase ended");
             } catch (ScoreCorruptionException | VariableCorruptionException e) {
                 throw new IllegalStateException("""
                         Solver corruption was detected. Solutions provided by this solver can not be trusted.
@@ -234,7 +234,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                                 %s phase (%d) needs to start from an initialized solution, but there are (%d) uninitialized entities.
                                 Maybe there is no Construction Heuristic configured before this phase to initialize the solution.
                                 Or maybe the getter/setters of your planning variables in your domain classes aren't implemented correctly."""
-                                .formatted(getPhaseTypeString(), phaseIndex, uninitializedEntityCount));
+                                .formatted(getPhaseType(), phaseIndex, uninitializedEntityCount));
             }
             var unassignedValueCount = initializationStatistics.unassignedValueCount();
             if (unassignedValueCount > 0) {
@@ -243,7 +243,7 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
                                 %s phase (%d) needs to start from an initialized solution, \
                                 but planning list variable (%s) has (%d) unexpected unassigned values.
                                 Maybe there is no Construction Heuristic configured before this phase to initialize the solution."""
-                                .formatted(getPhaseTypeString(), phaseIndex, solutionDescriptor.getListVariableDescriptor(),
+                                .formatted(getPhaseType(), phaseIndex, solutionDescriptor.getListVariableDescriptor(),
                                         unassignedValueCount));
             }
         }
