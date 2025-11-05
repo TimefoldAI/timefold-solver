@@ -22,7 +22,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         implements IterableValueSelector<Solution_> {
 
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
-    private final SelectionSorter<Solution_, Object> sorter;
+    private final SelectionSorter<Solution_, Object> selectionSorter;
     private final SelectionCacheType minimumCacheType;
     private final boolean randomSelection;
     private final boolean valueRangeMightContainEntity;
@@ -32,9 +32,9 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     private boolean cachedEntityListIsDirty = false;
 
     public IterableFromSolutionPropertyValueSelector(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            SelectionSorter<Solution_, Object> sorter, SelectionCacheType minimumCacheType, boolean randomSelection) {
+            SelectionSorter<Solution_, Object> selectionSorter, SelectionCacheType minimumCacheType, boolean randomSelection) {
         this.valueRangeDescriptor = valueRangeDescriptor;
-        this.sorter = sorter;
+        this.selectionSorter = selectionSorter;
         this.minimumCacheType = minimumCacheType;
         this.randomSelection = randomSelection;
         valueRangeMightContainEntity = valueRangeDescriptor.mightContainEntity();
@@ -51,6 +51,10 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         return (intrinsicCacheType.compareTo(minimumCacheType) > 0) ? intrinsicCacheType : minimumCacheType;
     }
 
+    public SelectionSorter<Solution_, Object> getSelectionSorter() {
+        return selectionSorter;
+    }
+
     // ************************************************************************
     // Cache lifecycle methods
     // ************************************************************************
@@ -60,7 +64,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         super.phaseStarted(phaseScope);
         var scoreDirector = phaseScope.getScoreDirector();
         cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
-                scoreDirector.getWorkingSolution(), sorter);
+                scoreDirector.getWorkingSolution(), selectionSorter);
         if (valueRangeMightContainEntity) {
             cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
             cachedEntityListIsDirty = false;
@@ -77,7 +81,7 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
                     cachedEntityListIsDirty = true;
                 } else {
                     cachedValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor,
-                            scoreDirector.getWorkingSolution(), sorter);
+                            scoreDirector.getWorkingSolution(), selectionSorter);
                     cachedEntityListRevision = scoreDirector.getWorkingEntityListRevision();
                 }
             }
@@ -160,12 +164,12 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
         if (!(o instanceof IterableFromSolutionPropertyValueSelector<?> that))
             return false;
         return randomSelection == that.randomSelection && Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor)
-                && Objects.equals(sorter, that.sorter) && minimumCacheType == that.minimumCacheType;
+                && Objects.equals(selectionSorter, that.selectionSorter) && minimumCacheType == that.minimumCacheType;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(valueRangeDescriptor, sorter, minimumCacheType, randomSelection);
+        return Objects.hash(valueRangeDescriptor, selectionSorter, minimumCacheType, randomSelection);
     }
 
     @Override

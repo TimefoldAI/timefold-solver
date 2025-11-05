@@ -8,11 +8,13 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Supplier;
 
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.list.DestinationSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
@@ -74,20 +76,22 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     private final IterableValueSelector<Solution_> nonReplayingValueSelector;
     private final IterableValueSelector<Solution_> replayingValueSelector;
+    private final SelectionSorter<Solution_, ?> selectionSorter;
     private final boolean randomSelection;
 
     private Object replayedValue = null;
     private long valuesSize;
     private ListVariableStateSupply<Solution_, Object, Object> listVariableStateSupply;
-    private ReachableValues reachableValues;
+    private ReachableValues<?, ?> reachableValues;
 
     private final boolean checkSourceAndDestination;
 
     public FilteringValueRangeSelector(IterableValueSelector<Solution_> nonReplayingValueSelector,
-            IterableValueSelector<Solution_> replayingValueSelector, boolean randomSelection,
-            boolean checkSourceAndDestination) {
+            IterableValueSelector<Solution_> replayingValueSelector, SelectionSorter<Solution_, ?> selectionSorter,
+            boolean randomSelection, boolean checkSourceAndDestination) {
         this.nonReplayingValueSelector = nonReplayingValueSelector;
         this.replayingValueSelector = replayingValueSelector;
+        this.selectionSorter = selectionSorter;
         this.randomSelection = randomSelection;
         this.checkSourceAndDestination = checkSourceAndDestination;
     }
@@ -111,7 +115,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         this.nonReplayingValueSelector.phaseStarted(phaseScope);
         this.replayingValueSelector.phaseStarted(phaseScope);
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
-                .getReachableValues(listVariableStateSupply.getSourceVariableDescriptor());
+                .getReachableValues(listVariableStateSupply.getSourceVariableDescriptor(), selectionSorter);
         valuesSize = reachableValues.getSize();
     }
 
@@ -129,6 +133,11 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
 
     public IterableValueSelector<Solution_> getChildValueSelector() {
         return nonReplayingValueSelector;
+    }
+
+    @Override
+    public SelectionCacheType getCacheType() {
+        return nonReplayingValueSelector.getCacheType();
     }
 
     @Override
@@ -194,12 +203,13 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     public boolean equals(Object other) {
         return other instanceof FilteringValueRangeSelector<?> that
                 && Objects.equals(nonReplayingValueSelector, that.nonReplayingValueSelector)
-                && Objects.equals(replayingValueSelector, that.replayingValueSelector);
+                && Objects.equals(replayingValueSelector, that.replayingValueSelector)
+                && Objects.equals(selectionSorter, that.selectionSorter);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(nonReplayingValueSelector, replayingValueSelector);
+        return Objects.hash(nonReplayingValueSelector, replayingValueSelector, selectionSorter);
     }
 
     @NullMarked

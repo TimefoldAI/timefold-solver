@@ -72,7 +72,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private Object replayedEntity;
     private BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
     private ValueRangeManager<Solution_> valueRangeManager;
-    private ReachableValues reachableValues;
+    private ReachableValues<?, ?> reachableValues;
     private List<Object> allEntities;
 
     public FilteringEntityByEntitySelector(EntitySelector<Solution_> childEntitySelector,

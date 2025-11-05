@@ -10,6 +10,8 @@ import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
 
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -27,17 +29,20 @@ public final class ReachableValues {
     private final Map<Object, Integer> valuesIndex;
     private final List<ReachableItemValue> allValues;
     private final @Nullable Class<?> valueClass;
+    private final @Nullable ValueRangeSorter<Object> valueRangeSorter;
     private final boolean acceptsNullValue;
     private @Nullable ReachableItemValue firstCachedObject;
     private @Nullable ReachableItemValue secondCachedObject;
 
     public ReachableValues(Map<Object, Integer> entityIndexMap, List<Object> entityList, Map<Object, Integer> valueIndexMap,
-            List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass, boolean acceptsNullValue) {
+            List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass,
+            ValueRangeSorter<Object> valueRangeSorter, boolean acceptsNullValue) {
         this.entitiesIndex = entityIndexMap;
         this.allEntities = entityList;
         this.valuesIndex = valueIndexMap;
         this.allValues = reachableValueList;
         this.valueClass = valueClass;
+        this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
     }
 
@@ -77,6 +82,7 @@ public final class ReachableValues {
         if (itemValue == null) {
             return Collections.emptyList();
         }
+        itemValue.checkSorting(valueRangeSorter, allValues);
         return itemValue.getRandomAccessValueList(allValues);
     }
 
@@ -125,6 +131,10 @@ public final class ReachableValues {
         return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
     }
 
+    public @Nullable SelectionSorter<?, Object> getValueSelectionSorter() {
+        return valueRangeSorter != null ? valueRangeSorter.getInnerSorter() : null;
+    }
+
     @NullMarked
     public static final class ReachableItemValue {
         private final Object value;
@@ -134,6 +144,7 @@ public final class ReachableValues {
         // The goal is to avoid loading unused data upfront, as it may affect scalability.
         private @Nullable List<Object> onDemandRandomAccessEntityList;
         private @Nullable List<Object> onDemandRandomAccessValueList;
+        private boolean sorted = false;
 
         public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
             this.value = value;
@@ -178,6 +189,13 @@ public final class ReachableValues {
                 onDemandRandomAccessValueList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues, v -> v.value);
             }
             return onDemandRandomAccessValueList;
+        }
+
+        private void checkSorting(@Nullable ValueRangeSorter<Object> valueRangeSorter, List<ReachableItemValue> allValues) {
+            if (valueRangeSorter != null && !sorted) {
+                valueRangeSorter.sort(getRandomAccessValueList(allValues));
+                sorted = true;
+            }
         }
     }
 

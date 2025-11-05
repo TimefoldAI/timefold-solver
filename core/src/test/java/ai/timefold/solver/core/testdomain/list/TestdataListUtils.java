@@ -340,10 +340,10 @@ public final class TestdataListUtils {
             var iterableEntityPropertyValueSelector =
                     mockIterableFromEntityPropertyValueSelector(nonReplaying, randomSelection);
             // Ensure OptimizedRandomFilteringValueRangeIterator is created for random iterators
-            return new FilteringValueRangeSelector<>(iterableEntityPropertyValueSelector, replayingValueSelector,
+            return new FilteringValueRangeSelector<>(iterableEntityPropertyValueSelector, replayingValueSelector, null,
                     randomSelection, assertBothSides);
         } else {
-            return new FilteringValueRangeSelector<>(nonReplaying, replayingValueSelector, randomSelection,
+            return new FilteringValueRangeSelector<>(nonReplaying, replayingValueSelector, null, randomSelection,
                     assertBothSides);
         }
     }

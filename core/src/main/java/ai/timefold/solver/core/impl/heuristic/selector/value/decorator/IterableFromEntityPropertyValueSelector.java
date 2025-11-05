@@ -82,6 +82,10 @@ public final class IterableFromEntityPropertyValueSelector<Solution_> extends Ab
     // Worker methods
     // ************************************************************************
 
+    public FromEntityPropertyValueSelector<Solution_> getChildValueSelector() {
+        return childValueSelector;
+    }
+
     @Override
     public SelectionCacheType getCacheType() {
         return minimumCacheType;

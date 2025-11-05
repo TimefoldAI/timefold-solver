@@ -52,7 +52,8 @@ class SortingEntitySelectorTest {
                 new TestdataEntity("apr"), new TestdataEntity("may"), new TestdataEntity("jun"));
 
         EntitySelector entitySelector =
-                new SortingEntitySelector(childEntitySelector, cacheType, new TestdataObjectSorter<TestdataEntity>());
+                new SortingEntitySelector(childEntitySelector, cacheType,
+                        new TestdataObjectSorter<TestdataSolution, TestdataEntity>());
 
         SolverScope solverScope = mock(SolverScope.class);
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);

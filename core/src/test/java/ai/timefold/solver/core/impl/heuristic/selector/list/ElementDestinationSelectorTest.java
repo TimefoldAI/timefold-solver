@@ -248,7 +248,7 @@ class ElementDestinationSelectorTest {
         var filteringValueRangeSelector = mockIterableFromEntityPropertyValueSelector(valueSelector, true);
         var replayinValueSelector = mockIterableValueSelector(getEntityRangeListVariableDescriptor(scoreDirector), v3);
         checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
-                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
+                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, null, true, false),
                 scoreDirector, new TestRandom(1, 1, 1), "C[0]");
 
         // select A for V1 and random pos A[2]
@@ -263,7 +263,7 @@ class ElementDestinationSelectorTest {
         // Cause the value iterator return no value at the second call
         doReturn(List.of(v1).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
         checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
-                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
+                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, null, true, false),
                 scoreDirector, new TestRandom(3, 0, 0, 0), "A[2]");
 
         // select B for V1 and random pos B[1]
@@ -277,7 +277,7 @@ class ElementDestinationSelectorTest {
         // Cause the value iterator return no value at the second call
         doReturn(List.of(v2).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
         checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
-                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
+                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, null, true, false),
                 scoreDirector, new TestRandom(3, 1, 1, 0), "B[1]");
 
         // select C for V5 and first unpinned pos C[1]
@@ -290,7 +290,7 @@ class ElementDestinationSelectorTest {
         // Cause the value iterator return no value at the second call
         doReturn(List.of(v5).iterator(), Collections.emptyIterator()).when(valueSelector).iterator();
         checkEntityValueRange(new FilteringEntityByValueSelector<>(mockEntitySelector(a, b, c), valueSelector, true),
-                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, true, false),
+                new FilteringValueRangeSelector<>(filteringValueRangeSelector, replayinValueSelector, null, true, false),
                 scoreDirector, new TestRandom(3, 1, 0), "C[1]");
     }
 

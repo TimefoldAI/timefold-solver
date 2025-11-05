@@ -477,13 +477,25 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
+        return getReachableValues(variableDescriptor, null);
+    }
+
+    public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
+            @Nullable SelectionSorter<Solution_, Object> sorter) {
         var values = reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
-        if (values != null) {
+        // We return the value if there is no sorter or the applied sorter is the same as the given sorter
+        if (values != null && (sorter == null || Objects.equals(values.getValueSelectionSorter(), sorter))) {
             return values;
         }
         if (cachedWorkingSolution == null) {
             throw new IllegalStateException(
                     "Impossible state: value reachability requested before the working solution is known.");
+        }
+        // We do not recalculate all reachable values if they have already been calculated
+        if (values != null) {
+            var newValues = values.copy(SelectionSorterAdapter.of(cachedWorkingSolution, sorter));
+            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = newValues;
+            return newValues;
         }
         var entityDescriptor = variableDescriptor.getEntityDescriptor();
         var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
