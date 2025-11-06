@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
+import ai.timefold.solver.core.impl.bavet.common.TuplePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
@@ -14,16 +15,17 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
     private final DefaultBiJoiner<Person, Person> joiner =
             (DefaultBiJoiner<Person, Person>) Joiners.equal(Person::gender)
                     .and(Joiners.lessThanOrEqual(Person::age));
+    private final ElementPositionTracker<UniTuple<String>> positionFunction = new TuplePositionTracker<>(0);
 
     @Test
     void iEmpty() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(joiner).buildIndexer(true, positionFunction);
         assertThat(getTuples(indexer, "F", 40)).isEmpty();
     }
 
     @Test
     void put() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(joiner).buildIndexer(true, positionFunction);
         var annTuple = newTuple("Ann-F-40");
         assertThat(indexer.size(IndexKeys.ofMany("F", 40))).isEqualTo(0);
         indexer.put(IndexKeys.ofMany("F", 40), annTuple);
@@ -32,18 +34,18 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
 
     @Test
     void removeTwice() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(joiner).buildIndexer(true, positionFunction);
         var annTuple = newTuple("Ann-F-40");
-        var annEntry = indexer.put(IndexKeys.ofMany("F", 40), annTuple);
+        indexer.put(IndexKeys.ofMany("F", 40), annTuple);
 
-        indexer.remove(IndexKeys.ofMany("F", 40), annEntry);
-        assertThatThrownBy(() -> indexer.remove(IndexKeys.ofMany("F", 40), annEntry))
+        indexer.remove(IndexKeys.ofMany("F", 40), annTuple);
+        assertThatThrownBy(() -> indexer.remove(IndexKeys.ofMany("F", 40), annTuple))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void visit() {
-        var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
+        var indexer = new IndexerFactory<>(joiner).buildIndexer(true, positionFunction);
 
         var annTuple = newTuple("Ann-F-40");
         indexer.put(IndexKeys.ofMany("F", 40), annTuple);
@@ -61,7 +63,7 @@ class EqualsAndComparisonIndexerTest extends AbstractIndexerTest {
     }
 
     private static UniTuple<String> newTuple(String factA) {
-        return new UniTuple<>(factA, 0);
+        return new UniTuple<>(factA, 1);
     }
 
 }

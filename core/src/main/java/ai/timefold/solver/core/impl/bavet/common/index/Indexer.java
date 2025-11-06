@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * An indexer for entity or fact {@code X},
@@ -22,9 +21,9 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  */
 public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
 
-    ElementAwareListEntry<T> put(Object indexKeys, T tuple);
+    void put(Object indexKeys, T element);
 
-    void remove(Object indexKeys, ElementAwareListEntry<T> entry);
+    void remove(Object indexKeys, T element);
 
     int size(Object indexKeys);
 

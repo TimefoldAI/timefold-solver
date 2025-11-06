@@ -2,41 +2,42 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
-
 public final class NoneIndexer<T> implements Indexer<T> {
 
-    private final ElementAwareList<T> tupleList = new ElementAwareList<>();
+    private final IndexedSet<T> store;
 
-    @Override
-    public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
-        return tupleList.add(tuple);
+    public NoneIndexer(ElementPositionTracker<T> elementPositionTracker) {
+        this.store = new IndexedSet<>(elementPositionTracker);
     }
 
     @Override
-    public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
-        entry.remove();
+    public void put(Object indexKeys, T element) {
+        store.add(element);
+    }
+
+    @Override
+    public void remove(Object indexKeys, T element) {
+        store.remove(element);
     }
 
     @Override
     public int size(Object indexKeys) {
-        return tupleList.size();
+        return store.size();
     }
 
     @Override
     public void forEach(Object indexKeys, Consumer<T> tupleConsumer) {
-        tupleList.forEach(tupleConsumer);
+        store.forEach(tupleConsumer);
     }
 
     @Override
     public boolean isEmpty() {
-        return tupleList.size() == 0;
+        return store.isEmpty();
     }
 
     @Override
     public String toString() {
-        return "size = " + tupleList.size();
+        return "size = " + store.size();
     }
 
 }

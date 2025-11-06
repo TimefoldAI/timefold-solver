@@ -4,6 +4,7 @@ import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.impl.bavet.common.AbstractUnindexedIfExistsNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class UnindexedIfExistsUniNode<A, B> extends AbstractUnindexedIfExistsNode<UniTuple<A>, B> {
@@ -11,22 +12,11 @@ public final class UnindexedIfExistsUniNode<A, B> extends AbstractUnindexedIfExi
     private final BiPredicate<A, B> filtering;
 
     public UnindexedIfExistsUniNode(boolean shouldExist,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexRightEntry,
-            TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle) {
-        this(shouldExist,
-                inputStoreIndexLeftCounterEntry, -1, inputStoreIndexRightEntry, -1,
-                nextNodesTupleLifecycle, null);
-    }
-
-    public UnindexedIfExistsUniNode(boolean shouldExist,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList, int inputStoreIndexRightEntry,
-            int inputStoreIndexRightTrackerList,
+            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
             TupleLifecycle<UniTuple<A>> nextNodesTupleLifecycle,
             BiPredicate<A, B> filtering) {
-        super(shouldExist,
-                inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList, inputStoreIndexRightEntry,
-                inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, filtering != null);
+        super(shouldExist, leftTupleStorePositionTracker, rightTupleStorePositionTracker, nextNodesTupleLifecycle,
+                filtering != null);
         this.filtering = filtering;
     }
 

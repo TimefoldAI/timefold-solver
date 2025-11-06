@@ -7,7 +7,9 @@ import ai.timefold.solver.core.impl.bavet.bi.IndexedJoinBiNode;
 import ai.timefold.solver.core.impl.bavet.bi.UnindexedJoinBiNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.OutputStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
@@ -45,26 +47,18 @@ public final class JoinBiEnumeratingStream<Solution_, A, B> extends AbstractBiEn
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         var solutionView = buildHelper.getSessionContext().solutionView();
         var filteringDataJoiner = this.filtering == null ? null : this.filtering.toBiPredicate(solutionView);
-        var outputStoreSize = buildHelper.extractTupleStoreSize(this);
         TupleLifecycle<BiTuple<A, B>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var indexerFactory = new IndexerFactory<>(joiner.toBiJoiner());
+        TupleStorePositionTracker leftTupleStorePositionTracker =
+                () -> buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource());
+        TupleStorePositionTracker rightTupleStorePositionTracker =
+                () -> buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource());
+        OutputStoreSizeTracker outputStoreSizeTracker = new OutputStoreSizeTracker(buildHelper.extractTupleStoreSize(this));
         var node = indexerFactory.hasJoiners()
-                ? new IndexedJoinBiNode<>(indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        downstream, filteringDataJoiner,
-                        outputStoreSize + 2, outputStoreSize, outputStoreSize + 1)
-                : new UnindexedJoinBiNode<>(
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        downstream, filteringDataJoiner,
-                        outputStoreSize + 2, outputStoreSize, outputStoreSize + 1);
+                ? new IndexedJoinBiNode<>(indexerFactory, leftTupleStorePositionTracker, rightTupleStorePositionTracker,
+                        outputStoreSizeTracker, downstream, filteringDataJoiner)
+                : new UnindexedJoinBiNode<>(leftTupleStorePositionTracker, rightTupleStorePositionTracker,
+                        outputStoreSizeTracker, downstream, filteringDataJoiner);
         buildHelper.addNode(node, this, leftParent, rightParent);
     }
 

@@ -1,11 +1,11 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import ai.timefold.solver.core.impl.bavet.common.index.IndexedSet;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 /**
  * This class has two direct children: {@link AbstractIndexedIfExistsNode} and {@link AbstractUnindexedIfExistsNode}.
@@ -20,20 +20,17 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
 
     protected final boolean shouldExist;
-
-    protected final int inputStoreIndexLeftTrackerList; // -1 if !isFiltering
-    protected final int inputStoreIndexRightTrackerList; // -1 if !isFiltering
-
+    protected final int inputStoreIndexLeftTrackerSet; // -1 if !isFiltering
+    protected final int inputStoreIndexRightTrackerSet; // -1 if !isFiltering
     protected final boolean isFiltering;
     private final DynamicPropagationQueue<LeftTuple_, ExistsCounter<LeftTuple_>> propagationQueue;
 
-    protected AbstractIfExistsNode(boolean shouldExist,
-            int inputStoreIndexLeftTrackerList, int inputStoreIndexRightTrackerList,
-            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
+    protected AbstractIfExistsNode(boolean shouldExist, TupleStorePositionTracker leftTupleStorePositionTracker,
+            TupleStorePositionTracker rightTupleStorePositionTracker, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
             boolean isFiltering) {
         this.shouldExist = shouldExist;
-        this.inputStoreIndexLeftTrackerList = inputStoreIndexLeftTrackerList;
-        this.inputStoreIndexRightTrackerList = inputStoreIndexRightTrackerList;
+        this.inputStoreIndexLeftTrackerSet = isFiltering ? leftTupleStorePositionTracker.reserveNextAvailablePosition() : -1;
+        this.inputStoreIndexRightTrackerSet = isFiltering ? rightTupleStorePositionTracker.reserveNextAvailablePosition() : -1;
         this.isFiltering = isFiltering;
         this.propagationQueue = new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
     }
@@ -66,8 +63,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
                 }
                 case OK, DYING -> propagationQueue.update(counter);
                 case DEAD, ABORTING -> propagationQueue.insert(counter);
-                default -> throw new IllegalStateException("Impossible state: the counter (" + counter
-                        + ") has an impossible insert state (" + state + ").");
+                default ->
+                    throw new IllegalStateException("Impossible state: the counter (%s) has an impossible insert state (%s)."
+                            .formatted(counter, state));
             }
         } else {
             // Retract or remain dead
@@ -80,8 +78,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
                     propagationQueue.retract(counter, TupleState.ABORTING);
                 case OK, UPDATING -> // Kill the original propagation.
                     propagationQueue.retract(counter, TupleState.DYING);
-                default -> throw new IllegalStateException("Impossible state: The counter (" + counter
-                        + ") has an impossible retract state (" + state + ").");
+                default ->
+                    throw new IllegalStateException("Impossible state: The counter (%s) has an impossible retract state (%s)."
+                            .formatted(counter, state));
 
             }
         }
@@ -115,27 +114,26 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         } // Else do not even propagate an update
     }
 
-    protected ElementAwareList<FilteringTracker<LeftTuple_>> updateRightTrackerList(UniTuple<Right_> rightTuple) {
-        ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = rightTuple.getStore(inputStoreIndexRightTrackerList);
-        for (FilteringTracker<LeftTuple_> tuple : rightTrackerList) {
+    IndexedSet<ExistsCounterHandle<LeftTuple_>> updateRightTrackerSet(UniTuple<Right_> rightTuple) {
+        IndexedSet<ExistsCounterHandle<LeftTuple_>> rightTrackerSet = rightTuple.getStore(inputStoreIndexRightTrackerSet);
+        rightTrackerSet.forEach(tuple -> {
             decrementCounterRight(tuple.counter);
             tuple.remove();
-        }
-        return rightTrackerList;
+        });
+        return rightTrackerSet;
     }
 
-    protected void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
-            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList) {
+    void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
+            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftTrackerSet) {
         if (testFiltering(leftTuple, rightTuple)) {
             counter.countRight++;
-            ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList =
-                    rightTuple.getStore(inputStoreIndexRightTrackerList);
-            new FilteringTracker<>(counter, leftTrackerList, rightTrackerList);
+            IndexedSet<ExistsCounterHandle<LeftTuple_>> rightTrackerSet = rightTuple.getStore(inputStoreIndexRightTrackerSet);
+            new ExistsCounterHandle<>(counter, leftTrackerSet, rightTrackerSet);
         }
     }
 
-    protected void updateCounterFromRight(UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
-            ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList) {
+    void updateCounterFromRight(UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
+            IndexedSet<ExistsCounterHandle<LeftTuple_>> rightTrackerSet) {
         var leftTuple = counter.leftTuple;
         if (!leftTuple.state.isActive()) {
             // Assume the following scenario:
@@ -156,9 +154,9 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         }
         if (testFiltering(counter.leftTuple, rightTuple)) {
             incrementCounterRight(counter);
-            ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList =
-                    counter.leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            new FilteringTracker<>(counter, leftTrackerList, rightTrackerList);
+            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftTrackerSet =
+                    counter.leftTuple.getStore(inputStoreIndexLeftTrackerSet);
+            new ExistsCounterHandle<>(counter, leftTrackerSet, rightTrackerSet);
         }
     }
 
@@ -166,8 +164,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         switch (counter.state) {
             case DYING -> propagationQueue.update(counter);
             case DEAD, ABORTING -> propagationQueue.insert(counter);
-            default -> throw new IllegalStateException("Impossible state: the counter (" + counter
-                    + ") has an impossible insert state (" + counter.state + ").");
+            default -> throw new IllegalStateException("Impossible state: the counter (%s) has an impossible insert state (%s)."
+                    .formatted(counter, counter.state));
         }
     }
 
@@ -177,33 +175,15 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
                 propagationQueue.retract(counter, TupleState.ABORTING);
             case OK, UPDATING -> // Kill the original propagation.
                 propagationQueue.retract(counter, TupleState.DYING);
-            default -> throw new IllegalStateException("Impossible state: The counter (" + counter
-                    + ") has an impossible retract state (" + counter.state + ").");
+            default ->
+                throw new IllegalStateException("Impossible state: The counter (%s) has an impossible retract state (%s)."
+                        .formatted(counter, counter.state));
         }
     }
 
     @Override
     public Propagator getPropagator() {
         return propagationQueue;
-    }
-
-    protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {
-        final ExistsCounter<LeftTuple_> counter;
-        private final ElementAwareListEntry<FilteringTracker<LeftTuple_>> leftTrackerEntry;
-        private final ElementAwareListEntry<FilteringTracker<LeftTuple_>> rightTrackerEntry;
-
-        FilteringTracker(ExistsCounter<LeftTuple_> counter, ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList,
-                ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList) {
-            this.counter = counter;
-            leftTrackerEntry = leftTrackerList.add(this);
-            rightTrackerEntry = rightTrackerList.add(this);
-        }
-
-        public void remove() {
-            leftTrackerEntry.remove();
-            rightTrackerEntry.remove();
-        }
-
     }
 
 }

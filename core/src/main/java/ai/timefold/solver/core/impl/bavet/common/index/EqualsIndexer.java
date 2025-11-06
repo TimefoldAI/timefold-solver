@@ -6,8 +6,6 @@ import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
-
 final class EqualsIndexer<T, Key_> implements Indexer<T> {
 
     private final KeyRetriever<Key_> keyRetriever;
@@ -18,9 +16,9 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
      * Construct an {@link EqualsIndexer} which immediately ends in a {@link NoneIndexer}.
      * This means {@code indexKeys} must be a single key.
      */
-    public EqualsIndexer() {
+    public EqualsIndexer(ElementPositionTracker<T> elementPositionTracker) {
         this.keyRetriever = new SingleKeyRetriever<>();
-        this.downstreamIndexerSupplier = NoneIndexer::new;
+        this.downstreamIndexerSupplier = () -> new NoneIndexer<>(elementPositionTracker);
     }
 
     /**
@@ -36,7 +34,7 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     }
 
     @Override
-    public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
+    public void put(Object indexKeys, T element) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexKey);
@@ -44,25 +42,25 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
             downstreamIndexer = downstreamIndexerSupplier.get();
             downstreamIndexerMap.put(indexKey, downstreamIndexer);
         }
-        return downstreamIndexer.put(indexKeys, tuple);
+        downstreamIndexer.put(indexKeys, element);
     }
 
     @Override
-    public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
+    public void remove(Object indexKeys, T element) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
-        Indexer<T> downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
-        downstreamIndexer.remove(indexKeys, entry);
+        Indexer<T> downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, element);
+        downstreamIndexer.remove(indexKeys, element);
         if (downstreamIndexer.isEmpty()) {
             downstreamIndexerMap.remove(indexKey);
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, T entry) {
         Indexer<T> downstreamIndexer = downstreamIndexerMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
                     "Impossible state: the tuple (%s) with indexKey (%s) doesn't exist in the indexer %s."
-                            .formatted(entry.getElement(), indexKeys, this));
+                            .formatted(entry, indexKeys, this));
         }
         return downstreamIndexer;
     }
