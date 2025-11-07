@@ -21,10 +21,13 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.ProblemSizeStatistics;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.SolverJob;
-import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
 import ai.timefold.solver.core.api.solver.event.BestSolutionChangedEvent;
+import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 import ai.timefold.solver.core.impl.phase.AbstractPhase;
 import ai.timefold.solver.core.impl.phase.PossiblyInitializingPhase;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
@@ -49,10 +52,10 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
     private final DefaultSolver<Solution_> solver;
     private final ProblemId_ problemId;
     private final Function<? super ProblemId_, ? extends Solution_> problemFinder;
-    private final Consumer<? super Solution_> bestSolutionConsumer;
-    private final Consumer<? super Solution_> finalBestSolutionConsumer;
-    private final FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer;
-    private final Consumer<? super Solution_> solverJobStartedConsumer;
+    private final Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
+    private final Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
+    private final Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer;
+    private final Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
     private final BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
 
     private volatile SolverStatus solverStatus;
@@ -68,10 +71,10 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
             DefaultSolverManager<Solution_, ProblemId_> solverManager,
             Solver<Solution_> solver, ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> bestSolutionConsumer,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer,
-            Consumer<? super Solution_> solverJobStartedConsumer,
+            Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
+            Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
+            Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer,
+            Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler) {
         this.solverManager = solverManager;
         this.problemId = problemId;
@@ -151,6 +154,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
 
     private void onBestSolutionChangedEvent(BestSolutionChangedEvent<Solution_> bestSolutionChangedEvent) {
         consumerSupport.consumeIntermediateBestSolution(bestSolutionChangedEvent.getNewBestSolution(),
+                bestSolutionChangedEvent.getProducerId(),
                 bestSolutionChangedEvent::isEveryProblemChangeProcessed);
     }
 
@@ -345,6 +349,7 @@ public final class DefaultSolverJob<Solution_, ProblemId_> implements SolverJob<
                 // but the consumption is done asynchronously by the Consumer thread.
                 // Only happens if the phase initializes the solution.
                 consumerSupport.consumeFirstInitializedSolution(phaseScope.getWorkingSolution(),
+                        phaseScope.getPhaseId(),
                         possiblyInitializingPhase.getTerminationStatus().early());
             }
         }

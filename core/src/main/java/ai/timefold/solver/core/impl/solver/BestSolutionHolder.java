@@ -14,6 +14,7 @@ import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -101,7 +102,8 @@ final class BestSolutionHolder<Solution_> {
                 .stream()
                 .flatMap(Collection::stream)
                 .toList();
-        return new BestSolutionContainingProblemChanges<>(latestVersionedBestSolution.bestSolution(), containedProblemChanges);
+        return new BestSolutionContainingProblemChanges<>(latestVersionedBestSolution.bestSolution(),
+                latestVersionedBestSolution.producerId(), containedProblemChanges);
     }
 
     private synchronized @Nullable VersionedBestSolution<Solution_> resetVersionedBestSolution() {
@@ -122,9 +124,10 @@ final class BestSolutionHolder<Solution_> {
      * and thus are contained in this best solution.
      *
      * @param bestSolution the new best solution that replaces the previous one if there is any
+     * @param producerId what produced the best solution event
      * @param isEveryProblemChangeProcessed a supplier that tells if all problem changes have been processed
      */
-    void set(Solution_ bestSolution, BooleanSupplier isEveryProblemChangeProcessed) {
+    void set(Solution_ bestSolution, EventProducerId producerId, BooleanSupplier isEveryProblemChangeProcessed) {
         // The new best solution can be accepted only if there are no pending problem changes
         // nor any additional changes may come during this operation.
         // Otherwise, a race condition might occur
@@ -133,7 +136,7 @@ final class BestSolutionHolder<Solution_> {
         // As a result, CompletableFutures representing these changes would be completed too early.
         if (isEveryProblemChangeProcessed.getAsBoolean()) {
             synchronized (this) {
-                versionedBestSolution = new VersionedBestSolution<>(bestSolution, currentVersion);
+                versionedBestSolution = new VersionedBestSolution<>(bestSolution, producerId, currentVersion);
                 currentVersion = currentVersion.add(BigInteger.ONE);
             }
         }
@@ -170,7 +173,7 @@ final class BestSolutionHolder<Solution_> {
                 .forEach(pendingProblemChange -> pendingProblemChange.cancel(false));
     }
 
-    private record VersionedBestSolution<Solution_>(Solution_ bestSolution, BigInteger version) {
+    private record VersionedBestSolution<Solution_>(Solution_ bestSolution, EventProducerId producerId, BigInteger version) {
     }
 
 }

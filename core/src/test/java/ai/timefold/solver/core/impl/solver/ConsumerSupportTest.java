@@ -17,6 +17,8 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.AfterEach;
@@ -41,12 +43,12 @@ class ConsumerSupportTest {
         AtomicReference<Throwable> error = new AtomicReference<>();
         List<TestdataSolution> consumedSolutions = Collections.synchronizedList(new ArrayList<>());
         BestSolutionHolder<TestdataSolution> bestSolutionHolder = new BestSolutionHolder<>();
-        consumerSupport = new ConsumerSupport<>(1L, testdataSolution -> {
+        consumerSupport = new ConsumerSupport<>(1L, event -> {
             try {
                 consumptionStarted.countDown();
                 consumptionPaused.await();
-                consumedSolutions.add(testdataSolution);
-                if (testdataSolution.getEntityList().size() == 3) { // The last best solution.
+                consumedSolutions.add(event.solution());
+                if (event.solution().getEntityList().size() == 3) { // The last best solution.
                     consumptionCompleted.countDown();
                 }
             } catch (InterruptedException e) {
@@ -78,7 +80,7 @@ class ConsumerSupportTest {
         BestSolutionHolder<TestdataSolution> bestSolutionHolder = new BestSolutionHolder<>();
         AtomicReference<TestdataSolution> finalBestSolutionRef = new AtomicReference<>();
         consumerSupport = new ConsumerSupport<>(1L, null,
-                finalBestSolution -> finalBestSolutionRef.set(finalBestSolution), null, null, null, bestSolutionHolder);
+                event -> finalBestSolutionRef.set(event.solution()), null, null, null, bestSolutionHolder);
 
         CompletableFuture<Void> futureProblemChange = addProblemChange(bestSolutionHolder);
 
@@ -96,7 +98,7 @@ class ConsumerSupportTest {
     void problemChangesCompleteExceptionally_afterExceptionInConsumer() {
         BestSolutionHolder<TestdataSolution> bestSolutionHolder = new BestSolutionHolder<>();
         final String errorMessage = "Test exception";
-        Consumer<TestdataSolution> errorneousConsumer = bestSolution -> {
+        Consumer<NewBestSolutionEvent<TestdataSolution>> errorneousConsumer = bestSolution -> {
             throw new RuntimeException(errorMessage);
         };
         consumerSupport = new ConsumerSupport<>(1L, errorneousConsumer, null, null, null, null, bestSolutionHolder);
@@ -136,6 +138,6 @@ class ConsumerSupportTest {
     }
 
     private void consumeIntermediateBestSolution(TestdataSolution bestSolution) {
-        consumerSupport.consumeIntermediateBestSolution(bestSolution, () -> true);
+        consumerSupport.consumeIntermediateBestSolution(bestSolution, EventProducerId.constructionHeuristic(0), () -> true);
     }
 }

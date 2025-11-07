@@ -44,10 +44,10 @@ class ProblemChangeBarrageIT {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(UUID.randomUUID())
                     .withProblem(solution)
-                    .withFirstInitializedSolutionConsumer((testdataSolution, isTerminatedEarly) -> {
+                    .withFirstInitializedSolutionEventConsumer(event -> {
                         solverStartedLatch.countDown();
                     })
-                    .withBestSolutionConsumer(testdataSolution -> {
+                    .withBestSolutionEventConsumer(event -> {
                         // No need to do anything.
                     })
                     .run();

@@ -38,7 +38,10 @@ import java.util.function.Function;
 import java.util.stream.IntStream;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
+import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
 import ai.timefold.solver.core.api.solver.phase.PhaseCommand;
 import ai.timefold.solver.core.config.constructionheuristic.ConstructionHeuristicPhaseConfig;
 import ai.timefold.solver.core.config.localsearch.LocalSearchPhaseConfig;
@@ -51,6 +54,7 @@ import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.solver.DefaultSolverJob;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.TerminationFactory;
+import ai.timefold.solver.core.impl.util.MutableReference;
 import ai.timefold.solver.core.testdomain.TestdataConstraintProvider;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
@@ -233,7 +237,7 @@ class SolverManagerTest {
             var solverJob1 = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFinalBestSolutionConsumer(bestSolution -> {
+                    .withFinalBestSolutionEventConsumer(bestSolution -> {
                         throw new IllegalStateException("exceptionInConsumer");
                     })
                     .withExceptionHandler((problemId, throwable) -> {
@@ -260,12 +264,12 @@ class SolverManagerTest {
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class);
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
-            Consumer<Object> finalBestSolutionConsumer = o -> {
+            Consumer<FinalBestSolutionEvent<TestdataSolution>> finalBestSolutionConsumer = o -> {
             };
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFinalBestSolutionConsumer(finalBestSolutionConsumer)
+                    .withFinalBestSolutionEventConsumer(finalBestSolutionConsumer)
                     .withExceptionHandler(exceptionHandler)
                     .run();
             solverJob.getFinalBestSolution();
@@ -275,9 +279,9 @@ class SolverManagerTest {
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithDefaultPhases() throws ExecutionException, InterruptedException {
-        var hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                initialSolutionEvent::readFromEvent;
 
         // Default configuration
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
@@ -287,19 +291,20 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+            assertThat(initialSolutionEvent.isInitialized()).isTrue();
+            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(0));
         }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithSingleCHPhase() throws ExecutionException, InterruptedException {
-        var hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                initialSolutionEvent::readFromEvent;
 
         // Only CH
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
@@ -308,20 +313,21 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(hasInitializedSolution.booleanValue()).isFalse();
-            hasInitializedSolution.setFalse();
+            assertThat(initialSolutionEvent.isInitialized()).isFalse();
+            initialSolutionEvent.isInitializedRef.setFalse();
+            assertThat(initialSolutionEvent.producerId()).isNull();
         }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithSingleLSPhase() throws ExecutionException, InterruptedException {
-        var hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                initialSolutionEvent::readFromEvent;
         // Only LS
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new LocalSearchPhaseConfig())
@@ -334,12 +340,13 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(o -> initializedSolution)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
-                    .withFinalBestSolutionConsumer(ignore -> {
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
+                    .withFinalBestSolutionEventConsumer(event -> {
                     })
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(hasInitializedSolution.booleanValue()).isFalse();
+            assertThat(initialSolutionEvent.isInitialized()).isFalse();
+            assertThat(initialSolutionEvent.producerId()).isNull();
         }
     }
 
@@ -347,11 +354,12 @@ class SolverManagerTest {
     @Timeout(60)
     void firstInitializedSolutionConsumerEarlyTerminatedCH() throws InterruptedException {
         var consumerCalled = new AtomicBoolean();
-        var hasInitializedSolution = new AtomicBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer = (ignore, isTerminatedEarly) -> {
-            consumerCalled.set(true);
-            hasInitializedSolution.set(!isTerminatedEarly);
-        };
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                (event) -> {
+                    consumerCalled.set(true);
+                    initialSolutionEvent.readFromEvent(event);
+                };
 
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
@@ -373,7 +381,7 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(problemFinder)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             try {
                 solverJob.getFinalBestSolution();
@@ -388,7 +396,8 @@ class SolverManagerTest {
                         .hasMessageContaining("needs to start from an initialized solution");
             } finally {
                 assertThat(consumerCalled).isTrue();
-                assertThat(hasInitializedSolution).isFalse();
+                assertThat(initialSolutionEvent.isInitialized()).isFalse();
+                assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(0));
             }
         }
     }
@@ -397,11 +406,12 @@ class SolverManagerTest {
     @Timeout(60)
     void firstInitializedSolutionConsumerEarlyTerminatedCHListVar() throws InterruptedException, ExecutionException {
         var consumerCalled = new AtomicBoolean();
-        var hasInitializedSolution = new AtomicBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer = (ignore, isTerminatedEarly) -> {
-            consumerCalled.set(true);
-            hasInitializedSolution.set(!isTerminatedEarly);
-        };
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataAllowsUnassignedValuesListSolution>> initializedSolutionConsumer =
+                (event) -> {
+                    consumerCalled.set(true);
+                    initialSolutionEvent.readFromEvent(event);
+                };
 
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataAllowsUnassignedValuesListSolution.class)
@@ -429,20 +439,21 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(problemFinder)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             solverJob.getFinalBestSolution(); // LS will start, but terminate immediately.
             assertThat(consumerCalled).isTrue();
-            assertThat(hasInitializedSolution).isFalse();
+            assertThat(initialSolutionEvent.isInitialized()).isFalse();
+            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(0));
         }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWith2CHAndLS() throws ExecutionException, InterruptedException {
-        var hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                initialSolutionEvent::readFromEvent;
 
         // CH - CH - LS
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
@@ -450,30 +461,31 @@ class SolverManagerTest {
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
-        hasInitializedSolution.setFalse();
+        initialSolutionEvent.isInitializedRef.setFalse();
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+            assertThat(initialSolutionEvent.isInitialized()).isTrue();
+            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(1));
         }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithCustomAndCHAndLS() throws ExecutionException, InterruptedException {
-        var hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                initialSolutionEvent::readFromEvent;
 
         // CS - CH - LS
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(new CustomPhaseConfig()
                         .withCustomPhaseCommands((scoreDirector,
-                                isPhaseTerminated) -> assertThat(hasInitializedSolution.booleanValue()).isFalse()),
+                                isPhaseTerminated) -> assertThat(initialSolutionEvent.isInitialized()).isFalse()),
                         new ConstructionHeuristicPhaseConfig(),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
@@ -482,19 +494,20 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+            assertThat(initialSolutionEvent.isInitialized()).isTrue();
+            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.constructionHeuristic(1));
         }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWithCHAndCustomAndLS() throws ExecutionException, InterruptedException {
-        var hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                initialSolutionEvent::readFromEvent;
 
         // CH - CS - LS
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
@@ -503,7 +516,7 @@ class SolverManagerTest {
                         new CustomPhaseConfig()
                                 .withCustomPhaseCommands(
                                         (scoreDirector, isPhaseTerminated) -> {
-                                            assertThat(hasInitializedSolution.booleanValue()).isFalse();
+                                            assertThat(initialSolutionEvent.isInitialized()).isFalse();
                                         }),
                         new LocalSearchPhaseConfig())
                 .withTerminationConfig(new TerminationConfig()
@@ -512,37 +525,39 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(hasInitializedSolution.booleanValue()).isTrue();
+            assertThat(initialSolutionEvent.isInitialized()).isTrue();
+            assertThat(initialSolutionEvent.producerId()).isEqualTo(EventProducerId.customPhase(1));
         }
     }
 
     @Test
     @Timeout(60)
     void firstInitializedSolutionConsumerWith2Custom() throws ExecutionException, InterruptedException {
-        var hasInitializedSolution = new MutableBoolean();
-        FirstInitializedSolutionConsumer<Object> initializedSolutionConsumer =
-                (ignore, isTerminatedEarly) -> hasInitializedSolution.setValue(!isTerminatedEarly);
+        var initialSolutionEvent = new InitialSolutionEvent();
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
+                initialSolutionEvent::readFromEvent;
 
         // CS (CH) - CS (LS)
         var solverConfig = PlannerTestUtils.buildSolverConfig(TestdataSolution.class, TestdataEntity.class)
                 .withPhases(
                         new CustomPhaseConfig().withCustomPhaseCommands((scoreDirector,
-                                isPhaseTerminated) -> assertThat(hasInitializedSolution.booleanValue()).isFalse()),
+                                isPhaseTerminated) -> assertThat(initialSolutionEvent.isInitialized()).isFalse()),
                         new CustomPhaseConfig().withCustomPhaseCommands((scoreDirector,
-                                isPhaseTerminated) -> assertThat(hasInitializedSolution.booleanValue()).isFalse()))
+                                isPhaseTerminated) -> assertThat(initialSolutionEvent.isInitialized()).isFalse()))
                 .withTerminationConfig(new TerminationConfig()
                         .withUnimprovedMillisecondsSpentLimit(1L));
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFirstInitializedSolutionConsumer(initializedSolutionConsumer)
+                    .withFirstInitializedSolutionEventConsumer(initializedSolutionConsumer)
                     .run();
             solverJob.getFinalBestSolution();
-            assertThat(hasInitializedSolution.booleanValue()).isFalse();
+            assertThat(initialSolutionEvent.isInitialized()).isFalse();
+            assertThat(initialSolutionEvent.producerId()).isNull();
         }
     }
 
@@ -555,7 +570,7 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withSolverJobStartedConsumer(solution -> started.increment())
+                    .withSolverJobStartedEventConsumer(event -> started.increment())
                     .run();
             solverJob.getFinalBestSolution();
             assertThat(started.getValue()).isOne();
@@ -730,7 +745,7 @@ class SolverManagerTest {
             var waitingSolverJob = solverManager.solveBuilder()
                     .withProblemId(secondProblemId)
                     .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
-                    .withBestSolutionConsumer(bestSolution::set)
+                    .withBestSolutionEventConsumer(event -> bestSolution.set(event.solution()))
                     .run();
 
             var problemSizeStatistics = waitingSolverJob.getProblemSizeStatistics();
@@ -766,10 +781,10 @@ class SolverManagerTest {
         doReturn(solverJobBuilder).when(solverManager).solveBuilder();
         doReturn(solverJobBuilder).when(solverJobBuilder).withProblemId(anyLong());
         doReturn(solverJobBuilder).when(solverJobBuilder).withProblem(any());
-        doReturn(solverJobBuilder).when(solverJobBuilder).withFinalBestSolutionConsumer(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withFinalBestSolutionEventConsumer(any());
         doReturn(solverJobBuilder).when(solverJobBuilder).withExceptionHandler(any());
         doReturn(solverJobBuilder).when(solverJobBuilder).withProblemFinder(any());
-        doReturn(solverJobBuilder).when(solverJobBuilder).withBestSolutionConsumer(any());
+        doReturn(solverJobBuilder).when(solverJobBuilder).withBestSolutionEventConsumer(any());
 
         doCallRealMethod().when(solverManager).solve(any(Long.class), any(TestdataSolution.class));
         solverManager.solve(1L, mock(TestdataSolution.class));
@@ -780,14 +795,14 @@ class SolverManagerTest {
         solverManager.solve(1L, mock(TestdataSolution.class), mock(Consumer.class));
         verify(solverJobBuilder, times(2)).withProblemId(anyLong());
         verify(solverJobBuilder, times(2)).withProblem(any());
-        verify(solverJobBuilder, times(1)).withFinalBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(1)).withFinalBestSolutionEventConsumer(any());
 
         doCallRealMethod().when(solverManager).solveAndListen(any(Long.class), any(TestdataSolution.class),
                 any(Consumer.class));
         solverManager.solveAndListen(1L, mock(TestdataSolution.class), mock(Consumer.class));
         verify(solverJobBuilder, times(3)).withProblemId(anyLong());
         verify(solverJobBuilder, times(3)).withProblem(any());
-        verify(solverJobBuilder, times(1)).withBestSolutionConsumer(any());
+        verify(solverJobBuilder, times(1)).withBestSolutionEventConsumer(any());
     }
 
     @Test
@@ -799,8 +814,8 @@ class SolverManagerTest {
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
             var finalBestSolution = new MutableObject<TestdataSolution>();
-            Consumer<TestdataSolution> finalBestConsumer = o -> {
-                finalBestSolution.setValue(o);
+            Consumer<FinalBestSolutionEvent<TestdataSolution>> finalBestConsumer = event -> {
+                finalBestSolution.setValue(event.solution());
                 try {
                     startedBarrier.await();
                 } catch (InterruptedException | BrokenBarrierException e) {
@@ -810,7 +825,7 @@ class SolverManagerTest {
             solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFinalBestSolutionConsumer(finalBestConsumer)
+                    .withFinalBestSolutionEventConsumer(finalBestConsumer)
                     .withExceptionHandler(exceptionHandler)
                     .run();
 
@@ -827,8 +842,8 @@ class SolverManagerTest {
         try (var solverManager = createDefaultSolverManager(solverConfig)) {
             BiConsumer<Object, Object> exceptionHandler = (o1, o2) -> fail("Solving failed.");
             var finalBestSolution = new MutableObject<TestdataSolution>();
-            Consumer<TestdataSolution> finalBestConsumer = o -> {
-                finalBestSolution.setValue(o);
+            Consumer<FinalBestSolutionEvent<TestdataSolution>> finalBestConsumer = event -> {
+                finalBestSolution.setValue(event.solution());
                 try {
                     startedBarrier.await();
                 } catch (InterruptedException | BrokenBarrierException e) {
@@ -836,18 +851,23 @@ class SolverManagerTest {
                 }
             };
             var bestSolution = new MutableObject<TestdataSolution>();
-            Consumer<TestdataSolution> bestConsumer = bestSolution::setValue;
+            var producerId = new MutableObject<EventProducerId>();
+            Consumer<NewBestSolutionEvent<TestdataSolution>> bestConsumer = event -> {
+                bestSolution.setValue(event.solution());
+                producerId.setValue(event.producerId());
+            };
             solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(DEFAULT_PROBLEM_FINDER)
-                    .withFinalBestSolutionConsumer(finalBestConsumer)
-                    .withBestSolutionConsumer(bestConsumer)
+                    .withFinalBestSolutionEventConsumer(finalBestConsumer)
+                    .withBestSolutionEventConsumer(bestConsumer)
                     .withExceptionHandler(exceptionHandler)
                     .run();
 
             startedBarrier.await();
             assertThat(finalBestSolution.getValue()).isNotNull();
             assertThat(bestSolution.getValue()).isNotNull();
+            assertThat(producerId.getValue()).isNotNull();
         }
     }
 
@@ -896,20 +916,20 @@ class SolverManagerTest {
             var solverJob = solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution("s1", 4))
-                    .withBestSolutionConsumer(bestSolution -> {
+                    .withBestSolutionEventConsumer(event -> {
                         var isFirstReceivedSolution = bestSolutionCount.incrementAndGet() == 1;
-                        if (bestSolution.getEntityList().get(1).getValue() == null) {
+                        if (event.solution().getEntityList().get(1).getValue() == null) {
                             // This best solution may be skipped as well.
                             try {
                                 latch.await();
                             } catch (InterruptedException e) {
                                 fail("Latch failed.");
                             }
-                        } else if (bestSolution.getEntityList().get(2).getValue() == null && !isFirstReceivedSolution) {
+                        } else if (event.solution().getEntityList().get(2).getValue() == null && !isFirstReceivedSolution) {
                             fail("No skip ahead occurred: both e2 and e3 are null in a best solution event.");
                         }
                     })
-                    .withFinalBestSolutionConsumer(finalBestSolution -> {
+                    .withFinalBestSolutionEventConsumer(event -> {
                         finalBestSolutionCount.incrementAndGet();
                         finalBestSolutionConsumed.countDown();
                     })
@@ -1045,15 +1065,15 @@ class SolverManagerTest {
                 jobs.add(solverManager.solveBuilder()
                         .withProblemId(id)
                         .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2))
-                        .withBestSolutionConsumer(consumedBestSolutions::add)
-                        .withFinalBestSolutionConsumer(finalBestSolution -> finalBestSolutionConsumed.countDown())
+                        .withBestSolutionEventConsumer(event -> consumedBestSolutions.add(event.solution()))
+                        .withFinalBestSolutionEventConsumer(event -> finalBestSolutionConsumed.countDown())
                         .run());
             } else {
                 jobs.add(solverManager.solveBuilder()
                         .withProblemId(id)
                         .withProblemFinder(problemId -> PlannerTestUtils.generateTestdataSolution(solutionName, 2))
-                        .withFinalBestSolutionConsumer(finalBestSolution -> {
-                            consumedBestSolutions.add(finalBestSolution);
+                        .withFinalBestSolutionEventConsumer(event -> {
+                            consumedBestSolutions.add(event.solution());
                             finalBestSolutionConsumed.countDown();
                         })
                         .run());
@@ -1134,7 +1154,7 @@ class SolverManagerTest {
             solverManager.solveBuilder()
                     .withProblemId(problemId)
                     .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", entityAndValueCount))
-                    .withBestSolutionConsumer(bestSolution::set)
+                    .withBestSolutionEventConsumer(event -> bestSolution.set(event.solution()))
                     .run();
 
             var futureChange = solverManager
@@ -1157,7 +1177,7 @@ class SolverManagerTest {
             solverManager.solveBuilder()
                     .withProblemId(1L)
                     .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s1", 4))
-                    .withBestSolutionConsumer(testdataSolution -> {
+                    .withBestSolutionEventConsumer(event -> {
                     })
                     .run();
 
@@ -1198,7 +1218,7 @@ class SolverManagerTest {
             solverManager.solveBuilder()
                     .withProblemId(secondProblemId)
                     .withProblemFinder(id -> PlannerTestUtils.generateTestdataSolution("s2", entityAndValueCount))
-                    .withBestSolutionConsumer(bestSolution::set)
+                    .withFinalBestSolutionEventConsumer(event -> bestSolution.set(event.solution()))
                     .run();
 
             var futureChange = solverManager
@@ -1292,6 +1312,25 @@ class SolverManagerTest {
             var solverJob = solverManager.solve(1L, inputProblem);
             var result = solverJob.getFinalBestSolution();
             assertThat(result).isNotNull();
+        }
+    }
+
+    record InitialSolutionEvent(MutableBoolean isInitializedRef, MutableReference<EventProducerId> producerIdRef) {
+        InitialSolutionEvent() {
+            this(new MutableBoolean(false), new MutableReference<>(null));
+        }
+
+        <Solution_> void readFromEvent(FirstInitializedSolutionEvent<Solution_> event) {
+            isInitializedRef.setValue(!event.isTerminatedEarly());
+            producerIdRef.setValue(event.producerId());
+        }
+
+        boolean isInitialized() {
+            return isInitializedRef.getValue();
+        }
+
+        EventProducerId producerId() {
+            return producerIdRef.getValue();
         }
     }
 }

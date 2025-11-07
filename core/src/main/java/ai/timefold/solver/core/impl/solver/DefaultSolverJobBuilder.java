@@ -10,6 +10,10 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverJobBuilder;
+import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 
 import org.jspecify.annotations.NonNull;
 
@@ -22,10 +26,10 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
     private final DefaultSolverManager<Solution_, ProblemId_> solverManager;
     private ProblemId_ problemId;
     private Function<? super ProblemId_, ? extends Solution_> problemFinder;
-    private Consumer<? super Solution_> bestSolutionConsumer;
-    private Consumer<? super Solution_> finalBestSolutionConsumer;
-    private FirstInitializedSolutionConsumer<? super Solution_> initializedSolutionConsumer;
-    private Consumer<? super Solution_> solverJobStartedConsumer;
+    private Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer;
+    private Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer;
+    private Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer;
+    private Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer;
     private BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler;
     private SolverConfigOverride<Solution_> solverConfigOverride;
 
@@ -48,7 +52,7 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withBestSolutionConsumer(@NonNull Consumer<? super Solution_> bestSolutionConsumer) {
+            withBestSolutionEventConsumer(@NonNull Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer) {
         this.bestSolutionConsumer =
                 Objects.requireNonNull(bestSolutionConsumer, "Invalid bestSolutionConsumer (null) given to SolverJobBuilder.");
         return this;
@@ -56,7 +60,8 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withFinalBestSolutionConsumer(@NonNull Consumer<? super Solution_> finalBestSolutionConsumer) {
+            withFinalBestSolutionEventConsumer(
+                    @NonNull Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer) {
         this.finalBestSolutionConsumer = Objects.requireNonNull(finalBestSolutionConsumer,
                 "Invalid finalBestSolutionConsumer (null) given to SolverJobBuilder.");
         return this;
@@ -64,8 +69,8 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public @NonNull SolverJobBuilder<Solution_, ProblemId_>
-            withFirstInitializedSolutionConsumer(
-                    @NonNull FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer) {
+            withFirstInitializedSolutionEventConsumer(
+                    @NonNull Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionConsumer) {
         this.initializedSolutionConsumer = Objects.requireNonNull(firstInitializedSolutionConsumer,
                 "Invalid initializedSolutionConsumer (null) given to SolverJobBuilder.");
         return this;
@@ -73,7 +78,7 @@ public final class DefaultSolverJobBuilder<Solution_, ProblemId_> implements Sol
 
     @Override
     public SolverJobBuilder<Solution_, ProblemId_>
-            withSolverJobStartedConsumer(Consumer<? super Solution_> solverJobStartedConsumer) {
+            withSolverJobStartedEventConsumer(Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer) {
         this.solverJobStartedConsumer = Objects.requireNonNull(solverJobStartedConsumer,
                 "Invalid startSolverJobHandler (null) given to SolverJobBuilder.");
         return this;

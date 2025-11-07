@@ -6,6 +6,10 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
@@ -58,40 +62,82 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
             withProblemFinder(@NonNull Function<? super ProblemId_, ? extends Solution_> problemFinder);
 
     /**
+     * As defined by {@link #withBestSolutionEventConsumer(Consumer)}.
+     *
+     * @deprecated Use {@link #withBestSolutionEventConsumer(Consumer)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    @NonNull
+    default SolverJobBuilder<Solution_, ProblemId_>
+            withBestSolutionConsumer(@NonNull Consumer<? super Solution_> bestSolutionConsumer) {
+        return withBestSolutionEventConsumer(event -> bestSolutionConsumer.accept(event.solution()));
+    }
+
+    /**
      * Sets the best solution consumer, which may be called multiple times during the solving process.
      * <p>
      * Don't apply any changes to the solution instance while the solver runs.
      * The solver's best solution instance is the same as the one in the event,
      * and any modifications may lead to solver corruption due to its internal reuse.
      *
-     * @param bestSolutionConsumer called multiple times for each new best solution on a consumer thread
+     * @param bestSolutionEventConsumer called multiple times for each new best solution on a consumer thread
      * @return this
      */
     @NonNull
-    SolverJobBuilder<Solution_, ProblemId_> withBestSolutionConsumer(@NonNull Consumer<? super Solution_> bestSolutionConsumer);
+    SolverJobBuilder<Solution_, ProblemId_>
+            withBestSolutionEventConsumer(@NonNull Consumer<NewBestSolutionEvent<Solution_>> bestSolutionEventConsumer);
+
+    /**
+     * As defined by {@link #withFinalBestSolutionEventConsumer}.
+     *
+     * @deprecated Use {@link #withFinalBestSolutionEventConsumer(Consumer)} instead.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    @NonNull
+    default SolverJobBuilder<Solution_, ProblemId_>
+            withFinalBestSolutionConsumer(@NonNull Consumer<? super Solution_> finalBestSolutionConsumer) {
+        return withFinalBestSolutionEventConsumer(event -> finalBestSolutionConsumer.accept(event.solution()));
+    }
 
     /**
      * Sets the final best solution consumer, which is called at the end of the solving process and returns the final
      * best solution.
      *
-     * @param finalBestSolutionConsumer called only once at the end of the solving process on a consumer thread
+     * @param finalBestSolutionEventConsumer called only once at the end of the solving process on a consumer thread
      * @return this
      */
     @NonNull
     SolverJobBuilder<Solution_, ProblemId_>
-            withFinalBestSolutionConsumer(@NonNull Consumer<? super Solution_> finalBestSolutionConsumer);
+            withFinalBestSolutionEventConsumer(
+                    @NonNull Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionEventConsumer);
 
     /**
-     * As defined by #withFirstInitializedSolutionConsumer(FirstInitializedSolutionConsumer).
+     * As defined by {@link #withFirstInitializedSolutionEventConsumer(Consumer)}.
      *
-     * @deprecated Use {@link #withFirstInitializedSolutionConsumer(FirstInitializedSolutionConsumer)} instead.
+     * @deprecated Use {@link #withFirstInitializedSolutionEventConsumer(Consumer)} instead.
      */
     @Deprecated(forRemoval = true, since = "1.19.0")
     @NonNull
     default SolverJobBuilder<Solution_, ProblemId_>
             withFirstInitializedSolutionConsumer(@NonNull Consumer<? super Solution_> firstInitializedSolutionConsumer) {
-        return withFirstInitializedSolutionConsumer(
-                (solution, isTerminatedEarly) -> firstInitializedSolutionConsumer.accept(solution));
+        return withFirstInitializedSolutionEventConsumer(
+                (event) -> firstInitializedSolutionConsumer.accept(event.solution()));
+    }
+
+    /**
+     * As defined by {@link #withFirstInitializedSolutionEventConsumer(Consumer)}.
+     *
+     * @deprecated Use {@link #withFirstInitializedSolutionEventConsumer(Consumer)} instead.
+     *
+     * @param firstInitializedSolutionConsumer called only once before starting the first Local Search phase
+     * @return this
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    @NonNull
+    default SolverJobBuilder<Solution_, ProblemId_> withFirstInitializedSolutionConsumer(
+            @NonNull FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer) {
+        return withFirstInitializedSolutionEventConsumer(
+                event -> firstInitializedSolutionConsumer.accept(event.solution(), event.isTerminatedEarly()));
     }
 
     /**
@@ -100,12 +146,21 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * First initialized solution is the solution at the end of the last phase
      * that immediately precedes the first local search phase.
      *
-     * @param firstInitializedSolutionConsumer called only once before starting the first Local Search phase
+     * @param firstInitializedSolutionEventConsumer called only once before starting the first Local Search phase
      * @return this
      */
-    @NonNull
-    SolverJobBuilder<Solution_, ProblemId_> withFirstInitializedSolutionConsumer(
-            @NonNull FirstInitializedSolutionConsumer<? super Solution_> firstInitializedSolutionConsumer);
+    SolverJobBuilder<Solution_, ProblemId_> withFirstInitializedSolutionEventConsumer(
+            @NonNull Consumer<FirstInitializedSolutionEvent<Solution_>> firstInitializedSolutionEventConsumer);
+
+    /**
+     * As defined by {@link #withSolverJobStartedEventConsumer(Consumer)}.
+     *
+     * @deprecated Use {@link #withSolverJobStartedEventConsumer(Consumer)} instead.
+     */
+    default SolverJobBuilder<Solution_, ProblemId_>
+            withSolverJobStartedConsumer(Consumer<? super Solution_> solverJobStartedConsumer) {
+        return withSolverJobStartedEventConsumer(event -> solverJobStartedConsumer.accept(event.solution()));
+    }
 
     /**
      * Sets the consumer for when the solver starts its solving process.
@@ -113,7 +168,8 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      * @param solverJobStartedConsumer never null, called only once when the solver is starting the solving process
      * @return this, never null
      */
-    SolverJobBuilder<Solution_, ProblemId_> withSolverJobStartedConsumer(Consumer<? super Solution_> solverJobStartedConsumer);
+    SolverJobBuilder<Solution_, ProblemId_>
+            withSolverJobStartedEventConsumer(Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer);
 
     /**
      * Sets the custom exception handler.
@@ -166,5 +222,4 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
         void accept(Solution_ solution, boolean isTerminatedEarly);
 
     }
-
 }
