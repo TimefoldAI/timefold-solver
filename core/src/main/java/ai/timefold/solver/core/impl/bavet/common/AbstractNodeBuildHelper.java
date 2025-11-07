@@ -17,6 +17,10 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     private final Set<Stream_> activeStreamSet;
@@ -24,15 +28,22 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     private final Map<Stream_, TupleLifecycle<? extends AbstractTuple>> tupleLifecycleMap;
     private final Map<Stream_, Integer> storeIndexMap;
 
-    private List<AbstractNode> reversedNodeList;
+    @Nullable
+    private final ConstraintProfiler constraintProfiler;
 
-    protected AbstractNodeBuildHelper(Set<Stream_> activeStreamSet) {
+    @Nullable
+    private List<AbstractNode> reversedNodeList;
+    private long nextLifecycleProfilingId = 0;
+
+    protected AbstractNodeBuildHelper(Set<Stream_> activeStreamSet,
+            @Nullable ConstraintProfiler constraintProfiler) {
         this.activeStreamSet = activeStreamSet;
         int activeStreamSetSize = activeStreamSet.size();
         this.nodeCreatorMap = new HashMap<>(Math.max(16, activeStreamSetSize));
         this.tupleLifecycleMap = new HashMap<>(Math.max(16, activeStreamSetSize));
         this.storeIndexMap = new HashMap<>(Math.max(16, activeStreamSetSize / 2));
         this.reversedNodeList = new ArrayList<>(activeStreamSetSize);
+        this.constraintProfiler = constraintProfiler;
     }
 
     public boolean isStreamActive(Stream_ stream) {
@@ -45,6 +56,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     public void addNode(AbstractNode node, Stream_ creator, Stream_ parent) {
         reversedNodeList.add(node);
+        node.addLocationSet(creator.getLocationSet());
         nodeCreatorMap.put(node, creator);
         if (!(node instanceof BavetRootNode<?>)) {
             if (parent == null) {
@@ -57,6 +69,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     public void addNode(AbstractNode node, Stream_ creator, Stream_ leftParent, Stream_ rightParent) {
         reversedNodeList.add(node);
+        node.addLocationSet(creator.getLocationSet());
         nodeCreatorMap.put(node, creator);
         putInsertUpdateRetract(leftParent, TupleLifecycle.ofLeft((LeftTupleLifecycle<? extends AbstractTuple>) node));
         putInsertUpdateRetract(rightParent, TupleLifecycle.ofRight((RightTupleLifecycle<? extends AbstractTuple>) node));
@@ -64,6 +77,11 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(Stream_ stream,
             TupleLifecycle<Tuple_> tupleLifecycle) {
+        if (constraintProfiler != null) {
+            tupleLifecycle = TupleLifecycle.profiling(constraintProfiler, nextLifecycleProfilingId,
+                    stream, tupleLifecycle);
+            nextLifecycleProfilingId++;
+        }
         tupleLifecycleMap.put(stream, tupleLifecycle);
     }
 
@@ -147,11 +165,14 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     }
 
     public static NodeNetwork buildNodeNetwork(List<AbstractNode> nodeList,
-            Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap) {
+            Map<Class<?>, List<BavetRootNode<?>>> declaredClassToNodeMap,
+            AbstractNodeBuildHelper<?> nodeBuildHelper) {
         var layerMap = new TreeMap<Long, List<Propagator>>();
         for (var node : nodeList) {
-            layerMap.computeIfAbsent(node.getLayerIndex(), k -> new ArrayList<>())
-                    .add(node.getPropagator());
+            var layer = node.getLayerIndex();
+            var propagator = node.getPropagator();
+            layerMap.computeIfAbsent(layer, k -> new ArrayList<>())
+                    .add(propagator);
         }
         var layerCount = layerMap.size();
         var layeredNodes = new Propagator[layerCount][];
@@ -159,7 +180,7 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
             var layer = layerMap.get((long) i);
             layeredNodes[i] = layer.toArray(new Propagator[0]);
         }
-        return new NodeNetwork(declaredClassToNodeMap, layeredNodes);
+        return new NodeNetwork(declaredClassToNodeMap, layeredNodes, nodeBuildHelper.constraintProfiler);
     }
 
     public <BuildHelper_ extends AbstractNodeBuildHelper<Stream_>> List<AbstractNode> buildNodeList(Set<Stream_> streamSet,

@@ -27,6 +27,7 @@ import org.jspecify.annotations.Nullable;
         "constraintProviderCustomProperties",
         "constraintStreamImplType",
         "constraintStreamAutomaticNodeSharing",
+        "constraintStreamProfilingMode",
         "incrementalScoreCalculatorClass",
         "incrementalScoreCalculatorCustomProperties",
         "scoreDrlList",
@@ -46,6 +47,7 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     protected Map<String, String> constraintProviderCustomProperties = null;
     protected ConstraintStreamImplType constraintStreamImplType;
     protected Boolean constraintStreamAutomaticNodeSharing;
+    protected ConstraintProfilingMode constraintStreamProfilingMode;
 
     protected Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass = null;
 
@@ -124,6 +126,14 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
 
     public void setConstraintStreamAutomaticNodeSharing(@Nullable Boolean constraintStreamAutomaticNodeSharing) {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
+    }
+
+    public ConstraintProfilingMode getConstraintStreamProfilingMode() {
+        return constraintStreamProfilingMode;
+    }
+
+    public void setConstraintStreamProfilingMode(ConstraintProfilingMode constraintStreamProfilingMode) {
+        this.constraintStreamProfilingMode = constraintStreamProfilingMode;
     }
 
     public @Nullable Class<? extends IncrementalScoreCalculator> getIncrementalScoreCalculatorClass() {
@@ -228,6 +238,12 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     public @NonNull ScoreDirectorFactoryConfig
+            withConstraintStreamProfiling(@NonNull ConstraintProfilingMode constraintStreamProfiling) {
+        this.constraintStreamProfilingMode = constraintStreamProfiling;
+        return this;
+    }
+
+    public @NonNull ScoreDirectorFactoryConfig
             withIncrementalScoreCalculatorClass(
                     @NonNull Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
         this.incrementalScoreCalculatorClass = incrementalScoreCalculatorClass;
@@ -288,6 +304,8 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
                 constraintStreamImplType, inheritedConfig.getConstraintStreamImplType());
         constraintStreamAutomaticNodeSharing = ConfigUtils.inheritOverwritableProperty(constraintStreamAutomaticNodeSharing,
                 inheritedConfig.getConstraintStreamAutomaticNodeSharing());
+        constraintStreamProfilingMode = ConfigUtils.inheritOverwritableProperty(constraintStreamProfilingMode,
+                inheritedConfig.getConstraintStreamProfilingMode());
         incrementalScoreCalculatorClass = ConfigUtils.inheritOverwritableProperty(
                 incrementalScoreCalculatorClass, inheritedConfig.getIncrementalScoreCalculatorClass());
         incrementalScoreCalculatorCustomProperties = ConfigUtils.inheritMergeableMapProperty(

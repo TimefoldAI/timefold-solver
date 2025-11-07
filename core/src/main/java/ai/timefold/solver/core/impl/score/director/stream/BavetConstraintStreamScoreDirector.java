@@ -125,6 +125,9 @@ public final class BavetConstraintStreamScoreDirector<Solution_, Score_ extends 
     public void close() {
         super.close();
         if (session != null) {
+            if (!derived) {
+                session.summarizeProfileIfPresent();
+            }
             session = null;
         }
     }
