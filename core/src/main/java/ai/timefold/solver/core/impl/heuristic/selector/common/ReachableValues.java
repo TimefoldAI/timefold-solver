@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.AbstractList;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
@@ -183,26 +182,26 @@ public final class ReachableValues {
     }
 
     @NullMarked
-    private static final class ArrayIndexedList<T> extends AbstractList<Object> {
+    private static final class ArrayIndexedList<T, V> extends AbstractList<V> {
 
         private final int[] valueIndex;
         private final List<T> allValues;
-        private final @Nullable Function<T, Object> valueExtractor;
+        private final @Nullable Function<T, V> valueExtractor;
 
-        private ArrayIndexedList(int[] valueIndex, List<T> allValues, @Nullable Function<T, Object> valueExtractor) {
+        private ArrayIndexedList(int[] valueIndex, List<T> allValues, @Nullable Function<T, V> valueExtractor) {
             this.valueIndex = valueIndex;
             this.allValues = allValues;
             this.valueExtractor = valueExtractor;
         }
 
         @Override
-        public Object get(int index) {
+        public V get(int index) {
             if (index < 0 || index >= valueIndex.length) {
                 throw new ArrayIndexOutOfBoundsException(index);
             }
             var value = allValues.get(valueIndex[index]);
             if (valueExtractor == null) {
-                return value;
+                return (V) value;
             } else {
                 return valueExtractor.apply(value);
             }
@@ -211,20 +210,6 @@ public final class ReachableValues {
         @Override
         public int size() {
             return valueIndex.length;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (!(o instanceof ArrayIndexedList objects))
-                return false;
-            if (!super.equals(o))
-                return false;
-            return Objects.deepEquals(valueIndex, objects.valueIndex);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(super.hashCode(), Arrays.hashCode(valueIndex));
         }
     }
 
