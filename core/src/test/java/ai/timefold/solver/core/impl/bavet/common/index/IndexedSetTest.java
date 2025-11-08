@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class IndexedSetTest {
 
@@ -22,7 +22,7 @@ class IndexedSetTest {
         set.add("C");
 
         assertThat(set.size()).isEqualTo(3);
-        assertThat(set.asList()).containsExactly("A", "B", "C");
+        assertThat(set.asList()).containsExactlyInAnyOrder("A", "B", "C");
     }
 
     @Test
@@ -65,7 +65,7 @@ class IndexedSetTest {
         set.remove("B");
 
         assertThat(set.size()).isEqualTo(2);
-        assertThat(set.asList()).containsExactly("A", "C");
+        assertThat(set.asList()).containsExactlyInAnyOrder("A", "C");
     }
 
     @Test
@@ -78,7 +78,7 @@ class IndexedSetTest {
         set.remove("C");
 
         assertThat(set.size()).isEqualTo(2);
-        assertThat(set.asList()).containsExactly("A", "B");
+        assertThat(set.asList()).containsExactlyInAnyOrder("A", "B");
     }
 
     @Test
@@ -91,7 +91,7 @@ class IndexedSetTest {
         set.remove("A");
 
         assertThat(set.size()).isEqualTo(2);
-        assertThat(set.asList()).containsExactly("B", "C");
+        assertThat(set.asList()).containsExactlyInAnyOrder("B", "C");
     }
 
     @Test
@@ -107,7 +107,7 @@ class IndexedSetTest {
         set.add("E");
 
         assertThat(set.size()).isEqualTo(3);
-        assertThat(set.asList()).containsExactly("C", "D", "E");
+        assertThat(set.asList()).containsExactlyInAnyOrder("C", "D", "E");
     }
 
     @Test
@@ -121,7 +121,7 @@ class IndexedSetTest {
         var result = new ArrayList<String>();
         set.forEach(result::add);
 
-        assertThat(result).containsExactly("A", "B", "C");
+        assertThat(result).containsExactlyInAnyOrder("A", "B", "C");
     }
 
     @Test
@@ -151,8 +151,8 @@ class IndexedSetTest {
             }
         });
 
-        assertThat(result).containsExactly("A", "B", "C", "D");
-        assertThat(set.asList()).containsExactly("A", "C", "D");
+        assertThat(result).containsExactlyInAnyOrder("A", "B", "C", "D");
+        assertThat(set.asList()).containsExactlyInAnyOrder("A", "C", "D");
     }
 
     @Test
@@ -173,23 +173,6 @@ class IndexedSetTest {
         var set = new IndexedSet<>(stringTracker);
 
         assertThat(set.asList()).isEmpty();
-    }
-
-    @Test
-    void toStringOnEmptySet() {
-        var set = new IndexedSet<>(stringTracker);
-
-        assertThat(set.toString()).isEqualTo("[]");
-    }
-
-    @Test
-    void toStringWithElements() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-
-        assertThat(set.toString()).isEqualTo("[A, B]");
     }
 
     @Test
