@@ -64,8 +64,26 @@ We kindly ask Kotlin users to translate the changes accordingly.
 .icon:exclamation-triangle[role=red] `SolverJobBuilder` `with...SolutionConsumer` methods deprecated.
 [%collapsible%open]
 ====
-The `SolverJobBuilder` 's `withBestSolutionConsumer`, `withFinalBestSolutionConsumer`, `withFirstInitializedSolutionConsumer` and `withSolverJobStartedConsumer` methods have been deprecated in favor of the new methods `withBestSolutionEventConsumer`, `withFinalBestSolutionEventConsumer`, `withFirstInitializedSolutionEventConsumer`, and `withSolverJobStartedEventConsumer` respectively.
-The new `with...EventConsumer` methods accept their own `...Event` object, with methods to access the best solution and different additional properties depending on the event.
+Some `SolverJobBuilder` 's methods for consuming solution-related events have been deprecated in favor of new methods that provide more context through event objects:
+
+
+|===
+|1.27.0 and older |1.28.0 and newer
+
+|`withBestSolutionConsumer`
+|`withBestSolutionEventConsumer`
+
+|`withFinalBestSolutionConsumer`
+|`withFinalBestSolutionEventConsumer`
+
+|`withFirstInitializedSolutionConsumer`
+|`withFirstInitializedSolutionEventConsumer`
+
+|`withSolverJobStartedConsumer`
+|`withSolverJobStartedEventConsumer`
+|===
+
+
 To migrate, change your `Consumer` to accept the event instead of the solution:
 
 Before in `*.java`:
@@ -139,7 +157,12 @@ void onFinalBestSolution(FinalBestSolutionEvent<Timetable> event) {
     // ...
 }
 ----
+
+Users of xref:enterprise-edition/enterprise-edition.adoc#throttlingBestSolutionEvents[solution throttling] should also update their code
+to use `ThrottlingBestSolutionEventConsumer` instead of the now deprecated `ThrottlingBestSolutionConsumer`.
 ====
+
+'''
 
 .icon:info-circle[role=yellow] `SelectionSorterWeightFactory` deprecated for removal
 [%collapsible%open]
@@ -149,6 +172,8 @@ The sorting settings now utilize a `Comparator` class rather than a `Comparable`
 ensuring all related settings are consistent and simpler.
 The old class remains valid and can be easily converted to use the `ComparatorFactory` instead.
 ====
+
+'''
 
 .icon:info-circle[role=yellow] `flattenLast` behaviour on `equals` objects
 [%collapsible%open]
