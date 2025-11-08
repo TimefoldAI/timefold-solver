@@ -32,7 +32,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         this.inputStoreIndexLeftCounter = leftTupleStorePositionTracker.reserveNextAvailablePosition();
         this.inputStoreIndexRightTuple = rightTupleStorePositionTracker.reserveNextAvailablePosition();
         this.leftCounterSet = new IndexedSet<>(
-                new ExistsCounterPositionTracker<>(leftTupleStorePositionTracker.reserveNextAvailablePosition()));
+                new ExistsCounterPositionTracker<>());
         this.rightTupleSet = new IndexedSet<>(new TuplePositionTracker<>(inputStoreIndexRightTuple));
     }
 

@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import java.util.function.ToIntFunction;
+
 import ai.timefold.solver.core.impl.bavet.common.index.ElementPositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
@@ -7,31 +9,21 @@ import org.jspecify.annotations.NullMarked;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 @NullMarked
-record ExistsCounterHandlePositionTracker<Tuple_ extends AbstractTuple>(PositionGetter<Tuple_> positionGetter,
-        PositionClearer<Tuple_> positionClearer,
+record ExistsCounterHandlePositionTracker<Tuple_ extends AbstractTuple>(
+        ToIntFunction<ExistsCounterHandle<Tuple_>> positionGetter,
         PositionSetter<Tuple_> positionSetter)
         implements
             ElementPositionTracker<ExistsCounterHandle<Tuple_>> {
 
     private static final ExistsCounterHandlePositionTracker LEFT = new ExistsCounterHandlePositionTracker(
-            tracker -> tracker.leftPosition,
-            tracker -> {
-                var result = tracker.leftPosition;
-                tracker.leftPosition = -1;
-                return result;
-            },
+            (ToIntFunction<ExistsCounterHandle>) tracker -> tracker.leftPosition,
             (tracker, position) -> {
                 var oldValue = tracker.leftPosition;
                 tracker.leftPosition = position;
                 return oldValue;
             });
     private static final ExistsCounterHandlePositionTracker RIGHT = new ExistsCounterHandlePositionTracker(
-            tracker -> tracker.rightPosition,
-            tracker -> {
-                var result = tracker.rightPosition;
-                tracker.rightPosition = -1;
-                return result;
-            },
+            (ToIntFunction<ExistsCounterHandle>) tracker -> tracker.rightPosition,
             (tracker, position) -> {
                 var oldValue = tracker.rightPosition;
                 tracker.rightPosition = position;
@@ -47,34 +39,15 @@ record ExistsCounterHandlePositionTracker<Tuple_ extends AbstractTuple>(Position
     }
 
     @Override
-    public int getPosition(ExistsCounterHandle<Tuple_> element) {
-        return positionGetter.apply(element);
-    }
-
-    @Override
-    public int setPosition(ExistsCounterHandle<Tuple_> element, int position) {
-        return positionSetter.apply(element, position);
+    public void setPosition(ExistsCounterHandle<Tuple_> element, int position) {
+        positionSetter.apply(element, position);
     }
 
     @Override
     public int clearPosition(ExistsCounterHandle<Tuple_> element) {
-        return positionClearer.apply(element);
-    }
-
-    @FunctionalInterface
-    @NullMarked
-    interface PositionGetter<Tuple_ extends AbstractTuple> {
-
-        int apply(ExistsCounterHandle<Tuple_> tracker);
-
-    }
-
-    @FunctionalInterface
-    @NullMarked
-    interface PositionClearer<Tuple_ extends AbstractTuple> {
-
-        int apply(ExistsCounterHandle<Tuple_> tracker);
-
+        var oldPosition = positionGetter.applyAsInt(element);
+        positionSetter.apply(element, -1);
+        return oldPosition;
     }
 
     @FunctionalInterface

@@ -42,8 +42,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         this.inputStoreIndexLeftKeys = leftTupleStorePositionTracker.reserveNextAvailablePosition();
         this.inputStoreIndexLeftCounter = leftTupleStorePositionTracker.reserveNextAvailablePosition();
         this.inputStoreIndexRightKeys = rightTupleStorePositionTracker.reserveNextAvailablePosition();
-        this.indexerLeft = indexerFactory.buildIndexer(true,
-                new ExistsCounterPositionTracker<>(leftTupleStorePositionTracker.reserveNextAvailablePosition()));
+        this.indexerLeft = indexerFactory.buildIndexer(true, ExistsCounterPositionTracker.instance());
         this.indexerRight = indexerFactory.buildIndexer(false,
                 new TuplePositionTracker<>(rightTupleStorePositionTracker.reserveNextAvailablePosition()));
     }

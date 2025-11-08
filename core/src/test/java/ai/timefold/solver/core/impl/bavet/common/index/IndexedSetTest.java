@@ -26,16 +26,6 @@ class IndexedSetTest {
     }
 
     @Test
-    void addDuplicateElement() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        assertThatThrownBy(() -> set.add("A"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("was already added");
-    }
-
-    @Test
     void removeElement() {
         var set = new IndexedSet<>(stringTracker);
 
@@ -226,13 +216,8 @@ class IndexedSetTest {
         private final Map<T, Integer> positions = new HashMap<>();
 
         @Override
-        public int setPosition(T element, int position) {
-            return positions.put(element, position) == null ? -1 : position;
-        }
-
-        @Override
-        public int getPosition(T element) {
-            return positions.getOrDefault(element, -1);
+        public void setPosition(T element, int position) {
+            positions.put(element, position);
         }
 
         @Override
