@@ -1,15 +1,15 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import ai.timefold.solver.core.impl.util.ElementAwareList;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-
-import ai.timefold.solver.core.impl.util.ElementAwareList;
-
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * {@link ArrayList}-backed set which allows to {@link #remove(Object)} an element
@@ -33,6 +33,9 @@ import org.jspecify.annotations.Nullable;
  * <p>
  * For performance reasons, this class does not check if an element was already added;
  * duplicates must be avoided by the caller and will cause undefined behavior.
+ * <p>
+ * This class is not thread-safe.
+ * It is in fact very thread-unsafe.
  *
  * @param <T>
  */
@@ -41,7 +44,8 @@ public final class IndexedSet<T> {
 
     private final ElementPositionTracker<T> elementPositionTracker;
     private @Nullable ArrayList<T> elementList; // Lazily initialized, so that empty indexes use no memory.
-    private int removalCount = 0;
+    private final BitSet gaps = new BitSet(0);
+    private int gapCount = 0;
 
     public IndexedSet(ElementPositionTracker<T> elementPositionTracker) {
         this.elementPositionTracker = Objects.requireNonNull(elementPositionTracker);
@@ -66,8 +70,16 @@ public final class IndexedSet<T> {
      */
     public void add(T element) {
         var actualElementList = getElementList();
-        actualElementList.add(element);
-        elementPositionTracker.setPosition(element, actualElementList.size() - 1);
+        if (gapCount > 0) {
+            var gapIndex = gaps.nextSetBit(0);
+            actualElementList.set(gapIndex, element);
+            elementPositionTracker.setPosition(element, gapIndex);
+            gaps.clear(gapIndex);
+            gapCount--;
+        } else {
+            actualElementList.add(element);
+            elementPositionTracker.setPosition(element, actualElementList.size() - 1);
+        }
     }
 
     /**
@@ -94,46 +106,19 @@ public final class IndexedSet<T> {
             return false;
         }
         var actualElementList = getElementList();
-        var upperBound = Math.min(insertionPosition, actualElementList.size() - 1);
-        var lowerBound = Math.max(0, insertionPosition - removalCount);
-        var actualPosition = findElement(actualElementList, element, lowerBound, upperBound);
-        if (actualPosition < 0) {
-            return false;
-        }
-        actualElementList.remove(actualPosition);
-        if (isEmpty()) {
-            removalCount = 0;
-        } else if (actualElementList.size() > actualPosition) {
-            // We only mark removals that actually affect later elements.
-            // Removing the last element does not affect any other element.
-            removalCount++;
+        if (insertionPosition == actualElementList.size() - 1) {
+            // The element was the last one added; we can simply remove it.
+            actualElementList.remove(insertionPosition);
+        } else {
+            actualElementList.set(insertionPosition, null);
+            gaps.set(insertionPosition);
+            gapCount++;
         }
         return true;
     }
 
-    /**
-     * Search for the element in the given range.
-     *
-     * @param actualElementList the list to search in
-     * @param element the element to search for
-     * @param startIndex start of the range we are currently considering (inclusive)
-     * @param endIndex end of the range we are currently considering (inclusive)
-     * @return the index of the element if found, -1 otherwise
-     */
-    private static <T> int findElement(List<T> actualElementList, T element, int startIndex, int endIndex) {
-        for (var i = endIndex; i >= startIndex; i--) {
-            // Iterating backwards as the element is more likely to be closer to the end of the range,
-            // which is where it was originally inserted.
-            var maybeElement = actualElementList.get(i);
-            if (maybeElement == element) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     public int size() {
-        return elementList == null ? 0 : elementList.size();
+        return elementList == null ? 0 : elementList.size() - gapCount;
     }
 
     /**
@@ -146,19 +131,16 @@ public final class IndexedSet<T> {
         if (elementList == null) {
             return;
         }
-        var i = 0;
-        while (i < elementList.size()) {
-            var oldRemovalCount = removalCount; // The consumer may remove some elements, shifting others forward.
-            tupleConsumer.accept(elementList.get(i));
-            var elementDrift = removalCount - oldRemovalCount;
-            // Move to the next element, adjusting for any shifts due to removals.
-            // If no elements were removed by the consumer, we simply move to the next index.
-            i -= elementDrift - 1;
+        for (var i = 0; i < elementList.size(); i++) {
+            var element = elementList.get(i);
+            if (element != null) {
+                tupleConsumer.accept(element);
+            }
         }
     }
 
     public boolean isEmpty() {
-        return elementList == null || elementList.isEmpty();
+        return size() == 0;
     }
 
     /**
@@ -168,11 +150,40 @@ public final class IndexedSet<T> {
      * @return a standard list view of this element-aware list
      */
     public List<T> asList() {
-        return elementList == null ? Collections.emptyList() : elementList;
+        if (elementList == null) {
+            return Collections.emptyList();
+        }
+        var actualElementList = getElementList();
+        defrag(actualElementList);
+        return actualElementList;
     }
 
-    public String toString() {
-        return elementList == null ? "[]" : elementList.toString();
+    private void defrag(List<T> actualElementList) {
+        if (gapCount == 0) {
+            return;
+        }
+        var gap = gaps.nextSetBit(0);
+        while (gap >= 0) {
+            var lastNonGapIndex = findNonGapFromEnd(actualElementList);
+            if (lastNonGapIndex < 0 || gap >= lastNonGapIndex) {
+                break;
+            }
+            var lastElement = actualElementList.remove(lastNonGapIndex);
+            actualElementList.set(gap, lastElement);
+            elementPositionTracker.setPosition(lastElement, gap);
+            gap = gaps.nextSetBit(gap + 1);
+        }
+        gaps.clear();
+        gapCount = 0;
+    }
+
+    private int findNonGapFromEnd(List<T> actualElementList) {
+        var end = actualElementList.size() - 1;
+        var lastNonGap = gaps.previousClearBit(end);
+        for (var i = end; i > lastNonGap; i--) {
+            actualElementList.remove(i);
+        }
+        return lastNonGap;
     }
 
 }
