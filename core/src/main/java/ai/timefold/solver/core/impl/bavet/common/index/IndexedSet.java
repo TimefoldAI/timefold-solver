@@ -12,8 +12,9 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
- * {@link ArrayList}-backed set which allows to {@link #remove(Object)} an element without knowing its position
- * and without an expensive lookup.
+ * {@link ArrayList}-backed set which allows to {@link #remove(Object)} an element
+ * without knowing its position and without an expensive lookup.
+ * It also allows for direct random access like a list.
  * <p>
  * It uses an {@link ElementPositionTracker} to track the insertion position of each element.
  * When an element is removed, the insertion position of later elements is not changed.
@@ -29,8 +30,10 @@ import org.jspecify.annotations.Nullable;
  * Random access is not required for Constraint Streams, but Neighborhoods make heavy use of it;
  * if we used the {@link ElementAwareList} implementation instead,
  * we would have to copy the elements to an array every time we need to access them randomly during move generation.
- * 
- * 
+ * <p>
+ * For performance reasons, this class does not check if an element was already added;
+ * duplicates must be avoided by the caller and will cause undefined behavior.
+ *
  * @param <T>
  */
 @NullMarked
@@ -52,20 +55,19 @@ public final class IndexedSet<T> {
     }
 
     /**
-     * Appends the specified element to the end of this collection, if not already present.
-     * Will use identity comparison to check for presence;
-     * two different instances which {@link Object#equals(Object) equal} are considered different elements.
+     * Appends the specified element to the end of this collection.
+     * If the element is already present,
+     * undefined, unexpected, and incorrect behavior should be expected.
+     * <p>
+     * Presence of the element can be checked using the associated {@link ElementPositionTracker}.
+     * For performance reasons, this method avoids that check.
      *
      * @param element element to be appended to this collection
-     * @throws IllegalStateException if the element was already present in this collection
      */
     public void add(T element) {
         var actualElementList = getElementList();
         actualElementList.add(element);
-        if (elementPositionTracker.setPosition(element, actualElementList.size() - 1) >= 0) {
-            throw new IllegalStateException("Impossible state: the element (%s) was already added to the IndexedSet."
-                    .formatted(element));
-        }
+        elementPositionTracker.setPosition(element, actualElementList.size() - 1);
     }
 
     /**

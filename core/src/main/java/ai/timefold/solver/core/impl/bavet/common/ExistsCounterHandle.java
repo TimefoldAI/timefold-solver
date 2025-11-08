@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.bavet.common;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexedSet;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Used for filtering in {@link AbstractIfExistsNode}.
  * There is no place where both left and right sets for each counter would be kept together,
@@ -11,6 +13,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
  *
  * @param <LeftTuple_>
  */
+@NullMarked
 final class ExistsCounterHandle<LeftTuple_ extends AbstractTuple> {
 
     final ExistsCounter<LeftTuple_> counter;
