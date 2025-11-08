@@ -355,11 +355,10 @@ class SolverManagerTest {
     void firstInitializedSolutionConsumerEarlyTerminatedCH() throws InterruptedException {
         var consumerCalled = new AtomicBoolean();
         var initialSolutionEvent = new InitialSolutionEvent();
-        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer =
-                (event) -> {
-                    consumerCalled.set(true);
-                    initialSolutionEvent.readFromEvent(event);
-                };
+        Consumer<FirstInitializedSolutionEvent<TestdataSolution>> initializedSolutionConsumer = event -> {
+            consumerCalled.set(true);
+            initialSolutionEvent.readFromEvent(event);
+        };
 
         var solverConfig = new SolverConfig()
                 .withSolutionClass(TestdataSolution.class)
@@ -408,7 +407,7 @@ class SolverManagerTest {
         var consumerCalled = new AtomicBoolean();
         var initialSolutionEvent = new InitialSolutionEvent();
         Consumer<FirstInitializedSolutionEvent<TestdataAllowsUnassignedValuesListSolution>> initializedSolutionConsumer =
-                (event) -> {
+                event -> {
                     consumerCalled.set(true);
                     initialSolutionEvent.readFromEvent(event);
                 };

@@ -17,16 +17,16 @@ public enum PhaseType {
      * @deprecated Deprecated on account of {@link NoChangePhase} having no use.
      */
     @Deprecated(forRemoval = true, since = "1.28.0")
-    NO_CHANGE("No Change"),
+    NO_CHANGE("No Change Phase"),
     /**
      * The type of phase associated with {@link ConstructionHeuristicPhase}.
      */
-    CONSTRUCTION_HEURISTIC("Construction Heuristics"),
+    CONSTRUCTION_HEURISTIC("Construction Heuristic"),
 
     /**
      * The type of phase associated with {@link RuinRecreateConstructionHeuristicPhase}
      */
-    RUIN_AND_RECREATE_CONSTRUCTION_HEURISTIC("Ruin & Recreate Construction Heuristics"),
+    RUIN_AND_RECREATE_CONSTRUCTION_HEURISTIC("Ruin & Recreate Construction Heuristic"),
     /**
      * The type of phase associated with {@link LocalSearchPhase}.
      */

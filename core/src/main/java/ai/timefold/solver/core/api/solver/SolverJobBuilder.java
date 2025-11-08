@@ -120,8 +120,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
     @NonNull
     default SolverJobBuilder<Solution_, ProblemId_>
             withFirstInitializedSolutionConsumer(@NonNull Consumer<? super Solution_> firstInitializedSolutionConsumer) {
-        return withFirstInitializedSolutionEventConsumer(
-                (event) -> firstInitializedSolutionConsumer.accept(event.solution()));
+        return withFirstInitializedSolutionEventConsumer(event -> firstInitializedSolutionConsumer.accept(event.solution()));
     }
 
     /**
@@ -157,6 +156,7 @@ public interface SolverJobBuilder<Solution_, ProblemId_> {
      *
      * @deprecated Use {@link #withSolverJobStartedEventConsumer(Consumer)} instead.
      */
+    @Deprecated(forRemoval = true, since = "1.28.0")
     default SolverJobBuilder<Solution_, ProblemId_>
             withSolverJobStartedConsumer(Consumer<? super Solution_> solverJobStartedConsumer) {
         return withSolverJobStartedEventConsumer(event -> solverJobStartedConsumer.accept(event.solution()));
