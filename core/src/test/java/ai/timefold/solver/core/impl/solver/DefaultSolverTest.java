@@ -138,6 +138,7 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
+import ai.timefold.solver.core.testutil.BestScoreChangedEvent;
 import ai.timefold.solver.core.testutil.NoChangeCustomPhaseCommand;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
@@ -167,7 +168,8 @@ class DefaultSolverTest {
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Arrays.asList(new TestdataEntity("e1"), new TestdataEntity("e2")));
 
-        solution = PlannerTestUtils.solve(solverConfig, solution);
+        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                BestScoreChangedEvent.constructionHeuristic(SimpleScore.ZERO, 0));
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
@@ -379,7 +381,8 @@ class DefaultSolverTest {
         solution.setValueList(Arrays.asList(new TestdataValue("v1"), new TestdataValue("v2")));
         solution.setEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, true);
+        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                BestScoreChangedEvent.solvingStarted(SimpleScore.ZERO));
         assertThat(solution).isNotNull();
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getValue() == null)).isEmpty();
@@ -404,7 +407,8 @@ class DefaultSolverTest {
         solution.setChainedAnchorList(Arrays.asList(new TestdataChainedAnchor("v1"), new TestdataChainedAnchor("v2")));
         solution.setChainedEntityList(Collections.emptyList());
 
-        solution = PlannerTestUtils.solve(solverConfig, solution, true);
+        solution = PlannerTestUtils.solveAssertingEvents(solverConfig, solution,
+                BestScoreChangedEvent.solvingStarted(SimpleScore.ZERO));
         assertThat(solution).isNotNull();
         assertThat(solution.getScore()).isNotNull();
     }
@@ -510,7 +514,6 @@ class DefaultSolverTest {
 
             solutionWithProblemChangeReceived.await();
             assertThat(bestSolution.get().getValueList()).hasSize(valueCount + 1);
-
             solver.terminateEarly();
         } finally {
             executorService.shutdownNow();

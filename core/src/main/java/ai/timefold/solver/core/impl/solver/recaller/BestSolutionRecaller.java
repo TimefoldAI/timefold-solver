@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.solver.recaller;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListenerAdapter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
@@ -90,7 +91,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             var innerScore = InnerScore.withUnassignedCount(
                     solverScope.getSolutionDescriptor().<Score_> getScore(newBestSolution),
                     -stepScope.getScoreDirector().getWorkingInitScore());
-            updateBestSolutionAndFire(solverScope, innerScore, newBestSolution);
+            updateBestSolutionAndFire(solverScope, phaseScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
         }
@@ -110,28 +111,30 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
             var newBestSolution = solverScope.getScoreDirector().cloneWorkingSolution();
             var innerScore = new InnerScore<>(moveScore.raw(), solverScope.getScoreDirector().getWorkingInitScore());
-            updateBestSolutionAndFire(solverScope, innerScore, newBestSolution);
+            updateBestSolutionAndFire(solverScope, phaseScope, innerScore, newBestSolution);
         } else if (assertBestScoreIsUnmodified) {
             solverScope.assertScoreFromScratch(solverScope.getBestSolution());
         }
     }
 
-    public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope) {
+    public void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope) {
         updateBestSolutionWithoutFiring(solverScope);
-        solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.getBestSolution());
+        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), solverScope.getBestSolution());
     }
 
-    public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope) {
+    public void updateBestSolutionAndFireIfInitialized(SolverScope<Solution_> solverScope,
+            EventProducerId eventProducerId) {
         updateBestSolutionWithoutFiring(solverScope);
         if (solverScope.isBestSolutionInitialized()) {
-            solverEventSupport.fireBestSolutionChanged(solverScope, solverScope.getBestSolution());
+            solverEventSupport.fireBestSolutionChanged(solverScope, eventProducerId, solverScope.getBestSolution());
         }
     }
 
-    private void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, InnerScore<?> bestScore,
+    private void updateBestSolutionAndFire(SolverScope<Solution_> solverScope, AbstractPhaseScope<Solution_> phaseScope,
+            InnerScore<?> bestScore,
             Solution_ bestSolution) {
         updateBestSolutionWithoutFiring(solverScope, bestScore, bestSolution);
-        solverEventSupport.fireBestSolutionChanged(solverScope, bestSolution);
+        solverEventSupport.fireBestSolutionChanged(solverScope, phaseScope.getPhaseId(), bestSolution);
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })

@@ -12,6 +12,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.ProblemFactChange;
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.monitoring.SolverMetric;
 import ai.timefold.solver.core.impl.phase.Phase;
@@ -226,7 +227,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
         registerSolverSpecificMetrics();
 
         // Update the best solution, since problem's shadows and score were updated
-        bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
+        bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
+                EventProducerId.solvingStarted());
 
         logger.info("Solving {}: time spent ({}), best score ({}), "
                 + "environment mode ({}), move thread count ({}), random ({}).",
@@ -347,7 +349,8 @@ public class DefaultSolver<Solution_> extends AbstractSolver<Solution_> {
             // Everything is fine, proceed.
             var score = scoreDirector.calculateScore();
             basicPlumbingTermination.endProblemChangesProcessing();
-            bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope);
+            bestSolutionRecaller.updateBestSolutionAndFireIfInitialized(solverScope,
+                    EventProducerId.problemChange());
             logger.info("Real-time problem fact changes done: step total ({}), new best score ({}).",
                     stepIndex, score);
             return true;

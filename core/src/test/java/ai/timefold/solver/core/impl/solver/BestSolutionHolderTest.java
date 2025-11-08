@@ -1,21 +1,30 @@
 package ai.timefold.solver.core.impl.solver;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.from;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import ai.timefold.solver.core.api.solver.Solver;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 class BestSolutionHolderTest {
+    private static final Comparator<TestdataSolution> IDENTITY_COMPARATOR = (a, b) -> {
+        if (a == b) {
+            return 0;
+        }
+        return System.identityHashCode(a) < System.identityHashCode(b) ? -1 : 1;
+    };
 
     @Test
     void setBestSolution() {
@@ -25,17 +34,27 @@ class BestSolutionHolderTest {
         TestdataSolution solution1 = TestdataSolution.generateSolution();
         TestdataSolution solution2 = TestdataSolution.generateSolution();
 
-        bestSolutionHolder.set(solution1, () -> true);
-        assertThat(bestSolutionHolder.take().getBestSolution()).isSameAs(solution1);
+        bestSolutionHolder.set(solution1, EventProducerId.constructionHeuristic(0), () -> true);
+        assertThat(bestSolutionHolder.take())
+                .usingComparatorForType(IDENTITY_COMPARATOR, TestdataSolution.class)
+                .returns(solution1, from(BestSolutionContainingProblemChanges::getBestSolution))
+                .returns(EventProducerId.constructionHeuristic(0), from(BestSolutionContainingProblemChanges::getProducerId));
         assertThat(bestSolutionHolder.take()).isNull();
 
-        bestSolutionHolder.set(solution1, () -> true);
-        bestSolutionHolder.set(solution2, () -> false);
-        assertThat(bestSolutionHolder.take().getBestSolution()).isSameAs(solution1);
+        bestSolutionHolder.set(solution1, EventProducerId.constructionHeuristic(1), () -> true);
+        bestSolutionHolder.set(solution2, EventProducerId.localSearch(2), () -> false);
+        assertThat(bestSolutionHolder.take())
+                .usingComparatorForType(IDENTITY_COMPARATOR, TestdataSolution.class)
+                .returns(solution1, from(BestSolutionContainingProblemChanges::getBestSolution))
+                .returns(EventProducerId.constructionHeuristic(1), from(BestSolutionContainingProblemChanges::getProducerId));
 
-        bestSolutionHolder.set(solution1, () -> true);
-        bestSolutionHolder.set(solution2, () -> true);
-        assertThat(bestSolutionHolder.take().getBestSolution()).isSameAs(solution2);
+        bestSolutionHolder.set(solution1, EventProducerId.customPhase(3), () -> true);
+        bestSolutionHolder.set(solution2, EventProducerId.customPhase(4), () -> true);
+        assertThat(bestSolutionHolder.take())
+                .usingComparatorForType(IDENTITY_COMPARATOR, TestdataSolution.class)
+                .returns(solution2, from(BestSolutionContainingProblemChanges::getBestSolution))
+                .returns(EventProducerId.customPhase(4), from(BestSolutionContainingProblemChanges::getProducerId));
+
     }
 
     @Test
@@ -43,7 +62,7 @@ class BestSolutionHolderTest {
         BestSolutionHolder<TestdataSolution> bestSolutionHolder = new BestSolutionHolder<>();
 
         CompletableFuture<Void> problemChange1 = addProblemChange(bestSolutionHolder);
-        bestSolutionHolder.set(TestdataSolution.generateSolution(), () -> true);
+        bestSolutionHolder.set(TestdataSolution.generateSolution(), EventProducerId.constructionHeuristic(0), () -> true);
         CompletableFuture<Void> problemChange2 = addProblemChange(bestSolutionHolder);
 
         bestSolutionHolder.take().completeProblemChanges();
@@ -51,8 +70,8 @@ class BestSolutionHolderTest {
         assertThat(problemChange2).isNotCompleted();
 
         CompletableFuture<Void> problemChange3 = addProblemChange(bestSolutionHolder);
-        bestSolutionHolder.set(TestdataSolution.generateSolution(), () -> true);
-        bestSolutionHolder.set(TestdataSolution.generateSolution(), () -> true);
+        bestSolutionHolder.set(TestdataSolution.generateSolution(), EventProducerId.constructionHeuristic(1), () -> true);
+        bestSolutionHolder.set(TestdataSolution.generateSolution(), EventProducerId.localSearch(2), () -> true);
         CompletableFuture<Void> problemChange4 = addProblemChange(bestSolutionHolder);
 
         bestSolutionHolder.take().completeProblemChanges();
@@ -67,7 +86,7 @@ class BestSolutionHolderTest {
         BestSolutionHolder<TestdataSolution> bestSolutionHolder = new BestSolutionHolder<>();
 
         CompletableFuture<Void> problemChange = addProblemChange(bestSolutionHolder);
-        bestSolutionHolder.set(TestdataSolution.generateSolution(), () -> true);
+        bestSolutionHolder.set(TestdataSolution.generateSolution(), EventProducerId.constructionHeuristic(0), () -> true);
 
         bestSolutionHolder.cancelPendingChanges();
 

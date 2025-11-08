@@ -1,12 +1,12 @@
 package ai.timefold.solver.core.testutil;
 
 import static java.util.Arrays.stream;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -15,7 +15,7 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -40,6 +40,8 @@ import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
+import org.assertj.core.api.ListAssert;
+import org.jspecify.annotations.NonNull;
 import org.mockito.AdditionalAnswers;
 
 /**
@@ -80,17 +82,28 @@ public final class PlannerTestUtils {
      */
     public static synchronized <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem,
             boolean bestSolutionEventExists) {
+        return solve(solverConfig, problem,
+                bestSolutionEventExists ? ListAssert::isNotEmpty : ListAssert::isEmpty);
+    }
+
+    public static synchronized <Solution_> Solution_ solve(SolverConfig solverConfig, Solution_ problem,
+            Consumer<ListAssert<BestScoreChangedEvent<?>>> bestSolutionEventsAsserter) {
         SolverFactory<Solution_> solverFactory = SolverFactory.create(solverConfig);
         var solver = solverFactory.buildSolver();
-        var eventBestSolutionRef = new AtomicReference<Solution_>();
-        solver.addEventListener(event -> eventBestSolutionRef.set(event.getNewBestSolution()));
+        var bestScoreChangedEventList = new ArrayList<BestScoreChangedEvent<?>>();
+        solver.addEventListener(event -> bestScoreChangedEventList.add(new BestScoreChangedEvent<>(event)));
         var finalBestSolution = solver.solve(problem);
-        if (bestSolutionEventExists) {
-            assertThat(eventBestSolutionRef).doesNotHaveNullValue();
-        } else {
-            assertThat(eventBestSolutionRef).hasNullValue();
-        }
+        bestSolutionEventsAsserter.accept(ListAssert.assertThatList(bestScoreChangedEventList));
         return finalBestSolution;
+    }
+
+    @SafeVarargs
+    public static synchronized <Solution_, Score_ extends Score<@NonNull Score_>> Solution_ solveAssertingEvents(
+            SolverConfig solverConfig,
+            Solution_ problem,
+            BestScoreChangedEvent<Score_>... events) {
+        return solve(solverConfig, problem,
+                listAssert -> listAssert.containsExactly(events));
     }
 
     // ************************************************************************

@@ -18,10 +18,13 @@ import ai.timefold.solver.core.api.solver.SolverConfigOverride;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.api.solver.SolverJob;
 import ai.timefold.solver.core.api.solver.SolverJobBuilder;
-import ai.timefold.solver.core.api.solver.SolverJobBuilder.FirstInitializedSolutionConsumer;
 import ai.timefold.solver.core.api.solver.SolverManager;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 import ai.timefold.solver.core.api.solver.change.ProblemChange;
+import ai.timefold.solver.core.api.solver.event.FinalBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.FirstInitializedSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.NewBestSolutionEvent;
+import ai.timefold.solver.core.api.solver.event.SolverJobStartedEvent;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 
@@ -78,10 +81,10 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
 
     SolverJob<Solution_, ProblemId_> solveAndListen(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> bestSolutionConsumer,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            FirstInitializedSolutionConsumer<? super Solution_> initializedSolutionConsumer,
-            Consumer<? super Solution_> solverJobStartedConsumer,
+            Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
+            Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
+            Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer,
+            Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> solverConfigOverride) {
         if (bestSolutionConsumer == null) {
@@ -93,10 +96,10 @@ public final class DefaultSolverManager<Solution_, ProblemId_> implements Solver
 
     SolverJob<Solution_, ProblemId_> solve(ProblemId_ problemId,
             Function<? super ProblemId_, ? extends Solution_> problemFinder,
-            Consumer<? super Solution_> bestSolutionConsumer,
-            Consumer<? super Solution_> finalBestSolutionConsumer,
-            FirstInitializedSolutionConsumer<? super Solution_> initializedSolutionConsumer,
-            Consumer<? super Solution_> solverJobStartedConsumer,
+            Consumer<NewBestSolutionEvent<Solution_>> bestSolutionConsumer,
+            Consumer<FinalBestSolutionEvent<Solution_>> finalBestSolutionConsumer,
+            Consumer<FirstInitializedSolutionEvent<Solution_>> initializedSolutionConsumer,
+            Consumer<SolverJobStartedEvent<Solution_>> solverJobStartedConsumer,
             BiConsumer<? super ProblemId_, ? super Throwable> exceptionHandler,
             SolverConfigOverride<Solution_> configOverride) {
         var solver = solverFactory.buildSolver(configOverride);

@@ -61,6 +61,86 @@ We kindly ask Kotlin users to translate the changes accordingly.
 
 === Upgrade from 1.27.0 to 1.28.0
 
+.icon:exclamation-triangle[role=red] `SolverJobBuilder` `with...SolutionConsumer` methods deprecated.
+[%collapsible%open]
+====
+The `SolverJobBuilder` 's `withBestSolutionConsumer`, `withFinalBestSolutionConsumer`, `withFirstInitializedSolutionConsumer` and `withSolverJobStartedConsumer` methods have been deprecated in favor of the new methods `withBestSolutionEventConsumer`, `withFinalBestSolutionEventConsumer`, `withFirstInitializedSolutionEventConsumer`, and `withSolverJobStartedEventConsumer` respectively.
+The new `with...EventConsumer` methods accept their own `...Event` object, with methods to access the best solution and different additional properties depending on the event.
+To migrate, change your `Consumer` to accept the event instead of the solution:
+
+Before in `*.java`:
+
+[source,java]
+----
+SolverManager<Timetable, Long> solverManager = SolverManager.create(solverConfig);
+
+void runJob(Timetable timetable) {
+    solverManager.solveBuilder()
+        .withProblemId(1L)
+        .withProblem(timetable)
+        .withSolverJobStartedConsumer(this::onJobStart)
+        .withFirstInitializedSolutionConsumer(this::onInitializedSolution)
+        .withBestSolutionConsumer(this::onNewBestSolution)
+        .withFinalBestSolutionConsumer(this::onFinalBestSolution)
+        .run();
+}
+
+void onJobStart(Timetable timetable) {
+    // ...
+}
+
+void onInitializedSolution(Timetable timetable) {
+    // ...
+}
+
+void onFinalBestSolution(Timetable timetable) {
+    // ...
+}
+
+void onJobStart(Timetable timetable) {
+    // ...
+}
+----
+
+After in `*.java`:
+
+[source,java]
+----
+SolverManager<Timetable, Long> solverManager = SolverManager.create(solverConfig);
+
+void runJob(Timetable timetable) {
+    solverManager.solveBuilder()
+        .withProblemId(1L)
+        .withProblem(timetable)
+        .withSolverJobStartedEventConsumer(this::onJobStart)
+        .withFirstInitializedSolutionEventConsumer(this::onInitializedSolution)
+        .withBestSolutionEventConsumer(this::onNewBestSolution)
+        .withFinalBestSolutionEventConsumer(this::onFinalBestSolution)
+        .run();
+}
+
+void onJobStart(SolverJobStartedEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+
+void onInitializedSolution(FirstInitializedSolutionEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+
+void onNewBestSolution(NewBestSolutionEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+
+void onFinalBestSolution(FinalBestSolutionEvent<Timetable> event) {
+    var timetable = event.solution();
+    // ...
+}
+----
+====
+
 .icon:info-circle[role=yellow] `SelectionSorterWeightFactory` deprecated for removal
 [%collapsible%open]
 ====

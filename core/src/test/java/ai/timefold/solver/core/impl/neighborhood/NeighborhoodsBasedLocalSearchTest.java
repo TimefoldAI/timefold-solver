@@ -5,6 +5,7 @@ import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -73,6 +74,7 @@ class NeighborhoodsBasedLocalSearchTest {
 
         var bestSolutionRecaller = new BestSolutionRecaller<TestdataSolution>();
         var solver = mock(AbstractSolver.class);
+        doReturn(List.of(localSearchPhase)).when(solver).getPhaseList();
         doReturn(bestSolutionRecaller).when(solver).getBestSolutionRecaller();
         var solverEventSupport = new SolverEventSupport<TestdataSolution>(solver);
         bestSolutionRecaller.setSolverEventSupport(solverEventSupport);

@@ -147,7 +147,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
                 .withProblemId(problemId)
                 .withProblem(problem);
         if (finalBestSolutionConsumer != null) {
-            builder.withFinalBestSolutionConsumer(finalBestSolutionConsumer);
+            builder.withFinalBestSolutionEventConsumer(event -> finalBestSolutionConsumer.accept(event.solution()));
         }
         return builder.run();
     }
@@ -297,7 +297,7 @@ public interface SolverManager<Solution_, ProblemId_> extends AutoCloseable {
         return solveBuilder()
                 .withProblemId(problemId)
                 .withProblem(problem)
-                .withBestSolutionConsumer(bestSolutionConsumer)
+                .withBestSolutionEventConsumer(event -> bestSolutionConsumer.accept(event.solution()))
                 .run();
     }
 

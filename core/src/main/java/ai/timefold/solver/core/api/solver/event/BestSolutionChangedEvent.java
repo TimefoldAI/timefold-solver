@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.api.solver.event;
 
-import java.util.EventObject;
-
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.solver.Solver;
@@ -16,9 +14,9 @@ import org.jspecify.annotations.NonNull;
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  */
 // TODO In Solver 2.0, maybe convert this to an interface.
-public class BestSolutionChangedEvent<Solution_> extends EventObject {
-
+public class BestSolutionChangedEvent<Solution_> {
     private final Solver<Solution_> solver;
+    private final EventProducerId producerId;
     private final long timeMillisSpent;
     private final Solution_ newBestSolution;
     private final Score newBestScore;
@@ -31,7 +29,7 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     @Deprecated(forRemoval = true, since = "1.22.0")
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore) {
-        this(solver, timeMillisSpent, newBestSolution, newBestScore, true);
+        this(solver, EventProducerId.unknown(), timeMillisSpent, newBestSolution, newBestScore, true);
     }
 
     /**
@@ -42,8 +40,19 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
     public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, long timeMillisSpent,
             @NonNull Solution_ newBestSolution, @NonNull Score newBestScore,
             boolean isNewBestSolutionInitialized) {
-        super(solver);
+        this(solver, EventProducerId.unknown(), timeMillisSpent, newBestSolution, newBestScore, isNewBestSolutionInitialized);
+    }
+
+    /**
+     * @param timeMillisSpent {@code >= 0L}
+     * @deprecated Users should not manually construct instances of this event.
+     */
+    @Deprecated(forRemoval = true, since = "1.28.0")
+    public BestSolutionChangedEvent(@NonNull Solver<Solution_> solver, EventProducerId producerId, long timeMillisSpent,
+            @NonNull Solution_ newBestSolution, @NonNull Score newBestScore,
+            boolean isNewBestSolutionInitialized) {
         this.solver = solver;
+        this.producerId = producerId;
         this.timeMillisSpent = timeMillisSpent;
         this.newBestSolution = newBestSolution;
         this.newBestScore = newBestScore;
@@ -56,6 +65,13 @@ public class BestSolutionChangedEvent<Solution_> extends EventObject {
      */
     public long getTimeMillisSpent() {
         return timeMillisSpent;
+    }
+
+    /**
+     * @return A {@link EventProducerId} identifying what generated the event
+     */
+    public EventProducerId getProducerId() {
+        return producerId;
     }
 
     /**

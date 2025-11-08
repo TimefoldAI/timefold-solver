@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.constructionheuristic;
 
+import java.util.function.IntFunction;
+
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.constructionheuristic.decider.ConstructionHeuristicDecider;
 import ai.timefold.solver.core.impl.constructionheuristic.placer.EntityPlacer;
@@ -8,6 +11,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.neighborhood.PlacerBasedMoveRepository;
 import ai.timefold.solver.core.impl.phase.AbstractPossiblyInitializingPhase;
+import ai.timefold.solver.core.impl.phase.PhaseType;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 
@@ -23,7 +27,6 @@ import org.slf4j.event.Level;
 public class DefaultConstructionHeuristicPhase<Solution_>
         extends AbstractPossiblyInitializingPhase<Solution_>
         implements ConstructionHeuristicPhase<Solution_> {
-
     protected final ConstructionHeuristicDecider<Solution_> decider;
     protected final PlacerBasedMoveRepository<Solution_> moveRepository;
     private TerminationStatus terminationStatus = TerminationStatus.NOT_TERMINATED;
@@ -44,8 +47,13 @@ public class DefaultConstructionHeuristicPhase<Solution_>
     }
 
     @Override
-    public String getPhaseTypeString() {
-        return "Construction Heuristics";
+    public PhaseType getPhaseType() {
+        return PhaseType.CONSTRUCTION_HEURISTIC;
+    }
+
+    @Override
+    public IntFunction<EventProducerId> getEventProducerIdSupplier() {
+        return EventProducerId::constructionHeuristic;
     }
 
     // ************************************************************************
@@ -196,7 +204,7 @@ public class DefaultConstructionHeuristicPhase<Solution_>
         if (!isNested() && !phaseScope.getStartingScore().equals(phaseScope.getBestScore())) {
             // Only update the best solution if the CH made any change; nested phases don't update the best solution.
             var solver = phaseScope.getSolverScope().getSolver();
-            solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope());
+            solver.getBestSolutionRecaller().updateBestSolutionAndFire(phaseScope.getSolverScope(), phaseScope);
         }
     }
 

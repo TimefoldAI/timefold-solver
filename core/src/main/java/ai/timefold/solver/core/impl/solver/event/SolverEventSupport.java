@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.solver.event;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.solver.Solver;
+import ai.timefold.solver.core.api.solver.event.EventProducerId;
 import ai.timefold.solver.core.api.solver.event.SolverEventListener;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
@@ -18,12 +19,14 @@ public class SolverEventSupport<Solution_> extends AbstractEventSupport<SolverEv
         this.solver = solver;
     }
 
-    public void fireBestSolutionChanged(SolverScope<Solution_> solverScope, Solution_ newBestSolution) {
+    public void fireBestSolutionChanged(SolverScope<Solution_> solverScope, EventProducerId eventProducerId,
+            Solution_ newBestSolution) {
         var it = getEventListeners().iterator();
         var timeMillisSpent = solverScope.getBestSolutionTimeMillisSpent();
         var bestScore = solverScope.getBestScore();
         if (it.hasNext()) {
-            var event = new DefaultBestSolutionChangedEvent<>(solver, timeMillisSpent, newBestSolution, bestScore);
+            var event =
+                    new DefaultBestSolutionChangedEvent<>(solver, eventProducerId, timeMillisSpent, newBestSolution, bestScore);
             do {
                 it.next().bestSolutionChanged(event);
             } while (it.hasNext());
