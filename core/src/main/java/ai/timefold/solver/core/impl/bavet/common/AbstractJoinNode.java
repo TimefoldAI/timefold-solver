@@ -169,14 +169,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private static <Tuple_ extends AbstractTuple> @Nullable Tuple_ findOutTuple(IndexedSet<Tuple_> outTupleSet,
             IndexedSet<Tuple_> referenceOutTupleSet, int outputStoreIndexOutSet) {
         // Hack: the outTuple has no left/right input tuple reference, use the left/right outSet reference instead.
-        var list = outTupleSet.asList();
-        for (var i = 0; i < list.size(); i++) { // Avoid allocating iterators.
-            var outTuple = list.get(i);
-            if (referenceOutTupleSet == outTuple.getStore(outputStoreIndexOutSet)) {
-                return outTuple;
-            }
-        }
-        return null;
+        return outTupleSet.findFirst(outTuple -> referenceOutTupleSet == outTuple.getStore(outputStoreIndexOutSet));
     }
 
     protected final void retractOutTuple(OutTuple_ outTuple) {
