@@ -18,15 +18,16 @@ import org.jspecify.annotations.Nullable;
  * @param <B> the type of the second parameter
  */
 @NullMarked
-public interface BiEnumeratingFilter<Solution_, A, B> extends TriPredicate<SolutionView<Solution_>, A, B> {
+public interface BiEnumeratingPredicate<Solution_, A, B> extends TriPredicate<SolutionView<Solution_>, A, B> {
 
     @Override
     boolean test(SolutionView<Solution_> solutionView, @Nullable A a, @Nullable B b);
 
     @Override
-    default BiEnumeratingFilter<Solution_, A, B>
+    default BiEnumeratingPredicate<Solution_, A, B>
             and(TriPredicate<? super SolutionView<Solution_>, ? super A, ? super B> other) {
-        return (BiEnumeratingFilter<Solution_, A, B>) TriPredicate.super.and(other);
+        return (solutionView, a, b) -> test(solutionView, a, b)
+                && other.test(solutionView, a, b);
     }
 
     default BiPredicate<A, B> toBiPredicate(SolutionView<Solution_> solutionView) {

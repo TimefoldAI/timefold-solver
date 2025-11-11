@@ -11,6 +11,9 @@ import java.util.function.Supplier;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         implements Indexer<T> {
 

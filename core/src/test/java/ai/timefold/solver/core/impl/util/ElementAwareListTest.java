@@ -4,11 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
 import java.util.NoSuchElementException;
-import java.util.Random;
 
-import ai.timefold.solver.core.testutil.TestRandom;
-
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class ElementAwareListTest {
@@ -144,38 +140,6 @@ class ElementAwareListTest {
     }
 
     @Test
-    void randomizedIterator() {
-        // create a list and add some elements
-        var list = new ElementAwareList<String>();
-        assertSoftly(softly -> {
-            var iter = list.randomizedIterator(new Random(0));
-            softly.assertThat(iter.hasNext()).isFalse();
-            softly.assertThatThrownBy(iter::next).isInstanceOf(NoSuchElementException.class);
-        });
-
-        list.add("A");
-        assertOrder(list, new String[] { "A" }, 0);
-
-        // Each order of elements should be generated exactly once, to guarantee fair shuffling.
-        // The particular order doesn't matter, as long as each combination is listed once.
-        var bEntry = list.add("B");
-        assertOrder(list, new String[] { "B", "A" }, 0, 0);
-        assertOrder(list, new String[] { "A", "B" }, 1, 0);
-
-        list.add("C");
-        assertOrder(list, new String[] { "A", "B", "C" }, 0, 0, 0);
-        assertOrder(list, new String[] { "A", "C", "B" }, 0, 1, 0);
-        assertOrder(list, new String[] { "B", "A", "C" }, 1, 0, 0);
-        assertOrder(list, new String[] { "B", "C", "A" }, 1, 1, 0);
-        assertOrder(list, new String[] { "C", "A", "B" }, 2, 0, 0);
-        assertOrder(list, new String[] { "C", "B", "A" }, 2, 1, 0);
-
-        bEntry.remove();
-        assertOrder(list, new String[] { "C", "A" }, 0, 0);
-        assertOrder(list, new String[] { "A", "C" }, 1, 0);
-    }
-
-    @Test
     void clear() {
         var list = new ElementAwareList<String>();
         list.add("A");
@@ -183,13 +147,6 @@ class ElementAwareListTest {
         assertThat(list.size()).isEqualTo(2);
         list.clear();
         assertThat(list.size()).isZero();
-    }
-
-    private void assertOrder(ElementAwareList<String> list, String[] elements, int... randoms) {
-        var iter = list.randomizedIterator(new TestRandom(randoms));
-        Assertions.assertThat(iter)
-                .toIterable()
-                .containsExactly(elements);
     }
 
 }
