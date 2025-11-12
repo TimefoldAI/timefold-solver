@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedIfExistsQuadNode<A, B, C, D, E> extends AbstractIndexedIfExistsNode<QuadTuple<A, B, C, D>, E> {
@@ -12,23 +13,10 @@ public final class IndexedIfExistsQuadNode<A, B, C, D, E> extends AbstractIndexe
     private final PentaPredicate<A, B, C, D, E> filtering;
 
     public IndexedIfExistsQuadNode(boolean shouldExist, IndexerFactory<E> indexerFactory,
-            int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry,
-            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry,
-            TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle) {
-        this(shouldExist, indexerFactory,
-                inputStoreIndexLeftKeys, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightKeys, inputStoreIndexRightEntry, -1,
-                nextNodesTupleLifecycle, null);
-    }
-
-    public IndexedIfExistsQuadNode(boolean shouldExist, IndexerFactory<E> indexerFactory,
-            int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
-            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
+            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, PentaPredicate<A, B, C, D, E> filtering) {
-        super(shouldExist, indexerFactory.buildQuadLeftKeysExtractor(), indexerFactory,
-                inputStoreIndexLeftKeys, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
-                inputStoreIndexRightKeys, inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, filtering != null);
+        super(shouldExist, indexerFactory.buildQuadLeftKeysExtractor(), indexerFactory, leftTupleStorePositionTracker,
+                rightTupleStorePositionTracker, nextNodesTupleLifecycle, filtering != null);
         this.filtering = filtering;
     }
 

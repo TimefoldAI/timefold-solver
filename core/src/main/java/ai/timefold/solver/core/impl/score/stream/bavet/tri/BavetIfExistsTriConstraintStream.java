@@ -9,6 +9,7 @@ import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.quad.joiner.DefaultQuadJoiner;
 import ai.timefold.solver.core.impl.bavet.tri.IndexedIfExistsTriNode;
 import ai.timefold.solver.core.impl.bavet.tri.UnindexedIfExistsTriNode;
@@ -66,30 +67,15 @@ final class BavetIfExistsTriConstraintStream<Solution_, A, B, C, D>
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<D> indexerFactory = new IndexerFactory<>(joiner);
+        TupleStorePositionTracker leftTupleStorePositionTracker =
+                () -> buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource());
+        TupleStorePositionTracker rightTupleStorePositionTracker =
+                () -> buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource());
         var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                        downstream)
-                        : new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                downstream, filtering))
-                : (filtering == null ? new UnindexedIfExistsTriNode<>(shouldExist,
-                        buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()), downstream)
-                        : new UnindexedIfExistsTriNode<>(shouldExist,
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                downstream, filtering));
+                ? new IndexedIfExistsTriNode<>(shouldExist, indexerFactory, leftTupleStorePositionTracker,
+                        rightTupleStorePositionTracker, downstream, filtering)
+                : new UnindexedIfExistsTriNode<>(shouldExist, leftTupleStorePositionTracker, rightTupleStorePositionTracker,
+                        downstream, filtering);
         buildHelper.addNode(node, this, this, parentBridgeD);
     }
 

@@ -9,7 +9,6 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
 
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         implements Indexer<T> {
@@ -26,8 +25,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
      *
      * @param comparisonJoinerType the type of comparison to use
      */
-    public ComparisonIndexer(JoinerType comparisonJoinerType) {
-        this(comparisonJoinerType, new SingleKeyRetriever<>(), NoneIndexer::new);
+    public ComparisonIndexer(JoinerType comparisonJoinerType, ElementPositionTracker<T> elementPositionTracker) {
+        this(comparisonJoinerType, new SingleKeyRetriever<>(), () -> new NoneIndexer<>(elementPositionTracker));
     }
 
     /**
@@ -61,7 +60,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
+    public void put(Object indexKeys, T element) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         var downstreamIndexer = comparisonMap.get(indexKey);
@@ -69,25 +68,25 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             downstreamIndexer = downstreamIndexerSupplier.get();
             comparisonMap.put(indexKey, downstreamIndexer);
         }
-        return downstreamIndexer.put(indexKeys, tuple);
+        downstreamIndexer.put(indexKeys, element);
     }
 
     @Override
-    public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
+    public void remove(Object indexKeys, T element) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
-        var downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
-        downstreamIndexer.remove(indexKeys, entry);
+        var downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, element);
+        downstreamIndexer.remove(indexKeys, element);
         if (downstreamIndexer.isEmpty()) {
             comparisonMap.remove(indexKey);
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, T entry) {
         var downstreamIndexer = comparisonMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
                     "Impossible state: the tuple (%s) with indexKeys (%s) doesn't exist in the indexer %s."
-                            .formatted(entry.getElement(), indexKeys, this));
+                            .formatted(entry, indexKeys, this));
         }
         return downstreamIndexer;
     }

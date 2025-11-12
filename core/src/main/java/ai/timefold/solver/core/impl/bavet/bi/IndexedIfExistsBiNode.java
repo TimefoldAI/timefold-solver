@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedIfExistsBiNode<A, B, C> extends AbstractIndexedIfExistsNode<BiTuple<A, B>, C> {
@@ -12,23 +13,10 @@ public final class IndexedIfExistsBiNode<A, B, C> extends AbstractIndexedIfExist
     private final TriPredicate<A, B, C> filtering;
 
     public IndexedIfExistsBiNode(boolean shouldExist, IndexerFactory<C> indexerFactory,
-            int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry,
-            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry,
-            TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle) {
-        this(shouldExist, indexerFactory,
-                inputStoreIndexLeftKeys, inputStoreIndexLeftCounterEntry, -1,
-                inputStoreIndexRightKeys, inputStoreIndexRightEntry, -1,
-                nextNodesTupleLifecycle, null);
-    }
-
-    public IndexedIfExistsBiNode(boolean shouldExist, IndexerFactory<C> indexerFactory,
-            int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
-            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
+            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
             TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, TriPredicate<A, B, C> filtering) {
-        super(shouldExist, indexerFactory.buildBiLeftKeysExtractor(), indexerFactory,
-                inputStoreIndexLeftKeys, inputStoreIndexLeftCounterEntry, inputStoreIndexLeftTrackerList,
-                inputStoreIndexRightKeys, inputStoreIndexRightEntry, inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, filtering != null);
+        super(shouldExist, indexerFactory.buildBiLeftKeysExtractor(), indexerFactory, leftTupleStorePositionTracker,
+                rightTupleStorePositionTracker, nextNodesTupleLifecycle, filtering != null);
         this.filtering = filtering;
     }
 

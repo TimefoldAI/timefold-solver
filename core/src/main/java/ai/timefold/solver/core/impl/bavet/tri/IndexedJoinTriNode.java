@@ -4,33 +4,29 @@ import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractIndexedJoinNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.OutputStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedJoinTriNode<A, B, C>
         extends AbstractIndexedJoinNode<BiTuple<A, B>, C, TriTuple<A, B, C>> {
 
     private final TriPredicate<A, B, C> filtering;
-    private final int outputStoreSize;
 
-    public IndexedJoinTriNode(IndexerFactory<C> indexerFactory,
-            int inputStoreIndexAB, int inputStoreIndexEntryAB, int inputStoreIndexOutTupleListAB,
-            int inputStoreIndexC, int inputStoreIndexEntryC, int inputStoreIndexOutTupleListC,
-            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, TriPredicate<A, B, C> filtering,
-            int outputStoreSize, int outputStoreIndexOutEntryAB, int outputStoreIndexOutEntryC) {
-        super(indexerFactory.buildBiLeftKeysExtractor(), indexerFactory,
-                inputStoreIndexAB, inputStoreIndexEntryAB, inputStoreIndexOutTupleListAB,
-                inputStoreIndexC, inputStoreIndexEntryC, inputStoreIndexOutTupleListC,
-                nextNodesTupleLifecycle, filtering != null,
-                outputStoreIndexOutEntryAB, outputStoreIndexOutEntryC);
+    public IndexedJoinTriNode(IndexerFactory<C> indexerFactory, TupleStorePositionTracker leftTupleStorePositionTracker,
+            TupleStorePositionTracker rightTupleStorePositionTracker, OutputStoreSizeTracker outputStoreSizeTracker,
+            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, TriPredicate<A, B, C> filtering) {
+        super(indexerFactory.buildBiLeftKeysExtractor(), indexerFactory, leftTupleStorePositionTracker,
+                rightTupleStorePositionTracker, outputStoreSizeTracker, nextNodesTupleLifecycle, filtering != null);
         this.filtering = filtering;
-        this.outputStoreSize = outputStoreSize;
     }
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return new TriTuple<>(leftTuple.factA, leftTuple.factB, rightTuple.factA, outputStoreSize);
+        return new TriTuple<>(leftTuple.factA, leftTuple.factB, rightTuple.factA,
+                outputStoreSizeTracker.computeOutputStoreSize());
     }
 
     @Override

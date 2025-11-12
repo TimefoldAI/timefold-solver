@@ -473,34 +473,32 @@ public final class IndexerFactory<Right_> {
         return buildUniKeysExtractor(joiner::getRightMapping);
     }
 
-    public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
-        /*
-         * Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
-         * (<A, B> becomes <B, A>.)
-         */
+    public <T> Indexer<T> buildIndexer(boolean isLeftBridge, ElementPositionTracker<T> elementPositionTracker) {
+        // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
+        // (<A, B> becomes <B, A>.)
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
-            return new NoneIndexer<>();
+            return new NoneIndexer<>(elementPositionTracker);
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
             if (joinerType == JoinerType.EQUAL) {
-                return new EqualsIndexer<>();
+                return new EqualsIndexer<>(elementPositionTracker);
             } else {
-                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip());
+                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip(), elementPositionTracker);
             }
         }
         // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
-        Supplier<Indexer<T>> noneIndexerSupplier = NoneIndexer::new;
+        Supplier<Indexer<T>> noneIndexerSupplier = () -> new NoneIndexer<>(elementPositionTracker);
         Supplier<Indexer<T>> downstreamIndexerSupplier = noneIndexerSupplier;
         var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
             if (downstreamIndexerSupplier == noneIndexerSupplier && indexPropertyId == 0) {
                 if (joinerType == JoinerType.EQUAL) {
-                    downstreamIndexerSupplier = EqualsIndexer::new;
+                    downstreamIndexerSupplier = () -> new EqualsIndexer<>(elementPositionTracker);
                 } else {
                     var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType);
+                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, elementPositionTracker);
                 }
             } else {
                 var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;
