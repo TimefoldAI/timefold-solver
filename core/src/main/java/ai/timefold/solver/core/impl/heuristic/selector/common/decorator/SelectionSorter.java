@@ -26,13 +26,13 @@ import org.jspecify.annotations.NullMarked;
 public interface SelectionSorter<Solution_, T> {
 
     /**
-     * Creates a copy of the provided list and sort the data.
+     * Performs an in-place sorting operation on the given selection list.
      * 
      * @param solution never null, the current solution
      * @param selectionList never null, a {@link List}
      *        of {@link PlanningEntity}, planningValue, {@link Move} or {@link Selector} that will be sorted.
      */
-    List<T> sort(Solution_ solution, List<T> selectionList);
+    void sort(Solution_ solution, List<T> selectionList);
 
     /**
      * Creates a copy of the provided set and sort the data.

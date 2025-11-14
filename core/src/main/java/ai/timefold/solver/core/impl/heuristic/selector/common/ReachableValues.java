@@ -35,8 +35,8 @@ public final class ReachableValues {
     private @Nullable ReachableItemValue secondCachedObject;
 
     public ReachableValues(Map<Object, Integer> entityIndexMap, List<Object> entityList, Map<Object, Integer> valueIndexMap,
-            List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass,
-            ValueRangeSorter<Object> valueRangeSorter, boolean acceptsNullValue) {
+                           List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass,
+                           ValueRangeSorter<Object> valueRangeSorter, boolean acceptsNullValue) {
         this.entitiesIndex = entityIndexMap;
         this.allEntities = entityList;
         this.valuesIndex = valueIndexMap;

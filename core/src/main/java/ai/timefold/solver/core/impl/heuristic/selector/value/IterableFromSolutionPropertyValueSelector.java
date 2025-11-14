@@ -164,8 +164,9 @@ public final class IterableFromSolutionPropertyValueSelector<Solution_>
     public boolean equals(Object o) {
         if (!(o instanceof IterableFromSolutionPropertyValueSelector<?> that))
             return false;
-        return randomSelection == that.randomSelection && Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor)
-                && Objects.equals(selectionSorter, that.selectionSorter) && minimumCacheType == that.minimumCacheType;
+        return Objects.equals(valueRangeDescriptor, that.valueRangeDescriptor)
+                && Objects.equals(selectionSorter, that.selectionSorter) && minimumCacheType == that.minimumCacheType
+                && randomSelection == that.randomSelection;
     }
 
     @Override

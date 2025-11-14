@@ -17,8 +17,8 @@ public record SelectionSorterAdapter<Solution_, T>(Solution_ solution,
     }
 
     @Override
-    public List<T> sort(List<T> selectionList) {
-        return innerSelectionSorter.sort(solution, selectionList);
+    public void sort(List<T> selectionList) {
+        innerSelectionSorter.sort(solution, selectionList);
     }
 
     @Override

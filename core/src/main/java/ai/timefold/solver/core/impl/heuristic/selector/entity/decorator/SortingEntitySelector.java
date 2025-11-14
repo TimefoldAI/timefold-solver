@@ -60,8 +60,7 @@ public final class SortingEntitySelector<Solution_> extends AbstractCachingEntit
             return;
         }
         super.constructCache(solverScope);
-        // We need to update the cachedEntityList since the sorter will copy the data and return a sorted list
-        cachedEntityList = sorter.sort(solverScope.getScoreDirector().getWorkingSolution(), cachedEntityList);
+        sorter.sort(solverScope.getScoreDirector().getWorkingSolution(), cachedEntityList);
         logger.trace("    Sorted cachedEntityList: size ({}), entitySelector ({}).",
                 cachedEntityList.size(), this);
     }

@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -14,10 +12,8 @@ import ai.timefold.solver.core.testutil.CodeAssertable;
 public class CodeAssertableSorter<T extends CodeAssertable> implements SelectionSorter<Object, T> {
 
     @Override
-    public List<T> sort(Object solution, List<T> selectionList) {
-        var sortedList = new ArrayList<>(selectionList);
-        Collections.sort(sortedList, Comparator.comparing(CodeAssertable::getCode));
-        return sortedList;
+    public void sort(Object solution, List<T> selectionList) {
+        selectionList.sort(Comparator.comparing(CodeAssertable::getCode));
     }
 
     @Override

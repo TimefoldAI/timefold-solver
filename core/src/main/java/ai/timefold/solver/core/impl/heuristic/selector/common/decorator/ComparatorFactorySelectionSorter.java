@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common.decorator;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -41,11 +40,9 @@ public final class ComparatorFactorySelectionSorter<Solution_, T> implements Sel
     }
 
     @Override
-    public List<T> sort(Solution_ solution, List<T> selectionList) {
+    public void sort(Solution_ solution, List<T> selectionList) {
         var appliedComparator = getAppliedComparator(selectionComparatorFactory.createComparator(solution));
-        var sortedList = new ArrayList<>(selectionList);
-        sortedList.sort(appliedComparator);
-        return Collections.unmodifiableList(sortedList);
+        selectionList.sort(appliedComparator);
     }
 
     @Override

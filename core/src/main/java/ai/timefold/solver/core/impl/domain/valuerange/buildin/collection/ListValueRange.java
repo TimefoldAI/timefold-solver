@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.collection;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
@@ -59,8 +60,10 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
-        var sortedList = sorter.sort(list);
-        return new ListValueRange<>(sortedList, isValueImmutable);
+        // The list may be immutable and need to be copied
+        var sortableList = new ArrayList<>(list);
+        sorter.sort(sortableList);
+        return new ListValueRange<>(sortableList, isValueImmutable);
     }
 
     @Override

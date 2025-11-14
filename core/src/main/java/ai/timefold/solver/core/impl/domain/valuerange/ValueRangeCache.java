@@ -82,11 +82,11 @@ public final class ValueRangeCache<Value_>
      * @param sorter never null, the sorter
      */
     public ValueRangeCache<Value_> sort(ValueRangeSorter<Value_> sorter) {
-        var valuesWithFastRandomAccessSorted = sorter.sort(valuesWithFastRandomAccess);
+        sorter.sort(valuesWithFastRandomAccess);
         if (trustedValues) {
-            return Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccessSorted);
+            return Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccess);
         } else {
-            return Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccessSorted);
+            return Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccess);
         }
     }
 

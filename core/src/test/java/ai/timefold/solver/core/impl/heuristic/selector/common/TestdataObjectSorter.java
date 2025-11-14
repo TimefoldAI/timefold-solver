@@ -1,7 +1,5 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
@@ -24,25 +22,22 @@ public class TestdataObjectSorter<S, T> implements SelectionSorter<S, T> {
     }
 
     @Override
-    public List<T> sort(S solution, List<T> selectionList) {
-        var sortedList = new ArrayList<>(selectionList);
-        var comparator = Comparator.comparing(TestdataObject::getCode);
+    public void sort(S solution, List<T> selectionList) {
+        var comparator = Comparator.comparing(v -> ((TestdataObject) v).getCode());
         if (!ascending) {
             comparator = comparator.reversed();
         }
-        var updatedList = new ArrayList<>(sortedList.stream().map(v -> (TestdataObject) v).toList());
-        Collections.sort(updatedList, comparator);
-        return (List<T>) updatedList;
+        selectionList.sort(comparator);
     }
 
     @Override
     public SortedSet<T> sort(S solution, Set<T> selectionSet) {
-        var comparator = Comparator.comparing(TestdataObject::getCode);
+        var comparator = Comparator.comparing(v -> ((TestdataObject) v).getCode());
         if (!ascending) {
             comparator = comparator.reversed();
         }
         var sortedSet = new TreeSet<>(comparator);
-        sortedSet.addAll(selectionSet.stream().map(v -> (TestdataObject) v).toList());
+        sortedSet.addAll(selectionSet);
         return (SortedSet<T>) sortedSet;
     }
 }

@@ -21,13 +21,13 @@ class ComparatorSelectionSorterTest {
         Collections.addAll(arrayToSort, baseArray);
         ComparatorSelectionSorter<TestdataSolution, Integer> selectionSorter = new ComparatorSelectionSorter<>(
                 new TestComparator(), SelectionSorterOrder.ASCENDING);
-        arrayToSort = selectionSorter.sort(null, arrayToSort);
+        selectionSorter.sort(null, arrayToSort);
         assertThat(arrayToSort).isSortedAccordingTo(new TestComparator());
 
         arrayToSort = new ArrayList<>();
         Collections.addAll(arrayToSort, baseArray);
         selectionSorter = new ComparatorSelectionSorter<>(new TestComparator(), SelectionSorterOrder.DESCENDING);
-        arrayToSort = selectionSorter.sort(null, arrayToSort);
+        selectionSorter.sort(null, arrayToSort);
         assertThat(arrayToSort).isSortedAccordingTo(new TestComparator().reversed());
     }
 
