@@ -4,6 +4,7 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -37,13 +38,13 @@ class ScoreManagerMethodsRecipeTest implements RewriteTest {
                 "Object score = scoreManager.update(solution, SolutionUpdatePolicy.UPDATE_SCORE_ONLY);");
     }
 
-    private void runTest(String before, String after) {
+    private void runTest(@Language("java") String before, @Language("java") String after) {
         rewriteRun(java(
                 wrap(before, false),
                 wrap(after, true)));
     }
 
-    private static String wrap(String content, boolean addImport) {
+    private static @Language("java") String wrap(@Language("java") String content, boolean addImport) {
         return "import ai.timefold.solver.core.api.score.ScoreManager;\n" +
                 (addImport ? "import ai.timefold.solver.core.api.solver.SolutionUpdatePolicy;\n" : "") +
                 "import ai.timefold.solver.core.api.score.ScoreExplanation;\n" +

@@ -4,6 +4,7 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -207,7 +208,8 @@ class NullableRecipeTest implements RewriteTest {
     // Helper methods
     // ************************************************************************
 
-    private static String wrapVariable(String content) {
+    private static @Language("java") String wrapVariable(@Language("java") String content) {
+        //language=java
         return """
                 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
@@ -219,7 +221,8 @@ class NullableRecipeTest implements RewriteTest {
                 }""".formatted(content);
     }
 
-    private static String wrapStream(String content) {
+    private static @Language("java") String wrapStream(@Language("java") String content) {
+        //language=java
         return """
                 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
                 import ai.timefold.solver.core.api.score.stream.ConstraintStream;

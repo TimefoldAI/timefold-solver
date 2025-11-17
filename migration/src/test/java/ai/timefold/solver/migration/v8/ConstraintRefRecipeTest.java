@@ -4,6 +4,7 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -75,11 +76,11 @@ class ConstraintRefRecipeTest implements RewriteTest {
                         String id   = constraintMatchTotal.getConstraintRef().constraintId();""");
     }
 
-    private void runTest(String implClassFqn, String declaration, String before, String after) {
+    private void runTest(String implClassFqn, String declaration, @Language("java") String before, @Language("java") String after) {
         rewriteRun(java(wrap(implClassFqn, declaration, before), wrap(implClassFqn, declaration, after)));
     }
 
-    private static String wrap(String implClassFqn, String declaration, String content) {
+    private static @Language("java") String wrap(String implClassFqn, @Language("java") String declaration, @Language("java") String content) {
         return """
                 import %s;
 

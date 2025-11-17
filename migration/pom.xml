@@ -100,6 +100,29 @@
   </dependencies>
 
   <build>
+    <plugins>
+      <!-- ./mvnw rewrite:run -Drewrite.activeRecipes=org.openrewrite.recipes.rewrite.OpenRewriteRecipeBestPractices -->
+      <plugin>
+          <groupId>org.openrewrite.maven</groupId>
+          <artifactId>rewrite-maven-plugin</artifactId>
+          <version>6.23.0</version>
+          <configuration>
+              <failOnDryRunResults>true</failOnDryRunResults>
+          </configuration>
+          <dependencies>
+              <dependency>
+                  <groupId>org.openrewrite.recipe</groupId>
+                  <artifactId>rewrite-migrate-java</artifactId>
+                  <version>3.21.2</version>
+              </dependency>
+              <dependency>
+                  <groupId>org.openrewrite.recipe</groupId>
+                  <artifactId>rewrite-rewrite</artifactId>
+                  <version>0.15.0</version>
+              </dependency>
+          </dependencies>
+      </plugin>
+    </plugins>
     <resources>
       <resource>
         <directory>src/main/resources</directory>

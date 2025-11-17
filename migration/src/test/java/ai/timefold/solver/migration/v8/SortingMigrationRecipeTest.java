@@ -4,6 +4,7 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -86,11 +87,11 @@ class SortingMigrationRecipeTest implements RewriteTest {
                         valueConfig.setSorterManner(ValueSorterManner.DESCENDING_IF_AVAILABLE);""");
     }
 
-    private void runTest(String contentBefore, String contentAfter) {
+    private void runTest(@Language("java") String contentBefore, @Language("java") String contentAfter) {
         rewriteRun(java(adjustBefore(contentBefore), adjustAfter(contentAfter)));
     }
 
-    private static String adjustBefore(String content) {
+    private static @Language("java") String adjustBefore(@Language("java") String content) {
         return """
                 import java.util.Comparator;
                 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
@@ -116,7 +117,7 @@ class SortingMigrationRecipeTest implements RewriteTest {
                 .formatted("", content);
     }
 
-    private static String adjustAfter(String content) {
+    private static @Language("java") String adjustAfter(@Language("java") String content) {
         return """
                 import java.util.Comparator;
                 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;

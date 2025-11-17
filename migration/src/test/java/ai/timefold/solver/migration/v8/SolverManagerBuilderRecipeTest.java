@@ -1,14 +1,14 @@
 package ai.timefold.solver.migration.v8;
 
-import static org.openrewrite.java.Assertions.java;
-
 import ai.timefold.solver.migration.AbstractRecipe;
-
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
 import org.openrewrite.test.RecipeSpec;
 import org.openrewrite.test.RewriteTest;
+
+import static org.openrewrite.java.Assertions.java;
 
 @Execution(ExecutionMode.CONCURRENT)
 class SolverManagerBuilderRecipeTest implements RewriteTest {
@@ -52,11 +52,12 @@ class SolverManagerBuilderRecipeTest implements RewriteTest {
                         """);
     }
 
-    private void runTest(String before, String after) {
+    private void runTest(@Language("java") String before, @Language("java") String after) {
         rewriteRun(java(wrap(before), wrap(after)));
     }
 
-    private static String wrap(String content) {
+    private static @Language("java") String wrap(@Language("java") String content) {
+        //language=java
         return """
                 import java.util.function.BiConsumer;
                 import java.util.function.Consumer;

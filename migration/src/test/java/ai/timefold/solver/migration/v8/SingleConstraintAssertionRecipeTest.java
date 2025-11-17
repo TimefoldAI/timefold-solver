@@ -4,6 +4,7 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
+import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -42,11 +43,11 @@ class SingleConstraintAssertionRecipeTest implements RewriteTest {
                         constraintVerifier.verifyThat((constraintProvider, constraintFactory) -> null).given(null).rewardsWith("test", BigDecimal.ONE);""");
     }
 
-    private void runTest(String before, String after) {
+    private void runTest(@Language("java") String before, @Language("java") String after) {
         rewriteRun(java(wrap(before), wrap(after)));
     }
 
-    private static String wrap(String content) {
+    private static @Language("java") String wrap(@Language("java") String content) {
         return """
                 import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
                 import java.math.BigDecimal;
