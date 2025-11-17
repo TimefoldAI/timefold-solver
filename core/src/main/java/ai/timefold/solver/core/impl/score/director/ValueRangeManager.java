@@ -708,7 +708,7 @@ public final class ValueRangeManager<Solution_> {
     }
 
     private record ValueRangeItem<Solution_, V>(V leftItem, @Nullable SelectionSorter<Solution_, ?> leftSorter,
-                                                @Nullable V rightItem, @Nullable SelectionSorter<Solution_, ?> rightSorter) {
+            @Nullable V rightItem, @Nullable SelectionSorter<Solution_, ?> rightSorter) {
 
     }
 
