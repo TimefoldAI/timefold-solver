@@ -1,7 +1,6 @@
 package ai.timefold.solver.migration.v8;
 
 import ai.timefold.solver.migration.AbstractRecipe;
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -52,11 +51,11 @@ class SolverManagerBuilderRecipeTest implements RewriteTest {
                         """);
     }
 
-    private void runTest(@Language("java") String before, @Language("java") String after) {
+    private void runTest(String before, String after) {
         rewriteRun(java(wrap(before), wrap(after)));
     }
 
-    private static @Language("java") String wrap(@Language("java") String content) {
+    private static String wrap(String content) {
         //language=java
         return """
                 import java.util.function.BiConsumer;

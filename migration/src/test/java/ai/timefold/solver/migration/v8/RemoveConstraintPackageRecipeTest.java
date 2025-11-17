@@ -4,7 +4,6 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -100,7 +99,7 @@ class RemoveConstraintPackageRecipeTest implements RewriteTest {
     // Helper methods
     // ************************************************************************
 
-    private static @Language("java") String wrap(@Language("java") String content) {
+    private static String wrap(String content) {
         return "import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;\n" +
                 "import ai.timefold.solver.core.api.score.stream.ConstraintFactory;\n" +
                 "import ai.timefold.solver.core.api.score.stream.Constraint;\n" +

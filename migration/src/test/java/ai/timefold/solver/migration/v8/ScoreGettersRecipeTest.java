@@ -4,7 +4,6 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -248,11 +247,11 @@ class ScoreGettersRecipeTest implements RewriteTest {
                         """);
     }
 
-    private void runTest(String scoreImplClassFqn, @Language("java") String scoreDeclaration, @Language("java") String before, @Language("java") String after) {
+    private void runTest(String scoreImplClassFqn, String scoreDeclaration, String before, String after) {
         rewriteRun(java(wrap(scoreImplClassFqn, scoreDeclaration, before), wrap(scoreImplClassFqn, scoreDeclaration, after)));
     }
 
-    private static @Language("java") String wrap(String scoreImplClassFqn, @Language("java") String scoreDeclaration, @Language("java") String content) {
+    private static String wrap(String scoreImplClassFqn, String scoreDeclaration, String content) {
         return "import java.math.BigDecimal;\n" +
                 "import " + scoreImplClassFqn + ";\n" +
                 "\n" +

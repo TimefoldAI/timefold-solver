@@ -4,7 +4,6 @@ import static org.openrewrite.java.Assertions.java;
 
 import ai.timefold.solver.migration.AbstractRecipe;
 
-import org.intellij.lang.annotations.Language;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
@@ -32,13 +31,13 @@ class SolutionManagerRecommendAssignmentRecipeTest implements RewriteTest {
                 "List<RecommendedAssignment> recommendations = solutionManager.recommendAssignment(null, null, null);");
     }
 
-    private void runTest(@Language("java") String before, @Language("java") String after) {
+    private void runTest(String before, String after) {
         rewriteRun(java(
                 wrap(before, true),
                 wrap(after, false)));
     }
 
-    private static @Language("java") String wrap(@Language("java") String content, boolean addImport) {
+    private static String wrap(String content, boolean addImport) {
         return "import ai.timefold.solver.core.api.solver.SolutionManager;\n" +
                 "import ai.timefold.solver.core.api.solver.SolverFactory;\n" +
                 (addImport ? "import ai.timefold.solver.core.api.solver.RecommendedFit;\n" : "") +

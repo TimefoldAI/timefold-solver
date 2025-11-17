@@ -66,14 +66,6 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Language annotations -->
-    <dependency>
-      <groupId>org.jetbrains</groupId>
-      <artifactId>annotations</artifactId>
-      <version>26.0.2</version>
-      <scope>compile</scope>
-    </dependency>
-
     <!-- Testing -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>
