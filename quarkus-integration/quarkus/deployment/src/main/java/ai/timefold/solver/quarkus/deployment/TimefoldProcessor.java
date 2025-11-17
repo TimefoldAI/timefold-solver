@@ -1006,9 +1006,13 @@ class TimefoldProcessor {
                 }
             });
 
+            var visited = new HashSet<AnnotationTarget>();
             for (var annotatedMember : membersToGeneratedAccessorsForCollection) {
                 ClassInfo classInfo = null;
                 String memberName = null;
+                if (!visited.add(annotatedMember.target())) {
+                    continue;
+                }
                 switch (annotatedMember.target().kind()) {
                     case FIELD -> {
                         var fieldInfo = annotatedMember.target().asField();
