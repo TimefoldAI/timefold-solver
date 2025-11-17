@@ -64,10 +64,9 @@ import org.jspecify.annotations.Nullable;
 public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final @Nullable CountableValueRangeItem<Solution_, ?>[] fromSolution;
-    private final ReachableValues[] reachableValues;
-    private final Map<Object, CountableValueRangeItem<Solution_, ?>[]> fromEntityMap =
-            new IdentityHashMap<>();
+    private final @Nullable ValueRangeItem<Solution_, CountableValueRange<?>>[] fromSolution;
+    private final Map<Object, ValueRangeItem<Solution_, CountableValueRange<?>>[]> fromEntityMap = new IdentityHashMap<>();
+    private final @Nullable ValueRangeItem<Solution_, ReachableValues>[] reachableValues;
 
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
@@ -88,8 +87,8 @@ public final class ValueRangeManager<Solution_> {
      */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.fromSolution = new CountableValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()];
-        this.reachableValues = new ReachableValues[solutionDescriptor.getValueRangeDescriptorCount()];
+        this.fromSolution = new ValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()];
+        this.reachableValues = new ValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()];
     }
 
     public SolutionInitializationStatistics getInitializationStatistics() {
@@ -381,33 +380,70 @@ public final class ValueRangeManager<Solution_> {
     public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution,
             @Nullable SelectionSorter<Solution_, T> sorter) {
         var item = fromSolution[valueRangeDescriptor.getOrdinal()];
-        var valueRange =
-                item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
-        var valueRangeSorter = item != null ? item.sorter() : null;
-        // We read and sort the data again if needed
-        if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
-            var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
-            if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
-                throw new UnsupportedOperationException("""
-                        Impossible state: value range (%s) on planning solution (%s) is not countable.
-                        Maybe replace %s with %s."""
-                        .formatted(valueRangeDescriptor, solution, DoubleValueRange.class.getSimpleName(),
-                                BigDecimalValueRange.class.getSimpleName()));
-            } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
-                valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
-            } else {
-                valueRange = countableValueRange;
+        // No item, we set the left side by default
+        if (item == null) {
+            var valueRange = fetchValueRangeFromSolution(valueRangeDescriptor, solution, sorter);
+            fromSolution[valueRangeDescriptor.getOrdinal()] = new ValueRangeItem<>(valueRange, sorter, null, null);
+            return valueRange;
+        }
+        var leftSorter = (SelectionSorter<Solution_, T>) item.leftSorter();
+        var leftValueRange = (CountableValueRange<T>) item.leftItem();
+        var rightSorter = (SelectionSorter<Solution_, T>) item.rightSorter();
+        var rightValueRange = (CountableValueRange<T>) item.rightItem();
+        if (sorter == null || Objects.equals(leftSorter, sorter)) {
+            // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
+            return leftValueRange;
+        } else if (rightValueRange != null && Objects.equals(rightSorter, sorter)) {
+            // Return the right value only if the right sorter is the same as the provided one.
+            return rightValueRange;
+        }
+        // If the left sorter is null, and the given sorter is not, we replace the left value with a sorted one.
+        if (leftSorter == null) {
+            if (!(leftValueRange instanceof SortableValueRange sortableValueRange)) {
+                throw new IllegalStateException(
+                        "Impossible state: value range (%s) on planning solution (%s) is not sortable."
+                                .formatted(valueRangeDescriptor, solution));
             }
-            if (sorter != null) {
-                if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
-                    throw new IllegalStateException(
-                            "Impossible state: value range (%s) on planning solution (%s) is not sortable."
-                                    .formatted(valueRangeDescriptor, solution));
-                }
-                var sorterAdapter = SelectionSorterAdapter.of(solution, sorter);
-                valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
+            var sorterAdapter = SelectionSorterAdapter.of(solution, sorter);
+            var valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
+            fromSolution[valueRangeDescriptor.getOrdinal()] =
+                    new ValueRangeItem<>(valueRange, sorter, rightValueRange, rightSorter);
+            return valueRange;
+        } else if (rightValueRange == null) {
+            var valueRange = fetchValueRangeFromSolution(valueRangeDescriptor, solution, sorter);
+            fromSolution[valueRangeDescriptor.getOrdinal()] =
+                    new ValueRangeItem<>(leftValueRange, leftSorter, valueRange, sorter);
+            return valueRange;
+        } else {
+            throw new IllegalStateException(
+                    "Impossible state: the value range (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
+                            .formatted(valueRangeDescriptor, sorter, leftSorter, rightSorter));
+        }
+    }
+
+    private <T> CountableValueRange<T> fetchValueRangeFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            Solution_ solution, @Nullable SelectionSorter<Solution_, T> sorter) {
+        CountableValueRange<T> valueRange;
+        var extractedValueRange = valueRangeDescriptor.<T> extractAllValues(Objects.requireNonNull(solution));
+        if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
+            throw new UnsupportedOperationException("""
+                    Impossible state: value range (%s) on planning solution (%s) is not countable.
+                    Maybe replace %s with %s."""
+                    .formatted(valueRangeDescriptor, solution, DoubleValueRange.class.getSimpleName(),
+                            BigDecimalValueRange.class.getSimpleName()));
+        } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
+            valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
+        } else {
+            valueRange = countableValueRange;
+        }
+        if (sorter != null) {
+            if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
+                throw new IllegalStateException(
+                        "Impossible state: value range (%s) on planning solution (%s) is not sortable."
+                                .formatted(valueRangeDescriptor, solution));
             }
-            fromSolution[valueRangeDescriptor.getOrdinal()] = new CountableValueRangeItem<>(valueRange, sorter);
+            var sorterAdapter = SelectionSorterAdapter.of(solution, sorter);
+            valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
         }
         return valueRange;
     }
@@ -433,35 +469,73 @@ public final class ValueRangeManager<Solution_> {
         }
         var valueRangeList =
                 fromEntityMap.computeIfAbsent(entity,
-                        e -> new CountableValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()]);
+                        e -> new ValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()]);
         var item = valueRangeList[valueRangeDescriptor.getOrdinal()];
-        var valueRange = item != null ? (CountableValueRange<T>) item.countableValueRange() : null;
-        var valueRangeSorter = item != null ? item.sorter() : null;
-        // We read and sort the data again if needed
-        if (valueRange == null || (sorter != null && !Objects.equals(valueRangeSorter, sorter))) {
-            var extractedValueRange =
-                    valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
-            if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
-                throw new UnsupportedOperationException("""
-                        Impossible state: value range (%s) on planning entity (%s) is not countable.
-                        Maybe replace %s with %s."""
-                        .formatted(valueRangeDescriptor, entity, DoubleValueRange.class.getSimpleName(),
-                                BigDecimalValueRange.class.getSimpleName()));
-            } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
-                valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
-            } else {
-                valueRange = countableValueRange;
+        // No item, we set the left side by default
+        if (item == null) {
+            var valueRange = fetchValueRangeFromEntity(valueRangeDescriptor, entity, sorter);
+            valueRangeList[valueRangeDescriptor.getOrdinal()] = new ValueRangeItem<>(valueRange, sorter, null, null);
+            return valueRange;
+        }
+        var leftSorter = (SelectionSorter<Solution_, T>) item.leftSorter();
+        var leftValueRange = (CountableValueRange<T>) item.leftItem();
+        var rightSorter = (SelectionSorter<Solution_, T>) item.rightSorter();
+        var rightValueRange = (CountableValueRange<T>) item.rightItem();
+        if (sorter == null || Objects.equals(leftSorter, sorter)) {
+            // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
+            return leftValueRange;
+        } else if (rightValueRange != null && Objects.equals(rightSorter, sorter)) {
+            // Return the right value only if the right sorter is the same as the provided one.
+            return rightValueRange;
+        }
+        // If the left sorter is null, and the given sorter is not, we replace the left value with a sorted one.
+        if (leftSorter == null) {
+            if (!(leftValueRange instanceof SortableValueRange sortableValueRange)) {
+                throw new IllegalStateException(
+                        "Impossible state: value range (%s) on planning solution (%s) is not sortable."
+                                .formatted(valueRangeDescriptor, cachedWorkingSolution));
             }
-            if (sorter != null) {
-                if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
-                    throw new IllegalStateException(
-                            "Impossible state: value range (%s) on planning entity (%s) is not sortable."
-                                    .formatted(valueRangeDescriptor, entity));
-                }
-                var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
-                valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
+            var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
+            var valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
+            valueRangeList[valueRangeDescriptor.getOrdinal()] =
+                    new ValueRangeItem<>(valueRange, sorter, rightValueRange, rightSorter);
+            return valueRange;
+        } else if (rightValueRange == null) {
+            var valueRange = fetchValueRangeFromEntity(valueRangeDescriptor, entity, sorter);
+            valueRangeList[valueRangeDescriptor.getOrdinal()] =
+                    new ValueRangeItem<>(leftValueRange, leftSorter, valueRange, sorter);
+            return valueRange;
+        } else {
+            throw new IllegalStateException(
+                    "Impossible state: the value range (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
+                            .formatted(valueRangeDescriptor, sorter, leftSorter, rightSorter));
+        }
+    }
+
+    private <T> CountableValueRange<T> fetchValueRangeFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            Object entity, @Nullable SelectionSorter<Solution_, T> sorter) {
+        CountableValueRange<T> valueRange;
+        var extractedValueRange =
+                valueRangeDescriptor.<T> extractValuesFromEntity(cachedWorkingSolution, Objects.requireNonNull(entity));
+        if (!(extractedValueRange instanceof CountableValueRange<T> countableValueRange)) {
+            throw new UnsupportedOperationException("""
+                    Impossible state: value range (%s) on planning entity (%s) is not countable.
+                    Maybe replace %s with %s."""
+                    .formatted(valueRangeDescriptor, entity, DoubleValueRange.class.getSimpleName(),
+                            BigDecimalValueRange.class.getSimpleName()));
+        } else if (valueRangeDescriptor.acceptsNullInValueRange()) {
+            valueRange = new NullAllowingCountableValueRange<>(countableValueRange);
+        } else {
+            valueRange = countableValueRange;
+        }
+        if (sorter != null) {
+            if (!(valueRange instanceof SortableValueRange sortableValueRange)) {
+                throw new IllegalStateException(
+                        "Impossible state: value range (%s) on planning entity (%s) is not sortable."
+                                .formatted(valueRangeDescriptor, entity));
             }
-            valueRangeList[valueRangeDescriptor.getOrdinal()] = new CountableValueRangeItem<>(valueRange, sorter);
+            var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
+            valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
         }
         return valueRange;
     }
@@ -481,22 +555,56 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            @Nullable SelectionSorter<Solution_, Object> sorter) {
-        var values = reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
-        // We return the value if there is no sorter or the applied sorter is the same as the given sorter
-        if (values != null && (sorter == null || Objects.equals(values.getValueSelectionSorter(), sorter))) {
-            return values;
-        }
+            @Nullable SelectionSorter<Solution_, ?> sorter) {
         if (cachedWorkingSolution == null) {
             throw new IllegalStateException(
                     "Impossible state: value reachability requested before the working solution is known.");
         }
-        // We do not recalculate all reachable values if they have already been calculated
-        if (values != null) {
-            var newValues = values.copy(SelectionSorterAdapter.of(cachedWorkingSolution, sorter));
-            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = newValues;
-            return newValues;
+        var item = reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()];
+        // No item, we set the leftItem side by default
+        if (item == null) {
+            var values = fetchReachableValues(variableDescriptor, sorter);
+            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
+                    new ValueRangeItem<>(values, sorter, null, null);
+            return values;
         }
+        var leftSorter = item.leftSorter();
+        var leftValues = item.leftItem();
+        var rightSorter = item.rightSorter();
+        var rightValues = item.rightItem();
+        if (sorter == null || Objects.equals(leftSorter, sorter)) {
+            // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
+            return leftValues;
+        } else if (rightValues != null && Objects.equals(rightSorter, sorter)) {
+            // Return the right value only if the right sorter is the same as the provided one.
+            return rightValues;
+        }
+
+        // If the left sorter is null, and the given sorter is not, we replace the left value with a sorted one.
+        if (leftSorter == null) {
+            var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
+            // We don't need to create a deep copy as we can reuse the existing internal state with the new sorter
+            var sortedValues = leftValues.copy(sorterAdapter, false);
+            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
+                    new ValueRangeItem<>(sortedValues, sorter, rightValues, rightSorter);
+            return sortedValues;
+        } else if (rightValues == null) {
+            // We perform a deep copy to create a new instance without sharing any internal state
+            var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
+            var sortedValues = leftValues.copy(sorterAdapter, true);
+            reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
+                    new ValueRangeItem<>(leftValues, leftSorter, sortedValues, sorter);
+            return sortedValues;
+        } else {
+            throw new IllegalStateException(
+                    "Impossible state: the reachable values structure for variable (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
+                            .formatted(variableDescriptor, sorter, leftSorter, rightSorter));
+        }
+    }
+
+    private ReachableValues fetchReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
+            @Nullable SelectionSorter<Solution_, ?> sorter) {
+        ReachableValues values;
         var entityDescriptor = variableDescriptor.getEntityDescriptor();
         var entityList = entityDescriptor.extractEntities(cachedWorkingSolution);
         var entityIndexMap = buildIndexMap(entityList.iterator(), entityList.size(), false);
@@ -518,9 +626,9 @@ public final class ValueRangeManager<Solution_> {
             var valueRange = getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity);
             loadEntityValueRange(i, valueIndexMap, valueRange, reachableValueList);
         }
-        values = new ReachableValues(entityIndexMap, entityList, valueIndexMap, reachableValueList, valueClass,
+        var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
+        values = new ReachableValues(entityIndexMap, entityList, valueIndexMap, reachableValueList, valueClass, sorterAdapter,
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
-        reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] = values;
         return values;
     }
 
@@ -599,8 +707,8 @@ public final class ValueRangeManager<Solution_> {
         }
     }
 
-    private record CountableValueRangeItem<Solution_, T>(CountableValueRange<T> countableValueRange,
-            @Nullable SelectionSorter<Solution_, T> sorter) {
+    private record ValueRangeItem<Solution_, V>(V leftItem, @Nullable SelectionSorter<Solution_, ?> leftSorter,
+                                                @Nullable V rightItem, @Nullable SelectionSorter<Solution_, ?> rightSorter) {
 
     }
 

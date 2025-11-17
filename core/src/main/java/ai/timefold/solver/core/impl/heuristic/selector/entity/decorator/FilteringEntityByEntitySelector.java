@@ -72,7 +72,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private Object replayedEntity;
     private BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
     private ValueRangeManager<Solution_> valueRangeManager;
-    private ReachableValues<Object, Object> reachableValues;
+    private ReachableValues reachableValues;
     private List<Object> allEntities;
 
     public FilteringEntityByEntitySelector(EntitySelector<Solution_> childEntitySelector,
@@ -419,7 +419,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         private final Iterator<Object> allEntitiesIterator;
         private final BasicVariableDescriptor<Solution_> basicVariableDescriptor;
-        private final ReachableValues<Object, Object> reachableValues;
+        private final ReachableValues reachableValues;
         private final Random workingRandom;
         private final int maxBailoutSize;
         private Object currentReplayedEntity = null;
@@ -429,7 +429,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
 
         private SingleVariableRandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
                 Iterator<Object> allEntitiesIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
-                ValueRangeManager<Solution_> valueRangeManager, ReachableValues<Object, Object> reachableValues,
+                ValueRangeManager<Solution_> valueRangeManager, ReachableValues reachableValues,
                 Random workingRandom,
                 int maxBailoutSize) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);

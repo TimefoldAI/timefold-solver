@@ -1,17 +1,18 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
-
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
+
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -29,14 +30,14 @@ public final class ReachableValues {
     private final Map<Object, Integer> valuesIndex;
     private final List<ReachableItemValue> allValues;
     private final @Nullable Class<?> valueClass;
-    private final @Nullable ValueRangeSorter<Object> valueRangeSorter;
+    private final @Nullable ValueRangeSorter<?> valueRangeSorter;
     private final boolean acceptsNullValue;
     private @Nullable ReachableItemValue firstCachedObject;
     private @Nullable ReachableItemValue secondCachedObject;
 
     public ReachableValues(Map<Object, Integer> entityIndexMap, List<Object> entityList, Map<Object, Integer> valueIndexMap,
-                           List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass,
-                           ValueRangeSorter<Object> valueRangeSorter, boolean acceptsNullValue) {
+            List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass,
+            @Nullable ValueRangeSorter<?> valueRangeSorter, boolean acceptsNullValue) {
         this.entitiesIndex = entityIndexMap;
         this.allEntities = entityList;
         this.valuesIndex = valueIndexMap;
@@ -82,8 +83,7 @@ public final class ReachableValues {
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        itemValue.checkSorting(valueRangeSorter, allValues);
-        return itemValue.getRandomAccessValueList(allValues);
+        return itemValue.getRandomAccessValueList(allValues, valueRangeSorter);
     }
 
     public int getSize() {
@@ -131,8 +131,17 @@ public final class ReachableValues {
         return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
     }
 
-    public @Nullable SelectionSorter<?, Object> getValueSelectionSorter() {
-        return valueRangeSorter != null ? valueRangeSorter.getInnerSorter() : null;
+    public ReachableValues copy(ValueRangeSorter<?> sorterAdapter, boolean deepCopy) {
+        var newAllValues = allValues;
+        if (deepCopy) {
+            newAllValues = new ArrayList<>(allValues.size());
+            for (var value : allValues) {
+                newAllValues.add(new ReachableItemValue(value.value, value.entityBitSet, value.valueBitSet,
+                        value.onDemandRandomAccessEntityList));
+            }
+        }
+        return new ReachableValues(entitiesIndex, allEntities, valuesIndex, newAllValues, valueClass, sorterAdapter,
+                acceptsNullValue);
     }
 
     @NullMarked
@@ -152,6 +161,14 @@ public final class ReachableValues {
             this.valueBitSet = new BitSet(valueListSize);
         }
 
+        private ReachableItemValue(Object value, BitSet entityBitSet, BitSet valueBitSet,
+                @Nullable List<Object> onDemandRandomAccessEntityList) {
+            this.value = value;
+            this.entityBitSet = entityBitSet;
+            this.valueBitSet = valueBitSet;
+            this.onDemandRandomAccessEntityList = onDemandRandomAccessEntityList;
+        }
+
         public void addEntity(int entityIndex) {
             entityBitSet.set(entityIndex);
         }
@@ -168,11 +185,10 @@ public final class ReachableValues {
             return valueBitSet.get(valueIndex);
         }
 
-        private static int[] extractAllIndexes(BitSet bitSet) {
-            var indexes = new int[bitSet.cardinality()];
-            var idx = 0;
+        private static List<Integer> extractAllIndexes(BitSet bitSet) {
+            var indexes = new ArrayList<Integer>(bitSet.cardinality());
             for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
-                indexes[idx++] = i;
+                indexes.add(i);
             }
             return indexes;
         }
@@ -184,29 +200,29 @@ public final class ReachableValues {
             return onDemandRandomAccessEntityList;
         }
 
-        List<Object> getRandomAccessValueList(List<ReachableItemValue> allValues) {
+        <V> List<Object> getRandomAccessValueList(List<ReachableItemValue> allValues,
+                @Nullable ValueRangeSorter<V> valueRangeSorter) {
             if (onDemandRandomAccessValueList == null) {
-                onDemandRandomAccessValueList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues, v -> v.value);
+                var valuesList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues,
+                        v -> (V) v.value);
+                if (valueRangeSorter != null && !sorted) {
+                    valueRangeSorter.sort(valuesList);
+                    sorted = true;
+                }
+                onDemandRandomAccessValueList = (List<Object>) valuesList;
             }
             return onDemandRandomAccessValueList;
-        }
-
-        private void checkSorting(@Nullable ValueRangeSorter<Object> valueRangeSorter, List<ReachableItemValue> allValues) {
-            if (valueRangeSorter != null && !sorted) {
-                valueRangeSorter.sort(getRandomAccessValueList(allValues));
-                sorted = true;
-            }
         }
     }
 
     @NullMarked
     private static final class ArrayIndexedList<T, V> extends AbstractList<V> {
 
-        private final int[] valueIndex;
+        private final List<Integer> valueIndex;
         private final List<T> allValues;
         private final @Nullable Function<T, V> valueExtractor;
 
-        private ArrayIndexedList(int[] valueIndex, List<T> allValues, @Nullable Function<T, V> valueExtractor) {
+        private ArrayIndexedList(List<Integer> valueIndex, List<T> allValues, @Nullable Function<T, V> valueExtractor) {
             this.valueIndex = valueIndex;
             this.allValues = allValues;
             this.valueExtractor = valueExtractor;
@@ -214,10 +230,17 @@ public final class ReachableValues {
 
         @Override
         public V get(int index) {
-            if (index < 0 || index >= valueIndex.length) {
+            if (index < 0 || index >= valueIndex.size()) {
                 throw new ArrayIndexOutOfBoundsException(index);
             }
-            var value = allValues.get(valueIndex[index]);
+            return getInnerValue(valueIndex.get(index));
+        }
+
+        private V getInnerValue(int index) {
+            if (index < 0 || index >= allValues.size()) {
+                throw new ArrayIndexOutOfBoundsException(index);
+            }
+            var value = allValues.get(index);
             if (valueExtractor == null) {
                 return (V) value;
             } else {
@@ -226,8 +249,13 @@ public final class ReachableValues {
         }
 
         @Override
+        public void sort(Comparator<? super V> comparator) {
+            valueIndex.sort((Integer v1, Integer v2) -> comparator.compare(getInnerValue(v1), getInnerValue(v2)));
+        }
+
+        @Override
         public int size() {
-            return valueIndex.length;
+            return valueIndex.size();
         }
     }
 
