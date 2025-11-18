@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.director;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -674,6 +675,15 @@ public final class ValueRangeManager<Solution_> {
 
     private static <T> void loadEntityValueRange(int entityIndex, Map<Object, Integer> valueIndexMap,
             CountableValueRange<T> valueRange, List<ReachableItemValue> reachableValueList) {
+        var allValuesBitSet = new BitSet(reachableValueList.size());
+        // We create a bitset containing all possible values from the range to optimize operations
+        for (var i = 0; i < valueRange.getSize(); i++) {
+            var value = valueRange.get(i);
+            if (value == null) {
+                continue;
+            }
+            allValuesBitSet.set(valueIndexMap.get(value));
+        }
         for (var i = 0; i < valueRange.getSize(); i++) {
             var value = valueRange.get(i);
             if (value == null) {
@@ -682,16 +692,11 @@ public final class ValueRangeManager<Solution_> {
             var valueIndex = valueIndexMap.get(value);
             var item = reachableValueList.get(valueIndex);
             item.addEntity(entityIndex);
-            for (var j = i + 1; j < valueRange.getSize(); j++) {
-                var otherValue = valueRange.get(j);
-                if (otherValue == null) {
-                    continue;
-                }
-                var otherValueIndex = valueIndexMap.get(otherValue);
-                var otherValueItem = reachableValueList.get(otherValueIndex);
-                item.addValue(otherValueIndex);
-                otherValueItem.addValue(valueIndex);
-            }
+            // We unset the current value index to import only the values that are reachable
+            allValuesBitSet.clear(valueIndex);
+            item.addValues(allValuesBitSet);
+            // We set it again to restore the state for the next value
+            allValuesBitSet.set(valueIndex);
         }
     }
 

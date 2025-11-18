@@ -173,8 +173,8 @@ public final class ReachableValues {
             entityBitSet.set(entityIndex);
         }
 
-        public void addValue(int valueIndex) {
-            valueBitSet.set(valueIndex);
+        public void addValues(BitSet values) {
+            valueBitSet.or(values);
         }
 
         boolean containsEntity(int entityIndex) {
