@@ -31,8 +31,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         super(shouldExist, leftTupleStorePositionTracker, rightTupleStorePositionTracker, nextNodesTupleLifecycle, isFiltering);
         this.inputStoreIndexLeftCounter = leftTupleStorePositionTracker.reserveNextAvailablePosition();
         this.inputStoreIndexRightTuple = rightTupleStorePositionTracker.reserveNextAvailablePosition();
-        this.leftCounterSet = new IndexedSet<>(
-                new ExistsCounterPositionTracker<>());
+        this.leftCounterSet = new IndexedSet<>(ExistsCounterPositionTracker.instance());
         this.rightTupleSet = new IndexedSet<>(new TuplePositionTracker<>(inputStoreIndexRightTuple));
     }
 
@@ -50,10 +49,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         if (!isFiltering) {
             counter.countRight = rightTupleSet.size();
         } else {
-            var leftTrackerSet =
-                    new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.left());
-            rightTupleSet.forEach(tuple -> updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerSet));
-            leftTuple.setStore(inputStoreIndexLeftTrackerSet, leftTrackerSet);
+            var leftHandleSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.left());
+            rightTupleSet.forEach(tuple -> updateCounterFromLeft(leftTuple, tuple, counter, leftHandleSet));
+            leftTuple.setStore(inputStoreIndexLeftHandleSet, leftHandleSet);
         }
         initCounterLeft(counter);
     }
@@ -71,11 +69,10 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             updateUnchangedCounterLeft(counter);
         } else {
             // Call filtering for the leftTuple and rightTuple combinations again
-            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftTrackerSet =
-                    leftTuple.getStore(inputStoreIndexLeftTrackerSet);
-            leftTrackerSet.forEach(ExistsCounterHandle::remove);
+            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet = leftTuple.getStore(inputStoreIndexLeftHandleSet);
+            leftHandleSet.forEach(ExistsCounterHandle::remove);
             counter.countRight = 0;
-            rightTupleSet.forEach(tuple -> updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerSet));
+            rightTupleSet.forEach(tuple -> updateCounterFromLeft(leftTuple, tuple, counter, leftHandleSet));
             updateCounterLeft(counter);
         }
     }
@@ -89,8 +86,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         }
         leftCounterSet.remove(counter);
         if (isFiltering) {
-            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftTrackerSet = leftTuple.getStore(inputStoreIndexLeftTrackerSet);
-            leftTrackerSet.forEach(ExistsCounterHandle::remove);
+            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet = leftTuple.getStore(inputStoreIndexLeftHandleSet);
+            leftHandleSet.forEach(ExistsCounterHandle::remove);
         }
         killCounterLeft(counter);
     }
@@ -106,9 +103,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         if (!isFiltering) {
             leftCounterSet.forEach(this::incrementCounterRight);
         } else {
-            var rightTrackerSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.right());
-            leftCounterSet.forEach(tuple -> updateCounterFromRight(rightTuple, tuple, rightTrackerSet));
-            rightTuple.setStore(inputStoreIndexRightTrackerSet, rightTrackerSet);
+            var rightHandleSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.right());
+            leftCounterSet.forEach(tuple -> updateCounterFromRight(rightTuple, tuple, rightHandleSet));
+            rightTuple.setStore(inputStoreIndexRightHandleSet, rightHandleSet);
         }
     }
 
@@ -120,8 +117,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             return;
         }
         if (isFiltering) {
-            var rightTrackerSet = updateRightTrackerSet(rightTuple);
-            leftCounterSet.forEach(tuple -> updateCounterFromRight(rightTuple, tuple, rightTrackerSet));
+            var rightHandleSet = updateRightHandleSet(rightTuple);
+            leftCounterSet.forEach(tuple -> updateCounterFromRight(rightTuple, tuple, rightHandleSet));
         }
     }
 
@@ -135,7 +132,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         if (!isFiltering) {
             leftCounterSet.forEach(this::decrementCounterRight);
         } else {
-            updateRightTrackerSet(rightTuple);
+            updateRightHandleSet(rightTuple);
         }
     }
 

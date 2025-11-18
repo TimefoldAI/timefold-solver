@@ -68,10 +68,10 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         if (!isFiltering) {
             counter.countRight = indexerRight.size(indexKeys);
         } else {
-            var leftTrackerSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.left());
+            var leftHandleSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.left());
             indexerRight.forEach(indexKeys,
-                    rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerSet));
-            leftTuple.setStore(inputStoreIndexLeftTrackerSet, leftTrackerSet);
+                    rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftHandleSet));
+            leftTuple.setStore(inputStoreIndexLeftHandleSet, leftHandleSet);
         }
     }
 
@@ -93,12 +93,11 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 updateUnchangedCounterLeft(counter);
             } else {
                 // Call filtering for the leftTuple and rightTuple combinations again
-                IndexedSet<ExistsCounterHandle<LeftTuple_>> leftTrackerSet =
-                        leftTuple.getStore(inputStoreIndexLeftTrackerSet);
-                leftTrackerSet.forEach(ExistsCounterHandle::remove);
+                IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet = leftTuple.getStore(inputStoreIndexLeftHandleSet);
+                leftHandleSet.forEach(ExistsCounterHandle::remove);
                 counter.countRight = 0;
                 indexerRight.forEach(oldIndexKeys,
-                        rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerSet));
+                        rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftHandleSet));
                 updateCounterLeft(counter);
             }
         } else {
@@ -126,9 +125,8 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
     private void updateIndexerLeft(Object indexKeys, ExistsCounter<LeftTuple_> counter, LeftTuple_ leftTuple) {
         indexerLeft.remove(indexKeys, counter);
         if (isFiltering) {
-            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftTrackerSet =
-                    leftTuple.getStore(inputStoreIndexLeftTrackerSet);
-            leftTrackerSet.forEach(ExistsCounterHandle::remove);
+            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet = leftTuple.getStore(inputStoreIndexLeftHandleSet);
+            leftHandleSet.forEach(ExistsCounterHandle::remove);
         }
     }
 
@@ -150,10 +148,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         if (!isFiltering) {
             indexerLeft.forEach(indexKeys, this::incrementCounterRight);
         } else {
-            var rightTrackerSet =
-                    new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.right());
-            indexerLeft.forEach(indexKeys, counter -> updateCounterFromRight(rightTuple, counter, rightTrackerSet));
-            rightTuple.setStore(inputStoreIndexRightTrackerSet, rightTrackerSet);
+            var rightHandleSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.right());
+            indexerLeft.forEach(indexKeys, counter -> updateCounterFromRight(rightTuple, counter, rightHandleSet));
+            rightTuple.setStore(inputStoreIndexRightHandleSet, rightHandleSet);
         }
     }
 
@@ -169,16 +166,16 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         if (oldIndexKeys.equals(newIndexKeys)) {
             // No need for re-indexing because the index keys didn't change
             if (isFiltering) {
-                var rightTrackerSet = updateRightTrackerSet(rightTuple);
+                var rightHandleSet = updateRightHandleSet(rightTuple);
                 indexerLeft.forEach(oldIndexKeys,
-                        counter -> updateCounterFromRight(rightTuple, counter, rightTrackerSet));
+                        counter -> updateCounterFromRight(rightTuple, counter, rightHandleSet));
             }
         } else {
             indexerRight.remove(oldIndexKeys, rightTuple);
             if (!isFiltering) {
                 indexerLeft.forEach(oldIndexKeys, this::decrementCounterRight);
             } else {
-                updateRightTrackerSet(rightTuple);
+                updateRightHandleSet(rightTuple);
             }
             rightTuple.setStore(inputStoreIndexRightKeys, newIndexKeys);
             indexerRight.put(newIndexKeys, rightTuple);
@@ -197,7 +194,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         if (!isFiltering) {
             indexerLeft.forEach(indexKeys, this::decrementCounterRight);
         } else {
-            updateRightTrackerSet(rightTuple);
+            updateRightHandleSet(rightTuple);
         }
     }
 
