@@ -43,7 +43,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class IndexedSet<T> {
 
-    private static final int MINIMUM_GAP_COUNT_FOR_COMPACTION = 10;
+    private static final int MINIMUM_ELEMENT_COUNT_FOR_COMPACTION = 10;
     private static final double GAP_RATIO_FOR_COMPACTION = 0.1;
 
     private final ElementPositionTracker<T> elementPositionTracker;
@@ -73,8 +73,16 @@ public final class IndexedSet<T> {
      */
     public void add(T element) {
         var actualElementList = getElementList();
+        var lastElementPosition = actualElementList.size() - 1;
+        if (gapCount > 0) {
+            if (actualElementList.get(lastElementPosition) == null) { // We can reuse the gap at the back.
+                putElementIntoGap(actualElementList, element, lastElementPosition);
+                return;
+            }
+        }
+        // Put the element at the end of the list.
         actualElementList.add(element);
-        elementPositionTracker.setPosition(element, actualElementList.size() - 1);
+        elementPositionTracker.setPosition(element, lastElementPosition + 1);
     }
 
     /**
@@ -126,59 +134,76 @@ public final class IndexedSet<T> {
         if (isEmpty()) {
             return;
         }
-        findFirst(element -> {
+        forEach(element -> {
             elementConsumer.accept(element);
             return false; // Iterate until the end.
         });
     }
 
-    public @Nullable T findFirst(Predicate<T> elementPredicate) {
+    private @Nullable T forEach(Predicate<T> elementPredicate) {
         if (isEmpty()) {
             return null;
         }
 
-        var shouldCompact = shouldCompact(size());
-        var actualElementList = getElementList();
-        var elementsAtTheBack = 0;
-        for (var i = actualElementList.size() - 1; i >= 0; i--) {
-            // We remove gaps back to front so that we keep elements as close to their original position as possible.
-            var element = actualElementList.get(i);
+        var elementCount = elementList.size();
+        var shouldCompact = shouldCompact(elementCount);
+
+        // We remove gaps back to front so that we keep elements as close to their original position as possible.
+        for (var i = elementCount - 1; i >= 0; i--) {
+            if (elementCount == gapCount) {
+                // If all elements were removed, clear the list to free memory and terminate iteration.
+                clearList();
+                return null;
+            }
+
+            var element = elementList.get(i);
             if (element == null) {
                 if (shouldCompact) {
-                    if (elementsAtTheBack > 0) {
-                        var elementToMove = actualElementList.remove(actualElementList.size() - 1);
-                        putElementIntoGap(actualElementList, elementToMove, i);
-                    } else {
-                        actualElementList.remove(i);
+                    if (i < elementCount - 1) {
+                        var elementToMove = elementList.remove(elementCount - 1);
+                        putElementIntoGap(elementList, elementToMove, i);
+                    } else { // The gap is at the back already.
+                        elementList.remove(i);
                         gapCount--;
                     }
+                    elementCount--;
                     if (gapCount == 0) {
                         shouldCompact = false;
                     }
                 }
-                continue;
             } else {
-                elementsAtTheBack++;
-            }
-            if (elementPredicate.test(element)) {
-                return element;
+                if (elementPredicate.test(element)) {
+                    return element;
+                }
+                elementCount = elementList.size(); // Update in case that the predicate removed some elements.
             }
         }
         return null;
-    }
-
-    private boolean shouldCompact(int elementCount) {
-        if (elementCount < MINIMUM_GAP_COUNT_FOR_COMPACTION) {
-            return false;
-        }
-        var gapPercentage = gapCount / (double) elementCount;
-        return gapPercentage > GAP_RATIO_FOR_COMPACTION;
     }
 
     private void putElementIntoGap(List<@Nullable T> elementList, T element, int gap) {
         elementList.set(gap, element);
         elementPositionTracker.setPosition(element, gap);
         gapCount--;
+    }
+
+    public @Nullable T findFirst(Predicate<T> elementPredicate) {
+        return forEach(elementPredicate);
+    }
+
+    private void clearList() {
+        if (elementList != null) {
+            elementList.clear();
+            gapCount = 0;
+        }
+    }
+
+    private boolean shouldCompact(int elementCount) {
+        if (elementCount < MINIMUM_ELEMENT_COUNT_FOR_COMPACTION) {
+            return false;
+        }
+        var gapPercentage = gapCount / (double) elementCount;
+        return gapPercentage > GAP_RATIO_FOR_COMPACTION;
     }
 
     public boolean isEmpty() {
@@ -192,27 +217,35 @@ public final class IndexedSet<T> {
      * @return a standard list view of this element-aware list
      */
     public List<T> asList() {
-        if (isEmpty()) {
+        if (elementList == null) {
             return Collections.emptyList();
         }
-        forceCompaction(elementList);
-        return elementList;
+        forceCompaction();
+        return elementList.isEmpty() ? Collections.emptyList() : elementList;
     }
 
-    private void forceCompaction(List<@Nullable T> actualElementList) {
+    private void forceCompaction() {
         // We remove gaps back to front so that we keep elements as close to their original position as possible.
-        var elementsAtTheBack = 0;
-        for (var i = actualElementList.size() - 1; gapCount > 0; i--) {
-            if (actualElementList.get(i) == null) {
-                if (elementsAtTheBack > 0) {
-                    var element = actualElementList.remove(actualElementList.size() - 1);
-                    putElementIntoGap(actualElementList, element, i);
-                } else {
-                    actualElementList.remove(i);
+        var elementCount = elementList.size();
+        for (var i = elementCount - 1; i >= 0; i--) {
+            if (elementCount == gapCount) {
+                // If all elements were removed, clear the list to free memory and terminate iteration.
+                clearList();
+                return;
+            }
+
+            if (elementList.get(i) == null) {
+                if (i < elementCount - 1) {
+                    var element = elementList.remove(elementCount - 1);
+                    putElementIntoGap(elementList, element, i);
+                } else { // The gap is at the back already.
+                    elementList.remove(i);
                     gapCount--;
                 }
-            } else {
-                elementsAtTheBack++;
+                elementCount--;
+                if (gapCount == 0) {
+                    return;
+                }
             }
         }
     }
