@@ -208,7 +208,6 @@ class NullableRecipeTest implements RewriteTest {
     // ************************************************************************
 
     private static String wrapVariable(String content) {
-        //language=java
         return """
                 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 
@@ -221,7 +220,6 @@ class NullableRecipeTest implements RewriteTest {
     }
 
     private static String wrapStream(String content) {
-        //language=java
         return """
                 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
                 import ai.timefold.solver.core.api.score.stream.ConstraintStream;

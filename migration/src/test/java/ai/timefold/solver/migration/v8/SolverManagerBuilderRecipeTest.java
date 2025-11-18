@@ -57,7 +57,6 @@ class SolverManagerBuilderRecipeTest implements RewriteTest {
     }
 
     private static String wrap(String content) {
-        //language=java
         return """
                 import java.util.function.BiConsumer;
                 import java.util.function.Consumer;
