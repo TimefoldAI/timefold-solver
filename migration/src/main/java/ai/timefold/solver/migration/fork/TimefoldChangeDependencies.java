@@ -71,10 +71,10 @@ public final class TimefoldChangeDependencies extends AbstractRecipe {
         for (String artifactSuffix : ARTIFACT_SUFFIXES) {
             String oldArtifactId = "optaplanner-" + artifactSuffix;
             String newArtifactSuffix;
-            if (artifactSuffix.equals("persistence")) {
+            if ("persistence".equals(artifactSuffix)) {
                 newArtifactSuffix = "persistence-parent";
             } else if (artifactSuffix.startsWith("persistence-")) {
-                if (artifactSuffix.equals("persistence-common")) {
+                if ("persistence-common".equals(artifactSuffix)) {
                     newArtifactSuffix = artifactSuffix;
                 } else {
                     newArtifactSuffix = artifactSuffix.substring("persistence-".length());

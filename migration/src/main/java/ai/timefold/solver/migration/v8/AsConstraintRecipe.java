@@ -192,8 +192,8 @@ public final class AsConstraintRecipe extends AbstractRecipe {
 
     @Override
     public String getDescription() {
-        return "Use `penalize().asConstraint()` and `reward().asConstraint()`" +
-                " instead of the deprecated `penalize()` and `reward()` methods.";
+        return "Use `penalize().asConstraint()` and `reward().asConstraint()` " +
+                "instead of the deprecated `penalize()` and `reward()` methods.";
     }
 
     @Override
@@ -216,8 +216,8 @@ public final class AsConstraintRecipe extends AbstractRecipe {
 
                     @Override
                     public J.MethodInvocation visitMethodInvocation(J.MethodInvocation originalMethod,
-                            ExecutionContext executionContext) {
-                        var method = super.visitMethodInvocation(originalMethod, executionContext);
+                            ExecutionContext ctx) {
+                        var method = super.visitMethodInvocation(originalMethod, ctx);
 
                         var matcherMeta = Arrays.stream(MATCHER_METAS)
                                 .filter(m -> m.methodMatcher.matches(method))
@@ -274,46 +274,39 @@ public final class AsConstraintRecipe extends AbstractRecipe {
                                     return template.apply(getCursor(),
                                             method.getCoordinates().replace(), select,
                                             arguments.get(1), arguments.get(0));
-                                } else {
-                                    return template.apply(getCursor(),
-                                            method.getCoordinates().replace(), select,
-                                            arguments.get(1), arguments.get(2), arguments.get(0));
                                 }
-                            } else {
-                                if (!matcherMeta.matchWeigherIncluded) {
-                                    return template.apply(getCursor(),
-                                            method.getCoordinates().replace(), select,
-                                            arguments.get(0));
-                                } else {
-                                    return template.apply(getCursor(),
-                                            method.getCoordinates().replace(), select,
-                                            arguments.get(1), arguments.get(0));
-                                }
+                                return template.apply(getCursor(),
+                                        method.getCoordinates().replace(), select,
+                                        arguments.get(1), arguments.get(2), arguments.get(0));
                             }
-                        } else {
-                            if (!matcherMeta.configurable) {
-                                if (!matcherMeta.matchWeigherIncluded) {
-                                    return template.apply(getCursor(),
-                                            method.getCoordinates().replace(), select,
-                                            arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
-                                } else {
-                                    return template.apply(getCursor(),
-                                            method.getCoordinates().replace(), select,
-                                            arguments.get(2), arguments.get(3),
-                                            mergeExpressions(arguments.get(0), arguments.get(1)));
-                                }
-                            } else {
-                                if (!matcherMeta.matchWeigherIncluded) {
-                                    return template.apply(getCursor(),
-                                            method.getCoordinates().replace(), select,
-                                            mergeExpressions(arguments.get(0), arguments.get(1)));
-                                } else {
-                                    return template.apply(getCursor(),
-                                            method.getCoordinates().replace(), select,
-                                            arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
-                                }
+                            if (!matcherMeta.matchWeigherIncluded) {
+                                return template.apply(getCursor(),
+                                        method.getCoordinates().replace(), select,
+                                        arguments.get(0));
                             }
+                            return template.apply(getCursor(),
+                                    method.getCoordinates().replace(), select,
+                                    arguments.get(1), arguments.get(0));
                         }
+                        if (!matcherMeta.configurable) {
+                            if (!matcherMeta.matchWeigherIncluded) {
+                                return template.apply(getCursor(),
+                                        method.getCoordinates().replace(), select,
+                                        arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
+                            }
+                            return template.apply(getCursor(),
+                                    method.getCoordinates().replace(), select,
+                                    arguments.get(2), arguments.get(3),
+                                    mergeExpressions(arguments.get(0), arguments.get(1)));
+                        }
+                        if (!matcherMeta.matchWeigherIncluded) {
+                            return template.apply(getCursor(),
+                                    method.getCoordinates().replace(), select,
+                                    mergeExpressions(arguments.get(0), arguments.get(1)));
+                        }
+                        return template.apply(getCursor(),
+                                method.getCoordinates().replace(), select,
+                                arguments.get(2), mergeExpressions(arguments.get(0), arguments.get(1)));
                     }
                 });
     }
@@ -333,15 +326,15 @@ public final class AsConstraintRecipe extends AbstractRecipe {
 
         public MatcherMeta(String select, String method) {
             String signature;
-            if (select.equals("ConstraintStream")) {
+            if ("ConstraintStream".equals(select)) {
                 signature = "ai.timefold.solver.core.api.score.stream.ConstraintStream";
-            } else if (select.equals("UniConstraintStream")) {
+            } else if ("UniConstraintStream".equals(select)) {
                 signature = "ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream";
-            } else if (select.equals("BiConstraintStream")) {
+            } else if ("BiConstraintStream".equals(select)) {
                 signature = "ai.timefold.solver.core.api.score.stream.bi.BiConstraintStream";
-            } else if (select.equals("TriConstraintStream")) {
+            } else if ("TriConstraintStream".equals(select)) {
                 signature = "ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream";
-            } else if (select.equals("QuadConstraintStream")) {
+            } else if ("QuadConstraintStream".equals(select)) {
                 signature = "ai.timefold.solver.core.api.score.stream.quad.QuadConstraintStream";
             } else {
                 throw new IllegalArgumentException("Invalid select (" + select + ").");

@@ -56,8 +56,8 @@ public final class SolverManagerBuilderRecipe extends AbstractRecipe {
                 new JavaIsoVisitor<>() {
 
                     @Override
-                    public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
-                        final Expression e = super.visitExpression(expression, executionContext);
+                    public Expression visitExpression(Expression expression, ExecutionContext ctx) {
+                        final Expression e = super.visitExpression(expression, ctx);
 
                         MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
                                 .findFirst().orElse(null);

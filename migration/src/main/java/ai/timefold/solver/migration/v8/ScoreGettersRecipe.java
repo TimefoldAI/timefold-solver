@@ -86,8 +86,8 @@ public final class ScoreGettersRecipe extends AbstractRecipe {
                 new JavaIsoVisitor<>() {
 
                     @Override
-                    public Expression visitExpression(Expression expression, ExecutionContext executionContext) {
-                        final Expression e = super.visitExpression(expression, executionContext);
+                    public Expression visitExpression(Expression expression, ExecutionContext ctx) {
+                        final Expression e = super.visitExpression(expression, ctx);
 
                         MatcherMeta matcherMeta = Arrays.stream(MATCHER_METAS).filter(m -> m.methodMatcher.matches(e))
                                 .findFirst().orElse(null);
@@ -109,12 +109,11 @@ public final class ScoreGettersRecipe extends AbstractRecipe {
                                     .javaParser(JAVA_PARSER)
                                     .build()
                                     .apply(getCursor(), e.getCoordinates().replace(), select, arguments.get(0));
-                        } else {
-                            return JavaTemplate.builder(pattern)
-                                    .javaParser(JAVA_PARSER)
-                                    .build()
-                                    .apply(getCursor(), e.getCoordinates().replace(), select);
                         }
+                        return JavaTemplate.builder(pattern)
+                                .javaParser(JAVA_PARSER)
+                                .build()
+                                .apply(getCursor(), e.getCoordinates().replace(), select);
                     }
                 });
     }
@@ -133,10 +132,10 @@ public final class ScoreGettersRecipe extends AbstractRecipe {
                     className = "ai.timefold.solver.core.api.score." + select;
                     break;
                 default:
-                    className = "ai.timefold.solver.core.api.score.buildin."
-                            + select.toLowerCase().replace("score", "")
-                            + "."
-                            + select;
+                    className = "ai.timefold.solver.core.api.score.buildin." +
+                            select.toLowerCase().replace("score", "") +
+                            "." +
+                            select;
             }
             this.scoreClassFqn = className;
             this.methodMatcher = new MethodMatcher(scoreClassFqn + " " + method);
