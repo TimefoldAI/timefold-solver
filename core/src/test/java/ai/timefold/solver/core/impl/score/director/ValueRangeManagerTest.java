@@ -1007,7 +1007,7 @@ class ValueRangeManagerTest {
         assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(otherValueRange).isSameAs(sortedValueRange);
 
-        // Update it to asc order
+        // Add the asc sorter
         SelectionSorter<S, TestdataObject> sorterComparatorFactory =
                 new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
                         SelectionSorterOrder.ASCENDING);
@@ -1047,7 +1047,7 @@ class ValueRangeManagerTest {
         assertReversedNonNullCodesOfIterator(otherValueRange.createOriginalIterator(), allValues.toArray(String[]::new));
         assertThat(otherValueRange).isSameAs(sortedValueRange);
 
-        // Update it to asc order
+        // Add the asc sorter
         SelectionSorter<S, TestdataObject> sorterComparatorFactory =
                 new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
                         SelectionSorterOrder.ASCENDING);
