@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.ArrayList;
-import java.util.BitSet;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -19,15 +18,12 @@ import org.jspecify.annotations.Nullable;
  * It also allows for direct random access like a list.
  * <p>
  * It uses an {@link ElementPositionTracker} to track the insertion position of each element.
- * When an element is removed, the insertion position of later elements is not changed.
- * Instead, when the next element is removed, the search starts from its last known insertion position,
- * iterating backwards until the element is found.
- * We also keep a counter of deleted elements to avoid excessive iteration;
- * we can guarantee that the current position of an element will not be further away
- * than the number of earlier deletions.
+ * When an element is removed, it is replaced by null at its insertion position;
+ * therefore the insertion position of later elements is not changed.
+ * The list is compacted back during iteration or when {@link #asList()} is called.
  * <p>
  * Together with the fact that removals are relatively rare,
- * this keeps the average removal cost low while giving us all benefits of {@link ArrayList},
+ * this keeps the overhead low while giving us all benefits of {@link ArrayList},
  * such as memory efficiency, random access, and fast iteration.
  * Random access is not required for Constraint Streams, but Neighborhoods make heavy use of it;
  * if we used the {@link ElementAwareList} implementation instead,
@@ -45,15 +41,14 @@ import org.jspecify.annotations.Nullable;
 public final class IndexedSet<T> {
 
     private final ElementPositionTracker<T> elementPositionTracker;
-    private @Nullable ArrayList<T> elementList; // Lazily initialized, so that empty indexes use no memory.
-    private final BitSet gaps = new BitSet(0);
+    private @Nullable ArrayList<@Nullable T> elementList; // Lazily initialized, so that empty indexes use no memory.
     private int gapCount = 0;
 
     public IndexedSet(ElementPositionTracker<T> elementPositionTracker) {
         this.elementPositionTracker = Objects.requireNonNull(elementPositionTracker);
     }
 
-    private List<T> getElementList() {
+    private List<@Nullable T> getElementList() {
         if (elementList == null) {
             elementList = new ArrayList<>();
         }
@@ -63,7 +58,7 @@ public final class IndexedSet<T> {
     /**
      * Appends the specified element to the end of this collection.
      * If the element is already present,
-     * undefined, unexpected, and incorrect behavior should be expected.
+     * an undefined, unexpected, and incorrect behavior should be expected.
      * <p>
      * Presence of the element can be checked using the associated {@link ElementPositionTracker}.
      * For performance reasons, this method avoids that check.
@@ -72,24 +67,8 @@ public final class IndexedSet<T> {
      */
     public void add(T element) {
         var actualElementList = getElementList();
-        if (gapCount > 0) {
-            var gapIndex = gaps.nextSetBit(0);
-            putElementIntoGap(actualElementList, element, gapIndex);
-        } else {
-            actualElementList.add(element);
-            elementPositionTracker.setPosition(element, actualElementList.size() - 1);
-        }
-    }
-
-    private void putElementIntoGap(List<T> elementList, T element, int gap) {
-        setElementList(elementList, element, gap);
-        gaps.clear(gap);
-        gapCount--;
-    }
-
-    private void setElementList(List<T> elementList, T element, int position) {
-        elementList.set(position, element);
-        elementPositionTracker.setPosition(element, position);
+        actualElementList.add(element);
+        elementPositionTracker.setPosition(element, actualElementList.size() - 1);
     }
 
     /**
@@ -121,8 +100,8 @@ public final class IndexedSet<T> {
             actualElementList.remove(insertionPosition);
             removeTailGap(actualElementList);
         } else {
+            // We replace the element with null, creating a gap.
             actualElementList.set(insertionPosition, null);
-            gaps.set(insertionPosition);
             gapCount++;
         }
         return true;
@@ -149,24 +128,28 @@ public final class IndexedSet<T> {
     }
 
     public @Nullable T findFirst(Predicate<T> elementPredicate) {
-        if (isEmpty()) {
-            return null;
-        }
-        for (var i = 0; i < elementList.size(); i++) {
-            var element = elementList.get(i);
+        var actualElementList = getElementList();
+        for (var i = 0; i < actualElementList.size(); i++) {
+            var element = actualElementList.get(i);
             if (element == null) {
-                var nonGap = removeTailGap(elementList);
-                if (i >= nonGap) {
+                var lastNonGapIndex = removeTailGap(actualElementList);
+                if (lastNonGapIndex < 0 || i >= lastNonGapIndex) {
                     return null;
                 }
-                element = elementList.remove(nonGap);
-                putElementIntoGap(elementList, element, i);
+                element = actualElementList.remove(lastNonGapIndex);
+                putElementIntoGap(actualElementList, element, i);
             }
             if (elementPredicate.test(element)) {
                 return element;
             }
         }
         return null;
+    }
+
+    private void putElementIntoGap(List<@Nullable T> elementList, T element, int gap) {
+        elementList.set(gap, element);
+        elementPositionTracker.setPosition(element, gap);
+        gapCount--;
     }
 
     public boolean isEmpty() {
@@ -187,43 +170,39 @@ public final class IndexedSet<T> {
         return elementList;
     }
 
-    private void defrag(List<T> actualElementList) {
+    private void defrag(List<@Nullable T> actualElementList) {
         if (gapCount == 0) {
             return;
         }
-        var gap = gaps.nextSetBit(0);
-        while (gap >= 0) {
-            var lastNonGapIndex = removeTailGap(actualElementList);
-            if (lastNonGapIndex < 0 || gap >= lastNonGapIndex) {
-                break;
+        var elementsAtTheBack = 0;
+        for (var i = removeTailGap(actualElementList); i >= 0 && gapCount > 0; i--) {
+            if (actualElementList.get(i) == null) {
+                if (elementsAtTheBack > 0) {
+                    var element = actualElementList.remove(actualElementList.size() - 1);
+                    putElementIntoGap(actualElementList, element, i);
+                } else {
+                    actualElementList.remove(i);
+                    gapCount--;
+                }
+            } else {
+                elementsAtTheBack++;
             }
-            var lastElement = actualElementList.remove(lastNonGapIndex);
-            setElementList(actualElementList, lastElement, gap);
-            gap = gaps.nextSetBit(gap + 1);
         }
-        resetGaps();
     }
 
-    private void resetGaps() {
-        gaps.clear();
-        gapCount = 0;
-    }
-
-    private int removeTailGap(List<T> actualElementList) {
-        var end = actualElementList.size() - 1;
-        var lastNonGap = gaps.previousClearBit(end);
-        if (lastNonGap < 0) {
+    private int removeTailGap(List<@Nullable T> actualElementList) {
+        if (gapCount == actualElementList.size()) {
             actualElementList.clear();
-            resetGaps();
+            gapCount = 0;
             return -1;
-        } else {
-            for (var i = end; i > lastNonGap; i--) {
-                actualElementList.remove(i);
-            }
-            gaps.clear(lastNonGap, end + 1);
-            gapCount = gaps.cardinality();
-            return lastNonGap;
         }
+        var end = actualElementList.size() - 1;
+        while (end >= 0 && actualElementList.get(end) == null) {
+            actualElementList.remove(end);
+            gapCount--;
+            end--;
+        }
+        return end;
     }
 
 }

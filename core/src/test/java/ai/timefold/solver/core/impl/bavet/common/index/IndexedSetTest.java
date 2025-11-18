@@ -1,14 +1,14 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 
 class IndexedSetTest {
 
