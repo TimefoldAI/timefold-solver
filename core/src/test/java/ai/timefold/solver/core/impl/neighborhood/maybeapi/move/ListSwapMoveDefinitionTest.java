@@ -71,17 +71,17 @@ class ListSwapMoveDefinitionTest {
         var move2 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(move2.extractPlanningEntities())
-                    .containsExactly(e2, e1);
+                    .containsExactly(e2);
             softly.assertThat(move2.extractPlanningValues())
-                    .containsExactly(assignedValue3, assignedValue1);
+                    .containsExactly(assignedValue3, assignedValue2);
         });
 
         var move3 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(2);
         assertSoftly(softly -> {
             softly.assertThat(move3.extractPlanningEntities())
-                    .containsExactly(e2);
+                    .containsExactly(e2, e1);
             softly.assertThat(move3.extractPlanningValues())
-                    .containsExactly(assignedValue3, assignedValue2);
+                    .containsExactly(assignedValue3, assignedValue1);
         });
     }
 

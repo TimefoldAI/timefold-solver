@@ -16,11 +16,14 @@ import org.jspecify.annotations.Nullable;
  * {@link ArrayList}-backed set which allows to {@link #remove(Object)} an element
  * without knowing its position and without an expensive lookup.
  * It also allows for direct random access like a list.
+ * The original insertion order of elements may not be preserved during iteration,
+ * but it is deterministic and predictable.
  * <p>
  * It uses an {@link ElementPositionTracker} to track the insertion position of each element.
  * When an element is removed, it is replaced by null at its insertion position;
  * therefore the insertion position of later elements is not changed.
- * The list is compacted back during iteration or when {@link #asList()} is called.
+ * The set is compacted back during iteration or when {@link #asList()} is called,
+ * by replacing these gaps with elements from the back of the set.
  * <p>
  * Together with the fact that removals are relatively rare,
  * this keeps the overhead low while giving us all benefits of {@link ArrayList},
@@ -39,6 +42,9 @@ import org.jspecify.annotations.Nullable;
  */
 @NullMarked
 public final class IndexedSet<T> {
+
+    private static final int MINIMUM_GAP_COUNT_FOR_COMPACTION = 10;
+    private static final double GAP_RATIO_FOR_COMPACTION = 0.1;
 
     private final ElementPositionTracker<T> elementPositionTracker;
     private @Nullable ArrayList<@Nullable T> elementList; // Lazily initialized, so that empty indexes use no memory.
@@ -98,7 +104,6 @@ public final class IndexedSet<T> {
         if (insertionPosition == actualElementList.size() - 1) {
             // The element was the last one added; we can simply remove it.
             actualElementList.remove(insertionPosition);
-            removeTailGap(actualElementList);
         } else {
             // We replace the element with null, creating a gap.
             actualElementList.set(insertionPosition, null);
@@ -128,22 +133,46 @@ public final class IndexedSet<T> {
     }
 
     public @Nullable T findFirst(Predicate<T> elementPredicate) {
+        if (isEmpty()) {
+            return null;
+        }
+
+        var shouldCompact = shouldCompact(size());
         var actualElementList = getElementList();
-        for (var i = 0; i < actualElementList.size(); i++) {
+        var elementsAtTheBack = 0;
+        for (var i = actualElementList.size() - 1; i >= 0; i--) {
+            // We remove gaps back to front so that we keep elements as close to their original position as possible.
             var element = actualElementList.get(i);
             if (element == null) {
-                var lastNonGapIndex = removeTailGap(actualElementList);
-                if (lastNonGapIndex < 0 || i >= lastNonGapIndex) {
-                    return null;
+                if (shouldCompact) {
+                    if (elementsAtTheBack > 0) {
+                        var elementToMove = actualElementList.remove(actualElementList.size() - 1);
+                        putElementIntoGap(actualElementList, elementToMove, i);
+                    } else {
+                        actualElementList.remove(i);
+                        gapCount--;
+                    }
+                    if (gapCount == 0) {
+                        shouldCompact = false;
+                    }
                 }
-                element = actualElementList.remove(lastNonGapIndex);
-                putElementIntoGap(actualElementList, element, i);
+                continue;
+            } else {
+                elementsAtTheBack++;
             }
             if (elementPredicate.test(element)) {
                 return element;
             }
         }
         return null;
+    }
+
+    private boolean shouldCompact(int elementCount) {
+        if (elementCount < MINIMUM_GAP_COUNT_FOR_COMPACTION) {
+            return false;
+        }
+        var gapPercentage = gapCount / (double) elementCount;
+        return gapPercentage > GAP_RATIO_FOR_COMPACTION;
     }
 
     private void putElementIntoGap(List<@Nullable T> elementList, T element, int gap) {
@@ -163,19 +192,17 @@ public final class IndexedSet<T> {
      * @return a standard list view of this element-aware list
      */
     public List<T> asList() {
-        if (elementList == null) {
+        if (isEmpty()) {
             return Collections.emptyList();
         }
-        defrag(elementList);
+        forceCompaction(elementList);
         return elementList;
     }
 
-    private void defrag(List<@Nullable T> actualElementList) {
-        if (gapCount == 0) {
-            return;
-        }
+    private void forceCompaction(List<@Nullable T> actualElementList) {
+        // We remove gaps back to front so that we keep elements as close to their original position as possible.
         var elementsAtTheBack = 0;
-        for (var i = removeTailGap(actualElementList); i >= 0 && gapCount > 0; i--) {
+        for (var i = actualElementList.size() - 1; gapCount > 0; i--) {
             if (actualElementList.get(i) == null) {
                 if (elementsAtTheBack > 0) {
                     var element = actualElementList.remove(actualElementList.size() - 1);
@@ -188,21 +215,6 @@ public final class IndexedSet<T> {
                 elementsAtTheBack++;
             }
         }
-    }
-
-    private int removeTailGap(List<@Nullable T> actualElementList) {
-        if (gapCount == actualElementList.size()) {
-            actualElementList.clear();
-            gapCount = 0;
-            return -1;
-        }
-        var end = actualElementList.size() - 1;
-        while (end >= 0 && actualElementList.get(end) == null) {
-            actualElementList.remove(end);
-            gapCount--;
-            end--;
-        }
-        return end;
     }
 
 }

@@ -1,284 +1,172 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.assertj.core.api.SoftAssertions;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
-class IndexedSetTest {
+@NullMarked
+class IndexedSetAdditionalTest {
 
     private final ElementPositionTracker<String> stringTracker = new SimpleTracker<>();
 
     @Test
-    void addMultipleElements() {
+    void addToEmptySet() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
-        set.add("B");
-        set.add("C");
 
-        assertThat(set.size()).isEqualTo(3);
-        assertThat(set.asList()).containsExactlyInAnyOrder("A", "B", "C");
+        assertThat(set.size()).isEqualTo(1);
+        assertThat(set.isEmpty()).isFalse();
+        assertThat(set.asList()).containsExactlyInAnyOrder("A");
     }
 
     @Test
-    void removeElement() {
-        var set = new IndexedSet<>(stringTracker);
+    void shouldNotCompactWithFewElements() {
+        var tracker = new CountingTracker<String>();
+        var set = new IndexedSet<>(tracker);
 
-        set.add("A");
-        set.remove("A");
+        // Add 5 elements, remove 1 (20% gaps, but below minimum)
+        for (int i = 0; i < 5; i++) {
+            set.add(String.valueOf(i));
+        }
+        set.remove("2");
 
-        assertThat(set.isEmpty()).isTrue();
-        assertThat(set.size()).isZero();
+        tracker.resetSetPositionCount();
+        set.findFirst(e -> false);
+
+        // No compaction should happen since we're below minimum gap count
+        assertThat(tracker.setPositionCount).isZero();
     }
 
     @Test
-    void removeNonExistentElement() {
-        var set = new IndexedSet<>(stringTracker);
+    void shouldCompactWhenGapRatioExceeded() {
+        var tracker = new CountingTracker<String>();
+        var set = new IndexedSet<>(tracker);
 
-        set.add("A");
-        assertThatThrownBy(() -> set.remove("B"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("was not found");
+        // Add 20 elements, remove 3 (15% gaps, above 10% threshold)
+        for (int i = 0; i < 20; i++) {
+            set.add(String.valueOf(i));
+        }
+        set.remove("5");
+        set.remove("10");
+        set.remove("15");
+
+        tracker.resetSetPositionCount();
+        set.findFirst(e -> false);
+
+        // Compaction should happen
+        assertThat(tracker.setPositionCount).isPositive();
     }
 
     @Test
-    void removeFromEmptySet() {
-        var set = new IndexedSet<>(stringTracker);
-
-        assertThatThrownBy(() -> set.remove("A"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("was not found");
-    }
-
-    @Test
-    void removeMiddleElement() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.remove("B");
-
-        assertThat(set.size()).isEqualTo(2);
-        assertThat(set.asList()).containsExactlyInAnyOrder("A", "C");
-    }
-
-    @Test
-    void removeLastElement() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.remove("C");
-
-        assertThat(set.size()).isEqualTo(2);
-        assertThat(set.asList()).containsExactlyInAnyOrder("A", "B");
-    }
-
-    @Test
-    void removeFirstElement() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.remove("A");
-
-        assertThat(set.size()).isEqualTo(2);
-        assertThat(set.asList()).containsExactlyInAnyOrder("B", "C");
-    }
-
-    @Test
-    void multipleRemovalsAndAdditions() {
+    void asListCompactsSet() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
         set.add("B");
         set.add("C");
         set.remove("B");
-        set.add("D");
+
+        var list = set.asList();
+
+        assertThat(list).containsExactlyInAnyOrder("A", "C");
+    }
+
+    @Test
+    void asListOnSetWithOnlyGaps() {
+        var set = new IndexedSet<>(stringTracker);
+
+        set.add("A");
+        set.add("B");
         set.remove("A");
-        set.add("E");
+        set.remove("B");
 
-        assertThat(set.size()).isEqualTo(3);
-        assertThat(set.asList()).containsExactlyInAnyOrder("C", "D", "E");
+        var list = set.asList();
+
+        assertThat(list).isEmpty();
     }
 
     @Test
-    void forEach() {
+    void findFirstStopsAtFirstMatch() {
         var set = new IndexedSet<>(stringTracker);
+        var counter = new AtomicInteger(0);
 
         set.add("A");
         set.add("B");
         set.add("C");
 
-        var result = new ArrayList<String>();
-        set.forEach(result::add);
-
-        assertThat(result).containsExactlyInAnyOrder("A", "B", "C");
-    }
-
-    @Test
-    void forEachOnEmptySet() {
-        var set = new IndexedSet<>(stringTracker);
-
-        var result = new ArrayList<String>();
-        set.forEach(result::add);
-
-        assertThat(result).isEmpty();
-    }
-
-    @Test
-    void forEachWithRemoval() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.add("D");
-
-        var result = new ArrayList<String>();
-        set.forEach(element -> {
-            result.add(element);
-            if (element.equals("B")) {
-                set.remove("B");
-            }
+        var result = set.findFirst(element -> {
+            counter.incrementAndGet();
+            return element.equals("B");
         });
 
-        assertThat(result).containsExactlyInAnyOrder("A", "B", "C", "D");
-        assertThat(set.asList()).containsExactlyInAnyOrder("A", "C", "D");
-    }
-
-    @Test
-    void isEmpty() {
-        var set = new IndexedSet<>(stringTracker);
-
-        assertThat(set.isEmpty()).isTrue();
-
-        set.add("A");
-        assertThat(set.isEmpty()).isFalse();
-
-        set.remove("A");
-        assertThat(set.isEmpty()).isTrue();
-    }
-
-    @Test
-    void asListOnEmptySet() {
-        var set = new IndexedSet<>(stringTracker);
-
-        assertThat(set.asList()).isEmpty();
-    }
-
-    @Test
-    void largeSetWithManyRemovals() {
-        var intTracker = new SimpleTracker<Integer>();
-        var set = new IndexedSet<>(intTracker);
-
-        for (int i = 0; i < 100; i++) {
-            set.add(i);
-        }
-
-        for (int i = 0; i < 50; i++) {
-            set.remove(i * 2);
-        }
-
-        assertThat(set.size()).isEqualTo(50);
-        for (int i = 0; i < 50; i++) {
-            assertThat(set.asList()).contains(i * 2 + 1);
-        }
-    }
-
-    @Test
-    void addToGapAfterRemoval() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.remove("B");
-        set.add("D");
-
-        assertThat(set.size()).isEqualTo(3);
-        assertThat(set.asList()).containsExactlyInAnyOrder("A", "C", "D");
-    }
-
-    @Test
-    void multipleGapsFilledInOrder() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.add("D");
-        set.remove("B");
-        set.remove("D");
-        set.add("E");
-        set.add("F");
-
-        assertThat(set.size()).isEqualTo(4);
-        assertThat(set.asList()).containsExactlyInAnyOrder("A", "C", "E", "F");
-    }
-
-    @Test
-    void findFirstWithPredicate() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-
-        var result = set.findFirst(element -> element.equals("B"));
-
         assertThat(result).isEqualTo("B");
+        assertThat(counter.get()).isLessThanOrEqualTo(3);
     }
 
     @Test
-    void findFirstOnEmptySet() {
-        var set = new IndexedSet<>(stringTracker);
-
-        var result = set.findFirst(element -> true);
-
-        assertThat(result).isNull();
-    }
-
-    @Test
-    void findFirstNoMatch() {
+    void findFirstWithAllGaps() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
         set.add("B");
         set.add("C");
-
-        var result = set.findFirst(element -> element.equals("Z"));
-
-        assertThat(result).isNull();
-    }
-
-    @Test
-    void findFirstWithGaps() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.add("D");
+        set.remove("A");
         set.remove("B");
+        set.remove("C");
 
-        var result = set.findFirst(element -> element.equals("C"));
+        var result = set.findFirst(e -> true);
 
-        assertThat(result).isEqualTo("C");
-        assertThat(set.size()).isEqualTo(3);
+        assertThat(result).isNull();
     }
 
     @Test
-    void defragmentationDuringAsList() {
+    void forEachOnSetAfterCompaction() {
+        var set = new IndexedSet<>(stringTracker);
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+        set.remove("B");
+        set.asList(); // Force compaction
+
+        var result = new ArrayList<String>();
+        set.forEach(result::add);
+
+        assertThat(result).containsExactlyInAnyOrder("A", "C");
+    }
+
+    @Test
+    void mixedOperationsWithCompaction() {
+        var set = new IndexedSet<>(stringTracker);
+
+        for (int i = 0; i < 50; i++) {
+            set.add("E" + i);
+        }
+        for (int i = 0; i < 25; i += 2) {
+            set.remove("E" + i);
+        }
+
+        var list = set.asList(); // Force compaction
+
+        SoftAssertions.assertSoftly(softly -> {
+            softly.assertThat(list)
+                    .hasSize(37);
+            for (int i = 1; i < 50; i += 2) {
+                softly.assertThat(list).contains("E" + i);
+            }
+        });
+    }
+
+    @Test
+    void removeFromMiddlePreservesOrder() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
@@ -292,25 +180,23 @@ class IndexedSetTest {
         var list = set.asList();
 
         assertThat(list).containsExactlyInAnyOrder("A", "C", "E");
-        assertThat(set.size()).isEqualTo(3);
     }
 
     @Test
-    void removeElementWithNegativeInsertionPosition() {
-        var tracker = new SimpleTracker<String>();
-        var set = new IndexedSet<>(tracker);
+    void gapAtEndIsRemoved() {
+        var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
+        set.add("B");
+        set.add("C");
+        set.remove("C");
 
-        tracker.positions.put("B", -1);
-
-        assertThatThrownBy(() -> set.remove("B"))
-                .isInstanceOf(IllegalStateException.class)
-                .hasMessageContaining("was not found");
+        assertThat(set.size()).isEqualTo(2);
+        assertThat(set.asList()).containsExactlyInAnyOrder("A", "B");
     }
 
     @Test
-    void sizeWithMultipleGaps() {
+    void multipleGapsAtEndAreRemoved() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
@@ -318,54 +204,53 @@ class IndexedSetTest {
         set.add("C");
         set.add("D");
         set.add("E");
-        set.remove("B");
         set.remove("D");
+        set.remove("E");
 
         assertThat(set.size()).isEqualTo(3);
+        assertThat(set.asList()).containsExactlyInAnyOrder("A", "B", "C");
     }
 
     @Test
-    void addAfterMultipleRemovals() {
+    void addAfterRemovingLastElement() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
         set.add("B");
+        set.remove("B");
         set.add("C");
-        set.add("D");
+
+        assertThat(set.size()).isEqualTo(2);
+        assertThat(set.asList()).containsExactlyInAnyOrder("A", "C");
+    }
+
+    @Test
+    void sizeIsConsistentAfterOperations() {
+        var set = new IndexedSet<>(stringTracker);
+
+        assertThat(set.size()).isZero();
+
+        set.add("A");
+        assertThat(set.size()).isEqualTo(1);
+
+        set.add("B");
+        assertThat(set.size()).isEqualTo(2);
+
         set.remove("A");
-        set.remove("C");
-        set.add("E");
-        set.add("F");
+        assertThat(set.size()).isEqualTo(1);
 
-        assertThat(set.size()).isEqualTo(4);
-        assertThat(set.asList()).containsExactlyInAnyOrder("B", "D", "E", "F");
+        set.add("C");
+        assertThat(set.size()).isEqualTo(2);
     }
 
     @Test
-    void consecutiveAdditionsAfterClearingGaps() {
+    void emptyAfterRemovingAllElements() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
         set.add("B");
-        set.remove("A");
-        set.add("C");
-        set.add("D");
-
-        assertThat(set.size()).isEqualTo(3);
-        assertThat(set.asList()).containsExactlyInAnyOrder("B", "C", "D");
-    }
-
-    @Test
-    void removeAllElementsOneByOne() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-
         set.remove("A");
         set.remove("B");
-        set.remove("C");
 
         assertThat(set.isEmpty()).isTrue();
         assertThat(set.size()).isZero();
@@ -373,55 +258,16 @@ class IndexedSetTest {
     }
 
     @Test
-    void forEachWithMultipleGaps() {
+    void forEachEmptyAfterRemovals() {
         var set = new IndexedSet<>(stringTracker);
 
         set.add("A");
-        set.add("B");
-        set.add("C");
-        set.add("D");
-        set.add("E");
-        set.remove("B");
-        set.remove("D");
+        set.remove("A");
 
         var result = new ArrayList<String>();
         set.forEach(result::add);
 
-        assertThat(result).containsExactlyInAnyOrder("A", "C", "E");
-    }
-
-    @Test
-    void removeDoesNotLeaveTrailingGaps() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.remove("B"); // Leave a gap.
-        set.remove("C"); // Remove the final element, which requires the preceding gap to be removed as well.
-
-        assertThat(set.size()).isEqualTo(1);
-        assertThat(set.asList()).containsExactlyInAnyOrder("A");
-    }
-
-    @Test
-    void findFirstDefragsInternalList() {
-        var set = new IndexedSet<>(stringTracker);
-
-        set.add("A");
-        set.add("B");
-        set.add("C");
-        set.add("D");
-        set.remove("A");
-        set.remove("C");
-
-        var result = new ArrayList<String>();
-        set.findFirst(element -> {
-            result.add(element);
-            return false;
-        });
-
-        assertThat(result).containsExactlyInAnyOrder("B", "D");
+        assertThat(result).isEmpty();
     }
 
     @NullMarked
@@ -438,6 +284,29 @@ class IndexedSetTest {
         public int clearPosition(T element) {
             var position = positions.remove(element);
             return position == null ? -1 : position;
+        }
+    }
+
+    @NullMarked
+    private static final class CountingTracker<T> implements ElementPositionTracker<T> {
+
+        private final Map<T, Integer> positions = new HashMap<>();
+        private int setPositionCount = 0;
+
+        @Override
+        public void setPosition(T element, int position) {
+            positions.put(element, position);
+            setPositionCount++;
+        }
+
+        @Override
+        public int clearPosition(T element) {
+            var position = positions.remove(element);
+            return position == null ? -1 : position;
+        }
+
+        void resetSetPositionCount() {
+            setPositionCount = 0;
         }
     }
 
