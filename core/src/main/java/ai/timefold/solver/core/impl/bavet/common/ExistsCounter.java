@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import ai.timefold.solver.core.impl.bavet.common.index.IndexedSet;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
@@ -10,6 +11,7 @@ public final class ExistsCounter<Tuple_ extends AbstractTuple>
         extends AbstractPropagationMetadataCarrier<Tuple_> {
 
     final Tuple_ leftTuple;
+    final IndexedSet<ExistsCounterHandle<Tuple_>> leftHandleSet = new IndexedSet<>(ExistsCounterHandlePositionTracker.left());
     TupleState state = TupleState.DEAD; // It's the node's job to mark a new instance as CREATING.
     int countRight = 0;
     int indexedSetPositon = -1;

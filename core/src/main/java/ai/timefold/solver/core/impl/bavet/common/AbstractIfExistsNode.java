@@ -20,16 +20,13 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
 
     protected final boolean shouldExist;
-    protected final int inputStoreIndexLeftHandleSet; // -1 if !isFiltering
     protected final int inputStoreIndexRightHandleSet; // -1 if !isFiltering
     protected final boolean isFiltering;
     private final DynamicPropagationQueue<LeftTuple_, ExistsCounter<LeftTuple_>> propagationQueue;
 
-    protected AbstractIfExistsNode(boolean shouldExist, TupleStorePositionTracker leftTupleStorePositionTracker,
-            TupleStorePositionTracker rightTupleStorePositionTracker, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
-            boolean isFiltering) {
+    protected AbstractIfExistsNode(boolean shouldExist, TupleStorePositionTracker rightTupleStorePositionTracker,
+            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering) {
         this.shouldExist = shouldExist;
-        this.inputStoreIndexLeftHandleSet = isFiltering ? leftTupleStorePositionTracker.reserveNextAvailablePosition() : -1;
         this.inputStoreIndexRightHandleSet = isFiltering ? rightTupleStorePositionTracker.reserveNextAvailablePosition() : -1;
         this.isFiltering = isFiltering;
         this.propagationQueue = new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
@@ -123,12 +120,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         return rightHandleSet;
     }
 
-    void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
-            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet) {
+    void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter) {
         if (testFiltering(leftTuple, rightTuple)) {
             counter.countRight++;
             IndexedSet<ExistsCounterHandle<LeftTuple_>> rightHandleSet = rightTuple.getStore(inputStoreIndexRightHandleSet);
-            new ExistsCounterHandle<>(counter, leftHandleSet, rightHandleSet);
+            new ExistsCounterHandle<>(counter, rightHandleSet);
         }
     }
 
@@ -154,9 +150,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         }
         if (testFiltering(counter.leftTuple, rightTuple)) {
             incrementCounterRight(counter);
-            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet =
-                    counter.leftTuple.getStore(inputStoreIndexLeftHandleSet);
-            new ExistsCounterHandle<>(counter, leftHandleSet, rightHandleSet);
+            new ExistsCounterHandle<>(counter, rightHandleSet);
         }
     }
 

@@ -36,7 +36,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
             TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
             boolean isFiltering) {
-        super(shouldExist, leftTupleStorePositionTracker, rightTupleStorePositionTracker, nextNodesTupleLifecycle, isFiltering);
+        super(shouldExist, rightTupleStorePositionTracker, nextNodesTupleLifecycle, isFiltering);
         this.keysExtractorLeft = keysExtractorLeft;
         this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
         this.inputStoreIndexLeftKeys = leftTupleStorePositionTracker.reserveNextAvailablePosition();
@@ -68,10 +68,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         if (!isFiltering) {
             counter.countRight = indexerRight.size(indexKeys);
         } else {
-            var leftHandleSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.left());
-            indexerRight.forEach(indexKeys,
-                    rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftHandleSet));
-            leftTuple.setStore(inputStoreIndexLeftHandleSet, leftHandleSet);
+            indexerRight.forEach(indexKeys, rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter));
         }
     }
 
@@ -93,15 +90,13 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 updateUnchangedCounterLeft(counter);
             } else {
                 // Call filtering for the leftTuple and rightTuple combinations again
-                IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet = leftTuple.getStore(inputStoreIndexLeftHandleSet);
-                leftHandleSet.forEach(ExistsCounterHandle::remove);
+                counter.leftHandleSet.forEach(ExistsCounterHandle::remove);
                 counter.countRight = 0;
-                indexerRight.forEach(oldIndexKeys,
-                        rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftHandleSet));
+                indexerRight.forEach(oldIndexKeys, rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter));
                 updateCounterLeft(counter);
             }
         } else {
-            updateIndexerLeft(oldIndexKeys, counter, leftTuple);
+            updateIndexerLeft(oldIndexKeys, counter);
             counter.countRight = 0;
             leftTuple.setStore(inputStoreIndexLeftKeys, newIndexKeys);
             indexerLeft.put(newIndexKeys, counter);
@@ -118,15 +113,14 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             return;
         }
         ExistsCounter<LeftTuple_> counter = leftTuple.getStore(inputStoreIndexLeftCounter);
-        updateIndexerLeft(indexKeys, counter, leftTuple);
+        updateIndexerLeft(indexKeys, counter);
         killCounterLeft(counter);
     }
 
-    private void updateIndexerLeft(Object indexKeys, ExistsCounter<LeftTuple_> counter, LeftTuple_ leftTuple) {
+    private void updateIndexerLeft(Object indexKeys, ExistsCounter<LeftTuple_> counter) {
         indexerLeft.remove(indexKeys, counter);
         if (isFiltering) {
-            IndexedSet<ExistsCounterHandle<LeftTuple_>> leftHandleSet = leftTuple.getStore(inputStoreIndexLeftHandleSet);
-            leftHandleSet.forEach(ExistsCounterHandle::remove);
+            counter.leftHandleSet.forEach(ExistsCounterHandle::remove);
         }
     }
 
