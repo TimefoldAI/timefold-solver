@@ -16,8 +16,8 @@ import org.jspecify.annotations.Nullable;
  * {@link ArrayList}-backed set which allows to {@link #remove(Object)} an element
  * without knowing its position and without an expensive lookup.
  * It also allows for direct random access like a list.
- * The original insertion order of elements may not be preserved during iteration,
- * but it is deterministic and predictable.
+ * The order of iteration is not guaranteed to be the insertion order,
+ * but it is stable and predictable.
  * <p>
  * It uses an {@link ElementPositionTracker} to track the insertion position of each element.
  * When an element is removed, it is replaced by null at its insertion position;
@@ -44,10 +44,11 @@ import org.jspecify.annotations.Nullable;
 public final class IndexedSet<T> {
 
     private static final int MINIMUM_ELEMENT_COUNT_FOR_COMPACTION = 10;
-    private static final double GAP_RATIO_FOR_COMPACTION = 0.1;
+    private static final double GAP_RATIO_FOR_COMPACTION = 0.2;
 
     private final ElementPositionTracker<T> elementPositionTracker;
     private @Nullable ArrayList<@Nullable T> elementList; // Lazily initialized, so that empty indexes use no memory.
+    private int lastElementPosition = -1;
     private int gapCount = 0;
 
     public IndexedSet(ElementPositionTracker<T> elementPositionTracker) {
@@ -73,16 +74,8 @@ public final class IndexedSet<T> {
      */
     public void add(T element) {
         var actualElementList = getElementList();
-        var lastElementPosition = actualElementList.size() - 1;
-        if (gapCount > 0) {
-            if (actualElementList.get(lastElementPosition) == null) { // We can reuse the gap at the back.
-                putElementIntoGap(actualElementList, element, lastElementPosition);
-                return;
-            }
-        }
-        // Put the element at the end of the list.
         actualElementList.add(element);
-        elementPositionTracker.setPosition(element, lastElementPosition + 1);
+        elementPositionTracker.setPosition(element, ++lastElementPosition);
     }
 
     /**
@@ -109,9 +102,10 @@ public final class IndexedSet<T> {
             return false;
         }
         var actualElementList = getElementList();
-        if (insertionPosition == actualElementList.size() - 1) {
+        if (insertionPosition == lastElementPosition) {
             // The element was the last one added; we can simply remove it.
             actualElementList.remove(insertionPosition);
+            lastElementPosition--;
         } else {
             // We replace the element with null, creating a gap.
             actualElementList.set(insertionPosition, null);
@@ -120,15 +114,24 @@ public final class IndexedSet<T> {
         return true;
     }
 
+    public boolean isEmpty() {
+        return size() == 0;
+    }
+
     public int size() {
-        return elementList == null ? 0 : elementList.size() - gapCount;
+        return elementList == null ? 0 : lastElementPosition - gapCount + 1;
     }
 
     /**
      * Performs the given action for each element of the collection
      * until all elements have been processed.
+     * The order of iteration is not guaranteed to be the insertion order,
+     * but it is stable and predictable.
      *
-     * @param elementConsumer the action to be performed for each element
+     * @param elementConsumer the action to be performed for each element;
+     *        may include removing elements from the collection,
+     *        but additions or swaps are not allowed;
+     *        undefined behavior will occur if that is attempted.
      */
     public void forEach(Consumer<T> elementConsumer) {
         if (isEmpty()) {
@@ -145,12 +148,11 @@ public final class IndexedSet<T> {
             return null;
         }
 
-        var elementCount = elementList.size();
-        var shouldCompact = shouldCompact(elementCount);
+        var shouldCompact = shouldCompact(lastElementPosition + 1);
 
         // We remove gaps back to front so that we keep elements as close to their original position as possible.
-        for (var i = elementCount - 1; i >= 0; i--) {
-            if (elementCount == gapCount) {
+        for (var i = lastElementPosition; i >= 0; i--) {
+            if (lastElementPosition + 1 == gapCount) {
                 // If all elements were removed, clear the list to free memory and terminate iteration.
                 clearList();
                 return null;
@@ -158,47 +160,23 @@ public final class IndexedSet<T> {
 
             var element = elementList.get(i);
             if (element == null) {
-                if (shouldCompact) {
-                    if (i < elementCount - 1) {
-                        var elementToMove = elementList.remove(elementCount - 1);
-                        putElementIntoGap(elementList, elementToMove, i);
-                    } else { // The gap is at the back already.
-                        elementList.remove(i);
-                        gapCount--;
-                    }
-                    elementCount--;
-                    if (gapCount == 0) {
-                        shouldCompact = false;
-                    }
+                if (!shouldCompact) {
+                    continue;
                 }
+                shouldCompact = !fillGap(i);
             } else {
                 if (elementPredicate.test(element)) {
                     return element;
                 }
-                elementCount = elementList.size(); // Update in case that the predicate removed some elements.
             }
         }
         return null;
     }
 
-    private void putElementIntoGap(List<@Nullable T> elementList, T element, int gap) {
-        elementList.set(gap, element);
-        elementPositionTracker.setPosition(element, gap);
-        gapCount--;
-    }
-
-    public @Nullable T findFirst(Predicate<T> elementPredicate) {
-        return forEach(elementPredicate);
-    }
-
-    private void clearList() {
-        if (elementList != null) {
-            elementList.clear();
-            gapCount = 0;
-        }
-    }
-
     private boolean shouldCompact(int elementCount) {
+        if (gapCount == 0) {
+            return false;
+        }
         if (elementCount < MINIMUM_ELEMENT_COUNT_FOR_COMPACTION) {
             return false;
         }
@@ -206,8 +184,42 @@ public final class IndexedSet<T> {
         return gapPercentage > GAP_RATIO_FOR_COMPACTION;
     }
 
-    public boolean isEmpty() {
-        return size() == 0;
+    private void clearList() {
+        if (elementList != null) {
+            elementList.clear();
+            gapCount = 0;
+            lastElementPosition = -1;
+        }
+    }
+
+    /**
+     * Fills the gap at position i by moving the last element into it.
+     * 
+     * @param i the position of the gap to fill
+     * @return true if there are no more gaps after filling this one
+     */
+    private boolean fillGap(int i) {
+        if (i < lastElementPosition) { // Fill the gap if there are elements after it.
+            var elementToMove = elementList.remove(lastElementPosition);
+            elementList.set(i, elementToMove);
+            elementPositionTracker.setPosition(elementToMove, i);
+        } else { // The gap is at the back already.
+            elementList.remove(i);
+        }
+        lastElementPosition--;
+        gapCount--;
+        return gapCount == 0;
+    }
+
+    /**
+     * As defined by {@link #forEach(Consumer)},
+     * but stops when the predicate returns true for an element.
+     * 
+     * @param elementPredicate the predicate to be tested for each element
+     * @return the first element for which the predicate returned true, or null if none
+     */
+    public @Nullable T findFirst(Predicate<T> elementPredicate) {
+        return forEach(elementPredicate);
     }
 
     /**
@@ -226,24 +238,16 @@ public final class IndexedSet<T> {
 
     private void forceCompaction() {
         // We remove gaps back to front so that we keep elements as close to their original position as possible.
-        var elementCount = elementList.size();
-        for (var i = elementCount - 1; i >= 0; i--) {
-            if (elementCount == gapCount) {
+        for (var i = lastElementPosition; i >= 0; i--) {
+            if (lastElementPosition + 1 == gapCount) {
                 // If all elements were removed, clear the list to free memory and terminate iteration.
                 clearList();
                 return;
             }
 
-            if (elementList.get(i) == null) {
-                if (i < elementCount - 1) {
-                    var element = elementList.remove(elementCount - 1);
-                    putElementIntoGap(elementList, element, i);
-                } else { // The gap is at the back already.
-                    elementList.remove(i);
-                    gapCount--;
-                }
-                elementCount--;
-                if (gapCount == 0) {
+            var element = elementList.get(i);
+            if (element == null) {
+                if (fillGap(i)) { // If there are no more gaps, we can stop.
                     return;
                 }
             }
