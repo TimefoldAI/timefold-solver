@@ -1308,7 +1308,7 @@ class DefaultSolverTest {
     @Test
     void solveWithMultipleSorterManners() {
         var solverConfig = PlannerTestUtils.buildSolverConfig(
-                        TestdataComparatorSortableSolution.class, TestdataComparatorSortableEntity.class)
+                TestdataComparatorSortableSolution.class, TestdataComparatorSortableEntity.class)
                 .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
                         new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
                                 .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("value"))),
