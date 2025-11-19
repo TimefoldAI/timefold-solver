@@ -50,7 +50,7 @@ public final class IndexedSet<T> {
     static final double GAP_RATIO_FOR_COMPACTION = 0.1;
 
     private final ElementPositionTracker<T> elementPositionTracker;
-    private @Nullable ArrayList<@Nullable T> elementList; // Lazily initialized, so that empty indexes use no memory.
+    private @Nullable List<@Nullable T> elementList; // Lazily initialized, so that empty indexes use no memory.
     private int lastElementPosition = -1;
     private int gapCount = 0;
 
@@ -97,25 +97,31 @@ public final class IndexedSet<T> {
     }
 
     private boolean innerRemove(T element) {
-        if (isEmpty()) {
-            return false;
-        }
         var insertionPosition = elementPositionTracker.clearPosition(element);
         if (insertionPosition < 0) {
             return false;
         }
-        var actualElementList = getElementList();
         if (insertionPosition == lastElementPosition) {
             // The element was the last one added; we can simply remove it.
-            actualElementList.remove(insertionPosition);
+            elementList.remove(insertionPosition);
             lastElementPosition--;
         } else {
             // We replace the element with null, creating a gap.
-            actualElementList.set(insertionPosition, null);
+            elementList.set(insertionPosition, null);
             gapCount++;
         }
         clearIfPossible();
         return true;
+    }
+
+    private boolean clearIfPossible() {
+        if (gapCount > 0 && lastElementPosition + 1 == gapCount) { // All positions are gaps. Clear the list entirely.
+            elementList.clear();
+            gapCount = 0;
+            lastElementPosition = -1;
+            return true;
+        }
+        return false;
     }
 
     public boolean isEmpty() {
@@ -123,7 +129,7 @@ public final class IndexedSet<T> {
     }
 
     public int size() {
-        return elementList == null ? 0 : lastElementPosition - gapCount + 1;
+        return lastElementPosition - gapCount + 1;
     }
 
     /**
@@ -197,17 +203,6 @@ public final class IndexedSet<T> {
         return null;
     }
 
-    private boolean clearIfPossible() {
-        if (gapCount > 0 && lastElementPosition + 1 == gapCount) {
-            // All positions are gaps. Clear the list entirely.
-            elementList.clear();
-            gapCount = 0;
-            lastElementPosition = -1;
-            return true;
-        }
-        return false;
-    }
-
     /**
      * Fills the gap at position i by moving the last element into it.
      * 
@@ -215,22 +210,26 @@ public final class IndexedSet<T> {
      * @return the element that now occupies position i, or null if no element further in the list can fill the gap
      */
     private @Nullable T fillGap(int gapPosition) {
-        T lastRemovedElement = null;
-        while (lastElementPosition >= gapPosition) {
-            lastRemovedElement = elementList.remove(lastElementPosition);
-            lastElementPosition--;
-            gapCount--; // Even if this is not a gap, we still mark a gap as removed...
-            if (lastRemovedElement != null) {
-                break;
-            }
-        }
+        T lastRemovedElement = removeLastNonGap(gapPosition);
         if (lastRemovedElement == null) {
             return null;
         }
-        // ... because this actually fills the main gap we were asked to fill.
         elementList.set(gapPosition, lastRemovedElement);
         elementPositionTracker.setPosition(lastRemovedElement, gapPosition);
+        gapCount--;
         return lastRemovedElement;
+    }
+
+    private @Nullable T removeLastNonGap(int gapPosition) {
+        while (lastElementPosition >= gapPosition) {
+            var lastRemovedElement = elementList.remove(lastElementPosition);
+            lastElementPosition--;
+            if (lastRemovedElement != null) {
+                return lastRemovedElement;
+            }
+            gapCount--;
+        }
+        return null;
     }
 
     /**
@@ -270,8 +269,8 @@ public final class IndexedSet<T> {
         for (var i = 0; i <= lastElementPosition; i++) {
             var element = elementList.get(i);
             if (element == null) {
-                element = fillGap(i);
-                if (element == null || gapCount == 0) { // If there are no more gaps, we can stop.
+                fillGap(i);
+                if (gapCount == 0) { // If there are no more gaps, we can stop.
                     return;
                 }
             }
