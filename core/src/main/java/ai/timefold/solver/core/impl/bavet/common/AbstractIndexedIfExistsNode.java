@@ -68,7 +68,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         if (!isFiltering) {
             counter.countRight = indexerRight.size(indexKeys);
         } else {
-            indexerRight.forEach(indexKeys, rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter));
+            indexerRight.forEach(indexKeys, rightTuple -> updateCounterFromLeft(counter, rightTuple));
         }
     }
 
@@ -91,7 +91,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             } else {
                 // Call filtering for the leftTuple and rightTuple combinations again
                 counter.clearIncludingCount();
-                indexerRight.forEach(oldIndexKeys, rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter));
+                indexerRight.forEach(oldIndexKeys, rightTuple -> updateCounterFromLeft(counter, rightTuple));
                 updateCounterLeft(counter);
             }
         } else {
@@ -142,7 +142,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             indexerLeft.forEach(indexKeys, this::incrementCounterRight);
         } else {
             var rightHandleSet = new IndexedSet<ExistsCounterHandle<LeftTuple_>>(ExistsCounterHandlePositionTracker.right());
-            indexerLeft.forEach(indexKeys, counter -> updateCounterFromRight(rightTuple, counter, rightHandleSet));
+            indexerLeft.forEach(indexKeys, counter -> updateCounterFromRight(counter, rightTuple, rightHandleSet));
             rightTuple.setStore(inputStoreIndexRightHandleSet, rightHandleSet);
         }
     }
@@ -161,7 +161,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
             if (isFiltering) {
                 var rightHandleSet = updateRightHandleSet(rightTuple);
                 indexerLeft.forEach(oldIndexKeys,
-                        counter -> updateCounterFromRight(rightTuple, counter, rightHandleSet));
+                        counter -> updateCounterFromRight(counter, rightTuple, rightHandleSet));
             }
         } else {
             indexerRight.remove(oldIndexKeys, rightTuple);

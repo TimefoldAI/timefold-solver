@@ -120,15 +120,14 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         return rightHandleSet;
     }
 
-    void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter) {
-        if (testFiltering(leftTuple, rightTuple)) {
+    void updateCounterFromLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple) {
+        if (testFiltering(counter.leftTuple, rightTuple)) {
             counter.countRight++;
-            IndexedSet<ExistsCounterHandle<LeftTuple_>> rightHandleSet = rightTuple.getStore(inputStoreIndexRightHandleSet);
-            new ExistsCounterHandle<>(counter, rightHandleSet);
+            new ExistsCounterHandle<>(counter, rightTuple.getStore(inputStoreIndexRightHandleSet));
         }
     }
 
-    void updateCounterFromRight(UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
+    void updateCounterFromRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple,
             IndexedSet<ExistsCounterHandle<LeftTuple_>> rightHandleSet) {
         var leftTuple = counter.leftTuple;
         if (!leftTuple.state.isActive()) {
@@ -148,7 +147,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
             // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
-        if (testFiltering(counter.leftTuple, rightTuple)) {
+        if (testFiltering(leftTuple, rightTuple)) {
             incrementCounterRight(counter);
             new ExistsCounterHandle<>(counter, rightHandleSet);
         }
