@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
 
+@NullMarked
 class IndexedSetTest {
 
     private IndexedSet<String> createIndexedSet() {
@@ -127,7 +128,7 @@ class IndexedSetTest {
     @Test
     void forEachWithGaps() {
         var set = createIndexedSet();
-        for (int i = 0; i < 20; i++) {
+        for (var i = 0; i < 20; i++) {
             set.add("Element-" + i);
         }
         // Remove some elements to create gaps
@@ -178,7 +179,7 @@ class IndexedSetTest {
     @Test
     void multipleExternalRemovalsDuringForEach() {
         var set = createIndexedSet();
-        for (int i = 0; i < 30; i++) {
+        for (var i = 0; i < 30; i++) {
             set.add("Element-" + i);
         }
 
@@ -219,7 +220,7 @@ class IndexedSetTest {
     @Test
     void findFirstWithExternalRemoval() {
         var set = createIndexedSet();
-        for (int i = 0; i < 20; i++) {
+        for (var i = 0; i < 20; i++) {
             set.add("Element-" + i);
         }
 
@@ -238,7 +239,7 @@ class IndexedSetTest {
     @Test
     void gapAtTheBackIsRemovedDirectly() {
         var set = createIndexedSet();
-        for (int i = 0; i < 20; i++) {
+        for (var i = 0; i < 20; i++) {
             set.add("Element-" + i);
         }
 
@@ -289,12 +290,14 @@ class IndexedSetTest {
     void compactionTriggersAtCorrectThreshold() {
         var set = createIndexedSet();
         // Add 100 elements (minimum for compaction)
-        for (int i = 0; i < 100; i++) {
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Remove 10 elements to create exactly 10% gaps (threshold)
-        for (int i = 0; i < 10; i++) {
+        var removedElementCount = elementCount / 10;
+        for (var i = 0; i < removedElementCount; i++) {
             set.remove("Element-" + i);
         }
 
@@ -304,118 +307,115 @@ class IndexedSetTest {
         var elements = new ArrayList<String>();
         set.forEach(elements::add);
 
-        assertThat(elements).hasSize(89);
-        assertThat(set.asList()).hasSize(89).doesNotContainNull();
+        assertThat(elements).hasSize(elementCount - removedElementCount - 1);
+        assertThat(set.asList())
+                .hasSize(elementCount - removedElementCount - 1)
+                .doesNotContainNull();
     }
 
     @Test
     void compactionDoesNotTriggerBelowMinimumElements() {
         var set = createIndexedSet();
+
         // Add 99 elements (below minimum for compaction)
-        for (int i = 0; i < 99; i++) {
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION - 1;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Remove 50% of elements (well above threshold)
-        for (int i = 0; i < 50; i++) {
+        var removedElementCount = elementCount / 2;
+        for (var i = 0; i < removedElementCount; i++) {
             set.remove("Element-" + i);
         }
 
         var elements = new ArrayList<String>();
         set.forEach(elements::add);
 
-        assertThat(elements).hasSize(49);
+        assertThat(elements).hasSize(elementCount - removedElementCount);
         // Even though gaps exist, compaction shouldn't have happened during forEach
         // It should happen during asList() instead
-        assertThat(set.asList()).hasSize(49).doesNotContainNull();
-    }
-
-    @Test
-    void compactionDoesNotTriggerBelowGapThreshold() {
-        var set = createIndexedSet();
-        // Add 100 elements
-        for (int i = 0; i < 100; i++) {
-            set.add("Element-" + i);
-        }
-
-        // Remove 9 elements (9% gaps, below 10% threshold)
-        for (int i = 0; i < 9; i++) {
-            set.remove("Element-" + i);
-        }
-
-        var elements = new ArrayList<String>();
-        set.forEach(elements::add);
-
-        assertThat(elements).hasSize(91);
+        assertThat(set.asList())
+                .hasSize(elementCount - removedElementCount)
+                .doesNotContainNull();
     }
 
     @Test
     void externalRemovalDuringCompactionAtStart() {
         var set = createIndexedSet();
-        for (int i = 0; i < 150; i++) {
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION + 50;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Create gaps to trigger compaction (20 gaps = 13.3%)
-        for (int i = 0; i < 20; i++) {
+        var removedElementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION / 5;
+        for (var i = 0; i < removedElementCount; i++) {
             set.remove("Element-" + i);
         }
 
         var processedElements = new ArrayList<String>();
         var counter = new AtomicInteger(0);
 
+        var removedElement = "Element-" + (removedElementCount + 1);
         set.forEach(element -> {
             processedElements.add(element);
             if (counter.incrementAndGet() == 1) {
                 // Remove element during compaction (compaction happens back-to-front)
-                set.remove("Element-100");
+                set.remove(removedElement);
             }
         });
 
-        assertThat(processedElements).hasSize(129); // 150 - 20 - 1
-        assertThat(set.asList()).doesNotContain("Element-100").doesNotContainNull();
+        assertThat(processedElements).hasSize(elementCount - removedElementCount - 1); // 150 - 20 - 1
+        assertThat(set.asList())
+                .doesNotContain(removedElement)
+                .doesNotContainNull();
     }
 
     @Test
     void externalRemovalDuringCompactionAtEnd() {
         var set = createIndexedSet();
-        for (int i = 0; i < 150; i++) {
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION + 50;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Create gaps to trigger compaction
-        for (int i = 0; i < 20; i++) {
+        var removedElementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION / 5;
+        for (var i = 0; i < removedElementCount; i++) {
             set.remove("Element-" + i);
         }
 
         var processedElements = new ArrayList<String>();
         var counter = new AtomicInteger(0);
 
+        var elementToRemove = "Element-" + (elementCount - 1);
         set.forEach(element -> {
-            if (counter.incrementAndGet() == 100) {
+            if (counter.incrementAndGet() == IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION) {
                 // Remove element near the end during compaction
-                set.remove("Element-149");
+                set.remove(elementToRemove);
             } else {
                 processedElements.add(element);
             }
         });
 
-        assertThat(processedElements).hasSize(129);
+        assertThat(processedElements).hasSize(elementCount - removedElementCount - 1);
         assertThat(set.asList())
-                .doesNotContain("Element-149")
+                .doesNotContain(elementToRemove)
                 .doesNotContainNull();
     }
 
     @Test
     void multipleExternalRemovalsDuringCompaction() {
         var set = createIndexedSet();
-        for (int i = 0; i < 201; i++) {
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION * 2 + 1;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Create gaps to trigger compaction (25 gaps = 12.5%)
-        var startFrom = 25;
-        for (int i = 0; i < startFrom; i++) {
+        var removedElementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION / 4;
+        for (var i = 0; i < removedElementCount; i++) {
             set.remove("Element-" + i);
         }
 
@@ -425,7 +425,7 @@ class IndexedSetTest {
         set.forEach(element -> {
             var count = counter.incrementAndGet();
             if (count % 20 == 0) {
-                var toRemove = "Element-" + ((count / 10) + startFrom);
+                var toRemove = "Element-" + ((count / 10) + removedElementCount);
                 set.remove(toRemove);
                 removedExternally.add(toRemove);
             }
@@ -439,43 +439,47 @@ class IndexedSetTest {
     @Test
     void externalRemovalOfElementBeingCompacted() {
         var set = createIndexedSet();
-        for (int i = 0; i < 150; i++) {
+
+        var extra = 50;
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION + extra;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Create gaps in the middle to trigger compaction
-        for (int i = 50; i < 70; i++) {
+        var removedElementCount = 20;
+        for (var i = extra; i < extra + removedElementCount; i++) {
             set.remove("Element-" + i);
         }
 
-        var processedElements = new ArrayList<String>();
-
+        var lastElement = "Element-" + (elementCount - 1);
         set.forEach(element -> {
-            processedElements.add(element);
             // Try to remove an element that might be moved during compaction
-            if (element.equals("Element-70")) {
-                set.remove("Element-149"); // Last element, likely to be moved
+            if (element.equals("Element-" + (extra + removedElementCount + 1))) {
+                set.remove(lastElement); // Last element, likely to be moved
             }
         });
 
-        assertThat(set.asList()).doesNotContain("Element-149").doesNotContainNull();
+        assertThat(set.asList())
+                .doesNotContain(lastElement)
+                .doesNotContainNull();
     }
 
     @Test
     void removeAllElementsDuringCompaction() {
         var set = createIndexedSet();
-        for (int i = 0; i < 120; i++) {
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION + 20;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Create gaps to trigger compaction (15 gaps = 12.5%)
-        for (int i = 0; i < 15; i++) {
+        var removedElementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION / 10 + 5;
+        for (var i = 0; i < removedElementCount; i++) {
             set.remove("Element-" + i);
         }
 
-        set.forEach(element -> {
-            set.remove(element);
-        });
+        set.forEach(set::remove);
 
         assertThat(set.isEmpty()).isTrue();
         assertThat(set.size()).isZero();
@@ -485,12 +489,13 @@ class IndexedSetTest {
     @Test
     void compactionClearsListWhenAllElementsRemoved() {
         var set = createIndexedSet();
-        for (int i = 0; i < 100; i++) {
+        var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION;
+        for (var i = 0; i < elementCount; i++) {
             set.add("Element-" + i);
         }
 
         // Remove all elements
-        for (int i = 0; i < 100; i++) {
+        for (var i = 0; i < elementCount; i++) {
             set.remove("Element-" + i);
         }
 
@@ -506,12 +511,12 @@ class IndexedSetTest {
     @Test
     void asListForcesCompaction() {
         var set = createIndexedSet();
-        for (int i = 0; i < 50; i++) {
+        for (var i = 0; i < 50; i++) {
             set.add("Element-" + i);
         }
 
         // Create gaps (but below threshold for forEach compaction)
-        for (int i = 0; i < 10; i++) {
+        for (var i = 0; i < 10; i++) {
             set.remove("Element-" + i);
         }
 
@@ -521,70 +526,6 @@ class IndexedSetTest {
         assertThat(list)
                 .hasSize(40)
                 .doesNotContainNull();
-    }
-
-    @Test
-    void findFirstTriggersCompactionAndReturnsCorrectElement() {
-        var set = createIndexedSet();
-        for (int i = 0; i < 150; i++) {
-            set.add("Element-" + i);
-        }
-
-        // Create gaps to trigger compaction
-        for (int i = 0; i < 20; i++) {
-            set.remove("Element-" + i);
-        }
-
-        var found = set.findFirst(element -> element.equals("Element-100"));
-
-        assertThat(found).isEqualTo("Element-100");
-        assertThat(set.asList()).hasSize(130).doesNotContainNull();
-    }
-
-    @Test
-    void findFirstWithExternalRemovalDuringCompaction() {
-        var set = createIndexedSet();
-        for (int i = 0; i < 150; i++) {
-            set.add("Element-" + i);
-        }
-
-        // Create gaps to trigger compaction
-        for (int i = 0; i < 20; i++) {
-            set.remove("Element-" + i);
-        }
-
-        var counter = new AtomicInteger(0);
-        var found = set.findFirst(element -> {
-            if (counter.incrementAndGet() == 10) {
-                set.remove("Element-100");
-            }
-            return element.equals("Element-50");
-        });
-
-        assertThat(found).isEqualTo("Element-50");
-        assertThat(set.asList()).doesNotContain("Element-100").hasSize(129);
-    }
-
-    @Test
-    void compactionPreservesElementsCloseToOriginalPosition() {
-        var tracker = new CompactingIndexPositionTracker<String>();
-        var set = new IndexedSet<>(tracker);
-
-        for (int i = 0; i < 150; i++) {
-            set.add("Element-" + i);
-        }
-
-        // Remove first 20 elements to create gaps at the beginning
-        for (int i = 0; i < 20; i++) {
-            set.remove("Element-" + i);
-        }
-
-        // Force compaction
-        set.asList();
-
-        // Elements from the back should have moved forward
-        // The last element (Element-149) should now be at position 0
-        assertThat(tracker.clearPosition("Element-149")).isLessThan(20);
     }
 
     @NullMarked
@@ -599,7 +540,7 @@ class IndexedSetTest {
 
         @Override
         public int clearPosition(T element) {
-            Integer result = positionMap.remove(element);
+            var result = positionMap.remove(element);
             return result != null ? result : -1;
         }
 

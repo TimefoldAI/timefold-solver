@@ -47,8 +47,8 @@ import org.jspecify.annotations.Nullable;
 public final class IndexedSet<T> {
 
     // Compaction during forEach() only makes performance sense for larger sets with a significant amount of gaps.
-    private static final int MINIMUM_ELEMENT_COUNT_FOR_COMPACTION = 100;
-    private static final double GAP_RATIO_FOR_COMPACTION = 0.1;
+    static final int MINIMUM_ELEMENT_COUNT_FOR_COMPACTION = 20;
+    static final double GAP_RATIO_FOR_COMPACTION = 0.1;
 
     private final ElementPositionTracker<T> elementPositionTracker;
     private @Nullable ArrayList<@Nullable T> elementList; // Lazily initialized, so that empty indexes use no memory.
@@ -162,10 +162,14 @@ public final class IndexedSet<T> {
     }
 
     private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate) {
+        return forEachNonCompacting(elementPredicate, lastElementPosition);
+    }
+
+    private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate, int startingIndex) {
         // We iterate back to front for consistency with the compacting version.
         // The predicate may remove elements during iteration,
         // therefore we check every time that the list still has elements.
-        for (var i = lastElementPosition; i >= 0 && lastElementPosition >= 0; i--) {
+        for (var i = startingIndex; i >= 0 && lastElementPosition >= 0; i--) {
             var element = elementList.get(i);
             if (element != null && elementPredicate.test(element)) {
                 return element;
@@ -175,7 +179,6 @@ public final class IndexedSet<T> {
     }
 
     private @Nullable T forEachCompacting(Predicate<T> elementPredicate) {
-        var shouldCompact = true;
         // We remove gaps back to front so that we keep elements as close to their original position as possible.
         // The predicate may remove elements during iteration,
         // therefore we check every time that the list still has elements.
@@ -186,10 +189,10 @@ public final class IndexedSet<T> {
 
             var element = elementList.get(i);
             if (element == null) {
-                if (!shouldCompact) {
-                    continue;
+                var hasRemainingGaps = !fillGap(i);
+                if (!hasRemainingGaps) {
+                    return forEachNonCompacting(elementPredicate, i - 1);
                 }
-                shouldCompact = !fillGap(i);
             } else {
                 if (elementPredicate.test(element)) {
                     return element;
