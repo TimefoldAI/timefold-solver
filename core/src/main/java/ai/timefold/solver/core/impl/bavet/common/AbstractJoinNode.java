@@ -10,8 +10,6 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-import org.jspecify.annotations.Nullable;
-
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
  * The logic in either is identical, except that the latter removes all indexing work.
@@ -92,11 +90,48 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         if (!isFiltering) {
             outTupleSetLeft.forEach(outTuple -> updateOutTupleLeft(outTuple, leftTuple));
         } else {
-            rightTupleConsumer.accept(rightTuple -> {
-                IndexedSet<OutTuple_> outTupleSetRight = rightTuple.getStore(inputStoreIndexRightOutTupleSet);
-                processOutTupleUpdate(leftTuple, rightTuple, outTupleSetRight, outTupleSetLeft, outputStoreIndexRightOutSet);
-            });
+            if (!leftTuple.state.isActive()) {
+                // Assume the following scenario:
+                // - The join is of two entities of the same type, both filtering out unassigned.
+                // - One entity became unassigned, so the outTuple is getting retracted.
+                // - The other entity is still assigned and is being updated.
+                //
+                // This means the filter would be called with (unassignedEntity, assignedEntity),
+                // which breaks the expectation that the filter is only called on two assigned entities
+                // and requires adding null checks to the filter for something that should intuitively be impossible.
+                // We avoid this situation as it is clear that the outTuple must be retracted anyway,
+                // and therefore any further updates to it are pointless.
+                //
+                // It is possible that the same problem would exist coming from the other side as well,
+                // and therefore the right tuple would have to be checked for active state as well.
+                // However, no such issue could have been reproduced; when in doubt, leave it out.
+                return;
+            }
+            rightTupleConsumer.accept(rightTuple -> findAndProcessOutTuple(leftTuple, rightTuple, outTupleSetLeft,
+                    rightTuple.getStore(inputStoreIndexRightOutTupleSet), outputStoreIndexRightOutSet));
         }
+    }
+
+    private void findAndProcessOutTuple(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, IndexedSet<OutTuple_> sourceSet,
+            IndexedSet<OutTuple_> referenceSet, int outputStoreIndex) {
+        var outTuple = findOutTuple(sourceSet, referenceSet, outputStoreIndex);
+        if (testFiltering(leftTuple, rightTuple)) {
+            if (outTuple == null) {
+                insertOutTuple(leftTuple, rightTuple);
+            } else {
+                updateOutTupleLeft(outTuple, leftTuple);
+            }
+        } else {
+            if (outTuple != null) {
+                retractOutTuple(outTuple);
+            }
+        }
+    }
+
+    private static <OutTuple_ extends AbstractTuple> OutTuple_ findOutTuple(IndexedSet<OutTuple_> sourceSet,
+            IndexedSet<OutTuple_> referenceSet, int outputStoreIndex) {
+        // Hack: outTuple has no left/right input tuple reference, use the left/right outSet reference instead.
+        return sourceSet.findFirst(tuple -> referenceSet == tuple.getStore(outputStoreIndex));
     }
 
     private void updateOutTupleLeft(OutTuple_ outTuple, LeftTuple_ leftTuple) {
@@ -126,50 +161,27 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
             });
         } else {
             leftTupleConsumer.accept(leftTuple -> {
-                IndexedSet<OutTuple_> outTupleSetLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleSet);
-                processOutTupleUpdate(leftTuple, rightTuple, outTupleSetLeft, outTupleSetRight, outputStoreIndexLeftOutSet);
+                if (!leftTuple.state.isActive()) {
+                    // Assume the following scenario:
+                    // - The join is of two entities of the same type, both filtering out unassigned.
+                    // - One entity became unassigned, so the outTuple is getting retracted.
+                    // - The other entity is still assigned and is being updated.
+                    //
+                    // This means the filter would be called with (unassignedEntity, assignedEntity),
+                    // which breaks the expectation that the filter is only called on two assigned entities
+                    // and requires adding null checks to the filter for something that should intuitively be impossible.
+                    // We avoid this situation as it is clear that the outTuple must be retracted anyway,
+                    // and therefore any further updates to it are pointless.
+                    //
+                    // It is possible that the same problem would exist coming from the other side as well,
+                    // and therefore the right tuple would have to be checked for active state as well.
+                    // However, no such issue could have been reproduced; when in doubt, leave it out.
+                    return;
+                }
+                findAndProcessOutTuple(leftTuple, rightTuple, outTupleSetRight,
+                        leftTuple.getStore(inputStoreIndexLeftOutTupleSet), outputStoreIndexLeftOutSet);
             });
         }
-    }
-
-    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
-            IndexedSet<OutTuple_> referenceOutTupleSet, IndexedSet<OutTuple_> outTupleSet,
-            int outputStoreIndexOutSet) {
-        if (!leftTuple.state.isActive()) {
-            // Assume the following scenario:
-            // - The join is of two entities of the same type, both filtering out unassigned.
-            // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity is still assigned and is being updated.
-            //
-            // This means the filter would be called with (unassignedEntity, assignedEntity),
-            // which breaks the expectation that the filter is only called on two assigned entities
-            // and requires adding null checks to the filter for something that should intuitively be impossible.
-            // We avoid this situation as it is clear that the outTuple must be retracted anyway,
-            // and therefore any further updates to it are pointless.
-            //
-            // It is possible that the same problem would exist coming from the other side as well,
-            // and therefore the right tuple would have to be checked for active state as well.
-            // However, no such issue could have been reproduced; when in doubt, leave it out.
-            return;
-        }
-        var outTuple = findOutTuple(outTupleSet, referenceOutTupleSet, outputStoreIndexOutSet);
-        if (testFiltering(leftTuple, rightTuple)) {
-            if (outTuple == null) {
-                insertOutTuple(leftTuple, rightTuple);
-            } else {
-                updateOutTupleLeft(outTuple, leftTuple);
-            }
-        } else {
-            if (outTuple != null) {
-                retractOutTuple(outTuple);
-            }
-        }
-    }
-
-    private static <Tuple_ extends AbstractTuple> @Nullable Tuple_ findOutTuple(IndexedSet<Tuple_> outTupleSet,
-            IndexedSet<Tuple_> referenceOutTupleSet, int outputStoreIndexOutSet) {
-        // Hack: the outTuple has no left/right input tuple reference, use the left/right outSet reference instead.
-        return outTupleSet.findFirst(outTuple -> referenceOutTupleSet == outTuple.getStore(outputStoreIndexOutSet));
     }
 
     protected final void retractOutTuple(OutTuple_ outTuple) {
