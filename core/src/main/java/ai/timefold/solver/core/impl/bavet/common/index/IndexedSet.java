@@ -16,30 +16,29 @@ import org.jspecify.annotations.Nullable;
  * {@link ArrayList}-backed set which allows to {@link #remove(Object)} an element
  * without knowing its position and without an expensive lookup.
  * It also allows for direct random access like a list.
- * The order of iteration is not guaranteed to be the insertion order,
- * but it is stable and predictable.
+ * The order of iteration isn't guaranteed to be the insertion order,
+ * and it changes over time as elements are added and removed.
  * <p>
  * It uses an {@link ElementPositionTracker} to track the insertion position of each element.
- * When an element is removed, it is replaced by null at its insertion position;
- * therefore the insertion position of later elements is not changed.
+ * When an element is removed, it's replaced by null at its insertion position, creating a gap;
+ * therefore, the insertion position of later elements isn't changed.
  * The set is compacted back during iteration or when {@link #asList()} is called,
  * by replacing these gaps with elements from the back of the set.
  * This operation also doesn't change the insertion position of any elements
  * except for those that are moved from the back to fill a gap.
- * Therefore the insertion positions, on average, remain stable over time.
  * <p>
  * Together with the fact that removals are relatively rare,
  * this keeps the overhead low while giving us all benefits of {@link ArrayList},
  * such as memory efficiency, random access, and fast iteration.
- * Random access is not required for Constraint Streams, but Neighborhoods make heavy use of it;
+ * Random access isn't required for Constraint Streams, but Neighborhoods make heavy use of it;
  * if we used the {@link ElementAwareList} implementation instead,
- * we would have to copy the elements to an array every time we need to access them randomly during move generation.
+ * we'd have to copy the elements to an array every time we need to access them randomly during move generation.
  * <p>
- * For performance reasons, this class does not check if an element was already added;
+ * For performance reasons, this class doesn't check if an element was already added;
  * duplicates must be avoided by the caller and will cause undefined behavior.
  * <p>
- * This class is not thread-safe.
- * It is in fact very thread-unsafe.
+ * This class isn't thread-safe.
+ * It's in fact very thread-unsafe.
  *
  * @param <T>
  */
@@ -130,8 +129,7 @@ public final class IndexedSet<T> {
     /**
      * Performs the given action for each element of the collection
      * until all elements have been processed.
-     * The order of iteration is not guaranteed to be the insertion order,
-     * but it is stable and predictable.
+     * The order of iteration may change as elements are added and removed.
      *
      * @param elementConsumer the action to be performed for each element;
      *        may include removing elements from the collection,
@@ -162,14 +160,11 @@ public final class IndexedSet<T> {
     }
 
     private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate) {
-        return forEachNonCompacting(elementPredicate, lastElementPosition);
+        return forEachNonCompacting(elementPredicate, 0);
     }
 
     private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate, int startingIndex) {
-        // We iterate back to front for consistency with the compacting version.
-        // The predicate may remove elements during iteration,
-        // therefore we check every time that the list still has elements.
-        for (var i = startingIndex; i >= 0 && lastElementPosition >= 0; i--) {
+        for (var i = startingIndex; i <= lastElementPosition; i++) {
             var element = elementList.get(i);
             if (element != null && elementPredicate.test(element)) {
                 return element;
@@ -179,24 +174,24 @@ public final class IndexedSet<T> {
     }
 
     private @Nullable T forEachCompacting(Predicate<T> elementPredicate) {
-        // We remove gaps back to front so that we keep elements as close to their original position as possible.
-        // The predicate may remove elements during iteration,
-        // therefore we check every time that the list still has elements.
-        for (var i = lastElementPosition; i >= 0 && lastElementPosition >= 0; i--) {
-            if (clearIfPossible()) {
-                return null;
-            }
-
+        if (clearIfPossible()) {
+            return null;
+        }
+        for (var i = 0; i <= lastElementPosition; i++) {
             var element = elementList.get(i);
             if (element == null) {
-                var hasRemainingGaps = !fillGap(i);
-                if (!hasRemainingGaps) {
-                    return forEachNonCompacting(elementPredicate, i - 1);
+                element = fillGap(i);
+                if (element == null) { // There was nothing to fill the gap with; we are done.
+                    return null;
                 }
-            } else {
-                if (elementPredicate.test(element)) {
-                    return element;
-                }
+            }
+            if (elementPredicate.test(element)) {
+                return element;
+            }
+            if (gapCount == 0) {
+                // No more gaps to fill; we can continue without compacting.
+                // This is an optimized loop which no longer checks for gaps.
+                return forEachNonCompacting(elementPredicate, i + 1);
             }
         }
         return null;
@@ -216,20 +211,26 @@ public final class IndexedSet<T> {
     /**
      * Fills the gap at position i by moving the last element into it.
      * 
-     * @param i the position of the gap to fill
-     * @return true if there are no more gaps after filling this one
+     * @param gapPosition the position of the gap to fill
+     * @return the element that now occupies position i, or null if no element further in the list can fill the gap
      */
-    private boolean fillGap(int i) {
-        if (i < lastElementPosition) { // Fill the gap if there are elements after it.
-            var elementToMove = elementList.remove(lastElementPosition);
-            elementList.set(i, elementToMove);
-            elementPositionTracker.setPosition(elementToMove, i);
-        } else { // The gap is at the back already.
-            elementList.remove(i);
+    private @Nullable T fillGap(int gapPosition) {
+        T lastRemovedElement = null;
+        while (lastElementPosition >= gapPosition) {
+            lastRemovedElement = elementList.remove(lastElementPosition);
+            lastElementPosition--;
+            gapCount--; // Even if this is not a gap, we still mark a gap as removed...
+            if (lastRemovedElement != null) {
+                break;
+            }
         }
-        lastElementPosition--;
-        gapCount--;
-        return gapCount == 0;
+        if (lastRemovedElement == null) {
+            return null;
+        }
+        // ... because this actually fills the main gap we were asked to fill.
+        elementList.set(gapPosition, lastRemovedElement);
+        elementPositionTracker.setPosition(lastRemovedElement, gapPosition);
+        return lastRemovedElement;
     }
 
     /**
@@ -248,7 +249,7 @@ public final class IndexedSet<T> {
 
     /**
      * Returns a standard {@link List} view of this collection.
-     * Users must not modify the returned list, as that would also change the underlying data structure.
+     * Users mustn't modify the returned list, as that'd also change the underlying data structure.
      *
      * @return a standard list view of this element-aware list
      */
@@ -263,15 +264,14 @@ public final class IndexedSet<T> {
     }
 
     private void forceCompaction() {
-        // We remove gaps back to front so that we keep elements as close to their original position as possible.
-        for (var i = lastElementPosition; i >= 0; i--) {
-            if (clearIfPossible()) {
-                return;
-            }
-
+        if (clearIfPossible()) {
+            return;
+        }
+        for (var i = 0; i <= lastElementPosition; i++) {
             var element = elementList.get(i);
             if (element == null) {
-                if (fillGap(i)) { // If there are no more gaps, we can stop.
+                element = fillGap(i);
+                if (element == null || gapCount == 0) { // If there are no more gaps, we can stop.
                     return;
                 }
             }

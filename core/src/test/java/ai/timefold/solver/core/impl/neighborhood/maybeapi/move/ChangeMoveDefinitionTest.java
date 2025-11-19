@@ -62,7 +62,7 @@ class ChangeMoveDefinitionTest {
         var move1 = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(move1.extractPlanningEntities())
-                    .containsExactly(secondEntity);
+                    .containsExactly(firstEntity);
             softly.assertThat(move1.extractPlanningValues())
                     .containsExactly(firstValue);
         });
@@ -70,7 +70,7 @@ class ChangeMoveDefinitionTest {
         var move2 = moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(move2.extractPlanningEntities())
-                    .containsExactly(secondEntity);
+                    .containsExactly(firstEntity);
             softly.assertThat(move2.extractPlanningValues())
                     .containsExactly(secondValue);
         });
@@ -78,7 +78,7 @@ class ChangeMoveDefinitionTest {
         var move3 = moveList.get(2);
         assertSoftly(softly -> {
             softly.assertThat(move3.extractPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(move3.extractPlanningValues())
                     .containsExactly(firstValue);
         });
@@ -86,7 +86,7 @@ class ChangeMoveDefinitionTest {
         var move4 = moveList.get(3);
         assertSoftly(softly -> {
             softly.assertThat(move4.extractPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(move4.extractPlanningValues())
                     .containsExactly(secondValue);
         });
@@ -122,7 +122,7 @@ class ChangeMoveDefinitionTest {
         var move1 = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(move1.extractPlanningEntities())
-                    .containsExactly(secondEntity);
+                    .containsExactly(firstEntity);
             softly.assertThat(move1.extractPlanningValues())
                     .containsExactly(firstValue);
         });
@@ -130,7 +130,7 @@ class ChangeMoveDefinitionTest {
         var move2 = moveList.get(1);
         assertSoftly(softly -> {
             softly.assertThat(move2.extractPlanningEntities())
-                    .containsExactly(secondEntity);
+                    .containsExactly(firstEntity);
             softly.assertThat(move2.extractPlanningValues())
                     .containsExactly(secondValue);
         });
@@ -138,7 +138,7 @@ class ChangeMoveDefinitionTest {
         var move3 = moveList.get(2);
         assertSoftly(softly -> {
             softly.assertThat(move3.extractPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(move3.extractPlanningValues())
                     .containsExactly(firstValue);
         });
@@ -146,7 +146,7 @@ class ChangeMoveDefinitionTest {
         var move4 = moveList.get(3);
         assertSoftly(softly -> {
             softly.assertThat(move4.extractPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(move4.extractPlanningValues())
                     .containsExactly(secondValue);
         });
@@ -216,7 +216,7 @@ class ChangeMoveDefinitionTest {
         var move1 = moveList.get(0);
         assertSoftly(softly -> {
             softly.assertThat(move1.extractPlanningEntities())
-                    .containsExactly(secondEntity);
+                    .containsExactly(firstEntity);
             softly.assertThat(move1.extractPlanningValues())
                     .hasSize(1)
                     .containsNull();
@@ -227,16 +227,16 @@ class ChangeMoveDefinitionTest {
             softly.assertThat(move2.extractPlanningEntities())
                     .containsExactly(secondEntity);
             softly.assertThat(move2.extractPlanningValues())
-                    .containsExactly(firstValue);
+                    .hasSize(1)
+                    .containsNull();
         });
 
         var move3 = moveList.get(2);
         assertSoftly(softly -> {
             softly.assertThat(move3.extractPlanningEntities())
-                    .containsExactly(firstEntity);
+                    .containsExactly(secondEntity);
             softly.assertThat(move3.extractPlanningValues())
-                    .hasSize(1)
-                    .containsNull();
+                    .containsExactly(firstValue);
         });
     }
 
