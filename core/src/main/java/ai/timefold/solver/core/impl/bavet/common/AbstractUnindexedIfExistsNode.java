@@ -67,8 +67,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             updateUnchangedCounterLeft(counter);
         } else {
             // Call filtering for the leftTuple and rightTuple combinations again
-            counter.leftHandleSet.forEach(ExistsCounterHandle::remove);
-            counter.countRight = 0;
+            counter.clearIncludingCount();
             rightTupleSet.forEach(tuple -> updateCounterFromLeft(leftTuple, tuple, counter));
             updateCounterLeft(counter);
         }
@@ -83,7 +82,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         }
         leftCounterSet.remove(counter);
         if (isFiltering) {
-            counter.leftHandleSet.forEach(ExistsCounterHandle::remove);
+            counter.clearWithoutCount();
         }
         killCounterLeft(counter);
     }

@@ -20,6 +20,15 @@ public final class ExistsCounter<Tuple_ extends AbstractTuple>
         this.leftTuple = leftTuple;
     }
 
+    public void clearWithoutCount() {
+        leftHandleSet.forEach(ExistsCounterHandle::remove);
+    }
+
+    public void clearIncludingCount() {
+        clearWithoutCount();
+        countRight = 0;
+    }
+
     @Override
     public Tuple_ getTuple() {
         return leftTuple;

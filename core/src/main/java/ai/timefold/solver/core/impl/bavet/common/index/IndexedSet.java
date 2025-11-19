@@ -115,6 +115,7 @@ public final class IndexedSet<T> {
             actualElementList.set(insertionPosition, null);
             gapCount++;
         }
+        clearIfPossible();
         return true;
     }
 
@@ -148,15 +149,11 @@ public final class IndexedSet<T> {
     }
 
     private @Nullable T forEach(Predicate<T> elementPredicate) {
-        if (isEmpty()) {
-            return null;
-        }
-
-        var shouldCompact = shouldCompact(lastElementPosition + 1);
-        return shouldCompact ? forEachCompacting(elementPredicate) : forEachNonCompacting(elementPredicate);
+        return shouldCompact() ? forEachCompacting(elementPredicate) : forEachNonCompacting(elementPredicate);
     }
 
-    private boolean shouldCompact(int elementCount) {
+    private boolean shouldCompact() {
+        int elementCount = lastElementPosition + 1;
         if (elementCount < MINIMUM_ELEMENT_COUNT_FOR_COMPACTION) {
             return false;
         }
@@ -166,7 +163,9 @@ public final class IndexedSet<T> {
 
     private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate) {
         // We iterate back to front for consistency with the compacting version.
-        for (var i = lastElementPosition; i >= 0; i--) {
+        // The predicate may remove elements during iteration,
+        // therefore we check every time that the list still has elements.
+        for (var i = lastElementPosition; i >= 0 && lastElementPosition >= 0; i--) {
             var element = elementList.get(i);
             if (element != null && elementPredicate.test(element)) {
                 return element;
@@ -176,12 +175,12 @@ public final class IndexedSet<T> {
     }
 
     private @Nullable T forEachCompacting(Predicate<T> elementPredicate) {
-        // We remove gaps back to front so that we keep elements as close to their original position as possible.
         var shouldCompact = true;
-        for (var i = lastElementPosition; i >= 0; i--) {
-            if (lastElementPosition + 1 == gapCount) {
-                // If all elements were removed, clear the list to free memory and terminate iteration.
-                clearList();
+        // We remove gaps back to front so that we keep elements as close to their original position as possible.
+        // The predicate may remove elements during iteration,
+        // therefore we check every time that the list still has elements.
+        for (var i = lastElementPosition; i >= 0 && lastElementPosition >= 0; i--) {
+            if (clearIfPossible()) {
                 return null;
             }
 
@@ -200,12 +199,15 @@ public final class IndexedSet<T> {
         return null;
     }
 
-    private void clearList() {
-        if (elementList != null) {
+    private boolean clearIfPossible() {
+        if (gapCount > 0 && lastElementPosition + 1 == gapCount) {
+            // All positions are gaps. Clear the list entirely.
             elementList.clear();
             gapCount = 0;
             lastElementPosition = -1;
+            return true;
         }
+        return false;
     }
 
     /**
@@ -235,6 +237,9 @@ public final class IndexedSet<T> {
      * @return the first element for which the predicate returned true, or null if none
      */
     public @Nullable T findFirst(Predicate<T> elementPredicate) {
+        if (isEmpty()) {
+            return null;
+        }
         return forEach(elementPredicate);
     }
 
@@ -257,9 +262,7 @@ public final class IndexedSet<T> {
     private void forceCompaction() {
         // We remove gaps back to front so that we keep elements as close to their original position as possible.
         for (var i = lastElementPosition; i >= 0; i--) {
-            if (lastElementPosition + 1 == gapCount) {
-                // If all elements were removed, clear the list to free memory and terminate iteration.
-                clearList();
+            if (clearIfPossible()) {
                 return;
             }
 

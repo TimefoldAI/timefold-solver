@@ -90,8 +90,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 updateUnchangedCounterLeft(counter);
             } else {
                 // Call filtering for the leftTuple and rightTuple combinations again
-                counter.leftHandleSet.forEach(ExistsCounterHandle::remove);
-                counter.countRight = 0;
+                counter.clearIncludingCount();
                 indexerRight.forEach(oldIndexKeys, rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter));
                 updateCounterLeft(counter);
             }
@@ -120,7 +119,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
     private void updateIndexerLeft(Object indexKeys, ExistsCounter<LeftTuple_> counter) {
         indexerLeft.remove(indexKeys, counter);
         if (isFiltering) {
-            counter.leftHandleSet.forEach(ExistsCounterHandle::remove);
+            counter.clearWithoutCount();
         }
     }
 

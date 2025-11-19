@@ -17,20 +17,20 @@ import org.jspecify.annotations.NullMarked;
 final class ExistsCounterHandle<LeftTuple_ extends AbstractTuple> {
 
     final ExistsCounter<LeftTuple_> counter;
-    private final IndexedSet<ExistsCounterHandle<LeftTuple_>> rightSet;
+    final IndexedSet<ExistsCounterHandle<LeftTuple_>> rightHandleSet;
     int leftPosition = -1;
     int rightPosition = -1;
 
-    ExistsCounterHandle(ExistsCounter<LeftTuple_> counter, IndexedSet<ExistsCounterHandle<LeftTuple_>> rightSet) {
+    ExistsCounterHandle(ExistsCounter<LeftTuple_> counter, IndexedSet<ExistsCounterHandle<LeftTuple_>> rightHandleSet) {
         this.counter = counter;
         counter.leftHandleSet.add(this);
-        this.rightSet = rightSet;
-        rightSet.add(this);
+        this.rightHandleSet = rightHandleSet;
+        rightHandleSet.add(this);
     }
 
     public void remove() {
         counter.leftHandleSet.remove(this);
-        rightSet.remove(this);
+        rightHandleSet.remove(this);
     }
 
 }
