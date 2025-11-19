@@ -24,6 +24,9 @@ import org.jspecify.annotations.Nullable;
  * therefore the insertion position of later elements is not changed.
  * The set is compacted back during iteration or when {@link #asList()} is called,
  * by replacing these gaps with elements from the back of the set.
+ * This operation also doesn't change the insertion position of any elements
+ * except for those that are moved from the back to fill a gap.
+ * Therefore the insertion positions, on average, remain stable over time.
  * <p>
  * Together with the fact that removals are relatively rare,
  * this keeps the overhead low while giving us all benefits of {@link ArrayList},
@@ -43,8 +46,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class IndexedSet<T> {
 
-    private static final int MINIMUM_ELEMENT_COUNT_FOR_COMPACTION = 10;
-    private static final double GAP_RATIO_FOR_COMPACTION = 0.2;
+    // Compaction during forEach() only makes performance sense for larger sets with a significant amount of gaps.
+    private static final int MINIMUM_ELEMENT_COUNT_FOR_COMPACTION = 100;
+    private static final double GAP_RATIO_FOR_COMPACTION = 0.1;
 
     private final ElementPositionTracker<T> elementPositionTracker;
     private @Nullable ArrayList<@Nullable T> elementList; // Lazily initialized, so that empty indexes use no memory.
@@ -149,8 +153,31 @@ public final class IndexedSet<T> {
         }
 
         var shouldCompact = shouldCompact(lastElementPosition + 1);
+        return shouldCompact ? forEachCompacting(elementPredicate) : forEachNonCompacting(elementPredicate);
+    }
 
+    private boolean shouldCompact(int elementCount) {
+        if (elementCount < MINIMUM_ELEMENT_COUNT_FOR_COMPACTION) {
+            return false;
+        }
+        var gapPercentage = gapCount / (double) elementCount;
+        return gapPercentage > GAP_RATIO_FOR_COMPACTION;
+    }
+
+    private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate) {
+        // We iterate back to front for consistency with the compacting version.
+        for (var i = lastElementPosition; i >= 0; i--) {
+            var element = elementList.get(i);
+            if (element != null && elementPredicate.test(element)) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    private @Nullable T forEachCompacting(Predicate<T> elementPredicate) {
         // We remove gaps back to front so that we keep elements as close to their original position as possible.
+        var shouldCompact = true;
         for (var i = lastElementPosition; i >= 0; i--) {
             if (lastElementPosition + 1 == gapCount) {
                 // If all elements were removed, clear the list to free memory and terminate iteration.
@@ -171,17 +198,6 @@ public final class IndexedSet<T> {
             }
         }
         return null;
-    }
-
-    private boolean shouldCompact(int elementCount) {
-        if (gapCount == 0) {
-            return false;
-        }
-        if (elementCount < MINIMUM_ELEMENT_COUNT_FOR_COMPACTION) {
-            return false;
-        }
-        var gapPercentage = gapCount / (double) elementCount;
-        return gapPercentage > GAP_RATIO_FOR_COMPACTION;
     }
 
     private void clearList() {
@@ -232,7 +248,9 @@ public final class IndexedSet<T> {
         if (elementList == null) {
             return Collections.emptyList();
         }
-        forceCompaction();
+        if (gapCount > 0) { // The list must not return any nulls.
+            forceCompaction();
+        }
         return elementList.isEmpty() ? Collections.emptyList() : elementList;
     }
 
