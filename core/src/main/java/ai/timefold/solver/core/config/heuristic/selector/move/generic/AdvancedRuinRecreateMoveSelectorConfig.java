@@ -7,13 +7,11 @@ import jakarta.xml.bind.annotation.XmlType;
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.preview.api.move.ruin.BasicRuinAndRecreatePicker;
-import ai.timefold.solver.core.preview.api.move.ruin.BasicRuinAndRecreator;
 
 import org.jspecify.annotations.NonNull;
 
 @XmlType(propOrder = {
         "ruinAndRecreatePickerClass",
-        "recreatorClass",
         "entityClass",
         "variableName"
 })
@@ -21,7 +19,6 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
     public static final String XML_ELEMENT_NAME = "advancedRuinRecreateMoveSelector";
 
     protected Class<? extends BasicRuinAndRecreatePicker<?, ?, ?, ?>> ruinAndRecreatePickerClass;
-    protected Class<? extends BasicRuinAndRecreator<?, ?, ?, ?>> recreatorClass;
 
     protected Class<?> entityClass = null;
     protected String variableName = null;
@@ -42,21 +39,6 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
     public @NonNull AdvancedRuinRecreateMoveSelectorConfig withRuinAndRecreatePickerClass(
             @NonNull Class<? extends BasicRuinAndRecreatePicker<?, ?, ?, ?>> ruinAndRecreatePickerClass) {
         this.setRuinAndRecreatePickerClass(ruinAndRecreatePickerClass);
-        return this;
-    }
-
-    public Class<? extends BasicRuinAndRecreator<?, ?, ?, ?>> getRecreatorClass() {
-        return recreatorClass;
-    }
-
-    public void setRecreatorClass(
-            Class<? extends BasicRuinAndRecreator<?, ?, ?, ?>> recreatorClass) {
-        this.recreatorClass = recreatorClass;
-    }
-
-    public @NonNull AdvancedRuinRecreateMoveSelectorConfig
-            withRecreatorClass(@NonNull Class<? extends BasicRuinAndRecreator<?, ?, ?, ?>> recreatorClass) {
-        this.setRecreatorClass(recreatorClass);
         return this;
     }
 
@@ -103,7 +85,6 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(ruinAndRecreatePickerClass);
-        classVisitor.accept(recreatorClass);
     }
 
     @Override
@@ -113,8 +94,6 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
         ruinAndRecreatePickerClass =
                 ConfigUtils.inheritOverwritableProperty(ruinAndRecreatePickerClass,
                         inheritedConfig.getRuinAndRecreatePickerClass());
-        recreatorClass =
-                ConfigUtils.inheritOverwritableProperty(recreatorClass, inheritedConfig.getRecreatorClass());
         entityClass =
                 ConfigUtils.inheritOverwritableProperty(entityClass, inheritedConfig.getEntityClass());
         variableName =

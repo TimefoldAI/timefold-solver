@@ -1201,8 +1201,6 @@
                     
           <xs:element minOccurs="0" name="ruinAndRecreatePickerClass" type="xs:string"/>
                     
-          <xs:element minOccurs="0" name="recreatorClass" type="xs:string"/>
-                    
           <xs:element minOccurs="0" name="entityClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="variableName" type="xs:string"/>
@@ -1224,8 +1222,6 @@
         <xs:sequence>
                     
           <xs:element minOccurs="0" name="ruinAndRecreatePickerClass" type="xs:string"/>
-                    
-          <xs:element minOccurs="0" name="recreatorClass" type="xs:string"/>
                     
           <xs:element minOccurs="0" name="entityClass" type="xs:string"/>
                     
