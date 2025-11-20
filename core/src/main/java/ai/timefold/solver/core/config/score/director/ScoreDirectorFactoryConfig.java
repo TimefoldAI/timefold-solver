@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import jakarta.xml.bind.annotation.XmlElement;
+import jakarta.xml.bind.annotation.XmlTransient;
 import jakarta.xml.bind.annotation.XmlType;
 import jakarta.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -41,6 +42,9 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     protected Map<String, String> easyScoreCalculatorCustomProperties = null;
 
     protected Class<? extends ConstraintProvider> constraintProviderClass = null;
+
+    @XmlTransient
+    protected ConstraintProvider constraintProvider = null;
 
     @XmlJavaTypeAdapter(JaxbCustomPropertiesAdapter.class)
     protected Map<String, String> constraintProviderCustomProperties = null;
@@ -89,6 +93,14 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
 
     public void setConstraintProviderClass(@Nullable Class<? extends ConstraintProvider> constraintProviderClass) {
         this.constraintProviderClass = constraintProviderClass;
+    }
+
+    public @Nullable ConstraintProvider getConstraintProvider() {
+        return constraintProvider;
+    }
+
+    public void setConstraintProvider(@Nullable ConstraintProvider constraintProvider) {
+        this.constraintProvider = constraintProvider;
     }
 
     public @Nullable Map<@NonNull String, @NonNull String> getConstraintProviderCustomProperties() {
@@ -145,8 +157,11 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
-     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     * @deprecated All support for Score DRL was removed when Timefold was forked
+     *             from OptaPlanner.
+     *             See <a href=
+     *             "https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL
+     *             to Constraint Streams
      *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
@@ -155,8 +170,11 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
-     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     * @deprecated All support for Score DRL was removed when Timefold was forked
+     *             from OptaPlanner.
+     *             See <a href=
+     *             "https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL
+     *             to Constraint Streams
      *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
@@ -184,28 +202,31 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     // With methods
     // ************************************************************************
 
-    public @NonNull ScoreDirectorFactoryConfig
-            withEasyScoreCalculatorClass(@NonNull Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
+    public @NonNull ScoreDirectorFactoryConfig withEasyScoreCalculatorClass(
+            @NonNull Class<? extends EasyScoreCalculator> easyScoreCalculatorClass) {
         this.easyScoreCalculatorClass = easyScoreCalculatorClass;
         return this;
     }
 
-    public @NonNull ScoreDirectorFactoryConfig
-            withEasyScoreCalculatorCustomProperties(
-                    @NonNull Map<@NonNull String, @NonNull String> easyScoreCalculatorCustomProperties) {
+    public @NonNull ScoreDirectorFactoryConfig withEasyScoreCalculatorCustomProperties(
+            @NonNull Map<@NonNull String, @NonNull String> easyScoreCalculatorCustomProperties) {
         this.easyScoreCalculatorCustomProperties = easyScoreCalculatorCustomProperties;
         return this;
     }
 
-    public @NonNull ScoreDirectorFactoryConfig
-            withConstraintProviderClass(@NonNull Class<? extends ConstraintProvider> constraintProviderClass) {
+    public @NonNull ScoreDirectorFactoryConfig withConstraintProviderClass(
+            @NonNull Class<? extends ConstraintProvider> constraintProviderClass) {
         this.constraintProviderClass = constraintProviderClass;
         return this;
     }
 
-    public @NonNull ScoreDirectorFactoryConfig
-            withConstraintProviderCustomProperties(
-                    @NonNull Map<@NonNull String, @NonNull String> constraintProviderCustomProperties) {
+    public @NonNull ScoreDirectorFactoryConfig withConstraintProvider(@NonNull ConstraintProvider constraintProvider) {
+        this.constraintProvider = constraintProvider;
+        return this;
+    }
+
+    public @NonNull ScoreDirectorFactoryConfig withConstraintProviderCustomProperties(
+            @NonNull Map<@NonNull String, @NonNull String> constraintProviderCustomProperties) {
         this.constraintProviderCustomProperties = constraintProviderCustomProperties;
         return this;
     }
@@ -215,35 +236,36 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
      *             This method no longer has any effect.
      */
     @Deprecated(forRemoval = true, since = "1.16.0")
-    public @NonNull ScoreDirectorFactoryConfig
-            withConstraintStreamImplType(@NonNull ConstraintStreamImplType constraintStreamImplType) {
+    public @NonNull ScoreDirectorFactoryConfig withConstraintStreamImplType(
+            @NonNull ConstraintStreamImplType constraintStreamImplType) {
         this.constraintStreamImplType = constraintStreamImplType;
         return this;
     }
 
-    public @NonNull ScoreDirectorFactoryConfig
-            withConstraintStreamAutomaticNodeSharing(@NonNull Boolean constraintStreamAutomaticNodeSharing) {
+    public @NonNull ScoreDirectorFactoryConfig withConstraintStreamAutomaticNodeSharing(
+            @NonNull Boolean constraintStreamAutomaticNodeSharing) {
         this.constraintStreamAutomaticNodeSharing = constraintStreamAutomaticNodeSharing;
         return this;
     }
 
-    public @NonNull ScoreDirectorFactoryConfig
-            withIncrementalScoreCalculatorClass(
-                    @NonNull Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
+    public @NonNull ScoreDirectorFactoryConfig withIncrementalScoreCalculatorClass(
+            @NonNull Class<? extends IncrementalScoreCalculator> incrementalScoreCalculatorClass) {
         this.incrementalScoreCalculatorClass = incrementalScoreCalculatorClass;
         return this;
     }
 
-    public @NonNull ScoreDirectorFactoryConfig
-            withIncrementalScoreCalculatorCustomProperties(
-                    @NonNull Map<@NonNull String, @NonNull String> incrementalScoreCalculatorCustomProperties) {
+    public @NonNull ScoreDirectorFactoryConfig withIncrementalScoreCalculatorCustomProperties(
+            @NonNull Map<@NonNull String, @NonNull String> incrementalScoreCalculatorCustomProperties) {
         this.incrementalScoreCalculatorCustomProperties = incrementalScoreCalculatorCustomProperties;
         return this;
     }
 
     /**
-     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
-     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     * @deprecated All support for Score DRL was removed when Timefold was forked
+     *             from OptaPlanner.
+     *             See <a href=
+     *             "https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL
+     *             to Constraint Streams
      *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
@@ -253,8 +275,11 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     }
 
     /**
-     * @deprecated All support for Score DRL was removed when Timefold was forked from OptaPlanner.
-     *             See <a href="https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL to Constraint Streams
+     * @deprecated All support for Score DRL was removed when Timefold was forked
+     *             from OptaPlanner.
+     *             See <a href=
+     *             "https://timefold.ai/blog/migrating-score-drl-to-constraint-streams">DRL
+     *             to Constraint Streams
      *             migration recipe</a>.
      */
     @Deprecated(forRemoval = true)
@@ -282,16 +307,20 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
                 easyScoreCalculatorCustomProperties, inheritedConfig.getEasyScoreCalculatorCustomProperties());
         constraintProviderClass = ConfigUtils.inheritOverwritableProperty(
                 constraintProviderClass, inheritedConfig.getConstraintProviderClass());
+        constraintProvider = ConfigUtils.inheritOverwritableProperty(
+                constraintProvider, inheritedConfig.getConstraintProvider());
         constraintProviderCustomProperties = ConfigUtils.inheritMergeableMapProperty(
                 constraintProviderCustomProperties, inheritedConfig.getConstraintProviderCustomProperties());
         constraintStreamImplType = ConfigUtils.inheritOverwritableProperty(
                 constraintStreamImplType, inheritedConfig.getConstraintStreamImplType());
-        constraintStreamAutomaticNodeSharing = ConfigUtils.inheritOverwritableProperty(constraintStreamAutomaticNodeSharing,
+        constraintStreamAutomaticNodeSharing = ConfigUtils.inheritOverwritableProperty(
+                constraintStreamAutomaticNodeSharing,
                 inheritedConfig.getConstraintStreamAutomaticNodeSharing());
         incrementalScoreCalculatorClass = ConfigUtils.inheritOverwritableProperty(
                 incrementalScoreCalculatorClass, inheritedConfig.getIncrementalScoreCalculatorClass());
         incrementalScoreCalculatorCustomProperties = ConfigUtils.inheritMergeableMapProperty(
-                incrementalScoreCalculatorCustomProperties, inheritedConfig.getIncrementalScoreCalculatorCustomProperties());
+                incrementalScoreCalculatorCustomProperties,
+                inheritedConfig.getIncrementalScoreCalculatorCustomProperties());
         scoreDrlList = ConfigUtils.inheritMergeableListProperty(
                 scoreDrlList, inheritedConfig.getScoreDrlList());
         initializingScoreTrend = ConfigUtils.inheritOverwritableProperty(
@@ -310,6 +339,9 @@ public class ScoreDirectorFactoryConfig extends AbstractConfig<ScoreDirectorFact
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
         classVisitor.accept(easyScoreCalculatorClass);
         classVisitor.accept(constraintProviderClass);
+        if (constraintProvider != null) {
+            classVisitor.accept(constraintProvider.getClass());
+        }
         classVisitor.accept(incrementalScoreCalculatorClass);
         if (assertionScoreDirectorFactory != null) {
             assertionScoreDirectorFactory.visitReferencedClasses(classVisitor);

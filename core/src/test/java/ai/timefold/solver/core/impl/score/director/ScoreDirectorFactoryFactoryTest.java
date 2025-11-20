@@ -32,11 +32,11 @@ class ScoreDirectorFactoryFactoryTest {
         customProperties.put("intProperty", "7");
         config.setIncrementalScoreCalculatorCustomProperties(customProperties);
 
-        var scoreDirectorFactory =
-                (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) buildTestdataScoreDirectoryFactory(config);
+        var scoreDirectorFactory = (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) buildTestdataScoreDirectoryFactory(
+                config);
         try (var scoreDirector = scoreDirectorFactory.buildScoreDirector()) {
-            var scoreCalculator =
-                    (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector.getIncrementalScoreCalculator();
+            var scoreCalculator = (TestCustomPropertiesIncrementalScoreCalculator) scoreDirector
+                    .getIncrementalScoreCalculator();
             assertThat(scoreCalculator.getStringProperty()).isEqualTo("string 1");
             assertThat(scoreCalculator.getIntProperty()).isEqualTo(7);
         }
@@ -50,16 +50,16 @@ class ScoreDirectorFactoryFactoryTest {
                 .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class)
                 .withAssertionScoreDirectorFactory(assertionScoreDirectorConfig);
 
-        var scoreDirectorFactory =
-                (AbstractScoreDirectorFactory<TestdataSolution, ?, ?>) buildTestdataScoreDirectoryFactory(config,
-                        EnvironmentMode.STEP_ASSERT);
+        var scoreDirectorFactory = (AbstractScoreDirectorFactory<TestdataSolution, ?, ?>) buildTestdataScoreDirectoryFactory(
+                config,
+                EnvironmentMode.STEP_ASSERT);
 
-        var assertionScoreDirectorFactory =
-                (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) scoreDirectorFactory
-                        .getAssertionScoreDirectorFactory();
+        var assertionScoreDirectorFactory = (IncrementalScoreDirectorFactory<TestdataSolution, SimpleScore>) scoreDirectorFactory
+                .getAssertionScoreDirectorFactory();
         try (var assertionScoreDirector = assertionScoreDirectorFactory.buildScoreDirector()) {
             var assertionScoreCalculator = assertionScoreDirector.getIncrementalScoreCalculator();
-            assertThat(assertionScoreCalculator).isExactlyInstanceOf(TestCustomPropertiesIncrementalScoreCalculator.class);
+            assertThat(assertionScoreCalculator)
+                    .isExactlyInstanceOf(TestCustomPropertiesIncrementalScoreCalculator.class);
         }
     }
 
@@ -69,19 +69,20 @@ class ScoreDirectorFactoryFactoryTest {
                 .withConstraintProviderClass(TestdataConstraintProvider.class)
                 .withEasyScoreCalculatorClass(TestCustomPropertiesEasyScoreCalculator.class)
                 .withIncrementalScoreCalculatorClass(TestCustomPropertiesIncrementalScoreCalculator.class);
-        assertThatExceptionOfType(IllegalArgumentException.class).isThrownBy(() -> buildTestdataScoreDirectoryFactory(config))
+        assertThatExceptionOfType(IllegalArgumentException.class)
+                .isThrownBy(() -> buildTestdataScoreDirectoryFactory(config))
                 .withMessageContaining("scoreDirectorFactory")
                 .withMessageContaining("together");
     }
 
-    private ScoreDirectorFactory<TestdataSolution, SimpleScore>
-            buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config, EnvironmentMode environmentMode) {
+    private ScoreDirectorFactory<TestdataSolution, SimpleScore> buildTestdataScoreDirectoryFactory(
+            ScoreDirectorFactoryConfig config, EnvironmentMode environmentMode) {
         return new ScoreDirectorFactoryFactory<TestdataSolution, SimpleScore>(config)
                 .buildScoreDirectorFactory(environmentMode, TestdataSolution.buildSolutionDescriptor());
     }
 
-    private ScoreDirectorFactory<TestdataSolution, SimpleScore>
-            buildTestdataScoreDirectoryFactory(ScoreDirectorFactoryConfig config) {
+    private ScoreDirectorFactory<TestdataSolution, SimpleScore> buildTestdataScoreDirectoryFactory(
+            ScoreDirectorFactoryConfig config) {
         return buildTestdataScoreDirectoryFactory(config, EnvironmentMode.PHASE_ASSERT);
     }
 
@@ -89,10 +90,48 @@ class ScoreDirectorFactoryFactoryTest {
     void constraintStreamsBavet() {
         var config = new ScoreDirectorFactoryConfig()
                 .withConstraintProviderClass(TestdataConstraintProvider.class);
-        var scoreDirectorFactory =
-                BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(TestdataSolution.buildSolutionDescriptor(),
-                        config, EnvironmentMode.PHASE_ASSERT);
+        var scoreDirectorFactory = BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(
+                TestdataSolution.buildSolutionDescriptor(),
+                config, EnvironmentMode.PHASE_ASSERT);
         assertThat(scoreDirectorFactory).isInstanceOf(BavetConstraintStreamScoreDirectorFactory.class);
+    }
+
+    @Test
+    void constraintProviderInstance() {
+        var constraintProviderInstance = new TestdataConstraintProvider();
+        var config = new ScoreDirectorFactoryConfig()
+                .withConstraintProvider(constraintProviderInstance);
+        var scoreDirectorFactory = BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(
+                TestdataSolution.buildSolutionDescriptor(),
+                config, EnvironmentMode.PHASE_ASSERT);
+        assertThat(scoreDirectorFactory).isInstanceOf(BavetConstraintStreamScoreDirectorFactory.class);
+    }
+
+    @Test
+    void constraintProviderInstanceAndClass_throwsException() {
+        var constraintProviderInstance = new TestdataConstraintProvider();
+        var config = new ScoreDirectorFactoryConfig()
+                .withConstraintProvider(constraintProviderInstance)
+                .withConstraintProviderClass(TestdataConstraintProvider.class);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> buildTestdataScoreDirectoryFactory(config))
+                .withMessageContaining("cannot have both")
+                .withMessageContaining("constraintProviderClass")
+                .withMessageContaining("constraintProvider instance");
+    }
+
+    @Test
+    void constraintProviderInstanceWithCustomProperties_throwsException() {
+        var constraintProviderInstance = new TestdataConstraintProvider();
+        var customProperties = new HashMap<String, String>();
+        customProperties.put("someProperty", "someValue");
+        var config = new ScoreDirectorFactoryConfig()
+                .withConstraintProvider(constraintProviderInstance)
+                .withConstraintProviderCustomProperties(customProperties);
+        assertThatExceptionOfType(IllegalStateException.class)
+                .isThrownBy(() -> buildTestdataScoreDirectoryFactory(config))
+                .withMessageContaining("constraintProviderCustomProperties")
+                .withMessageContaining("cannot be used when a constraintProvider instance is provided");
     }
 
     public static class TestCustomPropertiesEasyScoreCalculator

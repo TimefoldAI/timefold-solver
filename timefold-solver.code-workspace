@@ -1,0 +1,104 @@
+{
+	"folders": [
+		{
+			"path": "documentation",
+			"name": "ⓘ Docs"
+		},
+		{
+			"path": ".gitlab-ci",
+			"name": "🛠️ GitLab CI"
+		},
+		{
+			"path": ".",
+			"name": "🚀 optimization-service"
+		}
+	],
+	"settings": {
+		"coverage-gutters.showGutterCoverage": true,
+		"coverage-gutters.showLineCoverage": true,
+		"debug.inlineValues": "on",
+		"editor.formatOnSave": true,
+		"[json]": {
+			"editor.defaultFormatter": "vscode.json-language-features",
+			"editor.insertSpaces": true,
+			"editor.tabSize": 4
+		},
+		"[jsonc]": {
+			"editor.defaultFormatter": "vscode.json-language-features",
+			"editor.insertSpaces": true,
+			"editor.tabSize": 4
+		},
+		"editor.codeActionsOnSave": {
+			"source.fixAll.eslint": "explicit",
+			"source.fixAll": "explicit",
+			"source.organizeImports": "explicit"
+		},
+		"editor.bracketPairColorization.enabled": true,
+		"editor.guides.bracketPairs": "active",
+		"asciidoc.preview.asciidoctorAttributes": {
+			"imagesdir": "../images"
+		},
+		"todo-tree.general.tags": [
+			"FIXME",
+			"HACK",
+			"TODO",
+			"REVIEW",
+			"IDEA"
+		],
+		"todo-tree.general.tagGroups": {
+			"ToDo": [
+				"TODO"
+			],
+			"FixMe": [
+				"FIXME",
+				"HACK",
+				"BUG"
+			],
+			"Review": [
+				"REVIEW"
+			],
+			"Idea": [
+				"IDEA"
+			]
+		},
+		"local-history.path": "${workspaceFolder:<repository root>}",
+		"todo-tree.general.rootFolder": "",
+		"todo-tree.filtering.includeHiddenFiles": false,
+		"todo-tree.filtering.excludeGlobs": [
+			"**/target/*/**"
+		],
+		"coverage-gutters.coverageFileNames": [
+			"target/jacoco-report/jacoco.xml"
+		],
+		"yaml.schemas": {
+			"https://gitlab.com/gitlab-org/gitlab-foss/-/raw/master/app/assets/javascripts/editor/schema/ci.json": "file:///c%3A/projects/node-service-template/.gitlab-ci/**/*.yml"
+		},
+		"window.title": "${rootName}${separator}${rootPath}${separator}${profileName}${separator}${appName}",
+		"java.configuration.updateBuildConfiguration": "automatic",
+		"microprofile.tools.validation.unassigned.excluded": [
+			"rre.api.access-token"
+		],
+		"java.diagnostic.filter": [
+			"**/target/generated-sources/**/*"
+		],
+		"java.jdt.ls.vmargs": "-XX:+UseParallelGC -XX:GCTimeRatio=4 -XX:AdaptiveSizePolicyWeight=90 -Dsun.zip.disableMemoryMapping=true -Xmx16G -Xms100m -Xlog:disable",
+		"chat.agent.maxRequests": 300,
+		"chat.tools.terminal.enableAutoApprove": true,
+		"chat.tools.terminal.autoApprove": {
+			"rm": false,
+			"rmdir": false,
+			"del": false,
+			"kill": false,
+			"curl": true,
+			"wget": true,
+			"eval": false,
+			"chmod": false,
+			"chown": false,
+			"/^Remove-Item\\b/i": false
+		},
+		"java.debug.settings.onBuildFailureProceed": true
+	},
+	"extensions": {
+		"recommendations": []
+	}
+}

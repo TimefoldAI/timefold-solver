@@ -35,10 +35,11 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
             if (environmentMode.compareTo(EnvironmentMode.STEP_ASSERT) > 0) {
                 throw new IllegalArgumentException(
                         "A non-null assertionScoreDirectorFactory (%s) requires an environmentMode (%s) of %s or lower."
-                                .formatted(assertionScoreDirectorFactory, environmentMode, EnvironmentMode.STEP_ASSERT));
+                                .formatted(assertionScoreDirectorFactory, environmentMode,
+                                        EnvironmentMode.STEP_ASSERT));
             }
-            var assertionScoreDirectorFactoryFactory =
-                    new ScoreDirectorFactoryFactory<Solution_, Score_>(assertionScoreDirectorFactory);
+            var assertionScoreDirectorFactoryFactory = new ScoreDirectorFactoryFactory<Solution_, Score_>(
+                    assertionScoreDirectorFactory);
             scoreDirectorFactory.setAssertionScoreDirectorFactory(assertionScoreDirectorFactoryFactory
                     .buildScoreDirectorFactory(EnvironmentMode.NON_REPRODUCIBLE, solutionDescriptor));
         }
@@ -66,17 +67,19 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
         }
         assertCorrectDirectorFactory(config);
 
-        // At this point, we are guaranteed to have at most one score director factory selected.
+        // At this point, we are guaranteed to have at most one score director factory
+        // selected.
         if (config.getEasyScoreCalculatorClass() != null) {
             return EasyScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config);
         } else if (config.getIncrementalScoreCalculatorClass() != null) {
             return IncrementalScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config);
-        } else if (config.getConstraintProviderClass() != null) {
+        } else if (config.getConstraintProviderClass() != null || config.getConstraintProvider() != null) {
             return BavetConstraintStreamScoreDirectorFactory.buildScoreDirectorFactory(solutionDescriptor, config,
                     environmentMode);
         } else {
             throw new IllegalArgumentException(
-                    "The scoreDirectorFactory lacks configuration for either constraintProviderClass, " +
+                    "The scoreDirectorFactory lacks configuration for either constraintProvider, constraintProviderClass, "
+                            +
                             "easyScoreCalculatorClass or incrementalScoreCalculatorClass.");
         }
     }
@@ -98,11 +101,17 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                                     config.getIncrementalScoreCalculatorCustomProperties()));
         }
         var constraintProviderClass = config.getConstraintProviderClass();
-        var hasConstraintProvider = constraintProviderClass != null;
+        var constraintProvider = config.getConstraintProvider();
+        var hasConstraintProvider = constraintProviderClass != null || constraintProvider != null;
         if (!hasConstraintProvider && config.getConstraintProviderCustomProperties() != null) {
             throw new IllegalStateException(
-                    "If there is no constraintProviderClass (%s), then there can be no constraintProviderCustomProperties (%s) either."
+                    "If there is no constraintProviderClass (%s) or constraintProvider instance, then there can be no constraintProviderCustomProperties (%s) either."
                             .formatted(constraintProviderClass, config.getConstraintProviderCustomProperties()));
+        }
+        if (constraintProviderClass != null && constraintProvider != null) {
+            throw new IllegalStateException(
+                    "The scoreDirectorFactory cannot have both a constraintProviderClass (%s) and a constraintProvider instance together. Use one or the other."
+                            .formatted(constraintProviderClass.getName()));
         }
         if (hasEasyScoreCalculator && (hasIncrementalScoreCalculator || hasConstraintProvider)
                 || (hasIncrementalScoreCalculator && hasConstraintProvider)) {
@@ -112,8 +121,14 @@ public class ScoreDirectorFactoryFactory<Solution_, Score_ extends Score<Score_>
                         .add("an easyScoreCalculatorClass (%s)".formatted(easyScoreCalculatorClass.getName()));
             }
             if (hasConstraintProvider) {
-                scoreDirectorFactoryPropertyList
-                        .add("an constraintProviderClass (%s)".formatted(constraintProviderClass.getName()));
+                if (constraintProviderClass != null) {
+                    scoreDirectorFactoryPropertyList
+                            .add("a constraintProviderClass (%s)".formatted(constraintProviderClass.getName()));
+                } else {
+                    scoreDirectorFactoryPropertyList
+                            .add("a constraintProvider instance (%s)"
+                                    .formatted(constraintProvider.getClass().getName()));
+                }
             }
             if (hasIncrementalScoreCalculator) {
                 scoreDirectorFactoryPropertyList.add("an incrementalScoreCalculatorClass (%s)"
