@@ -58,13 +58,6 @@ public final class IndexedSet<T> {
         this.elementPositionTracker = Objects.requireNonNull(elementPositionTracker);
     }
 
-    private List<@Nullable T> getElementList() {
-        if (elementList == null) {
-            elementList = new ArrayList<>();
-        }
-        return elementList;
-    }
-
     /**
      * Appends the specified element to the end of this collection.
      * If the element is already present,
@@ -76,30 +69,26 @@ public final class IndexedSet<T> {
      * @param element element to be appended to this collection
      */
     public void add(T element) {
-        var actualElementList = getElementList();
-        actualElementList.add(element);
+        if (elementList == null) {
+            elementList = new ArrayList<>();
+        }
+        elementList.add(element);
         elementPositionTracker.setPosition(element, ++lastElementPosition);
     }
 
     /**
-     * Removes the first occurrence of the specified element from this collection, if it is present.
+     * Removes the first occurrence of the specified element from this collection, if present.
      * Will use identity comparison to check for presence;
      * two different instances which {@link Object#equals(Object) equal} are considered different elements.
      * 
      * @param element element to be removed from this collection
-     * @throws IllegalStateException if the element was not found in this collection
+     * @throws IllegalStateException if the element wasn't found in this collection
      */
     public void remove(T element) {
-        if (!innerRemove(element)) {
-            throw new IllegalStateException("Impossible state: the element (%s) was not found in the IndexedSet."
-                    .formatted(element));
-        }
-    }
-
-    private boolean innerRemove(T element) {
         var insertionPosition = elementPositionTracker.clearPosition(element);
         if (insertionPosition < 0) {
-            return false;
+            throw new IllegalStateException("Impossible state: the element (%s) was not found in the IndexedSet."
+                    .formatted(element));
         }
         if (insertionPosition == lastElementPosition) {
             // The element was the last one added; we can simply remove it.
@@ -111,7 +100,6 @@ public final class IndexedSet<T> {
             gapCount++;
         }
         clearIfPossible();
-        return true;
     }
 
     private boolean clearIfPossible() {
@@ -139,25 +127,25 @@ public final class IndexedSet<T> {
      *
      * @param elementConsumer the action to be performed for each element;
      *        may include removing elements from the collection,
-     *        but additions or swaps are not allowed;
+     *        but additions or swaps aren't allowed;
      *        undefined behavior will occur if that is attempted.
      */
     public void forEach(Consumer<T> elementConsumer) {
         if (isEmpty()) {
             return;
         }
-        forEach(element -> {
-            elementConsumer.accept(element);
-            return false; // Iterate until the end.
-        });
-    }
-
-    private @Nullable T forEach(Predicate<T> elementPredicate) {
-        return shouldCompact() ? forEachCompacting(elementPredicate) : forEachNonCompacting(elementPredicate);
+        if (shouldCompact()) {
+            forEachCompacting(elementConsumer);
+        } else {
+            forEachNonCompacting(elementConsumer);
+        }
     }
 
     private boolean shouldCompact() {
-        int elementCount = lastElementPosition + 1;
+        if (gapCount == 0) {
+            return false;
+        }
+        var elementCount = lastElementPosition + 1;
         if (elementCount < MINIMUM_ELEMENT_COUNT_FOR_COMPACTION) {
             return false;
         }
@@ -165,42 +153,39 @@ public final class IndexedSet<T> {
         return gapPercentage > GAP_RATIO_FOR_COMPACTION;
     }
 
-    private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate) {
-        return forEachNonCompacting(elementPredicate, 0);
+    private void forEachNonCompacting(Consumer<T> elementConsumer) {
+        forEachNonCompacting(elementConsumer, 0);
     }
 
-    private @Nullable T forEachNonCompacting(Predicate<T> elementPredicate, int startingIndex) {
+    private void forEachNonCompacting(Consumer<T> elementConsumer, int startingIndex) {
         for (var i = startingIndex; i <= lastElementPosition; i++) {
             var element = elementList.get(i);
-            if (element != null && elementPredicate.test(element)) {
-                return element;
+            if (element != null) {
+                elementConsumer.accept(element);
             }
         }
-        return null;
     }
 
-    private @Nullable T forEachCompacting(Predicate<T> elementPredicate) {
+    private void forEachCompacting(Consumer<T> elementConsumer) {
         if (clearIfPossible()) {
-            return null;
+            return;
         }
         for (var i = 0; i <= lastElementPosition; i++) {
             var element = elementList.get(i);
             if (element == null) {
                 element = fillGap(i);
                 if (element == null) { // There was nothing to fill the gap with; we are done.
-                    return null;
+                    return;
                 }
             }
-            if (elementPredicate.test(element)) {
-                return element;
-            }
+            elementConsumer.accept(element);
             if (gapCount == 0) {
                 // No more gaps to fill; we can continue without compacting.
                 // This is an optimized loop which no longer checks for gaps.
-                return forEachNonCompacting(elementPredicate, i + 1);
+                forEachNonCompacting(elementConsumer, i + 1);
+                return;
             }
         }
-        return null;
     }
 
     /**
@@ -210,7 +195,7 @@ public final class IndexedSet<T> {
      * @return the element that now occupies position i, or null if no element further in the list can fill the gap
      */
     private @Nullable T fillGap(int gapPosition) {
-        T lastRemovedElement = removeLastNonGap(gapPosition);
+        var lastRemovedElement = removeLastNonGap(gapPosition);
         if (lastRemovedElement == null) {
             return null;
         }
@@ -243,7 +228,45 @@ public final class IndexedSet<T> {
         if (isEmpty()) {
             return null;
         }
-        return forEach(elementPredicate);
+        return shouldCompact() ? findFirstCompacting(elementPredicate) : findFirstNonCompacting(elementPredicate);
+    }
+
+    private @Nullable T findFirstNonCompacting(Predicate<T> elementPredicate) {
+        return findFirstNonCompacting(elementPredicate, 0);
+    }
+
+    private @Nullable T findFirstNonCompacting(Predicate<T> elementPredicate, int startingIndex) {
+        for (var i = startingIndex; i <= lastElementPosition; i++) {
+            var element = elementList.get(i);
+            if (element != null && elementPredicate.test(element)) {
+                return element;
+            }
+        }
+        return null;
+    }
+
+    private @Nullable T findFirstCompacting(Predicate<T> elementPredicate) {
+        if (clearIfPossible()) {
+            return null;
+        }
+        for (var i = 0; i <= lastElementPosition; i++) {
+            var element = elementList.get(i);
+            if (element == null) {
+                element = fillGap(i);
+                if (element == null) { // There was nothing to fill the gap with; we are done.
+                    return null;
+                }
+            }
+            if (elementPredicate.test(element)) {
+                return element;
+            }
+            if (gapCount == 0) {
+                // No more gaps to fill; we can continue without compacting.
+                // This is an optimized loop which no longer checks for gaps.
+                return findFirstNonCompacting(elementPredicate, i + 1);
+            }
+        }
+        return null;
     }
 
     /**
