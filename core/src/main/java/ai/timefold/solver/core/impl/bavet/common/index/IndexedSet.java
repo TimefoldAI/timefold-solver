@@ -104,12 +104,18 @@ public final class IndexedSet<T> {
 
     private boolean clearIfPossible() {
         if (gapCount > 0 && lastElementPosition + 1 == gapCount) { // All positions are gaps. Clear the list entirely.
-            elementList.clear();
-            gapCount = 0;
-            lastElementPosition = -1;
+            forceClear();
             return true;
         }
         return false;
+    }
+
+    private void forceClear() {
+        if (elementList != null) {
+            elementList.clear();
+        }
+        gapCount = 0;
+        lastElementPosition = -1;
     }
 
     public boolean isEmpty() {
@@ -298,6 +304,32 @@ public final class IndexedSet<T> {
                 }
             }
         }
+    }
+
+    public void clear(Consumer<T> elementConsumer) {
+        var nonGapCount = size();
+        if (nonGapCount == 0) {
+            forceClear();
+            return;
+        }
+        var oldLastElementPosition = lastElementPosition;
+        for (var i = 0; i <= oldLastElementPosition; i++) {
+            var element = elementList.get(i);
+            if (element == null) {
+                continue;
+            }
+            elementConsumer.accept(element);
+            if (lastElementPosition != oldLastElementPosition) {
+                throw new IllegalStateException("Impossible state: the IndexedSet was modified while being cleared.");
+            }
+            elementPositionTracker.clearPosition(element);
+            // We can stop early once all non-gap elements have been processed.
+            nonGapCount--;
+            if (nonGapCount == 0) {
+                break;
+            }
+        }
+        forceClear();
     }
 
 }

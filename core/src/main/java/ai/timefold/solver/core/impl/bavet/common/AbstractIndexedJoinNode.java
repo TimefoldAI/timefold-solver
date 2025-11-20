@@ -82,8 +82,8 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             // Prefer an update over retract-insert if possible
             innerUpdateLeft(leftTuple, consumer -> indexerRight.forEach(oldIndexKeys, consumer));
         } else {
-            IndexedSet<OutTuple_> outTupleSetLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleSet);
             indexerLeft.remove(oldIndexKeys, leftTuple);
+            IndexedSet<OutTuple_> outTupleSetLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleSet);
             outTupleSetLeft.forEach(this::retractOutTuple);
             // outTupleSetLeft is now empty, no need for leftTuple.setStore(...);
             indexAndPropagateLeft(leftTuple, newIndexKeys);

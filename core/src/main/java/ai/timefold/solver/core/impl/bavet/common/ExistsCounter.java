@@ -21,7 +21,7 @@ public final class ExistsCounter<Tuple_ extends AbstractTuple>
     }
 
     public void clearWithoutCount() {
-        leftHandleSet.forEach(ExistsCounterHandle::remove);
+        leftHandleSet.clear(ExistsCounterHandle::removeByLeft);
     }
 
     public void clearIncludingCount() {

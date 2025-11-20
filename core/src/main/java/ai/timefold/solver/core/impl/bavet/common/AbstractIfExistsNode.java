@@ -113,8 +113,8 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     IndexedSet<ExistsCounterHandle<LeftTuple_>> updateRightHandleSet(UniTuple<Right_> rightTuple) {
         IndexedSet<ExistsCounterHandle<LeftTuple_>> rightHandleSet = rightTuple.getStore(inputStoreIndexRightHandleSet);
-        rightHandleSet.forEach(handle -> {
-            handle.remove();
+        rightHandleSet.clear(handle -> {
+            handle.removeByRight();
             decrementCounterRight(handle.counter);
         });
         return rightHandleSet;
