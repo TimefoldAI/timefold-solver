@@ -71,7 +71,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         }
         IndexedSet<OutTuple_> outTupleSetLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleSet);
         leftTupleSet.remove(leftTuple);
-        outTupleSetLeft.forEach(this::retractOutTuple);
+        outTupleSetLeft.clear(this::retractOutTupleByLeft);
     }
 
     @Override
@@ -105,7 +105,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         }
         IndexedSet<OutTuple_> outTupleSetRight = rightTuple.removeStore(inputStoreIndexRightOutTupleSet);
         rightTupleSet.remove(rightTuple);
-        outTupleSetRight.forEach(this::retractOutTuple);
+        outTupleSetRight.clear(this::retractOutTupleByRight);
     }
 
 }

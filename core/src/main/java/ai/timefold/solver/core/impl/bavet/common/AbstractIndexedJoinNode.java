@@ -84,7 +84,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         } else {
             indexerLeft.remove(oldIndexKeys, leftTuple);
             IndexedSet<OutTuple_> outTupleSetLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleSet);
-            outTupleSetLeft.forEach(this::retractOutTuple);
+            outTupleSetLeft.clear(this::retractOutTupleByLeft);
             // outTupleSetLeft is now empty, no need for leftTuple.setStore(...);
             indexAndPropagateLeft(leftTuple, newIndexKeys);
         }
@@ -105,7 +105,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         }
         IndexedSet<OutTuple_> outTupleSetLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleSet);
         indexerLeft.remove(indexKeys, leftTuple);
-        outTupleSetLeft.forEach(this::retractOutTuple);
+        outTupleSetLeft.clear(this::retractOutTupleByLeft);
     }
 
     @Override
@@ -137,7 +137,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         } else {
             IndexedSet<OutTuple_> outTupleSetRight = rightTuple.getStore(inputStoreIndexRightOutTupleSet);
             indexerRight.remove(oldIndexKeys, rightTuple);
-            outTupleSetRight.forEach(this::retractOutTuple);
+            outTupleSetRight.clear(this::retractOutTupleByRight);
             // outTupleSetRight is now empty, no need for rightTuple.setStore(...);
             indexAndPropagateRight(rightTuple, newIndexKeys);
         }
@@ -158,7 +158,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         }
         IndexedSet<OutTuple_> outTupleSetRight = rightTuple.removeStore(inputStoreIndexRightOutTupleSet);
         indexerRight.remove(indexKeys, rightTuple);
-        outTupleSetRight.forEach(this::retractOutTuple);
+        outTupleSetRight.clear(this::retractOutTupleByRight);
     }
 
 }

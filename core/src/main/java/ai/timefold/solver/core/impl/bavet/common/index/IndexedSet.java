@@ -1,16 +1,15 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import ai.timefold.solver.core.impl.util.ElementAwareList;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import ai.timefold.solver.core.impl.util.ElementAwareList;
-
-import org.jspecify.annotations.NullMarked;
-import org.jspecify.annotations.Nullable;
 
 /**
  * {@link ArrayList}-backed set which allows to {@link #remove(Object)} an element
@@ -132,9 +131,7 @@ public final class IndexedSet<T> {
      * The order of iteration may change as elements are added and removed.
      *
      * @param elementConsumer the action to be performed for each element;
-     *        may include removing elements from the collection,
-     *        but additions or swaps aren't allowed;
-     *        undefined behavior will occur if that is attempted.
+     *        mustn't modify the collection
      */
     public void forEach(Consumer<T> elementConsumer) {
         if (isEmpty()) {
@@ -227,7 +224,7 @@ public final class IndexedSet<T> {
      * As defined by {@link #forEach(Consumer)},
      * but stops when the predicate returns true for an element.
      * 
-     * @param elementPredicate the predicate to be tested for each element
+     * @param elementPredicate the predicate to be tested for each element; mustn't modify the collection
      * @return the first element for which the predicate returned true, or null if none
      */
     public @Nullable T findFirst(Predicate<T> elementPredicate) {
@@ -276,36 +273,12 @@ public final class IndexedSet<T> {
     }
 
     /**
-     * Returns a standard {@link List} view of this collection.
-     * Users mustn't modify the returned list, as that'd also change the underlying data structure.
+     * Empties the collection.
+     * For each element being removed, the given consumer is called.
+     * This is a more efficient implementation than removing elements individually.
      *
-     * @return a standard list view of this element-aware list
+     * @param elementConsumer the consumer to be called for each element being removed; mustn't modify the collection
      */
-    public List<T> asList() {
-        if (elementList == null) {
-            return Collections.emptyList();
-        }
-        if (gapCount > 0) { // The list must not return any nulls.
-            forceCompaction();
-        }
-        return elementList.isEmpty() ? Collections.emptyList() : elementList;
-    }
-
-    private void forceCompaction() {
-        if (clearIfPossible()) {
-            return;
-        }
-        for (var i = 0; i <= lastElementPosition; i++) {
-            var element = elementList.get(i);
-            if (element == null) {
-                fillGap(i);
-                if (gapCount == 0) { // If there are no more gaps, we can stop.
-                    return;
-                }
-            }
-        }
-    }
-
     public void clear(Consumer<T> elementConsumer) {
         var nonGapCount = size();
         if (nonGapCount == 0) {
@@ -330,6 +303,37 @@ public final class IndexedSet<T> {
             }
         }
         forceClear();
+    }
+
+    /**
+     * Returns a standard {@link List} view of this collection.
+     * Users mustn't modify the returned list, as that'd also change the underlying data structure.
+     *
+     * @return a standard list view of this element-aware list
+     */
+    public List<T> asList() {
+        if (elementList == null) {
+            return Collections.emptyList();
+        }
+        if (gapCount > 0) { // The list mustn't return any nulls.
+            forceCompaction();
+        }
+        return elementList.isEmpty() ? Collections.emptyList() : elementList;
+    }
+
+    private void forceCompaction() {
+        if (clearIfPossible()) {
+            return;
+        }
+        for (var i = 0; i <= lastElementPosition; i++) {
+            var element = elementList.get(i);
+            if (element == null) {
+                fillGap(i);
+                if (gapCount == 0) { // If there are no more gaps, we can stop.
+                    return;
+                }
+            }
+        }
     }
 
 }

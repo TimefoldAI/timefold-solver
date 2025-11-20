@@ -128,6 +128,22 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         }
     }
 
+    private void retractOutTuple(OutTuple_ outTuple) {
+        removeFromLeftOutSet(outTuple);
+        removeFromRightOutSet(outTuple);
+        propagateRetract(outTuple);
+    }
+
+    private void removeFromLeftOutSet(OutTuple_ outTuple) {
+        IndexedSet<OutTuple_> outSetLeft = outTuple.removeStore(outputStoreIndexLeftOutSet);
+        outSetLeft.remove(outTuple);
+    }
+
+    private void removeFromRightOutSet(OutTuple_ outTuple) {
+        IndexedSet<OutTuple_> outSetRight = outTuple.removeStore(outputStoreIndexRightOutSet);
+        outSetRight.remove(outTuple);
+    }
+
     private static <OutTuple_ extends AbstractTuple> OutTuple_ findOutTuple(IndexedSet<OutTuple_> sourceSet,
             IndexedSet<OutTuple_> referenceSet, int outputStoreIndex) {
         // Hack: outTuple has no left/right input tuple reference, use the left/right outSet reference instead.
@@ -184,17 +200,25 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         }
     }
 
-    protected final void retractOutTuple(OutTuple_ outTuple) {
-        IndexedSet<OutTuple_> outSetLeft = outTuple.removeStore(outputStoreIndexLeftOutSet);
-        outSetLeft.remove(outTuple);
-        IndexedSet<OutTuple_> outSetRight = outTuple.removeStore(outputStoreIndexRightOutSet);
-        outSetRight.remove(outTuple);
+    protected final void retractOutTupleByLeft(OutTuple_ outTuple) {
+        outTuple.removeStore(outputStoreIndexLeftOutSet); // The tuple will be removed from the set by the caller.
+        removeFromRightOutSet(outTuple);
+        propagateRetract(outTuple);
+    }
+
+    private void propagateRetract(OutTuple_ outTuple) {
         var state = outTuple.state;
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
                     .formatted(outTuple, this, outTuple.state));
         }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+    }
+
+    protected final void retractOutTupleByRight(OutTuple_ outTuple) {
+        removeFromLeftOutSet(outTuple);
+        outTuple.removeStore(outputStoreIndexRightOutSet); // The tuple will be removed from the set by the caller.
+        propagateRetract(outTuple);
     }
 
     @Override
