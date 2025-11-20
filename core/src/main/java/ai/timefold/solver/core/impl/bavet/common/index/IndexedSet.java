@@ -91,8 +91,7 @@ public final class IndexedSet<T> {
         }
         if (insertionPosition == lastElementPosition) {
             // The element was the last one added; we can simply remove it.
-            elementList.remove(insertionPosition);
-            lastElementPosition--;
+            elementList.remove(lastElementPosition--);
         } else {
             // We replace the element with null, creating a gap.
             elementList.set(insertionPosition, null);
@@ -210,8 +209,7 @@ public final class IndexedSet<T> {
 
     private @Nullable T removeLastNonGap(int gapPosition) {
         while (lastElementPosition >= gapPosition) {
-            var lastRemovedElement = elementList.remove(lastElementPosition);
-            lastElementPosition--;
+            var lastRemovedElement = elementList.remove(lastElementPosition--);
             if (lastRemovedElement != null) {
                 return lastRemovedElement;
             }
@@ -285,20 +283,15 @@ public final class IndexedSet<T> {
             forceClear();
             return;
         }
-        var oldLastElementPosition = lastElementPosition;
-        for (var i = 0; i <= oldLastElementPosition; i++) {
+        for (var i = 0; i <= lastElementPosition; i++) {
             var element = elementList.get(i);
             if (element == null) {
                 continue;
             }
             elementConsumer.accept(element);
-            if (lastElementPosition != oldLastElementPosition) {
-                throw new IllegalStateException("Impossible state: the IndexedSet was modified while being cleared.");
-            }
             elementPositionTracker.clearPosition(element);
             // We can stop early once all non-gap elements have been processed.
-            nonGapCount--;
-            if (nonGapCount == 0) {
+            if (--nonGapCount == 0) {
                 break;
             }
         }

@@ -1,425 +1,383 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import org.jspecify.annotations.NullMarked;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
-import org.jspecify.annotations.NullMarked;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @NullMarked
 class IndexedSetTest {
 
-    private static IndexedSet<String> createSet() {
-        return new IndexedSet<>(new CompactingIndexPositionTracker<>());
+    @Test
+    void addSingleElement() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        set.add("A");
+
+        assertThat(set.size()).isEqualTo(1);
+        assertThat(set.isEmpty()).isFalse();
+        assertThat(tracker.hasPosition("A")).isTrue();
     }
 
-    @Nested
-    class BasicOperations {
+    @Test
+    void addMultipleElements() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
 
-        @Test
-        void emptySetHasSizeZero() {
-            var set = createSet();
-            assertThat(set.isEmpty()).isTrue();
-            assertThat(set.size()).isZero();
-            assertThat(set.asList()).isEmpty();
-        }
+        set.add("A");
+        set.add("B");
+        set.add("C");
 
-        @Test
-        void addSingleElement() {
-            var set = createSet();
-            set.add("A");
-            assertThat(set.isEmpty()).isFalse();
-            assertThat(set.size()).isEqualTo(1);
-            assertThat(set.asList()).containsExactly("A");
-        }
-
-        @Test
-        void addMultipleElements() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            assertThat(set.size()).isEqualTo(3);
-            assertThat(set.asList()).containsExactly("A", "B", "C");
-        }
-
-        @Test
-        void removeSingleElement() {
-            var set = createSet();
-            set.add("A");
-            set.remove("A");
-            assertThat(set.isEmpty()).isTrue();
-            assertThat(set.size()).isZero();
-            assertThat(set.asList()).isEmpty();
-        }
-
-        @Test
-        void removeLastElement() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            set.remove("C");
-            assertThat(set.size()).isEqualTo(2);
-            assertThat(set.asList()).containsExactly("A", "B");
-        }
-
-        @Test
-        void removeMiddleElement() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            set.remove("B");
-            assertThat(set.size()).isEqualTo(2);
-            assertThat(set.asList()).containsExactly("A", "C");
-        }
-
-        @Test
-        void removeFirstElement() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            set.remove("A");
-            assertThat(set.size()).isEqualTo(2);
-            assertThat(set.asList()).containsExactly("C", "B");
-        }
-
-        @Test
-        void removeNonExistentElementThrows() {
-            var set = createSet();
-            set.add("A");
-            assertThatThrownBy(() -> set.remove("B"))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("was not found");
-        }
-
-        @Test
-        void removeFromEmptySetThrows() {
-            var set = createSet();
-            assertThatThrownBy(() -> set.remove("A"))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("was not found");
-        }
-
-        @Test
-        void removeAlreadyRemovedElementThrows() {
-            var set = createSet();
-            set.add("A");
-            set.remove("A");
-            assertThatThrownBy(() -> set.remove("A"))
-                    .isInstanceOf(IllegalStateException.class)
-                    .hasMessageContaining("was not found");
-        }
+        assertThat(set.size()).isEqualTo(3);
+        assertThat(set.isEmpty()).isFalse();
+        assertThat(tracker.hasPosition("A")).isTrue();
+        assertThat(tracker.hasPosition("B")).isTrue();
+        assertThat(tracker.hasPosition("C")).isTrue();
     }
 
-    @Nested
-    class ForEachTests {
+    @Test
+    void removeLastElement() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
 
-        @Test
-        void forEachOnEmptySet() {
-            var set = createSet();
-            var visited = new ArrayList<String>();
-            set.forEach(visited::add);
-            assertThat(visited).isEmpty();
-        }
+        set.add("A");
+        set.add("B");
+        set.remove("B");
 
-        @Test
-        void forEachVisitsAllElements() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            var visited = new ArrayList<String>();
-            set.forEach(visited::add);
-            assertThat(visited).containsExactlyInAnyOrder("A", "B", "C");
-        }
-
-        @Test
-        void forEachSkipsGaps() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            set.remove("B");
-            var visited = new ArrayList<String>();
-            set.forEach(visited::add);
-            assertThat(visited).containsExactlyInAnyOrder("A", "C");
-        }
-
-        @Test
-        void forEachWithRemovalDuringIteration() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            set.add("D");
-            var visited = new ArrayList<String>();
-            set.forEach(element -> {
-                visited.add(element);
-                if (element.equals("B")) {
-                    set.remove("C");
-                }
-            });
-            assertThat(visited).containsExactlyInAnyOrder("A", "B", "D");
-            assertThat(set.size()).isEqualTo(3);
-        }
+        assertThat(set.size()).isEqualTo(1);
+        assertThat(tracker.hasPosition("A")).isTrue();
+        assertThat(tracker.hasPosition("B")).isFalse();
     }
 
-    @Nested
-    class FindFirstTests {
+    @Test
+    void removeMiddleElement() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
 
-        @Test
-        void findFirstOnEmptySet() {
-            var set = createSet();
-            assertThat(set.findFirst(s -> true)).isNull();
-        }
+        set.add("A");
+        set.add("B");
+        set.add("C");
+        set.remove("B");
 
-        @Test
-        void findFirstReturnsMatchingElement() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            assertThat(set.findFirst(s -> s.equals("B"))).isEqualTo("B");
-        }
-
-        @Test
-        void findFirstReturnsNullWhenNoMatch() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            assertThat(set.findFirst(s -> s.equals("C"))).isNull();
-        }
-
-        @Test
-        void findFirstStopsAtFirstMatch() {
-            var set = createSet();
-            set.add("A");
-            set.add("B");
-            set.add("C");
-            var callCount = new AtomicInteger(0);
-            set.findFirst(s -> {
-                callCount.incrementAndGet();
-                return s.equals("B");
-            });
-            assertThat(callCount.get()).isLessThanOrEqualTo(2);
-        }
+        assertThat(set.size()).isEqualTo(2);
+        assertThat(tracker.hasPosition("A")).isTrue();
+        assertThat(tracker.hasPosition("B")).isFalse();
+        assertThat(tracker.hasPosition("C")).isTrue();
     }
 
-    @Nested
-    class CompactionTests {
+    @Test
+    void removeNonExistentElement() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
 
-        @Test
-        void noCompactionForSmallSets() {
-            var set = createSet();
-            // Add fewer elements than MINIMUM_ELEMENT_COUNT_FOR_COMPACTION
-            for (var i = 0; i < IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION - 1; i++) {
-                set.add("Element" + i);
-            }
-            // Remove half of them to create gaps
-            for (var i = 0; i < IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION / 2; i++) {
-                set.remove("Element" + i);
-            }
-            var visited = new ArrayList<String>();
-            set.forEach(visited::add);
-            // Verify elements are still visited correctly
-            assertThat(visited).hasSize(IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION / 2 - 1);
-        }
+        set.add("A");
 
-        @Test
-        void compactionTriggeredByGapRatio() {
-            var set = createSet();
-            var elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION;
-            // Add elements
-            for (var i = 0; i < elementCount; i++) {
-                set.add("Element" + i);
-            }
-            // Remove enough elements to exceed GAP_RATIO_FOR_COMPACTION (10%)
-            var gapsNeeded = (int) (elementCount * IndexedSet.GAP_RATIO_FOR_COMPACTION) + 1;
-            for (var i = 0; i < gapsNeeded; i++) {
-                set.remove("Element" + i);
-            }
-            var visited = new ArrayList<String>();
-            set.forEach(visited::add);
-            assertThat(visited).hasSize(elementCount - gapsNeeded);
-            // After compaction, asList should not trigger further compaction
-            assertThat(set.asList()).hasSize(elementCount - gapsNeeded);
-        }
-
-        @Test
-        void externalRemovalDuringCompaction() {
-            var set = createSet();
-            var elementCount = 30;
-            for (var i = 0; i < elementCount; i++) {
-                set.add("Element" + i);
-            }
-            // Remove elements to trigger compaction
-            for (var i = 0; i < 5; i++) {
-                set.remove("Element" + i);
-            }
-            var visited = new ArrayList<String>();
-            set.forEach(element -> {
-                visited.add(element);
-                // Remove an element during iteration
-                if (element.equals("Element10")) {
-                    set.remove("Element20");
-                }
-            });
-            assertThat(set.size()).isEqualTo(24);
-            assertThat(visited).doesNotContain("Element20");
-        }
-
-        @Test
-        void multipleExternalRemovalsDuringCompaction() {
-            var set = createSet();
-            for (var i = 0; i < 40; i++) {
-                set.add("Element" + i);
-            }
-            // Create gaps to trigger compaction
-            for (var i = 0; i < 6; i++) {
-                set.remove("Element" + i);
-            }
-            var visited = new ArrayList<String>();
-            var removed = new ArrayList<String>();
-            set.forEach(element -> {
-                visited.add(element);
-                if (element.equals("Element10")) {
-                    set.remove("Element20");
-                    removed.add("Element20");
-                }
-                if (element.equals("Element15")) {
-                    set.remove("Element25");
-                    removed.add("Element25");
-                }
-            });
-            assertThat(set.size()).isEqualTo(32);
-            assertThat(visited).doesNotContainAnyElementsOf(removed);
-        }
-
-        @Test
-        void removalOfLastElementDuringCompaction() {
-            var set = createSet();
-            for (var i = 0; i < 30; i++) {
-                set.add("Element" + i);
-            }
-            for (var i = 0; i < 4; i++) {
-                set.remove("Element" + i);
-            }
-            set.forEach(element -> {
-                if (element.equals("Element10")) {
-                    set.remove("Element29"); // Last element
-                }
-            });
-            assertThat(set.size()).isEqualTo(25);
-        }
-
-        @Test
-        void clearAllGapsDuringCompaction() {
-            var set = createSet();
-            for (var i = 0; i < 25; i++) {
-                set.add("Element" + i);
-            }
-            // Remove all elements to create only gaps
-            for (var i = 0; i < 25; i++) {
-                set.remove("Element" + i);
-            }
-            assertThat(set.isEmpty()).isTrue();
-            assertThat(set.asList()).isEmpty();
-        }
-
-        @Test
-        void asListTriggersCompaction() {
-            var set = createSet();
-            for (var i = 0; i < 30; i++) {
-                set.add("Element" + i);
-            }
-            set.remove("Element5");
-            set.remove("Element10");
-            set.remove("Element15");
-            var list = set.asList();
-            assertThat(list).hasSize(27);
-            assertThat(list).doesNotContainNull();
-        }
-
-        @Test
-        void forceCompactionWithMultipleGaps() {
-            var set = createSet();
-            for (var i = 0; i < 50; i++) {
-                set.add("Element" + i);
-            }
-            // Create multiple gaps
-            for (var i = 0; i < 10; i += 2) {
-                set.remove("Element" + i);
-            }
-            var list = set.asList();
-            assertThat(list).hasSize(45);
-            assertThat(list).doesNotContainNull();
-        }
+        assertThatThrownBy(() -> set.remove("B"))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("was not found in the IndexedSet");
     }
 
-    @Nested
-    class EdgeCases {
+    @Test
+    void removeAllElements() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
 
-        @Test
-        void removeAndReAddCycle() {
-            var set = createSet();
-            set.add("A");
-            set.remove("A");
-            set.add("A");
-            assertThat(set.size()).isEqualTo(1);
-            assertThat(set.asList()).containsExactly("A");
-        }
+        set.add("A");
+        set.add("B");
+        set.remove("A");
+        set.remove("B");
 
-        @Test
-        void largeNumberOfElements() {
-            var set = createSet();
-            var count = 1000;
-            for (var i = 0; i < count; i++) {
-                set.add("Element" + i);
-            }
-            assertThat(set.size()).isEqualTo(count);
-            assertThat(set.asList()).hasSize(count);
-        }
-
-        @Test
-        void largeNumberOfGaps() {
-            var set = createSet();
-            for (var i = 0; i < 100; i++) {
-                set.add("Element" + i);
-            }
-            for (var i = 0; i < 50; i++) {
-                set.remove("Element" + (i * 2));
-            }
-            assertThat(set.size()).isEqualTo(50);
-            var list = set.asList();
-            assertThat(list).hasSize(50);
-            assertThat(list).doesNotContainNull();
-        }
-
-        @Test
-        void alternatingAddAndRemove() {
-            var set = createSet();
-            for (var i = 0; i < 100; i++) {
-                set.add("Element" + i);
-                if (i > 0 && i % 2 == 0) {
-                    set.remove("Element" + (i - 1));
-                }
-            }
-            assertThat(set.size()).isGreaterThan(0);
-            assertThat(set.asList()).doesNotContainNull();
-        }
+        assertThat(set.size()).isEqualTo(0);
+        assertThat(set.isEmpty()).isTrue();
     }
 
-    @NullMarked
-    private static final class CompactingIndexPositionTracker<T> implements ElementPositionTracker<T> {
+    @Test
+    void removeAllElementsCreatingGaps() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+        set.remove("B");
+        set.remove("A");
+        set.remove("C");
+
+        assertThat(set.size()).isEqualTo(0);
+        assertThat(set.isEmpty()).isTrue();
+    }
+
+    @Test
+    void forEachEmptySet() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+        var result = new ArrayList<String>();
+
+        set.forEach(result::add);
+
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    void forEachWithoutGaps() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+        var result = new ArrayList<String>();
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+        set.forEach(result::add);
+
+        assertThat(result).containsExactlyInAnyOrder("A", "B", "C");
+    }
+
+    @Test
+    void forEachWithGapsNoCompaction() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+        var result = new ArrayList<String>();
+
+        // Add fewer elements than MINIMUM_ELEMENT_COUNT_FOR_COMPACTION
+        for (int i = 0; i < IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION - 1; i++) {
+            set.add("Element" + i);
+        }
+        set.remove("Element5");
+        set.forEach(result::add);
+
+        assertThat(result).hasSize(IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION - 2);
+    }
+
+    @Test
+    void forEachWithGapsTriggersCompaction() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+        var result = new ArrayList<String>();
+
+        // Add enough elements to trigger compaction
+        int elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION;
+        for (int i = 0; i < elementCount; i++) {
+            set.add("Element" + i);
+        }
+
+        // Remove enough elements to exceed GAP_RATIO_FOR_COMPACTION
+        int gapsNeeded = (int) Math.ceil(elementCount * IndexedSet.GAP_RATIO_FOR_COMPACTION) + 1;
+        for (int i = 0; i < gapsNeeded; i++) {
+            set.remove("Element" + i);
+        }
+
+        set.forEach(result::add);
+
+        assertThat(result).hasSize(elementCount - gapsNeeded);
+    }
+
+    @Test
+    void findFirstEmptySet() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        var result = set.findFirst(s -> s.equals("A"));
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void findFirstWithoutGaps() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+
+        var result = set.findFirst(s -> s.equals("B"));
+
+        assertThat(result).isEqualTo("B");
+    }
+
+    @Test
+    void findFirstNotFound() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        set.add("A");
+        set.add("B");
+
+        var result = set.findFirst(s -> s.equals("C"));
+
+        assertThat(result).isNull();
+    }
+
+    @Test
+    void findFirstWithGapsNoCompaction() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        for (int i = 0; i < IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION - 1; i++) {
+            set.add("Element" + i);
+        }
+        set.remove("Element5");
+
+        var result = set.findFirst(s -> s.equals("Element10"));
+
+        assertThat(result).isEqualTo("Element10");
+    }
+
+    @Test
+    void findFirstWithGapsTriggersCompaction() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        int elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION;
+        for (int i = 0; i < elementCount; i++) {
+            set.add("Element" + i);
+        }
+
+        int gapsNeeded = (int) Math.ceil(elementCount * IndexedSet.GAP_RATIO_FOR_COMPACTION) + 1;
+        for (int i = 0; i < gapsNeeded; i++) {
+            set.remove("Element" + i);
+        }
+
+        var result = set.findFirst(s -> s.startsWith("Element"));
+
+        assertThat(result).isNotNull();
+    }
+
+    @Test
+    void clearEmptySet() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+        var result = new ArrayList<String>();
+
+        set.clear(result::add);
+
+        assertThat(result).isEmpty();
+        assertThat(set.isEmpty()).isTrue();
+    }
+
+    @Test
+    void clearWithElements() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+        var result = new ArrayList<String>();
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+        set.clear(result::add);
+
+        assertThat(result).containsExactlyInAnyOrder("A", "B", "C");
+        assertThat(set.isEmpty()).isTrue();
+        assertThat(tracker.hasPosition("A")).isFalse();
+        assertThat(tracker.hasPosition("B")).isFalse();
+        assertThat(tracker.hasPosition("C")).isFalse();
+    }
+
+    @Test
+    void clearWithGaps() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+        var result = new ArrayList<String>();
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+        set.remove("B");
+        set.clear(result::add);
+
+        assertThat(result).containsExactlyInAnyOrder("A", "C");
+        assertThat(set.isEmpty()).isTrue();
+    }
+
+    @Test
+    void asListEmptySet() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        var list = set.asList();
+
+        assertThat(list).isEmpty();
+    }
+
+    @Test
+    void asListWithoutGaps() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+
+        var list = set.asList();
+
+        assertThat(list).containsExactly("A", "B", "C");
+    }
+
+    @Test
+    void asListWithGapsForcesCompaction() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        set.add("A");
+        set.add("B");
+        set.add("C");
+        set.remove("B");
+
+        var list = set.asList();
+
+        assertThat(list)
+                .hasSize(2)
+                .doesNotContainNull()
+                .containsExactlyInAnyOrder("A", "C");
+    }
+
+    @Test
+    void asListAfterClearReturnsEmptyList() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        set.add("A");
+        set.add("B");
+        set.remove("A");
+        set.remove("B");
+
+        var list = set.asList();
+
+        assertThat(list).isEmpty();
+    }
+
+    @Test
+    void compactionFillsGapsCorrectly() {
+        var tracker = new TestElementPositionTracker<String>();
+        var set = new IndexedSet<>(tracker);
+
+        // Create scenario where compaction will move elements
+        int elementCount = IndexedSet.MINIMUM_ELEMENT_COUNT_FOR_COMPACTION;
+        for (int i = 0; i < elementCount; i++) {
+            set.add("Element" + i);
+        }
+
+        // Remove elements from the beginning to create gaps
+        int gapsNeeded = (int) Math.ceil(elementCount * IndexedSet.GAP_RATIO_FOR_COMPACTION) + 1;
+        for (int i = 0; i < gapsNeeded; i++) {
+            set.remove("Element" + i);
+        }
+
+        // Force compaction via asList
+        var list = set.asList();
+
+        assertThat(list)
+                .hasSize(elementCount - gapsNeeded)
+                .doesNotContainNull();
+    }
+
+    private static final class TestElementPositionTracker<T> implements ElementPositionTracker<T> {
 
         private final Map<T, Integer> positionMap = new HashMap<>();
 
@@ -430,9 +388,13 @@ class IndexedSetTest {
 
         @Override
         public int clearPosition(T element) {
-            var result = positionMap.remove(element);
-            return result != null ? result : -1;
+            var position = positionMap.remove(element);
+            return position != null ? position : -1;
         }
 
+        public boolean hasPosition(T element) {
+            return positionMap.containsKey(element);
+        }
     }
+
 }

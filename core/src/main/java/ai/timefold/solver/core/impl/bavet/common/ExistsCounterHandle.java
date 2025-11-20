@@ -29,11 +29,11 @@ final class ExistsCounterHandle<LeftTuple_ extends AbstractTuple> {
     }
 
     public void removeByLeft() {
-        rightHandleSet.remove(this);
+        rightHandleSet.remove(this); // The counter will be removed from the left handle set by the caller.
     }
 
     public void removeByRight() {
-        counter.leftHandleSet.remove(this);
+        counter.leftHandleSet.remove(this); // The counter will be removed from the right handle set by the caller.
     }
 
 }
