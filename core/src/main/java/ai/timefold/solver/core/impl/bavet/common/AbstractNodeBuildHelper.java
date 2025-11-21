@@ -1,12 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.NodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
-import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
-import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,6 +10,13 @@ import java.util.TreeMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
+
+import ai.timefold.solver.core.impl.bavet.NodeNetwork;
+import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
+import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
 public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
@@ -120,7 +120,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
         return (lastIndex == null) ? 0 : lastIndex + 1;
     }
 
-    public InOutTupleStorePositionTracker getTupleStorePositionTracker(Stream_ tupleSourceStream, Stream_ leftParentSource, Stream_ rightParentSource) {
+    public InOutTupleStorePositionTracker getTupleStorePositionTracker(Stream_ tupleSourceStream, Stream_ leftParentSource,
+            Stream_ rightParentSource) {
         return new TupleStoreManager<>(this, tupleSourceStream, leftParentSource, rightParentSource);
     }
 

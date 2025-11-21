@@ -3,9 +3,9 @@ package ai.timefold.solver.core.impl.bavet.tri;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractIndexedIfExistsNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedIfExistsTriNode<A, B, C, D> extends AbstractIndexedIfExistsNode<TriTuple<A, B, C>, D> {

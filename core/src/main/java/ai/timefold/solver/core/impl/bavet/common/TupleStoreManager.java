@@ -12,7 +12,7 @@ final class TupleStoreManager<Stream_ extends BavetStream>
     private int finalOutputStoreSize = -1;
 
     public TupleStoreManager(AbstractNodeBuildHelper<Stream_> buildHelper, Stream_ thisStream, Stream_ leftParentSource,
-                             Stream_ rightParentSource) {
+            Stream_ rightParentSource) {
         this.buildHelper = buildHelper;
         this.leftParentSource = leftParentSource;
         this.rightParentSource = rightParentSource;

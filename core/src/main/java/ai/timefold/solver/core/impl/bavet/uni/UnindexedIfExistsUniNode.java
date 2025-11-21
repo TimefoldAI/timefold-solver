@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.bavet.uni;
 import java.util.function.BiPredicate;
 
 import ai.timefold.solver.core.impl.bavet.common.AbstractUnindexedIfExistsNode;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class UnindexedIfExistsUniNode<A, B> extends AbstractUnindexedIfExistsNode<UniTuple<A>, B> {

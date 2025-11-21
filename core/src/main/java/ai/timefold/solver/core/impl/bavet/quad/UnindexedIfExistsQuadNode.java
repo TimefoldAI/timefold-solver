@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.bavet.quad;
 
 import ai.timefold.solver.core.api.function.PentaPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractUnindexedIfExistsNode;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class UnindexedIfExistsQuadNode<A, B, C, D, E> extends AbstractUnindexedIfExistsNode<QuadTuple<A, B, C, D>, E> {
