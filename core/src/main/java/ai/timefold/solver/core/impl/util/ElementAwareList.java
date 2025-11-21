@@ -148,6 +148,11 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
+    /**
+     * Clears the list in one go, after consuming all elements with the provided consumer.
+     *
+     * @param tupleConsumer The action to be performed for each element before clearing.
+     */
     public void clear(Consumer<? super T> tupleConsumer) {
         forEach(tupleConsumer);
         clear();
