@@ -100,7 +100,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 // Call filtering for the leftTuple and rightTuple combinations again
                 ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList =
                         leftTuple.getStore(inputStoreIndexLeftTrackerList);
-                leftTrackerList.forEach(FilteringTracker::remove);
+                leftTrackerList.clear(FilteringTracker::removeByLeft);
                 counter.countRight = 0;
                 indexerRight.forEach(oldIndexKeys,
                         rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
@@ -133,7 +133,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         indexerLeft.remove(indexKeys, counterEntry);
         if (isFiltering) {
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.forEach(FilteringTracker::remove);
+            leftTrackerList.clear(FilteringTracker::removeByLeft);
         }
     }
 

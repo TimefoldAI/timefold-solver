@@ -75,7 +75,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         } else {
             // Call filtering for the leftTuple and rightTuple combinations again
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.forEach(FilteringTracker::remove);
+            leftTrackerList.clear(FilteringTracker::removeByLeft);
             counter.countRight = 0;
             for (var tuple : rightTupleList) {
                 updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerList);
@@ -95,7 +95,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         counterEntry.remove();
         if (isFiltering) {
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.forEach(FilteringTracker::remove);
+            leftTrackerList.clear(FilteringTracker::removeByLeft);
         }
         killCounterLeft(counter);
     }
