@@ -32,6 +32,8 @@ public final class ReachableValues {
     private final @Nullable Class<?> valueClass;
     private final @Nullable ValueRangeSorter<?> valueRangeSorter;
     private final boolean acceptsNullValue;
+    private @Nullable List<Object>[] onDemandRandomAccessEntity;
+    private @Nullable List<Object>[] onDemandRandomAccessValue;
     private @Nullable ReachableItemValue firstCachedObject;
     private @Nullable ReachableItemValue secondCachedObject;
 
@@ -45,6 +47,8 @@ public final class ReachableValues {
         this.valueClass = valueClass;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
+        this.onDemandRandomAccessEntity = new List[allValues.size()];
+        this.onDemandRandomAccessValue = new List[allValues.size()];
     }
 
     private @Nullable ReachableItemValue fetchItemValue(Object value) {
@@ -75,7 +79,12 @@ public final class ReachableValues {
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        return itemValue.getRandomAccessEntityList(allEntities);
+        var entityList = onDemandRandomAccessEntity[itemValue.ordinal];
+        if (entityList == null) {
+            entityList = itemValue.getRandomAccessEntityList(allEntities);
+            onDemandRandomAccessEntity[itemValue.ordinal] = entityList;
+        }
+        return entityList;
     }
 
     public List<Object> extractValuesAsList(Object value) {
@@ -83,7 +92,12 @@ public final class ReachableValues {
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        return itemValue.getRandomAccessValueList(allValues, valueRangeSorter);
+        var valueList = onDemandRandomAccessValue[itemValue.ordinal];
+        if (valueList == null) {
+            valueList = itemValue.getRandomAccessValueList(allValues, valueRangeSorter);
+            onDemandRandomAccessValue[itemValue.ordinal] = valueList;
+        }
+        return valueList;
     }
 
     public int getSize() {
@@ -136,37 +150,40 @@ public final class ReachableValues {
         if (deepCopy) {
             newAllValues = new ArrayList<>(allValues.size());
             for (var value : allValues) {
-                newAllValues.add(new ReachableItemValue(value.value, value.entityBitSet, value.valueBitSet,
-                        value.onDemandRandomAccessEntityList));
+                newAllValues.add(new ReachableItemValue(value.ordinal, value.value, value.entityBitSet, value.valueBitSet));
             }
         }
         return new ReachableValues(entitiesIndex, allEntities, valuesIndex, newAllValues, valueClass, sorterAdapter,
                 acceptsNullValue);
     }
 
+    public void clear() {
+        firstCachedObject = null;
+        secondCachedObject = null;
+        this.onDemandRandomAccessEntity = new List[allValues.size()];
+        this.onDemandRandomAccessValue = new List[allValues.size()];
+    }
+
     @NullMarked
     public static final class ReachableItemValue {
+        private final int ordinal;
         private final Object value;
         private final BitSet entityBitSet;
         private final BitSet valueBitSet;
-        // The entity and value list are calculated only when needed.
-        // The goal is to avoid loading unused data upfront, as it may affect scalability.
-        private @Nullable List<Object> onDemandRandomAccessEntityList;
-        private @Nullable List<Object> onDemandRandomAccessValueList;
         private boolean sorted = false;
 
-        public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
+        public ReachableItemValue(int ordinal, Object value, int entityListSize, int valueListSize) {
+            this.ordinal = ordinal;
             this.value = value;
             this.entityBitSet = new BitSet(entityListSize);
             this.valueBitSet = new BitSet(valueListSize);
         }
 
-        private ReachableItemValue(Object value, BitSet entityBitSet, BitSet valueBitSet,
-                @Nullable List<Object> onDemandRandomAccessEntityList) {
+        private ReachableItemValue(int ordinal, Object value, BitSet entityBitSet, BitSet valueBitSet) {
+            this.ordinal = ordinal;
             this.value = value;
             this.entityBitSet = entityBitSet;
             this.valueBitSet = valueBitSet;
-            this.onDemandRandomAccessEntityList = onDemandRandomAccessEntityList;
         }
 
         public void addEntity(int entityIndex) {
@@ -194,24 +211,18 @@ public final class ReachableValues {
         }
 
         List<Object> getRandomAccessEntityList(List<Object> allEntities) {
-            if (onDemandRandomAccessEntityList == null) {
-                onDemandRandomAccessEntityList = new ArrayIndexedList<>(extractAllIndexes(entityBitSet), allEntities, null);
-            }
-            return onDemandRandomAccessEntityList;
+            return new ArrayIndexedList<>(extractAllIndexes(entityBitSet), allEntities, null);
         }
 
         <V> List<Object> getRandomAccessValueList(List<ReachableItemValue> allValues,
                 @Nullable ValueRangeSorter<V> valueRangeSorter) {
-            if (onDemandRandomAccessValueList == null) {
-                var valuesList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues,
-                        v -> (V) v.value);
-                if (valueRangeSorter != null && !sorted) {
-                    valueRangeSorter.sort(valuesList);
-                    sorted = true;
-                }
-                onDemandRandomAccessValueList = (List<Object>) valuesList;
+            var valuesList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues,
+                    v -> (V) v.value);
+            if (valueRangeSorter != null && !sorted) {
+                valueRangeSorter.sort(valuesList);
+                sorted = true;
             }
-            return onDemandRandomAccessValueList;
+            return (List<Object>) valuesList;
         }
     }
 

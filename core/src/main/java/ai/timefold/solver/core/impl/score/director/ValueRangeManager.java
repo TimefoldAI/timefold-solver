@@ -66,8 +66,10 @@ public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     private final @Nullable ValueRangeItem<Solution_, CountableValueRange<?>>[] fromSolution;
+    private final @Nullable Map<Object, Integer>[] fromSolutionValueIndexMap;
     private final Map<Object, ValueRangeItem<Solution_, CountableValueRange<?>>[]> fromEntityMap = new IdentityHashMap<>();
     private final @Nullable ValueRangeItem<Solution_, ReachableValues>[] reachableValues;
+    private final @Nullable Map<BitSet, Object>[] fromEntityBitSet;
 
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
@@ -89,7 +91,9 @@ public final class ValueRangeManager<Solution_> {
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
         this.fromSolution = new ValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()];
+        this.fromSolutionValueIndexMap = new Map[solutionDescriptor.getValueRangeDescriptorCount()];
         this.reachableValues = new ValueRangeItem[solutionDescriptor.getValueRangeDescriptorCount()];
+        this.fromEntityBitSet = new HashMap[solutionDescriptor.getValueRangeDescriptorCount()];
     }
 
     public SolutionInitializationStatistics getInitializationStatistics() {
@@ -384,7 +388,11 @@ public final class ValueRangeManager<Solution_> {
         // No item, we set the left side by default
         if (item == null) {
             var valueRange = fetchValueRangeFromSolution(valueRangeDescriptor, solution, sorter);
-            fromSolution[valueRangeDescriptor.getOrdinal()] = new ValueRangeItem<>(valueRange, sorter, null, null);
+            fromSolution[valueRangeDescriptor.getOrdinal()] = new ValueRangeItem<>(null, valueRange, sorter, null, null);
+            Class<?> valueClass = findValueClass(valueRange);
+            var valueIndexMap = buildIndexMap(valueRange.createOriginalIterator(), (int) valueRange.getSize(),
+                    ConfigUtils.isGenericTypeImmutable(valueClass));
+            fromSolutionValueIndexMap[valueRangeDescriptor.getOrdinal()] = (Map<Object, Integer>) valueIndexMap;
             return valueRange;
         }
         var leftSorter = (SelectionSorter<Solution_, T>) item.leftSorter();
@@ -408,18 +416,28 @@ public final class ValueRangeManager<Solution_> {
             var sorterAdapter = SelectionSorterAdapter.of(solution, sorter);
             var valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
             fromSolution[valueRangeDescriptor.getOrdinal()] =
-                    new ValueRangeItem<>(valueRange, sorter, rightValueRange, rightSorter);
+                    new ValueRangeItem<>(null, valueRange, sorter, rightValueRange, rightSorter);
+            // We need to update the index map or the positions may become inconsistent
+            Class<?> valueClass = findValueClass(valueRange);
+            var valueIndexMap = buildIndexMap(valueRange.createOriginalIterator(), (int) valueRange.getSize(),
+                    ConfigUtils.isGenericTypeImmutable(valueClass));
+            fromSolutionValueIndexMap[valueRangeDescriptor.getOrdinal()] = (Map<Object, Integer>) valueIndexMap;
             return valueRange;
         } else if (rightValueRange == null) {
             var valueRange = fetchValueRangeFromSolution(valueRangeDescriptor, solution, sorter);
             fromSolution[valueRangeDescriptor.getOrdinal()] =
-                    new ValueRangeItem<>(leftValueRange, leftSorter, valueRange, sorter);
+                    new ValueRangeItem<>(null, leftValueRange, leftSorter, valueRange, sorter);
             return valueRange;
         } else {
             throw new IllegalStateException(
                     "Impossible state: the value range (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
                             .formatted(valueRangeDescriptor, sorter, leftSorter, rightSorter));
         }
+    }
+
+    private Map<Object, Integer> getIndexMapFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+        getFromSolution(valueRangeDescriptor);
+        return Objects.requireNonNull(fromSolutionValueIndexMap[valueRangeDescriptor.getOrdinal()]);
     }
 
     private <T> CountableValueRange<T> fetchValueRangeFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
@@ -475,14 +493,29 @@ public final class ValueRangeManager<Solution_> {
         // No item, we set the left side by default
         if (item == null) {
             var valueRange = fetchValueRangeFromEntity(valueRangeDescriptor, entity, sorter);
-            valueRangeList[valueRangeDescriptor.getOrdinal()] = new ValueRangeItem<>(valueRange, sorter, null, null);
+            var entityMatch = findEntityBitSetMatch(valueRangeDescriptor, entity,
+                    getInitializationStatistics().genuineEntityCount(), valueRange);
+            if (entityMatch != null) {
+                // We save the match to avoid recalculating it next time
+                valueRangeList[valueRangeDescriptor.getOrdinal()] = new ValueRangeItem<>(entityMatch, null, null, null, null);
+                return getFromEntity(valueRangeDescriptor, entityMatch, sorter);
+            }
+            valueRangeList[valueRangeDescriptor.getOrdinal()] = new ValueRangeItem<>(entity, valueRange, sorter, null, null);
             return valueRange;
         }
         var leftSorter = (SelectionSorter<Solution_, T>) item.leftSorter();
         var leftValueRange = (CountableValueRange<T>) item.leftItem();
         var rightSorter = (SelectionSorter<Solution_, T>) item.rightSorter();
         var rightValueRange = (CountableValueRange<T>) item.rightItem();
-        if (sorter == null || Objects.equals(leftSorter, sorter)) {
+
+        // We verify whether it serves as a placeholder to another value range
+        if (leftValueRange == null && rightValueRange == null) {
+            var placeholder = item.entity();
+            if (placeholder == null) {
+                throw new IllegalStateException("Impossible state: the placeholder is null and no value ranges are found.");
+            }
+            return getFromEntity(valueRangeDescriptor, placeholder, sorter);
+        } else if (sorter == null || Objects.equals(leftSorter, sorter)) {
             // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
             return leftValueRange;
         } else if (rightValueRange != null && Objects.equals(rightSorter, sorter)) {
@@ -499,18 +532,47 @@ public final class ValueRangeManager<Solution_> {
             var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
             var valueRange = (CountableValueRange<T>) sortableValueRange.sort(sorterAdapter);
             valueRangeList[valueRangeDescriptor.getOrdinal()] =
-                    new ValueRangeItem<>(valueRange, sorter, rightValueRange, rightSorter);
+                    new ValueRangeItem<>(entity, valueRange, sorter, rightValueRange, rightSorter);
             return valueRange;
         } else if (rightValueRange == null) {
             var valueRange = fetchValueRangeFromEntity(valueRangeDescriptor, entity, sorter);
             valueRangeList[valueRangeDescriptor.getOrdinal()] =
-                    new ValueRangeItem<>(leftValueRange, leftSorter, valueRange, sorter);
+                    new ValueRangeItem<>(entity, leftValueRange, leftSorter, valueRange, sorter);
             return valueRange;
         } else {
             throw new IllegalStateException(
                     "Impossible state: the value range (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
                             .formatted(valueRangeDescriptor, sorter, leftSorter, rightSorter));
         }
+    }
+
+    /**
+     * Search for an identical bitset linked to another entity.
+     * The goal is to deduplicate the value ranges stored in memory.
+     *
+     * @param valueRangeDescriptor the entity value range descriptor
+     * @param entity the entity
+     * @param valueRange the entity value range
+     * @return returns an existing entity with a matching value range, or returns null if it does not exist.
+     */
+    private @Nullable <T> Object findEntityBitSetMatch(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity,
+            int entitySize, CountableValueRange<T> valueRange) {
+        // We create a BitSet from the range values
+        // and check if another identical range already exists to prevent duplication
+        var valueIndexMap = getIndexMapFromSolution(valueRangeDescriptor);
+        var valueRangeBitSet = getBitSetValueRange(valueRange, valueIndexMap);
+        var fromEntity = fromEntityBitSet[valueRangeDescriptor.getOrdinal()];
+        if (fromEntity == null) {
+            fromEntity = new HashMap<>(entitySize);
+            fromEntityBitSet[valueRangeDescriptor.getOrdinal()] = fromEntity;
+            fromEntity.put(valueRangeBitSet, entity);
+            return null;
+        }
+        var match = fromEntity.get(valueRangeBitSet);
+        if (match == null) {
+            fromEntity.put(valueRangeBitSet, entity);
+        }
+        return match;
     }
 
     private <T> CountableValueRange<T> fetchValueRangeFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
@@ -541,6 +603,19 @@ public final class ValueRangeManager<Solution_> {
         return valueRange;
     }
 
+    private <T> BitSet getBitSetValueRange(CountableValueRange<T> valueRange, Map<Object, Integer> valueIndexMap) {
+        var valueBitSet = new BitSet((int) valueRange.getSize());
+        var iterator = valueRange.createOriginalIterator();
+        while (iterator.hasNext()) {
+            var value = iterator.next();
+            if (value == null) {
+                continue;
+            }
+            valueBitSet.set(valueIndexMap.get(value));
+        }
+        return valueBitSet;
+    }
+
     public long countOnSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution) {
         return getFromSolution(valueRangeDescriptor, solution)
                 .getSize();
@@ -566,7 +641,7 @@ public final class ValueRangeManager<Solution_> {
         if (item == null) {
             var values = fetchReachableValues(variableDescriptor, sorter);
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
-                    new ValueRangeItem<>(values, sorter, null, null);
+                    new ValueRangeItem<>(null, values, sorter, null, null);
             return values;
         }
         var leftSorter = item.leftSorter();
@@ -587,14 +662,14 @@ public final class ValueRangeManager<Solution_> {
             // We don't need to create a deep copy as we can reuse the existing internal state with the new sorter
             var sortedValues = leftValues.copy(sorterAdapter, false);
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
-                    new ValueRangeItem<>(sortedValues, sorter, rightValues, rightSorter);
+                    new ValueRangeItem<>(null, sortedValues, sorter, rightValues, rightSorter);
             return sortedValues;
         } else if (rightValues == null) {
             // We perform a deep copy to create a new instance without sharing any internal state
             var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
             var sortedValues = leftValues.copy(sorterAdapter, true);
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
-                    new ValueRangeItem<>(leftValues, leftSorter, sortedValues, sorter);
+                    new ValueRangeItem<>(null, leftValues, leftSorter, sortedValues, sorter);
             return sortedValues;
         } else {
             throw new IllegalStateException(
@@ -619,8 +694,7 @@ public final class ValueRangeManager<Solution_> {
                                     variableDescriptor.getVariableName(), valueListSize));
         }
         Class<?> valueClass = findValueClass(valueList);
-        var valueIndexMap = buildIndexMap(valueList.createOriginalIterator(), (int) valueListSize,
-                ConfigUtils.isGenericTypeImmutable(valueClass));
+        var valueIndexMap = getIndexMapFromSolution(variableDescriptor.getValueRangeDescriptor());
         var reachableValueList = initReachableValueList(valueList, entityList.size());
         for (var i = 0; i < entityList.size(); i++) {
             var entity = entityList.get(i);
@@ -647,8 +721,8 @@ public final class ValueRangeManager<Solution_> {
         return valueClass;
     }
 
-    private static Map<Object, Integer> buildIndexMap(Iterator<@Nullable Object> allValues, int size, boolean isImmutable) {
-        Map<Object, Integer> indexMap = isImmutable ? new HashMap<>(size) : new IdentityHashMap<>(size);
+    private static <T> Map<T, Integer> buildIndexMap(Iterator<@Nullable T> allValues, int size, boolean isImmutable) {
+        Map<T, Integer> indexMap = isImmutable ? new HashMap<>(size) : new IdentityHashMap<>(size);
         var idx = 0;
         while (allValues.hasNext()) {
             var value = allValues.next();
@@ -663,12 +737,13 @@ public final class ValueRangeManager<Solution_> {
     private static List<ReachableItemValue> initReachableValueList(CountableValueRange<Object> valueRange, int entityListSize) {
         var size = (int) valueRange.getSize();
         var valueList = new ArrayList<ReachableItemValue>(size);
+        var idx = 0;
         for (var i = 0; i < size; i++) {
             var value = valueRange.get(i);
             if (value == null) {
                 continue;
             }
-            valueList.add(new ReachableItemValue(value, entityListSize, size));
+            valueList.add(new ReachableItemValue(idx++, value, entityListSize, size));
         }
         return valueList;
     }
@@ -702,7 +777,22 @@ public final class ValueRangeManager<Solution_> {
 
     public void reset(@Nullable Solution_ workingSolution) {
         Arrays.fill(fromSolution, null);
+        Arrays.fill(fromSolutionValueIndexMap, null);
+        for (var value : reachableValues) {
+            if (value != null && value.leftItem() != null) {
+                value.leftItem().clear();
+            }
+            if (value != null && value.rightItem() != null) {
+                value.rightItem().clear();
+            }
+        }
         Arrays.fill(reachableValues, null);
+        for (var value : fromEntityBitSet) {
+            if (value != null) {
+                value.clear();
+            }
+        }
+        Arrays.fill(fromEntityBitSet, null);
         fromEntityMap.clear();
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
@@ -712,8 +802,9 @@ public final class ValueRangeManager<Solution_> {
         }
     }
 
-    private record ValueRangeItem<Solution_, V>(V leftItem, @Nullable SelectionSorter<Solution_, ?> leftSorter,
-            @Nullable V rightItem, @Nullable SelectionSorter<Solution_, ?> rightSorter) {
+    private record ValueRangeItem<Solution_, V>(@Nullable Object entity, @Nullable V leftItem,
+            @Nullable SelectionSorter<Solution_, ?> leftSorter, @Nullable V rightItem,
+            @Nullable SelectionSorter<Solution_, ?> rightSorter) {
 
     }
 
