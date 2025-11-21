@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
@@ -26,7 +26,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
     private final ElementAwareList<UniTuple<Right_>> rightTupleList = new ElementAwareList<>();
 
     protected AbstractUnindexedJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
-            TupleStorePositionTracker tupleStorePositionTracker) {
+            InOutTupleStorePositionTracker tupleStorePositionTracker) {
         super(nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker);
         this.inputStoreIndexLeftEntry = tupleStorePositionTracker.reserveNextLeft();
         this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();

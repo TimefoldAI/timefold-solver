@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 
 final class TupleStoreManager<Stream_ extends BavetStream>
-        implements TupleStorePositionTracker {
+        implements InOutTupleStorePositionTracker {
 
     private final AbstractNodeBuildHelper<Stream_> buildHelper;
     private final Stream_ leftParentSource;
@@ -12,7 +12,7 @@ final class TupleStoreManager<Stream_ extends BavetStream>
     private int finalOutputStoreSize = -1;
 
     public TupleStoreManager(AbstractNodeBuildHelper<Stream_> buildHelper, Stream_ thisStream, Stream_ leftParentSource,
-            Stream_ rightParentSource) {
+                             Stream_ rightParentSource) {
         this.buildHelper = buildHelper;
         this.leftParentSource = leftParentSource;
         this.rightParentSource = rightParentSource;

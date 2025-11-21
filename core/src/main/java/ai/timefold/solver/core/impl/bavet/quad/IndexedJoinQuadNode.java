@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.bavet.quad;
 import ai.timefold.solver.core.api.function.QuadPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractIndexedJoinNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedJoinQuadNode<A, B, C, D>
@@ -15,7 +15,7 @@ public final class IndexedJoinQuadNode<A, B, C, D>
     private final QuadPredicate<A, B, C, D> filtering;
 
     public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory, TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
-            QuadPredicate<A, B, C, D> filtering, TupleStorePositionTracker positionTracker) {
+            QuadPredicate<A, B, C, D> filtering, InOutTupleStorePositionTracker positionTracker) {
         super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory, nextNodesTupleLifecycle, filtering != null,
                 positionTracker);
         this.filtering = filtering;

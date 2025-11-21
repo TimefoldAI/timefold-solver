@@ -29,9 +29,8 @@ final class BavetIfExistsUniConstraintStream<Solution_, A, B>
 
     public BavetIfExistsUniConstraintStream(BavetConstraintFactory<Solution_> constraintFactory,
             BavetAbstractUniConstraintStream<Solution_, A> parentA,
-            BavetForeBridgeUniConstraintStream<Solution_, B> parentBridgeB,
-            boolean shouldExist,
-            DefaultBiJoiner<A, B> joiner, BiPredicate<A, B> filtering) {
+            BavetForeBridgeUniConstraintStream<Solution_, B> parentBridgeB, boolean shouldExist, DefaultBiJoiner<A, B> joiner,
+            BiPredicate<A, B> filtering) {
         super(constraintFactory, parentA.getRetrievalSemantics());
         this.parentA = parentA;
         this.parentBridgeB = parentBridgeB;
@@ -65,30 +64,13 @@ final class BavetIfExistsUniConstraintStream<Solution_, A, B>
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         TupleLifecycle<UniTuple<A>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<B> indexerFactory = new IndexerFactory<>(joiner);
+        var positionTracker =
+                buildHelper.getTupleStorePositionTracker(this, parentA.getTupleSource(), parentBridgeB.getTupleSource());
         var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        downstream)
-                        : new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                downstream, filtering))
-                : (filtering == null ? new UnindexedIfExistsUniNode<>(shouldExist,
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()), downstream)
-                        : new UnindexedIfExistsUniNode<>(shouldExist,
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                                downstream, filtering));
+                ? (filtering == null ? new IndexedIfExistsUniNode<>(shouldExist, indexerFactory, downstream, positionTracker)
+                        : new IndexedIfExistsUniNode<>(shouldExist, indexerFactory, downstream, filtering, positionTracker))
+                : (filtering == null ? new UnindexedIfExistsUniNode<>(shouldExist, downstream, positionTracker)
+                        : new UnindexedIfExistsUniNode<>(shouldExist, downstream, filtering, positionTracker));
         buildHelper.addNode(node, this, this, parentBridgeB);
     }
 

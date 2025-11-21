@@ -5,8 +5,8 @@ import java.util.function.BiPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractIndexedJoinNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedJoinBiNode<A, B> extends AbstractIndexedJoinNode<UniTuple<A>, B, BiTuple<A, B>> {
@@ -14,7 +14,7 @@ public final class IndexedJoinBiNode<A, B> extends AbstractIndexedJoinNode<UniTu
     private final BiPredicate<A, B> filtering;
 
     public IndexedJoinBiNode(IndexerFactory<B> indexerFactory, TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle,
-            BiPredicate<A, B> filtering, TupleStorePositionTracker tupleStorePositionTracker) {
+            BiPredicate<A, B> filtering, InOutTupleStorePositionTracker tupleStorePositionTracker) {
         super(indexerFactory.buildUniLeftKeysExtractor(), indexerFactory, nextNodesTupleLifecycle, filtering != null,
                 tupleStorePositionTracker);
         this.filtering = filtering;

@@ -66,30 +66,13 @@ final class BavetIfExistsTriConstraintStream<Solution_, A, B, C, D>
     public <Score_ extends Score<Score_>> void buildNode(ConstraintNodeBuildHelper<Solution_, Score_> buildHelper) {
         TupleLifecycle<TriTuple<A, B, C>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         IndexerFactory<D> indexerFactory = new IndexerFactory<>(joiner);
+        var positionTracker =
+                buildHelper.getTupleStorePositionTracker(this, parentABC.getTupleSource(), parentBridgeD.getTupleSource());
         var node = indexerFactory.hasJoiners()
-                ? (filtering == null ? new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                        downstream)
-                        : new IndexedIfExistsTriNode<>(shouldExist, indexerFactory,
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                downstream, filtering))
-                : (filtering == null ? new UnindexedIfExistsTriNode<>(shouldExist,
-                        buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()), downstream)
-                        : new UnindexedIfExistsTriNode<>(shouldExist,
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentABC.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                buildHelper.reserveTupleStoreIndex(parentBridgeD.getTupleSource()),
-                                downstream, filtering));
+                ? (filtering == null ? new IndexedIfExistsTriNode<>(shouldExist, indexerFactory, downstream, positionTracker)
+                        : new IndexedIfExistsTriNode<>(shouldExist, indexerFactory, downstream, filtering, positionTracker))
+                : (filtering == null ? new UnindexedIfExistsTriNode<>(shouldExist, downstream, positionTracker)
+                        : new UnindexedIfExistsTriNode<>(shouldExist, downstream, filtering, positionTracker));
         buildHelper.addNode(node, this, this, parentBridgeD);
     }
 

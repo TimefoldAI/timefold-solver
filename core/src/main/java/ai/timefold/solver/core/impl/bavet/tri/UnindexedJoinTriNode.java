@@ -3,9 +3,9 @@ package ai.timefold.solver.core.impl.bavet.tri;
 import ai.timefold.solver.core.api.function.TriPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractUnindexedJoinNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class UnindexedJoinTriNode<A, B, C>
@@ -14,7 +14,7 @@ public final class UnindexedJoinTriNode<A, B, C>
     private final TriPredicate<A, B, C> filtering;
 
     public UnindexedJoinTriNode(TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, TriPredicate<A, B, C> filtering,
-            TupleStorePositionTracker tupleStorePositionTracker) {
+            InOutTupleStorePositionTracker tupleStorePositionTracker) {
         super(nextNodesTupleLifecycle, filtering != null, tupleStorePositionTracker);
         this.filtering = filtering;
     }

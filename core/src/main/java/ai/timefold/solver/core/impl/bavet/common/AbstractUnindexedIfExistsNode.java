@@ -4,6 +4,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
@@ -27,15 +28,11 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
     private final ElementAwareList<ExistsCounter<LeftTuple_>> leftCounterList = new ElementAwareList<>();
     private final ElementAwareList<UniTuple<Right_>> rightTupleList = new ElementAwareList<>();
 
-    protected AbstractUnindexedIfExistsNode(boolean shouldExist,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList, int inputStoreIndexRightEntry,
-            int inputStoreIndexRightTrackerList,
-            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering) {
-        super(shouldExist,
-                inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, isFiltering);
-        this.inputStoreIndexLeftCounterEntry = inputStoreIndexLeftCounterEntry;
-        this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
+    protected AbstractUnindexedIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
+            boolean isFiltering, InTupleStorePositionTracker tupleStorePositionTracker) {
+        super(shouldExist, nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker);
+        this.inputStoreIndexLeftCounterEntry = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();
     }
 
     @Override

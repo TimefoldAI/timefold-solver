@@ -3,10 +3,10 @@ package ai.timefold.solver.core.impl.bavet.common;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
+import ai.timefold.solver.core.impl.bavet.common.tuple.OutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
@@ -28,11 +28,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
-    protected final TupleStoreSizeTracker outputStoreSizeTracker;
+    protected final OutTupleStorePositionTracker outputStoreSizeTracker;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
     protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
-            TupleStorePositionTracker tupleStorePositionTracker) {
+            InOutTupleStorePositionTracker tupleStorePositionTracker) {
         this.inputStoreIndexLeftOutTupleList = tupleStorePositionTracker.reserveNextLeft();
         this.inputStoreIndexRightOutTupleList = tupleStorePositionTracker.reserveNextRight();
         this.isFiltering = isFiltering;

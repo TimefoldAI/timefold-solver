@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.bavet.common;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
@@ -27,13 +28,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     protected final boolean isFiltering;
     private final DynamicPropagationQueue<LeftTuple_, ExistsCounter<LeftTuple_>> propagationQueue;
 
-    protected AbstractIfExistsNode(boolean shouldExist,
-            int inputStoreIndexLeftTrackerList, int inputStoreIndexRightTrackerList,
-            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
-            boolean isFiltering) {
+    protected AbstractIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            InTupleStorePositionTracker tupleStorePositionTracker) {
         this.shouldExist = shouldExist;
-        this.inputStoreIndexLeftTrackerList = inputStoreIndexLeftTrackerList;
-        this.inputStoreIndexRightTrackerList = inputStoreIndexRightTrackerList;
+        this.inputStoreIndexLeftTrackerList = isFiltering ? tupleStorePositionTracker.reserveNextLeft() : -1;
+        this.inputStoreIndexRightTrackerList = isFiltering ? tupleStorePositionTracker.reserveNextRight() : -1;
         this.isFiltering = isFiltering;
         this.propagationQueue = new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
     }
