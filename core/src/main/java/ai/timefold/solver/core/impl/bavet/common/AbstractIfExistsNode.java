@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -27,13 +28,11 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     protected final boolean isFiltering;
     private final DynamicPropagationQueue<LeftTuple_, ExistsCounter<LeftTuple_>> propagationQueue;
 
-    protected AbstractIfExistsNode(boolean shouldExist,
-            int inputStoreIndexLeftTrackerList, int inputStoreIndexRightTrackerList,
-            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
-            boolean isFiltering) {
+    protected AbstractIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            InTupleStorePositionTracker tupleStorePositionTracker) {
         this.shouldExist = shouldExist;
-        this.inputStoreIndexLeftTrackerList = inputStoreIndexLeftTrackerList;
-        this.inputStoreIndexRightTrackerList = inputStoreIndexRightTrackerList;
+        this.inputStoreIndexLeftTrackerList = isFiltering ? tupleStorePositionTracker.reserveNextLeft() : -1;
+        this.inputStoreIndexRightTrackerList = isFiltering ? tupleStorePositionTracker.reserveNextRight() : -1;
         this.isFiltering = isFiltering;
         this.propagationQueue = new DynamicPropagationQueue<>(nextNodesTupleLifecycle);
     }
@@ -117,10 +116,10 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     protected ElementAwareList<FilteringTracker<LeftTuple_>> updateRightTrackerList(UniTuple<Right_> rightTuple) {
         ElementAwareList<FilteringTracker<LeftTuple_>> rightTrackerList = rightTuple.getStore(inputStoreIndexRightTrackerList);
-        for (FilteringTracker<LeftTuple_> tuple : rightTrackerList) {
-            decrementCounterRight(tuple.counter);
-            tuple.remove();
-        }
+        rightTrackerList.clear(tracker -> {
+            decrementCounterRight(tracker.counter);
+            tracker.removeByRight();
+        });
         return rightTrackerList;
     }
 
@@ -199,9 +198,12 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
             rightTrackerEntry = rightTrackerList.add(this);
         }
 
-        public void remove() {
-            leftTrackerEntry.remove();
+        public void removeByLeft() {
             rightTrackerEntry.remove();
+        }
+
+        public void removeByRight() {
+            leftTrackerEntry.remove();
         }
 
     }

@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.bavet.common;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
+import ai.timefold.solver.core.impl.bavet.common.tuple.OutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -26,16 +28,17 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
+    protected final OutTupleStorePositionTracker outputStoreSizeTracker;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
-    protected AbstractJoinNode(int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
-            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
-            int outputStoreIndexLeftOutEntry, int outputStoreIndexRightOutEntry) {
-        this.inputStoreIndexLeftOutTupleList = inputStoreIndexLeftOutTupleList;
-        this.inputStoreIndexRightOutTupleList = inputStoreIndexRightOutTupleList;
+    protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            InOutTupleStorePositionTracker tupleStorePositionTracker) {
+        this.inputStoreIndexLeftOutTupleList = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexRightOutTupleList = tupleStorePositionTracker.reserveNextRight();
         this.isFiltering = isFiltering;
-        this.outputStoreIndexLeftOutEntry = outputStoreIndexLeftOutEntry;
-        this.outputStoreIndexRightOutEntry = outputStoreIndexRightOutEntry;
+        this.outputStoreIndexLeftOutEntry = tupleStorePositionTracker.reserveNextOut();
+        this.outputStoreIndexRightOutEntry = tupleStorePositionTracker.reserveNextOut();
+        this.outputStoreSizeTracker = tupleStorePositionTracker;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 
@@ -58,12 +61,12 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         propagationQueue.insert(outTuple);
     }
 
-    protected final void insertOutTupleFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
+    protected final void insertOutTupleFilteredFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         if (!leftTuple.state.isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
             // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity became assigned, as is therefore getting inserted.
+            // - The other entity became assigned, and is therefore getting inserted.
             //
             // This means the filter would be called with (unassignedEntity, assignedEntity),
             // which breaks the expectation that the filter is only called on two assigned entities
@@ -75,6 +78,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
             // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
+        insertOutTupleFiltered(leftTuple, rightTuple);
+    }
+
+    protected final void insertOutTupleFiltered(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
         if (!isFiltering || testFiltering(leftTuple, rightTuple)) {
             insertOutTuple(leftTuple, rightTuple);
         }
@@ -89,10 +96,25 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
-            rightTupleConsumer.accept(rightTuple -> {
-                ElementAwareList<OutTuple_> rightOutList = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, rightOutList, outTupleListLeft, outputStoreIndexRightOutEntry);
-            });
+            if (!leftTuple.state.isActive()) {
+                // Assume the following scenario:
+                // - The join is of two entities of the same type, both filtering out unassigned.
+                // - One entity became unassigned, so the outTuple is getting retracted.
+                // - The other entity is still assigned and is being updated.
+                //
+                // This means the filter would be called with (unassignedEntity, assignedEntity),
+                // which breaks the expectation that the filter is only called on two assigned entities
+                // and requires adding null checks to the filter for something that should intuitively be impossible.
+                // We avoid this situation as it is clear that the outTuple must be retracted anyway,
+                // and therefore any further updates to it are pointless.
+                //
+                // It is possible that the same problem would exist coming from the other side as well,
+                // and therefore the right tuple would have to be checked for active state as well.
+                // However, no such issue could have been reproduced; when in doubt, leave it out.
+                return;
+            }
+            rightTupleConsumer.accept(rightTuple -> processOutTupleUpdate(leftTuple, rightTuple,
+                    rightTuple.getStore(inputStoreIndexRightOutTupleList), outTupleListLeft, outputStoreIndexRightOutEntry));
         }
     }
 
@@ -122,15 +144,13 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
                 doUpdateOutTuple(outTuple);
             }
         } else {
-            leftTupleConsumer.accept(leftTuple -> {
-                ElementAwareList<OutTuple_> leftOutList = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-                processOutTupleUpdate(leftTuple, rightTuple, leftOutList, outTupleListRight, outputStoreIndexLeftOutEntry);
-            });
+            leftTupleConsumer.accept(leftTuple -> processOutTupleUpdateFromLeft(leftTuple, rightTuple,
+                    leftTuple.getStore(inputStoreIndexLeftOutTupleList), outTupleListRight, outputStoreIndexLeftOutEntry));
         }
     }
 
-    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ElementAwareList<OutTuple_> outList,
-            ElementAwareList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
+    private void processOutTupleUpdateFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
+            ElementAwareList<OutTuple_> outList, ElementAwareList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
         if (!leftTuple.state.isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
@@ -148,6 +168,11 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
             // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
+        processOutTupleUpdate(leftTuple, rightTuple, outList, outTupleList, outputStoreIndexOutEntry);
+    }
+
+    private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ElementAwareList<OutTuple_> outList,
+            ElementAwareList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
         var outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
@@ -179,17 +204,44 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         return null;
     }
 
-    protected final void retractOutTuple(OutTuple_ outTuple) {
-        ElementAwareListEntry<OutTuple_> outEntryLeft = outTuple.removeStore(outputStoreIndexLeftOutEntry);
-        outEntryLeft.remove();
-        ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
-        outEntryRight.remove();
+    private void retractOutTuple(OutTuple_ outTuple) {
+        removeLeftEntry(outTuple);
+        removeRightEntry(outTuple);
+        propagateRetract(outTuple);
+    }
+
+    private void removeLeftEntry(OutTuple_ outTuple) {
+        removeEntry(outTuple, outputStoreIndexLeftOutEntry);
+    }
+
+    private void removeRightEntry(OutTuple_ outTuple) {
+        removeEntry(outTuple, outputStoreIndexRightOutEntry);
+    }
+
+    private void removeEntry(OutTuple_ outTuple, int outputStoreIndex) {
+        ElementAwareListEntry<OutTuple_> outEntry = outTuple.removeStore(outputStoreIndex);
+        outEntry.remove();
+    }
+
+    private void propagateRetract(OutTuple_ outTuple) {
         var state = outTuple.state;
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
                     .formatted(outTuple, this, outTuple.state));
         }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+    }
+
+    void retractOutTupleByLeft(OutTuple_ outTuple) {
+        outTuple.removeStore(outputStoreIndexLeftOutEntry); // The caller will clear the entire list in one go.
+        removeRightEntry(outTuple);
+        propagateRetract(outTuple);
+    }
+
+    void retractOutTupleByRight(OutTuple_ outTuple) {
+        removeLeftEntry(outTuple);
+        outTuple.removeStore(outputStoreIndexRightOutEntry); // The caller will clear the entire list in one go.
+        propagateRetract(outTuple);
     }
 
     @Override

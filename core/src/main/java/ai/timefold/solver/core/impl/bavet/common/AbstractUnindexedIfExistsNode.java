@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -27,15 +28,11 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
     private final ElementAwareList<ExistsCounter<LeftTuple_>> leftCounterList = new ElementAwareList<>();
     private final ElementAwareList<UniTuple<Right_>> rightTupleList = new ElementAwareList<>();
 
-    protected AbstractUnindexedIfExistsNode(boolean shouldExist,
-            int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList, int inputStoreIndexRightEntry,
-            int inputStoreIndexRightTrackerList,
-            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering) {
-        super(shouldExist,
-                inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, isFiltering);
-        this.inputStoreIndexLeftCounterEntry = inputStoreIndexLeftCounterEntry;
-        this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
+    protected AbstractUnindexedIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
+            boolean isFiltering, InTupleStorePositionTracker tupleStorePositionTracker) {
+        super(shouldExist, nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker);
+        this.inputStoreIndexLeftCounterEntry = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();
     }
 
     @Override
@@ -75,7 +72,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         } else {
             // Call filtering for the leftTuple and rightTuple combinations again
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.forEach(FilteringTracker::remove);
+            leftTrackerList.clear(FilteringTracker::removeByLeft);
             counter.countRight = 0;
             for (var tuple : rightTupleList) {
                 updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerList);
@@ -95,7 +92,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         counterEntry.remove();
         if (isFiltering) {
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.forEach(FilteringTracker::remove);
+            leftTrackerList.clear(FilteringTracker::removeByLeft);
         }
         killCounterLeft(counter);
     }
@@ -112,8 +109,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             leftCounterList.forEach(this::incrementCounterRight);
         } else {
             var rightTrackerList = new ElementAwareList<FilteringTracker<LeftTuple_>>();
-            for (var tuple : leftCounterList) {
-                updateCounterFromRight(rightTuple, tuple, rightTrackerList);
+            for (var counter : leftCounterList) {
+                updateCounterFromRight(rightTuple, counter, rightTrackerList);
             }
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
@@ -129,8 +126,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         }
         if (isFiltering) {
             var rightTrackerList = updateRightTrackerList(rightTuple);
-            for (var tuple : leftCounterList) {
-                updateCounterFromRight(rightTuple, tuple, rightTrackerList);
+            for (var counter : leftCounterList) {
+                updateCounterFromRight(rightTuple, counter, rightTrackerList);
             }
         }
     }

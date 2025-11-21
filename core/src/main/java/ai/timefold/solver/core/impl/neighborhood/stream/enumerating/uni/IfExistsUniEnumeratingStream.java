@@ -63,35 +63,20 @@ final class IfExistsUniEnumeratingStream<Solution_, A, B>
             DataNodeBuildHelper<Solution_> buildHelper, TupleLifecycle<UniTuple<A>> downstream) {
         var sessionContext = buildHelper.getSessionContext();
         var isFiltering = filtering != null;
+        var tupleStorePositionTracker =
+                buildHelper.getTupleStorePositionTracker(this, parentA.getTupleSource(), parentBridgeB.getTupleSource());
         if (indexerFactory.hasJoiners()) {
             if (isFiltering) {
-                return new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        downstream, filtering.toBiPredicate(sessionContext.solutionView()));
+                return new IndexedIfExistsUniNode<>(shouldExist, indexerFactory, downstream,
+                        filtering.toBiPredicate(sessionContext.solutionView()), tupleStorePositionTracker);
             } else {
-                return new IndexedIfExistsUniNode<>(shouldExist, indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                        downstream);
+                return new IndexedIfExistsUniNode<>(shouldExist, indexerFactory, downstream, tupleStorePositionTracker);
             }
         } else if (isFiltering) {
-            return new UnindexedIfExistsUniNode<>(shouldExist,
-                    buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                    buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                    buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                    buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()),
-                    downstream, filtering.toBiPredicate(sessionContext.solutionView()));
+            return new UnindexedIfExistsUniNode<>(shouldExist, downstream,
+                    filtering.toBiPredicate(sessionContext.solutionView()), tupleStorePositionTracker);
         } else {
-            return new UnindexedIfExistsUniNode<>(shouldExist,
-                    buildHelper.reserveTupleStoreIndex(parentA.getTupleSource()),
-                    buildHelper.reserveTupleStoreIndex(parentBridgeB.getTupleSource()), downstream);
+            return new UnindexedIfExistsUniNode<>(shouldExist, downstream, tupleStorePositionTracker);
         }
     }
 

@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory.KeysExtractor;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory.UniKeysExtractor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -36,18 +37,15 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
     private final Indexer<UniTuple<Right_>> indexerRight;
 
     protected AbstractIndexedJoinNode(KeysExtractor<LeftTuple_> keysExtractorLeft, IndexerFactory<Right_> indexerFactory,
-            int inputStoreIndexLeftKeys, int inputStoreIndexLeftEntry, int inputStoreIndexLeftOutTupleList,
-            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightOutTupleList,
-            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering, int outputStoreIndexLeftOutEntry,
-            int outputStoreIndexRightOutEntry) {
-        super(inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, nextNodesTupleLifecycle, isFiltering,
-                outputStoreIndexLeftOutEntry, outputStoreIndexRightOutEntry);
+            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            InOutTupleStorePositionTracker tupleStorePositionTracker) {
+        super(nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker);
         this.keysExtractorLeft = keysExtractorLeft;
         this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
-        this.inputStoreIndexLeftKeys = inputStoreIndexLeftKeys;
-        this.inputStoreIndexLeftEntry = inputStoreIndexLeftEntry;
-        this.inputStoreIndexRightKeys = inputStoreIndexRightKeys;
-        this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
+        this.inputStoreIndexLeftKeys = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexLeftEntry = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexRightKeys = tupleStorePositionTracker.reserveNextRight();
+        this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();
         this.indexerLeft = indexerFactory.buildIndexer(true);
         this.indexerRight = indexerFactory.buildIndexer(false);
     }
@@ -81,7 +79,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.getStore(inputStoreIndexLeftEntry);
             ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
             indexerLeft.remove(oldIndexKeys, leftEntry);
-            outTupleListLeft.forEach(this::retractOutTuple);
+            outTupleListLeft.clear(this::retractOutTupleByLeft);
             // outTupleListLeft is now empty
             // No need for leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
             indexAndPropagateLeft(leftTuple, newIndexKeys);
@@ -92,6 +90,22 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         leftTuple.setStore(inputStoreIndexLeftKeys, indexKeys);
         var leftEntry = indexerLeft.put(indexKeys, leftTuple);
         leftTuple.setStore(inputStoreIndexLeftEntry, leftEntry);
+        if (!leftTuple.state.isActive()) {
+            // Assume the following scenario:
+            // - The join is of two entities of the same type, both filtering out unassigned.
+            // - One entity became unassigned, so the outTuple is getting retracted.
+            // - The other entity became assigned, and is therefore getting inserted.
+            //
+            // This means the filter would be called with (unassignedEntity, assignedEntity),
+            // which breaks the expectation that the filter is only called on two assigned entities
+            // and requires adding null checks to the filter for something that should intuitively be impossible.
+            // We avoid this situation as it is clear that it is pointless to insert this tuple.
+            //
+            // It is possible that the same problem would exist coming from the other side as well,
+            // and therefore the right tuple would have to be checked for active state as well.
+            // However, no such issue could have been reproduced; when in doubt, leave it out.
+            return;
+        }
         indexerRight.forEach(indexKeys, rightTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
     }
 
@@ -105,7 +119,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.removeStore(inputStoreIndexLeftEntry);
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
         indexerLeft.remove(indexKeys, leftEntry);
-        outTupleListLeft.forEach(this::retractOutTuple);
+        outTupleListLeft.clear(this::retractOutTupleByLeft);
     }
 
     @Override
@@ -137,7 +151,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
             ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
             indexerRight.remove(oldIndexKeys, rightEntry);
-            outTupleListRight.forEach(this::retractOutTuple);
+            outTupleListRight.clear(this::retractOutTupleByRight);
             // outTupleListRight is now empty
             // No need for rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
             indexAndPropagateRight(rightTuple, newIndexKeys);
@@ -148,7 +162,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         rightTuple.setStore(inputStoreIndexRightKeys, indexKeys);
         var rightEntry = indexerRight.put(indexKeys, rightTuple);
         rightTuple.setStore(inputStoreIndexRightEntry, rightEntry);
-        indexerLeft.forEach(indexKeys, leftTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
+        indexerLeft.forEach(indexKeys, leftTuple -> insertOutTupleFilteredFromLeft(leftTuple, rightTuple));
     }
 
     @Override
@@ -161,7 +175,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
         indexerRight.remove(indexKeys, rightEntry);
-        outTupleListRight.forEach(this::retractOutTuple);
+        outTupleListRight.clear(this::retractOutTupleByRight);
     }
 
 }

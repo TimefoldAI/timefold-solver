@@ -45,26 +45,13 @@ public final class JoinBiEnumeratingStream<Solution_, A, B> extends AbstractBiEn
     public void buildNode(DataNodeBuildHelper<Solution_> buildHelper) {
         var solutionView = buildHelper.getSessionContext().solutionView();
         var filteringDataJoiner = this.filtering == null ? null : this.filtering.toBiPredicate(solutionView);
-        var outputStoreSize = buildHelper.extractTupleStoreSize(this);
         TupleLifecycle<BiTuple<A, B>> downstream = buildHelper.getAggregatedTupleLifecycle(childStreamList);
         var indexerFactory = new IndexerFactory<>(joiner.toBiJoiner());
+        var positionTracker =
+                buildHelper.getTupleStorePositionTracker(this, leftParent.getTupleSource(), rightParent.getTupleSource());
         var node = indexerFactory.hasJoiners()
-                ? new IndexedJoinBiNode<>(indexerFactory,
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        downstream, filteringDataJoiner,
-                        outputStoreSize + 2, outputStoreSize, outputStoreSize + 1)
-                : new UnindexedJoinBiNode<>(
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(leftParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        buildHelper.reserveTupleStoreIndex(rightParent.getTupleSource()),
-                        downstream, filteringDataJoiner,
-                        outputStoreSize + 2, outputStoreSize, outputStoreSize + 1);
+                ? new IndexedJoinBiNode<>(indexerFactory, downstream, filteringDataJoiner, positionTracker)
+                : new UnindexedJoinBiNode<>(downstream, filteringDataJoiner, positionTracker);
         buildHelper.addNode(node, this, leftParent, rightParent);
     }
 

@@ -5,6 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory.KeysExtractor;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory.UniKeysExtractor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -32,21 +33,16 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
     private final Indexer<ExistsCounter<LeftTuple_>> indexerLeft;
     private final Indexer<UniTuple<Right_>> indexerRight;
 
-    protected AbstractIndexedIfExistsNode(boolean shouldExist,
-            KeysExtractor<LeftTuple_> keysExtractorLeft, IndexerFactory<Right_> indexerFactory,
-            int inputStoreIndexLeftKeys, int inputStoreIndexLeftCounterEntry, int inputStoreIndexLeftTrackerList,
-            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightTrackerList,
-            TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
-            boolean isFiltering) {
-        super(shouldExist,
-                inputStoreIndexLeftTrackerList, inputStoreIndexRightTrackerList,
-                nextNodesTupleLifecycle, isFiltering);
+    protected AbstractIndexedIfExistsNode(boolean shouldExist, KeysExtractor<LeftTuple_> keysExtractorLeft,
+            IndexerFactory<Right_> indexerFactory, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            InTupleStorePositionTracker tupleStorePositionTracker) {
+        super(shouldExist, nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker);
         this.keysExtractorLeft = keysExtractorLeft;
         this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
-        this.inputStoreIndexLeftKeys = inputStoreIndexLeftKeys;
-        this.inputStoreIndexLeftCounterEntry = inputStoreIndexLeftCounterEntry;
-        this.inputStoreIndexRightKeys = inputStoreIndexRightKeys;
-        this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
+        this.inputStoreIndexLeftKeys = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexLeftCounterEntry = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexRightKeys = tupleStorePositionTracker.reserveNextRight();
+        this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();
         this.indexerLeft = indexerFactory.buildIndexer(true);
         this.indexerRight = indexerFactory.buildIndexer(false);
     }
@@ -100,7 +96,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                 // Call filtering for the leftTuple and rightTuple combinations again
                 ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList =
                         leftTuple.getStore(inputStoreIndexLeftTrackerList);
-                leftTrackerList.forEach(FilteringTracker::remove);
+                leftTrackerList.clear(FilteringTracker::removeByLeft);
                 counter.countRight = 0;
                 indexerRight.forEach(oldIndexKeys,
                         rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
@@ -133,7 +129,7 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         indexerLeft.remove(indexKeys, counterEntry);
         if (isFiltering) {
             ElementAwareList<FilteringTracker<LeftTuple_>> leftTrackerList = leftTuple.getStore(inputStoreIndexLeftTrackerList);
-            leftTrackerList.forEach(FilteringTracker::remove);
+            leftTrackerList.clear(FilteringTracker::removeByLeft);
         }
     }
 

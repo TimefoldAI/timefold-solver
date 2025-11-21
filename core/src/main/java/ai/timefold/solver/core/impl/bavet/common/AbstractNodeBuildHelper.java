@@ -13,6 +13,7 @@ import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -117,6 +118,11 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     public int extractTupleStoreSize(Stream_ tupleSourceStream) {
         Integer lastIndex = storeIndexMap.put(tupleSourceStream, Integer.MIN_VALUE);
         return (lastIndex == null) ? 0 : lastIndex + 1;
+    }
+
+    public InOutTupleStorePositionTracker getTupleStorePositionTracker(Stream_ tupleSourceStream, Stream_ leftParentSource,
+            Stream_ rightParentSource) {
+        return new TupleStoreManager<>(this, tupleSourceStream, leftParentSource, rightParentSource);
     }
 
     public List<AbstractNode> destroyAndGetNodeList() {
