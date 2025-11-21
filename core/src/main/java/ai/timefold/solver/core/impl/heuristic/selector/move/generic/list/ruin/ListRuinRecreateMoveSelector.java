@@ -11,6 +11,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.move.generic.GenericMoveS
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.RuinRecreateConstructionHeuristicPhaseBuilder;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -76,6 +77,19 @@ final class ListRuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<
                 .getSupplyManager()
                 .demand(listVariableDescriptor.getStateDemand());
         this.workingRandom = solverScope.getWorkingRandom();
+    }
+
+    @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        super.solvingEnded(solverScope);
+        this.listVariableStateSupply = null;
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        this.solverScope = null;
+        this.workingRandom = null;
     }
 
     @Override

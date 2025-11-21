@@ -110,6 +110,12 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
     }
 
     @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        super.solvingEnded(solverScope);
+        this.listVariableStateSupply = null;
+    }
+
+    @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         this.nonReplayingValueSelector.phaseStarted(phaseScope);
@@ -124,6 +130,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         super.phaseEnded(phaseScope);
         this.nonReplayingValueSelector.phaseEnded(phaseScope);
         this.replayingValueSelector.phaseEnded(phaseScope);
+        this.replayedValue = null;
         this.reachableValues = null;
     }
 

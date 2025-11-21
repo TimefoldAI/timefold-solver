@@ -57,26 +57,26 @@ public final class IterableFromEntityPropertyValueSelector<Solution_> extends Ab
     public void solvingStarted(SolverScope<Solution_> solverScope) {
         super.solvingStarted(solverScope);
         this.childValueSelector.solvingStarted(solverScope);
-        this.innerScoreDirector = solverScope.getScoreDirector();
     }
 
     @Override
     public void solvingEnded(SolverScope<Solution_> solverScope) {
         super.solvingEnded(solverScope);
         childValueSelector.solvingEnded(solverScope);
-        this.innerScoreDirector = null;
     }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         childValueSelector.phaseStarted(phaseScope);
+        this.innerScoreDirector = phaseScope.getScoreDirector();
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         childValueSelector.phaseEnded(phaseScope);
+        this.innerScoreDirector = null;
     }
 
     // ************************************************************************

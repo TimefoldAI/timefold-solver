@@ -124,7 +124,9 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         this.childEntitySelector.phaseEnded(phaseScope);
         this.replayedEntity = null;
         this.valueRangeManager = null;
+        this.reachableValues = null;
         this.basicVariableDescriptors = null;
+        this.allEntities = null;
     }
 
     // ************************************************************************

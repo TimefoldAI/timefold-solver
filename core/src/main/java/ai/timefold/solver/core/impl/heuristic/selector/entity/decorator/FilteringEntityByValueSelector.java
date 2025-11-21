@@ -103,6 +103,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        this.replayedValue = null;
         this.reachableValues = null;
     }
 

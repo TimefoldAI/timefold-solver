@@ -11,7 +11,6 @@ import ai.timefold.solver.core.impl.heuristic.selector.AbstractDemandEnabledSele
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
-import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
  * This is the common {@link ValueSelector} implementation.
@@ -41,26 +40,16 @@ public final class FromEntityPropertyValueSelector<Solution_>
     // ************************************************************************
 
     @Override
-    public void solvingStarted(SolverScope<Solution_> solverScope) {
-        super.solvingStarted(solverScope);
-        this.scoreDirector = solverScope.getScoreDirector();
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        this.scoreDirector = null;
-    }
-
-    @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
+        this.scoreDirector = phaseScope.getScoreDirector();
         this.countableValueRange = scoreDirector.getValueRangeManager().getFromSolution(valueRangeDescriptor, selectionSorter);
     }
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        this.scoreDirector = null;
         this.countableValueRange = null;
     }
 
