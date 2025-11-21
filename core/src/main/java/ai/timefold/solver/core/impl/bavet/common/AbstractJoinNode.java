@@ -28,18 +28,17 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private final boolean isFiltering;
     private final int outputStoreIndexLeftOutEntry;
     private final int outputStoreIndexRightOutEntry;
-    protected final TupleStoreSizeTracker tupleStoreSizeTracker;
+    protected final TupleStoreSizeTracker outputStoreSizeTracker;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
     protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
-            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
-            TupleStoreSizeTracker outputStoreSizeTracker) {
-        this.inputStoreIndexLeftOutTupleList = leftTupleStorePositionTracker.reserveNextAvailablePosition();
-        this.inputStoreIndexRightOutTupleList = rightTupleStorePositionTracker.reserveNextAvailablePosition();
+            TupleStorePositionTracker tupleStorePositionTracker) {
+        this.inputStoreIndexLeftOutTupleList = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexRightOutTupleList = tupleStorePositionTracker.reserveNextRight();
         this.isFiltering = isFiltering;
-        this.outputStoreIndexLeftOutEntry = outputStoreSizeTracker.reserveNextAvailablePosition();
-        this.outputStoreIndexRightOutEntry = outputStoreSizeTracker.reserveNextAvailablePosition();
-        this.tupleStoreSizeTracker = outputStoreSizeTracker;
+        this.outputStoreIndexLeftOutEntry = tupleStorePositionTracker.reserveNextOut();
+        this.outputStoreIndexRightOutEntry = tupleStorePositionTracker.reserveNextOut();
+        this.outputStoreSizeTracker = tupleStorePositionTracker;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 

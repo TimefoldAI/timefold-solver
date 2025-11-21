@@ -6,7 +6,6 @@ import ai.timefold.solver.core.impl.bavet.common.AbstractUnindexedJoinNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class UnindexedJoinBiNode<A, B>
@@ -15,16 +14,14 @@ public final class UnindexedJoinBiNode<A, B>
     private final BiPredicate<A, B> filtering;
 
     public UnindexedJoinBiNode(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, BiPredicate<A, B> filtering,
-            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
-            TupleStoreSizeTracker tupleStoreSizeTracker) {
-        super(nextNodesTupleLifecycle, filtering != null, leftTupleStorePositionTracker, rightTupleStorePositionTracker,
-                tupleStoreSizeTracker);
+            TupleStorePositionTracker tupleStorePositionTracker) {
+        super(nextNodesTupleLifecycle, filtering != null, tupleStorePositionTracker);
         this.filtering = filtering;
     }
 
     @Override
     protected BiTuple<A, B> createOutTuple(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-        return new BiTuple<>(leftTuple.factA, rightTuple.factA, tupleStoreSizeTracker.computeStoreSize());
+        return new BiTuple<>(leftTuple.factA, rightTuple.factA, outputStoreSizeTracker.computeStoreSize());
     }
 
     @Override

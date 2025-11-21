@@ -7,7 +7,6 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
-import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedJoinQuadNode<A, B, C, D>
@@ -16,17 +15,16 @@ public final class IndexedJoinQuadNode<A, B, C, D>
     private final QuadPredicate<A, B, C, D> filtering;
 
     public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory, TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
-            QuadPredicate<A, B, C, D> filtering, TupleStorePositionTracker leftTupleStorePositionTracker,
-            TupleStorePositionTracker rightTupleStorePositionTracker, TupleStoreSizeTracker tupleStoreSizeTracker) {
+            QuadPredicate<A, B, C, D> filtering, TupleStorePositionTracker positionTracker) {
         super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory, nextNodesTupleLifecycle, filtering != null,
-                leftTupleStorePositionTracker, rightTupleStorePositionTracker, tupleStoreSizeTracker);
+                positionTracker);
         this.filtering = filtering;
     }
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(TriTuple<A, B, C> leftTuple, UniTuple<D> rightTuple) {
         return new QuadTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, rightTuple.factA,
-                tupleStoreSizeTracker.computeStoreSize());
+                outputStoreSizeTracker.computeStoreSize());
     }
 
     @Override
