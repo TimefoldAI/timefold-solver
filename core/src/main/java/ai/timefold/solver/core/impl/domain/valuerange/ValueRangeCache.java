@@ -41,6 +41,12 @@ public final class ValueRangeCache<Value_>
         this.trustedValues = trustedValues;
     }
 
+    private ValueRangeCache(List<Value_> valuesWithFastRandomAccess, Set<Value_> valuesWithFastLookup, boolean trustedValues) {
+        this.valuesWithFastRandomAccess = valuesWithFastRandomAccess;
+        this.valuesWithFastLookup = valuesWithFastLookup;
+        this.trustedValues = trustedValues;
+    }
+
     public void add(@Nullable Value_ value) {
         if (valuesWithFastLookup.add(value)) {
             valuesWithFastRandomAccess.add(value);
@@ -84,9 +90,9 @@ public final class ValueRangeCache<Value_>
     public ValueRangeCache<Value_> sort(ValueRangeSorter<Value_> sorter) {
         sorter.sort(valuesWithFastRandomAccess);
         if (trustedValues) {
-            return Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccess);
+            return Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccess, valuesWithFastLookup);
         } else {
-            return Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccess);
+            return Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccess, valuesWithFastLookup);
         }
     }
 
@@ -106,6 +112,11 @@ public final class ValueRangeCache<Value_>
                 return new ValueRangeCache<>(collection, CollectionUtils.newIdentityHashSet(collection.size()), false);
             }
 
+            @Override
+            public <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
+                    Set<Value_> valuesWithFastLookup) {
+                return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup, false);
+            }
         },
         /**
          * For types where we can trust that {@link Object#equals(Object)} means
@@ -126,11 +137,19 @@ public final class ValueRangeCache<Value_>
                 return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()), true);
             }
 
+            @Override
+            public <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
+                    Set<Value_> valuesWithFastLookup) {
+                return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup, true);
+            }
         };
 
         public abstract <Value_> ValueRangeCache<Value_> buildCache(int size);
 
         public abstract <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection);
+
+        public abstract <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
+                Set<Value_> valuesWithFastLookup);
 
     }
 
