@@ -85,7 +85,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         }
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
         leftEntry.remove();
-        outTupleListLeft.forEach(this::retractOutTuple);
+        outTupleListLeft.clear(this::retractOutTupleByLeft);
     }
 
     @Override
@@ -123,7 +123,7 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         }
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
         rightEntry.remove();
-        outTupleListRight.forEach(this::retractOutTuple);
+        outTupleListRight.clear(this::retractOutTupleByRight);
     }
 
 }

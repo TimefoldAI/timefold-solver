@@ -81,7 +81,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.getStore(inputStoreIndexLeftEntry);
             ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
             indexerLeft.remove(oldIndexKeys, leftEntry);
-            outTupleListLeft.forEach(this::retractOutTuple);
+            outTupleListLeft.clear(this::retractOutTupleByLeft);
             // outTupleListLeft is now empty
             // No need for leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
             indexAndPropagateLeft(leftTuple, newIndexKeys);
@@ -121,7 +121,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         ElementAwareListEntry<LeftTuple_> leftEntry = leftTuple.removeStore(inputStoreIndexLeftEntry);
         ElementAwareList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
         indexerLeft.remove(indexKeys, leftEntry);
-        outTupleListLeft.forEach(this::retractOutTuple);
+        outTupleListLeft.clear(this::retractOutTupleByLeft);
     }
 
     @Override
@@ -153,7 +153,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.getStore(inputStoreIndexRightEntry);
             ElementAwareList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
             indexerRight.remove(oldIndexKeys, rightEntry);
-            outTupleListRight.forEach(this::retractOutTuple);
+            outTupleListRight.clear(this::retractOutTupleByRight);
             // outTupleListRight is now empty
             // No need for rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
             indexAndPropagateRight(rightTuple, newIndexKeys);
@@ -177,7 +177,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         ElementAwareListEntry<UniTuple<Right_>> rightEntry = rightTuple.removeStore(inputStoreIndexRightEntry);
         ElementAwareList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
         indexerRight.remove(indexKeys, rightEntry);
-        outTupleListRight.forEach(this::retractOutTuple);
+        outTupleListRight.clear(this::retractOutTupleByRight);
     }
 
 }

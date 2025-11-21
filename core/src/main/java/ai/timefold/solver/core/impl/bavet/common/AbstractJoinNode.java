@@ -1,13 +1,13 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import java.util.function.Consumer;
-
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+
+import java.util.function.Consumer;
 
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
@@ -201,17 +201,44 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         return null;
     }
 
-    protected final void retractOutTuple(OutTuple_ outTuple) {
-        ElementAwareListEntry<OutTuple_> outEntryLeft = outTuple.removeStore(outputStoreIndexLeftOutEntry);
-        outEntryLeft.remove();
-        ElementAwareListEntry<OutTuple_> outEntryRight = outTuple.removeStore(outputStoreIndexRightOutEntry);
-        outEntryRight.remove();
+    private void retractOutTuple(OutTuple_ outTuple) {
+        removeLeftEntry(outTuple);
+        removeRightEntry(outTuple);
+        propagateRetract(outTuple);
+    }
+
+    private void removeLeftEntry(OutTuple_ outTuple) {
+        removeEntry(outTuple, outputStoreIndexLeftOutEntry);
+    }
+
+    private void removeRightEntry(OutTuple_ outTuple) {
+        removeEntry(outTuple, outputStoreIndexRightOutEntry);
+    }
+
+    private void removeEntry(OutTuple_ outTuple, int outputStoreIndex) {
+        ElementAwareListEntry<OutTuple_> outEntry = outTuple.removeStore(outputStoreIndex);
+        outEntry.remove();
+    }
+
+    private void propagateRetract(OutTuple_ outTuple) {
         var state = outTuple.state;
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
                     .formatted(outTuple, this, outTuple.state));
         }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+    }
+
+    void retractOutTupleByLeft(OutTuple_ outTuple) {
+        outTuple.removeStore(outputStoreIndexLeftOutEntry); // The caller will clear the entire list in one go.
+        removeRightEntry(outTuple);
+        propagateRetract(outTuple);
+    }
+
+    void retractOutTupleByRight(OutTuple_ outTuple) {
+        removeLeftEntry(outTuple);
+        outTuple.removeStore(outputStoreIndexRightOutEntry); // The caller will clear the entire list in one go.
+        propagateRetract(outTuple);
     }
 
     @Override

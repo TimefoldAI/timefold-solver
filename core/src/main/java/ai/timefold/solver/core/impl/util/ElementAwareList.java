@@ -148,6 +148,11 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
+    public void clear(Consumer<? super T> tupleConsumer) {
+        forEach(tupleConsumer);
+        clear();
+    }
+
     /**
      * See {@link #forEach(Consumer)} for a discussion on the correct use of this method.
      *
