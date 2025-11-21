@@ -94,7 +94,7 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
             // - One entity became unassigned, so the outTuple is getting retracted.
-            // - The other entity became assigned, as is therefore getting inserted.
+            // - The other entity became assigned, and is therefore getting inserted.
             //
             // This means the filter would be called with (unassignedEntity, assignedEntity),
             // which breaks the expectation that the filter is only called on two assigned entities
