@@ -5,6 +5,7 @@ import java.util.function.BiPredicate;
 import ai.timefold.solver.core.impl.bavet.common.AbstractUnindexedJoinNode;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -13,14 +14,11 @@ public final class UnindexedJoinBiNode<A, B>
 
     private final BiPredicate<A, B> filtering;
 
-    public UnindexedJoinBiNode(
-            int inputStoreIndexLeftEntry, int inputStoreIndexLeftOutTupleList,
-            int inputStoreIndexRightEntry, int inputStoreIndexRightOutTupleList,
-            TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, BiPredicate<A, B> filtering,
+    public UnindexedJoinBiNode(TupleLifecycle<BiTuple<A, B>> nextNodesTupleLifecycle, BiPredicate<A, B> filtering,
+            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
             TupleStoreSizeTracker tupleStoreSizeTracker) {
-        super(inputStoreIndexLeftEntry, inputStoreIndexLeftOutTupleList,
-                inputStoreIndexRightEntry, inputStoreIndexRightOutTupleList,
-                nextNodesTupleLifecycle, filtering != null, tupleStoreSizeTracker);
+        super(nextNodesTupleLifecycle, filtering != null, leftTupleStorePositionTracker, rightTupleStorePositionTracker,
+                tupleStoreSizeTracker);
         this.filtering = filtering;
     }
 

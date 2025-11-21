@@ -1,14 +1,15 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
+import java.util.function.Consumer;
+
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
 import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
-
-import java.util.function.Consumer;
 
 /**
  * This class has two direct children: {@link AbstractIndexedJoinNode} and {@link AbstractUnindexedJoinNode}.
@@ -30,15 +31,15 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     protected final TupleStoreSizeTracker tupleStoreSizeTracker;
     private final StaticPropagationQueue<OutTuple_> propagationQueue;
 
-    protected AbstractJoinNode(int inputStoreIndexLeftOutTupleList, int inputStoreIndexRightOutTupleList,
-            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
-            TupleStoreSizeTracker tupleStoreSizeTracker) {
-        this.inputStoreIndexLeftOutTupleList = inputStoreIndexLeftOutTupleList;
-        this.inputStoreIndexRightOutTupleList = inputStoreIndexRightOutTupleList;
+    protected AbstractJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
+            TupleStoreSizeTracker outputStoreSizeTracker) {
+        this.inputStoreIndexLeftOutTupleList = leftTupleStorePositionTracker.reserveNextAvailablePosition();
+        this.inputStoreIndexRightOutTupleList = rightTupleStorePositionTracker.reserveNextAvailablePosition();
         this.isFiltering = isFiltering;
-        this.outputStoreIndexLeftOutEntry = tupleStoreSizeTracker.reserveNextAvailablePosition();
-        this.outputStoreIndexRightOutEntry = tupleStoreSizeTracker.reserveNextAvailablePosition();
-        this.tupleStoreSizeTracker = tupleStoreSizeTracker;
+        this.outputStoreIndexLeftOutEntry = outputStoreSizeTracker.reserveNextAvailablePosition();
+        this.outputStoreIndexRightOutEntry = outputStoreSizeTracker.reserveNextAvailablePosition();
+        this.tupleStoreSizeTracker = outputStoreSizeTracker;
         this.propagationQueue = new StaticPropagationQueue<>(nextNodesTupleLifecycle);
     }
 

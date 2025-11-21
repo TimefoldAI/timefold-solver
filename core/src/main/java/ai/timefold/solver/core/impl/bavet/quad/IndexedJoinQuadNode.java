@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -14,15 +15,11 @@ public final class IndexedJoinQuadNode<A, B, C, D>
 
     private final QuadPredicate<A, B, C, D> filtering;
 
-    public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory,
-            int inputStoreIndexABC, int inputStoreIndexEntryABC, int inputStoreIndexOutTupleListABC,
-            int inputStoreIndexD, int inputStoreIndexEntryD, int inputStoreIndexOutTupleListD,
-            TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, QuadPredicate<A, B, C, D> filtering,
-            TupleStoreSizeTracker tupleStoreSizeTracker) {
-        super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory,
-                inputStoreIndexABC, inputStoreIndexEntryABC, inputStoreIndexOutTupleListABC,
-                inputStoreIndexD, inputStoreIndexEntryD, inputStoreIndexOutTupleListD,
-                nextNodesTupleLifecycle, filtering != null, tupleStoreSizeTracker);
+    public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory, TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle,
+            QuadPredicate<A, B, C, D> filtering, TupleStorePositionTracker leftTupleStorePositionTracker,
+            TupleStorePositionTracker rightTupleStorePositionTracker, TupleStoreSizeTracker tupleStoreSizeTracker) {
+        super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory, nextNodesTupleLifecycle, filtering != null,
+                leftTupleStorePositionTracker, rightTupleStorePositionTracker, tupleStoreSizeTracker);
         this.filtering = filtering;
     }
 

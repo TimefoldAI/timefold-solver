@@ -8,6 +8,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
@@ -37,18 +38,17 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
     private final Indexer<UniTuple<Right_>> indexerRight;
 
     protected AbstractIndexedJoinNode(KeysExtractor<LeftTuple_> keysExtractorLeft, IndexerFactory<Right_> indexerFactory,
-            int inputStoreIndexLeftKeys, int inputStoreIndexLeftEntry, int inputStoreIndexLeftOutTupleList,
-            int inputStoreIndexRightKeys, int inputStoreIndexRightEntry, int inputStoreIndexRightOutTupleList,
             TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
             TupleStoreSizeTracker tupleStoreSizeTracker) {
-        super(inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, nextNodesTupleLifecycle, isFiltering,
+        super(nextNodesTupleLifecycle, isFiltering, leftTupleStorePositionTracker, rightTupleStorePositionTracker,
                 tupleStoreSizeTracker);
         this.keysExtractorLeft = keysExtractorLeft;
         this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
-        this.inputStoreIndexLeftKeys = inputStoreIndexLeftKeys;
-        this.inputStoreIndexLeftEntry = inputStoreIndexLeftEntry;
-        this.inputStoreIndexRightKeys = inputStoreIndexRightKeys;
-        this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
+        this.inputStoreIndexLeftKeys = leftTupleStorePositionTracker.reserveNextAvailablePosition();
+        this.inputStoreIndexLeftEntry = leftTupleStorePositionTracker.reserveNextAvailablePosition();
+        this.inputStoreIndexRightKeys = rightTupleStorePositionTracker.reserveNextAvailablePosition();
+        this.inputStoreIndexRightEntry = rightTupleStorePositionTracker.reserveNextAvailablePosition();
         this.indexerLeft = indexerFactory.buildIndexer(true);
         this.indexerRight = indexerFactory.buildIndexer(false);
     }

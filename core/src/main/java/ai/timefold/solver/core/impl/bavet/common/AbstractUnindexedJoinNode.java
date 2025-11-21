@@ -4,6 +4,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareList;
@@ -25,14 +26,13 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
     private final ElementAwareList<LeftTuple_> leftTupleList = new ElementAwareList<>();
     private final ElementAwareList<UniTuple<Right_>> rightTupleList = new ElementAwareList<>();
 
-    protected AbstractUnindexedJoinNode(int inputStoreIndexLeftEntry, int inputStoreIndexLeftOutTupleList,
-            int inputStoreIndexRightEntry, int inputStoreIndexRightOutTupleList,
-            TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+    protected AbstractUnindexedJoinNode(TupleLifecycle<OutTuple_> nextNodesTupleLifecycle, boolean isFiltering,
+            TupleStorePositionTracker leftTupleStorePositionTracker, TupleStorePositionTracker rightTupleStorePositionTracker,
             TupleStoreSizeTracker tupleStoreSizeTracker) {
-        super(inputStoreIndexLeftOutTupleList, inputStoreIndexRightOutTupleList, nextNodesTupleLifecycle, isFiltering,
+        super(nextNodesTupleLifecycle, isFiltering, leftTupleStorePositionTracker, rightTupleStorePositionTracker,
                 tupleStoreSizeTracker);
-        this.inputStoreIndexLeftEntry = inputStoreIndexLeftEntry;
-        this.inputStoreIndexRightEntry = inputStoreIndexRightEntry;
+        this.inputStoreIndexLeftEntry = leftTupleStorePositionTracker.reserveNextAvailablePosition();
+        this.inputStoreIndexRightEntry = rightTupleStorePositionTracker.reserveNextAvailablePosition();
     }
 
     @Override

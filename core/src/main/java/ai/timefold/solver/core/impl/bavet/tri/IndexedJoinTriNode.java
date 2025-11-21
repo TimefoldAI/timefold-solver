@@ -6,6 +6,7 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
@@ -14,15 +15,11 @@ public final class IndexedJoinTriNode<A, B, C>
 
     private final TriPredicate<A, B, C> filtering;
 
-    public IndexedJoinTriNode(IndexerFactory<C> indexerFactory,
-            int inputStoreIndexAB, int inputStoreIndexEntryAB, int inputStoreIndexOutTupleListAB,
-            int inputStoreIndexC, int inputStoreIndexEntryC, int inputStoreIndexOutTupleListC,
-            TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, TriPredicate<A, B, C> filtering,
-            TupleStoreSizeTracker tupleStoreSizeTracker) {
-        super(indexerFactory.buildBiLeftKeysExtractor(), indexerFactory,
-                inputStoreIndexAB, inputStoreIndexEntryAB, inputStoreIndexOutTupleListAB,
-                inputStoreIndexC, inputStoreIndexEntryC, inputStoreIndexOutTupleListC,
-                nextNodesTupleLifecycle, filtering != null, tupleStoreSizeTracker);
+    public IndexedJoinTriNode(IndexerFactory<C> indexerFactory, TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle,
+            TriPredicate<A, B, C> filtering, TupleStorePositionTracker leftTupleStorePositionTracker,
+            TupleStorePositionTracker rightTupleStorePositionTracker, TupleStoreSizeTracker tupleStoreSizeTracker) {
+        super(indexerFactory.buildBiLeftKeysExtractor(), indexerFactory, nextNodesTupleLifecycle, filtering != null,
+                leftTupleStorePositionTracker, rightTupleStorePositionTracker, tupleStoreSizeTracker);
         this.filtering = filtering;
     }
 
