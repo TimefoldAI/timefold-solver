@@ -6,32 +6,30 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedJoinQuadNode<A, B, C, D>
         extends AbstractIndexedJoinNode<TriTuple<A, B, C>, D, QuadTuple<A, B, C, D>> {
 
     private final QuadPredicate<A, B, C, D> filtering;
-    private final int outputStoreSize;
 
     public IndexedJoinQuadNode(IndexerFactory<D> indexerFactory,
             int inputStoreIndexABC, int inputStoreIndexEntryABC, int inputStoreIndexOutTupleListABC,
             int inputStoreIndexD, int inputStoreIndexEntryD, int inputStoreIndexOutTupleListD,
             TupleLifecycle<QuadTuple<A, B, C, D>> nextNodesTupleLifecycle, QuadPredicate<A, B, C, D> filtering,
-            int outputStoreSize, int outputStoreIndexOutEntryABC, int outputStoreIndexOutEntryD) {
+            TupleStoreSizeTracker tupleStoreSizeTracker) {
         super(indexerFactory.buildTriLeftKeysExtractor(), indexerFactory,
                 inputStoreIndexABC, inputStoreIndexEntryABC, inputStoreIndexOutTupleListABC,
                 inputStoreIndexD, inputStoreIndexEntryD, inputStoreIndexOutTupleListD,
-                nextNodesTupleLifecycle, filtering != null,
-                outputStoreIndexOutEntryABC, outputStoreIndexOutEntryD);
+                nextNodesTupleLifecycle, filtering != null, tupleStoreSizeTracker);
         this.filtering = filtering;
-        this.outputStoreSize = outputStoreSize;
     }
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(TriTuple<A, B, C> leftTuple, UniTuple<D> rightTuple) {
         return new QuadTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, rightTuple.factA,
-                outputStoreSize);
+                tupleStoreSizeTracker.computeStoreSize());
     }
 
     @Override

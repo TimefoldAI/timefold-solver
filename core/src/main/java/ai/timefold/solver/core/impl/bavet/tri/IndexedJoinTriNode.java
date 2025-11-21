@@ -6,31 +6,29 @@ import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.TupleStoreSizeTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 public final class IndexedJoinTriNode<A, B, C>
         extends AbstractIndexedJoinNode<BiTuple<A, B>, C, TriTuple<A, B, C>> {
 
     private final TriPredicate<A, B, C> filtering;
-    private final int outputStoreSize;
 
     public IndexedJoinTriNode(IndexerFactory<C> indexerFactory,
             int inputStoreIndexAB, int inputStoreIndexEntryAB, int inputStoreIndexOutTupleListAB,
             int inputStoreIndexC, int inputStoreIndexEntryC, int inputStoreIndexOutTupleListC,
             TupleLifecycle<TriTuple<A, B, C>> nextNodesTupleLifecycle, TriPredicate<A, B, C> filtering,
-            int outputStoreSize, int outputStoreIndexOutEntryAB, int outputStoreIndexOutEntryC) {
+            TupleStoreSizeTracker tupleStoreSizeTracker) {
         super(indexerFactory.buildBiLeftKeysExtractor(), indexerFactory,
                 inputStoreIndexAB, inputStoreIndexEntryAB, inputStoreIndexOutTupleListAB,
                 inputStoreIndexC, inputStoreIndexEntryC, inputStoreIndexOutTupleListC,
-                nextNodesTupleLifecycle, filtering != null,
-                outputStoreIndexOutEntryAB, outputStoreIndexOutEntryC);
+                nextNodesTupleLifecycle, filtering != null, tupleStoreSizeTracker);
         this.filtering = filtering;
-        this.outputStoreSize = outputStoreSize;
     }
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return new TriTuple<>(leftTuple.factA, leftTuple.factB, rightTuple.factA, outputStoreSize);
+        return new TriTuple<>(leftTuple.factA, leftTuple.factB, rightTuple.factA, tupleStoreSizeTracker.computeStoreSize());
     }
 
     @Override
