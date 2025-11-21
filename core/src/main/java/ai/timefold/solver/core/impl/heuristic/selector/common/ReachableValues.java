@@ -25,6 +25,9 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 public final class ReachableValues {
 
+    // Restricts the number of entity and value lists stored in memory to reduce memory usage
+    private static final double MAX_CAPACITY_RATE = 0.5;
+    private final int maxItems;
     private final Map<Object, Integer> entitiesIndex;
     private final List<Object> allEntities;
     private final Map<Object, Integer> valuesIndex;
@@ -32,22 +35,27 @@ public final class ReachableValues {
     private final @Nullable Class<?> valueClass;
     private final @Nullable ValueRangeSorter<?> valueRangeSorter;
     private final boolean acceptsNullValue;
+    private final BitSet onDemandRandomAccessEntityBitSet;
     private @Nullable List<Object>[] onDemandRandomAccessEntity;
+    private final BitSet onDemandRandomAccessValueBitSet;
     private @Nullable List<Object>[] onDemandRandomAccessValue;
     private @Nullable ReachableItemValue firstCachedObject;
     private @Nullable ReachableItemValue secondCachedObject;
 
-    public ReachableValues(Map<Object, Integer> entityIndexMap, List<Object> entityList, Map<Object, Integer> valueIndexMap,
-            List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass,
+    public ReachableValues(Map<Object, Integer> entityIndexMap, List<Object> entityList,
+            Map<Object, Integer> valueIndexMap, List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass,
             @Nullable ValueRangeSorter<?> valueRangeSorter, boolean acceptsNullValue) {
         this.entitiesIndex = entityIndexMap;
         this.allEntities = entityList;
         this.valuesIndex = valueIndexMap;
         this.allValues = reachableValueList;
+        this.maxItems = (int) (allValues.size() * MAX_CAPACITY_RATE);
         this.valueClass = valueClass;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
+        this.onDemandRandomAccessEntityBitSet = new BitSet(allValues.size());
         this.onDemandRandomAccessEntity = new List[allValues.size()];
+        this.onDemandRandomAccessValueBitSet = new BitSet(allValues.size());
         this.onDemandRandomAccessValue = new List[allValues.size()];
     }
 
@@ -81,6 +89,15 @@ public final class ReachableValues {
         }
         var entityList = onDemandRandomAccessEntity[itemValue.ordinal];
         if (entityList == null) {
+            if (onDemandRandomAccessEntityBitSet.cardinality() == maxItems) {
+                // Before adding a new item, 
+                // we must first remove one to ensure it fits within the capacity.
+                // The selection strategy simply chooses the first element set.
+                var selection = onDemandRandomAccessEntityBitSet.nextSetBit(0);
+                onDemandRandomAccessEntityBitSet.clear(selection);
+                onDemandRandomAccessEntity[selection] = null;
+            }
+            onDemandRandomAccessEntityBitSet.set(itemValue.ordinal);
             entityList = itemValue.getRandomAccessEntityList(allEntities);
             onDemandRandomAccessEntity[itemValue.ordinal] = entityList;
         }
@@ -94,6 +111,15 @@ public final class ReachableValues {
         }
         var valueList = onDemandRandomAccessValue[itemValue.ordinal];
         if (valueList == null) {
+            if (onDemandRandomAccessValueBitSet.cardinality() == maxItems) {
+                // Before adding a new item, 
+                // we must first remove one to ensure it fits within the capacity.
+                // The selection strategy simply chooses the first element set.
+                var selection = onDemandRandomAccessValueBitSet.nextSetBit(0);
+                onDemandRandomAccessValueBitSet.clear(selection);
+                onDemandRandomAccessValue[selection] = null;
+            }
+            onDemandRandomAccessValueBitSet.set(itemValue.ordinal);
             valueList = itemValue.getRandomAccessValueList(allValues, valueRangeSorter);
             onDemandRandomAccessValue[itemValue.ordinal] = valueList;
         }
@@ -160,7 +186,9 @@ public final class ReachableValues {
     public void clear() {
         firstCachedObject = null;
         secondCachedObject = null;
+        this.onDemandRandomAccessEntityBitSet.clear();
         this.onDemandRandomAccessEntity = new List[allValues.size()];
+        this.onDemandRandomAccessValueBitSet.clear();
         this.onDemandRandomAccessValue = new List[allValues.size()];
     }
 
