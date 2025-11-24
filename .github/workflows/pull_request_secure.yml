@@ -225,7 +225,7 @@ jobs:
       - name: Use Aikido Sec Safe Chain
         run: |
           pnpm install -g @aikidosec/safe-chain@1.1.7
-          safe-chain setup
+          safe-chain setup-ci
       - name: Set up NodeJs
         uses: actions/setup-node@v6
         with:
