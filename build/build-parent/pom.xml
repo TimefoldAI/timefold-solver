@@ -53,7 +53,7 @@
     <version.source.plugin>3.3.1</version.source.plugin>
     <version.spotless.plugin>3.0.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.4</version.surefire.plugin>
-    <version.versions.plugin>2.19.1</version.versions.plugin>
+    <version.versions.plugin>2.20.0</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in .mvn/maven-wrapper.properties -->
