@@ -3,6 +3,7 @@ package ai.timefold.solver.quarkus.deployment;
 import static io.quarkus.deployment.annotations.ExecutionTime.RUNTIME_INIT;
 import static java.lang.String.format;
 
+import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -96,7 +97,9 @@ import io.quarkus.devui.spi.JsonRPCProvidersBuildItem;
 import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
 import io.quarkus.gizmo.ClassOutput;
-import io.quarkus.gizmo.MethodDescriptor;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.desc.ConstructorDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.runtime.configuration.ConfigurationException;
 
 class TimefoldProcessor {
@@ -559,9 +562,7 @@ class TimefoldProcessor {
         var solutionClass = solverConfig.getSolutionClass();
         if (solutionClass != null) {
             // Need to register even when using GIZMO so annotations are preserved
-            Type jandexType = Type.create(DotName.createSimple(solutionClass.getName()), Type.Kind.CLASS);
-            reflectiveHierarchyClass.produce(new ReflectiveHierarchyBuildItem.Builder()
-                    .type(jandexType)
+            reflectiveHierarchyClass.produce(ReflectiveHierarchyBuildItem.builder(solutionClass)
                     // Ignore only the packages from timefold-solver-core
                     // (Can cause a hard to diagnose issue when creating a test/example
                     // in the package "ai.timefold.solver").
@@ -708,52 +709,54 @@ class TimefoldProcessor {
             SyntheticBeanBuildItem.ExtendedBeanConfigurator constraintDescriptor =
                     SyntheticBeanBuildItem.configure(DotNames.CONSTRAINT_VERIFIER)
                             .scope(Singleton.class)
-                            .creator(methodCreator -> {
-                                var constraintProviderResultHandle =
-                                        methodCreator.newInstance(MethodDescriptor.ofConstructor(constraintProviderClass));
-                                var planningSolutionClassResultHandle = methodCreator.loadClass(planningSolutionClass);
+                            .creator(createGeneration -> {
+                                var methodCreator = createGeneration.createMethod();
+                                var constraintProviderResultHandle = methodCreator.localVar("constraintProvider",
+                                        methodCreator.new_(constraintProviderClass));
+                                var planningSolutionClassResultHandle = Const.of(planningSolutionClass);
 
                                 var planningEntityClassesResultHandle =
-                                        methodCreator.newArray(Class.class, planningEntityClassList.size());
+                                        methodCreator.localVar("entityClasses",
+                                                methodCreator.newEmptyArray(Class.class, planningEntityClassList.size()));
                                 for (var i = 0; i < planningEntityClassList.size(); i++) {
-                                    var planningEntityClassResultHandle =
-                                            methodCreator.loadClass(planningEntityClassList.get(i));
-                                    methodCreator.writeArrayValue(planningEntityClassesResultHandle, i,
+                                    var planningEntityClassResultHandle = Const.of(planningEntityClassList.get(i));
+                                    methodCreator.set(planningEntityClassesResultHandle.elem(i),
                                             planningEntityClassResultHandle);
                                 }
 
-                                var enabledPreviewFeatureSet = methodCreator.invokeStaticMethod(
-                                        MethodDescriptor.ofMethod(
-                                                EnumSet.class, "noneOf", EnumSet.class, Class.class),
-                                        methodCreator.loadClass(PreviewFeature.class));
+                                var enabledPreviewFeatureSet = methodCreator.localVar("previewFeatureSet",
+                                        methodCreator.invokeStatic(
+                                                MethodDesc.of(EnumSet.class, "noneOf", EnumSet.class, Class.class),
+                                                Const.of(PreviewFeature.class)));
                                 if (solverConfig.getEnablePreviewFeatureSet() != null) {
                                     for (var enabledPreviewFeature : solverConfig.getEnablePreviewFeatureSet()) {
-                                        methodCreator.invokeVirtualMethod(
-                                                MethodDescriptor.ofMethod(EnumSet.class, "add", boolean.class, Object.class),
-                                                enabledPreviewFeatureSet, methodCreator.load(enabledPreviewFeature));
+                                        methodCreator.invokeVirtual(
+                                                MethodDesc.of(EnumSet.class, "add", boolean.class, Object.class),
+                                                enabledPreviewFeatureSet, Const.of(enabledPreviewFeature));
                                     }
                                 }
                                 for (var i = 0; i < planningEntityClassList.size(); i++) {
-                                    var planningEntityClassResultHandle =
-                                            methodCreator.loadClass(planningEntityClassList.get(i));
-                                    methodCreator.writeArrayValue(planningEntityClassesResultHandle, i,
+                                    var planningEntityClassResultHandle = Const.of(planningEntityClassList.get(i));
+                                    methodCreator.set(planningEntityClassesResultHandle.elem(i),
                                             planningEntityClassResultHandle);
                                 }
 
                                 // Got incompatible class change error when trying to invoke static method on
                                 // ConstraintVerifier.build(ConstraintProvider, Class, Class...)
-                                var solutionDescriptorResultHandle = methodCreator.invokeStaticMethod(
-                                        MethodDescriptor.ofMethod(SolutionDescriptor.class, "buildSolutionDescriptor",
-                                                SolutionDescriptor.class, Set.class, Class.class, Class[].class),
-                                        enabledPreviewFeatureSet, planningSolutionClassResultHandle,
-                                        planningEntityClassesResultHandle);
-                                var constraintVerifierResultHandle = methodCreator.newInstance(
-                                        MethodDescriptor.ofConstructor(
-                                                "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier",
+                                var solutionDescriptorResultHandle = methodCreator.localVar("solutionDescriptor",
+                                        methodCreator.invokeStatic(
+                                                MethodDesc.of(SolutionDescriptor.class, "buildSolutionDescriptor",
+                                                        SolutionDescriptor.class, Set.class, Class.class, Class[].class),
+                                                enabledPreviewFeatureSet, planningSolutionClassResultHandle,
+                                                planningEntityClassesResultHandle));
+                                var constraintVerifierResultHandle = methodCreator.new_(
+                                        ConstructorDesc.of(
+                                                ClassDesc.of(
+                                                        "ai.timefold.solver.test.impl.score.stream.DefaultConstraintVerifier"),
                                                 ConstraintProvider.class, SolutionDescriptor.class),
                                         constraintProviderResultHandle, solutionDescriptorResultHandle);
 
-                                methodCreator.returnValue(constraintVerifierResultHandle);
+                                methodCreator.return_(constraintVerifierResultHandle);
                             })
                             .addType(ParameterizedType.create(DotNames.CONSTRAINT_VERIFIER,
                                     new Type[] {
