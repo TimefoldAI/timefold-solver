@@ -90,6 +90,12 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     }
 
     @Override
+    public void solvingEnded(SolverScope<Solution_> solverScope) {
+        super.solvingEnded(solverScope);
+        this.childEntitySelector.solvingEnded(solverScope);
+    }
+
+    @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
@@ -103,6 +109,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
+        this.childEntitySelector.phaseEnded(phaseScope);
         this.replayedValue = null;
         this.reachableValues = null;
     }

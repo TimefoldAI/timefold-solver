@@ -145,15 +145,8 @@ public final class ReachableValues {
         return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
     }
 
-    public ReachableValues copy(ValueRangeSorter<?> sorterAdapter, boolean deepCopy) {
-        var newAllValues = allValues;
-        if (deepCopy) {
-            newAllValues = new ArrayList<>(allValues.size());
-            for (var value : allValues) {
-                newAllValues.add(new ReachableItemValue(value.ordinal, value.value, value.entityBitSet, value.valueBitSet));
-            }
-        }
-        return new ReachableValues(entitiesIndex, allEntities, valuesIndex, newAllValues, valueClass, sorterAdapter,
+    public ReachableValues copy(ValueRangeSorter<?> sorterAdapter) {
+        return new ReachableValues(entitiesIndex, allEntities, valuesIndex, allValues, valueClass, sorterAdapter,
                 acceptsNullValue);
     }
 
@@ -170,20 +163,12 @@ public final class ReachableValues {
         private final Object value;
         private final BitSet entityBitSet;
         private final BitSet valueBitSet;
-        private boolean sorted = false;
 
         public ReachableItemValue(int ordinal, Object value, int entityListSize, int valueListSize) {
             this.ordinal = ordinal;
             this.value = value;
             this.entityBitSet = new BitSet(entityListSize);
             this.valueBitSet = new BitSet(valueListSize);
-        }
-
-        private ReachableItemValue(int ordinal, Object value, BitSet entityBitSet, BitSet valueBitSet) {
-            this.ordinal = ordinal;
-            this.value = value;
-            this.entityBitSet = entityBitSet;
-            this.valueBitSet = valueBitSet;
         }
 
         public void addEntity(int entityIndex) {
@@ -218,9 +203,8 @@ public final class ReachableValues {
                 @Nullable ValueRangeSorter<V> valueRangeSorter) {
             var valuesList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues,
                     v -> (V) v.value);
-            if (valueRangeSorter != null && !sorted) {
+            if (valueRangeSorter != null) {
                 valueRangeSorter.sort(valuesList);
-                sorted = true;
             }
             return (List<Object>) valuesList;
         }

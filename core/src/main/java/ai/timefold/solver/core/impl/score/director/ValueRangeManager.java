@@ -659,15 +659,14 @@ public final class ValueRangeManager<Solution_> {
         // If the left sorter is null, and the given sorter is not, we replace the left value with a sorted one.
         if (leftSorter == null) {
             var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
-            // We don't need to create a deep copy as we can reuse the existing internal state with the new sorter
-            var sortedValues = leftValues.copy(sorterAdapter, false);
+            var sortedValues = leftValues.copy(sorterAdapter);
+            leftValues.clear();
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
                     new ValueRangeItem<>(null, sortedValues, sorter, rightValues, rightSorter);
             return sortedValues;
         } else if (rightValues == null) {
-            // We perform a deep copy to create a new instance without sharing any internal state
             var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
-            var sortedValues = leftValues.copy(sorterAdapter, true);
+            var sortedValues = leftValues.copy(sorterAdapter);
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
                     new ValueRangeItem<>(null, leftValues, leftSorter, sortedValues, sorter);
             return sortedValues;

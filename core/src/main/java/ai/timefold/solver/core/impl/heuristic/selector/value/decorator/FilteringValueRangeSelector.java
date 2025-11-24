@@ -105,19 +105,13 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         super.solvingStarted(solverScope);
         this.nonReplayingValueSelector.solvingStarted(solverScope);
         this.replayingValueSelector.solvingStarted(solverScope);
-        this.listVariableStateSupply = solverScope.getScoreDirector().getListVariableStateSupply(
-                (ListVariableDescriptor<Solution_>) nonReplayingValueSelector.getVariableDescriptor());
-    }
-
-    @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        this.listVariableStateSupply = null;
     }
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
+        this.listVariableStateSupply = phaseScope.getSolverScope().getScoreDirector().getListVariableStateSupply(
+                (ListVariableDescriptor<Solution_>) nonReplayingValueSelector.getVariableDescriptor());
         this.nonReplayingValueSelector.phaseStarted(phaseScope);
         this.replayingValueSelector.phaseStarted(phaseScope);
         this.reachableValues = phaseScope.getScoreDirector().getValueRangeManager()
@@ -132,6 +126,7 @@ public final class FilteringValueRangeSelector<Solution_> extends AbstractDemand
         this.replayingValueSelector.phaseEnded(phaseScope);
         this.replayedValue = null;
         this.reachableValues = null;
+        this.listVariableStateSupply = null;
     }
 
     // ************************************************************************
