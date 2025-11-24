@@ -222,11 +222,14 @@ jobs:
           fetch-depth: 0 # Otherwise merge will fail on account of not having history.
       - name: Install pnpm
         uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061
+      - name: Use Aikido Sec Safe Chain
+        run: |
+          pnpm install -g @aikidosec/safe-chain@1.1.7
+          safe-chain setup
       - name: Set up NodeJs
         uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
-          cache: pnpm
 
       - name: Checkout timefold-solver
         uses: actions/checkout@v6
@@ -264,8 +267,8 @@ jobs:
           yq -i e 'del(.content.sources)' apps/docs/antora-playbook.yml
           yq -i e 'del(.site.keys)' apps/docs/antora-playbook.yml
           yq -i e '.content.sources += [{"url": "../../timefold-solver", "start_path": "docs/src"}]' apps/docs/antora-playbook.yml
-          pnpm install --frozen-lockfile
-          pnpm build --filter @timefoldai/docs
+          aikido-pnpm install --frozen-lockfile
+          aikido-pnpm build --filter @timefoldai/docs
 
       - name: Deploy Documentation (Preview Mode)
         if: ${{ env.BRANCH_NAME != 'main' }}
