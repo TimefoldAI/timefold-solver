@@ -170,9 +170,9 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     private void processOutTupleUpdate(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
-            ElementAwareLinkedList<OutTuple_> outList,
-            ElementAwareLinkedList<OutTuple_> outTupleList, int outputStoreIndexOutEntry) {
-        var outTuple = findOutTuple(outTupleList, outList, outputStoreIndexOutEntry);
+            ElementAwareLinkedList<OutTuple_> referenceList, ElementAwareLinkedList<OutTuple_> sourceList,
+            int outputStoreIndexOutEntry) {
+        var outTuple = findOutTuple(sourceList, referenceList, outputStoreIndexOutEntry);
         if (testFiltering(leftTuple, rightTuple)) {
             if (outTuple == null) {
                 insertOutTuple(leftTuple, rightTuple);
@@ -186,16 +186,16 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         }
     }
 
-    private static <Tuple_ extends AbstractTuple> Tuple_ findOutTuple(ElementAwareLinkedList<Tuple_> outTupleList,
-            ElementAwareLinkedList<Tuple_> outList, int outputStoreIndexOutEntry) {
+    private static <Tuple_ extends AbstractTuple> Tuple_ findOutTuple(ElementAwareLinkedList<Tuple_> sourceList,
+            ElementAwareLinkedList<Tuple_> referenceList, int outputStoreIndexOutEntry) {
         // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead.
-        var item = outTupleList.first();
+        var item = sourceList.first();
         while (item != null) {
             // Creating list iterators here caused major GC pressure; therefore, we iterate over the entries directly.
             var outTuple = item.getElement();
             ElementAwareLinkedList.Entry<Tuple_> outEntry = outTuple.getStore(outputStoreIndexOutEntry);
             var outEntryList = outEntry.getList();
-            if (outList == outEntryList) {
+            if (referenceList == outEntryList) {
                 return outTuple;
             }
             item = item.next();

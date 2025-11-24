@@ -39,15 +39,15 @@ import ai.timefold.solver.core.impl.util.Triple;
  * Indexers have an id, which is the position of the indexer in the chain.
  * Top-most indexer has id 0, and the id increases as we go down the hierarchy.
  * Each {@link AbstractTuple tuple} is assigned an
- * {@link IndexKeys} instance,
+ * {@link CompositeKey} instance,
  * which determines its location in the index.
- * {@link IndexKeys} instances are built from
+ * {@link CompositeKey} instances are built from
  * {@link AbstractJoiner joiners}
  * using methods such as {@link #buildUniLeftKeysExtractor()} and {@link #buildRightKeysExtractor()}.
- * Each {@link IndexKeys#get(int) index keyFunction} has an
+ * Each {@link CompositeKey#get(int) index keyFunction} has an
  * id,
  * and this id matches the id of the indexer;
- * each keyFunction in {@link IndexKeys} is associated with a
+ * each keyFunction in {@link CompositeKey} is associated with a
  * single indexer.
  * <p>
  * Comparison joiners result in a single indexer each,
@@ -109,7 +109,7 @@ public final class IndexerFactory<Right_> {
     private <A> UniKeysExtractor<A> buildUniKeysExtractor(IntFunction<Function<A, Object>> mappingExtractor) {
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount == 0) {
-            return tuple -> IndexKeys.none();
+            return tuple -> CompositeKey.none();
         } else if (joinerCount == 1) {
             return toKeysExtractor(mappingExtractor.apply(0));
         }
@@ -170,7 +170,7 @@ public final class IndexerFactory<Right_> {
     private static <A> UniKeysExtractor<A> toKeysExtractor(Function<A, Object> keyFunction) {
         return tuple -> {
             var a = tuple.factA;
-            return IndexKeys.of(keyFunction.apply(a));
+            return CompositeKey.of(keyFunction.apply(a));
         };
     }
 
@@ -183,7 +183,7 @@ public final class IndexerFactory<Right_> {
                 var keyFunction2 = keyFunctionList.get(1);
                 yield tuple -> {
                     var a = tuple.factA;
-                    return IndexKeys.of(keyFunction1.apply(a), keyFunction2.apply(a));
+                    return CompositeKey.of(keyFunction1.apply(a), keyFunction2.apply(a));
                 };
             }
             default -> tuple -> {
@@ -192,7 +192,7 @@ public final class IndexerFactory<Right_> {
                 for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a);
                 }
-                return IndexKeys.ofMany(arr);
+                return CompositeKey.ofMany(arr);
             };
         };
     }
@@ -202,7 +202,7 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultTriJoiner<A, B, Right_>) joiner;
         if (joinerCount == 0) {
-            return tuple -> IndexKeys.none();
+            return tuple -> CompositeKey.none();
         } else if (joinerCount == 1) {
             return toKeysExtractor(castJoiner.getLeftMapping(0));
         }
@@ -261,7 +261,7 @@ public final class IndexerFactory<Right_> {
                 yield tuple -> {
                     var a = tuple.factA;
                     var b = tuple.factB;
-                    return IndexKeys.of(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
+                    return CompositeKey.of(keyFunction1.apply(a, b), keyFunction2.apply(a, b));
                 };
             }
             default -> tuple -> {
@@ -271,7 +271,7 @@ public final class IndexerFactory<Right_> {
                 for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a, b);
                 }
-                return IndexKeys.ofMany(arr);
+                return CompositeKey.ofMany(arr);
             };
         };
     }
@@ -280,7 +280,7 @@ public final class IndexerFactory<Right_> {
         return tuple -> {
             var a = tuple.factA;
             var b = tuple.factB;
-            return IndexKeys.of(keyFunction.apply(a, b));
+            return CompositeKey.of(keyFunction.apply(a, b));
         };
     }
 
@@ -289,7 +289,7 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultQuadJoiner<A, B, C, Right_>) joiner;
         if (joinerCount == 0) {
-            return tuple -> IndexKeys.none();
+            return tuple -> CompositeKey.none();
         } else if (joinerCount == 1) {
             return toKeysExtractor(castJoiner.getLeftMapping(0));
         }
@@ -350,7 +350,7 @@ public final class IndexerFactory<Right_> {
                     var a = tuple.factA;
                     var b = tuple.factB;
                     var c = tuple.factC;
-                    return IndexKeys.of(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
+                    return CompositeKey.of(keyFunction1.apply(a, b, c), keyFunction2.apply(a, b, c));
                 };
             }
             default -> tuple -> {
@@ -361,7 +361,7 @@ public final class IndexerFactory<Right_> {
                 for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a, b, c);
                 }
-                return IndexKeys.ofMany(arr);
+                return CompositeKey.ofMany(arr);
             };
         };
     }
@@ -371,7 +371,7 @@ public final class IndexerFactory<Right_> {
             var a = tuple.factA;
             var b = tuple.factB;
             var c = tuple.factC;
-            return IndexKeys.of(keyFunction.apply(a, b, c));
+            return CompositeKey.of(keyFunction.apply(a, b, c));
         };
     }
 
@@ -380,7 +380,7 @@ public final class IndexerFactory<Right_> {
         var joinerCount = joiner.getJoinerCount();
         var castJoiner = (DefaultPentaJoiner<A, B, C, D, Right_>) joiner;
         if (joinerCount == 0) {
-            return tuple -> IndexKeys.none();
+            return tuple -> CompositeKey.none();
         } else if (joinerCount == 1) {
             return toKeysExtractor(castJoiner.getLeftMapping(0));
         }
@@ -442,7 +442,7 @@ public final class IndexerFactory<Right_> {
                     var b = tuple.factB;
                     var c = tuple.factC;
                     var d = tuple.factD;
-                    return IndexKeys.of(keyFunction1.apply(a, b, c, d), keyFunction2.apply(a, b, c, d));
+                    return CompositeKey.of(keyFunction1.apply(a, b, c, d), keyFunction2.apply(a, b, c, d));
                 };
             }
             default -> tuple -> {
@@ -454,7 +454,7 @@ public final class IndexerFactory<Right_> {
                 for (var i = 0; i < keyFunctionCount; i++) {
                     arr[i] = keyFunctionList.get(i).apply(a, b, c, d);
                 }
-                return IndexKeys.ofMany(arr);
+                return CompositeKey.ofMany(arr);
             };
         };
     }
@@ -465,7 +465,7 @@ public final class IndexerFactory<Right_> {
             var b = tuple.factB;
             var c = tuple.factC;
             var d = tuple.factD;
-            return IndexKeys.of(keyFunction.apply(a, b, c, d));
+            return CompositeKey.of(keyFunction.apply(a, b, c, d));
         };
     }
 

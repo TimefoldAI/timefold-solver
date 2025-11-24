@@ -56,8 +56,8 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
             // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
-        for (var tuple : rightTupleList) {
-            insertOutTupleFiltered(leftTuple, tuple);
+        for (var rightTuple : rightTupleList) {
+            insertOutTupleFiltered(leftTuple, rightTuple);
         }
     }
 
@@ -92,8 +92,8 @@ public abstract class AbstractUnindexedJoinNode<LeftTuple_ extends AbstractTuple
         }
         rightTuple.setStore(inputStoreIndexRightEntry, rightTupleList.add(rightTuple));
         rightTuple.setStore(inputStoreIndexRightOutTupleList, new ElementAwareLinkedList<OutTuple_>());
-        for (var tuple : leftTupleList) {
-            insertOutTupleFilteredFromLeft(tuple, rightTuple);
+        for (var leftTuple : leftTupleList) {
+            insertOutTupleFilteredFromLeft(leftTuple, rightTuple);
         }
     }
 

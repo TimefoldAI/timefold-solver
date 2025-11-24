@@ -19,7 +19,7 @@ public sealed interface IndexerBackend<T>
         permits RandomAccessIndexerBackend, LinkedListIndexerBackend {
 
     @Override
-    default List<? extends ListEntry<T>> asList(Object indexKeys) {
+    default List<? extends ListEntry<T>> asList(Object compositeKey) {
         throw new UnsupportedOperationException("Indexer backend (%s) does not support random access."
                 .formatted(this.getClass().getSimpleName()));
     }

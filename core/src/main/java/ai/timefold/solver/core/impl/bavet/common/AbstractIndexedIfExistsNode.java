@@ -26,9 +26,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     private final KeysExtractor<LeftTuple_> keysExtractorLeft;
     private final UniKeysExtractor<Right_> keysExtractorRight;
-    private final int inputStoreIndexLeftKeys;
+    private final int inputStoreIndexLefCompositeKey;
     private final int inputStoreIndexLeftCounterEntry;
-    private final int inputStoreIndexRightKeys;
+    private final int inputStoreIndexRightCompositeKey;
     private final int inputStoreIndexRightEntry;
     private final Indexer<ExistsCounter<LeftTuple_>> indexerLeft;
     private final Indexer<UniTuple<Right_>> indexerRight;
@@ -39,9 +39,9 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
         super(shouldExist, nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker);
         this.keysExtractorLeft = keysExtractorLeft;
         this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
-        this.inputStoreIndexLeftKeys = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexLefCompositeKey = tupleStorePositionTracker.reserveNextLeft();
         this.inputStoreIndexLeftCounterEntry = tupleStorePositionTracker.reserveNextLeft();
-        this.inputStoreIndexRightKeys = tupleStorePositionTracker.reserveNextRight();
+        this.inputStoreIndexRightCompositeKey = tupleStorePositionTracker.reserveNextRight();
         this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();
         this.indexerLeft = indexerFactory.buildIndexer(true);
         this.indexerRight = indexerFactory.buildIndexer(false);
@@ -49,45 +49,45 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void insertLeft(LeftTuple_ leftTuple) {
-        if (leftTuple.getStore(inputStoreIndexLeftKeys) != null) {
+        if (leftTuple.getStore(inputStoreIndexLefCompositeKey) != null) {
             throw new IllegalStateException(
                     "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
                             .formatted(leftTuple));
         }
-        var indexKeys = keysExtractorLeft.apply(leftTuple);
-        leftTuple.setStore(inputStoreIndexLeftKeys, indexKeys);
+        var compositeKey = keysExtractorLeft.apply(leftTuple);
+        leftTuple.setStore(inputStoreIndexLefCompositeKey, compositeKey);
 
         var counter = new ExistsCounter<>(leftTuple);
-        updateCounterRight(leftTuple, indexKeys, counter, indexerLeft.put(indexKeys, counter));
+        updateCounterRight(leftTuple, compositeKey, counter, indexerLeft.put(compositeKey, counter));
         initCounterLeft(counter);
     }
 
-    private void updateCounterRight(LeftTuple_ leftTuple, Object indexKeys, ExistsCounter<LeftTuple_> counter,
+    private void updateCounterRight(LeftTuple_ leftTuple, Object compositeKey, ExistsCounter<LeftTuple_> counter,
             ListEntry<ExistsCounter<LeftTuple_>> counterEntry) {
         leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterEntry);
         if (!isFiltering) {
-            counter.countRight = indexerRight.size(indexKeys);
+            counter.countRight = indexerRight.size(compositeKey);
         } else {
             var leftTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
-            indexerRight.forEach(indexKeys,
-                    rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
+            indexerRight.forEach(compositeKey,
+                    rightTuple -> updateCounterFromLeft(counter, rightTuple, leftTrackerList));
             leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
     }
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        var oldIndexKeys = leftTuple.getStore(inputStoreIndexLeftKeys);
-        if (oldIndexKeys == null) {
+        var oldCompositeKey = leftTuple.getStore(inputStoreIndexLefCompositeKey);
+        if (oldCompositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
             return;
         }
-        var newIndexKeys = keysExtractorLeft.apply(leftTuple);
+        var newCompositeKey = keysExtractorLeft.apply(leftTuple);
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
         var counter = counterEntry.getElement();
 
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
             // The indexers contain counters in the DEAD state, to track the rightCount.
             if (!isFiltering) {
@@ -98,34 +98,34 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
                         leftTuple.getStore(inputStoreIndexLeftTrackerList);
                 leftTrackerList.clear(FilteringTracker::removeByLeft);
                 counter.countRight = 0;
-                indexerRight.forEach(oldIndexKeys,
-                        rightTuple -> updateCounterFromLeft(leftTuple, rightTuple, counter, leftTrackerList));
+                indexerRight.forEach(oldCompositeKey,
+                        rightTuple -> updateCounterFromLeft(counter, rightTuple, leftTrackerList));
                 updateCounterLeft(counter);
             }
         } else {
-            updateIndexerLeft(oldIndexKeys, counterEntry, leftTuple);
+            updateIndexerLeft(oldCompositeKey, counterEntry, leftTuple);
             counter.countRight = 0;
-            leftTuple.setStore(inputStoreIndexLeftKeys, newIndexKeys);
-            updateCounterRight(leftTuple, newIndexKeys, counter, indexerLeft.put(newIndexKeys, counter));
+            leftTuple.setStore(inputStoreIndexLefCompositeKey, newCompositeKey);
+            updateCounterRight(leftTuple, newCompositeKey, counter, indexerLeft.put(newCompositeKey, counter));
             updateCounterLeft(counter);
         }
     }
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
-        var indexKeys = leftTuple.removeStore(inputStoreIndexLeftKeys);
-        if (indexKeys == null) {
+        var compositeKey = leftTuple.removeStore(inputStoreIndexLefCompositeKey);
+        if (compositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
         ListEntry<ExistsCounter<LeftTuple_>> counterEntry = leftTuple.getStore(inputStoreIndexLeftCounterEntry);
-        updateIndexerLeft(indexKeys, counterEntry, leftTuple);
+        updateIndexerLeft(compositeKey, counterEntry, leftTuple);
         killCounterLeft(counterEntry.getElement());
     }
 
-    private void updateIndexerLeft(Object indexKeys, ListEntry<ExistsCounter<LeftTuple_>> counterEntry,
+    private void updateIndexerLeft(Object compositeKey, ListEntry<ExistsCounter<LeftTuple_>> counterEntry,
             LeftTuple_ leftTuple) {
-        indexerLeft.remove(indexKeys, counterEntry);
+        indexerLeft.remove(compositeKey, counterEntry);
         if (isFiltering) {
             ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList =
                     leftTuple.getStore(inputStoreIndexLeftTrackerList);
@@ -135,68 +135,68 @@ public abstract class AbstractIndexedIfExistsNode<LeftTuple_ extends AbstractTup
 
     @Override
     public final void insertRight(UniTuple<Right_> rightTuple) {
-        if (rightTuple.getStore(inputStoreIndexRightKeys) != null) {
+        if (rightTuple.getStore(inputStoreIndexRightCompositeKey) != null) {
             throw new IllegalStateException(
                     "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
                             .formatted(rightTuple));
         }
-        var indexKeys = keysExtractorRight.apply(rightTuple);
-        rightTuple.setStore(inputStoreIndexRightKeys, indexKeys);
-        rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(indexKeys, rightTuple));
-        updateCounterLeft(rightTuple, indexKeys);
+        var compositeKey = keysExtractorRight.apply(rightTuple);
+        rightTuple.setStore(inputStoreIndexRightCompositeKey, compositeKey);
+        rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(compositeKey, rightTuple));
+        updateCounterLeft(rightTuple, compositeKey);
     }
 
-    private void updateCounterLeft(UniTuple<Right_> rightTuple, Object indexKeys) {
+    private void updateCounterLeft(UniTuple<Right_> rightTuple, Object compositeKey) {
         if (!isFiltering) {
-            indexerLeft.forEach(indexKeys, this::incrementCounterRight);
+            indexerLeft.forEach(compositeKey, this::incrementCounterRight);
         } else {
             var rightTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
-            indexerLeft.forEach(indexKeys, counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
+            indexerLeft.forEach(compositeKey, counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
     }
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        var oldIndexKeys = rightTuple.getStore(inputStoreIndexRightKeys);
-        if (oldIndexKeys == null) {
+        var oldCompositeKey = rightTuple.getStore(inputStoreIndexRightCompositeKey);
+        if (oldCompositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
         }
-        var newIndexKeys = keysExtractorRight.apply(rightTuple);
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        var newCompositeKey = keysExtractorRight.apply(rightTuple);
+        if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
             if (isFiltering) {
-                var rightTrackerList = updateRightTrackerList(rightTuple);
-                indexerLeft.forEach(oldIndexKeys,
-                        counter -> updateCounterFromRight(rightTuple, counter, rightTrackerList));
+                var rightTrackerList = clearRightTrackerList(rightTuple);
+                indexerLeft.forEach(oldCompositeKey,
+                        counter -> updateCounterFromRight(counter, rightTuple, rightTrackerList));
             }
         } else {
-            indexerRight.remove(oldIndexKeys, rightTuple.getStore(inputStoreIndexRightEntry));
+            indexerRight.remove(oldCompositeKey, rightTuple.getStore(inputStoreIndexRightEntry));
             if (!isFiltering) {
-                indexerLeft.forEach(oldIndexKeys, this::decrementCounterRight);
+                indexerLeft.forEach(oldCompositeKey, this::decrementCounterRight);
             } else {
-                updateRightTrackerList(rightTuple);
+                clearRightTrackerList(rightTuple);
             }
-            rightTuple.setStore(inputStoreIndexRightKeys, newIndexKeys);
-            rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(newIndexKeys, rightTuple));
-            updateCounterLeft(rightTuple, newIndexKeys);
+            rightTuple.setStore(inputStoreIndexRightCompositeKey, newCompositeKey);
+            rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(newCompositeKey, rightTuple));
+            updateCounterLeft(rightTuple, newCompositeKey);
         }
     }
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
-        var indexKeys = rightTuple.removeStore(inputStoreIndexRightKeys);
-        if (indexKeys == null) {
+        var compositeKey = rightTuple.removeStore(inputStoreIndexRightCompositeKey);
+        if (compositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        indexerRight.remove(indexKeys, rightTuple.removeStore(inputStoreIndexRightEntry));
+        indexerRight.remove(compositeKey, rightTuple.removeStore(inputStoreIndexRightEntry));
         if (!isFiltering) {
-            indexerLeft.forEach(indexKeys, this::decrementCounterRight);
+            indexerLeft.forEach(compositeKey, this::decrementCounterRight);
         } else {
-            updateRightTrackerList(rightTuple);
+            clearRightTrackerList(rightTuple);
         }
     }
 

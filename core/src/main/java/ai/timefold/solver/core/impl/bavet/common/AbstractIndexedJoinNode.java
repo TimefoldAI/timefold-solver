@@ -25,9 +25,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     private final KeysExtractor<LeftTuple_> keysExtractorLeft;
     private final UniKeysExtractor<Right_> keysExtractorRight;
-    private final int inputStoreIndexLeftKeys;
+    private final int inputStoreIndexLeftCompositeKey;
     private final int inputStoreIndexLeftEntry;
-    private final int inputStoreIndexRightKeys;
+    private final int inputStoreIndexRightCompositeKey;
     private final int inputStoreIndexRightEntry;
     /**
      * Calls for example {@link AbstractScorer#insert(AbstractTuple)} and/or ...
@@ -41,9 +41,9 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
         super(nextNodesTupleLifecycle, isFiltering, tupleStorePositionTracker);
         this.keysExtractorLeft = keysExtractorLeft;
         this.keysExtractorRight = indexerFactory.buildRightKeysExtractor();
-        this.inputStoreIndexLeftKeys = tupleStorePositionTracker.reserveNextLeft();
+        this.inputStoreIndexLeftCompositeKey = tupleStorePositionTracker.reserveNextLeft();
         this.inputStoreIndexLeftEntry = tupleStorePositionTracker.reserveNextLeft();
-        this.inputStoreIndexRightKeys = tupleStorePositionTracker.reserveNextRight();
+        this.inputStoreIndexRightCompositeKey = tupleStorePositionTracker.reserveNextRight();
         this.inputStoreIndexRightEntry = tupleStorePositionTracker.reserveNextRight();
         this.indexerLeft = indexerFactory.buildIndexer(true);
         this.indexerRight = indexerFactory.buildIndexer(false);
@@ -51,42 +51,42 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
 
     @Override
     public final void insertLeft(LeftTuple_ leftTuple) {
-        if (leftTuple.getStore(inputStoreIndexLeftKeys) != null) {
+        if (leftTuple.getStore(inputStoreIndexLeftCompositeKey) != null) {
             throw new IllegalStateException(
                     "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
                             .formatted(leftTuple));
         }
-        var indexKeys = keysExtractorLeft.apply(leftTuple);
+        var compositeKey = keysExtractorLeft.apply(leftTuple);
         leftTuple.setStore(inputStoreIndexLeftOutTupleList, new ElementAwareLinkedList<OutTuple_>());
-        indexAndPropagateLeft(leftTuple, indexKeys);
+        indexAndPropagateLeft(leftTuple, compositeKey);
     }
 
     @Override
     public final void updateLeft(LeftTuple_ leftTuple) {
-        var oldIndexKeys = leftTuple.getStore(inputStoreIndexLeftKeys);
-        if (oldIndexKeys == null) {
+        var oldCompositeKey = leftTuple.getStore(inputStoreIndexLeftCompositeKey);
+        if (oldCompositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertLeft(leftTuple);
             return;
         }
-        var newIndexKeys = keysExtractorLeft.apply(leftTuple);
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        var newCompositeKey = keysExtractorLeft.apply(leftTuple);
+        if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
             // Prefer an update over retract-insert if possible
-            innerUpdateLeft(leftTuple, consumer -> indexerRight.forEach(oldIndexKeys, consumer));
+            innerUpdateLeft(leftTuple, consumer -> indexerRight.forEach(oldCompositeKey, consumer));
         } else {
             ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.getStore(inputStoreIndexLeftOutTupleList);
-            indexerLeft.remove(oldIndexKeys, leftTuple.getStore(inputStoreIndexLeftEntry));
+            indexerLeft.remove(oldCompositeKey, leftTuple.getStore(inputStoreIndexLeftEntry));
             outTupleListLeft.clear(this::retractOutTupleByLeft);
             // outTupleListLeft is now empty
             // No need for leftTuple.setStore(inputStoreIndexLeftOutTupleList, outTupleListLeft);
-            indexAndPropagateLeft(leftTuple, newIndexKeys);
+            indexAndPropagateLeft(leftTuple, newCompositeKey);
         }
     }
 
-    private void indexAndPropagateLeft(LeftTuple_ leftTuple, Object indexKeys) {
-        leftTuple.setStore(inputStoreIndexLeftKeys, indexKeys);
-        leftTuple.setStore(inputStoreIndexLeftEntry, indexerLeft.put(indexKeys, leftTuple));
+    private void indexAndPropagateLeft(LeftTuple_ leftTuple, Object compositeKey) {
+        leftTuple.setStore(inputStoreIndexLeftCompositeKey, compositeKey);
+        leftTuple.setStore(inputStoreIndexLeftEntry, indexerLeft.put(compositeKey, leftTuple));
         if (!leftTuple.state.isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
@@ -103,71 +103,71 @@ public abstract class AbstractIndexedJoinNode<LeftTuple_ extends AbstractTuple, 
             // However, no such issue could have been reproduced; when in doubt, leave it out.
             return;
         }
-        indexerRight.forEach(indexKeys, rightTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
+        indexerRight.forEach(compositeKey, rightTuple -> insertOutTupleFiltered(leftTuple, rightTuple));
     }
 
     @Override
     public final void retractLeft(LeftTuple_ leftTuple) {
-        var indexKeys = leftTuple.removeStore(inputStoreIndexLeftKeys);
-        if (indexKeys == null) {
+        var compositeKey = leftTuple.removeStore(inputStoreIndexLeftCompositeKey);
+        if (compositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
         ElementAwareLinkedList<OutTuple_> outTupleListLeft = leftTuple.removeStore(inputStoreIndexLeftOutTupleList);
-        indexerLeft.remove(indexKeys, leftTuple.removeStore(inputStoreIndexLeftEntry));
+        indexerLeft.remove(compositeKey, leftTuple.removeStore(inputStoreIndexLeftEntry));
         outTupleListLeft.clear(this::retractOutTupleByLeft);
     }
 
     @Override
     public final void insertRight(UniTuple<Right_> rightTuple) {
-        if (rightTuple.getStore(inputStoreIndexRightKeys) != null) {
+        if (rightTuple.getStore(inputStoreIndexRightCompositeKey) != null) {
             throw new IllegalStateException(
                     "Impossible state: the input for the tuple (%s) was already added in the tupleStore."
                             .formatted(rightTuple));
         }
-        var indexKeys = keysExtractorRight.apply(rightTuple);
+        var compositeKey = keysExtractorRight.apply(rightTuple);
         rightTuple.setStore(inputStoreIndexRightOutTupleList, new ElementAwareLinkedList<OutTuple_>());
-        indexAndPropagateRight(rightTuple, indexKeys);
+        indexAndPropagateRight(rightTuple, compositeKey);
     }
 
     @Override
     public final void updateRight(UniTuple<Right_> rightTuple) {
-        var oldIndexKeys = rightTuple.getStore(inputStoreIndexRightKeys);
-        if (oldIndexKeys == null) {
+        var oldCompositeKey = rightTuple.getStore(inputStoreIndexRightCompositeKey);
+        if (oldCompositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             insertRight(rightTuple);
             return;
         }
-        var newIndexKeys = keysExtractorRight.apply(rightTuple);
-        if (oldIndexKeys.equals(newIndexKeys)) {
+        var newCompositeKey = keysExtractorRight.apply(rightTuple);
+        if (oldCompositeKey.equals(newCompositeKey)) {
             // No need for re-indexing because the index keys didn't change
             // Prefer an update over retract-insert if possible
-            innerUpdateRight(rightTuple, consumer -> indexerLeft.forEach(oldIndexKeys, consumer));
+            innerUpdateRight(rightTuple, consumer -> indexerLeft.forEach(oldCompositeKey, consumer));
         } else {
             ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.getStore(inputStoreIndexRightOutTupleList);
-            indexerRight.remove(oldIndexKeys, rightTuple.getStore(inputStoreIndexRightEntry));
+            indexerRight.remove(oldCompositeKey, rightTuple.getStore(inputStoreIndexRightEntry));
             outTupleListRight.clear(this::retractOutTupleByRight);
             // outTupleListRight is now empty
             // No need for rightTuple.setStore(inputStoreIndexRightOutTupleList, outTupleListRight);
-            indexAndPropagateRight(rightTuple, newIndexKeys);
+            indexAndPropagateRight(rightTuple, newCompositeKey);
         }
     }
 
-    private void indexAndPropagateRight(UniTuple<Right_> rightTuple, Object indexKeys) {
-        rightTuple.setStore(inputStoreIndexRightKeys, indexKeys);
-        rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(indexKeys, rightTuple));
-        indexerLeft.forEach(indexKeys, leftTuple -> insertOutTupleFilteredFromLeft(leftTuple, rightTuple));
+    private void indexAndPropagateRight(UniTuple<Right_> rightTuple, Object compositeKey) {
+        rightTuple.setStore(inputStoreIndexRightCompositeKey, compositeKey);
+        rightTuple.setStore(inputStoreIndexRightEntry, indexerRight.put(compositeKey, rightTuple));
+        indexerLeft.forEach(compositeKey, leftTuple -> insertOutTupleFilteredFromLeft(leftTuple, rightTuple));
     }
 
     @Override
     public final void retractRight(UniTuple<Right_> rightTuple) {
-        var indexKeys = rightTuple.removeStore(inputStoreIndexRightKeys);
-        if (indexKeys == null) {
+        var compositeKey = rightTuple.removeStore(inputStoreIndexRightCompositeKey);
+        if (compositeKey == null) {
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
         ElementAwareLinkedList<OutTuple_> outTupleListRight = rightTuple.removeStore(inputStoreIndexRightOutTupleList);
-        indexerRight.remove(indexKeys, rightTuple.removeStore(inputStoreIndexRightEntry));
+        indexerRight.remove(compositeKey, rightTuple.removeStore(inputStoreIndexRightEntry));
         outTupleListRight.clear(this::retractOutTupleByRight);
     }
 

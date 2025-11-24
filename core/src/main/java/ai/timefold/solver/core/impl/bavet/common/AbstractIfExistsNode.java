@@ -117,7 +117,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         } // Else do not even propagate an update
     }
 
-    protected ElementAwareLinkedList<FilteringTracker<LeftTuple_>> updateRightTrackerList(UniTuple<Right_> rightTuple) {
+    protected ElementAwareLinkedList<FilteringTracker<LeftTuple_>> clearRightTrackerList(UniTuple<Right_> rightTuple) {
         ElementAwareLinkedList<FilteringTracker<LeftTuple_>> rightTrackerList =
                 rightTuple.getStore(inputStoreIndexRightTrackerList);
         rightTrackerList.clear(tracker -> {
@@ -127,15 +127,15 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
         return rightTrackerList;
     }
 
-    protected void updateCounterFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
+    protected void updateCounterFromLeft(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple,
             ElementAwareLinkedList<FilteringTracker<LeftTuple_>> leftTrackerList) {
-        if (testFiltering(leftTuple, rightTuple)) {
+        if (testFiltering(counter.leftTuple, rightTuple)) {
             counter.countRight++;
             new FilteringTracker<>(counter, leftTrackerList, rightTuple.getStore(inputStoreIndexRightTrackerList));
         }
     }
 
-    protected void updateCounterFromRight(UniTuple<Right_> rightTuple, ExistsCounter<LeftTuple_> counter,
+    protected void updateCounterFromRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple,
             ElementAwareLinkedList<FilteringTracker<LeftTuple_>> rightTrackerList) {
         var leftTuple = counter.leftTuple;
         if (!leftTuple.state.isActive()) {
@@ -189,6 +189,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
 
     @NullMarked
     protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {
+
         final ExistsCounter<LeftTuple_> counter;
         private final ElementAwareLinkedList.Entry<FilteringTracker<LeftTuple_>> leftTrackerEntry;
         private final ElementAwareLinkedList.Entry<FilteringTracker<LeftTuple_>> rightTrackerEntry;

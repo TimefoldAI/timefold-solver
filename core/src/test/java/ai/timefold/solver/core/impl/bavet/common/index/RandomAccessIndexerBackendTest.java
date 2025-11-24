@@ -23,9 +23,9 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
     void put() {
         var indexer = new RandomAccessIndexerBackend<>();
         var annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(IndexKeys.none())).isEqualTo(0);
-        indexer.put(IndexKeys.none(), annTuple);
-        assertThat(indexer.size(IndexKeys.none())).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.none())).isEqualTo(0);
+        indexer.put(CompositeKey.none(), annTuple);
+        assertThat(indexer.size(CompositeKey.none())).isEqualTo(1);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
@@ -36,18 +36,18 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
     void removeTwice() {
         var indexer = new RandomAccessIndexerBackend<>();
         var annTuple = newTuple("Ann-F-40");
-        var annEntry = indexer.put(IndexKeys.none(), annTuple);
+        var annEntry = indexer.put(CompositeKey.none(), annTuple);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
         });
 
-        indexer.remove(IndexKeys.none(), annEntry);
+        indexer.remove(CompositeKey.none(), annEntry);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isTrue();
             softly.assertThat(getTuples(indexer)).isEmpty();
         });
-        assertThatThrownBy(() -> indexer.remove(IndexKeys.none(), annEntry))
+        assertThatThrownBy(() -> indexer.remove(CompositeKey.none(), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -56,9 +56,9 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
         var indexer = new RandomAccessIndexerBackend<>();
 
         var annTuple = newTuple("Ann-F-40");
-        indexer.put(IndexKeys.none(), annTuple);
+        indexer.put(CompositeKey.none(), annTuple);
         var bethTuple = newTuple("Beth-F-30");
-        indexer.put(IndexKeys.none(), bethTuple);
+        indexer.put(CompositeKey.none(), bethTuple);
 
         assertThat(getTuples(indexer)).containsOnly(annTuple, bethTuple);
     }

@@ -24,7 +24,7 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
     private final int inputStoreIndexRightEntry;
 
     // Acts as a leftTupleList too
-    private final ElementAwareLinkedList<ExistsCounter<LeftTuple_>> leftCounterList = new ElementAwareLinkedList<>();
+    private final ElementAwareLinkedList<ExistsCounter<LeftTuple_>> counterList = new ElementAwareLinkedList<>();
     private final ElementAwareLinkedList<UniTuple<Right_>> rightTupleList = new ElementAwareLinkedList<>();
 
     protected AbstractUnindexedIfExistsNode(boolean shouldExist, TupleLifecycle<LeftTuple_> nextNodesTupleLifecycle,
@@ -42,14 +42,14 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
                             .formatted(leftTuple));
         }
         var counter = new ExistsCounter<>(leftTuple);
-        leftTuple.setStore(inputStoreIndexLeftCounterEntry, leftCounterList.add(counter));
+        leftTuple.setStore(inputStoreIndexLeftCounterEntry, counterList.add(counter));
 
         if (!isFiltering) {
             counter.countRight = rightTupleList.size();
         } else {
             var leftTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
-            for (var tuple : rightTupleList) {
-                updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerList);
+            for (var rightTuple : rightTupleList) {
+                updateCounterFromLeft(counter, rightTuple, leftTrackerList);
             }
             leftTuple.setStore(inputStoreIndexLeftTrackerList, leftTrackerList);
         }
@@ -75,8 +75,8 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
                     leftTuple.getStore(inputStoreIndexLeftTrackerList);
             leftTrackerList.clear(FilteringTracker::removeByLeft);
             counter.countRight = 0;
-            for (var tuple : rightTupleList) {
-                updateCounterFromLeft(leftTuple, tuple, counter, leftTrackerList);
+            for (var rightTuple : rightTupleList) {
+                updateCounterFromLeft(counter, rightTuple, leftTrackerList);
             }
             updateCounterLeft(counter);
         }
@@ -109,11 +109,11 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         }
         rightTuple.setStore(inputStoreIndexRightEntry, rightTupleList.add(rightTuple));
         if (!isFiltering) {
-            leftCounterList.forEach(this::incrementCounterRight);
+            counterList.forEach(this::incrementCounterRight);
         } else {
             var rightTrackerList = new ElementAwareLinkedList<FilteringTracker<LeftTuple_>>();
-            for (var counter : leftCounterList) {
-                updateCounterFromRight(rightTuple, counter, rightTrackerList);
+            for (var counter : counterList) {
+                updateCounterFromRight(counter, rightTuple, rightTrackerList);
             }
             rightTuple.setStore(inputStoreIndexRightTrackerList, rightTrackerList);
         }
@@ -128,9 +128,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
             return;
         }
         if (isFiltering) {
-            var rightTrackerList = updateRightTrackerList(rightTuple);
-            for (var counter : leftCounterList) {
-                updateCounterFromRight(rightTuple, counter, rightTrackerList);
+            var rightTrackerList = clearRightTrackerList(rightTuple);
+            for (var counter : counterList) {
+                updateCounterFromRight(counter, rightTuple, rightTrackerList);
             }
         }
     }
@@ -144,9 +144,9 @@ public abstract class AbstractUnindexedIfExistsNode<LeftTuple_ extends AbstractT
         }
         rightEntry.remove();
         if (!isFiltering) {
-            leftCounterList.forEach(this::decrementCounterRight);
+            counterList.forEach(this::decrementCounterRight);
         } else {
-            updateRightTrackerList(rightTuple);
+            clearRightTrackerList(rightTuple);
         }
     }
 

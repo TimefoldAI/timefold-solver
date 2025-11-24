@@ -26,19 +26,19 @@ class EqualsIndexerTest extends AbstractIndexerTest {
     void put() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         var annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(IndexKeys.ofMany("F", 40))).isEqualTo(0);
-        indexer.put(IndexKeys.ofMany("F", 40), annTuple);
-        assertThat(indexer.size(IndexKeys.ofMany("F", 40))).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.ofMany("F", 40))).isEqualTo(0);
+        indexer.put(CompositeKey.ofMany("F", 40), annTuple);
+        assertThat(indexer.size(CompositeKey.ofMany("F", 40))).isEqualTo(1);
     }
 
     @Test
     void removeTwice() {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
         var annTuple = newTuple("Ann-F-40");
-        var annEntry = indexer.put(IndexKeys.ofMany("F", 40), annTuple);
+        var annEntry = indexer.put(CompositeKey.ofMany("F", 40), annTuple);
 
-        indexer.remove(IndexKeys.ofMany("F", 40), annEntry);
-        assertThatThrownBy(() -> indexer.remove(IndexKeys.ofMany("F", 40), annEntry))
+        indexer.remove(CompositeKey.ofMany("F", 40), annEntry);
+        assertThatThrownBy(() -> indexer.remove(CompositeKey.ofMany("F", 40), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
@@ -47,13 +47,13 @@ class EqualsIndexerTest extends AbstractIndexerTest {
         var indexer = new IndexerFactory<>(joiner).buildIndexer(true);
 
         var annTuple = newTuple("Ann-F-40");
-        indexer.put(IndexKeys.of(new Pair<>("F", 40)), annTuple);
+        indexer.put(CompositeKey.of(new Pair<>("F", 40)), annTuple);
         var bethTuple = newTuple("Beth-F-30");
-        indexer.put(IndexKeys.of(new Pair<>("F", 30)), bethTuple);
-        indexer.put(IndexKeys.of(new Pair<>("M", 40)), newTuple("Carl-M-40"));
-        indexer.put(IndexKeys.of(new Pair<>("M", 30)), newTuple("Dan-M-30"));
+        indexer.put(CompositeKey.of(new Pair<>("F", 30)), bethTuple);
+        indexer.put(CompositeKey.of(new Pair<>("M", 40)), newTuple("Carl-M-40"));
+        indexer.put(CompositeKey.of(new Pair<>("M", 30)), newTuple("Dan-M-30"));
         var ednaTuple = newTuple("Edna-F-40");
-        indexer.put(IndexKeys.of(new Pair<>("F", 40)), ednaTuple);
+        indexer.put(CompositeKey.of(new Pair<>("F", 40)), ednaTuple);
 
         assertThat(getTuples(indexer, new Pair<>("F", 40))).containsOnly(annTuple, ednaTuple);
         assertThat(getTuples(indexer, new Pair<>("F", 30))).containsOnly(bethTuple);

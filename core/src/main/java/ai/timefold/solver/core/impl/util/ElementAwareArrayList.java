@@ -91,7 +91,6 @@ public final class ElementAwareArrayList<T> {
      * @param elementConsumer the action to be performed for each element;
      *        mustn't modify the collection and mustn't throw exceptions,
      *        as that'd leave the collection in an inconsistent state
-     * 
      */
     public void forEach(Consumer<T> elementConsumer) {
         if (gapCount == 0) {
@@ -134,7 +133,7 @@ public final class ElementAwareArrayList<T> {
 
     /**
      * Clears all remaining gaps if all remaining elements are gaps.
-     * 
+     *
      * @param currentGapPosition the current position in the iteration
      * @param encounteredGaps the number of gaps encountered so far in the iteration, including the current one
      * @param indexesToRemove the array of indexes where gaps were previously found; won't be modified

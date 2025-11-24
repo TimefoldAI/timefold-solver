@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * An indexer for entity or fact {@code X},
- * maps a property or a combination of properties of {@code X}, denoted by {@code indexKeys},
+ * maps a property or a combination of properties of {@code X}, denoted by {@code compositeKey},
  * to all instances of {@code X} that match those properties,
  * depending on the the indexer type (equal, lower than, ...).
  * For example for {@code {Lesson(id=1, room=A), Lesson(id=2, room=B), Lesson(id=3, room=A)}},
@@ -27,16 +27,16 @@ import org.jspecify.annotations.NullMarked;
 public sealed interface Indexer<T>
         permits ComparisonIndexer, EqualsIndexer, IndexerBackend {
 
-    ListEntry<T> put(Object indexKeys, T tuple);
+    ListEntry<T> put(Object compositeKey, T tuple);
 
-    void remove(Object indexKeys, ListEntry<T> entry);
+    void remove(Object compositeKey, ListEntry<T> entry);
 
-    int size(Object indexKeys);
+    int size(Object compositeKey);
 
-    void forEach(Object indexKeys, Consumer<T> tupleConsumer);
+    void forEach(Object compositeKey, Consumer<T> tupleConsumer);
 
     boolean isEmpty();
 
-    List<? extends ListEntry<T>> asList(Object indexKeys);
+    List<? extends ListEntry<T>> asList(Object compositeKey);
 
 }

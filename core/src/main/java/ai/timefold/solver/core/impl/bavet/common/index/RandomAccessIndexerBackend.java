@@ -21,22 +21,22 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
     private final ElementAwareArrayList<T> tupleList = new ElementAwareArrayList<>();
 
     @Override
-    public ListEntry<T> put(Object indexKeys, T tuple) {
+    public ListEntry<T> put(Object compositeKey, T tuple) {
         return tupleList.add(tuple);
     }
 
     @Override
-    public void remove(Object indexKeys, ListEntry<T> entry) {
+    public void remove(Object compositeKey, ListEntry<T> entry) {
         tupleList.remove((ElementAwareArrayList.Entry<T>) entry);
     }
 
     @Override
-    public int size(Object indexKeys) {
+    public int size(Object compositeKey) {
         return tupleList.size();
     }
 
     @Override
-    public void forEach(Object indexKeys, Consumer<T> tupleConsumer) {
+    public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
         tupleList.forEach(tupleConsumer);
     }
 
@@ -46,7 +46,7 @@ public final class RandomAccessIndexerBackend<T> implements IndexerBackend<T> {
     }
 
     @Override
-    public List<ElementAwareArrayList.Entry<T>> asList(Object indexKeys) {
+    public List<ElementAwareArrayList.Entry<T>> asList(Object compositeKey) {
         return tupleList.asList();
     }
 
