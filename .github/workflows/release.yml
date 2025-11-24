@@ -37,7 +37,7 @@ jobs:
       attestations: write  # IMPORTANT: mandatory for attestations
     steps:
       - name: Checkout timefold-solver
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: ${{ github.event.inputs.sourceBranch }}
