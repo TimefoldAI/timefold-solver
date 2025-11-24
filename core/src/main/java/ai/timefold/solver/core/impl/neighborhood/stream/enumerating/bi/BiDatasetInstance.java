@@ -12,8 +12,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDatasetInstance;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
-import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -22,7 +21,7 @@ import org.jspecify.annotations.Nullable;
 public final class BiDatasetInstance<Solution_, A, B>
         extends AbstractDatasetInstance<Solution_, BiTuple<A, B>> {
 
-    private final Map<A, ElementAwareList<BiTuple<A, B>>> tupleListMap = new LinkedHashMap<>();
+    private final Map<A, ElementAwareLinkedList<BiTuple<A, B>>> tupleListMap = new LinkedHashMap<>();
 
     public BiDatasetInstance(AbstractDataset<Solution_, BiTuple<A, B>> parent, int inputStoreIndex) {
         super(parent, inputStoreIndex);
@@ -30,7 +29,7 @@ public final class BiDatasetInstance<Solution_, A, B>
 
     @Override
     public void insert(BiTuple<A, B> tuple) {
-        var tupleList = tupleListMap.computeIfAbsent(tuple.factA, key -> new ElementAwareList<>());
+        var tupleList = tupleListMap.computeIfAbsent(tuple.factA, key -> new ElementAwareLinkedList<>());
         var entry = tupleList.add(tuple);
         tuple.setStore(inputStoreIndex, entry);
     }
@@ -52,7 +51,7 @@ public final class BiDatasetInstance<Solution_, A, B>
 
     @Override
     public void retract(BiTuple<A, B> tuple) {
-        ElementAwareListEntry<BiTuple<A, B>> entry = tuple.removeStore(inputStoreIndex);
+        ElementAwareLinkedList.Entry<BiTuple<A, B>> entry = tuple.removeStore(inputStoreIndex);
         // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
         if (entry != null) {
             var tupleList = entry.getList();
@@ -74,10 +73,10 @@ public final class BiDatasetInstance<Solution_, A, B>
     @NullMarked
     private static final class OriginalTupleMapIterator<A, B> implements Iterator<BiTuple<A, B>> {
 
-        private final Iterator<ElementAwareList<BiTuple<A, B>>> listIterator;
+        private final Iterator<ElementAwareLinkedList<BiTuple<A, B>>> listIterator;
         private @Nullable Iterator<BiTuple<A, B>> currentIterator = null;
 
-        public OriginalTupleMapIterator(Map<A, ElementAwareList<BiTuple<A, B>>> tupleListMap) {
+        public OriginalTupleMapIterator(Map<A, ElementAwareLinkedList<BiTuple<A, B>>> tupleListMap) {
             this.listIterator = tupleListMap.values().iterator();
         }
 
@@ -102,12 +101,12 @@ public final class BiDatasetInstance<Solution_, A, B>
     private static final class RandomTupleMapIterator<A, B> implements Iterator<BiTuple<A, B>> {
 
         private final Random workingRandom;
-        private final Map<A, ElementAwareList<BiTuple<A, B>>> allTuplesMap;
+        private final Map<A, ElementAwareLinkedList<BiTuple<A, B>>> allTuplesMap;
         private final List<A> keyList;
         private final Map<A, List<BiTuple<A, B>>> unvisitedTuplesMap;
         private @Nullable BiTuple<A, B> selection;
 
-        public RandomTupleMapIterator(Map<A, ElementAwareList<BiTuple<A, B>>> allTuplesMap, Random workingRandom) {
+        public RandomTupleMapIterator(Map<A, ElementAwareLinkedList<BiTuple<A, B>>> allTuplesMap, Random workingRandom) {
             this.workingRandom = workingRandom;
             this.allTuplesMap = allTuplesMap;
             this.keyList = new ArrayList<>(allTuplesMap.keySet());

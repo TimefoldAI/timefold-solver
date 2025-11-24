@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
@@ -9,8 +12,11 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ListEntry;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         implements Indexer<T> {
 
@@ -21,17 +27,17 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     private final NavigableMap<Key_, Indexer<T>> comparisonMap;
 
     /**
-     * Construct an {@link ComparisonIndexer} which immediately ends in a {@link NoneIndexer}.
+     * Construct an {@link ComparisonIndexer} which immediately ends in a {@link IndexerBackend}.
      * This means {@code indexKeys} must be a single key.
      *
      * @param comparisonJoinerType the type of comparison to use
      */
     public ComparisonIndexer(JoinerType comparisonJoinerType) {
-        this(comparisonJoinerType, new SingleKeyRetriever<>(), NoneIndexer::new);
+        this(comparisonJoinerType, new SingleKeyRetriever<>(), LinkedListIndexerBackend::new);
     }
 
     /**
-     * Construct an {@link ComparisonIndexer} which does not immediately go to a {@link NoneIndexer}.
+     * Construct an {@link ComparisonIndexer} which does not immediately go to a {@link IndexerBackend}.
      * This means {@code indexKeys} must be an instance of {@link IndexKeys}.
      *
      * @param comparisonJoinerType the type of comparison to use
@@ -61,7 +67,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public ElementAwareListEntry<T> put(Object indexKeys, T tuple) {
+    public ListEntry<T> put(Object indexKeys, T tuple) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         var downstreamIndexer = comparisonMap.get(indexKey);
@@ -73,7 +79,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     }
 
     @Override
-    public void remove(Object indexKeys, ElementAwareListEntry<T> entry) {
+    public void remove(Object indexKeys, ListEntry<T> entry) {
         Key_ indexKey = keyRetriever.apply(indexKeys);
         var downstreamIndexer = getDownstreamIndexer(indexKeys, indexKey, entry);
         downstreamIndexer.remove(indexKeys, entry);
@@ -82,12 +88,12 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         }
     }
 
-    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ElementAwareListEntry<T> entry) {
+    private Indexer<T> getDownstreamIndexer(Object indexKeys, Key_ indexerKey, ListEntry<T> entry) {
         var downstreamIndexer = comparisonMap.get(indexerKey);
         if (downstreamIndexer == null) {
             throw new IllegalStateException(
                     "Impossible state: the tuple (%s) with indexKeys (%s) doesn't exist in the indexer %s."
-                            .formatted(entry.getElement(), indexKeys, this));
+                            .formatted(entry, indexKeys, this));
         }
         return downstreamIndexer;
     }
@@ -165,6 +171,42 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     @Override
     public boolean isEmpty() {
         return comparisonMap.isEmpty();
+    }
+
+    @Override
+    public List<? extends ListEntry<T>> asList(Object indexKeys) {
+        var size = comparisonMap.size();
+        if (size == 0) {
+            return Collections.emptyList();
+        }
+        var result = new ArrayList<ListEntry<T>>();
+        Key_ indexKey = keyRetriever.apply(indexKeys);
+        if (size == 1) { // Avoid creation of the entry set and iterator.
+            var entry = comparisonMap.firstEntry();
+            visitEntry(indexKeys, result, indexKey, entry);
+        } else {
+            for (var entry : comparisonMap.entrySet()) {
+                var boundaryReached = visitEntry(indexKeys, result, indexKey, entry);
+                if (boundaryReached) {
+                    return result;
+                }
+            }
+        }
+        return result;
+    }
+
+    private boolean visitEntry(Object indexKeys, List<ListEntry<T>> result, Key_ indexKey, Map.Entry<Key_, Indexer<T>> entry) {
+        // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
+        var comparison = keyComparator.compare(entry.getKey(), indexKey);
+        if (comparison >= 0) { // Possibility of reaching the boundary condition.
+            if (comparison > 0 || !hasOrEquals) {
+                // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
+                return true;
+            }
+        }
+        // Boundary condition not yet reached; include the indexer in the range.
+        result.addAll(entry.getValue().asList(indexKeys));
+        return false;
     }
 
     @Override

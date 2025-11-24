@@ -9,20 +9,23 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Consumer;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Linked list that allows to add and remove an element in O(1) time.
  * Ideal for incremental operations with frequent undo.
  *
  * @param <T> The element type. Often a tuple.
  */
-public final class ElementAwareList<T> implements Iterable<T> {
+public final class ElementAwareLinkedList<T> implements Iterable<T> {
 
     private int size = 0;
-    private ElementAwareListEntry<T> first = null;
-    private ElementAwareListEntry<T> last = null;
+    private Entry<T> first = null;
+    private Entry<T> last = null;
 
-    public ElementAwareListEntry<T> add(T tuple) {
-        ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, last);
+    public Entry<T> add(T tuple) {
+        Entry<T> entry = new Entry<>(this, tuple, last);
         if (first == null) {
             first = entry;
         } else {
@@ -33,9 +36,9 @@ public final class ElementAwareList<T> implements Iterable<T> {
         return entry;
     }
 
-    public ElementAwareListEntry<T> addFirst(T tuple) {
+    public Entry<T> addFirst(T tuple) {
         if (first != null) {
-            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, null);
+            Entry<T> entry = new Entry<>(this, tuple, null);
             first.previous = entry;
             entry.next = first;
             first = entry;
@@ -46,13 +49,13 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
-    public ElementAwareListEntry<T> addAfter(T tuple, ElementAwareListEntry<T> previous) {
+    public Entry<T> addAfter(T tuple, Entry<T> previous) {
         Objects.requireNonNull(previous);
         if (first == null || previous == last) {
             return add(tuple);
         } else {
-            ElementAwareListEntry<T> entry = new ElementAwareListEntry<>(this, tuple, previous);
-            ElementAwareListEntry<T> currentNext = previous.next;
+            Entry<T> entry = new Entry<>(this, tuple, previous);
+            Entry<T> currentNext = previous.next;
             if (currentNext != null) {
                 currentNext.previous = entry;
             } else {
@@ -65,7 +68,7 @@ public final class ElementAwareList<T> implements Iterable<T> {
         }
     }
 
-    public void remove(ElementAwareListEntry<T> entry) {
+    public void remove(Entry<T> entry) {
         if (first == entry) {
             first = entry.next;
         } else {
@@ -81,11 +84,11 @@ public final class ElementAwareList<T> implements Iterable<T> {
         size--;
     }
 
-    public ElementAwareListEntry<T> first() {
+    public Entry<T> first() {
         return first;
     }
 
-    public ElementAwareListEntry<T> last() {
+    public Entry<T> last() {
         return last;
     }
 
@@ -139,10 +142,10 @@ public final class ElementAwareList<T> implements Iterable<T> {
      */
     @Override
     public void forEach(Consumer<? super T> tupleConsumer) {
-        ElementAwareListEntry<T> entry = first;
+        Entry<T> entry = first;
         while (entry != null) {
             // Extract next before processing it, in case the entry is removed and entry.next becomes null
-            ElementAwareListEntry<T> next = entry.next;
+            Entry<T> next = entry.next;
             tupleConsumer.accept(entry.getElement());
             entry = next;
         }
@@ -229,9 +232,9 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     private static final class ElementAwareListIterator<T> implements Iterator<T> {
 
-        private ElementAwareListEntry<T> nextEntry;
+        private Entry<T> nextEntry;
 
-        public ElementAwareListIterator(ElementAwareListEntry<T> nextEntry) {
+        public ElementAwareListIterator(Entry<T> nextEntry) {
             this.nextEntry = nextEntry;
         }
 
@@ -289,4 +292,56 @@ public final class ElementAwareList<T> implements Iterable<T> {
 
     }
 
+    @NullMarked
+    public static final class Entry<T> implements ListEntry<T> {
+
+        private @Nullable ElementAwareLinkedList<T> list;
+        private final T element;
+        @Nullable
+        Entry<T> previous;
+        @Nullable
+        Entry<T> next;
+
+        Entry(ElementAwareLinkedList<T> list, T element, @Nullable Entry<T> previous) {
+            this.list = list;
+            this.element = element;
+            this.previous = previous;
+            this.next = null;
+        }
+
+        public @Nullable Entry<T> previous() {
+            return previous;
+        }
+
+        public @Nullable Entry<T> next() {
+            return next;
+        }
+
+        public void remove() {
+            if (isRemoved()) {
+                throw new IllegalStateException("The element (" + element + ") was already removed.");
+            }
+            list.remove(this);
+            list = null;
+        }
+
+        @Override
+        public boolean isRemoved() {
+            return list == null;
+        }
+
+        public T getElement() {
+            return element;
+        }
+
+        public @Nullable ElementAwareLinkedList<T> getList() {
+            return list;
+        }
+
+        @Override
+        public String toString() {
+            return element.toString();
+        }
+
+    }
 }

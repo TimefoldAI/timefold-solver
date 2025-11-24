@@ -1,9 +1,12 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ListEntry;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * An indexer for entity or fact {@code X},
@@ -20,16 +23,20 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
  *        For example for {@code Bi<A, B>.join(C)}, the tuple is {@code BiTuple<A, B>} xor {@code UniTuple<C>}.
  */
-public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
+@NullMarked
+public sealed interface Indexer<T>
+        permits ComparisonIndexer, EqualsIndexer, IndexerBackend {
 
-    ElementAwareListEntry<T> put(Object indexKeys, T tuple);
+    ListEntry<T> put(Object indexKeys, T tuple);
 
-    void remove(Object indexKeys, ElementAwareListEntry<T> entry);
+    void remove(Object indexKeys, ListEntry<T> entry);
 
     int size(Object indexKeys);
 
     void forEach(Object indexKeys, Consumer<T> tupleConsumer);
 
     boolean isEmpty();
+
+    List<? extends ListEntry<T>> asList(Object indexKeys);
 
 }

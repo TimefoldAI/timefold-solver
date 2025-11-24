@@ -29,10 +29,10 @@ import ai.timefold.solver.core.impl.util.Triple;
 /**
  * {@link Indexer Indexers} form a parent-child hierarchy,
  * each child has exactly one parent.
- * {@link NoneIndexer} is always at the bottom of the hierarchy,
+ * {@link IndexerBackend} is always at the bottom of the hierarchy,
  * never a parent unless it is the only indexer.
  * Parent indexers delegate to their children,
- * until they reach the ultimate {@link NoneIndexer}.
+ * until they reach the ultimate {@link IndexerBackend}.
  * <p>
  * Example 1: EQUAL+LESS_THAN joiner will become EqualsIndexer -> ComparisonIndexer -> NoneIndexer.
  * <p>
@@ -479,7 +479,7 @@ public final class IndexerFactory<Right_> {
          * (<A, B> becomes <B, A>.)
          */
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
-            return new NoneIndexer<>();
+            return new LinkedListIndexerBackend<>();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
             if (joinerType == JoinerType.EQUAL) {
@@ -490,7 +490,7 @@ public final class IndexerFactory<Right_> {
         }
         // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
-        Supplier<Indexer<T>> noneIndexerSupplier = NoneIndexer::new;
+        Supplier<Indexer<T>> noneIndexerSupplier = LinkedListIndexerBackend::new;
         Supplier<Indexer<T>> downstreamIndexerSupplier = noneIndexerSupplier;
         var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {

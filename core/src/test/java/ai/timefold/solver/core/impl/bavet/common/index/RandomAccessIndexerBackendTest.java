@@ -8,11 +8,11 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
 
-class NoneIndexerTest extends AbstractIndexerTest {
+class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
 
     @Test
     void isEmpty() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
         assertSoftly(softly -> {
             softly.assertThat(getTuples(indexer)).isEmpty();
             softly.assertThat(indexer.isEmpty()).isTrue();
@@ -21,7 +21,7 @@ class NoneIndexerTest extends AbstractIndexerTest {
 
     @Test
     void put() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
         var annTuple = newTuple("Ann-F-40");
         assertThat(indexer.size(IndexKeys.none())).isEqualTo(0);
         indexer.put(IndexKeys.none(), annTuple);
@@ -34,7 +34,7 @@ class NoneIndexerTest extends AbstractIndexerTest {
 
     @Test
     void removeTwice() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
         var annTuple = newTuple("Ann-F-40");
         var annEntry = indexer.put(IndexKeys.none(), annTuple);
         assertSoftly(softly -> {
@@ -53,7 +53,7 @@ class NoneIndexerTest extends AbstractIndexerTest {
 
     @Test
     void visit() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
 
         var annTuple = newTuple("Ann-F-40");
         indexer.put(IndexKeys.none(), annTuple);
