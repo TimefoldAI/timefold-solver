@@ -1,14 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Supplier;
-
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
@@ -22,9 +13,19 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.penta.joiner.DefaultPentaJoiner;
 import ai.timefold.solver.core.impl.bavet.quad.joiner.DefaultQuadJoiner;
 import ai.timefold.solver.core.impl.bavet.tri.joiner.DefaultTriJoiner;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 import ai.timefold.solver.core.impl.util.Triple;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
 
 /**
  * {@link Indexer Indexers} form a parent-child hierarchy,
@@ -73,10 +74,12 @@ import ai.timefold.solver.core.impl.util.Triple;
 public final class IndexerFactory<Right_> {
 
     private final AbstractJoiner<Right_> joiner;
+    private final boolean requiresRandomAccess; // Neighborhoods with enumerating joiners require random access.
     private final NavigableMap<Integer, JoinerType> joinerTypeMap;
 
     public IndexerFactory(AbstractJoiner<Right_> joiner) {
         this.joiner = joiner;
+        this.requiresRandomAccess = joiner instanceof DefaultBiEnumeratingJoiner<?, Right_>;
         var joinerCount = joiner.getJoinerCount();
         if (joinerCount < 2) {
             joinerTypeMap = null;
@@ -105,8 +108,18 @@ public final class IndexerFactory<Right_> {
     }
 
     public <A> UniKeysExtractor<A> buildUniLeftKeysExtractor() {
-        var castJoiner = (DefaultBiJoiner<A, Right_>) joiner;
-        return buildUniKeysExtractor(castJoiner::getLeftMapping);
+        return buildUniKeysExtractor(getMappingExtractor());
+    }
+
+    private <A> IntFunction<Function<A, Object>> getMappingExtractor() {
+        if (joiner instanceof DefaultBiJoiner<?, Right_> castJoiner) {
+            return i -> (Function<A, Object>) castJoiner.getLeftMapping(i);
+        } else if (joiner instanceof DefaultBiEnumeratingJoiner<?, Right_> castJoiner) {
+            return i -> (Function<A, Object>) castJoiner.getLeftMapping(i);
+        } else {
+            throw new IllegalStateException("Impossible state: The joiner (%s) is neither %s nor %s."
+                    .formatted(joiner.getClass(), DefaultBiJoiner.class, DefaultBiEnumeratingJoiner.class));
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -478,28 +491,27 @@ public final class IndexerFactory<Right_> {
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
-        /*
-         * Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
-         * (<A, B> becomes <B, A>.)
-         */
+        Supplier<Indexer<T>> backendSupplier = requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new;
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
-            return new LinkedListIndexerBackend<>();
+            return backendSupplier.get();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
             var joinerType = joiner.getJoinerType(0);
             if (joinerType == JoinerType.EQUAL) {
-                return new EqualsIndexer<>();
+                return new EqualsIndexer<>(backendSupplier);
             } else {
-                return new ComparisonIndexer<>(isLeftBridge ? joinerType : joinerType.flip());
+                // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
+                // (<A, B> becomes <B, A>.)
+                var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
+                return new ComparisonIndexer<>(actualJoinerType, backendSupplier);
             }
         }
         // The following code builds the children first, so it needs to iterate over the joiners in reverse order.
         var descendingJoinerTypeMap = joinerTypeMap.descendingMap();
-        Supplier<Indexer<T>> noneIndexerSupplier = LinkedListIndexerBackend::new;
-        Supplier<Indexer<T>> downstreamIndexerSupplier = noneIndexerSupplier;
+        Supplier<Indexer<T>> downstreamIndexerSupplier = backendSupplier;
         var indexPropertyId = descendingJoinerTypeMap.size() - 1;
         for (var entry : descendingJoinerTypeMap.entrySet()) {
             var joinerType = entry.getValue();
-            if (downstreamIndexerSupplier == noneIndexerSupplier && indexPropertyId == 0) {
+            if (downstreamIndexerSupplier == backendSupplier && indexPropertyId == 0) {
                 if (joinerType == JoinerType.EQUAL) {
                     downstreamIndexerSupplier = EqualsIndexer::new;
                 } else {
