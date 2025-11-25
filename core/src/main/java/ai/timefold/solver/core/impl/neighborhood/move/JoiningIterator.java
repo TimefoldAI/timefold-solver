@@ -46,7 +46,7 @@ final class JoiningIterator<Solution_, A, B> implements Iterator<UniTuple<B>> {
         while (rightTupleIterator.hasNext()) {
             var rightTuple = rightTupleIterator.next();
             var rightFact = rightTuple.factA;
-            if (BiRandomMoveIterator.failsJoiner(joiner, leftFact, rightFact)) {
+            if (failsJoiner(joiner, leftFact, rightFact)) {
                 continue;
             }
             // Only test the filter after the joiners all match;
@@ -59,6 +59,19 @@ final class JoiningIterator<Solution_, A, B> implements Iterator<UniTuple<B>> {
         }
         hasNext = false;
         next = EMPTY_TUPLE;
+        return false;
+    }
+
+    private static <A, B> boolean failsJoiner(DefaultBiEnumeratingJoiner<A, B> joiner, A leftFact, B rightFact) {
+        var joinerCount = joiner.getJoinerCount();
+        for (var joinerId = 0; joinerId < joinerCount; joinerId++) {
+            var joinerType = joiner.getJoinerType(joinerId);
+            var mappedLeft = joiner.getLeftMapping(joinerId).apply(leftFact);
+            var mappedRight = joiner.getRightMapping(joinerId).apply(rightFact);
+            if (!joinerType.matches(mappedLeft, mappedRight)) {
+                return true;
+            }
+        }
         return false;
     }
 

@@ -96,6 +96,10 @@ public final class IndexerFactory<Right_> {
         }
     }
 
+    public AbstractJoiner<Right_> getJoiner() {
+        return joiner;
+    }
+
     public boolean hasJoiners() {
         return joiner.getJoinerCount() > 0;
     }

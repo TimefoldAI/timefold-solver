@@ -124,7 +124,8 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     @Override
     public <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream) {
-        return new DefaultUniSamplingStream<>(((AbstractUniEnumeratingStream<Solution_, A>) enumeratingStream).createDataset());
+        return new DefaultUniSamplingStream<>(
+                ((AbstractUniEnumeratingStream<Solution_, A>) enumeratingStream).createLeftDataset());
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {

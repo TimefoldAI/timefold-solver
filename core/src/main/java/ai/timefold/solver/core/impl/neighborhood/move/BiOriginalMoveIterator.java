@@ -5,7 +5,8 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniDatasetInstance;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDatasetInstance;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;
@@ -25,8 +26,8 @@ final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Sol
     private static final UniTuple EMPTY_TUPLE = new UniTuple<>(null, 0);
 
     private final BiMoveStreamContext<Solution_, A, B> context;
-    private final UniDatasetInstance<Solution_, A> leftDatasetInstance;
-    private final UniDatasetInstance<Solution_, B> rightDatasetInstance;
+    private final UniLeftDatasetInstance<Solution_, A> leftDatasetInstance;
+    private final UniRightDatasetInstance<Solution_, A, B> rightDatasetInstance;
 
     // Fields required for iteration.
     private @Nullable Move<Solution_> nextMove;
@@ -57,15 +58,11 @@ final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Sol
         }
 
         // Try to find the next valid move.
-        var joiner = context.getJoiner();
-        var filter = context.getFilter();
-        var solutionView = context.neighborhoodSession().getSolutionView();
         while (true) {
             if (rightTupleIterator == null || !rightTupleIterator.hasNext()) {
                 if (leftTupleIterator.hasNext()) { // The second iterator is exhausted or the first one was not yet created.
                     leftTuple = leftTupleIterator.next();
-                    rightTupleIterator =
-                            new JoiningIterator<>(joiner, filter, solutionView, leftTuple, rightDatasetInstance.iterator());
+                    rightTupleIterator = rightDatasetInstance.iterator(rightDatasetInstance.produceCompositeKey(leftTuple));
                 } else { // No more elements in both iterators.
                     return false;
                 }

@@ -8,16 +8,16 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Termi
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-final class TerminalUniEnumeratingStream<Solution_, A>
+final class LeftTerminalUniEnumeratingStream<Solution_, A>
         extends AbstractUniEnumeratingStream<Solution_, A>
-        implements TerminalEnumeratingStream<Solution_, UniTuple<A>, UniDataset<Solution_, A>> {
+        implements TerminalEnumeratingStream<Solution_, UniTuple<A>, UniLeftDataset<Solution_, A>> {
 
-    private final UniDataset<Solution_, A> dataset;
+    private final UniLeftDataset<Solution_, A> dataset;
 
-    public TerminalUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
+    public LeftTerminalUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractUniEnumeratingStream<Solution_, A> parent) {
         super(enumeratingStreamFactory, parent);
-        this.dataset = new UniDataset<>(enumeratingStreamFactory, this);
+        this.dataset = new UniLeftDataset<>(enumeratingStreamFactory, this);
     }
 
     @Override
@@ -28,7 +28,7 @@ final class TerminalUniEnumeratingStream<Solution_, A>
     }
 
     @Override
-    public UniDataset<Solution_, A> getDataset() {
+    public UniLeftDataset<Solution_, A> getDataset() {
         return dataset;
     }
 

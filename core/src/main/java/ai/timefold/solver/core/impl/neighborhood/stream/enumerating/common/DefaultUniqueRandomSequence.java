@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
@@ -36,7 +35,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
     private int leftmostIndex;
     private int rightmostIndex;
 
-    public DefaultUniqueRandomSequence(List<ElementAwareArrayList.Entry<T>> listOfUniqueItems) {
+    public DefaultUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems) {
         this.originalList = Collections.unmodifiableList(listOfUniqueItems);
         this.length = listOfUniqueItems.size();
         this.removed = new BitSet(length);
