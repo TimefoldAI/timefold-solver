@@ -62,7 +62,12 @@ final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Sol
             if (rightTupleIterator == null || !rightTupleIterator.hasNext()) {
                 if (leftTupleIterator.hasNext()) { // The second iterator is exhausted or the first one was not yet created.
                     leftTuple = leftTupleIterator.next();
+                    var filter = rightDatasetInstance.getFilter();
                     rightTupleIterator = rightDatasetInstance.iterator(rightDatasetInstance.produceCompositeKey(leftTuple));
+                    if (filter != null) {
+                        rightTupleIterator = new FilteringIterator<>(filter, context.neighborhoodSession().getSolutionView(),
+                                leftTuple, rightTupleIterator);
+                    }
                 } else { // No more elements in both iterators.
                     return false;
                 }

@@ -52,7 +52,8 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     }
 
     public Iterator<UniTuple<Right_>> iterator(Object compositeKey) {
-        return new UnwrappingIterator<>(indexer.asList(compositeKey).iterator());
+        var list = indexer.asList(compositeKey);
+        return new UnwrappingIterator<>(list.iterator());
     }
 
     public DefaultUniqueRandomSequence<UniTuple<Right_>> buildRandomSequence(Object compositeKey) {
