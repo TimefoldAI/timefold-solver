@@ -1,6 +1,6 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-record TwoIndexKeys<A, B>(A propertyA, B propertyB) implements IndexKeys {
+record BiCompositeKey<A, B>(A propertyA, B propertyB) implements CompositeKey {
 
     @SuppressWarnings("unchecked")
     @Override

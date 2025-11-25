@@ -8,11 +8,11 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
 import org.junit.jupiter.api.Test;
 
-class NoneIndexerTest extends AbstractIndexerTest {
+class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
 
     @Test
     void isEmpty() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
         assertSoftly(softly -> {
             softly.assertThat(getTuples(indexer)).isEmpty();
             softly.assertThat(indexer.isEmpty()).isTrue();
@@ -21,11 +21,11 @@ class NoneIndexerTest extends AbstractIndexerTest {
 
     @Test
     void put() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
         var annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(IndexKeys.none())).isEqualTo(0);
-        indexer.put(IndexKeys.none(), annTuple);
-        assertThat(indexer.size(IndexKeys.none())).isEqualTo(1);
+        assertThat(indexer.size(CompositeKey.none())).isZero();
+        indexer.put(CompositeKey.none(), annTuple);
+        assertThat(indexer.size(CompositeKey.none())).isEqualTo(1);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
@@ -34,31 +34,31 @@ class NoneIndexerTest extends AbstractIndexerTest {
 
     @Test
     void removeTwice() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
         var annTuple = newTuple("Ann-F-40");
-        var annEntry = indexer.put(IndexKeys.none(), annTuple);
+        var annEntry = indexer.put(CompositeKey.none(), annTuple);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isFalse();
             softly.assertThat(getTuples(indexer)).containsExactly(annTuple);
         });
 
-        indexer.remove(IndexKeys.none(), annEntry);
+        indexer.remove(CompositeKey.none(), annEntry);
         assertSoftly(softly -> {
             softly.assertThat(indexer.isEmpty()).isTrue();
             softly.assertThat(getTuples(indexer)).isEmpty();
         });
-        assertThatThrownBy(() -> indexer.remove(IndexKeys.none(), annEntry))
+        assertThatThrownBy(() -> indexer.remove(CompositeKey.none(), annEntry))
                 .isInstanceOf(IllegalStateException.class);
     }
 
     @Test
     void visit() {
-        var indexer = new NoneIndexer<>();
+        var indexer = new RandomAccessIndexerBackend<>();
 
         var annTuple = newTuple("Ann-F-40");
-        indexer.put(IndexKeys.none(), annTuple);
+        indexer.put(CompositeKey.none(), annTuple);
         var bethTuple = newTuple("Beth-F-30");
-        indexer.put(IndexKeys.none(), bethTuple);
+        indexer.put(CompositeKey.none(), bethTuple);
 
         assertThat(getTuples(indexer)).containsOnly(annTuple, bethTuple);
     }

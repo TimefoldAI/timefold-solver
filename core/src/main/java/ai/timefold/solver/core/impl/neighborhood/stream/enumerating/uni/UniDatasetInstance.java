@@ -6,8 +6,7 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDatasetInstance;
-import ai.timefold.solver.core.impl.util.ElementAwareList;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -15,7 +14,7 @@ import org.jspecify.annotations.NullMarked;
 public final class UniDatasetInstance<Solution_, A>
         extends AbstractDatasetInstance<Solution_, UniTuple<A>> {
 
-    private final ElementAwareList<UniTuple<A>> tupleList = new ElementAwareList<>();
+    private final ElementAwareLinkedList<UniTuple<A>> tupleList = new ElementAwareLinkedList<>();
 
     public UniDatasetInstance(AbstractDataset<Solution_, UniTuple<A>> parent, int inputStoreIndex) {
         super(parent, inputStoreIndex);
@@ -34,7 +33,7 @@ public final class UniDatasetInstance<Solution_, A>
 
     @Override
     public void retract(UniTuple<A> tuple) {
-        ElementAwareListEntry<UniTuple<A>> entry = tuple.removeStore(inputStoreIndex);
+        ElementAwareLinkedList.Entry<UniTuple<A>> entry = tuple.removeStore(inputStoreIndex);
         entry.remove();
     }
 

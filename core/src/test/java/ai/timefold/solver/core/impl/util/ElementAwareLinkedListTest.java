@@ -11,11 +11,11 @@ import ai.timefold.solver.core.testutil.TestRandom;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class ElementAwareListTest {
+class ElementAwareLinkedListTest {
 
     @Test
     void addRemove() {
-        var list = new ElementAwareList<String>();
+        var list = new ElementAwareLinkedList<String>();
         assertThat(list.size()).isZero();
         assertThat(list.first()).isNull();
         assertThat(list.last()).isNull();
@@ -53,7 +53,7 @@ class ElementAwareListTest {
 
     @Test
     void addFirst() {
-        var list = new ElementAwareList<String>();
+        var list = new ElementAwareLinkedList<String>();
         assertThat(list.size()).isZero();
         assertThat(list.first()).isNull();
         assertThat(list.last()).isNull();
@@ -78,7 +78,7 @@ class ElementAwareListTest {
 
     @Test
     void addAfter() {
-        var list = new ElementAwareList<String>();
+        var list = new ElementAwareLinkedList<String>();
         assertThat(list.size()).isZero();
         assertThat(list.first()).isNull();
         assertThat(list.last()).isNull();
@@ -121,7 +121,7 @@ class ElementAwareListTest {
     @Test
     void iterator() {
         // create a list and add some elements
-        var list = new ElementAwareList<String>();
+        var list = new ElementAwareLinkedList<String>();
         assertSoftly(softly -> {
             softly.assertThat(list).isEmpty();
             var iter = list.iterator();
@@ -146,7 +146,7 @@ class ElementAwareListTest {
     @Test
     void randomizedIterator() {
         // create a list and add some elements
-        var list = new ElementAwareList<String>();
+        var list = new ElementAwareLinkedList<String>();
         assertSoftly(softly -> {
             var iter = list.randomizedIterator(new Random(0));
             softly.assertThat(iter.hasNext()).isFalse();
@@ -177,7 +177,7 @@ class ElementAwareListTest {
 
     @Test
     void clear() {
-        var list = new ElementAwareList<String>();
+        var list = new ElementAwareLinkedList<String>();
         list.add("A");
         list.add("B");
         assertThat(list.size()).isEqualTo(2);
@@ -185,7 +185,7 @@ class ElementAwareListTest {
         assertThat(list.size()).isZero();
     }
 
-    private void assertOrder(ElementAwareList<String> list, String[] elements, int... randoms) {
+    private void assertOrder(ElementAwareLinkedList<String> list, String[] elements, int... randoms) {
         var iter = list.randomizedIterator(new TestRandom(randoms));
         Assertions.assertThat(iter)
                 .toIterable()

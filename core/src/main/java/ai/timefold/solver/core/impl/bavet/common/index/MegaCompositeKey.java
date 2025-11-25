@@ -2,10 +2,10 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 
 import java.util.Arrays;
 
-record ManyIndexKeys(Object... properties) implements IndexKeys {
+record MegaCompositeKey(Object... properties) implements CompositeKey {
 
-    static final ManyIndexKeys EMPTY = new ManyIndexKeys();
-    static final ManyIndexKeys SINGLE_NULL = new ManyIndexKeys((Object) null);
+    static final MegaCompositeKey EMPTY = new MegaCompositeKey();
+    static final MegaCompositeKey SINGLE_NULL = new MegaCompositeKey((Object) null);
 
     @SuppressWarnings("unchecked")
     @Override
@@ -18,7 +18,7 @@ record ManyIndexKeys(Object... properties) implements IndexKeys {
         if (this == o) { // Due to the use of SINGLE_NULL, this is possible.
             return true;
         }
-        return o instanceof ManyIndexKeys other && Arrays.equals(properties, other.properties);
+        return o instanceof MegaCompositeKey other && Arrays.equals(properties, other.properties);
     }
 
     @Override

@@ -4,8 +4,8 @@ record SingleKeyRetriever<Key_>() implements KeyRetriever<Key_> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Key_ apply(Object indexKeys) {
-        return (Key_) indexKeys;
+    public Key_ apply(Object compositeKey) {
+        return (Key_) compositeKey;
     }
 
 }

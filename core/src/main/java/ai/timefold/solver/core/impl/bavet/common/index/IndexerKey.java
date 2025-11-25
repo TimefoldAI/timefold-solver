@@ -5,10 +5,13 @@ import java.util.Arrays;
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Triple;
 
+import org.jspecify.annotations.NullMarked;
+
 /**
  * Often replaced by a specialization such as {@link Pair}, {@link Triple}, ...
  * Overrides {@link Object#equals(Object)} and {@link Object#hashCode()} as it references external object.
  */
+@NullMarked
 record IndexerKey(Object... properties) {
 
     @Override

@@ -1,13 +1,16 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.List;
 import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
-import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
+import ai.timefold.solver.core.impl.util.ListEntry;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * An indexer for entity or fact {@code X},
- * maps a property or a combination of properties of {@code X}, denoted by {@code indexKeys},
+ * maps a property or a combination of properties of {@code X}, denoted by {@code compositeKey},
  * to all instances of {@code X} that match those properties,
  * depending on the the indexer type (equal, lower than, ...).
  * For example for {@code {Lesson(id=1, room=A), Lesson(id=2, room=B), Lesson(id=3, room=A)}},
@@ -20,16 +23,20 @@ import ai.timefold.solver.core.impl.util.ElementAwareListEntry;
  *        For example for {@code from(A).join(B)}, the tuple is {@code UniTuple<A>} xor {@code UniTuple<B>}.
  *        For example for {@code Bi<A, B>.join(C)}, the tuple is {@code BiTuple<A, B>} xor {@code UniTuple<C>}.
  */
-public sealed interface Indexer<T> permits ComparisonIndexer, EqualsIndexer, NoneIndexer {
+@NullMarked
+public sealed interface Indexer<T>
+        permits ComparisonIndexer, EqualsIndexer, IndexerBackend {
 
-    ElementAwareListEntry<T> put(Object indexKeys, T tuple);
+    ListEntry<T> put(Object compositeKey, T tuple);
 
-    void remove(Object indexKeys, ElementAwareListEntry<T> entry);
+    void remove(Object compositeKey, ListEntry<T> entry);
 
-    int size(Object indexKeys);
+    int size(Object compositeKey);
 
-    void forEach(Object indexKeys, Consumer<T> tupleConsumer);
+    void forEach(Object compositeKey, Consumer<T> tupleConsumer);
 
     boolean isEmpty();
+
+    List<? extends ListEntry<T>> asList(Object compositeKey);
 
 }

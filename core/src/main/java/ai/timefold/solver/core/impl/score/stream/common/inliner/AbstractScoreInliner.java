@@ -31,7 +31,7 @@ import ai.timefold.solver.core.impl.score.constraint.DefaultIndictment;
 import ai.timefold.solver.core.impl.score.definition.ScoreDefinition;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
-import ai.timefold.solver.core.impl.util.ElementAwareList;
+import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
 
 /**
  * Keeps track of the working score and constraint matches for a single constraint session.
@@ -107,7 +107,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
 
     protected final ConstraintMatchPolicy constraintMatchPolicy;
     protected final Map<Constraint, Score_> constraintWeightMap;
-    private final Map<Constraint, ElementAwareList<ConstraintMatchCarrier<Score_>>> constraintMatchMap;
+    private final Map<Constraint, ElementAwareLinkedList<ConstraintMatchCarrier<Score_>>> constraintMatchMap;
     private Map<String, ConstraintMatchTotal<Score_>> constraintIdToConstraintMatchTotalMap = null;
     private Map<Object, Indictment<Score_>> indictmentMap = null;
 
@@ -119,7 +119,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
             this.constraintMatchMap = CollectionUtils.newIdentityHashMap(constraintWeightMap.size());
             for (var constraint : constraintWeightMap.keySet()) {
                 // Ensure that even constraints without matches have their entry.
-                this.constraintMatchMap.put(constraint, new ElementAwareList<>());
+                this.constraintMatchMap.put(constraint, new ElementAwareLinkedList<>());
             }
         } else {
             this.constraintMatchMap = Collections.emptyMap();
@@ -161,7 +161,7 @@ public abstract class AbstractScoreInliner<Score_ extends Score<Score_>> {
         };
     }
 
-    private ElementAwareList<ConstraintMatchCarrier<Score_>> getConstraintMatchList(Constraint constraint) {
+    private ElementAwareLinkedList<ConstraintMatchCarrier<Score_>> getConstraintMatchList(Constraint constraint) {
         // Optimization: computeIfAbsent() would have created a lambda on the hot path.
         var constraintMatchList = constraintMatchMap.get(constraint);
         if (constraintMatchList == null) {

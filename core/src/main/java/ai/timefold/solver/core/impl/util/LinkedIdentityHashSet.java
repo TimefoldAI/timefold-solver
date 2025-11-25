@@ -14,12 +14,12 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class LinkedIdentityHashSet<V> extends AbstractSet<V> {
 
-    private final ElementAwareList<V> delegate;
-    private final IdentityHashMap<V, ElementAwareListEntry<V>> identityMap;
+    private final ElementAwareLinkedList<V> delegate;
+    private final IdentityHashMap<V, ElementAwareLinkedList.Entry<V>> identityMap;
     private int size = 0; // Avoid method calls to underlying collections.
 
     public LinkedIdentityHashSet() {
-        this.delegate = new ElementAwareList<>();
+        this.delegate = new ElementAwareLinkedList<>();
         this.identityMap = new IdentityHashMap<>();
     }
 
