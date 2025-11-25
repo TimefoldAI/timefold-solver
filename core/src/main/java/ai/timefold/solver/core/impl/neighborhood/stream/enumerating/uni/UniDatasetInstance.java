@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -10,6 +8,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DefaultUniqueRandomSequence;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.FilteredUniqueRandomSequence;
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -17,7 +16,7 @@ import org.jspecify.annotations.NullMarked;
 public final class UniDatasetInstance<Solution_, A>
         extends AbstractDatasetInstance<Solution_, UniTuple<A>> {
 
-    private final List<UniTuple<A>> tupleList = new ArrayList<>();
+    private final ElementAwareArrayList<UniTuple<A>> tupleList = new ElementAwareArrayList<>();
 
     public UniDatasetInstance(AbstractDataset<Solution_, UniTuple<A>> parent, int rightMostPositionStoreIndex) {
         super(parent, rightMostPositionStoreIndex);
@@ -25,11 +24,7 @@ public final class UniDatasetInstance<Solution_, A>
 
     @Override
     public void insert(UniTuple<A> tuple) {
-        tupleList.add(tuple);
-        // Since elements are only ever added at the end,
-        // the index is always the right-most position that the tuple could be found at.
-        var rightMostIndex = tupleList.size() - 1;
-        tuple.setStore(entryStoreIndex, rightMostIndex);
+        tuple.setStore(entryStoreIndex, tupleList.add(tuple));
     }
 
     @Override
@@ -39,39 +34,48 @@ public final class UniDatasetInstance<Solution_, A>
 
     @Override
     public void retract(UniTuple<A> tuple) {
-        // The tuple knows the right-most index it could be found at.
-        // But retracts may have shifted other tuples to the left,
-        // so we need to search backwards from there.
-        // Thankfully retracts are relatively rare.
-        int rightMostIndex = Math.min(tuple.removeStore(entryStoreIndex), tupleList.size() - 1);
-        for (int i = rightMostIndex; i >= 0; i--) {
-            if (tupleList.get(i) == tuple) {
-                tupleList.remove(i);
-                return;
-            }
-        }
-        throw new IllegalStateException("Impossible state: tuple (%s) not found."
-                .formatted(tuple));
+        ElementAwareArrayList.Entry<UniTuple<A>> entry = tuple.removeStore(entryStoreIndex);
+        tupleList.remove(entry);
     }
 
     @Override
     public Iterator<UniTuple<A>> iterator() {
-        return tupleList.iterator();
+        return new UnwrappingIterator<>(tupleList.asList().iterator());
     }
 
     @Override
     public DefaultUniqueRandomSequence<UniTuple<A>> buildRandomSequence() {
-        return new DefaultUniqueRandomSequence<>(tupleList);
+        return new DefaultUniqueRandomSequence<>(tupleList.asList());
     }
 
     @Override
     public FilteredUniqueRandomSequence<UniTuple<A>> buildRandomSequence(Predicate<UniTuple<A>> predicate) {
-        return new FilteredUniqueRandomSequence<>(tupleList, predicate);
+        return new FilteredUniqueRandomSequence<>(tupleList.asList(), predicate);
     }
 
     @Override
     public int size() {
         return tupleList.size();
+    }
+
+    private static final class UnwrappingIterator<T> implements Iterator<T> {
+
+        private final Iterator<ElementAwareArrayList.Entry<T>> parentIterator;
+
+        public UnwrappingIterator(Iterator<ElementAwareArrayList.Entry<T>> parentIterator) {
+            this.parentIterator = parentIterator;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return parentIterator.hasNext();
+        }
+
+        @Override
+        public T next() {
+            return parentIterator.next().getElement();
+        }
+
     }
 
 }

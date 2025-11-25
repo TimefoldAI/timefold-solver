@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
+import static ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.SelectionProbabilityTest.*;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.SoftAssertions.assertSoftly;
 
@@ -68,11 +69,11 @@ class FilteredUniqueRandomSequenceTest {
         }
         Predicate<String> filter = Predicate.not(filteredElements::contains);
 
-        var sequence = new FilteredUniqueRandomSequence<>(list, filter);
+        var sequence = new FilteredUniqueRandomSequence<>(toEntries(list), filter);
         var expectedUnfilteredSize = list.size() - filteredElements.size();
 
         var picked = new LinkedHashSet<>(expectedUnfilteredSize);
-        for (int i = 0; i < expectedUnfilteredSize; i++) {
+        for (var i = 0; i < expectedUnfilteredSize; i++) {
             var element = sequence.pick(random);
             picked.add(element.value());
             sequence.remove(element.index());
@@ -100,10 +101,10 @@ class FilteredUniqueRandomSequenceTest {
         }
         Predicate<String> filter = Predicate.not(filteredElements::contains);
 
-        var sequence = new FilteredUniqueRandomSequence<>(list, filter);
+        var sequence = new FilteredUniqueRandomSequence<>(toEntries(list), filter);
         var expectedUnfilteredSize = list.size() - filteredElements.size();
 
-        for (int i = 0; i < expectedUnfilteredSize; i++) {
+        for (var i = 0; i < expectedUnfilteredSize; i++) {
             sequence.remove(i);
         }
 
@@ -125,7 +126,7 @@ class FilteredUniqueRandomSequenceTest {
         Predicate<String> filter = Predicate.not(list::contains);
 
         // Everything is filtered out, but the sequence has no way of knowing that.
-        var sequence = new FilteredUniqueRandomSequence<>(list, filter);
+        var sequence = new FilteredUniqueRandomSequence<>(toEntries(list), filter);
         assertThatThrownBy(() -> sequence.pick(random))
                 .isInstanceOf(NoSuchElementException.class);
     }

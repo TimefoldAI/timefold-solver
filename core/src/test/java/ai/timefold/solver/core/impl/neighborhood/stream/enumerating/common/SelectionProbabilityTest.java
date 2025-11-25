@@ -8,6 +8,8 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.IntStream;
 
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+
 import org.apache.commons.math3.stat.descriptive.SummaryStatistics;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.parallel.Execution;
@@ -35,10 +37,11 @@ public final class SelectionProbabilityTest {
     void check(int n) {
         SortedMap<Integer, Integer> counts = new TreeMap<>();
 
+        var sampleList = toEntries(SAMPLES);
         var random = new Random(0);
         for (var trial = 0; trial < TRIAL_COUNT; trial++) { // Independent trials; each gets its own random seed.
             UniqueRandomSequence.SequenceElement<Integer> element = null;
-            var sequence = new DefaultUniqueRandomSequence<>(SAMPLES); // This is the code that we test.
+            var sequence = new DefaultUniqueRandomSequence<>(sampleList); // This is the code that we test.
             var splitRandom = new Random(random.nextLong());
             for (var i = 0; i < n; i++) { // Pick N random elements.
                 element = sequence.pick(splitRandom);
@@ -66,6 +69,14 @@ public final class SelectionProbabilityTest {
                 .as(() -> "Standard deviation of selection counts (%s) on the %sth random sample is over %s threshold."
                         .formatted(standardDeviation, n, threshold))
                 .isLessThanOrEqualTo(threshold);
+    }
+
+    static <T> List<ElementAwareArrayList.Entry<T>> toEntries(List<T> elements) {
+        var list = new ElementAwareArrayList<T>();
+        for (var element : elements) {
+            list.add(element);
+        }
+        return list.asList();
     }
 
 }
