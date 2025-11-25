@@ -108,29 +108,31 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         Key_ indexKey = keyRetriever.apply(compositeKey);
         if (mapSize == 1) { // Avoid creation of the entry set and iterator.
             var entry = comparisonMap.firstEntry();
-            var comparison = keyComparator.compare(entry.getKey(), indexKey);
-            if (comparison >= 0) { // Possibility of reaching the boundary condition.
-                if (comparison > 0 || !hasOrEquals) {
-                    // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
-                    return 0;
-                }
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return 0;
             }
             return entry.getValue().size(compositeKey);
         } else {
             var size = 0;
             for (var entry : comparisonMap.entrySet()) {
-                var comparison = keyComparator.compare(entry.getKey(), indexKey);
-                if (comparison >= 0) { // Possibility of reaching the boundary condition.
-                    if (comparison > 0 || !hasOrEquals) {
-                        // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
-                        break;
-                    }
+                if (boundaryReached(entry.getKey(), indexKey)) {
+                    break;
                 }
                 // Boundary condition not yet reached; include the indexer in the range.
                 size += entry.getValue().size(compositeKey);
             }
             return size;
         }
+    }
+
+    private boolean boundaryReached(Key_ entryKey, Key_ indexKey) {
+        // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
+        var comparison = keyComparator.compare(entryKey, indexKey);
+        if (comparison >= 0) { // Possibility of reaching the boundary condition.
+            // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
+            return comparison > 0 || !hasOrEquals;
+        }
+        return false;
     }
 
     @Override
@@ -155,13 +157,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     private boolean visitEntry(Object compositeKey, Consumer<T> tupleConsumer, Key_ indexKey,
             Map.Entry<Key_, Indexer<T>> entry) {
-        // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
-        var comparison = keyComparator.compare(entry.getKey(), indexKey);
-        if (comparison >= 0) { // Possibility of reaching the boundary condition.
-            if (comparison > 0 || !hasOrEquals) {
-                // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
-                return true;
-            }
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            return true;
         }
         // Boundary condition not yet reached; include the indexer in the range.
         entry.getValue().forEach(compositeKey, tupleConsumer);
@@ -197,13 +194,8 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     private boolean visitEntry(Object compositeKey, List<ListEntry<T>> result, Key_ indexKey,
             Map.Entry<Key_, Indexer<T>> entry) {
-        // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
-        var comparison = keyComparator.compare(entry.getKey(), indexKey);
-        if (comparison >= 0) { // Possibility of reaching the boundary condition.
-            if (comparison > 0 || !hasOrEquals) {
-                // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
-                return true;
-            }
+        if (boundaryReached(entry.getKey(), indexKey)) {
+            return true;
         }
         // Boundary condition not yet reached; include the indexer in the range.
         result.addAll(entry.getValue().asList(compositeKey));

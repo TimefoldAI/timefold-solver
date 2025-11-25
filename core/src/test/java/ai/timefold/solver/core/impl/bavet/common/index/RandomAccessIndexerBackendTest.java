@@ -23,7 +23,7 @@ class RandomAccessIndexerBackendTest extends AbstractIndexerTest {
     void put() {
         var indexer = new RandomAccessIndexerBackend<>();
         var annTuple = newTuple("Ann-F-40");
-        assertThat(indexer.size(CompositeKey.none())).isEqualTo(0);
+        assertThat(indexer.size(CompositeKey.none())).isZero();
         indexer.put(CompositeKey.none(), annTuple);
         assertThat(indexer.size(CompositeKey.none())).isEqualTo(1);
         assertSoftly(softly -> {

@@ -311,7 +311,7 @@ class ElementAwareArrayListTest {
             var list = new ElementAwareArrayList<String>();
             var entry = list.add("test");
 
-            assertThat(entry.toString()).isEqualTo("test@0");
+            assertThat(entry).hasToString("test@0");
         }
 
         @Test
@@ -322,7 +322,7 @@ class ElementAwareArrayListTest {
 
             list.remove(entry);
 
-            assertThat(entry.toString()).isEqualTo("null");
+            assertThat(entry).hasToString("null");
         }
 
     }
