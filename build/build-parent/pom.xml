@@ -21,7 +21,7 @@
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
     <version.ch.qos.logback>1.5.21</version.ch.qos.logback>
-    <version.io.quarkus>3.29.2</version.io.quarkus>
+    <version.io.quarkus>3.30.0</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.2</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.6</version.org.assertj>
@@ -30,7 +30,7 @@
     <version.org.jfree.jfreechart>1.5.6</version.org.jfree.jfreechart>
     <version.org.jspecify>1.0.0</version.org.jspecify>
     <version.org.junit.jupiter>6.0.1</version.org.junit.jupiter>
-    <version.org.openrewrite.recipe>3.18.0</version.org.openrewrite.recipe>
+    <version.org.openrewrite.recipe>3.19.0</version.org.openrewrite.recipe>
     <version.org.springframework.boot>3.5.7</version.org.springframework.boot>
     <version.ow2.asm>9.9</version.ow2.asm>
 
@@ -46,14 +46,14 @@
     <version.exec.plugin>3.6.2</version.exec.plugin>
     <version.enforcer.plugin>3.6.2</version.enforcer.plugin>
     <version.jacoco.plugin>0.8.14</version.jacoco.plugin>
-    <version.jar.plugin>3.4.2</version.jar.plugin>
+    <version.jar.plugin>3.5.0</version.jar.plugin>
     <version.jaxb2.plugin>4.0.0</version.jaxb2.plugin>
     <version.revapi.plugin>0.15.1</version.revapi.plugin>
-    <version.sonar.plugin>5.2.0.4988</version.sonar.plugin>
+    <version.sonar.plugin>5.3.0.6276</version.sonar.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
-    <version.spotless.plugin>3.0.0</version.spotless.plugin>
+    <version.spotless.plugin>3.1.0</version.spotless.plugin>
     <version.surefire.plugin>3.5.4</version.surefire.plugin>
-    <version.versions.plugin>2.19.1</version.versions.plugin>
+    <version.versions.plugin>2.20.0</version.versions.plugin>
 
     <!-- Plugin configuration properties -->
     <maven.min.version>3.9.11</maven.min.version> <!-- The same as the version in .mvn/maven-wrapper.properties -->
