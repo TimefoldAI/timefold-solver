@@ -39,7 +39,6 @@ public final class EnumeratingStreamFactory<Solution_> {
         return share(new ForEachIncludingPinnedEnumeratingStream<>(this, sourceClass, includeNull));
     }
 
-    @SuppressWarnings("unchecked")
     public <A> UniEnumeratingStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
         if (!solutionDescriptor.getMetaModel().hasEntity(sourceClass)) {

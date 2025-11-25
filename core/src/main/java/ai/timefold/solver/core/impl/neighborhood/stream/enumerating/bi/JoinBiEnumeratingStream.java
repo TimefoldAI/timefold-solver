@@ -16,6 +16,9 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.JoinE
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 
+import org.jspecify.annotations.NullMarked;
+
+@NullMarked
 public final class JoinBiEnumeratingStream<Solution_, A, B> extends AbstractBiEnumeratingStream<Solution_, A, B>
         implements JoinEnumeratingStream<Solution_> {
 
