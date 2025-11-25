@@ -1,5 +1,14 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NavigableMap;
+import java.util.TreeMap;
+import java.util.function.BiFunction;
+import java.util.function.Function;
+import java.util.function.IntFunction;
+import java.util.function.Supplier;
+
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.function.TriFunction;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
@@ -17,15 +26,6 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.Defau
 import ai.timefold.solver.core.impl.util.Pair;
 import ai.timefold.solver.core.impl.util.Quadruple;
 import ai.timefold.solver.core.impl.util.Triple;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NavigableMap;
-import java.util.TreeMap;
-import java.util.function.BiFunction;
-import java.util.function.Function;
-import java.util.function.IntFunction;
-import java.util.function.Supplier;
 
 /**
  * {@link Indexer Indexers} form a parent-child hierarchy,
@@ -491,7 +491,8 @@ public final class IndexerFactory<Right_> {
     }
 
     public <T> Indexer<T> buildIndexer(boolean isLeftBridge) {
-        Supplier<Indexer<T>> backendSupplier = requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new;
+        Supplier<Indexer<T>> backendSupplier =
+                requiresRandomAccess ? RandomAccessIndexerBackend::new : LinkedListIndexerBackend::new;
         if (!hasJoiners()) { // NoneJoiner results in NoneIndexer.
             return backendSupplier.get();
         } else if (joiner.getJoinerCount() == 1) { // Single joiner maps directly to EqualsIndexer or ComparisonIndexer.
@@ -501,7 +502,10 @@ public final class IndexerFactory<Right_> {
             } else {
                 // Note that if creating indexer for a right bridge node, the joiner type has to be flipped.
                 // (<A, B> becomes <B, A>.)
-                var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
+                // This does not apply if random access is required,
+                // because in that case we create a right bridge only,
+                // and we query it from the left.
+                var actualJoinerType = isLeftBridge ? joinerType : requiresRandomAccess ? joinerType : joinerType.flip();
                 return new ComparisonIndexer<>(actualJoinerType, backendSupplier);
             }
         }
@@ -513,10 +517,10 @@ public final class IndexerFactory<Right_> {
             var joinerType = entry.getValue();
             if (downstreamIndexerSupplier == backendSupplier && indexPropertyId == 0) {
                 if (joinerType == JoinerType.EQUAL) {
-                    downstreamIndexerSupplier = EqualsIndexer::new;
+                    downstreamIndexerSupplier = () -> new EqualsIndexer<>(backendSupplier);
                 } else {
                     var actualJoinerType = isLeftBridge ? joinerType : joinerType.flip();
-                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType);
+                    downstreamIndexerSupplier = () -> new ComparisonIndexer<>(actualJoinerType, backendSupplier);
                 }
             } else {
                 var actualDownstreamIndexerSupplier = downstreamIndexerSupplier;

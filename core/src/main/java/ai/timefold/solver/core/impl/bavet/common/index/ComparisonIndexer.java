@@ -1,9 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.util.ListEntry;
-import org.jspecify.annotations.NullMarked;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -14,6 +10,11 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
+import ai.timefold.solver.core.impl.util.ListEntry;
+
+import org.jspecify.annotations.NullMarked;
 
 @NullMarked
 final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
@@ -26,20 +27,11 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
     private final NavigableMap<Key_, Indexer<T>> comparisonMap;
 
     /**
-     * Construct an {@link ComparisonIndexer} which immediately ends in a {@link IndexerBackend}.
+     * Construct an {@link ComparisonIndexer} which immediately ends in the backend.
      * This means {@code compositeKey} must be a single key.
      *
      * @param comparisonJoinerType the type of comparison to use
-     */
-    public ComparisonIndexer(JoinerType comparisonJoinerType) {
-        this(comparisonJoinerType, LinkedListIndexerBackend::new);
-    }
-
-    /**
-     * Construct an {@link ComparisonIndexer} which immediately ends in a {@link IndexerBackend}.
-     * This means {@code compositeKey} must be a single key.
-     *
-     * @param comparisonJoinerType the type of comparison to use
+     * @param downstreamIndexerSupplier the supplier of the downstream indexer
      */
     public ComparisonIndexer(JoinerType comparisonJoinerType, Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this(comparisonJoinerType, new SingleKeyRetriever<>(), downstreamIndexerSupplier);

@@ -95,6 +95,10 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
             return Integer.compare(this.index(), o.index());
         }
 
+        @Override
+        public String toString() {
+            return value + "@" + elementPosition;
+        }
     }
 
 }
