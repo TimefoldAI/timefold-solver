@@ -399,7 +399,7 @@ public final class ValueRangeManager<Solution_> {
         var leftValueRange = (CountableValueRange<T>) item.leftItem();
         var rightSorter = (SelectionSorter<Solution_, T>) item.rightSorter();
         var rightValueRange = (CountableValueRange<T>) item.rightItem();
-        if (sorter == null || Objects.equals(leftSorter, sorter)) {
+        if (leftValueRange != null && (sorter == null || Objects.equals(leftSorter, sorter))) {
             // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
             return leftValueRange;
         } else if (rightValueRange != null && Objects.equals(rightSorter, sorter)) {
@@ -515,7 +515,7 @@ public final class ValueRangeManager<Solution_> {
                 throw new IllegalStateException("Impossible state: the placeholder is null and no value ranges are found.");
             }
             return getFromEntity(valueRangeDescriptor, placeholder, sorter);
-        } else if (sorter == null || Objects.equals(leftSorter, sorter)) {
+        } else if (leftValueRange != null && (sorter == null || Objects.equals(leftSorter, sorter))) {
             // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
             return leftValueRange;
         } else if (rightValueRange != null && Objects.equals(rightSorter, sorter)) {
@@ -603,7 +603,7 @@ public final class ValueRangeManager<Solution_> {
         return valueRange;
     }
 
-    private <T> BitSet getBitSetValueRange(CountableValueRange<T> valueRange, Map<Object, Integer> valueIndexMap) {
+    private static <T> BitSet getBitSetValueRange(CountableValueRange<T> valueRange, Map<Object, Integer> valueIndexMap) {
         var valueBitSet = new BitSet((int) valueRange.getSize());
         var iterator = valueRange.createOriginalIterator();
         while (iterator.hasNext()) {
@@ -648,7 +648,7 @@ public final class ValueRangeManager<Solution_> {
         var leftValues = item.leftItem();
         var rightSorter = item.rightSorter();
         var rightValues = item.rightItem();
-        if (sorter == null || Objects.equals(leftSorter, sorter)) {
+        if (leftValues != null && (sorter == null || Objects.equals(leftSorter, sorter))) {
             // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
             return leftValues;
         } else if (rightValues != null && Objects.equals(rightSorter, sorter)) {

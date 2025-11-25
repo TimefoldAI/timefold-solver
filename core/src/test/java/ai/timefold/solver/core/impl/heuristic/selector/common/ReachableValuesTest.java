@@ -210,19 +210,19 @@ class ReachableValuesTest {
         var ascendingSorter = new TestdataObjectSorter<TestdataAllowsUnassignedEntityProvidingSolution, TestdataValue>(true);
         var ascendingValues = scoreDirector.getValueRangeManager()
                 .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0), ascendingSorter);
-        assertThat(ascendingValues).isNotSameAs(noSorterValues);
-        assertThat(ascendingValues).isSameAs(scoreDirector.getValueRangeManager()
-                .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0), ascendingSorter));
+        assertThat(ascendingValues).isNotSameAs(noSorterValues)
+                .isSameAs(scoreDirector.getValueRangeManager()
+                        .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0), ascendingSorter));
         assertThat(noSorterValues.extractValuesAsList(v2)).containsExactlyInAnyOrder(v1, v3, v4, v5);
 
         // Descending sorter
         var descendingSorter = new TestdataObjectSorter<TestdataAllowsUnassignedEntityProvidingSolution, TestdataValue>(false);
         var descendingValues = scoreDirector.getValueRangeManager()
                 .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0), descendingSorter);
-        assertThat(descendingValues).isNotSameAs(ascendingValues);
-        assertThat(descendingValues).isNotSameAs(noSorterValues);
-        assertThat(descendingValues).isSameAs(scoreDirector.getValueRangeManager()
-                .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0), descendingSorter));
+        assertThat(descendingValues).isNotSameAs(ascendingValues)
+                .isNotSameAs(noSorterValues)
+                .isSameAs(scoreDirector.getValueRangeManager()
+                        .getReachableValues(entityDescriptor.getGenuineVariableDescriptorList().get(0), descendingSorter));
         assertThat(descendingValues.extractValuesAsList(v2)).containsExactlyInAnyOrder(v5, v4, v3, v1);
 
         // Null sorter returns the ascending sorter
