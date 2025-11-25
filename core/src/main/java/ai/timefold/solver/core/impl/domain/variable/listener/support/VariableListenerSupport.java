@@ -270,6 +270,9 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
         for (var notifiable : notifiableRegistry.getAll()) {
             notifiable.closeVariableListener();
         }
+        if (listVariableDescriptor != null && listVariableStateSupply != null) {
+            cancel(listVariableDescriptor.getStateDemand());
+        }
     }
 
     public void beforeVariableChanged(VariableDescriptor<Solution_> variableDescriptor, Object entity) {
