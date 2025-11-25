@@ -7,6 +7,9 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
 
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+import ai.timefold.solver.core.impl.util.ListEntry;
+
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -23,20 +26,20 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequence<T> {
 
-    private final List<T> originalList;
+    private final List<ListEntry<T>> originalList;
     private final Predicate<T> filter;
     private final DefaultUniqueRandomSequence<T> delegate;
 
-    public FilteredUniqueRandomSequence(List<T> listOfUniqueItems, Predicate<T> filter) {
+    public FilteredUniqueRandomSequence(List<ElementAwareArrayList.Entry<T>> listOfUniqueItems, Predicate<T> filter) {
         this.originalList = Collections.unmodifiableList(listOfUniqueItems);
         this.filter = Objects.requireNonNull(filter);
-        this.delegate = new DefaultUniqueRandomSequence<>(originalList);
+        this.delegate = new DefaultUniqueRandomSequence<>(listOfUniqueItems);
     }
 
     @Override
     public SequenceElement<T> pick(Random workingRandom) {
         var index = pickIndex(workingRandom);
-        return new SequenceElement<>(originalList.get(index), index);
+        return new SequenceElement<>(originalList.get(index).getElement(), index);
     }
 
     public int pickIndex(Random workingRandom) {
@@ -52,7 +55,7 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
             delegate.remove(actualValueIndex);
             // We try the same random index again; the underlying sequence will find the next best non-removed element.
             actualValueIndex = delegate.pickIndex(workingRandom, originalRandomIndex);
-            value = originalList.get(actualValueIndex);
+            value = originalList.get(actualValueIndex).getElement();
         }
         return actualValueIndex;
     }
@@ -65,7 +68,7 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
     @Override
     public T remove(int index) {
         var element = delegate.remove(index);
-        if (!filter.test(originalList.get(index))) {
+        if (!filter.test(originalList.get(index).getElement())) {
             throw new NoSuchElementException();
         }
         return element;

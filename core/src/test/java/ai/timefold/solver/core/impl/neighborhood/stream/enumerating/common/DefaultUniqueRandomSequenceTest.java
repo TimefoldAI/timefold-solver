@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
+import static ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.SelectionProbabilityTest.*;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 import static org.assertj.core.api.Assertions.assertThatNoException;
@@ -37,7 +38,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void singleElementSetPickAndRemove() {
         var list = List.of("A");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         assertThat(set.isEmpty()).isFalse();
 
@@ -57,7 +58,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void singleElementSetRemoveByIndex() {
         var list = List.of("A");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         var cleared = set.remove(0);
         assertThat(cleared).isEqualTo("A");
@@ -71,7 +72,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void multipleElementSet() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         assertThat(set.isEmpty()).isFalse();
 
@@ -84,7 +85,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void pickDoesNotModifySet() {
         var list = List.of("A", "B", "C");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         var random = new Random(0);
         var element1 = set.pick(random);
@@ -101,7 +102,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeAllElements() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         var random = new Random(0);
         var clearedElements = new HashSet<String>();
@@ -122,7 +123,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeByIndexSequentially() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         assertThat(set.remove(0)).isEqualTo("A");
         assertThat(set.isEmpty()).isFalse();
@@ -143,7 +144,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeByIndexReverseOrder() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         assertThat(set.remove(4)).isEqualTo("E");
         assertThat(set.remove(3)).isEqualTo("D");
@@ -157,7 +158,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeByIndexRandomOrder() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         assertThat(set.remove(2)).isEqualTo("C");
         assertThat(set.remove(0)).isEqualTo("A");
@@ -171,7 +172,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void pickAfterPartialRemove() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(1); // Clear "B"
         set.remove(3); // Clear "D"
@@ -194,7 +195,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeByIndexThenPickRemaining() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(0); // Clear "A"
         set.remove(4); // Clear "E"
@@ -215,7 +216,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void mixedPickAndRemove() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         var random = new Random(0);
 
@@ -237,7 +238,7 @@ class DefaultUniqueRandomSequenceTest {
     void randomDistribution() {
         // Test that random selection is reasonably distributed
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         var random = new Random(12345);
         var counts = new int[5];
@@ -257,7 +258,7 @@ class DefaultUniqueRandomSequenceTest {
     void randomDistributionAfterPartialRemove() {
         // Test that random selection remains distributed after clearing some elements
         var list = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         // Clear some elements
         set.remove(1); // B
@@ -280,7 +281,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeUntilOneRemaining() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(0);
         set.remove(1);
@@ -301,7 +302,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeLeftmost() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(0); // Clear leftmost
 
@@ -315,7 +316,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeRightmost() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(4); // Clear rightmost
 
@@ -329,7 +330,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeBothEnds() {
         var list = List.of("A", "B", "C", "D", "E");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(0); // Clear leftmost
         set.remove(4); // Clear rightmost
@@ -344,7 +345,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeConsecutiveFromLeft() {
         var list = List.of("A", "B", "C", "D", "E", "F");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(0);
         set.remove(1);
@@ -360,7 +361,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeConsecutiveFromRight() {
         var list = List.of("A", "B", "C", "D", "E", "F");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(5);
         set.remove(4);
@@ -376,7 +377,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeAlternatingPattern() {
         var list = List.of("A", "B", "C", "D", "E", "F", "G", "H");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         // Clear every other element
         set.remove(0);
@@ -403,18 +404,18 @@ class DefaultUniqueRandomSequenceTest {
     void multipleRandomSeeds() {
         var list = List.of("A", "B", "C", "D", "E");
 
-        var set1 = new DefaultUniqueRandomSequence<>(list);
+        var set1 = new DefaultUniqueRandomSequence<>(toEntries(list));
         var random1 = new Random(123);
         var element1 = set1.pick(random1);
 
-        var set2 = new DefaultUniqueRandomSequence<>(list);
+        var set2 = new DefaultUniqueRandomSequence<>(toEntries(list));
         var random2 = new Random(123);
         var element2 = set2.pick(random2);
 
         // Same seed should produce same result
         assertThat(element1).isEqualTo(element2);
 
-        var set3 = new DefaultUniqueRandomSequence<>(list);
+        var set3 = new DefaultUniqueRandomSequence<>(toEntries(list));
         var random3 = new Random(456);
         var element3 = set3.pick(random3);
 
@@ -430,7 +431,7 @@ class DefaultUniqueRandomSequenceTest {
             list.add("Element" + i);
         }
 
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
         var random = new Random(0);
 
         // Clear half of the elements
@@ -451,7 +452,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void removeSameIndexMultipleTimes() {
         var list = List.of("A", "B", "C");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         set.remove(1); // Clear "B"
         Assertions.assertThatThrownBy(() -> set.remove(1))
@@ -461,7 +462,7 @@ class DefaultUniqueRandomSequenceTest {
     @Test
     void verifyUniquenessOfClearedElements() {
         var list = List.of("A", "B", "C", "D", "E", "F", "G", "H", "I", "J");
-        var set = new DefaultUniqueRandomSequence<>(list);
+        var set = new DefaultUniqueRandomSequence<>(toEntries(list));
 
         var random = new Random(99999);
         var clearedElements = new ArrayList<String>();

@@ -6,6 +6,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
+import ai.timefold.solver.core.impl.util.ListEntry;
+
 import org.jspecify.annotations.NullMarked;
 
 /**
@@ -25,7 +28,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
         return (DefaultUniqueRandomSequence<T>) EMPTY;
     }
 
-    private final List<T> originalList;
+    private final List<ListEntry<T>> originalList;
     private final int length;
     private final BitSet removed;
 
@@ -33,7 +36,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
     private int leftmostIndex;
     private int rightmostIndex;
 
-    public DefaultUniqueRandomSequence(List<T> listOfUniqueItems) {
+    public DefaultUniqueRandomSequence(List<ElementAwareArrayList.Entry<T>> listOfUniqueItems) {
         this.originalList = Collections.unmodifiableList(listOfUniqueItems);
         this.length = listOfUniqueItems.size();
         this.removed = new BitSet(length);
@@ -45,7 +48,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
     @Override
     public SequenceElement<T> pick(Random workingRandom) {
         var randomIndex = pickIndex(workingRandom);
-        return new SequenceElement<>(originalList.get(randomIndex), randomIndex);
+        return new SequenceElement<>(originalList.get(randomIndex).getElement(), randomIndex);
     }
 
     private int pickIndex(Random workingRandom) {
@@ -107,7 +110,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
         if (index == rightmostIndex) {
             rightmostIndex = removed.previousClearBit(rightmostIndex);
         }
-        return originalList.get(index);
+        return originalList.get(index).getElement();
     }
 
     public boolean isEmpty() {
