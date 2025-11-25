@@ -1,15 +1,16 @@
 package ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
 
+import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo.BytecodeCreator;
-import io.quarkus.gizmo.FieldDescriptor;
-import io.quarkus.gizmo.MethodDescriptor;
-import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 interface GizmoMemberHandler {
 
@@ -22,7 +23,7 @@ interface GizmoMemberHandler {
      * @param ignoreFinalChecks true if Quarkus will make the field non-final for us
      * @return never null
      */
-    static GizmoMemberHandler of(Class<?> declaringClass, String name, FieldDescriptor fieldDescriptor,
+    static GizmoMemberHandler of(Class<?> declaringClass, String name, FieldDesc fieldDescriptor,
             boolean ignoreFinalChecks) {
         try {
             Field field = declaringClass.getField(name);
@@ -40,18 +41,18 @@ interface GizmoMemberHandler {
      * @param methodDescriptor never null, descriptor of the {@link Method} in question
      * @return never null
      */
-    static GizmoMemberHandler of(Class<?> declaringClass, MethodDescriptor methodDescriptor) {
+    static GizmoMemberHandler of(Class<?> declaringClass, MethodDesc methodDescriptor) {
         return new GizmoMethodHandler(declaringClass, methodDescriptor);
     }
 
-    void whenIsField(Consumer<FieldDescriptor> fieldDescriptorConsumer);
+    void whenIsField(Consumer<FieldDesc> fieldDescriptorConsumer);
 
-    void whenIsMethod(Consumer<MethodDescriptor> methodDescriptorConsumer);
+    void whenIsMethod(Consumer<MethodDesc> methodDescriptorConsumer);
 
-    ResultHandle readMemberValue(BytecodeCreator bytecodeCreator, ResultHandle thisObj);
+    Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj);
 
-    boolean writeMemberValue(MethodDescriptor setter, BytecodeCreator bytecodeCreator, ResultHandle thisObj,
-            ResultHandle newValue);
+    boolean writeMemberValue(MethodDesc setter, BlockCreator bytecodeCreator, Expr thisObj,
+            Expr newValue);
 
     String getDeclaringClassName();
 
@@ -59,4 +60,18 @@ interface GizmoMemberHandler {
 
     Type getType();
 
+    static String getTypeName(ClassDesc classDesc) {
+        if (classDesc.isPrimitive()) {
+            // will return "int", "boolean", etc. for primitive types,
+            // but the simple name for class types
+            return classDesc.displayName();
+        }
+        if (classDesc.isArray()) {
+            return getTypeName(classDesc.componentType()) + "[]";
+        }
+        // class descriptor format
+        // "L" + className + ";"
+        var classDescriptor = classDesc.descriptorString();
+        return classDescriptor.substring(1, classDescriptor.length() - 1).replace('/', '.');
+    }
 }

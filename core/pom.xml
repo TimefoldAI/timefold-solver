@@ -31,12 +31,7 @@
     <!-- Gizmo dependencies -->
     <dependency>
       <groupId>io.quarkus.gizmo</groupId>
-      <artifactId>gizmo</artifactId>
-      <optional>true</optional>
-    </dependency>
-    <dependency>
-      <groupId>org.ow2.asm</groupId>
-      <artifactId>asm</artifactId>
+      <artifactId>gizmo2</artifactId>
       <optional>true</optional>
     </dependency>
 

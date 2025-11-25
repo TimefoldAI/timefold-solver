@@ -10,10 +10,10 @@ import static org.objectweb.asm.Opcodes.PUTFIELD;
 import static org.objectweb.asm.Opcodes.RETURN;
 
 import java.lang.annotation.Annotation;
+import java.lang.constant.ClassDesc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Collection;
 import java.util.HashMap;
@@ -58,16 +58,12 @@ import org.objectweb.asm.Type;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.recording.RecorderContext;
-import io.quarkus.gizmo.BranchResult;
-import io.quarkus.gizmo.BytecodeCreator;
-import io.quarkus.gizmo.ClassCreator;
-import io.quarkus.gizmo.ClassOutput;
-import io.quarkus.gizmo.DescriptorUtils;
-import io.quarkus.gizmo.FieldDescriptor;
-import io.quarkus.gizmo.Gizmo;
-import io.quarkus.gizmo.MethodCreator;
-import io.quarkus.gizmo.MethodDescriptor;
-import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.gizmo2.ClassOutput;
+import io.quarkus.gizmo2.Const;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.desc.ClassMethodDesc;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 import io.quarkus.runtime.RuntimeValue;
 
 final class GizmoMemberAccessorEntityEnhancer {
@@ -135,7 +131,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         return Objects.requireNonNullElse(ReflectionHelper.getGetterPropertyName(member), member.getName());
     }
 
-    private static Optional<MethodDescriptor> getSetterDescriptor(ClassInfo classInfo, MethodInfo methodInfo, String name) {
+    private static Optional<MethodDesc> getSetterDescriptor(ClassInfo classInfo, MethodInfo methodInfo, String name) {
         if (methodInfo.name().startsWith("get") || methodInfo.name().startsWith("is")) {
             // ex: for methodInfo = Integer getValue(), name = value,
             // return void setValue(Integer value)
@@ -144,7 +140,14 @@ final class GizmoMemberAccessorEntityEnhancer {
             return Optional.ofNullable(classInfo.method("set" + name.substring(0, 1)
                     .toUpperCase(Locale.ROOT) +
                     name.substring(1),
-                    methodInfo.returnType())).map(MethodDescriptor::of);
+                    methodInfo.returnType())).map(
+                            setterInfo -> ClassMethodDesc.of(
+                                    ClassDesc.ofDescriptor(classInfo.descriptor()),
+                                    setterInfo.name(),
+                                    ClassDesc.ofDescriptor(setterInfo.returnType().descriptor()),
+                                    setterInfo.parameterTypes().stream()
+                                            .map(parameter -> ClassDesc.ofDescriptor(parameter.descriptor()))
+                                            .toArray(ClassDesc[]::new)));
         } else {
             return Optional.empty();
         }
@@ -166,23 +169,28 @@ final class GizmoMemberAccessorEntityEnhancer {
             ClassInfo classInfo, MethodInfo methodInfo, boolean requiredReturnType,
             BuildProducer<BytecodeTransformerBuildItem> transformers)
             throws ClassNotFoundException, NoSuchMethodException {
-        Class<?> declaringClass = Class.forName(methodInfo.declaringClass().name().toString(), false,
+        var declaringClass = Class.forName(methodInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
-        Method methodMember = declaringClass.getDeclaredMethod(methodInfo.name());
-        String generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(methodMember);
+        var methodMember = declaringClass.getDeclaredMethod(methodInfo.name());
+        var generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(methodMember);
         GizmoMemberDescriptor member;
-        String name = getMemberName(methodMember);
-        Optional<MethodDescriptor> setterDescriptor = getSetterDescriptor(classInfo, methodInfo, name);
+        var name = getMemberName(methodMember);
+        var setterDescriptor = getSetterDescriptor(classInfo, methodInfo, name);
 
-        MethodDescriptor memberDescriptor = MethodDescriptor.of(methodInfo);
+        var memberDescriptor = ClassMethodDesc.of(ClassDesc.ofDescriptor(methodInfo.declaringClass().descriptor()),
+                methodInfo.name(), ClassDesc.ofDescriptor(methodInfo.returnType().descriptor()),
+                methodInfo.parameterTypes().stream()
+                        .map(parameterType -> ClassDesc.ofDescriptor(parameterType.descriptor()))
+                        .toArray(ClassDesc[]::new));
 
         if (Modifier.isPublic(methodInfo.flags())) {
             member = new GizmoMemberDescriptor(name, memberDescriptor, declaringClass, setterDescriptor.orElse(null));
         } else {
             setterDescriptor = addVirtualMethodGetter(classInfo, methodInfo, name, setterDescriptor, transformers);
-            String methodName = getVirtualGetterName(false, name);
-            MethodDescriptor newMethodDescriptor =
-                    MethodDescriptor.ofMethod(declaringClass, methodName, memberDescriptor.getReturnType());
+            var methodName = getVirtualGetterName(false, name);
+            var newMethodDescriptor =
+                    ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), methodName,
+                            memberDescriptor.returnType());
             member = new GizmoMemberDescriptor(name, newMethodDescriptor, memberDescriptor, declaringClass,
                     setterDescriptor.orElse(null));
         }
@@ -196,8 +204,8 @@ final class GizmoMemberAccessorEntityEnhancer {
         return generatedClassName;
     }
 
-    private Optional<MethodDescriptor> addVirtualMethodGetter(ClassInfo classInfo, MethodInfo methodInfo, String name,
-            Optional<MethodDescriptor> setterDescriptor,
+    private Optional<MethodDesc> addVirtualMethodGetter(ClassInfo classInfo, MethodInfo methodInfo, String name,
+            Optional<MethodDesc> setterDescriptor,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         if (!visitedMethods.contains(methodInfo)) {
             transformers.produce(new BytecodeTransformerBuildItem(classInfo.name().toString(),
@@ -205,21 +213,18 @@ final class GizmoMemberAccessorEntityEnhancer {
                             name, setterDescriptor)));
             visitedMethods.add(methodInfo);
         }
-        return setterDescriptor.map(md -> MethodDescriptor
-                .ofMethod(classInfo.name().toString(), getVirtualSetterName(false, name),
-                        md.getReturnType(), md.getParameterTypes()));
+        return setterDescriptor.map(md -> ClassMethodDesc
+                .of(ClassDesc.ofDescriptor(classInfo.descriptor()), getVirtualSetterName(false, name),
+                        md.returnType(), md.parameterTypes()));
     }
 
     public String generateSolutionCloner(SolutionDescriptor solutionDescriptor, ClassOutput classOutput,
             IndexView indexView, BuildProducer<BytecodeTransformerBuildItem> transformers) {
         String generatedClassName = GizmoSolutionClonerFactory.getGeneratedClassName(solutionDescriptor);
-        try (ClassCreator classCreator = ClassCreator
-                .builder()
-                .className(generatedClassName)
-                .interfaces(GizmoSolutionCloner.class)
-                .classOutput(classOutput)
-                .setFinal(true)
-                .build()) {
+        var gizmo = Gizmo.create(classOutput);
+        gizmo.class_(generatedClassName, classCreator -> {
+            classCreator.implements_(GizmoSolutionCloner.class);
+            classCreator.final_();
 
             Set<Class<?>> solutionSubclassSet =
                     indexView.getAllKnownSubclasses(DotName.createSimple(solutionDescriptor.getSolutionClass().getName()))
@@ -295,7 +300,7 @@ final class GizmoMemberAccessorEntityEnhancer {
                     classCreator,
                     solutionDescriptor, solutionSubclassSet,
                     memoizedGizmoSolutionOrEntityDescriptorForClassMap, deepClonedClassSet);
-        }
+        });
 
         return generatedClassName;
     }
@@ -345,21 +350,22 @@ final class GizmoMemberAccessorEntityEnhancer {
             makeFieldNonFinal(field, transformers);
         }
 
-        Class<?> declaringClass = field.getDeclaringClass();
-        FieldDescriptor memberDescriptor = FieldDescriptor.of(field);
-        String name = field.getName();
+        var declaringClass = field.getDeclaringClass();
+        var memberDescriptor = FieldDesc.of(field);
+        var name = field.getName();
 
         // Not being recorded, so can use Type and annotated element directly
         if (Modifier.isPublic(field.getModifiers())) {
             return new GizmoMemberDescriptor(name, memberDescriptor, declaringClass);
         } else {
             addVirtualFieldGetter(declaringClass, field, transformers);
-            String getterName = getVirtualGetterName(true, name);
-            MethodDescriptor getterDescriptor =
-                    MethodDescriptor.ofMethod(declaringClass.getName(), getterName, field.getType());
-            String setterName = getVirtualSetterName(true, name);
-            MethodDescriptor setterDescriptor =
-                    MethodDescriptor.ofMethod(declaringClass.getName(), setterName, "void", field.getType());
+            var getterName = getVirtualGetterName(true, name);
+            var getterDescriptor =
+                    ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), getterName, field.getType());
+            var setterName = getVirtualSetterName(true, name);
+            var setterDescriptor =
+                    ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), setterName, void.class,
+                            field.getType());
             return new GizmoMemberDescriptor(name, getterDescriptor, memberDescriptor, declaringClass, setterDescriptor);
         }
     }
@@ -386,40 +392,31 @@ final class GizmoMemberAccessorEntityEnhancer {
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         String generatedClassName = TimefoldGizmoBeanFactory.class.getName() + "$Implementation";
 
-        ClassCreator classCreator = ClassCreator
-                .builder()
-                .className(generatedClassName)
-                .interfaces(TimefoldGizmoBeanFactory.class)
-                .classOutput(classOutput)
-                .build();
+        var gizmo = Gizmo.create(classOutput);
+        gizmo.class_(generatedClassName, classCreator -> {
+            classCreator.implements_(TimefoldGizmoBeanFactory.class);
 
-        classCreator.addAnnotation(ApplicationScoped.class);
-        MethodCreator methodCreator = classCreator.getMethodCreator(MethodDescriptor.ofMethod(TimefoldGizmoBeanFactory.class,
-                "newInstance", Object.class, Class.class));
-        ResultHandle query = methodCreator.getMethodParam(0);
-        BytecodeCreator currentBranch = methodCreator;
+            classCreator.addAnnotation(ApplicationScoped.class);
+            classCreator.defaultConstructor();
+            classCreator.method("newInstance", methodCreator -> {
+                var query = methodCreator.parameter("query", Class.class);
+                methodCreator.returning(Object.class);
+                methodCreator.body(blockCreator -> {
+                    for (Class<?> beanClass : beanClasses) {
+                        if (beanClass.isInterface() || Modifier.isAbstract(beanClass.getModifiers())) {
+                            continue;
+                        }
+                        makeConstructorAccessible(beanClass, transformers);
+                        var beanClassHandle = Const.of(beanClass);
+                        blockCreator.if_(blockCreator.objEquals(beanClassHandle, query), isQueryBranch -> {
+                            isQueryBranch.return_(isQueryBranch.new_(beanClass));
+                        });
+                    }
+                    blockCreator.returnNull();
+                });
+            });
+        });
 
-        for (Class<?> beanClass : beanClasses) {
-            if (beanClass.isInterface() || Modifier.isAbstract(beanClass.getModifiers())) {
-                continue;
-            }
-            makeConstructorAccessible(beanClass, transformers);
-            ResultHandle beanClassHandle = currentBranch.loadClass(beanClass);
-            ResultHandle isTarget = currentBranch.invokeVirtualMethod(
-                    MethodDescriptor.ofMethod(Object.class, "equals", boolean.class, Object.class),
-                    beanClassHandle, query);
-
-            BranchResult isQueryBranchResult = currentBranch.ifTrue(isTarget);
-            BytecodeCreator isQueryBranch = isQueryBranchResult.trueBranch();
-            ResultHandle beanInstance =
-                    isQueryBranch.newInstance(MethodDescriptor.ofConstructor(beanClass));
-            isQueryBranch.returnValue(beanInstance);
-
-            currentBranch = isQueryBranchResult.falseBranch();
-        }
-        currentBranch.returnValue(currentBranch.loadNull());
-
-        classCreator.close();
         return generatedClassName;
     }
 
@@ -427,7 +424,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         final Field finalField;
 
         public TimefoldFinalFieldEnhancingClassVisitor(ClassVisitor outputClassVisitor, Field finalField) {
-            super(Gizmo.ASM_API_VERSION, outputClassVisitor);
+            super(io.quarkus.gizmo.Gizmo.ASM_API_VERSION, outputClassVisitor);
             this.finalField = finalField;
         }
 
@@ -444,7 +441,7 @@ final class GizmoMemberAccessorEntityEnhancer {
 
     private static class TimefoldConstructorEnhancingClassVisitor extends ClassVisitor {
         public TimefoldConstructorEnhancingClassVisitor(ClassVisitor outputClassVisitor) {
-            super(Gizmo.ASM_API_VERSION, outputClassVisitor);
+            super(io.quarkus.gizmo.Gizmo.ASM_API_VERSION, outputClassVisitor);
         }
 
         @Override
@@ -474,7 +471,7 @@ final class GizmoMemberAccessorEntityEnhancer {
 
         public TimefoldFieldEnhancingClassVisitor(Class<?> classInfo, ClassVisitor outputClassVisitor,
                 Field fieldInfo) {
-            super(Gizmo.ASM_API_VERSION, outputClassVisitor);
+            super(io.quarkus.gizmo.Gizmo.ASM_API_VERSION, outputClassVisitor);
             this.fieldInfo = fieldInfo;
             clazz = classInfo;
             fieldTypeDescriptor = Type.getDescriptor(fieldInfo.getType());
@@ -515,18 +512,18 @@ final class GizmoMemberAccessorEntityEnhancer {
         private final MethodInfo methodInfo;
         private final Class<?> clazz;
         private final String returnTypeDescriptor;
-        private final MethodDescriptor setter;
+        private final MethodDesc setter;
         private final String name;
 
         public TimefoldMethodEnhancingClassVisitor(ClassInfo classInfo, ClassVisitor outputClassVisitor,
-                MethodInfo methodInfo, String name, Optional<MethodDescriptor> maybeSetter) {
-            super(Gizmo.ASM_API_VERSION, outputClassVisitor);
+                MethodInfo methodInfo, String name, Optional<MethodDesc> maybeSetter) {
+            super(io.quarkus.gizmo.Gizmo.ASM_API_VERSION, outputClassVisitor);
             this.methodInfo = methodInfo;
             this.name = name;
             this.setter = maybeSetter.orElse(null);
             try {
                 clazz = Class.forName(classInfo.name().toString(), false, Thread.currentThread().getContextClassLoader());
-                returnTypeDescriptor = DescriptorUtils.typeToString(methodInfo.returnType());
+                returnTypeDescriptor = methodInfo.returnType().descriptor();
             } catch (ClassNotFoundException e) {
                 throw new IllegalStateException(e);
             }
@@ -559,12 +556,12 @@ final class GizmoMemberAccessorEntityEnhancer {
             }
             String methodName = getVirtualSetterName(false, name);
             MethodVisitor mv;
-            mv = classWriter.visitMethod(ACC_PUBLIC, methodName, setter.getDescriptor(),
+            mv = classWriter.visitMethod(ACC_PUBLIC, methodName, setter.type().descriptorString(),
                     null, null);
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(ALOAD, 1);
-            mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(clazz), setter.getName(),
-                    setter.getDescriptor(), false);
+            mv.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(clazz), setter.name(),
+                    setter.type().descriptorString(), false);
             mv.visitInsn(RETURN);
             mv.visitMaxs(0, 0);
         }

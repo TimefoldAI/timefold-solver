@@ -10,10 +10,10 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 
-import io.quarkus.gizmo.BytecodeCreator;
-import io.quarkus.gizmo.FieldDescriptor;
-import io.quarkus.gizmo.MethodDescriptor;
-import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 /**
  * Describe and provide simplified/unified access for {@link Member}.
@@ -39,7 +39,7 @@ public final class GizmoMemberDescriptor {
     /**
      * The MethodDescriptor of the corresponding setter. Empty if not present.
      */
-    private final MethodDescriptor setter;
+    private final MethodDesc setter;
 
     public GizmoMemberDescriptor(Member member) {
         Class<?> declaringClass = member.getDeclaringClass();
@@ -50,12 +50,12 @@ public final class GizmoMemberDescriptor {
                     "Maybe use domainAccessType REFLECTION instead of GIZMO.");
         }
         if (member instanceof Field field) {
-            FieldDescriptor fieldDescriptor = FieldDescriptor.of(field);
+            var fieldDescriptor = FieldDesc.of(field);
             this.name = member.getName();
             this.memberHandler = GizmoMemberHandler.of(declaringClass, name, fieldDescriptor, false);
             this.setter = null;
         } else if (member instanceof Method method) {
-            MethodDescriptor methodDescriptor = MethodDescriptor.ofMethod(method);
+            var methodDescriptor = MethodDesc.of(method);
             this.name = ReflectionHelper.isGetterMethod(method) ? ReflectionHelper.getGetterPropertyName(member)
                     : member.getName();
             this.memberHandler = GizmoMemberHandler.of(declaringClass, methodDescriptor);
@@ -66,15 +66,15 @@ public final class GizmoMemberDescriptor {
         this.metadataHandler = this.memberHandler;
     }
 
-    public GizmoMemberDescriptor(String name, FieldDescriptor fieldDescriptor, Class<?> declaringClass) {
+    public GizmoMemberDescriptor(String name, FieldDesc fieldDescriptor, Class<?> declaringClass) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, name, fieldDescriptor, true);
         this.metadataHandler = this.memberHandler;
         this.setter = null;
     }
 
-    public GizmoMemberDescriptor(String name, MethodDescriptor memberDescriptor, MethodDescriptor metadataDescriptor,
-            Class<?> declaringClass, MethodDescriptor setterDescriptor) {
+    public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, MethodDesc metadataDescriptor,
+            Class<?> declaringClass, MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
         this.metadataHandler = memberDescriptor == metadataDescriptor ? this.memberHandler
@@ -82,16 +82,16 @@ public final class GizmoMemberDescriptor {
         this.setter = setterDescriptor;
     }
 
-    public GizmoMemberDescriptor(String name, MethodDescriptor memberDescriptor, Class<?> declaringClass,
-            MethodDescriptor setterDescriptor) {
+    public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, Class<?> declaringClass,
+            MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
         this.metadataHandler = this.memberHandler;
         this.setter = setterDescriptor;
     }
 
-    public GizmoMemberDescriptor(String name, MethodDescriptor memberDescriptor, FieldDescriptor metadataDescriptor,
-            Class<?> declaringClass, MethodDescriptor setterDescriptor) {
+    public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, FieldDesc metadataDescriptor,
+            Class<?> declaringClass, MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
         this.metadataHandler = GizmoMemberHandler.of(declaringClass, name, metadataDescriptor, true);
@@ -105,7 +105,7 @@ public final class GizmoMemberDescriptor {
      * @param fieldDescriptorConsumer What to do if the member a field.
      * @return this
      */
-    public GizmoMemberDescriptor whenIsField(Consumer<FieldDescriptor> fieldDescriptorConsumer) {
+    public GizmoMemberDescriptor whenIsField(Consumer<FieldDesc> fieldDescriptorConsumer) {
         memberHandler.whenIsField(fieldDescriptorConsumer);
         return this;
     }
@@ -117,12 +117,12 @@ public final class GizmoMemberDescriptor {
      * @param methodDescriptorConsumer What to do if the member a method.
      * @return this
      */
-    public GizmoMemberDescriptor whenIsMethod(Consumer<MethodDescriptor> methodDescriptorConsumer) {
+    public GizmoMemberDescriptor whenIsMethod(Consumer<MethodDesc> methodDescriptorConsumer) {
         memberHandler.whenIsMethod(methodDescriptorConsumer);
         return this;
     }
 
-    public ResultHandle readMemberValue(BytecodeCreator bytecodeCreator, ResultHandle thisObj) {
+    public Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj) {
         return memberHandler.readMemberValue(bytecodeCreator, thisObj);
     }
 
@@ -136,7 +136,7 @@ public final class GizmoMemberDescriptor {
      * @param newValue to new value of the member
      * @return True if it was able to write the member value, false otherwise
      */
-    public boolean writeMemberValue(BytecodeCreator bytecodeCreator, ResultHandle thisObj, ResultHandle newValue) {
+    public boolean writeMemberValue(BlockCreator bytecodeCreator, Expr thisObj, Expr newValue) {
         return memberHandler.writeMemberValue(setter, bytecodeCreator, thisObj, newValue);
     }
 
@@ -147,7 +147,7 @@ public final class GizmoMemberDescriptor {
      * @param fieldDescriptorConsumer What to do if the member a field.
      * @return this
      */
-    public GizmoMemberDescriptor whenMetadataIsOnField(Consumer<FieldDescriptor> fieldDescriptorConsumer) {
+    public GizmoMemberDescriptor whenMetadataIsOnField(Consumer<FieldDesc> fieldDescriptorConsumer) {
         metadataHandler.whenIsField(fieldDescriptorConsumer);
         return this;
     }
@@ -159,7 +159,7 @@ public final class GizmoMemberDescriptor {
      * @param methodDescriptorConsumer What to do if the member a method.
      * @return this
      */
-    public GizmoMemberDescriptor whenMetadataIsOnMethod(Consumer<MethodDescriptor> methodDescriptorConsumer) {
+    public GizmoMemberDescriptor whenMetadataIsOnMethod(Consumer<MethodDesc> methodDescriptorConsumer) {
         metadataHandler.whenIsMethod(methodDescriptorConsumer);
         return this;
     }
@@ -174,14 +174,14 @@ public final class GizmoMemberDescriptor {
         return memberHandler.getDeclaringClassName();
     }
 
-    public Optional<MethodDescriptor> getSetter() {
+    public Optional<MethodDesc> getSetter() {
         return Optional.ofNullable(setter);
     }
 
-    private static Optional<MethodDescriptor> lookupSetter(Object memberDescriptor, Class<?> declaringClass, String name) {
-        if (memberDescriptor instanceof MethodDescriptor) {
+    private static Optional<MethodDesc> lookupSetter(Object memberDescriptor, Class<?> declaringClass, String name) {
+        if (memberDescriptor instanceof MethodDesc) {
             return Optional.ofNullable(ReflectionHelper.getSetterMethod(declaringClass, name))
-                    .map(MethodDescriptor::ofMethod);
+                    .map(MethodDesc::of);
         } else {
             return Optional.empty();
         }
@@ -196,8 +196,7 @@ public final class GizmoMemberDescriptor {
      * The name does not include generic information.
      */
     public String getTypeName() {
-        String typeName = metadataHandler.getTypeName();
-        return org.objectweb.asm.Type.getType(typeName).getClassName();
+        return metadataHandler.getTypeName();
     }
 
     public Type getType() {

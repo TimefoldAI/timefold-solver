@@ -76,10 +76,10 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
-import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
+import io.quarkus.arc.deployment.GeneratedBeanGizmo2Adaptor;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
-import io.quarkus.deployment.GeneratedClassGizmoAdaptor;
+import io.quarkus.deployment.GeneratedClassGizmo2Adaptor;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -88,6 +88,7 @@ import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
+import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
@@ -96,7 +97,7 @@ import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.devui.spi.JsonRPCProvidersBuildItem;
 import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
-import io.quarkus.gizmo.ClassOutput;
+import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -192,6 +193,7 @@ class TimefoldProcessor {
             BuildProducer<UnremovableBeanBuildItem> unremovableBeans,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
+            BuildProducer<GeneratedResourceBuildItem> generatedResources,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         var indexView = combinedIndex.getIndex();
 
@@ -274,7 +276,7 @@ class TimefoldProcessor {
                         entryConfig -> generateConstraintVerifier(entryConfig.getValue(), syntheticBeanBuildItemBuildProducer));
 
         GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(solverConfigMap, indexView, generatedBeans,
-                generatedClasses, transformers, reflectiveClassSet);
+                generatedClasses, generatedResources, transformers, reflectiveClassSet);
 
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
         if (solverConfigMap.size() <= 1) {
@@ -938,11 +940,12 @@ class TimefoldProcessor {
     private GeneratedGizmoClasses generateDomainAccessors(Map<String, SolverConfig> solverConfigMap, IndexView indexView,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
+            BuildProducer<GeneratedResourceBuildItem> generatedResources,
             BuildProducer<BytecodeTransformerBuildItem> transformers, Set<Class<?>> reflectiveClassSet) {
         // Use mvn quarkus:dev -Dquarkus.debug.generated-classes-dir=dump-classes
         // to dump generated classes
-        var classOutput = new GeneratedClassGizmoAdaptor(generatedClasses, true);
-        var beanClassOutput = new GeneratedBeanGizmoAdaptor(generatedBeans);
+        var classOutput = new GeneratedClassGizmo2Adaptor(generatedClasses, generatedResources, true);
+        var beanClassOutput = new GeneratedBeanGizmo2Adaptor(generatedBeans);
 
         var generatedMemberAccessorsClassNameSet = new HashSet<String>();
         var gizmoSolutionClonerClassNameSet = new HashSet<String>();

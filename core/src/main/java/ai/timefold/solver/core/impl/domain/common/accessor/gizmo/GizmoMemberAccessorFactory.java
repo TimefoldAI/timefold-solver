@@ -36,13 +36,13 @@ public class GizmoMemberAccessorFactory {
             boolean returnTypeRequired, GizmoClassLoader gizmoClassLoader) {
         try {
             // Check if Gizmo on the classpath by verifying we can access one of its classes
-            Class.forName("io.quarkus.gizmo.ClassCreator", false,
+            Class.forName("io.quarkus.gizmo2.Gizmo", false,
                     Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
             throw new IllegalStateException("When using the domainAccessType (" +
                     DomainAccessType.GIZMO +
-                    ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo.\n" +
-                    "Maybe add a dependency to io.quarkus.gizmo:gizmo.");
+                    ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo2.\n" +
+                    "Maybe add a dependency to io.quarkus.gizmo:gizmo2.");
         }
         return GizmoMemberAccessorImplementor.createAccessorFor(member, annotationClass, returnTypeRequired, gizmoClassLoader);
     }

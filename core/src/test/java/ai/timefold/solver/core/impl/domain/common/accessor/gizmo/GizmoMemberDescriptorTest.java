@@ -18,8 +18,8 @@ import ai.timefold.solver.core.testdomain.reflect.field.TestdataFieldAnnotatedEn
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo.FieldDescriptor;
-import io.quarkus.gizmo.MethodDescriptor;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 class GizmoMemberDescriptorTest {
 
@@ -42,7 +42,7 @@ class GizmoMemberDescriptorTest {
     @Test
     void testThatWhenIsMethodExecuteConsumerIffMemberIsMethod() throws Exception {
         GizmoMemberDescriptor methodMemberDescriptor = new GizmoMemberDescriptor(GizmoTestdataEntity.class.getMethod("getId"));
-        Consumer<MethodDescriptor> methodDescriptorConsumer = mock(Consumer.class);
+        Consumer<MethodDesc> methodDescriptorConsumer = mock(Consumer.class);
         methodMemberDescriptor.whenIsMethod(methodDescriptorConsumer);
         verify(methodDescriptorConsumer).accept(any());
 
@@ -56,7 +56,7 @@ class GizmoMemberDescriptorTest {
     @Test
     void testThatWhenIsFieldExecuteConsumerIffMemberIsField() throws Exception {
         GizmoMemberDescriptor fieldMemberDescriptor = new GizmoMemberDescriptor(GizmoTestdataEntity.class.getField("value"));
-        Consumer<FieldDescriptor> methodDescriptorConsumer = mock(Consumer.class);
+        Consumer<FieldDesc> methodDescriptorConsumer = mock(Consumer.class);
         fieldMemberDescriptor.whenIsField(methodDescriptorConsumer);
         verify(methodDescriptorConsumer).accept(any());
 
@@ -71,11 +71,11 @@ class GizmoMemberDescriptorTest {
     void testThatGetDeclaringClassNameIsCorrect() throws Exception {
         GizmoMemberDescriptor fieldMemberDescriptor = new GizmoMemberDescriptor(GizmoTestdataEntity.class.getField("value"));
         assertThat(fieldMemberDescriptor.getDeclaringClassName())
-                .isEqualTo(GizmoTestdataEntity.class.getName().replace('.', '/'));
+                .isEqualTo(GizmoTestdataEntity.class.getName());
 
         GizmoMemberDescriptor methodMemberDescriptor = new GizmoMemberDescriptor(GizmoTestdataEntity.class.getMethod("getId"));
         assertThat(methodMemberDescriptor.getDeclaringClassName())
-                .isEqualTo(GizmoTestdataEntity.class.getName().replace('.', '/'));
+                .isEqualTo(GizmoTestdataEntity.class.getName());
     }
 
     @Test
@@ -104,7 +104,7 @@ class GizmoMemberDescriptorTest {
         GizmoMemberDescriptor getterMethodMemberDescriptorWithSetter =
                 new GizmoMemberDescriptor(GizmoTestdataEntity.class.getMethod("getValue"));
         assertThat(getterMethodMemberDescriptorWithSetter.getSetter())
-                .hasValue(MethodDescriptor.ofMethod(GizmoTestdataEntity.class.getMethod("setValue", TestdataValue.class)));
+                .hasValue(MethodDesc.of(GizmoTestdataEntity.class.getMethod("setValue", TestdataValue.class)));
 
         GizmoMemberDescriptor readMethodMemberDescriptor =
                 new GizmoMemberDescriptor(GizmoTestdataEntity.class.getMethod("readMethod"));
