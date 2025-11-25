@@ -23,7 +23,12 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
         var isImmutable = true;
         for (AbstractCountableValueRange<T> childValueRange : childValueRangeList) {
             isImmutable &= childValueRange.isValueImmutable();
-            maximumSize += childValueRange.getSize();
+            // We choose to select the larger size instead of summing all sizes, as they may not be distinct.
+            // This approach opts for the cost of resizing instead of allocating larger chunks of memory.
+            var size = childValueRange.getSize();
+            if (size > maximumSize) {
+                maximumSize = size;
+            }
         }
         // To eliminate duplicates, we immediately expand the child value ranges into a cache.
         var cacheBuilder = isImmutable ? ValueRangeCache.Builder.FOR_TRUSTED_VALUES
