@@ -11,15 +11,15 @@ import org.jspecify.annotations.NullMarked;
 public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends AbstractTuple>
         implements TupleLifecycle<Tuple_> {
 
-    private final AbstractDataset<Solution_, Tuple_> parent;
+    private final AbstractDataset<Solution_> parent;
     protected final int entryStoreIndex;
 
-    protected AbstractDatasetInstance(AbstractDataset<Solution_, Tuple_> parent, int rightMostPositionStoreIndex) {
+    protected AbstractDatasetInstance(AbstractDataset<Solution_> parent, int rightMostPositionStoreIndex) {
         this.parent = Objects.requireNonNull(parent);
         this.entryStoreIndex = rightMostPositionStoreIndex;
     }
 
-    public AbstractDataset<Solution_, Tuple_> getParent() {
+    public AbstractDataset<Solution_> getParent() {
         return parent;
     }
 

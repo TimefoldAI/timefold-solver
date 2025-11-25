@@ -129,11 +129,11 @@ public final class EnumeratingStreamFactory<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<AbstractDataset<Solution_, ?>> getDatasets() {
+    public List<AbstractDataset<Solution_>> getDatasets() {
         return sharingStreamMap.values().stream()
                 .flatMap(s -> {
                     if (s instanceof TerminalEnumeratingStream<?, ?, ?> terminalStream) {
-                        return Stream.of((AbstractDataset<Solution_, ?>) terminalStream.getDataset());
+                        return Stream.of((AbstractDataset<Solution_>) terminalStream.getDataset());
                     }
                     return Stream.empty();
                 })

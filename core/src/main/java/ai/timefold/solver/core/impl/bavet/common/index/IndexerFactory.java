@@ -505,7 +505,7 @@ public final class IndexerFactory<Right_> {
                 // This does not apply if random access is required,
                 // because in that case we create a right bridge only,
                 // and we query it from the left.
-                var actualJoinerType = isLeftBridge ? joinerType : requiresRandomAccess ? joinerType : joinerType.flip();
+                var actualJoinerType = isLeftBridge || requiresRandomAccess ? joinerType : joinerType.flip();
                 return new ComparisonIndexer<>(actualJoinerType, backendSupplier);
             }
         }
