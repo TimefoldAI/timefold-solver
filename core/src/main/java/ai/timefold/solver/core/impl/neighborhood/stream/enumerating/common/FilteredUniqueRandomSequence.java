@@ -7,7 +7,6 @@ import java.util.Objects;
 import java.util.Random;
 import java.util.function.Predicate;
 
-import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
@@ -30,7 +29,7 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
     private final Predicate<T> filter;
     private final DefaultUniqueRandomSequence<T> delegate;
 
-    public FilteredUniqueRandomSequence(List<ElementAwareArrayList.Entry<T>> listOfUniqueItems, Predicate<T> filter) {
+    public FilteredUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems, Predicate<T> filter) {
         this.originalList = Collections.unmodifiableList(listOfUniqueItems);
         this.filter = Objects.requireNonNull(filter);
         this.delegate = new DefaultUniqueRandomSequence<>(listOfUniqueItems);

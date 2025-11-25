@@ -24,8 +24,6 @@ public abstract class AbstractDataset<Solution_, Tuple_ extends AbstractTuple> {
         parent.collectActiveEnumeratingStreams(enumeratingStreamSet);
     }
 
-    public abstract AbstractDatasetInstance<Solution_, Tuple_> instantiate(int entryStoreIndex);
-
     @Override
     public boolean equals(Object entity) {
         if (!(entity instanceof AbstractDataset<?, ?> dataset)) {

@@ -4,8 +4,10 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSession;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniDataset;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniDatasetInstance;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDataset;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDatasetInstance;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
@@ -22,8 +24,12 @@ public final class DefaultNeighborhoodSession<Solution_>
         this.solutionView = Objects.requireNonNull(solutionView);
     }
 
-    public <A> UniDatasetInstance<Solution_, A> getDatasetInstance(UniDataset<Solution_, A> dataset) {
-        return (UniDatasetInstance<Solution_, A>) datasetSession.getInstance(dataset);
+    public <A> UniLeftDatasetInstance<Solution_, A> getLeftDatasetInstance(UniLeftDataset<Solution_, A> dataset) {
+        return (UniLeftDatasetInstance<Solution_, A>) datasetSession.getInstance(dataset);
+    }
+
+    public <A, B> UniRightDatasetInstance<Solution_, A, B> getRightDatasetInstance(UniRightDataset<Solution_, A, B> dataset) {
+        return (UniRightDatasetInstance<Solution_, A, B>) datasetSession.getInstance(dataset);
     }
 
     public void insert(Object fact) {

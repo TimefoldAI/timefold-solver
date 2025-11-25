@@ -11,7 +11,6 @@ import java.util.Random;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DefaultUniqueRandomSequence;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.UniqueRandomSequence;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -83,40 +82,19 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
     private UniqueRandomSequence<UniTuple<B>> computeRightSequence(UniTuple<A> leftTuple) {
         var rightDatasetInstance = context.getRightDatasetInstance();
-        var rightTupleCount = rightDatasetInstance.size();
+        var compositeKey = rightDatasetInstance.produceCompositeKey(leftTuple);
+        var rightTupleCount = rightDatasetInstance.size(compositeKey);
         if (rightTupleCount == 0) {
             return DefaultUniqueRandomSequence.empty();
         }
-        var joiner = context.getJoiner();
-        var filter = context.getFilter();
-        if (joiner.getJoinerCount() == 0 && filter == null) {
-            // Shortcut: no joiners and no filter means we can take the entire right dataset as-is.
-            return rightDatasetInstance.buildRandomSequence();
+        var filter = rightDatasetInstance.getFilter();
+        if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
+            return rightDatasetInstance.buildRandomSequence(compositeKey);
         }
         var leftFact = leftTuple.factA;
         var solutionView = context.neighborhoodSession().getSolutionView();
-        return rightDatasetInstance.buildRandomSequence(rightTuple -> {
-            var rightFact = rightTuple.factA;
-            if (failsJoiner(joiner, leftFact, rightFact)) {
-                return false;
-            }
-            // Only test the filter after the joiners all match;
-            // this fits user expectations as the filtering joiner is always declared last.
-            return filter == null || filter.test(solutionView, leftFact, rightFact);
-        });
-    }
-
-    static <A, B> boolean failsJoiner(DefaultBiEnumeratingJoiner<A, B> joiner, A leftFact, B rightFact) {
-        var joinerCount = joiner.getJoinerCount();
-        for (var joinerId = 0; joinerId < joinerCount; joinerId++) {
-            var joinerType = joiner.getJoinerType(joinerId);
-            var mappedLeft = joiner.getLeftMapping(joinerId).apply(leftFact);
-            var mappedRight = joiner.getRightMapping(joinerId).apply(rightFact);
-            if (!joinerType.matches(mappedLeft, mappedRight)) {
-                return true;
-            }
-        }
-        return false;
+        return rightDatasetInstance.buildRandomSequence(compositeKey,
+                rightTuple -> filter.test(solutionView, leftFact, rightTuple.factA));
     }
 
     @Override
