@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.TerminalEnumeratingStream;
@@ -11,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 final class RightTerminalUniEnumeratingStream<Solution_, A, B>
         extends AbstractUniEnumeratingStream<Solution_, B>
-        implements TerminalEnumeratingStream<Solution_, UniTuple<B>, UniRightDataset<Solution_, A, B>> {
+        implements TerminalEnumeratingStream<Solution_, UniRightDataset<Solution_, A, B>> {
 
     private final UniRightDataset<Solution_, A, B> dataset;
 
