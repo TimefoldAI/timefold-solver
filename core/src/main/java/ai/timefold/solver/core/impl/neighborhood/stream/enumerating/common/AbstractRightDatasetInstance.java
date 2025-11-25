@@ -19,7 +19,7 @@ public abstract class AbstractRightDatasetInstance<Solution_, Right_>
     private final int compositeKeyStoreIndex;
     private final Indexer<UniTuple<Right_>> indexer;
 
-    protected AbstractRightDatasetInstance(AbstractDataset<Solution_, UniTuple<Right_>> parent,
+    protected AbstractRightDatasetInstance(AbstractDataset<Solution_> parent,
             IndexerFactory.KeysExtractor<UniTuple<Right_>> compositeKeyExtractor, int compositeKeyStoreIndex,
             int rightMostPositionStoreIndex, Indexer<UniTuple<Right_>> indexer) {
         super(parent, rightMostPositionStoreIndex);

@@ -18,7 +18,7 @@ final class RightTerminalUniEnumeratingStream<Solution_, A, B>
     public RightTerminalUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractUniEnumeratingStream<Solution_, B> parent, BiEnumeratingJoinerComber<Solution_, A, B> joinerComber) {
         super(enumeratingStreamFactory, parent);
-        this.dataset = new UniRightDataset<>(enumeratingStreamFactory, this, joinerComber);
+        this.dataset = new UniRightDataset<>(this, joinerComber);
     }
 
     @Override

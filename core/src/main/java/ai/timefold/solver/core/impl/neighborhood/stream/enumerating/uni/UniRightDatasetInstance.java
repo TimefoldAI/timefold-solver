@@ -16,7 +16,7 @@ public final class UniRightDatasetInstance<Solution_, A, B>
     private final IndexerFactory.KeysExtractor<UniTuple<A>> leftCompositeKeyExtractor;
     private final @Nullable BiEnumeratingPredicate<Solution_, A, B> filter;
 
-    public UniRightDatasetInstance(AbstractDataset<Solution_, UniTuple<B>> parent, IndexerFactory<B> indexerFactory,
+    public UniRightDatasetInstance(AbstractDataset<Solution_> parent, IndexerFactory<B> indexerFactory,
             @Nullable BiEnumeratingPredicate<Solution_, A, B> filter, int compositeKeyStoreIndex,
             int rightMostPositionStoreIndex) {
         super(parent, indexerFactory.buildRightKeysExtractor(), compositeKeyStoreIndex, rightMostPositionStoreIndex,

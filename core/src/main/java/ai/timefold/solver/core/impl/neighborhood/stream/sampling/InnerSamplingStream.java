@@ -9,6 +9,6 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public interface InnerSamplingStream<Solution_, Out_ extends AbstractTuple> extends SamplingStream {
 
-    AbstractDataset<Solution_, Out_> getDataset();
+    AbstractDataset<Solution_> getDataset();
 
 }

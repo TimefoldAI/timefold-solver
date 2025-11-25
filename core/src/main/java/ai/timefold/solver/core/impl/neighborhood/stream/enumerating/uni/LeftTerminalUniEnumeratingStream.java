@@ -17,7 +17,7 @@ final class LeftTerminalUniEnumeratingStream<Solution_, A>
     public LeftTerminalUniEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             AbstractUniEnumeratingStream<Solution_, A> parent) {
         super(enumeratingStreamFactory, parent);
-        this.dataset = new UniLeftDataset<>(enumeratingStreamFactory, this);
+        this.dataset = new UniLeftDataset<>(this);
     }
 
     @Override

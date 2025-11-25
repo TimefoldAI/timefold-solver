@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni;
 
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
+import java.util.Objects;
+
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractLeftDataset;
 
 import org.jspecify.annotations.NullMarked;
@@ -8,14 +9,24 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class UniLeftDataset<Solution_, A> extends AbstractLeftDataset<Solution_, A> {
 
-    public UniLeftDataset(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
-            AbstractUniEnumeratingStream<Solution_, A> parent) {
-        super(enumeratingStreamFactory, parent);
+    public UniLeftDataset(AbstractUniEnumeratingStream<Solution_, A> parent) {
+        super(parent);
     }
 
     @Override
     public UniLeftDatasetInstance<Solution_, A> instantiate(int entryStoreIndex) {
         return new UniLeftDatasetInstance<>(this, entryStoreIndex);
+    }
+
+    @Override
+    public boolean equals(Object compositeKey) {
+        return compositeKey instanceof UniLeftDataset<?, ?> other
+                && Objects.equals(parent, other.parent);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(parent);
     }
 
 }

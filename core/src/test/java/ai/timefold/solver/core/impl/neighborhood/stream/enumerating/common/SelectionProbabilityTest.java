@@ -18,7 +18,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 @Execution(ExecutionMode.CONCURRENT)
-public final class SelectionProbabilityTest {
+final class SelectionProbabilityTest {
 
     private static final int TRIAL_COUNT = 1_000_000;
     private static final int SAMPLE_COUNT = 100;

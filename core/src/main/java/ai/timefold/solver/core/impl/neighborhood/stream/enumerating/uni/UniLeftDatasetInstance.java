@@ -10,7 +10,7 @@ import org.jspecify.annotations.NullMarked;
 public final class UniLeftDatasetInstance<Solution_, A>
         extends AbstractLeftDatasetInstance<Solution_, UniTuple<A>> {
 
-    public UniLeftDatasetInstance(AbstractDataset<Solution_, UniTuple<A>> parent, int rightMostPositionStoreIndex) {
+    public UniLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightMostPositionStoreIndex) {
         super(parent, rightMostPositionStoreIndex);
     }
 

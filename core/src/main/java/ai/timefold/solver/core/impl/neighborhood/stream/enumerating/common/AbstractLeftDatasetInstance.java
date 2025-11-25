@@ -16,7 +16,7 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Abst
 
     private final ElementAwareArrayList<Tuple_> tupleList = new ElementAwareArrayList<>();
 
-    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_, Tuple_> parent, int rightMostPositionStoreIndex) {
+    protected AbstractLeftDatasetInstance(AbstractDataset<Solution_> parent, int rightMostPositionStoreIndex) {
         super(parent, rightMostPositionStoreIndex);
     }
 

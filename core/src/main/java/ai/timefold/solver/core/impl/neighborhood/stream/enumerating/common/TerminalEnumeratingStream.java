@@ -5,7 +5,7 @@ import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public interface TerminalEnumeratingStream<Solution_, Tuple_ extends AbstractTuple, Dataset_ extends AbstractDataset<Solution_, Tuple_>> {
+public interface TerminalEnumeratingStream<Solution_, Tuple_ extends AbstractTuple, Dataset_ extends AbstractDataset<Solution_>> {
 
     Dataset_ getDataset();
 
