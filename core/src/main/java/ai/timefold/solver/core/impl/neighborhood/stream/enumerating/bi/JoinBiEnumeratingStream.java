@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridg
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public final class JoinBiEnumeratingStream<Solution_, A, B> extends AbstractBiEnumeratingStream<Solution_, A, B>
@@ -25,11 +26,11 @@ public final class JoinBiEnumeratingStream<Solution_, A, B> extends AbstractBiEn
     private final ForeBridgeUniEnumeratingStream<Solution_, A> leftParent;
     private final ForeBridgeUniEnumeratingStream<Solution_, B> rightParent;
     private final DefaultBiEnumeratingJoiner<A, B> joiner;
-    private final BiEnumeratingPredicate<Solution_, A, B> filtering;
+    private final @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering;
 
     public JoinBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             ForeBridgeUniEnumeratingStream<Solution_, A> leftParent, ForeBridgeUniEnumeratingStream<Solution_, B> rightParent,
-            DefaultBiEnumeratingJoiner<A, B> joiner, BiEnumeratingPredicate<Solution_, A, B> filtering) {
+            DefaultBiEnumeratingJoiner<A, B> joiner, @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering) {
         super(enumeratingStreamFactory);
         this.leftParent = leftParent;
         this.rightParent = rightParent;
