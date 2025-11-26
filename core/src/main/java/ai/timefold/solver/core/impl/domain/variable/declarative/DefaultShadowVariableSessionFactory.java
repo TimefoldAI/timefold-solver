@@ -193,6 +193,8 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         var declarativeShadowVariables = graphDescriptor.solutionDescriptor().getDeclarativeShadowVariableDescriptors();
         var sortedDeclarativeVariables = topologicallySortedDeclarativeShadowVariables(declarativeShadowVariables);
 
+        var canTerminateEarly = hasNoNonDeclarativeSourcesFromParent(declarativeShadowVariables);
+
         var topologicalSorter =
                 getTopologicalSorter(graphDescriptor.solutionDescriptor(),
                         Objects.requireNonNull(graphDescriptor.changedVariableNotifier().innerScoreDirector()),
@@ -200,7 +202,23 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
 
         return new SingleDirectionalParentVariableReferenceGraph<>(graphDescriptor.consistencyTracker(),
                 sortedDeclarativeVariables,
-                topologicalSorter, graphDescriptor.changedVariableNotifier(), graphDescriptor.entities());
+                topologicalSorter, graphDescriptor.changedVariableNotifier(),
+                canTerminateEarly,
+                graphDescriptor.entities());
+    }
+
+    private static <Solution_> boolean hasNoNonDeclarativeSourcesFromParent(
+            List<DeclarativeShadowVariableDescriptor<Solution_>> declarativeShadowVariables) {
+        for (var declarativeShadowVariable : declarativeShadowVariables) {
+            for (var source : declarativeShadowVariable.getSources()) {
+                for (var sourceReference : source.variableSourceReferences()) {
+                    if (!sourceReference.isTopLevel() && !sourceReference.isDeclarative()) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     private static <Solution_> List<DeclarativeShadowVariableDescriptor<Solution_>>

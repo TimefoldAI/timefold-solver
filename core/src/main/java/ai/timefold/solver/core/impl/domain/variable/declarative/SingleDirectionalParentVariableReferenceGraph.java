@@ -21,6 +21,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
     private final ChangedVariableNotifier<Solution_> changedVariableNotifier;
     private final List<Object> changedEntities;
     private final Class<?> monitoredEntityClass;
+    private final boolean canTerminateEarly;
     private boolean isUpdating;
 
     @SuppressWarnings("unchecked")
@@ -29,6 +30,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
             List<DeclarativeShadowVariableDescriptor<Solution_>> sortedDeclarativeShadowVariableDescriptors,
             TopologicalSorter topologicalSorter,
             ChangedVariableNotifier<Solution_> changedVariableNotifier,
+            boolean canTerminateEarly,
             Object[] entities) {
         monitoredEntityClass = sortedDeclarativeShadowVariableDescriptors.get(0).getEntityDescriptor().getEntityClass();
         sortedVariableUpdaterInfos = new VariableUpdaterInfo[sortedDeclarativeShadowVariableDescriptors.size()];
@@ -36,6 +38,7 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
         changedEntities = new ArrayList<>();
         isUpdating = false;
 
+        this.canTerminateEarly = canTerminateEarly;
         this.successorFunction = topologicalSorter.successor();
         this.topologicalOrderComparator = topologicalSorter.comparator();
         this.keyFunction = topologicalSorter.key();
@@ -104,7 +107,10 @@ public final class SingleDirectionalParentVariableReferenceGraph<Solution_> impl
             for (var updater : sortedVariableUpdaterInfos) {
                 anyChanged |= updater.updateIfChanged(current, changedVariableNotifier);
             }
-            if (anyChanged) {
+            // We cannot look ahead by 1 in the cannot terminate early case;
+            // If a successor was unchanged and its parent unchanged,
+            // it can still be the case that the successor's successor was changed
+            if (!canTerminateEarly || anyChanged) {
                 previous = current;
                 current = successorFunction.apply(current);
             } else {
