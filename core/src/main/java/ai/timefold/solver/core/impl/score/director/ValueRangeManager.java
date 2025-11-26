@@ -70,7 +70,7 @@ public final class ValueRangeManager<Solution_> {
     private final @Nullable Map<Object, Integer>[] fromSolutionValueIndexMap;
     private final Map<Object, ValueRangeItem<Solution_, CountableValueRange<?>>[]> fromEntityMap = new IdentityHashMap<>();
     private final @Nullable ValueRangeItem<Solution_, ReachableValues>[] reachableValues;
-    private final @Nullable Map<BitSet, Object>[] fromEntityBitSet;
+    private final @Nullable Map<BitSetItem, Object>[] fromEntityBitSet;
 
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable SolutionInitializationStatistics cachedInitializationStatistics = null;
@@ -588,18 +588,28 @@ public final class ValueRangeManager<Solution_> {
         // and check if another identical range already exists to prevent duplication
         var valueIndexMap = getIndexMapFromSolution(valueRangeDescriptor);
         var valueRangeBitSet = getBitSetValueRange(valueRange, valueIndexMap);
+        var fromEntity = findEntityBitSetMap(valueRangeDescriptor, entity, entitySize, valueRange, valueRangeBitSet);
+        if (fromEntity == null) {
+            return null;
+        }
+        var match = fromEntity.get(BitSetItem.of(valueRange, valueRangeBitSet));
+        if (match == null) {
+            fromEntity.put(BitSetItem.of(valueRange, valueRangeBitSet), entity);
+        }
+        return match;
+    }
+
+    private <T> @Nullable Map<BitSetItem, Object> findEntityBitSetMap(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            Object entity,
+            int entitySize, CountableValueRange<T> valueRange, BitSet valueRangeBitSet) {
         var fromEntity = fromEntityBitSet[valueRangeDescriptor.getOrdinal()];
         if (fromEntity == null) {
             fromEntity = new HashMap<>(entitySize);
             fromEntityBitSet[valueRangeDescriptor.getOrdinal()] = fromEntity;
-            fromEntity.put(valueRangeBitSet, entity);
+            fromEntity.put(BitSetItem.of(valueRange, valueRangeBitSet), entity);
             return null;
         }
-        var match = fromEntity.get(valueRangeBitSet);
-        if (match == null) {
-            fromEntity.put(valueRangeBitSet, entity);
-        }
-        return match;
+        return fromEntity;
     }
 
     private <T> CountableValueRange<T> fetchValueRangeFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
@@ -672,38 +682,62 @@ public final class ValueRangeManager<Solution_> {
                     new ValueRangeItem<>(null, values, sorter, null, null);
             return values;
         }
-
-        var leftSorter = item.leftSorter();
-        var leftValues = item.leftItem();
-        var rightSorter = item.rightSorter();
-        var rightValues = item.rightItem();
-        if (leftValues != null && (sorter == null || Objects.equals(leftSorter, sorter))) {
-            // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
-            return leftValues;
-        } else if (rightValues != null && Objects.equals(rightSorter, sorter)) {
-            // Return the right value only if the right sorter is the same as the provided one.
-            return rightValues;
+        var value = pickReachableValuesBySorter(item, sorter);
+        if (value != null) {
+            return value;
         }
-
         // If the left sorter is null, and the given sorter is not, we replace the left value with a sorted one.
-        if (leftSorter == null && sorter != null) {
-            var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
-            var sortedValues = Objects.requireNonNull(leftValues).copy(sorterAdapter);
-            leftValues.clear();
+        if (item.leftItem() != null && item.leftSorter() == null && sorter != null) {
+            // We clear the left item as we are copying it and updating the sorter
+            var sortedValues = buildSortedReachableValues(item.leftItem(), sorter, true);
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
-                    new ValueRangeItem<>(null, sortedValues, sorter, rightValues, rightSorter);
+                    new ValueRangeItem<>(null,
+                            // Left item from the newly sorted item
+                            sortedValues,
+                            sorter,
+                            // Current right item
+                            item.rightItem(),
+                            item.rightSorter());
             return sortedValues;
-        } else if (rightValues == null && sorter != null) {
-            var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
-            var sortedValues = Objects.requireNonNull(leftValues).copy(sorterAdapter);
+        } else if (item.rightItem() == null && sorter != null) {
+            // We use the existing left item to create a new structure with a different sorter
+            var sortedValues = buildSortedReachableValues(item.leftItem(), sorter, false);
             reachableValues[variableDescriptor.getValueRangeDescriptor().getOrdinal()] =
-                    new ValueRangeItem<>(null, leftValues, leftSorter, sortedValues, sorter);
+                    new ValueRangeItem<>(null,
+                            // Current left item
+                            item.leftItem(),
+                            item.leftSorter(),
+                            // Right item from the newly sorted item
+                            sortedValues,
+                            sorter);
             return sortedValues;
         } else {
             throw new IllegalStateException(
                     "Impossible state: the reachable values structure for variable (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
-                            .formatted(variableDescriptor, sorter, leftSorter, rightSorter));
+                            .formatted(variableDescriptor, sorter, item.leftSorter(), item.rightSorter()));
         }
+    }
+
+    private <T> @Nullable ReachableValues pickReachableValuesBySorter(ValueRangeItem<Solution_, ReachableValues> item,
+            @Nullable SelectionSorter<Solution_, T> sorter) {
+        if (item.leftItem() != null && (sorter == null || Objects.equals(item.leftSorter(), sorter))) {
+            // Return the left value if there is no sorter or if the left sorter is the same as the provided one.
+            return item.leftItem();
+        } else if (item.rightItem() != null && Objects.equals(item.rightSorter(), sorter)) {
+            // Return the right value only if the right sorter is the same as the provided one.
+            return item.rightItem();
+        }
+        return null;
+    }
+
+    private ReachableValues buildSortedReachableValues(ReachableValues values, SelectionSorter<Solution_, ?> sorter,
+            boolean clear) {
+        var sorterAdapter = SelectionSorterAdapter.of(cachedWorkingSolution, sorter);
+        var sortedValues = Objects.requireNonNull(values).copy(sorterAdapter);
+        if (clear) {
+            values.clear();
+        }
+        return sortedValues;
     }
 
     private ReachableValues fetchReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
@@ -806,20 +840,7 @@ public final class ValueRangeManager<Solution_> {
     public void reset(@Nullable Solution_ workingSolution) {
         Arrays.fill(fromSolution, null);
         Arrays.fill(fromSolutionValueIndexMap, null);
-        for (var value : reachableValues) {
-            if (value != null && value.leftItem() != null) {
-                value.leftItem().clear();
-            }
-            if (value != null && value.rightItem() != null) {
-                value.rightItem().clear();
-            }
-        }
         Arrays.fill(reachableValues, null);
-        for (var value : fromEntityBitSet) {
-            if (value != null) {
-                value.clear();
-            }
-        }
         Arrays.fill(fromEntityBitSet, null);
         fromEntityMap.clear();
         // We only update the cached solution if it is not null; null means to only reset the maps.
@@ -834,6 +855,30 @@ public final class ValueRangeManager<Solution_> {
             @Nullable SelectionSorter<Solution_, ?> leftSorter, @Nullable V rightItem,
             @Nullable SelectionSorter<Solution_, ?> rightSorter) {
 
+    }
+
+    /**
+     * The record holds a reference to {@link BitSet},
+     * a precomputed hash to avoid recalculating it every time since the BitSet should be immutable.
+     * It also includes the size of the BitSet to skip unnecessary comparisons when searching it in the map.
+     */
+    private record BitSetItem(int size, int hash, BitSet item) {
+
+        public static <T> BitSetItem of(CountableValueRange<T> valueRange, BitSet item) {
+            return new BitSetItem((int) valueRange.getSize(), item.hashCode(), item);
+        }
+
+        @Override
+        public int hashCode() {
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof BitSetItem that))
+                return false;
+            return size() == that.size() && hash() == that.hash() && Objects.equals(item(), that.item());
+        }
     }
 
 }
