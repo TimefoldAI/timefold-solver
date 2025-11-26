@@ -152,7 +152,7 @@ public final class DotNames {
         PLANNING_SCORE(DotNames.PLANNING_SCORE, "scoreDefinitionClass"),
         PLANNING_SOLUTION(DotNames.PLANNING_SOLUTION, "solutionCloner"),
         PLANNING_ENTITY(DotNames.PLANNING_ENTITY, "pinningFilter", "difficultyComparatorClass",
-                "difficultyWeightFactoryClass"),
+                "difficultyWeightFactoryClass", "comparatorClass", "comparatorFactoryClass"),
         PLANNING_VARIABLE(DotNames.PLANNING_VARIABLE, "strengthComparatorClass",
                 "strengthWeightFactoryClass"),
         CUSTOM_SHADOW_VARIABLE(DotNames.CUSTOM_SHADOW_VARIABLE, "variableListenerClass"),
