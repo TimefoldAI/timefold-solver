@@ -24,9 +24,9 @@ public class TimefoldDevUIRecorder {
         this.timefoldRuntimeConfig = timefoldRuntimeConfig;
     }
 
-    public Supplier<DevUISolverConfig> solverConfigSupplier(Map<String, SolverConfig> allSolverConfig,
+    public <Solution_> Supplier<DevUISolverConfig> solverConfigSupplier(Map<String, SolverConfig> allSolverConfig,
             Map<String, RuntimeValue<MemberAccessor>> generatedGizmoMemberAccessorMap,
-            Map<String, RuntimeValue<SolutionCloner>> generatedGizmoSolutionClonerMap) {
+            Map<String, RuntimeValue<SolutionCloner<Solution_>>> generatedGizmoSolutionClonerMap) {
         return () -> {
             DevUISolverConfig uiSolverConfig = new DevUISolverConfig();
             allSolverConfig.forEach((solverName, solverConfig) -> {

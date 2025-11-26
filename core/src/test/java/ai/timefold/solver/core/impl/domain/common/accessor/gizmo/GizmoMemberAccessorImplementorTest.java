@@ -80,6 +80,7 @@ class GizmoMemberAccessorImplementorTest {
 
     @Test
     void testGeneratedMemberAccessorForPrimitiveField() throws NoSuchFieldException {
+        System.setProperty("gizmo.debug", "true");
         Member member = GizmoTestdataEntity.class.getField("isPinned");
         MemberAccessor memberAccessor =
                 GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningPin.class, true, new GizmoClassLoader());

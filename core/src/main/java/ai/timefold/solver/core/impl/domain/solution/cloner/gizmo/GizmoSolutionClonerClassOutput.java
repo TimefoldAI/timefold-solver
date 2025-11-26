@@ -6,15 +6,19 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 
-import io.quarkus.gizmo.ClassOutput;
+import io.quarkus.gizmo2.ClassOutput;
 
 record GizmoSolutionClonerClassOutput(Map<String, byte[]> classNameToBytecode) implements ClassOutput {
+    private static final String CLASS_FILE_SUFFIX = ".class";
+
     @Override
-    public void write(String classInternalName, byte[] byteCode) {
-        classNameToBytecode.put(classInternalName.replace('/', '.'), byteCode);
+    public void write(String classFileLocation, byte[] byteCode) {
+        var className =
+                classFileLocation.substring(0, classFileLocation.length() - CLASS_FILE_SUFFIX.length()).replace('/', '.');
+        classNameToBytecode.put(className, byteCode);
         if (GizmoSolutionClonerImplementor.DEBUG) {
             Path debugRoot = Paths.get("target/timefold-solver-generated-classes");
-            Path rest = Paths.get(classInternalName + ".class");
+            Path rest = Paths.get(classFileLocation);
             Path destination = debugRoot.resolve(rest);
 
             try {

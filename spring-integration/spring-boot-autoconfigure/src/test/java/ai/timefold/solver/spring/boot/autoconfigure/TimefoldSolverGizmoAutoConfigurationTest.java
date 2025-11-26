@@ -32,7 +32,7 @@ class TimefoldSolverGizmoAutoConfigurationTest {
                 .withConfiguration(
                         AutoConfigurations.of(TimefoldSolverAutoConfiguration.class, TimefoldSolverBeanFactory.class))
                 .withUserConfiguration(GizmoSpringTestConfiguration.class);
-        noGizmoFilteredClassLoader = new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("io.quarkus.gizmo"),
+        noGizmoFilteredClassLoader = new FilteredClassLoader(FilteredClassLoader.PackageFilter.of("io.quarkus.gizmo2"),
                 FilteredClassLoader.ClassPathResourceFilter.of(
                         new ClassPathResource(TimefoldProperties.DEFAULT_SOLVER_CONFIG_URL)));
     }
@@ -68,8 +68,8 @@ class TimefoldSolverGizmoAutoConfigurationTest {
                 .run(context -> context.getBean(SolverFactory.class)))
                 .hasRootCauseMessage("When using the domainAccessType (" +
                         DomainAccessType.GIZMO +
-                        ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo.\n" +
-                        "Maybe add a dependency to io.quarkus.gizmo:gizmo.");
+                        ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo2.\n" +
+                        "Maybe add a dependency to io.quarkus.gizmo:gizmo2.");
     }
 
 }

@@ -74,6 +74,6 @@ class GizmoMemberAccessorFactoryTest {
         assertThatCode(() -> {
             GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, PlanningVariable.class, true, new GizmoClassLoader());
         }).hasMessage("When using the domainAccessType (GIZMO) the classpath or modulepath must contain " +
-                "io.quarkus.gizmo:gizmo.\nMaybe add a dependency to io.quarkus.gizmo:gizmo.");
+                "io.quarkus.gizmo:gizmo2.\nMaybe add a dependency to io.quarkus.gizmo:gizmo2.");
     }
 }

@@ -3,43 +3,43 @@ package ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
 import java.lang.reflect.Type;
 import java.util.function.Consumer;
 
-import io.quarkus.gizmo.BytecodeCreator;
-import io.quarkus.gizmo.FieldDescriptor;
-import io.quarkus.gizmo.MethodDescriptor;
-import io.quarkus.gizmo.ResultHandle;
+import io.quarkus.gizmo2.Expr;
+import io.quarkus.gizmo2.creator.BlockCreator;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 final class GizmoFieldHandler implements GizmoMemberHandler {
 
     private final Class<?> declaringClass;
-    private final FieldDescriptor fieldDescriptor;
+    private final FieldDesc fieldDescriptor;
     private final boolean canBeWritten;
 
-    GizmoFieldHandler(Class<?> declaringClass, FieldDescriptor fieldDescriptor, boolean canBeWritten) {
+    GizmoFieldHandler(Class<?> declaringClass, FieldDesc fieldDescriptor, boolean canBeWritten) {
         this.declaringClass = declaringClass;
         this.fieldDescriptor = fieldDescriptor;
         this.canBeWritten = canBeWritten;
     }
 
     @Override
-    public void whenIsField(Consumer<FieldDescriptor> fieldDescriptorConsumer) {
+    public void whenIsField(Consumer<FieldDesc> fieldDescriptorConsumer) {
         fieldDescriptorConsumer.accept(fieldDescriptor);
     }
 
     @Override
-    public void whenIsMethod(Consumer<MethodDescriptor> methodDescriptorConsumer) {
+    public void whenIsMethod(Consumer<MethodDesc> methodDescriptorConsumer) {
         // Do nothing.
     }
 
     @Override
-    public ResultHandle readMemberValue(BytecodeCreator bytecodeCreator, ResultHandle thisObj) {
-        return bytecodeCreator.readInstanceField(fieldDescriptor, thisObj);
+    public Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj) {
+        return thisObj.field(fieldDescriptor);
     }
 
     @Override
-    public boolean writeMemberValue(MethodDescriptor setter, BytecodeCreator bytecodeCreator, ResultHandle thisObj,
-            ResultHandle newValue) {
+    public boolean writeMemberValue(MethodDesc setter, BlockCreator bytecodeCreator, Expr thisObj,
+            Expr newValue) {
         if (canBeWritten) {
-            bytecodeCreator.writeInstanceField(fieldDescriptor, thisObj, newValue);
+            bytecodeCreator.set(thisObj.field(fieldDescriptor), newValue);
             return true;
         } else {
             return false;
@@ -48,22 +48,21 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
 
     @Override
     public String getDeclaringClassName() {
-        return fieldDescriptor.getDeclaringClass();
+        return GizmoMemberHandler.getTypeName(fieldDescriptor.owner());
     }
 
     @Override
     public String getTypeName() {
-        return fieldDescriptor.getType();
+        return GizmoMemberHandler.getTypeName(fieldDescriptor.type());
     }
 
     @Override
     public Type getType() {
         try {
-            return declaringClass.getDeclaredField(fieldDescriptor.getName()).getGenericType();
+            return declaringClass.getDeclaredField(fieldDescriptor.name()).getGenericType();
         } catch (NoSuchFieldException e) {
             throw new IllegalStateException(
-                    "Cannot find field (" + fieldDescriptor.getName() + ") on class (" + declaringClass + ").",
-                    e);
+                    "Cannot find field (%s) on class (%s).".formatted(fieldDescriptor.name(), declaringClass), e);
         }
     }
 

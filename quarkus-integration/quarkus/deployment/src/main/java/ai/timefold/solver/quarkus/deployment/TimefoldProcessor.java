@@ -76,10 +76,10 @@ import org.jboss.logging.Logger;
 
 import io.quarkus.arc.deployment.AdditionalBeanBuildItem;
 import io.quarkus.arc.deployment.GeneratedBeanBuildItem;
-import io.quarkus.arc.deployment.GeneratedBeanGizmoAdaptor;
+import io.quarkus.arc.deployment.GeneratedBeanGizmo2Adaptor;
 import io.quarkus.arc.deployment.SyntheticBeanBuildItem;
 import io.quarkus.arc.deployment.UnremovableBeanBuildItem;
-import io.quarkus.deployment.GeneratedClassGizmoAdaptor;
+import io.quarkus.deployment.GeneratedClassGizmo2Adaptor;
 import io.quarkus.deployment.IsDevelopment;
 import io.quarkus.deployment.annotations.BuildProducer;
 import io.quarkus.deployment.annotations.BuildStep;
@@ -88,6 +88,7 @@ import io.quarkus.deployment.builditem.BytecodeTransformerBuildItem;
 import io.quarkus.deployment.builditem.CombinedIndexBuildItem;
 import io.quarkus.deployment.builditem.FeatureBuildItem;
 import io.quarkus.deployment.builditem.GeneratedClassBuildItem;
+import io.quarkus.deployment.builditem.GeneratedResourceBuildItem;
 import io.quarkus.deployment.builditem.HotDeploymentWatchedFileBuildItem;
 import io.quarkus.deployment.builditem.IndexDependencyBuildItem;
 import io.quarkus.deployment.builditem.nativeimage.ReflectiveHierarchyBuildItem;
@@ -96,7 +97,7 @@ import io.quarkus.deployment.recording.RecorderContext;
 import io.quarkus.devui.spi.JsonRPCProvidersBuildItem;
 import io.quarkus.devui.spi.page.CardPageBuildItem;
 import io.quarkus.devui.spi.page.Page;
-import io.quarkus.gizmo.ClassOutput;
+import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.desc.ConstructorDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
@@ -192,6 +193,7 @@ class TimefoldProcessor {
             BuildProducer<UnremovableBeanBuildItem> unremovableBeans,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
+            BuildProducer<GeneratedResourceBuildItem> generatedResources,
             BuildProducer<BytecodeTransformerBuildItem> transformers) {
         var indexView = combinedIndex.getIndex();
 
@@ -267,14 +269,14 @@ class TimefoldProcessor {
                 .filter(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null)
                 .map(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass().getName())
                 .distinct()
-                .map(constraintName -> solverConfigMap.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
-                        .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintName))
-                        .findFirst().get())
+                .map(constraintProviderName -> solverConfigMap.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
+                        .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintProviderName))
+                        .findFirst().orElseThrow())
                 .forEach(
                         entryConfig -> generateConstraintVerifier(entryConfig.getValue(), syntheticBeanBuildItemBuildProducer));
 
         GeneratedGizmoClasses generatedGizmoClasses = generateDomainAccessors(solverConfigMap, indexView, generatedBeans,
-                generatedClasses, transformers, reflectiveClassSet);
+                generatedClasses, generatedResources, transformers, reflectiveClassSet);
 
         additionalBeans.produce(new AdditionalBeanBuildItem(TimefoldSolverBannerBean.class));
         if (solverConfigMap.size() <= 1) {
@@ -938,11 +940,12 @@ class TimefoldProcessor {
     private GeneratedGizmoClasses generateDomainAccessors(Map<String, SolverConfig> solverConfigMap, IndexView indexView,
             BuildProducer<GeneratedBeanBuildItem> generatedBeans,
             BuildProducer<GeneratedClassBuildItem> generatedClasses,
+            BuildProducer<GeneratedResourceBuildItem> generatedResources,
             BuildProducer<BytecodeTransformerBuildItem> transformers, Set<Class<?>> reflectiveClassSet) {
         // Use mvn quarkus:dev -Dquarkus.debug.generated-classes-dir=dump-classes
         // to dump generated classes
-        var classOutput = new GeneratedClassGizmoAdaptor(generatedClasses, true);
-        var beanClassOutput = new GeneratedBeanGizmoAdaptor(generatedBeans);
+        var classOutput = new GeneratedClassGizmo2Adaptor(generatedClasses, generatedResources, true);
+        var beanClassOutput = new GeneratedBeanGizmo2Adaptor(generatedBeans);
 
         var generatedMemberAccessorsClassNameSet = new HashSet<String>();
         var gizmoSolutionClonerClassNameSet = new HashSet<String>();
@@ -1031,10 +1034,8 @@ class TimefoldProcessor {
                         buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, methodInfo, true, transformers);
                     }
-                    default -> {
-                        throw new IllegalStateException(
-                                "The member (%s) is not on a field or method.".formatted(annotatedMember));
-                    }
+                    default -> throw new IllegalStateException(
+                            "The member (%s) is not on a field or method.".formatted(annotatedMember));
                 }
                 if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
                     // The source method name also must be included
@@ -1189,15 +1190,12 @@ class TimefoldProcessor {
     }
 
     private boolean shouldIgnoreMember(AnnotationInstance annotationInstance) {
-        switch (annotationInstance.target().kind()) {
-            case FIELD:
-                return (annotationInstance.target().asField().flags() & Modifier.STATIC) != 0;
-            case METHOD:
-                return (annotationInstance.target().asMethod().flags() & Modifier.STATIC) != 0;
-            default:
-                throw new IllegalArgumentException(
-                        "Annotation (%s) can only be applied to methods and fields.".formatted(annotationInstance.name()));
-        }
+        return switch (annotationInstance.target().kind()) {
+            case FIELD -> (annotationInstance.target().asField().flags() & Modifier.STATIC) != 0;
+            case METHOD -> (annotationInstance.target().asMethod().flags() & Modifier.STATIC) != 0;
+            default -> throw new IllegalArgumentException(
+                    "Annotation (%s) can only be applied to methods and fields.".formatted(annotationInstance.name()));
+        };
     }
 
     private void registerCustomClassesFromSolverConfig(SolverConfig solverConfig, Set<Class<?>> reflectiveClassSet) {

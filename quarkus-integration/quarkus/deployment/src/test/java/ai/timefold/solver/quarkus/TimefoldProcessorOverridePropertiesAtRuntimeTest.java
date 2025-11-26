@@ -36,7 +36,7 @@ class TimefoldProcessorOverridePropertiesAtRuntimeTest {
     private static String getRequiredProperty(String name) {
         final String v = System.getProperty(name);
         if (v == null || v.isEmpty()) {
-            throw new IllegalStateException("The system property (" + name + ") has not been set.");
+            throw new IllegalStateException("The system property (%s) has not been set.".formatted(name));
         }
         return v;
     }

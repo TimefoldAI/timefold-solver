@@ -24,9 +24,9 @@ import ai.timefold.solver.core.testdomain.inheritance.solution.baseannotated.chi
 
 import org.junit.jupiter.api.Test;
 
-import io.quarkus.gizmo.ClassCreator;
-import io.quarkus.gizmo.FieldDescriptor;
-import io.quarkus.gizmo.MethodDescriptor;
+import io.quarkus.gizmo2.Gizmo;
+import io.quarkus.gizmo2.desc.FieldDesc;
+import io.quarkus.gizmo2.desc.MethodDesc;
 
 class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
 
@@ -43,29 +43,30 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
         var classBytecodeHolder = new HashMap<String, byte[]>();
         var classOutput =
                 GizmoSolutionClonerImplementor.createClassOutputWithDebuggingCapability(classBytecodeHolder);
-        var classCreator = ClassCreator.builder()
-                .className(className)
-                .interfaces(GizmoSolutionCloner.class)
-                .superClass(Object.class)
-                .classOutput(classOutput)
-                .setFinal(true)
-                .build();
 
-        var memoizedSolutionOrEntityDescriptorMap = new HashMap<Class<?>, GizmoSolutionOrEntityDescriptor>();
+        System.setProperty("gizmo.debug", "true");
+        var gizmo = Gizmo.create(classOutput);
 
-        var deepClonedClassSet = GizmoCloningUtils.getDeepClonedClasses(solutionDescriptor, Collections.emptyList());
-        Stream.concat(Stream.of(solutionDescriptor.getSolutionClass()),
-                Stream.concat(solutionDescriptor.getEntityClassSet().stream(),
-                        deepClonedClassSet.stream()))
-                .forEach(clazz -> {
-                    memoizedSolutionOrEntityDescriptorMap.put(clazz,
-                            generateGizmoSolutionOrEntityDescriptor(solutionDescriptor, clazz));
-                });
+        gizmo.class_(className, classCreator -> {
+            classCreator.implements_(GizmoSolutionCloner.class);
+            classCreator.extends_(Object.class);
+            classCreator.final_();
 
-        GizmoSolutionClonerImplementor.defineClonerFor(classCreator, solutionDescriptor,
-                Collections.singleton(solutionDescriptor.getSolutionClass()),
-                memoizedSolutionOrEntityDescriptorMap, deepClonedClassSet);
-        classCreator.close();
+            var memoizedSolutionOrEntityDescriptorMap = new HashMap<Class<?>, GizmoSolutionOrEntityDescriptor>();
+
+            var deepClonedClassSet = GizmoCloningUtils.getDeepClonedClasses(solutionDescriptor, Collections.emptyList());
+            Stream.concat(Stream.of(solutionDescriptor.getSolutionClass()),
+                    Stream.concat(solutionDescriptor.getEntityClassSet().stream(),
+                            deepClonedClassSet.stream()))
+                    .forEach(clazz -> {
+                        memoizedSolutionOrEntityDescriptorMap.put(clazz,
+                                generateGizmoSolutionOrEntityDescriptor(solutionDescriptor, clazz));
+                    });
+
+            GizmoSolutionClonerImplementor.defineClonerFor(classCreator, solutionDescriptor,
+                    Collections.singleton(solutionDescriptor.getSolutionClass()),
+                    memoizedSolutionOrEntityDescriptorMap, deepClonedClassSet);
+        });
 
         var gizmoClassLoader = new GizmoClassLoader(classBytecodeHolder);
 
@@ -92,7 +93,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                 if (!Modifier.isStatic(field.getModifiers())) {
                     GizmoMemberDescriptor member;
                     var declaringClass = field.getDeclaringClass();
-                    var memberDescriptor = FieldDescriptor.of(field);
+                    var memberDescriptor = FieldDesc.of(field);
                     var name = field.getName();
 
                     if (Modifier.isPublic(field.getModifiers())) {
@@ -101,10 +102,10 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                         var getter = ReflectionHelper.getGetterMethod(currentClass, field.getName());
                         var setter = ReflectionHelper.getSetterMethod(currentClass, field.getName());
                         if (getter != null && setter != null) {
-                            var getterDescriptor = MethodDescriptor.ofMethod(field.getDeclaringClass().getName(),
+                            var getterDescriptor = MethodDesc.of(field.getDeclaringClass(),
                                     getter.getName(),
                                     field.getType());
-                            var setterDescriptor = MethodDescriptor.ofMethod(field.getDeclaringClass().getName(),
+                            var setterDescriptor = MethodDesc.of(field.getDeclaringClass(),
                                     setter.getName(),
                                     setter.getReturnType(),
                                     field.getType());
