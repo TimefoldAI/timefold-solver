@@ -5,7 +5,6 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
@@ -21,6 +20,7 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class SwapMoveDefinition<Solution_, Entity_>
@@ -66,23 +66,29 @@ public class SwapMoveDefinition<Solution_, Entity_>
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var entityType = entityMetaModel.type();
         var entityStream = moveStreamFactory.forEach(entityType, false);
-        // TODO this requires everything that is ever swapped to implement @PlanningID; likely not acceptable
-        return moveStreamFactory.pick(entityStream)
-                .pick(entityStream,
-                        buildLessThanId(entityType),
-                        EnumeratingJoiners.filtering(this::isValidSwap))
-                .asMove((solutionView, leftEntity, rightEntity) -> Moves.swap(leftEntity, rightEntity,
-                        variableMetaModelList.toArray(new PlanningVariableMetaModel[0])));
+        var lessThanIdJoiner = buildLessThanId(entityType);
+        if (lessThanIdJoiner == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
+            return moveStreamFactory.pick(entityStream)
+                    .pick(entityStream,
+                            EnumeratingJoiners.filtering(this::isValidSwap))
+                    .asMove((solutionView, leftEntity, rightEntity) -> Moves.swap(leftEntity, rightEntity,
+                            variableMetaModelList.toArray(new PlanningVariableMetaModel[0])));
+        } else {
+            return moveStreamFactory.pick(entityStream)
+                    .pick(entityStream,
+                            buildLessThanId(entityType),
+                            EnumeratingJoiners.filtering(this::isValidSwap))
+                    .asMove((solutionView, leftEntity, rightEntity) -> Moves.swap(leftEntity, rightEntity,
+                            variableMetaModelList.toArray(new PlanningVariableMetaModel[0])));
+        }
     }
 
-    private <A> DefaultBiEnumeratingJoiner<A, A> buildLessThanId(Class<A> sourceClass) {
+    private <A> @Nullable DefaultBiEnumeratingJoiner<A, A> buildLessThanId(Class<A> sourceClass) {
         SolutionDescriptor<Solution_> solutionDescriptor =
                 ((DefaultPlanningSolutionMetaModel<Solution_>) entityMetaModel.solution()).solutionDescriptor();
         MemberAccessor planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(sourceClass);
         if (planningIdMemberAccessor == null) {
-            throw new IllegalArgumentException(
-                    "The fromClass (%s) has no member with a @%s annotation, so the pairs cannot be made unique ([A,B] vs [B,A])."
-                            .formatted(sourceClass, PlanningId.class.getSimpleName()));
+            return null;
         }
         Function<A, Comparable> planningIdGetter = planningIdMemberAccessor.getGetterFunction();
         return (DefaultBiEnumeratingJoiner<A, A>) EnumeratingJoiners.lessThan(planningIdGetter);

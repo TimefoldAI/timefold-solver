@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.neighborhood.maybeapi.move;
 import java.util.Objects;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -16,27 +15,26 @@ import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
         implements MoveDefinition<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
-    private final Function<Entity_, Comparable> planningIdGetter;
+    private final @Nullable Function<Entity_, Comparable> planningIdGetter;
 
     public ListSwapMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
         this.planningIdGetter = getPlanningIdGetter(variableMetaModel.entity().type());
     }
 
-    private <A> Function<A, Comparable> getPlanningIdGetter(Class<A> sourceClass) {
+    private <A> @Nullable Function<A, Comparable> getPlanningIdGetter(Class<A> sourceClass) {
         SolutionDescriptor<Solution_> solutionDescriptor =
                 ((DefaultPlanningSolutionMetaModel<Solution_>) variableMetaModel.entity().solution()).solutionDescriptor();
         MemberAccessor planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(sourceClass);
         if (planningIdMemberAccessor == null) {
-            throw new IllegalArgumentException(
-                    "The fromClass (%s) has no member with a @%s annotation, so the pairs cannot be made unique ([A,B] vs [B,A])."
-                            .formatted(sourceClass, PlanningId.class.getSimpleName()));
+            return null;
         }
         return planningIdMemberAccessor.getGetterFunction();
     }
@@ -47,17 +45,23 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
                 .filter((solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList)
                 .map((solutionView, value) -> new FullElementPosition<>(value,
                         solutionView.getPositionOf(variableMetaModel, value).ensureAssigned(), planningIdGetter));
-        // TODO this requires everything that is ever swapped to implement @PlanningID; likely not acceptable
-        return moveStreamFactory.pick(assignedValueStream)
-                .pick(assignedValueStream,
-                        EnumeratingJoiners.lessThan(a -> a),
-                        EnumeratingJoiners.filtering(this::isValidSwap))
-                .asMove((solutionView, leftPosition, rightPosition) -> Moves.swap(leftPosition.elementPosition,
-                        rightPosition.elementPosition, variableMetaModel));
+        if (planningIdGetter == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
+            return moveStreamFactory.pick(assignedValueStream)
+                    .pick(assignedValueStream,
+                            EnumeratingJoiners.filtering(this::isValidSwap))
+                    .asMove((solutionView, leftPosition, rightPosition) -> Moves.swap(leftPosition.elementPosition,
+                            rightPosition.elementPosition, variableMetaModel));
+        } else {
+            return moveStreamFactory.pick(assignedValueStream)
+                    .pick(assignedValueStream,
+                            EnumeratingJoiners.lessThan(a -> a),
+                            EnumeratingJoiners.filtering(this::isValidSwap))
+                    .asMove((solutionView, leftPosition, rightPosition) -> Moves.swap(leftPosition.elementPosition,
+                            rightPosition.elementPosition, variableMetaModel));
+        }
     }
 
-    private boolean isValidSwap(SolutionView<Solution_> solutionView,
-            FullElementPosition<Entity_, Value_> leftPosition,
+    private boolean isValidSwap(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> leftPosition,
             FullElementPosition<Entity_, Value_> rightPosition) {
         if (Objects.equals(leftPosition, rightPosition)) {
             return false;
@@ -68,15 +72,9 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
 
     @NullMarked
     private record FullElementPosition<Entity_, Value_>(Value_ value, PositionInList elementPosition,
-            Function<Entity_, Comparable> planningIdGetter) implements Comparable<FullElementPosition<Entity_, Value_>> {
-
-        public static <Solution_, Entity_, Value_> FullElementPosition<Entity_, Value_> of(
-                PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-                SolutionView<Solution_> solutionView, Value_ value,
-                Function<Entity_, Comparable> planningIdGetter) {
-            var assignedElement = solutionView.getPositionOf(variableMetaModel, value).ensureAssigned();
-            return new FullElementPosition<>(value, assignedElement, planningIdGetter);
-        }
+            @Nullable Function<Entity_, Comparable> planningIdGetter)
+            implements
+                Comparable<FullElementPosition<Entity_, Value_>> {
 
         public Entity_ entity() {
             return elementPosition.entity();
@@ -88,6 +86,9 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
 
         @Override
         public int compareTo(FullElementPosition<Entity_, Value_> o) {
+            if (planningIdGetter == null) { // The code will not get here if the getter is null.
+                throw new IllegalStateException("Impossible state: The planningIdGetter is null, cannot compare entities.");
+            }
             var entityComparison = planningIdGetter.apply(this.entity()).compareTo(planningIdGetter.apply(o.entity()));
             if (entityComparison != 0) {
                 return entityComparison;
