@@ -113,12 +113,6 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     }
 
     @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        super.stepStarted(stepScope);
-        this.childEntitySelector.stepStarted(stepScope);
-    }
-
-    @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         this.childEntitySelector.phaseEnded(phaseScope);
@@ -127,6 +121,12 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         this.reachableValues = null;
         this.basicVariableDescriptors = null;
         this.allEntities = null;
+    }
+
+    @Override
+    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        super.stepStarted(stepScope);
+        this.childEntitySelector.stepStarted(stepScope);
     }
 
     // ************************************************************************

@@ -20,6 +20,7 @@ import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 /**
@@ -90,12 +91,6 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     }
 
     @Override
-    public void solvingEnded(SolverScope<Solution_> solverScope) {
-        super.solvingEnded(solverScope);
-        this.childEntitySelector.solvingEnded(solverScope);
-    }
-
-    @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseStarted(phaseScope);
         this.entitiesSize = childEntitySelector.getEntityDescriptor().extractEntities(phaseScope.getWorkingSolution()).size();
@@ -112,6 +107,12 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         this.childEntitySelector.phaseEnded(phaseScope);
         this.replayedValue = null;
         this.reachableValues = null;
+    }
+
+    @Override
+    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        super.stepStarted(stepScope);
+        this.childEntitySelector.stepStarted(stepScope);
     }
 
     // ************************************************************************

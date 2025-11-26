@@ -449,7 +449,6 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
         if (listVariableStateSupply != null) {
             getSupplyManager().cancel(listVariableStateSupply.getSourceVariableDescriptor().getStateDemand());
         }
-        valueRangeManager.reset(null);
         variableListenerSupport.close();
     }
 
