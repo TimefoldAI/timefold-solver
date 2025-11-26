@@ -37,6 +37,16 @@ public sealed interface Indexer<T>
 
     boolean isEmpty();
 
+    /**
+     * Returns all entries for the given composite key as a list.
+     * The index must not be modified while iterating over the returned list.
+     * If the index is modified, a new instance of this list must be retrieved;
+     * the previous instance is no longer valid and its behavior is undefined.
+     * 
+     * @param compositeKey the composite key
+     * @return all entries for a given composite key;
+     *         the caller must not modify the list
+     */
     List<? extends ListEntry<T>> asList(Object compositeKey);
 
 }

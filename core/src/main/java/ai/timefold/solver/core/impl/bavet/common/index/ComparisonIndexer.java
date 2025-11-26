@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.bavet.common.index;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -177,7 +176,10 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         if (size == 0) {
             return Collections.emptyList();
         }
-        var result = new ArrayList<ListEntry<T>>();
+        // The index backend's asList() may take a while to build.
+        // At the same time, the elements in these lists will be accessed randomly.
+        // Therefore we build this abstraction to avoid building unnecessary lists that would never get accessed.
+        var result = new ComposingList<ListEntry<T>>();
         Key_ indexKey = keyRetriever.apply(compositeKey);
         if (size == 1) { // Avoid creation of the entry set and iterator.
             var entry = comparisonMap.firstEntry();
@@ -193,13 +195,15 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return result;
     }
 
-    private boolean visitEntry(Object compositeKey, List<ListEntry<T>> result, Key_ indexKey,
+    @SuppressWarnings("unchecked")
+    private boolean visitEntry(Object compositeKey, ComposingList<ListEntry<T>> result, Key_ indexKey,
             Map.Entry<Key_, Indexer<T>> entry) {
         if (boundaryReached(entry.getKey(), indexKey)) {
             return true;
         }
         // Boundary condition not yet reached; include the indexer in the range.
-        result.addAll(entry.getValue().asList(compositeKey));
+        var indexer = entry.getValue();
+        result.addSubList(() -> (List<ListEntry<T>>) indexer.asList(compositeKey), indexer.size(compositeKey));
         return false;
     }
 
