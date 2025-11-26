@@ -46,6 +46,7 @@ import ai.timefold.solver.test.api.score.stream.ConstraintVerifier;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Execution;
 import org.junit.jupiter.api.parallel.ExecutionMode;
+import org.junit.jupiter.api.parallel.ResourceLock;
 import org.springframework.boot.autoconfigure.AutoConfigurations;
 import org.springframework.boot.test.context.ConfigDataApplicationContextInitializer;
 import org.springframework.boot.test.context.FilteredClassLoader;
@@ -55,6 +56,7 @@ import org.springframework.test.context.TestExecutionListeners;
 
 @TestExecutionListeners
 @Execution(ExecutionMode.CONCURRENT)
+@ResourceLock("yamlAndXml")
 class TimefoldSolverMultipleSolverAutoConfigurationTest {
 
     private final ApplicationContextRunner contextRunner;
