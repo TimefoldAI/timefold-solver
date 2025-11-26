@@ -739,9 +739,9 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isEqualTo(20.0);
         });
     }
@@ -758,9 +758,9 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(0);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(0);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(0);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(0);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isEqualTo(0);
         });
     }
@@ -777,9 +777,9 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(1);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(1);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(1);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(1);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isEqualTo(0);
         });
     }
@@ -797,10 +797,10 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * variableCount);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(3L);
-            softly.assertThat(valueRangeManager.getApproximateValueCount())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(3L);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount())
                     .isEqualTo(variableCount * valueCount);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isCloseTo(Math.log10(Math.pow(valueCount, variableCount)), Percentage.withPercentage(1.0));
         });
     }
@@ -823,9 +823,9 @@ class ValueRangeManagerTest {
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
 
             // Add 1 to the value range sizes, since the value range allows unassigned
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(4L);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(3L + 4L);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(4L);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(3L + 4L);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isCloseTo(Math.log10(3 * 4), Percentage.withPercentage(1.0));
         });
     }
@@ -845,8 +845,8 @@ class ValueRangeManagerTest {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(2L);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(2L);
 
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(3L);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(2L + 3L);
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(3L);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(2L + 3L);
         });
     }
 
@@ -866,9 +866,9 @@ class ValueRangeManagerTest {
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(1L);
 
             // Add 1 to the value range sizes, since the value range allows unassigned
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(2L);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(2L);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(2L);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(2L);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isCloseTo(Math.log10(2), Percentage.withPercentage(1.0));
         });
     }
@@ -884,12 +884,12 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount * 2);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize())
                     .isEqualTo(entityCount + anchorCount);
             // 1 unchained value is inside the solution
-            softly.assertThat(valueRangeManager.getApproximateValueCount())
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount())
                     .isEqualTo(entityCount + anchorCount + 1);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 10, 500, 20)
                             / (double) MathUtils.LOG_PRECISION, Percentage.withPercentage(1.0));
         });
@@ -920,9 +920,9 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isCloseTo(MathUtils.getPossibleArrangementsScaledApproximateLog(MathUtils.LOG_PRECISION, 10, 500, 20)
                             / (double) MathUtils.LOG_PRECISION, Percentage.withPercentage(1.0));
         });
@@ -939,9 +939,9 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getProblemScale()).isEqualTo(0.0);
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale()).isEqualTo(0.0);
         });
     }
 
@@ -956,9 +956,9 @@ class ValueRangeManagerTest {
         assertSoftly(softly -> {
             softly.assertThat(solutionDescriptor.getGenuineEntityCount(solution)).isEqualTo(entityCount);
             softly.assertThat(solutionDescriptor.getGenuineVariableCount(solution)).isEqualTo(entityCount);
-            softly.assertThat(valueRangeManager.getMaximumValueRangeSize()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getApproximateValueCount()).isEqualTo(valueCount);
-            softly.assertThat(valueRangeManager.getProblemScale())
+            softly.assertThat(valueRangeManager.getStatistics().getMaximumValueRangeSize()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getApproximateValueCount()).isEqualTo(valueCount);
+            softly.assertThat(valueRangeManager.getStatistics().getProblemScale())
                     .isCloseTo(Math.log10(2), Percentage.withPercentage(1.0));
         });
     }
@@ -971,12 +971,12 @@ class ValueRangeManagerTest {
         var solutionDescriptor = TestdataListSolution.buildSolutionDescriptor();
         var listSolution = TestdataListSolution.generateUninitializedSolution(valueCount, entityCount);
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, listSolution);
-        var listPowerExponent = valueRangeManager.getProblemScale();
+        var listPowerExponent = valueRangeManager.getStatistics().getProblemScale();
 
         var solutionDescriptorChained = TestdataChainedSolution.buildSolutionDescriptor();
         var solutionChained = generateChainedSolution(entityCount, valueCount);
         var valueRangeManagerChained = ValueRangeManager.of(solutionDescriptorChained, solutionChained);
-        var chainedPowerExponent = valueRangeManagerChained.getProblemScale();
+        var chainedPowerExponent = valueRangeManagerChained.getStatistics().getProblemScale();
 
         // Since they are using different bases in calculation, some difference is expected,
         // but the numbers should be relatively (i.e. ~1%) close.
