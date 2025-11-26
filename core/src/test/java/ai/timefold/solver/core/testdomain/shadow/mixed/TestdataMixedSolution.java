@@ -24,6 +24,7 @@ public class TestdataMixedSolution {
     SimpleScore score;
 
     public TestdataMixedSolution() {
+        // required for cloning
     }
 
     public List<TestdataMixedEntity> getMixedEntityList() {

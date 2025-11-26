@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.solver.MoveAsserter;
 
 import org.junit.jupiter.api.Test;
 
-public class TestdataMixedTest {
+class TestdataMixedTest {
     @Test
     void changingVariableOfParentShouldChangeDependentVariableOfChildren() {
         var problem = new TestdataMixedSolution();

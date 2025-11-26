@@ -23,6 +23,7 @@ public class TestdataMixedValue extends TestdataObject {
     private Integer previousDelay;
 
     public TestdataMixedValue() {
+        // required for cloning
     }
 
     public TestdataMixedValue(String code) {
