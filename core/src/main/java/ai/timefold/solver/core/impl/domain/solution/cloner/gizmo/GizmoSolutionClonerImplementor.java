@@ -446,9 +446,8 @@ public class GizmoSolutionClonerImplementor {
             GizmoMemberDescriptor gizmoMemberDescriptor, Var toClone, Var cloneResultHolder) {
         BlockCreator blockCreator = clonerMethodDescriptor.blockCreator;
 
-        blockCreator.ifNull(toClone, isNullBranch -> {
-            isNullBranch.set(cloneResultHolder, Const.ofNull(cloneResultHolder.type()));
-        });
+        blockCreator.ifNull(toClone,
+                isNullBranch -> isNullBranch.set(cloneResultHolder, Const.ofNull(cloneResultHolder.type())));
 
         blockCreator.ifNotNull(toClone, isNotNullBranch -> {
             var deeplyClonedFieldClass = deeplyClonedField.getType();
@@ -532,9 +531,8 @@ public class GizmoSolutionClonerImplementor {
             Var cloneResultHolder) {
         BlockCreator blockCreator = clonerMethodDescriptor.blockCreator;
 
-        blockCreator.ifNull(toClone, ifNullBranch -> {
-            ifNullBranch.set(cloneResultHolder, Const.ofNull(cloneResultHolder.type()));
-        });
+        blockCreator.ifNull(toClone,
+                ifNullBranch -> ifNullBranch.set(cloneResultHolder, Const.ofNull(cloneResultHolder.type())));
 
         blockCreator.ifNotNull(toClone, isNotNullBranch -> {
             if (clonerMethodDescriptor.entityDescriptor.getSolutionDescriptor().getSolutionClass()
@@ -573,9 +571,8 @@ public class GizmoSolutionClonerImplementor {
 
     private static void writeDeepCloneSolutionInstructions(
             ClonerMethodDescriptor clonerMethodDescriptor, Var toClone, Var cloneResultHolder) {
-        clonerMethodDescriptor.blockCreator.ifNull(toClone, isNullBranch -> {
-            isNullBranch.set(cloneResultHolder, Const.ofNull(cloneResultHolder.type()));
-        });
+        clonerMethodDescriptor.blockCreator.ifNull(toClone,
+                isNullBranch -> isNullBranch.set(cloneResultHolder, Const.ofNull(cloneResultHolder.type())));
         clonerMethodDescriptor.blockCreator.ifNotNull(toClone, isNotNullBranch -> {
             var clone = isNotNullBranch.invokeStatic(
                     ClassMethodDesc.of(
@@ -630,10 +627,9 @@ public class GizmoSolutionClonerImplementor {
                         isSortedSetBranch.new_(ConstructorDesc.of(TreeSet.class, Comparator.class),
                                 setComparator));
             });
-            blockCreator.ifNotInstanceOf(toClone, SortedSet.class, isNotSortedSetBranch -> {
-                isNotSortedSetBranch.set(cloneResultHolder,
-                        isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size));
-            });
+            blockCreator.ifNotInstanceOf(toClone, SortedSet.class,
+                    isNotSortedSetBranch -> isNotSortedSetBranch.set(cloneResultHolder,
+                            isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size)));
         } else {
             // field is probably of type collection; determine collection semantics at runtime
             blockCreator.ifInstanceOf(toClone, Set.class, (isSetBranch, castedToClone) -> {
@@ -645,16 +641,13 @@ public class GizmoSolutionClonerImplementor {
                             isSortedSetBranch.new_(ConstructorDesc.of(TreeSet.class, Comparator.class),
                                     setComparator));
                 });
-                blockCreator.ifNotInstanceOf(toClone, SortedSet.class, isNotSortedSetBranch -> {
-                    isNotSortedSetBranch.set(cloneResultHolder,
-                            isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size));
-                });
+                blockCreator.ifNotInstanceOf(toClone, SortedSet.class,
+                        isNotSortedSetBranch -> isNotSortedSetBranch.set(cloneResultHolder,
+                                isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size)));
             });
             // Default to ArrayList
-            blockCreator.ifNotInstanceOf(toClone, Set.class, isNotSetBranch -> {
-                isNotSetBranch.set(cloneResultHolder,
-                        isNotSetBranch.new_(ConstructorDesc.of(ArrayList.class, int.class), size));
-            });
+            blockCreator.ifNotInstanceOf(toClone, Set.class, isNotSetBranch -> isNotSetBranch.set(cloneResultHolder,
+                    isNotSetBranch.new_(ConstructorDesc.of(ArrayList.class, int.class), size)));
         }
         var iterator =
                 blockCreator.localVar(toClone.name() + "$Iterator", blockCreator.withCollection(toClone).iterator());
@@ -873,22 +866,22 @@ public class GizmoSolutionClonerImplementor {
         var isHandled = currentBranch.localVar(cloneResultHolder.name() + "$IsHandled", Const.of(false));
         // If the field holds an instance of one of the field's declared type's subtypes, clone the subtype instead.
         for (Class<?> deepClonedSubclass : deepClonedSubclasses) {
-            currentBranch.ifNot(isHandled, notHandledBranch -> {
-                notHandledBranch.ifInstanceOf(toClone, deepClonedSubclass, (isInstanceBranch, castedToClone) -> {
-                    var cloneObj = isInstanceBranch.invokeStatic(
-                            ClassMethodDesc.of(
-                                    ClassDesc.of(GizmoSolutionClonerFactory
-                                            .getGeneratedClassName(
-                                                    clonerMethodDescriptor.entityDescriptor.getSolutionDescriptor())),
-                                    getEntityHelperMethodName(deepClonedSubclass), deepClonedSubclass, deepClonedSubclass,
-                                    Map.class,
-                                    boolean.class, ArrayDeque.class),
-                            castedToClone, clonerMethodDescriptor.createdCloneMap, Const.of(clonerMethodDescriptor.isBottom),
-                            clonerMethodDescriptor.cloneQueue);
-                    isInstanceBranch.set(cloneResultHolder, cloneObj);
-                    isInstanceBranch.set(isHandled, Const.of(true));
-                });
-            });
+            currentBranch.ifNot(isHandled, notHandledBranch -> notHandledBranch.ifInstanceOf(toClone, deepClonedSubclass,
+                    (isInstanceBranch, castedToClone) -> {
+                        var cloneObj = isInstanceBranch.invokeStatic(
+                                ClassMethodDesc.of(
+                                        ClassDesc.of(GizmoSolutionClonerFactory
+                                                .getGeneratedClassName(
+                                                        clonerMethodDescriptor.entityDescriptor.getSolutionDescriptor())),
+                                        getEntityHelperMethodName(deepClonedSubclass), deepClonedSubclass, deepClonedSubclass,
+                                        Map.class,
+                                        boolean.class, ArrayDeque.class),
+                                castedToClone, clonerMethodDescriptor.createdCloneMap,
+                                Const.of(clonerMethodDescriptor.isBottom),
+                                clonerMethodDescriptor.cloneQueue);
+                        isInstanceBranch.set(cloneResultHolder, cloneObj);
+                        isInstanceBranch.set(isHandled, Const.of(true));
+                    }));
         }
         currentBranch.ifNot(isHandled, notHandledBranch -> {
             // We are certain that the instance is of the same type as the declared field type.
@@ -1030,21 +1023,19 @@ public class GizmoSolutionClonerImplementor {
                             // (which potentially create a new deep cloned object) to the queue, and we
                             // iterate through the queue until it is empty, at which point this object
                             // is fully initialized.
-                            newNoCloneBranch.if_(isBottom, bottomObjectBranch -> {
-                                bottomObjectBranch.while_(
-                                        condition -> condition.yield(condition.logicalNot(condition.invokeVirtual(
-                                                MethodDesc.of(ArrayDeque.class, "isEmpty", boolean.class), cloneQueue))),
-                                        queueNotEmptyBlock -> {
-                                            var next = queueNotEmptyBlock
-                                                    .invokeVirtual(MethodDesc.of(ArrayDeque.class, "pop", Object.class),
-                                                            cloneQueue);
-                                            queueNotEmptyBlock.invokeInterface(
-                                                    MethodDesc.of(BiConsumer.class, "accept", void.class, Object.class,
-                                                            Object.class),
-                                                    next, cloneMap,
-                                                    cloneQueue);
-                                        });
-                            });
+                            newNoCloneBranch.if_(isBottom, bottomObjectBranch -> bottomObjectBranch.while_(
+                                    condition -> condition.yield(condition.logicalNot(condition.invokeVirtual(
+                                            MethodDesc.of(ArrayDeque.class, "isEmpty", boolean.class), cloneQueue))),
+                                    queueNotEmptyBlock -> {
+                                        var next = queueNotEmptyBlock
+                                                .invokeVirtual(MethodDesc.of(ArrayDeque.class, "pop", Object.class),
+                                                        cloneQueue);
+                                        queueNotEmptyBlock.invokeInterface(
+                                                MethodDesc.of(BiConsumer.class, "accept", void.class, Object.class,
+                                                        Object.class),
+                                                next, cloneMap,
+                                                cloneQueue);
+                                    }));
                             newNoCloneBranch.return_(cloneObj);
                         });
             });
@@ -1063,35 +1054,36 @@ public class GizmoSolutionClonerImplementor {
 
         // Initialize the field inside a Runnable (BiConsumer here since you
         // cannot share ResultHandles across different BytecodeCreators).
-        var consumer = blockCreator.newAnonymousClass(BiConsumer.class, consumerClassCreator -> {
-            consumerClassCreator.method("accept", consumerMethodCreator -> {
-                consumerMethodCreator.returning(void.class);
-                var innerCloneMapObject = consumerMethodCreator.parameter("cloneMapObject", Object.class);
-                var innerCloneQueueObject = consumerMethodCreator.parameter("cloneQueueObject", Object.class);
-                consumerMethodCreator.body(consumerBlockCreator -> {
-                    var innerCloneMap =
-                            consumerBlockCreator.localVar("cloneMap", innerCloneMapObject);
-                    var innerCloneQueue = consumerBlockCreator.localVar("cloneQueue", innerCloneQueueObject);
-                    var subfieldValue = consumerBlockCreator.localVar("toClone",
-                            gizmoMemberDescriptor.readMemberValue(consumerBlockCreator, consumerClassCreator.capture(toClone)));
-                    var cloneValue = consumerBlockCreator.localVar("clonedValue", deeplyClonedField.getType(),
-                            Const.ofNull(deeplyClonedField.getType()));
-                    writeDeepCloneInstructions(clonerDescriptor, clonerMethodDescriptor
-                            .withBlockCreator(consumerBlockCreator)
-                            .withCreatedCloneMap(innerCloneMap)
-                            .withCloneQueue(innerCloneQueue),
-                            deeplyClonedField, gizmoMemberDescriptor, subfieldValue,
-                            cloneValue);
+        var consumer = blockCreator.newAnonymousClass(BiConsumer.class,
+                consumerClassCreator -> consumerClassCreator.method("accept", consumerMethodCreator -> {
+                    consumerMethodCreator.returning(void.class);
+                    var innerCloneMapObject = consumerMethodCreator.parameter("cloneMapObject", Object.class);
+                    var innerCloneQueueObject = consumerMethodCreator.parameter("cloneQueueObject", Object.class);
+                    consumerMethodCreator.body(consumerBlockCreator -> {
+                        var innerCloneMap =
+                                consumerBlockCreator.localVar("cloneMap", innerCloneMapObject);
+                        var innerCloneQueue = consumerBlockCreator.localVar("cloneQueue", innerCloneQueueObject);
+                        var subfieldValue = consumerBlockCreator.localVar("toClone",
+                                gizmoMemberDescriptor.readMemberValue(consumerBlockCreator,
+                                        consumerClassCreator.capture(toClone)));
+                        var cloneValue = consumerBlockCreator.localVar("clonedValue", deeplyClonedField.getType(),
+                                Const.ofNull(deeplyClonedField.getType()));
+                        writeDeepCloneInstructions(clonerDescriptor, clonerMethodDescriptor
+                                .withBlockCreator(consumerBlockCreator)
+                                .withCreatedCloneMap(innerCloneMap)
+                                .withCloneQueue(innerCloneQueue),
+                                deeplyClonedField, gizmoMemberDescriptor, subfieldValue,
+                                cloneValue);
 
-                    if (!gizmoMemberDescriptor.writeMemberValue(consumerBlockCreator, consumerClassCreator.capture(cloneObj),
-                            cloneValue)) {
-                        throw new IllegalStateException("The member (%s) of class (%s) does not have a setter.".formatted(
-                                gizmoMemberDescriptor.getName(), gizmoMemberDescriptor.getDeclaringClassName()));
-                    }
-                    consumerBlockCreator.return_();
-                });
-            });
-        });
+                        if (!gizmoMemberDescriptor.writeMemberValue(consumerBlockCreator,
+                                consumerClassCreator.capture(cloneObj),
+                                cloneValue)) {
+                            throw new IllegalStateException("The member (%s) of class (%s) does not have a setter.".formatted(
+                                    gizmoMemberDescriptor.getName(), gizmoMemberDescriptor.getDeclaringClassName()));
+                        }
+                        consumerBlockCreator.return_();
+                    });
+                }));
 
         // Add the initializer to the queue
         blockCreator.invokeVirtual(

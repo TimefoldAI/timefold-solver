@@ -57,9 +57,8 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
                 && timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml() != null) {
             if (beanClassLoader.getResource(timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml()) == null) {
                 throw new IllegalStateException(
-                        "Invalid timefold.benchmark.solverBenchmarkConfigXml property ("
-                                + timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml()
-                                + "): that classpath resource does not exist.");
+                        "Invalid timefold.benchmark.solverBenchmarkConfigXml property (%s): that classpath resource does not exist."
+                                .formatted(timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml()));
             }
             benchmarkConfig = PlannerBenchmarkConfig
                     .createFromXmlResource(timefoldProperties.getBenchmark().getSolverBenchmarkConfigXml(), beanClassLoader);
@@ -97,12 +96,14 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
             List<SolverBenchmarkConfig> solverBenchmarkConfigList = benchmarkConfig.getSolverBenchmarkConfigList();
             List<String> unconfiguredTerminationSolverBenchmarkList = new ArrayList<>();
             if (solverBenchmarkConfigList == null) {
-                throw new IllegalStateException("At least one of the properties " +
-                        "timefold.benchmark.solver.termination.spent-limit, " +
-                        "timefold.benchmark.solver.termination.best-score-limit, " +
-                        "timefold.benchmark.solver.termination.unimproved-spent-limit " +
-                        "is required if termination is not configured in the " +
-                        "inherited solver benchmark config and solverBenchmarkBluePrint is used.");
+                throw new IllegalStateException("""
+                        At least one of the properties \
+                        timefold.benchmark.solver.termination.spent-limit, \
+                        timefold.benchmark.solver.termination.best-score-limit, \
+                        timefold.benchmark.solver.termination.unimproved-spent-limit \
+                        is required if termination is not configured in the \
+                        inherited solver benchmark config and solverBenchmarkBluePrint is used.
+                        """);
             }
             if (solverBenchmarkConfigList.size() == 1 && solverBenchmarkConfigList.get(0).getSolverConfig() == null) {
                 // Benchmark config was created from solver config, which means only the inherited solver config exists.
@@ -122,17 +123,19 @@ public class TimefoldBenchmarkAutoConfiguration implements BeanClassLoaderAware,
                 }
             }
             if (!unconfiguredTerminationSolverBenchmarkList.isEmpty()) {
-                throw new IllegalStateException("The following " + SolverBenchmarkConfig.class.getSimpleName() + " do not " +
-                        "have termination configured: " +
+                throw new IllegalStateException("""
+                        The following %s do not \
+                        have termination configured: \
+                        %s. \
+                        At least one of the properties \
+                        timefold.benchmark.solver.termination.spent-limit, \
+                        timefold.benchmark.solver.termination.best-score-limit, \
+                        timefold.benchmark.solver.termination.unimproved-spent-limit \
+                        is required if termination is not configured in a solver benchmark and the \
+                        inherited solver benchmark config.
+                        """.formatted(SolverBenchmarkConfig.class.getSimpleName(),
                         unconfiguredTerminationSolverBenchmarkList.stream()
-                                .collect(Collectors.joining(", ", "[", "]"))
-                        + ". " +
-                        "At least one of the properties " +
-                        "timefold.benchmark.solver.termination.spent-limit, " +
-                        "timefold.benchmark.solver.termination.best-score-limit, " +
-                        "timefold.benchmark.solver.termination.unimproved-spent-limit " +
-                        "is required if termination is not configured in a solver benchmark and the " +
-                        "inherited solver benchmark config.");
+                                .collect(Collectors.joining(", ", "[", "]"))));
             }
         }
         return benchmarkConfig;

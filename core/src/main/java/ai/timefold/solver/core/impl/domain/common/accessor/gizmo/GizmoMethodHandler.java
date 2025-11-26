@@ -46,7 +46,7 @@ final class GizmoMethodHandler implements GizmoMemberHandler {
         }
     }
 
-    private Expr invokeMemberMethod(Class<?> declaringClass, BlockCreator creator, MethodDesc method,
+    private static Expr invokeMemberMethod(Class<?> declaringClass, BlockCreator creator, MethodDesc method,
             Expr bean, Expr... parameters) {
         if (declaringClass.isInterface()) {
             // method might be from the implementation class; we need it from the declaring interface
@@ -73,9 +73,8 @@ final class GizmoMethodHandler implements GizmoMemberHandler {
         try {
             return declaringClass.getDeclaredMethod(methodDescriptor.name()).getGenericReturnType();
         } catch (NoSuchMethodException e) {
-            throw new IllegalStateException(
-                    "Cannot find method (" + methodDescriptor.name() + ") on class (" + declaringClass + ").",
-                    e);
+            throw new IllegalStateException("Cannot find method (%s) on class (%s)."
+                    .formatted(methodDescriptor.name(), declaringClass), e);
         }
     }
 

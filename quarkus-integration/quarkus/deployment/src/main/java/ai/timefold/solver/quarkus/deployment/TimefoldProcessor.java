@@ -269,9 +269,9 @@ class TimefoldProcessor {
                 .filter(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass() != null)
                 .map(config -> config.getScoreDirectorFactoryConfig().getConstraintProviderClass().getName())
                 .distinct()
-                .map(constraintName -> solverConfigMap.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
-                        .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintName))
-                        .findFirst().get())
+                .map(constraintProviderName -> solverConfigMap.entrySet().stream().filter(entryConfig -> entryConfig.getValue()
+                        .getScoreDirectorFactoryConfig().getConstraintProviderClass().getName().equals(constraintProviderName))
+                        .findFirst().orElseThrow())
                 .forEach(
                         entryConfig -> generateConstraintVerifier(entryConfig.getValue(), syntheticBeanBuildItemBuildProducer));
 
@@ -1034,10 +1034,8 @@ class TimefoldProcessor {
                         buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                                 classInfo, methodInfo, true, transformers);
                     }
-                    default -> {
-                        throw new IllegalStateException(
-                                "The member (%s) is not on a field or method.".formatted(annotatedMember));
-                    }
+                    default -> throw new IllegalStateException(
+                            "The member (%s) is not on a field or method.".formatted(annotatedMember));
                 }
                 if (annotatedMember.name().equals(DotNames.CASCADING_UPDATE_SHADOW_VARIABLE)) {
                     // The source method name also must be included
@@ -1192,15 +1190,12 @@ class TimefoldProcessor {
     }
 
     private boolean shouldIgnoreMember(AnnotationInstance annotationInstance) {
-        switch (annotationInstance.target().kind()) {
-            case FIELD:
-                return (annotationInstance.target().asField().flags() & Modifier.STATIC) != 0;
-            case METHOD:
-                return (annotationInstance.target().asMethod().flags() & Modifier.STATIC) != 0;
-            default:
-                throw new IllegalArgumentException(
-                        "Annotation (%s) can only be applied to methods and fields.".formatted(annotationInstance.name()));
-        }
+        return switch (annotationInstance.target().kind()) {
+            case FIELD -> (annotationInstance.target().asField().flags() & Modifier.STATIC) != 0;
+            case METHOD -> (annotationInstance.target().asMethod().flags() & Modifier.STATIC) != 0;
+            default -> throw new IllegalArgumentException(
+                    "Annotation (%s) can only be applied to methods and fields.".formatted(annotationInstance.name()));
+        };
     }
 
     private void registerCustomClassesFromSolverConfig(SolverConfig solverConfig, Set<Class<?>> reflectiveClassSet) {

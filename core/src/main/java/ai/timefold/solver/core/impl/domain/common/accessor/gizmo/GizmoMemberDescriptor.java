@@ -8,6 +8,7 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 
 import io.quarkus.gizmo2.Expr;
@@ -44,10 +45,13 @@ public final class GizmoMemberDescriptor {
     public GizmoMemberDescriptor(Member member) {
         Class<?> declaringClass = member.getDeclaringClass();
         if (!Modifier.isPublic(member.getModifiers())) {
-            throw new IllegalStateException("Member (" + member.getName() + ") of class (" +
-                    member.getDeclaringClass().getName() + ") is not public and domainAccessType is GIZMO.\n" +
-                    ((member instanceof Field) ? "Maybe put the annotations onto the public getter of the field.\n" : "") +
-                    "Maybe use domainAccessType REFLECTION instead of GIZMO.");
+            throw new IllegalStateException("""
+                    Member (%s) of class (%s) is not public and domainAccessType is %s.
+                    %sMaybe use domainAccessType %s instead of %s."""
+                    .formatted(member.getName(), member.getDeclaringClass().getName(), DomainAccessType.GIZMO,
+                            ((member instanceof Field) ? "Maybe put the annotations onto the public getter of the field.\n"
+                                    : ""),
+                            DomainAccessType.REFLECTION, DomainAccessType.GIZMO));
         }
         if (member instanceof Field field) {
             var fieldDescriptor = FieldDesc.of(field);
@@ -61,7 +65,7 @@ public final class GizmoMemberDescriptor {
             this.memberHandler = GizmoMemberHandler.of(declaringClass, methodDescriptor);
             this.setter = lookupSetter(methodDescriptor, declaringClass, name).orElse(null);
         } else {
-            throw new IllegalArgumentException(member + " is not a Method or a Field.");
+            throw new IllegalArgumentException("%s is not a Method or a Field.".formatted(member));
         }
         this.metadataHandler = this.memberHandler;
     }

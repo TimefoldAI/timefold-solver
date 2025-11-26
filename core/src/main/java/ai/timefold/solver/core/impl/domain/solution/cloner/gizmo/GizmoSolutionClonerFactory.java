@@ -23,10 +23,9 @@ public final class GizmoSolutionClonerFactory {
             // Check if Gizmo on the classpath by verifying we can access one of its classes
             Class.forName("io.quarkus.gizmo2.Gizmo", false, Thread.currentThread().getContextClassLoader());
         } catch (ClassNotFoundException e) {
-            throw new IllegalStateException("When using the domainAccessType (" +
-                    DomainAccessType.GIZMO +
-                    ") the classpath or modulepath must contain io.quarkus.gizmo:gizmo.\n" +
-                    "Maybe add a dependency to io.quarkus.gizmo:gizmo.");
+            throw new IllegalStateException("""
+                    When using the domainAccessType (%s) the classpath or modulepath must contain io.quarkus.gizmo:gizmo2.
+                    Maybe add a dependency to io.quarkus.gizmo:gizmo2.""".formatted(DomainAccessType.GIZMO));
         }
         return new GizmoSolutionClonerImplementor().createClonerFor(solutionDescriptor,
                 gizmoClassLoader);

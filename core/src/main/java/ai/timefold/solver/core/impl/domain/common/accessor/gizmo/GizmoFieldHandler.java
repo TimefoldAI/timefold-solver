@@ -62,8 +62,7 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
             return declaringClass.getDeclaredField(fieldDescriptor.name()).getGenericType();
         } catch (NoSuchFieldException e) {
             throw new IllegalStateException(
-                    "Cannot find field (" + fieldDescriptor.name() + ") on class (" + declaringClass + ").",
-                    e);
+                    "Cannot find field (%s) on class (%s).".formatted(fieldDescriptor.name(), declaringClass), e);
         }
     }
 

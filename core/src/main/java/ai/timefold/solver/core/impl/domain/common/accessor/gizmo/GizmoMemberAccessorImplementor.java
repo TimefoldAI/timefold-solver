@@ -15,6 +15,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.util.MutableReference;
 
+import org.jspecify.annotations.NonNull;
+
 import io.quarkus.gizmo2.ClassOutput;
 import io.quarkus.gizmo2.Const;
 import io.quarkus.gizmo2.Gizmo;
@@ -27,10 +29,6 @@ import io.quarkus.gizmo2.desc.MethodDesc;
  * Generates the bytecode for the MemberAccessor of a particular Member
  */
 public final class GizmoMemberAccessorImplementor {
-
-    final static String GENERIC_TYPE_FIELD = "genericType";
-    final static String ANNOTATED_ELEMENT_FIELD = "annotatedElement";
-
     /**
      * Generates the constructor and implementations of {@link AbstractGizmoMemberAccessor} methods for the given
      * {@link Member}.
@@ -77,12 +75,8 @@ public final class GizmoMemberAccessorImplementor {
 
     private static Class<? extends AbstractGizmoMemberAccessor> getCorrectSuperclass(GizmoMemberInfo memberInfo) {
         AtomicBoolean supportsSetter = new AtomicBoolean();
-        memberInfo.descriptor().whenIsMethod(method -> {
-            supportsSetter.set(memberInfo.descriptor().getSetter().isPresent());
-        });
-        memberInfo.descriptor().whenIsField(field -> {
-            supportsSetter.set(true);
-        });
+        memberInfo.descriptor().whenIsMethod(method -> supportsSetter.set(memberInfo.descriptor().getSetter().isPresent()));
+        memberInfo.descriptor().whenIsField(field -> supportsSetter.set(true));
         if (supportsSetter.get()) {
             return AbstractReadWriteGizmoMemberAccessor.class;
         } else {
@@ -110,7 +104,7 @@ public final class GizmoMemberAccessorImplementor {
         if (gizmoClassLoader.hasBytecodeFor(className)) {
             return createInstance(className, gizmoClassLoader);
         }
-        final MutableReference<byte[]> classBytecodeHolder = new MutableReference<>(null);
+        final MutableReference<byte @NonNull []> classBytecodeHolder = new MutableReference<>(null);
         ClassOutput classOutput = (path, byteCode) -> classBytecodeHolder.setValue(byteCode);
         GizmoMemberInfo memberInfo =
                 new GizmoMemberInfo(new GizmoMemberDescriptor(member), returnTypeRequired, annotationClass);
@@ -138,50 +132,48 @@ public final class GizmoMemberAccessorImplementor {
         var classCreator = generatedClassInfo.classCreator;
         var memberInfo = generatedClassInfo.memberInfo;
 
-        classCreator.constructor(constructorCreator -> {
-            constructorCreator.body(blockCreator -> {
-                var thisObj = constructorCreator.this_();
+        classCreator.constructor(constructorCreator -> constructorCreator.body(blockCreator -> {
+            var thisObj = constructorCreator.this_();
 
-                // Invoke Object's constructor
-                blockCreator.invokeSpecial(ConstructorDesc.of(classCreator.superClass()), thisObj);
+            // Invoke Object's constructor
+            blockCreator.invokeSpecial(ConstructorDesc.of(classCreator.superClass()), thisObj);
 
-                var declaringClass = blockCreator.localVar("declaringClass", Const.of(ClassDesc.of(
-                        memberInfo.descriptor().getDeclaringClassName())));
-                memberInfo.descriptor().whenMetadataIsOnField(fd -> {
-                    var name = Const.of(fd.name());
-                    var field = blockCreator.localVar("declaredField", blockCreator.invokeVirtual(
-                            MethodDesc.of(Class.class, "getDeclaredField",
-                                    Field.class, String.class),
-                            declaringClass, name));
+            var declaringClass = blockCreator.localVar("declaringClass", Const.of(ClassDesc.of(
+                    memberInfo.descriptor().getDeclaringClassName())));
+            memberInfo.descriptor().whenMetadataIsOnField(fd -> {
+                var name = Const.of(fd.name());
+                var field = blockCreator.localVar("declaredField", blockCreator.invokeVirtual(
+                        MethodDesc.of(Class.class, "getDeclaredField",
+                                Field.class, String.class),
+                        declaringClass, name));
+                var type =
+                        blockCreator.invokeVirtual(
+                                MethodDesc.of(Field.class, "getGenericType", Type.class),
+                                field);
+                blockCreator.set(thisObj.field(generatedClassInfo.genericTypeField), type);
+                blockCreator.set(thisObj.field(generatedClassInfo.annotatedElementField), field);
+            });
+
+            memberInfo.descriptor().whenMetadataIsOnMethod(md -> {
+                var name = Const.of(md.name());
+                var method = blockCreator.localVar("method", blockCreator.invokeVirtual(
+                        MethodDesc.of(Class.class, "getDeclaredMethod",
+                                Method.class, String.class, Class[].class),
+                        declaringClass, name,
+                        blockCreator.newEmptyArray(Class.class, 0)));
+                if (memberInfo.returnTypeRequired()) {
+                    // We create a field to store the result, only if the called method has a return type.
+                    // Otherwise, we will only execute it
                     var type =
                             blockCreator.invokeVirtual(
-                                    MethodDesc.of(Field.class, "getGenericType", Type.class),
-                                    field);
+                                    MethodDesc.of(Method.class, "getGenericReturnType", Type.class),
+                                    method);
                     blockCreator.set(thisObj.field(generatedClassInfo.genericTypeField), type);
-                    blockCreator.set(thisObj.field(generatedClassInfo.annotatedElementField), field);
-                });
-
-                memberInfo.descriptor().whenMetadataIsOnMethod(md -> {
-                    var name = Const.of(md.name());
-                    var method = blockCreator.localVar("method", blockCreator.invokeVirtual(
-                            MethodDesc.of(Class.class, "getDeclaredMethod",
-                                    Method.class, String.class, Class[].class),
-                            declaringClass, name,
-                            blockCreator.newEmptyArray(Class.class, 0)));
-                    if (memberInfo.returnTypeRequired()) {
-                        // We create a field to store the result, only if the called method has a return type.
-                        // Otherwise, we will only execute it
-                        var type =
-                                blockCreator.invokeVirtual(
-                                        MethodDesc.of(Method.class, "getGenericReturnType", Type.class),
-                                        method);
-                        blockCreator.set(thisObj.field(generatedClassInfo.genericTypeField), type);
-                    }
-                    blockCreator.set(thisObj.field(generatedClassInfo.annotatedElementField), method);
-                });
-                blockCreator.return_();
+                }
+                blockCreator.set(thisObj.field(generatedClassInfo.annotatedElementField), method);
             });
-        });
+            blockCreator.return_();
+        }));
     }
 
     /**
@@ -200,11 +192,9 @@ public final class GizmoMemberAccessorImplementor {
         classCreator.method("getDeclaringClass", builder -> {
             builder.public_();
             builder.returning(Class.class);
-            builder.body(blockCreator -> {
-                blockCreator.return_(
-                        Const.of(ClassDesc.of(
-                                memberInfo.descriptor().getDeclaringClassName())));
-            });
+            builder.body(blockCreator -> blockCreator.return_(
+                    Const.of(ClassDesc.of(
+                            memberInfo.descriptor().getDeclaringClassName()))));
         });
     }
 
@@ -368,15 +358,13 @@ public final class GizmoMemberAccessorImplementor {
         classCreator.method("getGenericType", builder -> {
             builder.public_();
             builder.returning(Type.class);
-            builder.body(blockCreator -> {
-                blockCreator.return_(classCreator.this_().field(generatedClassInfo.genericTypeField));
-            });
+            builder.body(blockCreator -> blockCreator.return_(classCreator.this_().field(generatedClassInfo.genericTypeField)));
         });
     }
 
     /**
      * Generates the following code:
-     *
+     * <p>
      * For a field
      *
      * <pre>
@@ -431,7 +419,7 @@ public final class GizmoMemberAccessorImplementor {
 
     /**
      * Generates the following code:
-     *
+     * <p>
      * For a field
      *
      * <pre>
@@ -469,7 +457,7 @@ public final class GizmoMemberAccessorImplementor {
                         blockCreator.localVar("castedBean", ClassDesc.of(memberInfo.descriptor().getDeclaringClassName()),
                                 bean);
                 if (memberInfo.descriptor().writeMemberValue(blockCreator, castedBean, value)) {
-                    // we are here only if the write is successful
+                    // we are here only if writing was successful
                     blockCreator.return_();
                 } else {
                     blockCreator.throw_(blockCreator.new_(UnsupportedOperationException.class,
