@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
@@ -27,7 +28,7 @@ public final class ReachableValues {
 
     private final ReachableValuesIndex<Object> entitiesIndex;
     private final ReachableValuesIndex<ReachableItemValue> valuesIndex;
-    private final @Nullable Class<?> valueClass;
+    private final Set<Class<?>> valueTypeSet;
     private final @Nullable ValueRangeSorter<?> valueRangeSorter;
     private final boolean acceptsNullValue;
     private @Nullable List<Object>[] onDemandRandomAccessEntity;
@@ -36,10 +37,10 @@ public final class ReachableValues {
     private @Nullable ReachableItemValue secondCachedObject;
 
     public ReachableValues(ReachableValuesIndex<Object> entitiesIndex, ReachableValuesIndex<ReachableItemValue> valuesIndex,
-            @Nullable Class<?> valueClass, @Nullable ValueRangeSorter<?> valueRangeSorter, boolean acceptsNullValue) {
+            Set<Class<?>> valueTypeSet, @Nullable ValueRangeSorter<?> valueRangeSorter, boolean acceptsNullValue) {
         this.entitiesIndex = entitiesIndex;
         this.valuesIndex = valuesIndex;
-        this.valueClass = valueClass;
+        this.valueTypeSet = valueTypeSet;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
         this.onDemandRandomAccessEntity = new List[valuesIndex.allItems().size()];
@@ -137,11 +138,11 @@ public final class ReachableValues {
     }
 
     public boolean matchesValueClass(Object value) {
-        return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
+        return valueTypeSet.contains(Objects.requireNonNull(value).getClass());
     }
 
     public ReachableValues copy(ValueRangeSorter<?> sorterAdapter) {
-        return new ReachableValues(entitiesIndex, valuesIndex, valueClass, sorterAdapter, acceptsNullValue);
+        return new ReachableValues(entitiesIndex, valuesIndex, valueTypeSet, sorterAdapter, acceptsNullValue);
     }
 
     public void clear() {

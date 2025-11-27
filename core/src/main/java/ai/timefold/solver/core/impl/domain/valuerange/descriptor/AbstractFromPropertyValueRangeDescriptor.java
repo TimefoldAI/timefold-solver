@@ -99,6 +99,11 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
     }
 
     @Override
+    public boolean isGenericTypeImmutable() {
+        return isGenericTypeImmutable;
+    }
+
+    @Override
     public boolean isCountable() {
         return countable;
     }

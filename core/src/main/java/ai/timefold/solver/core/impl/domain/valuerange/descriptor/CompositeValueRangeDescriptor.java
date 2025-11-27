@@ -21,12 +21,14 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
 
     private final boolean canExtractValueRangeFromSolution;
     private final List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList;
+    private final boolean isGenericTypeImmutable;
 
     public CompositeValueRangeDescriptor(int ordinal, GenuineVariableDescriptor<Solution_> variableDescriptor,
             List<ValueRangeDescriptor<Solution_>> childValueRangeDescriptorList) {
         super(ordinal, variableDescriptor);
         this.childValueRangeDescriptorList = childValueRangeDescriptorList;
         var canExtractFromSolution = true;
+        var isImmutable = true;
         for (var valueRangeDescriptor : childValueRangeDescriptorList) {
             if (!valueRangeDescriptor.isCountable()) {
                 throw new IllegalStateException("""
@@ -36,8 +38,15 @@ public final class CompositeValueRangeDescriptor<Solution_> extends AbstractValu
                                 BigDecimalValueRange.class.getSimpleName()));
             }
             canExtractFromSolution = canExtractFromSolution && valueRangeDescriptor.canExtractValueRangeFromSolution();
+            isImmutable = isImmutable && valueRangeDescriptor.isGenericTypeImmutable();
         }
         this.canExtractValueRangeFromSolution = canExtractFromSolution;
+        this.isGenericTypeImmutable = isImmutable;
+    }
+
+    @Override
+    public boolean isGenericTypeImmutable() {
+        return isGenericTypeImmutable;
     }
 
     public int getValueRangeCount() {

@@ -1,17 +1,18 @@
 package ai.timefold.solver.core.impl.score.director;
 
-import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
+import java.util.Spliterator;
+import java.util.Spliterators;
 import java.util.function.BiFunction;
+import java.util.stream.StreamSupport;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
-import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.bigdecimal.BigDecimalValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.composite.NullAllowingCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.primdouble.DoubleValueRange;
@@ -22,12 +23,14 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues;
 import ai.timefold.solver.core.impl.heuristic.selector.common.ReachableValues.ReachableValuesIndex;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
+import ai.timefold.solver.core.impl.util.CollectionUtils;
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-final class ValueRangeDescriptorState<Solution_, T> {
+final class ValueRangeState<Solution_, T> {
 
     private final ValueRangeDescriptor<Solution_> valueRangeDescriptor;
     private final Solution_ cachedWorkingSolution;
@@ -43,7 +46,7 @@ final class ValueRangeDescriptorState<Solution_, T> {
     // ReachableValues related field
     private @Nullable ValueRangeItem<Solution_, ReachableValues> reachableValuesItem;
 
-    ValueRangeDescriptorState(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ cachedWorkingSolution) {
+    ValueRangeState(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ cachedWorkingSolution) {
         this.valueRangeDescriptor = Objects.requireNonNull(valueRangeDescriptor);
         this.cachedWorkingSolution = Objects.requireNonNull(cachedWorkingSolution);
     }
@@ -52,10 +55,9 @@ final class ValueRangeDescriptorState<Solution_, T> {
         // No item, we set the left side by default
         if (fromSolutionItem == null) {
             var valueRange = fetchValueRangeFromSolution(solution, sorter);
-            fromSolutionItem = ValueRangeItem.of(valueRange, sorter, null, null);
-            fromSolutionValueIndexMap =
-                    buildIndexMap((Iterator<Object>) valueRange.createOriginalIterator(), (int) valueRange.getSize(),
-                            ConfigUtils.isGenericTypeImmutable(findValueClass(valueRange)));
+            fromSolutionItem = ValueRangeItem.ofLeft(null, valueRange, sorter);
+            fromSolutionValueIndexMap = buildIndexMap((Iterator<Object>) valueRange.createOriginalIterator(),
+                    (int) valueRange.getSize(), valueRangeDescriptor.isGenericTypeImmutable());
             return valueRange;
         }
         var valueRange = pickValueBySorter(fromSolutionItem, sorter, null);
@@ -66,15 +68,17 @@ final class ValueRangeDescriptorState<Solution_, T> {
         if (fromSolutionItem.leftSorter() == null && sorter != null) {
             var sortedValueRange = sortValueRange(Objects.requireNonNull(fromSolutionItem.leftItem()), sorter);
             fromSolutionItem =
-                    ValueRangeItem.of(sortedValueRange, sorter, fromSolutionItem.rightItem(), fromSolutionItem.rightSorter());
+                    ValueRangeItem.of(null, sortedValueRange, sorter, fromSolutionItem.rightItem(),
+                            fromSolutionItem.rightSorter());
             // We need to update the index map or the positions may become inconsistent
             fromSolutionValueIndexMap = buildIndexMap((Iterator<Object>) sortedValueRange.createOriginalIterator(),
-                    (int) sortedValueRange.getSize(), ConfigUtils.isGenericTypeImmutable(findValueClass(sortedValueRange)));
+                    (int) sortedValueRange.getSize(), valueRangeDescriptor.isGenericTypeImmutable());
             return sortedValueRange;
         } else if (fromSolutionItem.rightItem() == null) {
             var sortedValueRange = sortValueRange(Objects.requireNonNull(fromSolutionItem.leftItem()), sorter);
             fromSolutionItem =
-                    ValueRangeItem.of(fromSolutionItem.leftItem(), fromSolutionItem.leftSorter(), sortedValueRange, sorter);
+                    ValueRangeItem.of(null, fromSolutionItem.leftItem(), fromSolutionItem.leftSorter(), sortedValueRange,
+                            sorter);
             return sortedValueRange;
         } else {
             throw new IllegalStateException(
@@ -188,8 +192,8 @@ final class ValueRangeDescriptorState<Solution_, T> {
 
     private Map<Object, ValueRangeItem<Solution_, CountableValueRange<T>>> ensureEntityMapIsInitialized(int entityCount) {
         if (fromEntityMap == null) {
-            fromEntityMap = new IdentityHashMap<>(entityCount);
-            fromEntityBitSet = new HashMap<>(entityCount);
+            fromEntityMap = CollectionUtils.newIdentityHashMap(entityCount);
+            fromEntityBitSet = CollectionUtils.newHashMap(entityCount);
         }
         return fromEntityMap;
     }
@@ -200,10 +204,10 @@ final class ValueRangeDescriptorState<Solution_, T> {
         if (checkEntityMatch) {
             var entityMatch = findEntityBitSetMatch(entity, valueRange);
             if (entityMatch != null) {
-                return ValueRangeItem.of(entityMatch);
+                return ValueRangeItem.ofEntity(entityMatch);
             }
         }
-        return ValueRangeItem.of(entity, valueRange, sorter);
+        return ValueRangeItem.ofLeft(entity, valueRange, sorter);
     }
 
     /**
@@ -264,7 +268,7 @@ final class ValueRangeDescriptorState<Solution_, T> {
         // No item, we set the leftItem side by default
         if (reachableValuesItem == null) {
             var values = fetchReachableValues(variableDescriptor, sorter);
-            reachableValuesItem = ValueRangeItem.of(values, sorter);
+            reachableValuesItem = ValueRangeItem.ofLeft(null, values, sorter);
             return values;
         }
         var value = pickValueBySorter(reachableValuesItem, sorter, null);
@@ -276,14 +280,16 @@ final class ValueRangeDescriptorState<Solution_, T> {
             // We clear the left item as we are copying it and updating the sorter
             var sortedValues = buildSortedReachableValues(Objects.requireNonNull(reachableValuesItem.leftItem()), sorter, true);
             reachableValuesItem =
-                    ValueRangeItem.of(sortedValues, sorter, reachableValuesItem.rightItem(), reachableValuesItem.rightSorter());
+                    ValueRangeItem.of(null, sortedValues, sorter, reachableValuesItem.rightItem(),
+                            reachableValuesItem.rightSorter());
             return sortedValues;
         } else if (reachableValuesItem.rightItem() == null && sorter != null) {
             // We use the existing left item to create a new structure with a different sorter
             var sortedValues =
                     buildSortedReachableValues(Objects.requireNonNull(reachableValuesItem.leftItem()), sorter, false);
             reachableValuesItem =
-                    ValueRangeItem.of(Objects.requireNonNull(reachableValuesItem.leftItem()), reachableValuesItem.leftSorter(),
+                    ValueRangeItem.of(null, Objects.requireNonNull(reachableValuesItem.leftItem()),
+                            reachableValuesItem.leftSorter(),
                             sortedValues, sorter);
             return sortedValues;
         } else {
@@ -311,9 +317,8 @@ final class ValueRangeDescriptorState<Solution_, T> {
         var entityIndexMap = buildIndexMap(entityList.iterator(), entityList.size(), false);
         var entityIndexItem = new ReachableValuesIndex<>(entityIndexMap, entityList);
         var valueList = getFromSolution(cachedWorkingSolution, null);
-        Class<?> valueClass = findValueClass(valueList);
         var valueIndexMap = buildIndexMap((Iterator<Object>) valueList.createOriginalIterator(), (int) valueList.getSize(),
-                ConfigUtils.isGenericTypeImmutable(valueClass));
+                valueRangeDescriptor.isGenericTypeImmutable());
         var valueListSize = valueList.getSize();
         if (valueListSize > Integer.MAX_VALUE) {
             throw new IllegalStateException(
@@ -322,7 +327,8 @@ final class ValueRangeDescriptorState<Solution_, T> {
                                     entityDescriptor.getEntityClass().getSimpleName(),
                                     variableDescriptor.getVariableName(), valueListSize));
         }
-        var reachableValueList = initReachableValueList(valueList, entityList.size());
+        var valueTypeSet = new HashSet<Class<?>>();
+        var reachableValueList = initReachableValueList(valueList, entityList.size(), valueTypeSet);
         var valueIndexItem = new ReachableValuesIndex<>(valueIndexMap, reachableValueList);
         for (var i = 0; i < entityList.size(); i++) {
             var entity = entityList.get(i);
@@ -330,26 +336,13 @@ final class ValueRangeDescriptorState<Solution_, T> {
             loadEntityValueRange(i, valueIndexMap, valueRange, reachableValueList);
         }
         var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
-        return new ReachableValues(entityIndexItem, valueIndexItem, valueClass, sorterAdapter,
+        return new ReachableValues(entityIndexItem, valueIndexItem, valueTypeSet, sorterAdapter,
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
     }
 
-    private @Nullable Class<?> findValueClass(CountableValueRange<T> valueRange) {
-        Class<?> valueClass = null;
-        var idx = 0;
-        while (idx < valueRange.getSize()) {
-            var value = valueRange.get(idx++);
-            if (value == null) {
-                continue;
-            }
-            valueClass = value.getClass();
-            break;
-        }
-        return valueClass;
-    }
-
     private static Map<Object, Integer> buildIndexMap(Iterator<@Nullable Object> allValues, int size, boolean isImmutable) {
-        Map<Object, Integer> indexMap = isImmutable ? new HashMap<>(size) : new IdentityHashMap<>(size);
+        Map<Object, Integer> indexMap =
+                isImmutable ? CollectionUtils.newHashMap(size) : CollectionUtils.newIdentityHashMap(size);
         var idx = 0;
         while (allValues.hasNext()) {
             var value = allValues.next();
@@ -362,18 +355,18 @@ final class ValueRangeDescriptorState<Solution_, T> {
     }
 
     private List<ReachableValues.ReachableItemValue> initReachableValueList(CountableValueRange<T> valueRange,
-            int entityListSize) {
-        var size = (int) valueRange.getSize();
-        var valueList = new ArrayList<ReachableValues.ReachableItemValue>(size);
-        var idx = 0;
-        for (var i = 0; i < size; i++) {
-            var value = valueRange.get(i);
-            if (value == null) {
-                continue;
-            }
-            valueList.add(new ReachableValues.ReachableItemValue(idx++, value, entityListSize, size));
-        }
-        return valueList;
+            int entityListSize, Set<Class<?>> valueTypeSet) {
+        var valuesSize = (int) valueRange.getSize();
+        Iterator<@Nullable T> iterator = valueRange.createOriginalIterator();
+        var spliterator = Spliterators.spliterator(iterator, valuesSize, Spliterator.ORDERED | Spliterator.IMMUTABLE);
+        var idx = new MutableInt(-1);
+        return StreamSupport.stream(spliterator, false)
+                .filter(Objects::nonNull)
+                .map(v -> {
+                    valueTypeSet.add(v.getClass());
+                    return new ReachableValues.ReachableItemValue(idx.increment(), v, entityListSize, valuesSize);
+                })
+                .toList();
     }
 
     private void loadEntityValueRange(int entityIndex, Map<Object, Integer> valueIndexMap,
@@ -407,24 +400,13 @@ final class ValueRangeDescriptorState<Solution_, T> {
             @Nullable SelectionSorter<Solution_, ?> leftSorter, @Nullable T rightItem,
             @Nullable SelectionSorter<Solution_, ?> rightSorter) {
 
-        public static <Solution_, T> ValueRangeItem<Solution_, T> of(Object entity) {
+        public static <Solution_, T> ValueRangeItem<Solution_, T> ofEntity(Object entity) {
             return new ValueRangeItem<>(entity, null, null, null, null);
         }
 
-        public static <Solution_, T> ValueRangeItem<Solution_, T> of(@Nullable Object entity, T leftItem,
+        public static <Solution_, T> ValueRangeItem<Solution_, T> ofLeft(@Nullable Object entity, T leftItem,
                 @Nullable SelectionSorter<Solution_, ?> leftSorter) {
             return new ValueRangeItem<>(entity, leftItem, leftSorter, null, null);
-        }
-
-        public static <Solution_, T> ValueRangeItem<Solution_, T> of(T leftItem,
-                @Nullable SelectionSorter<Solution_, ?> leftSorter) {
-            return new ValueRangeItem<>(null, leftItem, leftSorter, null, null);
-        }
-
-        public static <Solution_, T> ValueRangeItem<Solution_, T> of(@Nullable T leftItem,
-                @Nullable SelectionSorter<Solution_, ?> leftSorter, @Nullable T rightItem,
-                @Nullable SelectionSorter<Solution_, ?> rightSorter) {
-            return new ValueRangeItem<>(null, leftItem, leftSorter, rightItem, rightSorter);
         }
 
         public static <Solution_, T> ValueRangeItem<Solution_, T> of(@Nullable Object entity, @Nullable T leftItem,

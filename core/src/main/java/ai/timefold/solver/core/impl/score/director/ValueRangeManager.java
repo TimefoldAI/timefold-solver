@@ -42,7 +42,10 @@ import org.jspecify.annotations.Nullable;
 public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
-    private final @Nullable ValueRangeDescriptorState<Solution_, ?>[] state;
+    // Single value range descriptor requires no array
+    private @Nullable ValueRangeState<Solution_, ?> singleValueRangeState;
+    // Using multiple value range descriptors
+    private final @Nullable ValueRangeState<Solution_, ?> @Nullable [] multipleValueRangeState;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable ValueRangeStatistics<Solution_> statistics;
 
@@ -61,7 +64,12 @@ public final class ValueRangeManager<Solution_> {
      */
     public ValueRangeManager(SolutionDescriptor<Solution_> solutionDescriptor) {
         this.solutionDescriptor = Objects.requireNonNull(solutionDescriptor);
-        this.state = new ValueRangeDescriptorState[solutionDescriptor.getValueRangeDescriptorCount()];
+        var countDescriptor = solutionDescriptor.getValueRangeDescriptorCount();
+        if (countDescriptor > 1) {
+            this.multipleValueRangeState = new ValueRangeState[countDescriptor];
+        } else {
+            this.multipleValueRangeState = null;
+        }
     }
 
     private ValueRangeStatistics<Solution_> ensureStatisticsInitialized(Solution_ solution) {
@@ -104,13 +112,21 @@ public final class ValueRangeManager<Solution_> {
         return ensureStatisticsInitialized(Objects.requireNonNull(cachedWorkingSolution)).getProblemSizeStatistics();
     }
 
-    private ValueRangeDescriptorState<Solution_, ?> fromDescriptor(ValueRangeDescriptor<Solution_> descriptor) {
-        var descriptorState = state[descriptor.getOrdinal()];
-        if (descriptorState == null) {
-            descriptorState = new ValueRangeDescriptorState<>(descriptor, Objects.requireNonNull(cachedWorkingSolution));
-            state[descriptor.getOrdinal()] = descriptorState;
+    private ValueRangeState<Solution_, ?> fromDescriptor(ValueRangeDescriptor<Solution_> descriptor) {
+        if (multipleValueRangeState == null) {
+            // Null array means there are only one variable range descriptor
+            if (singleValueRangeState == null) {
+                singleValueRangeState = new ValueRangeState<>(descriptor, Objects.requireNonNull(cachedWorkingSolution));
+            }
+            return singleValueRangeState;
+        } else {
+            var descriptorState = multipleValueRangeState[descriptor.getOrdinal()];
+            if (descriptorState == null) {
+                descriptorState = new ValueRangeState<>(descriptor, Objects.requireNonNull(cachedWorkingSolution));
+                multipleValueRangeState[descriptor.getOrdinal()] = descriptorState;
+            }
+            return descriptorState;
         }
-        return descriptorState;
     }
 
     /**
@@ -187,7 +203,10 @@ public final class ValueRangeManager<Solution_> {
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
-        Arrays.fill(state, null);
+        singleValueRangeState = null;
+        if (multipleValueRangeState != null) {
+            Arrays.fill(multipleValueRangeState, null);
+        }
         // We only update the cached solution if it is not null; null means to only reset the maps.
         if (workingSolution != null) {
             cachedWorkingSolution = workingSolution;
