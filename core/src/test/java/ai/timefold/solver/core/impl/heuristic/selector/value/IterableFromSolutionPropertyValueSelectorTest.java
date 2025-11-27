@@ -49,8 +49,8 @@ class IterableFromSolutionPropertyValueSelectorTest {
         InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
         doReturn(scoreDirector).when(solverScope).getScoreDirector();
         doReturn(solution).when(scoreDirector).getWorkingSolution();
-        doReturn(new ValueRangeManager<>(TestdataSolution.buildSolutionDescriptor())).when(scoreDirector)
-                .getValueRangeManager();
+        var valueRangeManager = ValueRangeManager.of(TestdataSolution.buildSolutionDescriptor(), solution);
+        doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();
         valueSelector.solvingStarted(solverScope);
 
         var phaseScopeA = mock(AbstractPhaseScope.class);

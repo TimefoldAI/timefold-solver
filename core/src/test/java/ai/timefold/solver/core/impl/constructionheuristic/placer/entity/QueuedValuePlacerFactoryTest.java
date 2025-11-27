@@ -42,9 +42,10 @@ class QueuedValuePlacerFactoryTest {
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
         InnerScoreDirector<TestdataSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
         when(phaseScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
-        when(scoreDirector.getWorkingSolution()).thenReturn(generateSolution());
-        when(scoreDirector.getValueRangeManager())
-                .thenReturn(new ValueRangeManager<>(TestdataSolution.buildSolutionDescriptor()));
+        var solution = generateSolution();
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        var valueRangeManager = ValueRangeManager.of(TestdataSolution.buildSolutionDescriptor(), solution);
+        when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
         placer.phaseStarted(phaseScope);
         Iterator<Placement<TestdataSolution>> placementIterator = placer.iterator();
         assertThat(placementIterator).hasNext();

@@ -216,7 +216,8 @@ class VariableListenerSupportTest {
         var solutionDescriptor = TestdataConcurrentSolution.buildSolutionDescriptor();
         InnerScoreDirector<TestdataConcurrentSolution, HardSoftScore> scoreDirector = mock(InnerScoreDirector.class);
         when(scoreDirector.getSolutionDescriptor()).thenReturn(solutionDescriptor);
-        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>(solutionDescriptor));
+        var valueRangeManager = new ValueRangeManager<>(solutionDescriptor);
+        when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
 
         AtomicReference<MockTopologicalOrderGraph> graphReference = new AtomicReference<>(null);
         var registry = new NotifiableRegistry<>(solutionDescriptor);
@@ -255,6 +256,7 @@ class VariableListenerSupportTest {
         var solution = new TestdataConcurrentSolution();
         solution.setEntities(List.of(vehicle1, vehicle2, vehicle3));
         solution.setValues(List.of(visitA1, visitA2, visitB1, visitB2, visitB3, visitC));
+        valueRangeManager.reset(solution);
 
         variableListenerSupport =
                 new VariableListenerSupport<>(scoreDirector, registry, size -> {
