@@ -863,7 +863,7 @@ class TimefoldProcessor {
         for (var beanDefiningAnnotation : DotNames.BeanDefiningAnnotations.values()) {
             for (var annotationInstance : indexView
                     .getAnnotationsWithRepeatable(beanDefiningAnnotation.getAnnotationDotName(), indexView)) {
-                for (var parameterName : beanDefiningAnnotation.getParameterNames()) {
+                for (var parameterName : beanDefiningAnnotation.getBeanDefiningMethodNames()) {
                     var value = annotationInstance.value(parameterName);
 
                     // We don't care about the default/null type.

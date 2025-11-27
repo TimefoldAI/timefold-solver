@@ -2,12 +2,14 @@ package ai.timefold.solver.quarkus;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
 
 import jakarta.inject.Inject;
 
+import ai.timefold.solver.core.api.domain.common.ComparatorFactory;
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.variable.ShadowVariable;
 import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
@@ -87,6 +89,8 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
         assertFactoryContains(DummySolutionPartitioner.class);
         assertFactoryContains(DummyValueFilter.class);
         assertFactoryContains(DummyVariableListener.class);
+        assertFactoryContains(DummyEntityComparator.class);
+        assertFactoryContains(DummyAbstractEntityComparatorFactory.class);
 
         assertFactoryNotContains(DummyInterfaceEntity.class);
         assertFactoryNotContains(DummyAbstractEntity.class);
@@ -94,7 +98,22 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
 
     /* Dummy classes below are referenced from the testSolverConfig.xml used in this test case. */
 
-    @PlanningEntity
+    public static class DummyEntityComparator implements Comparator<DummyInterfaceEntity> {
+        @Override
+        public int compare(DummyInterfaceEntity o1, DummyInterfaceEntity o2) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    public static class DummyAbstractEntityComparatorFactory
+            implements ComparatorFactory<TestdataSolution, DummyAbstractEntity> {
+        @Override
+        public Comparator<DummyAbstractEntity> createComparator(TestdataSolution object) {
+            throw new UnsupportedOperationException();
+        }
+    }
+
+    @PlanningEntity(comparatorClass = DummyEntityComparator.class)
     public interface DummyInterfaceEntity {
         @ShadowVariable(variableListenerClass = DummyVariableListener.class,
                 sourceEntityClass = TestdataEntity.class, sourceVariableName = "value")
@@ -103,7 +122,7 @@ class TimefoldProcessorGeneratedGizmoSupplierTest {
         void setLength(Integer length);
     }
 
-    @PlanningEntity
+    @PlanningEntity(comparatorFactoryClass = DummyAbstractEntityComparatorFactory.class)
     public abstract static class DummyAbstractEntity {
         @ShadowVariable(variableListenerClass = DummyVariableListener.class,
                 sourceEntityClass = TestdataEntity.class, sourceVariableName = "value")
