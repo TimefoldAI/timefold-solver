@@ -88,11 +88,13 @@ public final class ValueRangeCache<Value_>
      * @param sorter never null, the sorter
      */
     public ValueRangeCache<Value_> sort(ValueRangeSorter<Value_> sorter) {
-        sorter.sort(valuesWithFastRandomAccess);
+        // We need to copy the list or the sorting to ensure it won't affect other cache instances
+        var newValuesWithFastRandomAccess = new ArrayList<>(valuesWithFastRandomAccess);
+        sorter.sort(newValuesWithFastRandomAccess);
         if (trustedValues) {
-            return Builder.FOR_TRUSTED_VALUES.buildCache(valuesWithFastRandomAccess, valuesWithFastLookup);
+            return Builder.FOR_TRUSTED_VALUES.buildCache(newValuesWithFastRandomAccess, valuesWithFastLookup);
         } else {
-            return Builder.FOR_USER_VALUES.buildCache(valuesWithFastRandomAccess, valuesWithFastLookup);
+            return Builder.FOR_USER_VALUES.buildCache(newValuesWithFastRandomAccess, valuesWithFastLookup);
         }
     }
 

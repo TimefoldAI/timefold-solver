@@ -17,7 +17,8 @@ public class TestdataListEntityProvidingSolution {
                 TestdataListEntityProvidingEntity.class, TestdataListEntityProvidingValue.class);
     }
 
-    public static TestdataListEntityProvidingSolution generateSolution(int valueListSize, int entityListSize) {
+    public static TestdataListEntityProvidingSolution generateSolution(int valueListSize, int entityListSize,
+            boolean sameValueRange) {
         var solution = new TestdataListEntityProvidingSolution();
         var valueList = new ArrayList<TestdataListEntityProvidingValue>(valueListSize);
         for (var i = 0; i < valueListSize; i++) {
@@ -27,13 +28,17 @@ public class TestdataListEntityProvidingSolution {
         var entityList = new ArrayList<TestdataListEntityProvidingEntity>(entityListSize);
         var idx = 0;
         for (var i = 0; i < entityListSize; i++) {
-            var expectedCount = Math.max(1, valueListSize / entityListSize);
             var valueRange = new ArrayList<TestdataListEntityProvidingValue>();
-            for (var j = 0; j < expectedCount; j++) {
-                if (idx >= valueListSize) {
-                    break;
+            if (sameValueRange) {
+                valueRange.addAll(valueList);
+            } else {
+                var expectedCount = Math.max(1, valueListSize / entityListSize);
+                for (var j = 0; j < expectedCount; j++) {
+                    if (idx >= valueListSize) {
+                        break;
+                    }
+                    valueRange.add(valueList.get(idx++));
                 }
-                valueRange.add(valueList.get(idx++));
             }
             var entity = new TestdataListEntityProvidingEntity("Generated Entity " + i, valueRange);
             entityList.add(entity);

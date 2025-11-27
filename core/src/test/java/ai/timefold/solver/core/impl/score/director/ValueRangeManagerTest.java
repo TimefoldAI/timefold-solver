@@ -32,6 +32,7 @@ import ai.timefold.solver.core.testdomain.list.composite.TestdataListCompositeEn
 import ai.timefold.solver.core.testdomain.list.composite.TestdataListCompositeSolution;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListSolution;
+import ai.timefold.solver.core.testdomain.list.unassignedvar.TestdataAllowsUnassignedValuesListValue;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.composite.TestdataAllowsUnassignedCompositeListEntity;
 import ai.timefold.solver.core.testdomain.list.unassignedvar.composite.TestdataAllowsUnassignedCompositeListSolution;
 import ai.timefold.solver.core.testdomain.list.valuerange.TestdataListEntityProvidingEntity;
@@ -607,7 +608,7 @@ class ValueRangeManagerTest {
 
     @Test
     void sortValueFromEntityAssignedListVariable() {
-        var solution = TestdataListEntityProvidingSolution.generateSolution(6, 2);
+        var solution = TestdataListEntityProvidingSolution.generateSolution(6, 2, false);
         var valueRangeDescriptor = TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList()
                 .getValueRangeDescriptor();
         assertSolutionValueRangeSortingOrder(solution, valueRangeDescriptor, List.of("Generated Value 0", "Generated Value 1",
@@ -982,6 +983,69 @@ class ValueRangeManagerTest {
         // but the numbers should be relatively (i.e. ~1%) close.
         assertThat(Math.pow(10, listPowerExponent))
                 .isCloseTo(Math.pow(10, chainedPowerExponent), Percentage.withPercentage(1));
+    }
+
+    @Test
+    void deduplicationForSolution() {
+        var valueCount = 3;
+        var entityCount = 3;
+        var solutionDescriptor = TestdataAllowsUnassignedValuesListSolution.buildSolutionDescriptor();
+        var valueRangeDescriptor =
+                TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList().getValueRangeDescriptor();
+        var solution = TestdataAllowsUnassignedValuesListSolution.generateUninitializedSolution(valueCount, entityCount);
+
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        var valueRange =
+                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
+        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
+                solution.getValueList().stream().map(TestdataAllowsUnassignedValuesListValue::getCode).toArray(String[]::new));
+        var otherValueRange =
+                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
+        assertThat(valueRange).isSameAs(otherValueRange);
+        var yetAnotherValueRange =
+                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
+        assertThat(yetAnotherValueRange).isSameAs(otherValueRange);
+    }
+
+    @Test
+    void deduplicationForEntity() {
+        var valueCount = 3;
+        var entityCount = 3;
+        var solutionDescriptor = TestdataListEntityProvidingSolution.buildSolutionDescriptor();
+        var valueRangeDescriptor =
+                TestdataListEntityProvidingEntity.buildVariableDescriptorForValueList().getValueRangeDescriptor();
+        var solution = TestdataListEntityProvidingSolution.generateSolution(valueCount, entityCount, true);
+
+        // One entity with a different range
+        solution.getEntityList().get(2).getValueRange().remove(0);
+
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+
+        // Entity 0 and Entity 1
+        var valueRange =
+                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0));
+        assertNonNullCodesOfIterator(valueRange.createOriginalIterator(),
+                solution.getValueList().stream().map(TestdataListEntityProvidingValue::getCode).toArray(String[]::new));
+        var otherValueRange =
+                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1));
+        assertThat(valueRange).isSameAs(otherValueRange);
+
+        // Entity 2
+        var yetAnotherValueRange =
+                (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2));
+        assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
+
+        // Sorting data
+        SelectionSorter<TestdataListEntityProvidingSolution, TestdataObject> sorterComparator =
+                new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
+        valueRange = valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(0), sorterComparator);
+        otherValueRange =
+                valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(1), sorterComparator);
+        assertThat(valueRange).isSameAs(otherValueRange);
+        yetAnotherValueRange =
+                valueRangeManager.getFromEntity(valueRangeDescriptor, solution.getEntityList().get(2), sorterComparator);
+        assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
     }
 
     private <S> void assertSolutionValueRangeSortingOrder(S solution, ValueRangeDescriptor<S> valueRangeDescriptor,
