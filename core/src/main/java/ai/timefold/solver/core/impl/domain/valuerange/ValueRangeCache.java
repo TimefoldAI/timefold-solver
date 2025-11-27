@@ -88,7 +88,7 @@ public final class ValueRangeCache<Value_>
      * @param sorter never null, the sorter
      */
     public ValueRangeCache<Value_> sort(ValueRangeSorter<Value_> sorter) {
-        // We need to copy the list or the sorting to ensure it won't affect other cache instances
+        // We need to copy the list to ensure it won't affect other cache instances
         var newValuesWithFastRandomAccess = new ArrayList<>(valuesWithFastRandomAccess);
         sorter.sort(newValuesWithFastRandomAccess);
         if (trustedValues) {

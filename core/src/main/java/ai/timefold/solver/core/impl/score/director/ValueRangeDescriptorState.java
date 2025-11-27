@@ -86,7 +86,7 @@ final class ValueRangeDescriptorState<Solution_, T> {
 
     private @Nullable <V> V pickValueBySorter(ValueRangeItem<Solution_, V> item,
             @Nullable SelectionSorter<Solution_, ?> sorter,
-            @Nullable BiFunction<Object, SelectionSorter<Solution_, ?>, V> placeholderFunction) {
+            @Nullable BiFunction<Object, @Nullable SelectionSorter<Solution_, ?>, V> placeholderFunction) {
         // We verify whether it serves as a placeholder to another value range
         if (item.leftItem() == null && item.rightItem() == null && placeholderFunction != null) {
             var placeholder = item.entity();
@@ -167,21 +167,23 @@ final class ValueRangeDescriptorState<Solution_, T> {
         if (valueRange != null) {
             return valueRange;
         }
-        var newItem = buildEntityValueRangeItem(entity, sorter, false);
         if (item.leftSorter() == null && sorter != null) {
             // The current left sorter is null and need to be updated
-            entityMap.put(entity,
-                    ValueRangeItem.of(entity, newItem.leftItem(), newItem.leftSorter(), item.rightItem(), item.rightSorter()));
+            var newItem = ValueRangeItem.of(entity, sortValueRange(Objects.requireNonNull(item.leftItem()), sorter), sorter,
+                    item.rightItem(), item.rightSorter());
+            entityMap.put(entity, newItem);
             return Objects.requireNonNull(newItem.leftItem());
         } else if (item.rightItem() == null) {
             // The new item stores the sorted right item at the left position
-            entityMap.put(entity,
-                    ValueRangeItem.of(entity, item.leftItem(), item.leftSorter(), newItem.leftItem(), newItem.leftSorter()));
-            return Objects.requireNonNull(newItem.leftItem());
+            var newItem = ValueRangeItem.of(entity, item.leftItem(), item.leftSorter(),
+                    sortValueRange(Objects.requireNonNull(item.leftItem()), sorter), sorter);
+            entityMap.put(entity, newItem);
+            return Objects.requireNonNull(newItem.rightItem());
+        } else {
+            throw new IllegalStateException(
+                    "Impossible state: the value range (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
+                            .formatted(valueRangeDescriptor, sorter, item.leftSorter(), item.rightSorter()));
         }
-        throw new IllegalStateException(
-                "Impossible state: the value range (%s) with sorter (%s) does not align with the existing ascending (%s) and descending (%s) sorters."
-                        .formatted(valueRangeDescriptor, sorter, item.leftSorter(), item.rightSorter()));
     }
 
     private Map<Object, ValueRangeItem<Solution_, CountableValueRange<T>>> ensureEntityMapIsInitialized(int entityCount) {
@@ -309,7 +311,9 @@ final class ValueRangeDescriptorState<Solution_, T> {
         var entityIndexMap = buildIndexMap(entityList.iterator(), entityList.size(), false);
         var entityIndexItem = new ReachableValuesIndex<>(entityIndexMap, entityList);
         var valueList = getFromSolution(cachedWorkingSolution, null);
-        var valueIndexMap = getIndexMapFromSolution();
+        Class<?> valueClass = findValueClass(valueList);
+        var valueIndexMap = buildIndexMap((Iterator<Object>) valueList.createOriginalIterator(), (int) valueList.getSize(),
+                ConfigUtils.isGenericTypeImmutable(valueClass));
         var valueListSize = valueList.getSize();
         if (valueListSize > Integer.MAX_VALUE) {
             throw new IllegalStateException(
@@ -318,7 +322,6 @@ final class ValueRangeDescriptorState<Solution_, T> {
                                     entityDescriptor.getEntityClass().getSimpleName(),
                                     variableDescriptor.getVariableName(), valueListSize));
         }
-        Class<?> valueClass = findValueClass(valueList);
         var reachableValueList = initReachableValueList(valueList, entityList.size());
         var valueIndexItem = new ReachableValuesIndex<>(valueIndexMap, reachableValueList);
         for (var i = 0; i < entityList.size(); i++) {
