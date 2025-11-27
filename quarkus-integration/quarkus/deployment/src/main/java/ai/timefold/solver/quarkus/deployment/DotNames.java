@@ -1,6 +1,7 @@
 package ai.timefold.solver.quarkus.deployment;
 
-import java.util.Arrays;
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -149,29 +150,33 @@ public final class DotNames {
             SOLVER_MANAGER);
 
     public enum BeanDefiningAnnotations {
-        PLANNING_SCORE(DotNames.PLANNING_SCORE, "scoreDefinitionClass"),
-        PLANNING_SOLUTION(DotNames.PLANNING_SOLUTION, "solutionCloner"),
-        PLANNING_ENTITY(DotNames.PLANNING_ENTITY, "pinningFilter", "difficultyComparatorClass",
-                "difficultyWeightFactoryClass", "comparatorClass", "comparatorFactoryClass"),
-        PLANNING_VARIABLE(DotNames.PLANNING_VARIABLE, "strengthComparatorClass",
-                "strengthWeightFactoryClass"),
-        CUSTOM_SHADOW_VARIABLE(DotNames.CUSTOM_SHADOW_VARIABLE, "variableListenerClass"),
-        SHADOW_VARIABLE(DotNames.SHADOW_VARIABLE, "variableListenerClass");
+        PLANNING_SCORE(DotNames.PLANNING_SCORE, PlanningScore.class),
+        PLANNING_SOLUTION(DotNames.PLANNING_SOLUTION, PlanningSolution.class),
+        PLANNING_ENTITY(DotNames.PLANNING_ENTITY, PlanningEntity.class),
+        PLANNING_VARIABLE(DotNames.PLANNING_VARIABLE, PlanningVariable.class),
+        PLANNING_LIST_VARIABLE(DotNames.PLANNING_LIST_VARIABLE, PlanningListVariable.class),
+        CUSTOM_SHADOW_VARIABLE(DotNames.CUSTOM_SHADOW_VARIABLE, CustomShadowVariable.class),
+        SHADOW_VARIABLE(DotNames.SHADOW_VARIABLE, ShadowVariable.class);
 
         private final DotName annotationDotName;
-        private final List<String> parameterNames;
+        private final List<String> beanDefiningMethodNames;
 
-        BeanDefiningAnnotations(DotName annotationDotName, String... parameterNames) {
+        BeanDefiningAnnotations(DotName annotationDotName, Class<? extends Annotation> annotationClass) {
             this.annotationDotName = annotationDotName;
-            this.parameterNames = Arrays.asList(parameterNames);
+            this.beanDefiningMethodNames = new ArrayList<>();
+            for (var method : annotationClass.getMethods()) {
+                if (method.getReturnType().equals(Class.class)) {
+                    beanDefiningMethodNames.add(method.getName());
+                }
+            }
         }
 
         public DotName getAnnotationDotName() {
             return annotationDotName;
         }
 
-        public List<String> getParameterNames() {
-            return parameterNames;
+        public List<String> getBeanDefiningMethodNames() {
+            return beanDefiningMethodNames;
         }
     }
 
