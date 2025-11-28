@@ -198,7 +198,7 @@ public final class ReachableValues<Entity_, Value_> {
         List<Value_> getRandomAccessValueList(List<ReachableItemValue<Entity_, Value_>> allValues,
                 @Nullable ValueRangeSorter<Value_> valueRangeSorter) {
             var valuesList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues,
-                    v -> (Value_) v.value);
+                    v -> v.value);
             if (valueRangeSorter != null) {
                 valueRangeSorter.sort(valuesList);
             }

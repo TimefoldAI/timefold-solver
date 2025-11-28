@@ -455,7 +455,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             if (value != null) {
                 this.oneSideValidation = true;
                 var entityList = reachableValues.extractEntitiesAsList(value);
-                this.entityIterator = new RandomListIterator(entityList, workingRandom);
+                this.entityIterator = new RandomListIterator<>(entityList, workingRandom);
                 this.iterationBailoutSize = entityList.size();
             } else {
                 this.oneSideValidation = false;

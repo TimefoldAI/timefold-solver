@@ -335,7 +335,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             loadEntityValueRange(i, valueIndexMap, valueRange, reachableValueList);
         }
         var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
-        return new ReachableValues(entityIndexItem, valueIndexItem, expectedTypeOfValue, sorterAdapter,
+        return new ReachableValues<>(entityIndexItem, valueIndexItem, expectedTypeOfValue, sorterAdapter,
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
     }
 
