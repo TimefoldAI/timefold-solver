@@ -1,12 +1,10 @@
 package ai.timefold.solver.core.impl.score.director;
 
 import java.util.BitSet;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.BiFunction;
@@ -327,8 +325,10 @@ final class ValueRangeState<Solution_, T> {
                                     entityDescriptor.getEntityClass().getSimpleName(),
                                     variableDescriptor.getVariableName(), valueListSize));
         }
-        var valueTypeSet = new HashSet<Class<?>>();
-        var reachableValueList = initReachableValueList(valueList, entityList.size(), valueTypeSet);
+        var expectedTypeOfValue = valueRangeDescriptor.getVariableDescriptor()
+                .getVariableMetaModel()
+                .type();
+        var reachableValueList = initReachableValueList(valueList, entityList.size());
         var valueIndexItem = new ReachableValuesIndex<>(valueIndexMap, reachableValueList);
         for (var i = 0; i < entityList.size(); i++) {
             var entity = entityList.get(i);
@@ -336,7 +336,7 @@ final class ValueRangeState<Solution_, T> {
             loadEntityValueRange(i, valueIndexMap, valueRange, reachableValueList);
         }
         var sorterAdapter = sorter != null ? SelectionSorterAdapter.of(cachedWorkingSolution, sorter) : null;
-        return new ReachableValues(entityIndexItem, valueIndexItem, valueTypeSet, sorterAdapter,
+        return new ReachableValues(entityIndexItem, valueIndexItem, expectedTypeOfValue, sorterAdapter,
                 variableDescriptor.getValueRangeDescriptor().acceptsNullInValueRange());
     }
 
@@ -355,17 +355,14 @@ final class ValueRangeState<Solution_, T> {
     }
 
     private List<ReachableValues.ReachableItemValue> initReachableValueList(CountableValueRange<T> valueRange,
-            int entityListSize, Set<Class<?>> valueTypeSet) {
+            int entityListSize) {
         var valuesSize = (int) valueRange.getSize();
         Iterator<@Nullable T> iterator = valueRange.createOriginalIterator();
         var spliterator = Spliterators.spliterator(iterator, valuesSize, Spliterator.ORDERED | Spliterator.IMMUTABLE);
         var idx = new MutableInt(-1);
         return StreamSupport.stream(spliterator, false)
                 .filter(Objects::nonNull)
-                .map(v -> {
-                    valueTypeSet.add(v.getClass());
-                    return new ReachableValues.ReachableItemValue(idx.increment(), v, entityListSize, valuesSize);
-                })
+                .map(v -> new ReachableValues.ReachableItemValue(idx.increment(), v, entityListSize, valuesSize))
                 .toList();
     }
 

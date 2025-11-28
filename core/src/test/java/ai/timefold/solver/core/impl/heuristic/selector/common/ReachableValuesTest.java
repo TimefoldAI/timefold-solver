@@ -47,8 +47,8 @@ class ReachableValuesTest {
         assertThat(reachableValues.isEntityReachable(v1, b)).isFalse();
         assertThat(reachableValues.isEntityReachable(v1, c)).isFalse();
 
-        assertThat(reachableValues.matchesValueClass(v1)).isTrue();
-        assertThat(reachableValues.matchesValueClass(a)).isFalse();
+        assertThat(reachableValues.valueHasMatchingType(v1)).isTrue();
+        assertThat(reachableValues.valueHasMatchingType(a)).isFalse();
     }
 
     @Test
