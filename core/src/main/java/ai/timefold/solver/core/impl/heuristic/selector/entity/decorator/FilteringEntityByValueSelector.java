@@ -70,7 +70,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
     private final boolean randomSelection;
 
     private Object replayedValue;
-    private ReachableValues reachableValues;
+    private ReachableValues<Object, Object> reachableValues;
     private long entitiesSize;
 
     public FilteringEntityByValueSelector(EntitySelector<Solution_> childEntitySelector,
@@ -157,27 +157,27 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
 
     @Override
     public Iterator<Object> endingIterator() {
-        return new OriginalFilteringValueRangeIterator(this::selectReplayedValue, reachableValues);
+        return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues);
     }
 
     @Override
     public Iterator<Object> iterator() {
         if (randomSelection) {
-            return new RandomFilteringValueRangeIterator(this::selectReplayedValue, reachableValues, workingRandom);
+            return new RandomFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues, workingRandom);
         } else {
-            return new OriginalFilteringValueRangeIterator(this::selectReplayedValue, reachableValues);
+            return new OriginalFilteringValueRangeIterator<>(this::selectReplayedValue, reachableValues);
         }
     }
 
     @Override
     public ListIterator<Object> listIterator() {
-        return new OriginalFilteringValueRangeListIterator(this::selectReplayedValue, childEntitySelector.listIterator(),
+        return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(),
                 reachableValues);
     }
 
     @Override
     public ListIterator<Object> listIterator(int index) {
-        return new OriginalFilteringValueRangeListIterator(this::selectReplayedValue, childEntitySelector.listIterator(index),
+        return new OriginalFilteringValueRangeListIterator<>(this::selectReplayedValue, childEntitySelector.listIterator(index),
                 reachableValues);
     }
 
@@ -193,50 +193,51 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         return Objects.hash(childEntitySelector, replayingValueSelector);
     }
 
-    private static class OriginalFilteringValueRangeIterator extends UpcomingSelectionIterator<Object> {
+    private static class OriginalFilteringValueRangeIterator<Entity_, Value_> extends UpcomingSelectionIterator<Entity_> {
 
-        private final Supplier<Object> upcomingValueSupplier;
-        private final ReachableValues reachableValues;
-        private Iterator<Object> valueIterator;
+        private final Supplier<Value_> upcomingValueSupplier;
+        private final ReachableValues<Entity_, Value_> reachableValues;
+        private Iterator<Entity_> entityIterator;
 
-        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
-                ReachableValues reachableValues) {
+        private OriginalFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
+                ReachableValues<Entity_, Value_> reachableValues) {
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.upcomingValueSupplier = Objects.requireNonNull(upcomingValueSupplier);
         }
 
         private void initialize() {
-            if (valueIterator != null) {
+            if (entityIterator != null) {
                 return;
             }
             var currentUpcomingValue = upcomingValueSupplier.get();
             if (currentUpcomingValue == null) {
-                valueIterator = Collections.emptyIterator();
+                entityIterator = Collections.emptyIterator();
             } else {
                 var allValues = reachableValues.extractEntitiesAsList(Objects.requireNonNull(currentUpcomingValue));
-                this.valueIterator = Objects.requireNonNull(allValues).iterator();
+                this.entityIterator = Objects.requireNonNull(allValues).iterator();
             }
         }
 
         @Override
-        protected Object createUpcomingSelection() {
+        protected Entity_ createUpcomingSelection() {
             initialize();
-            if (!valueIterator.hasNext()) {
+            if (!entityIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return valueIterator.next();
+            return entityIterator.next();
         }
     }
 
-    private static class OriginalFilteringValueRangeListIterator extends UpcomingSelectionListIterator<Object> {
+    private static class OriginalFilteringValueRangeListIterator<Entity_, Value_>
+            extends UpcomingSelectionListIterator<Entity_> {
 
-        private final Supplier<Object> upcomingValueSupplier;
-        private final ListIterator<Object> entityIterator;
-        private final ReachableValues reachableValues;
-        private Object replayedValue;
+        private final Supplier<Value_> upcomingValueSupplier;
+        private final ListIterator<Entity_> entityIterator;
+        private final ReachableValues<Entity_, Value_> reachableValues;
+        private Value_ replayedValue;
 
-        private OriginalFilteringValueRangeListIterator(Supplier<Object> upcomingValueSupplier,
-                ListIterator<Object> entityIterator, ReachableValues reachableValues) {
+        private OriginalFilteringValueRangeListIterator(Supplier<Value_> upcomingValueSupplier,
+                ListIterator<Entity_> entityIterator, ReachableValues<Entity_, Value_> reachableValues) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.entityIterator = entityIterator;
             this.reachableValues = reachableValues;
@@ -262,7 +263,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         }
 
         @Override
-        protected Object createUpcomingSelection() {
+        protected Entity_ createUpcomingSelection() {
             if (!entityIterator.hasNext()) {
                 return noUpcomingSelection();
             }
@@ -276,7 +277,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         }
 
         @Override
-        protected Object createPreviousSelection() {
+        protected Entity_ createPreviousSelection() {
             if (!entityIterator.hasPrevious()) {
                 return noUpcomingSelection();
             }
@@ -290,17 +291,16 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         }
     }
 
-    private static class RandomFilteringValueRangeIterator implements Iterator<Object> {
+    private static class RandomFilteringValueRangeIterator<Entity_, Value_> implements Iterator<Entity_> {
 
-        private final Supplier<Object> upcomingValueSupplier;
-        private final ReachableValues reachableValues;
+        private final Supplier<Value_> upcomingValueSupplier;
+        private final ReachableValues<Entity_, Value_> reachableValues;
         private final Random workingRandom;
-        private Object currentUpcomingValue;
-        private List<Object> entityList;
+        private Value_ currentUpcomingValue;
+        private List<Entity_> entityList;
 
-        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingValueSupplier,
-                ReachableValues reachableValues,
-                Random workingRandom) {
+        private RandomFilteringValueRangeIterator(Supplier<Value_> upcomingValueSupplier,
+                ReachableValues<Entity_, Value_> reachableValues, Random workingRandom) {
             this.upcomingValueSupplier = upcomingValueSupplier;
             this.reachableValues = Objects.requireNonNull(reachableValues);
             this.workingRandom = workingRandom;
@@ -327,7 +327,7 @@ public final class FilteringEntityByValueSelector<Solution_> extends AbstractDem
         }
 
         @Override
-        public Object next() {
+        public Entity_ next() {
             if (entityList.isEmpty()) {
                 throw new NoSuchElementException();
             }

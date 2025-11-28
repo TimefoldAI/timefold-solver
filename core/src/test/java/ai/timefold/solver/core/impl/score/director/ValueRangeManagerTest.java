@@ -1048,7 +1048,8 @@ class ValueRangeManagerTest {
         assertThat(yetAnotherValueRange).isNotSameAs(otherValueRange);
     }
 
-    private <S> void assertSolutionValueRangeSortingOrder(S solution, ValueRangeDescriptor<S> valueRangeDescriptor,
+    private <Solution_> void assertSolutionValueRangeSortingOrder(Solution_ solution,
+            ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             List<String> allValues) {
         var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
@@ -1058,7 +1059,7 @@ class ValueRangeManagerTest {
         assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
 
         // Desc comparator
-        SelectionSorter<S, TestdataObject> sorterComparator =
+        SelectionSorter<Solution_, TestdataObject> sorterComparator =
                 new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
         var sortedValueRange =
                 (CountableValueRange<?>) valueRangeManager.getFromSolution(valueRangeDescriptor, solution, sorterComparator);
@@ -1072,7 +1073,7 @@ class ValueRangeManagerTest {
         assertThat(otherValueRange).isSameAs(sortedValueRange);
 
         // Add the asc sorter
-        SelectionSorter<S, TestdataObject> sorterComparatorFactory =
+        SelectionSorter<Solution_, TestdataObject> sorterComparatorFactory =
                 new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
                         SelectionSorterOrder.ASCENDING);
         var otherSortedValueRange =
@@ -1088,7 +1089,8 @@ class ValueRangeManagerTest {
         assertThat(otherSortedValueRange).isSameAs(anotherSortedValueRange);
     }
 
-    private <S, E> void assertEntityValueRangeSortingOrder(S solution, E entity, ValueRangeDescriptor<S> valueRangeDescriptor,
+    private <Solution_, Entity_> void assertEntityValueRangeSortingOrder(Solution_ solution, Entity_ entity,
+            ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             List<String> allValues) {
         var solutionDescriptor = valueRangeDescriptor.getVariableDescriptor().getEntityDescriptor().getSolutionDescriptor();
         var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
@@ -1098,7 +1100,7 @@ class ValueRangeManagerTest {
         assertNonNullCodesOfIterator(valueRange.createOriginalIterator(), allValues.toArray(String[]::new));
 
         // Desc comparator
-        SelectionSorter<S, TestdataObject> sorterComparator =
+        SelectionSorter<Solution_, TestdataObject> sorterComparator =
                 new ComparatorSelectionSorter<>(Comparator.comparing(TestdataObject::getCode), SelectionSorterOrder.DESCENDING);
         var sortedValueRange =
                 (CountableValueRange<?>) valueRangeManager.getFromEntity(valueRangeDescriptor, entity, sorterComparator);
@@ -1112,7 +1114,7 @@ class ValueRangeManagerTest {
         assertThat(otherValueRange).isSameAs(sortedValueRange);
 
         // Add the asc sorter
-        SelectionSorter<S, TestdataObject> sorterComparatorFactory =
+        SelectionSorter<Solution_, TestdataObject> sorterComparatorFactory =
                 new ComparatorFactorySelectionSorter<>(sol -> Comparator.comparing(TestdataObject::getCode),
                         SelectionSorterOrder.ASCENDING);
         var otherSortedValueRange =

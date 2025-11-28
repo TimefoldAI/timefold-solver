@@ -43,9 +43,9 @@ public final class ValueRangeManager<Solution_> {
 
     private final SolutionDescriptor<Solution_> solutionDescriptor;
     // Single value range descriptor requires no array
-    private @Nullable ValueRangeState<Solution_, ?> singleValueRangeState;
+    private @Nullable ValueRangeState<Solution_, ?, ?> singleValueRangeState;
     // Using multiple value range descriptors
-    private final @Nullable ValueRangeState<Solution_, ?> @Nullable [] multipleValueRangeState;
+    private final @Nullable ValueRangeState<Solution_, ?, ?> @Nullable [] multipleValueRangeState;
     private @Nullable Solution_ cachedWorkingSolution = null;
     private @Nullable ValueRangeStatistics<Solution_> statistics;
 
@@ -112,20 +112,21 @@ public final class ValueRangeManager<Solution_> {
         return ensureStatisticsInitialized(Objects.requireNonNull(cachedWorkingSolution)).getProblemSizeStatistics();
     }
 
-    private ValueRangeState<Solution_, ?> fromDescriptor(ValueRangeDescriptor<Solution_> descriptor) {
+    private <Entity_, Value_> ValueRangeState<Solution_, Entity_, Value_>
+            fromDescriptor(ValueRangeDescriptor<Solution_> descriptor) {
         if (multipleValueRangeState == null) {
             // Null array means there are only one variable range descriptor
             if (singleValueRangeState == null) {
                 singleValueRangeState = new ValueRangeState<>(descriptor, Objects.requireNonNull(cachedWorkingSolution));
             }
-            return singleValueRangeState;
+            return (ValueRangeState<Solution_, Entity_, Value_>) singleValueRangeState;
         } else {
             var descriptorState = multipleValueRangeState[descriptor.getOrdinal()];
             if (descriptorState == null) {
                 descriptorState = new ValueRangeState<>(descriptor, Objects.requireNonNull(cachedWorkingSolution));
                 multipleValueRangeState[descriptor.getOrdinal()] = descriptorState;
             }
-            return descriptorState;
+            return (ValueRangeState<Solution_, Entity_, Value_>) descriptorState;
         }
     }
 
@@ -136,7 +137,7 @@ public final class ValueRangeManager<Solution_> {
      *
      * @throws IllegalStateException if called before {@link #reset(Object)} is called
      */
-    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
+    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor) {
         if (cachedWorkingSolution == null) {
             throw new IllegalStateException(
                     "Impossible state: value range (%s) requested before the working solution is known."
@@ -145,8 +146,8 @@ public final class ValueRangeManager<Solution_> {
         return getFromSolution(valueRangeDescriptor, cachedWorkingSolution);
     }
 
-    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
-            @Nullable SelectionSorter<Solution_, T> sorter) {
+    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            @Nullable SelectionSorter<Solution_, Value_> sorter) {
         if (cachedWorkingSolution == null) {
             throw new IllegalStateException(
                     "Impossible state: value range (%s) requested before the working solution is known."
@@ -155,51 +156,54 @@ public final class ValueRangeManager<Solution_> {
         return getFromSolution(valueRangeDescriptor, cachedWorkingSolution, sorter);
     }
 
-    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
             Solution_ solution) {
         return getFromSolution(valueRangeDescriptor, solution, null);
     }
 
-    @SuppressWarnings({ "unchecked" })
-    public <T> CountableValueRange<T> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution,
-            @Nullable SelectionSorter<Solution_, T> sorter) {
-        return (CountableValueRange<T>) fromDescriptor(valueRangeDescriptor).getFromSolution(solution, sorter);
+    public <Value_> CountableValueRange<Value_> getFromSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            Solution_ solution,
+            @Nullable SelectionSorter<Solution_, Value_> sorter) {
+        ValueRangeState<Solution_, ?, Value_> descriptor = fromDescriptor(valueRangeDescriptor);
+        return descriptor.getFromSolution(solution, sorter);
     }
 
     /**
      * @throws IllegalStateException if called before {@link #reset(Object)} is called
      */
-    public <T> CountableValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
+    public <Entity_, Value_> CountableValueRange<Value_> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            Entity_ entity) {
         return getFromEntity(valueRangeDescriptor, entity, null);
     }
 
     /**
      * @throws IllegalStateException if called before {@link #reset(Object)} is called
      */
-    @SuppressWarnings({ "unchecked" })
-    public <T> CountableValueRange<T> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity,
-            @Nullable SelectionSorter<Solution_, T> sorter) {
-        return (CountableValueRange<T>) fromDescriptor(valueRangeDescriptor).getFromEntity(entity,
-                getInitializationStatistics().genuineEntityCount(), sorter);
+    public <Entity_, Value_> CountableValueRange<Value_> getFromEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor,
+            Entity_ entity,
+            @Nullable SelectionSorter<Solution_, Value_> sorter) {
+        ValueRangeState<Solution_, Entity_, Value_> descriptor = fromDescriptor(valueRangeDescriptor);
+        return descriptor.getFromEntity(entity, getInitializationStatistics().genuineEntityCount(), sorter);
     }
 
     public long countOnSolution(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Solution_ solution) {
-        return getFromSolution(valueRangeDescriptor, solution)
-                .getSize();
+        return getFromSolution(valueRangeDescriptor, solution).getSize();
     }
 
-    public long countOnEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Object entity) {
-        return getFromEntity(valueRangeDescriptor, entity)
-                .getSize();
+    public <Entity_> long countOnEntity(ValueRangeDescriptor<Solution_> valueRangeDescriptor, Entity_ entity) {
+        return getFromEntity(valueRangeDescriptor, entity).getSize();
     }
 
-    public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
+    public <Entity_, Value_> ReachableValues<Entity_, Value_>
+            getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor) {
         return getReachableValues(variableDescriptor, null);
     }
 
-    public ReachableValues getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            @Nullable SelectionSorter<Solution_, ?> sorter) {
-        return fromDescriptor(variableDescriptor.getValueRangeDescriptor()).getReachableValues(variableDescriptor, sorter);
+    public <Entity_, Value_> ReachableValues<Entity_, Value_> getReachableValues(
+            GenuineVariableDescriptor<Solution_> variableDescriptor,
+            @Nullable SelectionSorter<Solution_, Value_> sorter) {
+        ValueRangeState<Solution_, Entity_, Value_> descriptor = fromDescriptor(variableDescriptor.getValueRangeDescriptor());
+        return descriptor.getReachableValues(variableDescriptor, sorter);
     }
 
     public void reset(@Nullable Solution_ workingSolution) {
