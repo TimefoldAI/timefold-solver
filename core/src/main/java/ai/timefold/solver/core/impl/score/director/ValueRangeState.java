@@ -368,28 +368,16 @@ final class ValueRangeState<Solution_, T> {
 
     private void loadEntityValueRange(int entityIndex, Map<Object, Integer> valueIndexMap,
             CountableValueRange<T> valueRange, List<ReachableValues.ReachableItemValue> reachableValueList) {
-        var allValuesBitSet = new BitSet(reachableValueList.size());
         // We create a bitset containing all possible values from the range to optimize operations
-        for (var i = 0; i < valueRange.getSize(); i++) {
-            var value = valueRange.get(i);
-            if (value == null) {
-                continue;
-            }
-            allValuesBitSet.set(valueIndexMap.get(value));
-        }
-        for (var i = 0; i < valueRange.getSize(); i++) {
-            var value = valueRange.get(i);
-            if (value == null) {
-                continue;
-            }
-            var valueIndex = valueIndexMap.get(value);
+        var allValuesBitSet = buildBitSetForValueRange(valueRange, valueIndexMap);
+        // The second pass need only to iterate over the bits we already set.
+        var valueIndex = allValuesBitSet.nextSetBit(0);
+        while (valueIndex >= 0) {
             var item = reachableValueList.get(valueIndex);
             item.addEntity(entityIndex);
             // We unset the current value index to import only the values that are reachable
-            allValuesBitSet.clear(valueIndex);
-            item.addValues(allValuesBitSet);
-            // We set it again to restore the state for the next value
-            allValuesBitSet.set(valueIndex);
+            item.addValuesExcept(allValuesBitSet, valueIndex);
+            valueIndex = allValuesBitSet.nextSetBit(valueIndex + 1);
         }
     }
 
