@@ -156,7 +156,7 @@ final class ValueRangeState<Solution_, T> {
         var item = entityMap.get(entity);
         // No item, we set the left side by default
         if (item == null) {
-            var newItem = buildEntityValueRangeItem(entity, sorter, true);
+            var newItem = buildEntityValueRangeItem(entity, sorter);
             entityMap.put(entity, newItem);
             if (newItem.entity() != null && newItem.leftItem() == null && newItem.rightItem() == null) {
                 // Placeholder for another entity
@@ -197,13 +197,11 @@ final class ValueRangeState<Solution_, T> {
     }
 
     private ValueRangeItem<Solution_, CountableValueRange<T>> buildEntityValueRangeItem(Object entity,
-            @Nullable SelectionSorter<Solution_, ?> sorter, boolean checkEntityMatch) {
+            @Nullable SelectionSorter<Solution_, ?> sorter) {
         var valueRange = fetchValueRangeFromEntity(entity, sorter);
-        if (checkEntityMatch) {
-            var entityMatch = findEntityBitSetMatch(entity, valueRange);
-            if (entityMatch != null) {
-                return ValueRangeItem.ofEntity(entityMatch);
-            }
+        var entityMatch = findEntityBitSetMatch(entity, valueRange);
+        if (entityMatch != null) {
+            return ValueRangeItem.ofEntity(entityMatch);
         }
         return ValueRangeItem.ofLeft(entity, valueRange, sorter);
     }
