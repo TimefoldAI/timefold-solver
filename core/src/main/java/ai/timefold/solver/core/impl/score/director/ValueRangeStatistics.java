@@ -96,10 +96,14 @@ final class ValueRangeStatistics<Solution_> {
             }
             // TODO maybe detect duplicates and elements that are outside the value range
         });
-        return new SolutionInitializationStatistics(genuineEntityCount.intValue(),
+        var statistics = new SolutionInitializationStatistics(genuineEntityCount.intValue(),
                 shadowEntityCount.intValue(),
                 uninitializedEntityCount.intValue(), uninitializedVariableCount.intValue(), unassignedValueCount.intValue(),
                 notInAnyListValueCount.intValue());
+        if (cachedInitializationStatistics == null) {
+            this.cachedInitializationStatistics = statistics;
+        }
+        return statistics;
     }
 
     public ProblemSizeStatistics getProblemSizeStatistics() {
