@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.primint;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import ai.timefold.solver.core.testutil.TestRandom;
 
@@ -15,7 +16,7 @@ class IntValueRangeTest {
         assertThat(new IntValueRange(0, 10).getSize()).isEqualTo(10L);
         assertThat(new IntValueRange(100, 120).getSize()).isEqualTo(20L);
         assertThat(new IntValueRange(-15, 25).getSize()).isEqualTo(40L);
-        assertThat(new IntValueRange(7, 7).getSize()).isEqualTo(0L);
+        assertThat(new IntValueRange(7, 7).getSize()).isZero();
         assertThat(new IntValueRange(-1000, Integer.MAX_VALUE - 100).getSize()).isEqualTo(Integer.MAX_VALUE + 900L);
         // IncrementUnit
         assertThat(new IntValueRange(0, 10, 2).getSize()).isEqualTo(5L);
@@ -76,6 +77,12 @@ class IntValueRangeTest {
         assertElementsOfIterator(new IntValueRange(0, 10, 2).createRandomIterator(new TestRandom(3, 0)), 6, 0);
         assertElementsOfIterator(new IntValueRange(-1, 9, 2).createRandomIterator(new TestRandom(3, 0)), 5, -1);
         assertElementsOfIterator(new IntValueRange(100, 120, 5).createRandomIterator(new TestRandom(3, 0)), 115, 100);
+    }
+
+    @Test
+    void sort() {
+        var range = new IntValueRange(0, 7);
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
     }
 
 }

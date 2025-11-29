@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.value;
 
+import static ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder.SORTED;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -29,14 +31,12 @@ import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.CachingVa
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.DowncastingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueRangeSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FromEntitySortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.InitializedValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.IterableFromEntityPropertyValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ProbabilityValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ReinitializeVariableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SelectedCountLimitValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.ShufflingValueSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.SortingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.UnassignedListValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicRecordingValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.mimic.MimicReplayingValueSelector;
@@ -122,10 +122,10 @@ public class ValueSelectorFactory<Solution_>
 
         // baseValueSelector and lower should be SelectionOrder.ORIGINAL if they are going to get cached completely
         var randomSelection = determineBaseRandomSelection(variableDescriptor, resolvedCacheType, resolvedSelectionOrder);
-        var valueSelector =
-                buildBaseValueSelector(variableDescriptor, SelectionCacheType.max(minimumCacheType, resolvedCacheType),
-                        randomSelection);
         var instanceCache = configPolicy.getClassInstanceCache();
+        var sorter = determineSorter(variableDescriptor, resolvedSelectionOrder, instanceCache);
+        var valueSelector = buildBaseValueSelector(variableDescriptor, sorter,
+                SelectionCacheType.max(minimumCacheType, resolvedCacheType), randomSelection);
         if (nearbySelectionConfig != null) {
             // TODO Static filtering (such as movableEntitySelectionFilter) should affect nearbySelection too
             valueSelector = applyNearbySelection(configPolicy, entityDescriptor, minimumCacheType,
@@ -141,7 +141,6 @@ public class ValueSelectorFactory<Solution_>
         }
         valueSelector = applyFiltering(valueSelector, instanceCache);
         valueSelector = applyInitializedChainedValueFilter(configPolicy, variableDescriptor, valueSelector);
-        valueSelector = applySorting(resolvedCacheType, resolvedSelectionOrder, valueSelector, instanceCache);
         valueSelector = applyProbability(resolvedCacheType, resolvedSelectionOrder, valueSelector, instanceCache);
         valueSelector = applyShuffling(resolvedCacheType, resolvedSelectionOrder, valueSelector);
         valueSelector = applyCaching(resolvedCacheType, resolvedSelectionOrder, valueSelector);
@@ -260,8 +259,46 @@ public class ValueSelectorFactory<Solution_>
         }
     }
 
+    private SelectionSorter<Solution_, Object> determineSorter(GenuineVariableDescriptor<Solution_> variableDescriptor,
+            SelectionOrder resolvedSelectionOrder, ClassInstanceCache instanceCache) {
+        if (resolvedSelectionOrder != SORTED) {
+            return null;
+        }
+        SelectionSorter<Solution_, Object> sorter;
+        var sorterManner = config.getSorterManner();
+        var comparatorClass = determineComparatorClass(config);
+        var comparatorFactoryClass = determineComparatorFactoryClass(config);
+        if (sorterManner != null) {
+            if (!ValueSelectorConfig.hasSorter(sorterManner, variableDescriptor)) {
+                return null;
+            }
+            sorter = ValueSelectorConfig.determineSorter(sorterManner, variableDescriptor);
+        } else if (comparatorClass != null) {
+            Comparator<Object> sorterComparator =
+                    instanceCache.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
+            sorter = new ComparatorSelectionSorter<>(sorterComparator,
+                    SelectionSorterOrder.resolve(config.getSorterOrder()));
+        } else if (comparatorFactoryClass != null) {
+            var comparatorFactory = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
+                    comparatorFactoryClass);
+            sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
+                    SelectionSorterOrder.resolve(config.getSorterOrder()));
+        } else if (config.getSorterClass() != null) {
+            sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());
+        } else {
+            throw new IllegalArgumentException("""
+                    The valueSelectorConfig (%s) with resolvedSelectionOrder (%s) needs \
+                    a sorterManner (%s) or a %s (%s) or a %s (%s) \
+                    or a sorterClass (%s)."""
+                    .formatted(config, resolvedSelectionOrder, sorterManner, determineComparatorPropertyName(config),
+                            comparatorClass, determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
+                            config.getSorterClass()));
+        }
+        return sorter;
+    }
+
     private ValueSelector<Solution_> buildBaseValueSelector(GenuineVariableDescriptor<Solution_> variableDescriptor,
-            SelectionCacheType minimumCacheType, boolean randomSelection) {
+            SelectionSorter<Solution_, Object> sorter, SelectionCacheType minimumCacheType, boolean randomSelection) {
         var valueRangeDescriptor = variableDescriptor.getValueRangeDescriptor();
         // TODO minimumCacheType SOLVER is only a problem if the valueRange includes entities or custom weird cloning
         if (minimumCacheType == SelectionCacheType.SOLVER) {
@@ -271,11 +308,13 @@ public class ValueSelectorFactory<Solution_>
                     + ") is not yet supported. Please use " + SelectionCacheType.PHASE + " instead.");
         }
         if (valueRangeDescriptor.canExtractValueRangeFromSolution()) {
-            return new IterableFromSolutionPropertyValueSelector<>(valueRangeDescriptor, minimumCacheType, randomSelection);
+            return new IterableFromSolutionPropertyValueSelector<>(valueRangeDescriptor, sorter, minimumCacheType,
+                    randomSelection);
         } else {
             // TODO Do not allow PHASE cache on FromEntityPropertyValueSelector, except if the moveSelector is PHASE cached too.
-            var fromEntityPropertySelector = new FromEntityPropertyValueSelector<>(valueRangeDescriptor, randomSelection);
-            return new IterableFromEntityPropertyValueSelector<>(fromEntityPropertySelector, randomSelection);
+            var fromEntityPropertySelector =
+                    new FromEntityPropertyValueSelector<>(valueRangeDescriptor, sorter, randomSelection);
+            return new IterableFromEntityPropertyValueSelector<>(fromEntityPropertySelector, minimumCacheType, randomSelection);
         }
     }
 
@@ -322,14 +361,14 @@ public class ValueSelectorFactory<Solution_>
         var sorterOrder = config.getSorterOrder();
         var sorterClass = config.getSorterClass();
         if ((sorterManner != null || comparatorClass != null || comparatorFactoryClass != null
-                || sorterOrder != null || sorterClass != null) && resolvedSelectionOrder != SelectionOrder.SORTED) {
+                || sorterOrder != null || sorterClass != null) && resolvedSelectionOrder != SORTED) {
             throw new IllegalArgumentException("""
                     The valueSelectorConfig (%s) with sorterManner (%s) \
                     and %s (%s) and %s (%s) and sorterOrder (%s) and sorterClass (%s) \
                     has a resolvedSelectionOrder (%s) that is not %s."""
                     .formatted(config, sorterManner, comparatorPropertyName, comparatorClass, comparatorFactoryPropertyName,
                             comparatorFactoryClass, sorterOrder, sorterClass, resolvedSelectionOrder,
-                            SelectionOrder.SORTED));
+                            SORTED));
         }
         assertNotSorterMannerAnd(config, comparatorPropertyName, ValueSelectorFactory::determineComparatorClass);
         assertNotSorterMannerAnd(config, comparatorFactoryPropertyName,
@@ -367,59 +406,6 @@ public class ValueSelectorFactory<Solution_>
                     "The entitySelectorConfig (%s) with sorterClass (%s) has a non-null %s (%s)."
                             .formatted(config, sorterClass, propertyName, property));
         }
-    }
-
-    protected ValueSelector<Solution_> applySorting(SelectionCacheType resolvedCacheType, SelectionOrder resolvedSelectionOrder,
-            ValueSelector<Solution_> valueSelector, ClassInstanceCache instanceCache) {
-        if (resolvedSelectionOrder == SelectionOrder.SORTED) {
-            SelectionSorter<Solution_, Object> sorter;
-            var sorterManner = config.getSorterManner();
-            var comparatorClass = determineComparatorClass(config);
-            var comparatorFactoryClass = determineComparatorFactoryClass(config);
-            if (sorterManner != null) {
-                var variableDescriptor = valueSelector.getVariableDescriptor();
-                if (!ValueSelectorConfig.hasSorter(sorterManner, variableDescriptor)) {
-                    return valueSelector;
-                }
-                sorter = ValueSelectorConfig.determineSorter(sorterManner, variableDescriptor);
-            } else if (comparatorClass != null) {
-                Comparator<Object> sorterComparator =
-                        instanceCache.newInstance(config, determineComparatorPropertyName(config), comparatorClass);
-                sorter = new ComparatorSelectionSorter<>(sorterComparator,
-                        SelectionSorterOrder.resolve(config.getSorterOrder()));
-            } else if (comparatorFactoryClass != null) {
-                var comparatorFactory = instanceCache.newInstance(config, determineComparatorFactoryPropertyName(config),
-                        comparatorFactoryClass);
-                sorter = new ComparatorFactorySelectionSorter<>(comparatorFactory,
-                        SelectionSorterOrder.resolve(config.getSorterOrder()));
-            } else if (config.getSorterClass() != null) {
-                sorter = instanceCache.newInstance(config, "sorterClass", config.getSorterClass());
-            } else {
-                throw new IllegalArgumentException("""
-                        The valueSelectorConfig (%s) with resolvedSelectionOrder (%s) needs \
-                        a sorterManner (%s) or a %s (%s) or a %s (%s) \
-                        or a sorterClass (%s)."""
-                        .formatted(config, resolvedSelectionOrder, sorterManner, determineComparatorPropertyName(config),
-                                comparatorClass, determineComparatorFactoryPropertyName(config), comparatorFactoryClass,
-                                config.getSorterClass()));
-            }
-            if (!valueSelector.getVariableDescriptor().canExtractValueRangeFromSolution()
-                    && resolvedCacheType == SelectionCacheType.STEP) {
-                valueSelector = new FromEntitySortingValueSelector<>(valueSelector, resolvedCacheType, sorter);
-            } else {
-                if (!(valueSelector instanceof IterableValueSelector)) {
-                    throw new IllegalArgumentException("The valueSelectorConfig (" + config
-                            + ") with resolvedCacheType (" + resolvedCacheType
-                            + ") and resolvedSelectionOrder (" + resolvedSelectionOrder
-                            + ") needs to be based on an "
-                            + IterableValueSelector.class.getSimpleName() + " (" + valueSelector + ")."
-                            + " Check your @" + ValueRangeProvider.class.getSimpleName() + " annotations.");
-                }
-                valueSelector = new SortingValueSelector<>((IterableValueSelector<Solution_>) valueSelector,
-                        resolvedCacheType, sorter);
-            }
-        }
-        return valueSelector;
     }
 
     protected void validateProbability(SelectionOrder resolvedSelectionOrder) {

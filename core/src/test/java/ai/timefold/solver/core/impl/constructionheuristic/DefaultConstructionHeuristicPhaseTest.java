@@ -22,6 +22,7 @@ import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedEntityP
 import ai.timefold.solver.core.config.constructionheuristic.placer.QueuedValuePlacerConfig;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionOrder;
+import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySelectionConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySorterManner;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
@@ -35,6 +36,7 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.common.DummyHardSoftEasyScoreCalculator;
 import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingComparator;
 import ai.timefold.solver.core.testdomain.common.TestdataObjectSortableDescendingFactory;
+import ai.timefold.solver.core.testdomain.list.TestDistanceMeter;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListSolution;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
@@ -1170,6 +1172,36 @@ class DefaultConstructionHeuristicPhaseTest {
         var values = new ArrayList<ConstructionHeuristicTestConfig>();
         values.addAll(generateCommonConfiguration());
         values.addAll(generateAdvancedListVariableConfiguration(SelectionCacheType.STEP));
+        // Corner case where the value selector uses a range-filtering node and also sorts the data
+        values.add(new ConstructionHeuristicTestConfig(
+                new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                        .withId("sortedValueSelector")
+                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                        .withCacheType(SelectionCacheType.PHASE)
+                                        .withSorterManner(ValueSorterManner.DESCENDING))
+                                .withMoveSelectorConfig(new ListChangeMoveSelectorConfig()
+                                        .withValueSelectorConfig(
+                                                new ValueSelectorConfig().withMimicSelectorRef("sortedValueSelector"))
+                                        .withDestinationSelectorConfig(new DestinationSelectorConfig()
+                                                // Will create a range-filtering node and sort the data
+                                                .withValueSelectorConfig(new ValueSelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(SelectionCacheType.STEP)
+                                                        .withSorterManner(ValueSorterManner.DESCENDING))
+                                                .withEntitySelectorConfig(new EntitySelectorConfig()
+                                                        .withSelectionOrder(SelectionOrder.SORTED)
+                                                        .withCacheType(SelectionCacheType.STEP)
+                                                        .withSorterManner(EntitySorterManner.DESCENDING)))))
+                        .withForagerConfig(new ConstructionHeuristicForagerConfig().withPickEarlyType(
+                                ConstructionHeuristicPickEarlyType.FIRST_FEASIBLE_SCORE_OR_NON_DETERIORATING_HARD)),
+                // Since we are starting from decreasing strength
+                // and the entities are being read in decreasing order of difficulty,
+                // this is expected: e1[1], e2[2], and e3[3]
+                new int[] { 0, 1, 2 },
+                // Both are sorted and the expected result won't be affected
+                true));
         return values;
     }
 
@@ -1592,6 +1624,39 @@ class DefaultConstructionHeuristicPhaseTest {
                     .hasMessageContaining(
                             "comparatorFactoryClass (ai.timefold.solver.core.testdomain.common.DummyValueFactory) at the same time.");
         }
+    }
+
+    @Test
+    void failConstructionHeuristicBothNearbyAndSorting() {
+        // Two comparator properties
+        var solverConfig = PlannerTestUtils
+                .buildSolverConfig(TestdataListSolution.class, TestdataListEntity.class)
+                .withEasyScoreCalculatorClass(TestdataListSolutionEasyScoreCalculator.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig()
+                        .withEntityPlacerConfig(new QueuedEntityPlacerConfig()
+                                .withEntitySelectorConfig(new EntitySelectorConfig().withId("sortedEntitySelector"))
+                                .withMoveSelectorConfigs(new ChangeMoveSelectorConfig()
+                                        .withEntitySelectorConfig(
+                                                new EntitySelectorConfig().withMimicSelectorRef("sortedEntitySelector"))
+                                        .withValueSelectorConfig(new ValueSelectorConfig()
+                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                .withCacheType(SelectionCacheType.PHASE)
+                                                .withComparatorFactoryClass(
+                                                        TestdataObjectSortableDescendingFactory.class)
+                                                .withNearbySelectionConfig(new NearbySelectionConfig()
+                                                        .withOriginValueSelectorConfig(new ValueSelectorConfig()
+                                                                .withMimicSelectorRef("sortedEntitySelector"))
+                                                        .withNearbyDistanceMeterClass(TestDistanceMeter.class))))));
+        var solution = new TestdataListSolution();
+        assertThatCode(() -> PlannerTestUtils.solve(solverConfig, solution))
+                .hasMessageContaining(
+                        "The nearbySelectorConfig")
+                .hasMessageContaining(
+                        "Maybe remove difficultyComparatorClass or difficultyWeightFactoryClass from your @PlanningEntity annotation.")
+                .hasMessageContaining(
+                        "Maybe remove strengthComparatorClass or strengthWeightFactoryClass from your @PlanningVariable annotation.")
+                .hasMessageContaining(
+                        "Maybe disable nearby selection.");
     }
 
     @Test

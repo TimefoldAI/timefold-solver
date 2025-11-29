@@ -4,22 +4,22 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfEnt
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Comparator;
-
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
+import ai.timefold.solver.core.impl.heuristic.selector.common.TestdataObjectSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 
 import org.junit.jupiter.api.Test;
@@ -51,11 +51,14 @@ class SortingEntitySelectorTest {
                 new TestdataEntity("jan"), new TestdataEntity("feb"), new TestdataEntity("mar"),
                 new TestdataEntity("apr"), new TestdataEntity("may"), new TestdataEntity("jun"));
 
-        SelectionSorter<TestdataSolution, TestdataEntity> sorter = (scoreDirector, selectionList) -> selectionList
-                .sort(Comparator.comparing(TestdataObject::getCode));
-        EntitySelector entitySelector = new SortingEntitySelector(childEntitySelector, cacheType, sorter);
+        EntitySelector entitySelector =
+                new SortingEntitySelector(childEntitySelector, cacheType,
+                        new TestdataObjectSorter<TestdataSolution, TestdataEntity>());
 
         SolverScope solverScope = mock(SolverScope.class);
+        InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
+        doReturn(scoreDirector).when(solverScope).getScoreDirector();
+        doReturn(new TestdataSolution()).when(scoreDirector).getWorkingSolution();
         entitySelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);

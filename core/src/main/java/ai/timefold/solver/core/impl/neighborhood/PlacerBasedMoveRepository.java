@@ -65,6 +65,7 @@ public final class PlacerBasedMoveRepository<Solution_>
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         phaseScope.getScoreDirector().setMoveRepository(null);
         placer.phaseEnded(phaseScope);
+        this.placementIterator = null;
     }
 
     @Override

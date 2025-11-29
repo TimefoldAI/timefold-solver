@@ -22,9 +22,6 @@ class ExternalizedListVariableStateSupplyTest {
     @Test
     void initializeRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getValueRangeManager())
-                .thenReturn(new ValueRangeManager<>(variableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
@@ -36,7 +33,10 @@ class ExternalizedListVariableStateSupplyTest {
             var solution = new TestdataAllowsUnassignedValuesListSolution();
             solution.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
             solution.setValueList(Arrays.asList(v1, v2, v3));
-
+            var scoreDirector = mock(InnerScoreDirector.class);
+            var valueRangeManager =
+                    ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
+            when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
             when(scoreDirector.getWorkingSolution()).thenReturn(solution);
             supply.resetWorkingSolution(scoreDirector);
 
@@ -52,9 +52,6 @@ class ExternalizedListVariableStateSupplyTest {
     @Test
     void assignRoundTrip() {
         var variableDescriptor = TestdataAllowsUnassignedValuesListEntity.buildVariableDescriptorForValueList();
-        var scoreDirector = mock(InnerScoreDirector.class);
-        when(scoreDirector.getValueRangeManager())
-                .thenReturn(new ValueRangeManager<>(variableDescriptor.getEntityDescriptor().getSolutionDescriptor()));
         try (var supply = new ExternalizedListVariableStateSupply<>(variableDescriptor)) {
 
             var v1 = new TestdataAllowsUnassignedValuesListValue("1");
@@ -67,6 +64,10 @@ class ExternalizedListVariableStateSupplyTest {
             solution.setEntityList(new ArrayList<>(Arrays.asList(e1, e2)));
             solution.setValueList(Arrays.asList(v1, v2, v3));
 
+            var scoreDirector = mock(InnerScoreDirector.class);
+            var valueRangeManager =
+                    ValueRangeManager.of(variableDescriptor.getEntityDescriptor().getSolutionDescriptor(), solution);
+            when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
             when(scoreDirector.getWorkingSolution()).thenReturn(solution);
             supply.resetWorkingSolution(scoreDirector);
 

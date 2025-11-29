@@ -62,9 +62,12 @@ class QueuedEntityPlacerFactoryTest {
         AbstractPhaseScope<TestdataMultiVarSolution> phaseScope = mock(AbstractPhaseScope.class);
         when(phaseScope.getSolverScope()).thenReturn(solverScope);
         InnerScoreDirector<TestdataMultiVarSolution, SimpleScore> scoreDirector = mock(InnerScoreDirector.class);
+        when(solverScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
         when(phaseScope.getScoreDirector()).thenReturn((InnerScoreDirector) scoreDirector);
-        when(scoreDirector.getWorkingSolution()).thenReturn(generateTestdataSolution());
-        when(scoreDirector.getValueRangeManager()).thenReturn(new ValueRangeManager<>(solutionDescriptor));
+        var solution = generateTestdataSolution();
+        when(scoreDirector.getWorkingSolution()).thenReturn(solution);
+        var valueRangeManager = ValueRangeManager.of(solutionDescriptor, solution);
+        when(scoreDirector.getValueRangeManager()).thenReturn(valueRangeManager);
         entityPlacer.phaseStarted(phaseScope);
         Iterator<Placement<TestdataMultiVarSolution>> placementIterator = entityPlacer.iterator();
         assertThat(placementIterator).hasNext();

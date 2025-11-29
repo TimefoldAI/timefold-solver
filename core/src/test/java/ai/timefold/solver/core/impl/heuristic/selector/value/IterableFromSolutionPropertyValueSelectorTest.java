@@ -1,69 +1,70 @@
-package ai.timefold.solver.core.impl.heuristic.selector.value.decorator;
+package ai.timefold.solver.core.impl.heuristic.selector.value;
 
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfValueSelector;
-import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Comparator;
+import java.util.List;
 
 import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
-import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
+import ai.timefold.solver.core.impl.heuristic.selector.common.TestdataObjectSorter;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
+import ai.timefold.solver.core.impl.score.director.ValueRangeManager;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
 import org.junit.jupiter.api.Test;
 
-class SortingValueSelectorTest {
+class IterableFromSolutionPropertyValueSelectorTest {
 
     @Test
     void originalSelectionCacheTypeSolver() {
-        runOriginalSelection(SelectionCacheType.SOLVER, 1);
+        runOriginalSelection(SelectionCacheType.SOLVER);
     }
 
     @Test
     void originalSelectionCacheTypePhase() {
-        runOriginalSelection(SelectionCacheType.PHASE, 2);
+        runOriginalSelection(SelectionCacheType.PHASE);
     }
 
     @Test
     void originalSelectionCacheTypeStep() {
-        runOriginalSelection(SelectionCacheType.STEP, 5);
+        runOriginalSelection(SelectionCacheType.STEP);
     }
 
-    public void runOriginalSelection(SelectionCacheType cacheType, int timesCalled) {
-        IterableValueSelector childValueSelector = SelectorTestUtils.mockIterableValueSelector(
-                TestdataEntity.class, "value",
-                new TestdataValue("jan"), new TestdataValue("feb"), new TestdataValue("mar"),
-                new TestdataValue("apr"), new TestdataValue("may"), new TestdataValue("jun"));
+    public void runOriginalSelection(SelectionCacheType cacheType) {
+        var valueRangeDescriptor = TestdataEntity.buildVariableDescriptorForValue();
+        var valueSelector = new IterableFromSolutionPropertyValueSelector(valueRangeDescriptor.getValueRangeDescriptor(),
+                new TestdataObjectSorter<TestdataSolution, TestdataValue>(), cacheType, false);
 
-        SelectionSorter<TestdataSolution, TestdataValue> sorter = (scoreDirector, selectionList) -> selectionList
-                .sort(Comparator.comparing(TestdataObject::getCode));
-        IterableValueSelector valueSelector = new SortingValueSelector(childValueSelector, cacheType, sorter);
-
-        SolverScope solverScope = mock(SolverScope.class);
+        var solution = new TestdataSolution();
+        solution.setValueList(List.of(new TestdataValue("jan"), new TestdataValue("feb"), new TestdataValue("mar"),
+                new TestdataValue("apr"), new TestdataValue("may"), new TestdataValue("jun")));
+        var solverScope = mock(SolverScope.class);
+        InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
+        doReturn(scoreDirector).when(solverScope).getScoreDirector();
+        doReturn(solution).when(scoreDirector).getWorkingSolution();
+        var valueRangeManager = ValueRangeManager.of(TestdataSolution.buildSolutionDescriptor(), solution);
+        doReturn(valueRangeManager).when(scoreDirector).getValueRangeManager();
         valueSelector.solvingStarted(solverScope);
 
-        AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);
+        var phaseScopeA = mock(AbstractPhaseScope.class);
         when(phaseScopeA.getSolverScope()).thenReturn(solverScope);
+        when(phaseScopeA.getScoreDirector()).thenReturn(scoreDirector);
         valueSelector.phaseStarted(phaseScopeA);
 
-        AbstractStepScope stepScopeA1 = mock(AbstractStepScope.class);
+        var stepScopeA1 = mock(AbstractStepScope.class);
         when(stepScopeA1.getPhaseScope()).thenReturn(phaseScopeA);
         valueSelector.stepStarted(stepScopeA1);
         assertAllCodesOfValueSelector(valueSelector, "apr", "feb", "jan", "jun", "mar", "may");
         valueSelector.stepEnded(stepScopeA1);
 
-        AbstractStepScope stepScopeA2 = mock(AbstractStepScope.class);
+        var stepScopeA2 = mock(AbstractStepScope.class);
         when(stepScopeA2.getPhaseScope()).thenReturn(phaseScopeA);
         valueSelector.stepStarted(stepScopeA2);
         assertAllCodesOfValueSelector(valueSelector, "apr", "feb", "jan", "jun", "mar", "may");
@@ -71,23 +72,26 @@ class SortingValueSelectorTest {
 
         valueSelector.phaseEnded(phaseScopeA);
 
-        AbstractPhaseScope phaseScopeB = mock(AbstractPhaseScope.class);
+        var phaseScopeB = mock(AbstractPhaseScope.class);
         when(phaseScopeB.getSolverScope()).thenReturn(solverScope);
+        when(phaseScopeB.getSolverScope()).thenReturn(solverScope);
+        when(phaseScopeB.getScoreDirector()).thenReturn(scoreDirector);
+
         valueSelector.phaseStarted(phaseScopeB);
 
-        AbstractStepScope stepScopeB1 = mock(AbstractStepScope.class);
+        var stepScopeB1 = mock(AbstractStepScope.class);
         when(stepScopeB1.getPhaseScope()).thenReturn(phaseScopeB);
         valueSelector.stepStarted(stepScopeB1);
         assertAllCodesOfValueSelector(valueSelector, "apr", "feb", "jan", "jun", "mar", "may");
         valueSelector.stepEnded(stepScopeB1);
 
-        AbstractStepScope stepScopeB2 = mock(AbstractStepScope.class);
+        var stepScopeB2 = mock(AbstractStepScope.class);
         when(stepScopeB2.getPhaseScope()).thenReturn(phaseScopeB);
         valueSelector.stepStarted(stepScopeB2);
         assertAllCodesOfValueSelector(valueSelector, "apr", "feb", "jan", "jun", "mar", "may");
         valueSelector.stepEnded(stepScopeB2);
 
-        AbstractStepScope stepScopeB3 = mock(AbstractStepScope.class);
+        var stepScopeB3 = mock(AbstractStepScope.class);
         when(stepScopeB3.getPhaseScope()).thenReturn(phaseScopeB);
         valueSelector.stepStarted(stepScopeB3);
         assertAllCodesOfValueSelector(valueSelector, "apr", "feb", "jan", "jun", "mar", "may");
@@ -96,10 +100,5 @@ class SortingValueSelectorTest {
         valueSelector.phaseEnded(phaseScopeB);
 
         valueSelector.solvingEnded(solverScope);
-
-        verifyPhaseLifecycle(childValueSelector, 1, 2, 5);
-        verify(childValueSelector, times(timesCalled)).iterator();
-        verify(childValueSelector, times(timesCalled)).getSize();
     }
-
 }

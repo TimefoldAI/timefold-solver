@@ -135,6 +135,9 @@ import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverse
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationEntity;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationSolution;
 import ai.timefold.solver.core.testdomain.shadow.inverserelation.TestdataInverseRelationValue;
+import ai.timefold.solver.core.testdomain.sort.comparator.OneValuePerEntityComparatorEasyScoreCalculator;
+import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableEntity;
+import ai.timefold.solver.core.testdomain.sort.comparator.TestdataComparatorSortableSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingScoreCalculator;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.unassignedvar.TestdataAllowsUnassignedEntityProvidingSolution;
@@ -1300,6 +1303,44 @@ class DefaultSolverTest {
         assertThat(solution.getEntityList().stream()
                 .filter(e -> e.getBasicValue() == null || e.getSecondBasicValue() == null || e.getValueList().isEmpty()))
                 .isEmpty();
+    }
+
+    @Test
+    void solveWithMultipleSorterManners() {
+        var solverConfig = PlannerTestUtils.buildSolverConfig(
+                TestdataComparatorSortableSolution.class, TestdataComparatorSortableEntity.class)
+                .withPhases(new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedEntityPlacerConfig()),
+                        new ConstructionHeuristicPhaseConfig().withEntityPlacerConfig(new QueuedValuePlacerConfig()
+                                .withValueSelectorConfig(new ValueSelectorConfig().withVariableName("value"))),
+                        new LocalSearchPhaseConfig()
+                                .withMoveSelectorConfig(
+                                        new UnionMoveSelectorConfig()
+                                                .withMoveSelectors(
+                                                        // Two moves, one asc and another desc
+                                                        new ChangeMoveSelectorConfig()
+                                                                .withEntitySelectorConfig(new EntitySelectorConfig())
+                                                                .withValueSelectorConfig(
+                                                                        new ValueSelectorConfig()
+                                                                                .withVariableName("value")
+                                                                                .withCacheType(SelectionCacheType.PHASE)
+                                                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                                                .withSorterManner(
+                                                                                        ValueSorterManner.ASCENDING)),
+                                                        new ChangeMoveSelectorConfig()
+                                                                .withEntitySelectorConfig(new EntitySelectorConfig())
+                                                                .withValueSelectorConfig(
+                                                                        new ValueSelectorConfig()
+                                                                                .withVariableName("value")
+                                                                                .withCacheType(SelectionCacheType.PHASE)
+                                                                                .withSelectionOrder(SelectionOrder.SORTED)
+                                                                                .withSorterManner(
+                                                                                        ValueSorterManner.DESCENDING))))
+                                .withTerminationConfig(new TerminationConfig().withMoveCountLimit(10L)))
+                .withEasyScoreCalculatorClass(OneValuePerEntityComparatorEasyScoreCalculator.class);
+
+        var problem = TestdataComparatorSortableSolution.generateSolution(5, 5, true);
+        var solution = PlannerTestUtils.solve(solverConfig, problem);
+        assertThat(solution).isNotNull();
     }
 
     @Test

@@ -5,6 +5,10 @@ import java.time.OffsetDateTime;
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.SortableValueRange;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Abstract superclass for {@link CountableValueRange} (and therefore {@link ValueRange}).
@@ -13,7 +17,8 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeFactory;
  * @see ValueRange
  * @see ValueRangeFactory
  */
-public abstract class AbstractCountableValueRange<T> implements CountableValueRange<T> {
+@NullMarked
+public abstract class AbstractCountableValueRange<T> implements CountableValueRange<T>, SortableValueRange<T> {
 
     /**
      * Certain optimizations can be applied if {@link Object#equals(Object)} can be relied upon
@@ -33,4 +38,10 @@ public abstract class AbstractCountableValueRange<T> implements CountableValueRa
         return getSize() == 0L;
     }
 
+    @Override
+    public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
+        // The sorting operation is not supported by default
+        // and must be explicitly implemented by the child classes if needed.
+        throw new UnsupportedOperationException();
+    }
 }

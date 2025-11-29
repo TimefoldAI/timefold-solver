@@ -4,10 +4,14 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Sorts a selection {@link List} based on a {@link Comparator}.
@@ -15,6 +19,7 @@ import ai.timefold.solver.core.config.heuristic.selector.common.decorator.Select
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @param <T> the selection type
  */
+@NullMarked
 public final class ComparatorSelectionSorter<Solution_, T> implements SelectionSorter<Solution_, T> {
 
     private final Comparator<T> appliedComparator;
@@ -34,8 +39,15 @@ public final class ComparatorSelectionSorter<Solution_, T> implements SelectionS
     }
 
     @Override
-    public void sort(ScoreDirector<Solution_> scoreDirector, List<T> selectionList) {
+    public void sort(Solution_ solution, List<T> selectionList) {
         selectionList.sort(appliedComparator);
+    }
+
+    @Override
+    public SortedSet<T> sort(Solution_ solution, Set<T> selectionSet) {
+        var treeSet = new TreeSet<>(appliedComparator);
+        treeSet.addAll(selectionSet);
+        return Collections.unmodifiableSortedSet(treeSet);
     }
 
     @Override

@@ -17,8 +17,6 @@ public abstract class AbstractStepScope<Solution_> {
 
     protected InnerScore<?> score = null;
     protected boolean bestScoreImproved = false;
-    // Stays null if there is no need to clone it
-    protected Solution_ clonedSolution = null;
 
     public AbstractStepScope(int stepIndex) {
         this.stepIndex = stepIndex;
@@ -72,11 +70,8 @@ public abstract class AbstractStepScope<Solution_> {
         return getPhaseScope().getWorkingRandom();
     }
 
-    public Solution_ createOrGetClonedSolution() {
-        if (clonedSolution == null) {
-            clonedSolution = getScoreDirector().cloneWorkingSolution();
-        }
-        return clonedSolution;
+    public Solution_ cloneWorkingSolution() {
+        return getScoreDirector().cloneWorkingSolution();
     }
 
     @Override

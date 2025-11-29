@@ -95,7 +95,7 @@ class BestSolutionRecallerTest {
                 .thenReturn(stepScore.innerScore.raw());
         when(scoreDirector.getWorkingInitScore()).thenReturn(-stepScore.innerScore.unassignedCount());
         doReturn(stepScore.innerScore).when(stepScope).getScore();
-        when(stepScope.createOrGetClonedSolution()).thenReturn(stepSolution);
+        when(stepScope.cloneWorkingSolution()).thenReturn(stepSolution);
 
         BestSolutionRecaller<TestdataSolution> recaller = createBestSolutionRecaller();
         recaller.processWorkingSolutionDuringStep(stepScope);

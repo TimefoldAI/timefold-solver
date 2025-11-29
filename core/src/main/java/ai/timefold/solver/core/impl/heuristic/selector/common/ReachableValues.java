@@ -1,14 +1,17 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.FromEntityPropertyValueRangeDescriptor;
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -20,29 +23,32 @@ import org.jspecify.annotations.Nullable;
  * @see FromEntityPropertyValueRangeDescriptor
  */
 @NullMarked
-public final class ReachableValues {
+public final class ReachableValues<Entity_, Value_> {
 
-    private final Map<Object, Integer> entitiesIndex;
-    private final List<Object> allEntities;
-    private final Map<Object, Integer> valuesIndex;
-    private final List<ReachableItemValue> allValues;
-    private final @Nullable Class<?> valueClass;
+    private final ReachableValuesIndex<Entity_, Entity_> entitiesIndex;
+    private final ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex;
+    private final Class<?> expectedSupertypeOfValue;
+    private final @Nullable ValueRangeSorter<Value_> valueRangeSorter;
     private final boolean acceptsNullValue;
-    private @Nullable ReachableItemValue firstCachedObject;
-    private @Nullable ReachableItemValue secondCachedObject;
+    private @Nullable List<Entity_>[] onDemandRandomAccessEntity;
+    private @Nullable List<Value_>[] onDemandRandomAccessValue;
+    private @Nullable ReachableItemValue<Entity_, Value_> firstCachedObject;
+    private @Nullable ReachableItemValue<Entity_, Value_> secondCachedObject;
 
-    public ReachableValues(Map<Object, Integer> entityIndexMap, List<Object> entityList, Map<Object, Integer> valueIndexMap,
-            List<ReachableItemValue> reachableValueList, @Nullable Class<?> valueClass, boolean acceptsNullValue) {
-        this.entitiesIndex = entityIndexMap;
-        this.allEntities = entityList;
-        this.valuesIndex = valueIndexMap;
-        this.allValues = reachableValueList;
-        this.valueClass = valueClass;
+    public ReachableValues(ReachableValuesIndex<Entity_, Entity_> entitiesIndex,
+            ReachableValuesIndex<Value_, ReachableItemValue<Entity_, Value_>> valuesIndex, Class<?> expectedSupertypeOfValue,
+            @Nullable ValueRangeSorter<Value_> valueRangeSorter, boolean acceptsNullValue) {
+        this.entitiesIndex = entitiesIndex;
+        this.valuesIndex = valuesIndex;
+        this.expectedSupertypeOfValue = expectedSupertypeOfValue;
+        this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
+        this.onDemandRandomAccessEntity = new List[valuesIndex.allItems().size()];
+        this.onDemandRandomAccessValue = new List[valuesIndex.allItems().size()];
     }
 
-    private @Nullable ReachableItemValue fetchItemValue(Object value) {
-        ReachableItemValue selected = null;
+    private @Nullable ReachableItemValue<Entity_, Value_> fetchItemValue(Object value) {
+        ReachableItemValue<Entity_, Value_> selected = null;
         if (firstCachedObject != null && firstCachedObject.value == value) {
             selected = firstCachedObject;
         } else if (secondCachedObject != null && secondCachedObject.value == value) {
@@ -53,38 +59,48 @@ public final class ReachableValues {
             firstCachedObject = selected;
         }
         if (selected == null) {
-            var index = valuesIndex.get(value);
+            var index = valuesIndex.indexMap().get(value);
             if (index == null) {
                 return null;
             }
-            selected = allValues.get(index);
+            selected = valuesIndex.allItems().get(index);
             secondCachedObject = firstCachedObject;
             firstCachedObject = selected;
         }
         return selected;
     }
 
-    public List<Object> extractEntitiesAsList(Object value) {
+    public List<Entity_> extractEntitiesAsList(Object value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        return itemValue.getRandomAccessEntityList(allEntities);
+        var entityList = onDemandRandomAccessEntity[itemValue.ordinal];
+        if (entityList == null) {
+            entityList = itemValue.getRandomAccessEntityList(entitiesIndex.allItems());
+            onDemandRandomAccessEntity[itemValue.ordinal] = entityList;
+        }
+        return entityList;
     }
 
-    public List<Object> extractValuesAsList(Object value) {
+    public List<Value_> extractValuesAsList(Object value) {
         var itemValue = fetchItemValue(value);
         if (itemValue == null) {
             return Collections.emptyList();
         }
-        return itemValue.getRandomAccessValueList(allValues);
+        var valueList = onDemandRandomAccessValue[itemValue.ordinal];
+        if (valueList == null) {
+            valueList = itemValue.getRandomAccessValueList(valuesIndex.allItems(), valueRangeSorter);
+            onDemandRandomAccessValue[itemValue.ordinal] = valueList;
+        }
+        return valueList;
     }
 
     public int getSize() {
-        return allValues.size();
+        return valuesIndex.allItems().size();
     }
 
-    public boolean isEntityReachable(@Nullable Object origin, @Nullable Object entity) {
+    public boolean isEntityReachable(@Nullable Value_ origin, @Nullable Entity_ entity) {
         if (entity == null) {
             return true;
         }
@@ -95,14 +111,14 @@ public final class ReachableValues {
         if (originItemValue == null) {
             return false;
         }
-        var entityIndex = entitiesIndex.get(entity);
+        var entityIndex = entitiesIndex.indexMap().get(entity);
         if (entityIndex == null) {
             throw new IllegalStateException("The entity %s is not indexed.".formatted(entity));
         }
         return originItemValue.containsEntity(entityIndex);
     }
 
-    public boolean isValueReachable(Object origin, @Nullable Object otherValue) {
+    public boolean isValueReachable(Value_ origin, @Nullable Value_ otherValue) {
         var originItemValue = fetchItemValue(Objects.requireNonNull(origin));
         if (originItemValue == null) {
             return false;
@@ -110,7 +126,7 @@ public final class ReachableValues {
         if (otherValue == null) {
             return acceptsNullValue;
         }
-        var otherValueIndex = valuesIndex.get(Objects.requireNonNull(otherValue));
+        var otherValueIndex = valuesIndex.indexMap().get(Objects.requireNonNull(otherValue));
         if (otherValueIndex == null) {
             return false;
         }
@@ -121,21 +137,30 @@ public final class ReachableValues {
         return acceptsNullValue;
     }
 
-    public boolean matchesValueClass(Object value) {
-        return valueClass != null && valueClass.isAssignableFrom(Objects.requireNonNull(value).getClass());
+    public boolean valueHasMatchingType(Value_ value) {
+        return expectedSupertypeOfValue.isAssignableFrom(value.getClass());
+    }
+
+    public ReachableValues<Entity_, Value_> copy(ValueRangeSorter<Value_> sorterAdapter) {
+        return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue);
+    }
+
+    public void clear() {
+        firstCachedObject = null;
+        secondCachedObject = null;
+        this.onDemandRandomAccessEntity = new List[valuesIndex.allItems().size()];
+        this.onDemandRandomAccessValue = new List[valuesIndex.allItems().size()];
     }
 
     @NullMarked
-    public static final class ReachableItemValue {
-        private final Object value;
+    public static final class ReachableItemValue<Entity_, Value_> {
+        private final int ordinal;
+        private final Value_ value;
         private final BitSet entityBitSet;
         private final BitSet valueBitSet;
-        // The entity and value list are calculated only when needed.
-        // The goal is to avoid loading unused data upfront, as it may affect scalability.
-        private @Nullable List<Object> onDemandRandomAccessEntityList;
-        private @Nullable List<Object> onDemandRandomAccessValueList;
 
-        public ReachableItemValue(Object value, int entityListSize, int valueListSize) {
+        public ReachableItemValue(int ordinal, Value_ value, int entityListSize, int valueListSize) {
+            this.ordinal = ordinal;
             this.value = value;
             this.entityBitSet = new BitSet(entityListSize);
             this.valueBitSet = new BitSet(valueListSize);
@@ -145,8 +170,9 @@ public final class ReachableValues {
             entityBitSet.set(entityIndex);
         }
 
-        public void addValue(int valueIndex) {
-            valueBitSet.set(valueIndex);
+        public void addValuesExcept(BitSet values, int exceptValueIndex) {
+            valueBitSet.or(values);
+            valueBitSet.clear(exceptValueIndex);
         }
 
         boolean containsEntity(int entityIndex) {
@@ -157,59 +183,79 @@ public final class ReachableValues {
             return valueBitSet.get(valueIndex);
         }
 
-        private static int[] extractAllIndexes(BitSet bitSet) {
-            var indexes = new int[bitSet.cardinality()];
-            var idx = 0;
+        private static List<Integer> extractAllIndexes(BitSet bitSet) {
+            var indexes = new ArrayList<Integer>(bitSet.cardinality());
             for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
-                indexes[idx++] = i;
+                indexes.add(i);
             }
             return indexes;
         }
 
-        List<Object> getRandomAccessEntityList(List<Object> allEntities) {
-            if (onDemandRandomAccessEntityList == null) {
-                onDemandRandomAccessEntityList = new ArrayIndexedList<>(extractAllIndexes(entityBitSet), allEntities, null);
-            }
-            return onDemandRandomAccessEntityList;
+        List<Entity_> getRandomAccessEntityList(List<Entity_> allEntities) {
+            return new ArrayIndexedList<>(extractAllIndexes(entityBitSet), allEntities, null);
         }
 
-        List<Object> getRandomAccessValueList(List<ReachableItemValue> allValues) {
-            if (onDemandRandomAccessValueList == null) {
-                onDemandRandomAccessValueList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues, v -> v.value);
+        List<Value_> getRandomAccessValueList(List<ReachableItemValue<Entity_, Value_>> allValues,
+                @Nullable ValueRangeSorter<Value_> valueRangeSorter) {
+            var valuesList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues,
+                    v -> v.value);
+            if (valueRangeSorter != null) {
+                valueRangeSorter.sort(valuesList);
             }
-            return onDemandRandomAccessValueList;
+            return valuesList;
         }
     }
 
     @NullMarked
-    private static final class ArrayIndexedList<T, V> extends AbstractList<V> {
+    public record ReachableValuesIndex<Value_, Type_>(Map<Value_, Integer> indexMap, List<Type_> allItems) {
 
-        private final int[] valueIndex;
-        private final List<T> allValues;
-        private final @Nullable Function<T, V> valueExtractor;
+    }
 
-        private ArrayIndexedList(int[] valueIndex, List<T> allValues, @Nullable Function<T, V> valueExtractor) {
+    @NullMarked
+    private static final class ArrayIndexedList<Type_, Value_> extends AbstractList<Value_> {
+
+        private final List<Integer> valueIndex;
+        private final List<Type_> allValues;
+        private final @Nullable Function<Type_, Value_> valueExtractor;
+
+        private ArrayIndexedList(List<Integer> valueIndex, List<Type_> allValues,
+                @Nullable Function<Type_, Value_> valueExtractor) {
             this.valueIndex = valueIndex;
             this.allValues = allValues;
             this.valueExtractor = valueExtractor;
         }
 
         @Override
-        public V get(int index) {
-            if (index < 0 || index >= valueIndex.length) {
+        public Value_ get(int index) {
+            if (index < 0 || index >= valueIndex.size()) {
                 throw new ArrayIndexOutOfBoundsException(index);
             }
-            var value = allValues.get(valueIndex[index]);
+            return getInnerValue(valueIndex.get(index));
+        }
+
+        private Value_ getInnerValue(int index) {
+            if (index < 0 || index >= allValues.size()) {
+                throw new ArrayIndexOutOfBoundsException(index);
+            }
+            var value = allValues.get(index);
             if (valueExtractor == null) {
-                return (V) value;
+                return (Value_) value;
             } else {
                 return valueExtractor.apply(value);
             }
         }
 
         @Override
+        public void sort(@Nullable Comparator<? super Value_> comparator) {
+            if (comparator == null) {
+                return;
+            }
+            valueIndex.sort((Integer v1, Integer v2) -> comparator.compare(getInnerValue(v1), getInnerValue(v2)));
+        }
+
+        @Override
         public int size() {
-            return valueIndex.length;
+            return valueIndex.size();
         }
     }
 

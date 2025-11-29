@@ -29,7 +29,7 @@ public class TestdataCompositeSolution extends TestdataObject {
         }
         List<TestdataValue> otherValueList = new ArrayList<>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {
-            TestdataValue value = new TestdataValue("Generated Value " + (valueListSize + i - 1));
+            TestdataValue value = new TestdataValue("Generated Value " + (valueListSize + i));
             otherValueList.add(value);
         }
         solution.setValueList(valueList);

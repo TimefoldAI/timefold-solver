@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.CachedListRandomIterator;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 
@@ -25,16 +26,25 @@ public final class ValueRangeCache<Value_>
 
     private final List<Value_> valuesWithFastRandomAccess;
     private final Set<Value_> valuesWithFastLookup;
+    private final boolean trustedValues;
 
-    private ValueRangeCache(int size, Set<Value_> emptyCacheSet) {
+    private ValueRangeCache(int size, Set<Value_> emptyCacheSet, boolean trustedValues) {
         this.valuesWithFastRandomAccess = new ArrayList<>(size);
         this.valuesWithFastLookup = emptyCacheSet;
+        this.trustedValues = trustedValues;
     }
 
-    private ValueRangeCache(Collection<Value_> collection, Set<Value_> emptyCacheSet) {
+    private ValueRangeCache(Collection<Value_> collection, Set<Value_> emptyCacheSet, boolean trustedValues) {
         this.valuesWithFastRandomAccess = new ArrayList<>(collection);
         this.valuesWithFastLookup = emptyCacheSet;
         this.valuesWithFastLookup.addAll(valuesWithFastRandomAccess);
+        this.trustedValues = trustedValues;
+    }
+
+    private ValueRangeCache(List<Value_> valuesWithFastRandomAccess, Set<Value_> valuesWithFastLookup, boolean trustedValues) {
+        this.valuesWithFastRandomAccess = valuesWithFastRandomAccess;
+        this.valuesWithFastLookup = valuesWithFastLookup;
+        this.trustedValues = trustedValues;
     }
 
     public void add(@Nullable Value_ value) {
@@ -72,6 +82,22 @@ public final class ValueRangeCache<Value_>
         return new CachedListRandomIterator<>(valuesWithFastRandomAccess, workingRandom);
     }
 
+    /**
+     * Creates a copy of the cache and apply a sorting operation.
+     *
+     * @param sorter never null, the sorter
+     */
+    public ValueRangeCache<Value_> sort(ValueRangeSorter<Value_> sorter) {
+        // We need to copy the list to ensure it won't affect other cache instances
+        var newValuesWithFastRandomAccess = new ArrayList<>(valuesWithFastRandomAccess);
+        sorter.sort(newValuesWithFastRandomAccess);
+        if (trustedValues) {
+            return Builder.FOR_TRUSTED_VALUES.buildCache(newValuesWithFastRandomAccess, valuesWithFastLookup);
+        } else {
+            return Builder.FOR_USER_VALUES.buildCache(newValuesWithFastRandomAccess, valuesWithFastLookup);
+        }
+    }
+
     public enum Builder {
 
         /**
@@ -80,14 +106,19 @@ public final class ValueRangeCache<Value_>
         FOR_USER_VALUES {
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(int size) {
-                return new ValueRangeCache<>(size, CollectionUtils.newIdentityHashSet(size));
+                return new ValueRangeCache<>(size, CollectionUtils.newIdentityHashSet(size), false);
             }
 
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection) {
-                return new ValueRangeCache<>(collection, CollectionUtils.newIdentityHashSet(collection.size()));
+                return new ValueRangeCache<>(collection, CollectionUtils.newIdentityHashSet(collection.size()), false);
             }
 
+            @Override
+            public <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
+                    Set<Value_> valuesWithFastLookup) {
+                return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup, false);
+            }
         },
         /**
          * For types where we can trust that {@link Object#equals(Object)} means
@@ -100,19 +131,27 @@ public final class ValueRangeCache<Value_>
         FOR_TRUSTED_VALUES {
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(int size) {
-                return new ValueRangeCache<>(size, CollectionUtils.newHashSet(size));
+                return new ValueRangeCache<>(size, CollectionUtils.newHashSet(size), true);
             }
 
             @Override
             public <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection) {
-                return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()));
+                return new ValueRangeCache<>(collection, CollectionUtils.newHashSet(collection.size()), true);
             }
 
+            @Override
+            public <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
+                    Set<Value_> valuesWithFastLookup) {
+                return new ValueRangeCache<>(valuesWithFastRandomAccess, valuesWithFastLookup, true);
+            }
         };
 
         public abstract <Value_> ValueRangeCache<Value_> buildCache(int size);
 
         public abstract <Value_> ValueRangeCache<Value_> buildCache(Collection<Value_> collection);
+
+        public abstract <Value_> ValueRangeCache<Value_> buildCache(List<Value_> valuesWithFastRandomAccess,
+                Set<Value_> valuesWithFastLookup);
 
     }
 

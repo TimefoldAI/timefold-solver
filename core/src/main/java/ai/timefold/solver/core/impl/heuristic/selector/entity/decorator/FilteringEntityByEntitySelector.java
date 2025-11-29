@@ -72,7 +72,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     private Object replayedEntity;
     private BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
     private ValueRangeManager<Solution_> valueRangeManager;
-    private ReachableValues reachableValues;
+    private ReachableValues<Object, Object> reachableValues;
     private List<Object> allEntities;
 
     public FilteringEntityByEntitySelector(EntitySelector<Solution_> childEntitySelector,
@@ -113,18 +113,20 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
     }
 
     @Override
-    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
-        super.stepStarted(stepScope);
-        this.childEntitySelector.stepStarted(stepScope);
-    }
-
-    @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         super.phaseEnded(phaseScope);
         this.childEntitySelector.phaseEnded(phaseScope);
         this.replayedEntity = null;
         this.valueRangeManager = null;
+        this.reachableValues = null;
         this.basicVariableDescriptors = null;
+        this.allEntities = null;
+    }
+
+    @Override
+    public void stepStarted(AbstractStepScope<Solution_> stepScope) {
+        super.stepStarted(stepScope);
+        this.childEntitySelector.stepStarted(stepScope);
     }
 
     // ************************************************************************
@@ -214,14 +216,14 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         return Objects.hash(childEntitySelector, replayingEntitySelector);
     }
 
-    private abstract static class AbstractFilteringValueRangeIterator<Solution_> implements Iterator<Object> {
-        private final Supplier<Object> upcomingEntitySupplier;
+    private abstract static class AbstractFilteringValueRangeIterator<Solution_, Entity_, Value_> implements Iterator<Object> {
+        private final Supplier<Entity_> upcomingEntitySupplier;
         private final BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
         private final ValueRangeManager<Solution_> valueRangeManager;
         private boolean initialized = false;
-        private Object replayedEntity;
+        private Entity_ replayedEntity;
 
-        private AbstractFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
+        private AbstractFilteringValueRangeIterator(Supplier<Entity_> upcomingEntitySupplier,
                 BasicVariableDescriptor<Solution_>[] basicVariableDescriptors, ValueRangeManager<Solution_> valueRangeManager) {
             this.upcomingEntitySupplier = upcomingEntitySupplier;
             this.basicVariableDescriptors = basicVariableDescriptors;
@@ -244,16 +246,16 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             }
         }
 
-        abstract void load(Object replayedEntity);
+        abstract void load(Entity_ replayedEntity);
 
         /**
          * The other entity is reachable if it accepts all assigned values from the replayed entity, and vice versa.
          */
-        boolean isReachable(Object otherEntity) {
+        boolean isReachable(Entity_ otherEntity) {
             return isReachable(replayedEntity, otherEntity);
         }
 
-        boolean isReachable(Object entity, Object otherEntity) {
+        boolean isReachable(Entity_ entity, Entity_ otherEntity) {
             if (entity == otherEntity) {
                 // Same entity cannot be swapped
                 return false;
@@ -267,7 +269,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return true;
         }
 
-        private boolean isReachable(Object entity, Object value, Object otherEntity, Object otherValue,
+        private boolean isReachable(Entity_ entity, Value_ value, Entity_ otherEntity, Value_ otherValue,
                 BasicVariableDescriptor<Solution_> variableDescriptor, ValueRangeManager<Solution_> valueRangeManager) {
             return valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity).contains(otherValue)
                     && valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), otherEntity)
@@ -275,20 +277,21 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
     }
 
-    private static class OriginalFilteringValueRangeIterator<Solution_> extends AbstractFilteringValueRangeIterator<Solution_> {
+    private static class OriginalFilteringValueRangeIterator<Solution_, Entity_, Value_>
+            extends AbstractFilteringValueRangeIterator<Solution_, Entity_, Value_> {
 
-        private final Iterator<Object> entityIterator;
-        private Object selected = null;
+        private final Iterator<Entity_> entityIterator;
+        private Entity_ selected = null;
 
-        private OriginalFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
-                Iterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
+        private OriginalFilteringValueRangeIterator(Supplier<Entity_> upcomingEntitySupplier,
+                Iterator<Entity_> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
                 ValueRangeManager<Solution_> valueRangeManager) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
             this.entityIterator = entityIterator;
         }
 
         @Override
-        void load(Object replayedEntity) {
+        void load(Entity_ replayedEntity) {
             this.selected = null;
         }
 
@@ -298,7 +301,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return selected != null;
         }
 
-        private Object pickNext() {
+        private Entity_ pickNext() {
             if (selected != null) {
                 throw new IllegalStateException("The next value has already been picked.");
             }
@@ -313,7 +316,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return null;
         }
 
-        private Object pickSelected() {
+        private Entity_ pickSelected() {
             if (selected == null) {
                 throw new NoSuchElementException();
             }
@@ -323,22 +326,23 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        public Object next() {
+        public Entity_ next() {
             return pickSelected();
         }
 
     }
 
-    private static class OriginalFilteringValueRangeListIterator<Solution_> extends UpcomingSelectionListIterator<Object> {
+    private static class OriginalFilteringValueRangeListIterator<Solution_, Entity_, Value_>
+            extends UpcomingSelectionListIterator<Entity_> {
 
-        private final Supplier<Object> upcomingEntitySupplier;
+        private final Supplier<Entity_> upcomingEntitySupplier;
         private final BasicVariableDescriptor<Solution_>[] basicVariableDescriptors;
-        private final ListIterator<Object> entityIterator;
+        private final ListIterator<Entity_> entityIterator;
         private final ValueRangeManager<Solution_> valueRangeManager;
-        private Object replayedEntity;
+        private Entity_ replayedEntity;
 
-        private OriginalFilteringValueRangeListIterator(Supplier<Object> upcomingEntitySupplier,
-                ListIterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
+        private OriginalFilteringValueRangeListIterator(Supplier<Entity_> upcomingEntitySupplier,
+                ListIterator<Entity_> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
                 ValueRangeManager<Solution_> valueRangeManager) {
             this.upcomingEntitySupplier = upcomingEntitySupplier;
             this.entityIterator = entityIterator;
@@ -366,7 +370,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        protected Object createUpcomingSelection() {
+        protected Entity_ createUpcomingSelection() {
             if (!entityIterator.hasNext()) {
                 return noUpcomingSelection();
             }
@@ -380,7 +384,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        protected Object createPreviousSelection() {
+        protected Entity_ createPreviousSelection() {
             if (!entityIterator.hasPrevious()) {
                 return noUpcomingSelection();
             }
@@ -393,7 +397,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return noUpcomingSelection();
         }
 
-        boolean isReachable(Object entity, Object otherEntity) {
+        boolean isReachable(Entity_ entity, Entity_ otherEntity) {
             if (entity == otherEntity) {
                 return false;
             }
@@ -406,7 +410,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return true;
         }
 
-        private boolean isReachable(Object entity, Object value, Object otherEntity, Object otherValue,
+        private boolean isReachable(Entity_ entity, Value_ value, Entity_ otherEntity, Value_ otherValue,
                 BasicVariableDescriptor<Solution_> variableDescriptor, ValueRangeManager<Solution_> valueRangeManager) {
             return valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), entity).contains(otherValue)
                     && valueRangeManager.getFromEntity(variableDescriptor.getValueRangeDescriptor(), otherEntity)
@@ -414,23 +418,23 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
     }
 
-    private static class SingleVariableRandomFilteringValueRangeIterator<Solution_>
-            extends AbstractFilteringValueRangeIterator<Solution_> {
+    private static class SingleVariableRandomFilteringValueRangeIterator<Solution_, Entity_, Value_>
+            extends AbstractFilteringValueRangeIterator<Solution_, Entity_, Value_> {
 
-        private final Iterator<Object> allEntitiesIterator;
+        private final Iterator<Entity_> allEntitiesIterator;
         private final BasicVariableDescriptor<Solution_> basicVariableDescriptor;
-        private final ReachableValues reachableValues;
+        private final ReachableValues<Entity_, Value_> reachableValues;
         private final Random workingRandom;
         private final int maxBailoutSize;
-        private Object currentReplayedEntity = null;
-        private Iterator<Object> entityIterator;
+        private Entity_ currentReplayedEntity = null;
+        private Iterator<Entity_> entityIterator;
         private int iterationBailoutSize;
         private boolean oneSideValidation;
 
-        private SingleVariableRandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
-                Iterator<Object> allEntitiesIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
-                ValueRangeManager<Solution_> valueRangeManager, ReachableValues reachableValues, Random workingRandom,
-                int maxBailoutSize) {
+        private SingleVariableRandomFilteringValueRangeIterator(Supplier<Entity_> upcomingEntitySupplier,
+                Iterator<Entity_> allEntitiesIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
+                ValueRangeManager<Solution_> valueRangeManager, ReachableValues<Entity_, Value_> reachableValues,
+                Random workingRandom, int maxBailoutSize) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
             this.allEntitiesIterator = allEntitiesIterator;
             if (basicVariableDescriptors.length > 1) {
@@ -445,13 +449,13 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        void load(Object replayedEntity) {
+        void load(Entity_ replayedEntity) {
             this.currentReplayedEntity = replayedEntity;
             var value = basicVariableDescriptor.getValue(replayedEntity);
             if (value != null) {
                 this.oneSideValidation = true;
                 var entityList = reachableValues.extractEntitiesAsList(value);
-                this.entityIterator = new RandomListIterator(entityList, workingRandom);
+                this.entityIterator = new RandomListIterator<>(entityList, workingRandom);
                 this.iterationBailoutSize = entityList.size();
             } else {
                 this.oneSideValidation = false;
@@ -467,7 +471,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        public Object next() {
+        public Entity_ next() {
             if (!entityIterator.hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -485,11 +489,11 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
             return currentReplayedEntity;
         }
 
-        private boolean isReachable(Object replayedEntity, Object otherEntity, boolean oneSideValidation) {
+        private boolean isReachable(Entity_ replayedEntity, Entity_ otherEntity, boolean oneSideValidation) {
             if (oneSideValidation) {
                 var otherValue = basicVariableDescriptor.getValue(otherEntity);
                 if (otherValue != null) {
-                    return reachableValues.isEntityReachable(otherValue, replayedEntity);
+                    return reachableValues.isEntityReachable((Value_) otherValue, replayedEntity);
                 } else {
                     return reachableValues.acceptsNullValue();
                 }
@@ -499,15 +503,15 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
     }
 
-    private static class RandomFilteringValueRangeIterator<Solution_>
-            extends AbstractFilteringValueRangeIterator<Solution_> {
+    private static class RandomFilteringValueRangeIterator<Solution_, Entity_, Value_>
+            extends AbstractFilteringValueRangeIterator<Solution_, Entity_, Value_> {
 
-        private final Iterator<Object> entityIterator;
+        private final Iterator<Entity_> entityIterator;
         private final int maxBailoutSize;
-        private Object currentReplayedEntity = null;
+        private Entity_ currentReplayedEntity = null;
 
-        private RandomFilteringValueRangeIterator(Supplier<Object> upcomingEntitySupplier,
-                Iterator<Object> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
+        private RandomFilteringValueRangeIterator(Supplier<Entity_> upcomingEntitySupplier,
+                Iterator<Entity_> entityIterator, BasicVariableDescriptor<Solution_>[] basicVariableDescriptors,
                 ValueRangeManager<Solution_> valueRangeManager, int maxBailoutSize) {
             super(upcomingEntitySupplier, basicVariableDescriptors, valueRangeManager);
             this.entityIterator = entityIterator;
@@ -515,7 +519,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        void load(Object replayedEntity) {
+        void load(Entity_ replayedEntity) {
             this.currentReplayedEntity = replayedEntity;
         }
 
@@ -526,7 +530,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        public Object next() {
+        public Entity_ next() {
             if (!entityIterator.hasNext()) {
                 throw new NoSuchElementException();
             }
@@ -545,12 +549,12 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
     }
 
-    private static class RandomListIterator implements Iterator<Object> {
+    private static class RandomListIterator<Value_> implements Iterator<Value_> {
 
-        private final List<Object> values;
+        private final List<Value_> values;
         private final Random workingRandom;
 
-        private RandomListIterator(List<Object> values, Random workingRandom) {
+        private RandomListIterator(List<Value_> values, Random workingRandom) {
             this.values = values;
             this.workingRandom = workingRandom;
         }
@@ -561,7 +565,7 @@ public final class FilteringEntityByEntitySelector<Solution_> extends AbstractDe
         }
 
         @Override
-        public Object next() {
+        public Value_ next() {
             if (!hasNext()) {
                 throw new NoSuchElementException();
             }

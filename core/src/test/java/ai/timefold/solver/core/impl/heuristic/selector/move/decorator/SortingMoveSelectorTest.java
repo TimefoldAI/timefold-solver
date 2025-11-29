@@ -5,6 +5,7 @@ import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllCodesOfMov
 import static ai.timefold.solver.core.testutil.PlannerAssert.verifyPhaseLifecycle;
 import static ai.timefold.solver.core.testutil.PlannerTestUtils.mockScoreDirector;
 import static org.assertj.core.api.Assertions.assertThatIllegalArgumentException;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -21,12 +22,13 @@ import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.DummyMove;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
+import ai.timefold.solver.core.impl.heuristic.selector.common.CodeAssertableSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorterWeightFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelectorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
+import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testutil.CodeAssertable;
@@ -104,11 +106,13 @@ class SortingMoveSelectorTest {
                 new DummyMove("jan"), new DummyMove("feb"), new DummyMove("mar"),
                 new DummyMove("apr"), new DummyMove("may"), new DummyMove("jun"));
 
-        SelectionSorter<TestdataSolution, DummyMove> sorter = (scoreDirector, selectionList) -> selectionList
-                .sort(Comparator.comparing(DummyMove::getCode));
-        MoveSelector moveSelector = new SortingMoveSelector(childMoveSelector, cacheType, sorter);
+        MoveSelector moveSelector =
+                new SortingMoveSelector(childMoveSelector, cacheType, new CodeAssertableSorter<DummyMove>());
 
         SolverScope solverScope = mock(SolverScope.class);
+        InnerScoreDirector<?, ?> scoreDirector = mock(InnerScoreDirector.class);
+        doReturn(scoreDirector).when(solverScope).getScoreDirector();
+        doReturn(new TestdataSolution()).when(scoreDirector).getWorkingSolution();
         moveSelector.solvingStarted(solverScope);
 
         AbstractPhaseScope phaseScopeA = mock(AbstractPhaseScope.class);

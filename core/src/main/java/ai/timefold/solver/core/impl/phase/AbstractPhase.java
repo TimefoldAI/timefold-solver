@@ -130,6 +130,10 @@ public abstract class AbstractPhase<Solution_> implements Phase<Solution_> {
         if (assertPhaseScoreFromScratch) {
             var score = phaseScope.getSolverScope().calculateScore();
             try {
+                // Before making the assertion, we reset the value manager to release resources,
+                // as the assertion will need to reallocate the solution range,
+                // and it may lead to OOM errors.
+                phaseScope.getScoreDirector().getValueRangeManager().reset(null);
                 phaseScope.assertWorkingScoreFromScratch(score, getPhaseType() + " phase ended");
             } catch (ScoreCorruptionException | VariableCorruptionException e) {
                 throw new IllegalStateException("""

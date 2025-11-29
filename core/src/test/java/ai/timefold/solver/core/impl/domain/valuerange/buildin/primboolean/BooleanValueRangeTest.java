@@ -45,12 +45,19 @@ class BooleanValueRangeTest {
 
     @Test
     void getIndexNegative() {
-        assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> new BooleanValueRange().get(-1));
+        var range = new BooleanValueRange();
+        assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> range.get(-1));
     }
 
     @Test
     void getIndexGreaterThanSize() {
-        assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> new BooleanValueRange().get(2));
+        var range = new BooleanValueRange();
+        assertThatExceptionOfType(IndexOutOfBoundsException.class).isThrownBy(() -> range.get(2));
     }
 
+    @Test
+    void sort() {
+        var range = new BooleanValueRange();
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
+    }
 }

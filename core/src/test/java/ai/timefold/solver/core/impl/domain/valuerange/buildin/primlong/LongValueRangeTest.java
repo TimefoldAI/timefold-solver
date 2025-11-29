@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.primlong;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertAllElementsOfIterator;
 import static ai.timefold.solver.core.testutil.PlannerAssert.assertElementsOfIterator;
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
 import ai.timefold.solver.core.testutil.TestRandom;
 
@@ -15,7 +16,7 @@ class LongValueRangeTest {
         assertThat(new LongValueRange(0L, 10L).getSize()).isEqualTo(10L);
         assertThat(new LongValueRange(100L, 120L).getSize()).isEqualTo(20L);
         assertThat(new LongValueRange(-15L, 25L).getSize()).isEqualTo(40L);
-        assertThat(new LongValueRange(7L, 7L).getSize()).isEqualTo(0L);
+        assertThat(new LongValueRange(7L, 7L).getSize()).isZero();
         assertThat(new LongValueRange(-1000L, Long.MAX_VALUE - 3000L).getSize()).isEqualTo(Long.MAX_VALUE - 2000L);
         // IncrementUnit
         assertThat(new LongValueRange(0L, 10L, 2L).getSize()).isEqualTo(5L);
@@ -76,6 +77,12 @@ class LongValueRangeTest {
         assertElementsOfIterator(new LongValueRange(0L, 10L, 2L).createRandomIterator(new TestRandom(3, 0)), 6L, 0L);
         assertElementsOfIterator(new LongValueRange(-1L, 9L, 2L).createRandomIterator(new TestRandom(3, 0)), 5L, -1L);
         assertElementsOfIterator(new LongValueRange(100L, 120L, 5L).createRandomIterator(new TestRandom(3, 0)), 115L, 100L);
+    }
+
+    @Test
+    void sort() {
+        var range = new LongValueRange(0L, 7L);
+        assertThatExceptionOfType(UnsupportedOperationException.class).isThrownBy(() -> range.sort(null));
     }
 
 }

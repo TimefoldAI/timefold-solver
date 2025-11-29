@@ -42,6 +42,11 @@ public sealed interface ValueRangeDescriptor<Solution_> permits AbstractValueRan
     }
 
     /**
+     * @return true if the value range generic type is immutable.
+     */
+    boolean isGenericTypeImmutable();
+
+    /**
      * @return true if the {@link ValueRange} is countable
      *         (for example a double value range between 1.2 and 1.4 is not countable)
      */

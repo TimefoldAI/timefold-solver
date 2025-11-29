@@ -87,7 +87,7 @@ public class BestSolutionRecaller<Solution_> extends PhaseLifecycleListenerAdapt
         stepScope.setBestScoreImproved(bestScoreImproved);
         if (bestScoreImproved) {
             phaseScope.setBestSolutionStepIndex(stepScope.getStepIndex());
-            var newBestSolution = stepScope.createOrGetClonedSolution();
+            var newBestSolution = stepScope.cloneWorkingSolution();
             var innerScore = InnerScore.withUnassignedCount(
                     solverScope.getSolutionDescriptor().<Score_> getScore(newBestSolution),
                     -stepScope.getScoreDirector().getWorkingInitScore());

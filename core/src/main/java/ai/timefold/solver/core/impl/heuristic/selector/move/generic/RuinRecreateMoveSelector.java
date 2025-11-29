@@ -5,6 +5,7 @@ import java.util.Iterator;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 
 import org.apache.commons.math3.util.CombinatoricsUtils;
@@ -61,6 +62,13 @@ final class RuinRecreateMoveSelector<Solution_> extends GenericMoveSelector<Solu
         super.solvingStarted(solverScope);
         this.solverScope = solverScope;
         this.workingRandom = solverScope.getWorkingRandom();
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        this.solverScope = null;
+        this.workingRandom = null;
     }
 
     @Override
