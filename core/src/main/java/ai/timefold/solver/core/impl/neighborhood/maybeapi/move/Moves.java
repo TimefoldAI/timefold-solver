@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.neighborhood.maybeapi.move;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -36,13 +35,12 @@ public final class Moves {
 
     public static <Solution_, Entity_> Move<Solution_> swap(Entity_ leftEntity, Entity_ rightEntity,
             PlanningVariableMetaModel<Solution_, Entity_, Object> variableMetaModel) {
-        return new SwapMove<>(Collections.singletonList(variableMetaModel), leftEntity, rightEntity);
+        return swap(leftEntity, rightEntity, Collections.singletonList(variableMetaModel));
     }
 
-    @SafeVarargs
     public static <Solution_, Entity_> Move<Solution_> swap(Entity_ leftEntity, Entity_ rightEntity,
-            PlanningVariableMetaModel<Solution_, Entity_, Object>... variableMetaModels) {
-        return new SwapMove<>(Arrays.asList(variableMetaModels), leftEntity, rightEntity);
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
+        return new SwapMove<>(variableMetaModelList, leftEntity, rightEntity);
     }
 
     // ************************************************************************

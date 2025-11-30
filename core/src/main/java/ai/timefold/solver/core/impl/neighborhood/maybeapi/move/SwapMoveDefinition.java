@@ -17,6 +17,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.Defau
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
@@ -71,16 +72,18 @@ public class SwapMoveDefinition<Solution_, Entity_>
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
                             EnumeratingJoiners.filtering(this::isValidSwap))
-                    .asMove((solutionView, leftEntity, rightEntity) -> Moves.swap(leftEntity, rightEntity,
-                            variableMetaModelList.toArray(new PlanningVariableMetaModel[0])));
+                    .asMove(this::buildMove);
         } else {
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
-                            buildLessThanId(entityType),
+                            lessThanIdJoiner,
                             EnumeratingJoiners.filtering(this::isValidSwap))
-                    .asMove((solutionView, leftEntity, rightEntity) -> Moves.swap(leftEntity, rightEntity,
-                            variableMetaModelList.toArray(new PlanningVariableMetaModel[0])));
+                    .asMove(this::buildMove);
         }
+    }
+
+    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, Entity_ a, Entity_ b) {
+        return Moves.swap(a, b, variableMetaModelList);
     }
 
     private <A> @Nullable DefaultBiEnumeratingJoiner<A, A> buildLessThanId(Class<A> sourceClass) {
