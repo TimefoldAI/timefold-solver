@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.BiDataJoinerComber;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.BiEnumeratingJoinerComber;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
 
 import org.jspecify.annotations.NullMarked;
@@ -49,7 +49,7 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
         var other = (AbstractUniEnumeratingStream<Solution_, B>) otherStream;
         var leftBridge = new ForeBridgeUniEnumeratingStream<Solution_, A>(enumeratingStreamFactory, this);
         var rightBridge = new ForeBridgeUniEnumeratingStream<Solution_, B>(enumeratingStreamFactory, other);
-        var joinerComber = BiDataJoinerComber.<Solution_, A, B> comb(joiners);
+        var joinerComber = BiEnumeratingJoinerComber.<Solution_, A, B> comb(joiners);
         var joinStream = new JoinBiEnumeratingStream<>(enumeratingStreamFactory, leftBridge, rightBridge,
                 joinerComber.mergedJoiner(), joinerComber.mergedFiltering());
         return enumeratingStreamFactory.share(joinStream, joinStream_ -> {
@@ -94,7 +94,7 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
             UniEnumeratingStream<Solution_, B> otherStream,
             BiEnumeratingJoiner<A, B>[] joiners) {
         var other = (AbstractUniEnumeratingStream<Solution_, B>) otherStream;
-        var joinerComber = BiDataJoinerComber.<Solution_, A, B> comb(joiners);
+        var joinerComber = BiEnumeratingJoinerComber.<Solution_, A, B> comb(joiners);
         var parentBridgeB =
                 other.shareAndAddChild(new ForeBridgeUniEnumeratingStream<Solution_, B>(enumeratingStreamFactory, other));
         return enumeratingStreamFactory
@@ -151,8 +151,14 @@ public abstract class AbstractUniEnumeratingStream<Solution_, A> extends Abstrac
         return groupBy(ConstantLambdaUtils.identity());
     }
 
-    public UniDataset<Solution_, A> createDataset() {
-        var stream = shareAndAddChild(new TerminalUniEnumeratingStream<>(enumeratingStreamFactory, this));
+    public UniLeftDataset<Solution_, A> createLeftDataset() {
+        var stream = shareAndAddChild(new LeftTerminalUniEnumeratingStream<>(enumeratingStreamFactory, this));
+        return stream.getDataset();
+    }
+
+    public <Other_> UniRightDataset<Solution_, Other_, A>
+            createRightDataset(BiEnumeratingJoinerComber<Solution_, Other_, A> joinerComber) {
+        var stream = shareAndAddChild(new RightTerminalUniEnumeratingStream<>(enumeratingStreamFactory, this, joinerComber));
         return stream.getDataset();
     }
 

@@ -2,23 +2,20 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.BiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingMapper;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.sampling.BiSamplingStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.sampling.UniSamplingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.AbstractBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.stream.sampling.DefaultBiFromBiSamplingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.sampling.DefaultUniSamplingStream;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
@@ -89,25 +86,11 @@ public final class DefaultMoveStreamFactory<Solution_>
         return enumeratingStreamFactory.forEachNonDiscriminating(sourceClass, includeNull);
     }
 
-    @Override
-    public <Entity_, Value_> BiEnumeratingStream<Solution_, Entity_, Value_> forEachEntityValuePair(
-            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        var includeNull =
-                variableMetaModel instanceof PlanningVariableMetaModel<Solution_, Entity_, Value_> planningVariableMetaModel
-                        ? planningVariableMetaModel.allowsUnassigned()
-                        : variableMetaModel instanceof PlanningListVariableMetaModel<Solution_, Entity_, Value_> planningListVariableMetaModel
-                                && planningListVariableMetaModel.allowsUnassignedValues();
-        var stream = enumeratingStreamFactory.forEachExcludingPinned(variableMetaModel.type(), includeNull);
-        var nodeSharingSupportFunctions = getNodeSharingSupportFunctions(variableMetaModel);
-        return forEach(variableMetaModel.entity().type(), false)
-                .join(stream, EnumeratingJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter));
-    }
-
     @SuppressWarnings("unchecked")
-    private <Entity_, Value_> NodeSharingSupportFunctions<Solution_, Entity_, Value_>
-            getNodeSharingSupportFunctions(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public <Entity_, Value_> NodeSharingSupportFunctions<Solution_, Entity_, Value_>
+            getNodeSharingSupportFunctions(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         return (NodeSharingSupportFunctions<Solution_, Entity_, Value_>) nodeSharingSupportFunctionMap
-                .computeIfAbsent(variableMetaModel, NodeSharingSupportFunctions::new);
+                .computeIfAbsent(variableMetaModel, ignored -> new NodeSharingSupportFunctions<>(variableMetaModel));
     }
 
     @Override
@@ -133,7 +116,7 @@ public final class DefaultMoveStreamFactory<Solution_>
     }
 
     @SuppressWarnings("unchecked")
-    private <Entity_, Value_> ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>
+    public <Entity_, Value_> ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>
             getNodeSharingSupportFunctions(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         return (ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>) listVariableNodeSharingSupportFunctionsMap
                 .computeIfAbsent(variableMetaModel, ListVariableNodeSharingSupportFunctions::new);
@@ -141,34 +124,31 @@ public final class DefaultMoveStreamFactory<Solution_>
 
     @Override
     public <A> UniSamplingStream<Solution_, A> pick(UniEnumeratingStream<Solution_, A> enumeratingStream) {
-        return new DefaultUniSamplingStream<>(((AbstractUniEnumeratingStream<Solution_, A>) enumeratingStream).createDataset());
-    }
-
-    @Override
-    public <A, B> BiSamplingStream<Solution_, A, B> pick(BiEnumeratingStream<Solution_, A, B> enumeratingStream) {
-        return new DefaultBiFromBiSamplingStream<>(
-                ((AbstractBiEnumeratingStream<Solution_, A, B>) enumeratingStream).createDataset());
+        return new DefaultUniSamplingStream<>(
+                ((AbstractUniEnumeratingStream<Solution_, A>) enumeratingStream).createLeftDataset());
     }
 
     public SolutionDescriptor<Solution_> getSolutionDescriptor() {
         return enumeratingStreamFactory.getSolutionDescriptor();
     }
 
-    private record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(
-            GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-            BiEnumeratingFilter<Solution_, Entity_, Value_> valueInRangeFilter) {
+    public record NodeSharingSupportFunctions<Solution_, Entity_, Value_>(
+            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            BiEnumeratingPredicate<Solution_, Entity_, Value_> differentValueFilter,
+            BiEnumeratingPredicate<Solution_, Entity_, Value_> valueInRangeFilter) {
 
-        public NodeSharingSupportFunctions(GenuineVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+        public NodeSharingSupportFunctions(PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
             this(variableMetaModel,
+                    (solutionView, entity, value) -> !Objects.equals(solutionView.getValue(variableMetaModel, entity), value),
                     (solutionView, entity, value) -> solutionView.isValueInRange(variableMetaModel, entity, value));
         }
 
     }
 
-    private record ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>(
+    public record ListVariableNodeSharingSupportFunctions<Solution_, Entity_, Value_>(
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             UniEnumeratingFilter<Solution_, Value_> unpinnedValueFilter,
-            BiEnumeratingFilter<Solution_, Entity_, Value_> valueInRangeFilter,
+            BiEnumeratingPredicate<Solution_, Entity_, Value_> valueInRangeFilter,
             BiEnumeratingMapper<Solution_, Entity_, Value_, ElementPosition> toElementPositionMapper) {
 
         public ListVariableNodeSharingSupportFunctions(

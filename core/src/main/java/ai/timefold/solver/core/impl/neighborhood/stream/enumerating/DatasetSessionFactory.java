@@ -15,6 +15,10 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.Abstr
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public final class DatasetSessionFactory<Solution_> {
 
     private final EnumeratingStreamFactory<Solution_> enumeratingStreamFactory;
@@ -38,7 +42,7 @@ public final class DatasetSessionFactory<Solution_> {
     }
 
     private NodeNetwork buildNodeNetwork(Set<AbstractEnumeratingStream<Solution_>> enumeratingStreamSet,
-            DataNodeBuildHelper<Solution_> buildHelper, Consumer<String> nodeNetworkVisualizationConsumer) {
+            DataNodeBuildHelper<Solution_> buildHelper, @Nullable Consumer<String> nodeNetworkVisualizationConsumer) {
         var declaredClassToNodeMap = new LinkedHashMap<Class<?>, List<BavetRootNode<?>>>();
         var nodeList = buildHelper.buildNodeList(enumeratingStreamSet, buildHelper,
                 AbstractEnumeratingStream::buildNode, node -> {

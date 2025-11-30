@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.bavet.bi.UnindexedJoinBiNode;
 import ai.timefold.solver.core.impl.bavet.common.index.IndexerFactory;
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
@@ -16,17 +16,21 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.JoinE
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
+@NullMarked
 public final class JoinBiEnumeratingStream<Solution_, A, B> extends AbstractBiEnumeratingStream<Solution_, A, B>
         implements JoinEnumeratingStream<Solution_> {
 
     private final ForeBridgeUniEnumeratingStream<Solution_, A> leftParent;
     private final ForeBridgeUniEnumeratingStream<Solution_, B> rightParent;
     private final DefaultBiEnumeratingJoiner<A, B> joiner;
-    private final BiEnumeratingFilter<Solution_, A, B> filtering;
+    private final @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering;
 
     public JoinBiEnumeratingStream(EnumeratingStreamFactory<Solution_> enumeratingStreamFactory,
             ForeBridgeUniEnumeratingStream<Solution_, A> leftParent, ForeBridgeUniEnumeratingStream<Solution_, B> rightParent,
-            DefaultBiEnumeratingJoiner<A, B> joiner, BiEnumeratingFilter<Solution_, A, B> filtering) {
+            DefaultBiEnumeratingJoiner<A, B> joiner, @Nullable BiEnumeratingPredicate<Solution_, A, B> filtering) {
         super(enumeratingStreamFactory);
         this.leftParent = leftParent;
         this.rightParent = rightParent;

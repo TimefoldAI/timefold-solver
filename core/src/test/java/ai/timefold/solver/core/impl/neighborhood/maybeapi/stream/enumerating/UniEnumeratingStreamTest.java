@@ -10,6 +10,8 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSessi
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
+import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
@@ -20,7 +22,6 @@ import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIn
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListSolution;
 import ai.timefold.solver.core.testdomain.list.pinned.index.TestdataPinnedWithIndexListValue;
 
-import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class UniEnumeratingStreamTest {
@@ -31,16 +32,16 @@ class UniEnumeratingStreamTest {
                 new EnumeratingStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniEnumeratingStream<TestdataSolution, TestdataEntity>) enumeratingStreamFactory
                 .forEachNonDiscriminating(TestdataEntity.class, false))
-                .createDataset();
+                .createLeftDataset();
 
         var solution = TestdataSolution.generateSolution(2, 2);
         var datasetSession = UniEnumeratingStreamTest.createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(entity1, entity2);
@@ -51,10 +52,15 @@ class UniEnumeratingStreamTest {
         datasetSession.retract(entity2);
         datasetSession.settle();
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(entity1, entity3);
+    }
+
+    private static <Solution_, A> UniLeftDatasetInstance<Solution_, A> getDatasetInstance(DatasetSession<Solution_> session,
+            UniLeftDataset<Solution_, A> dataset) {
+        return (UniLeftDatasetInstance<Solution_, A>) session.getInstance(dataset);
     }
 
     @Test
@@ -63,16 +69,16 @@ class UniEnumeratingStreamTest {
                 new EnumeratingStreamFactory<>(TestdataSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniEnumeratingStream<TestdataSolution, TestdataEntity>) enumeratingStreamFactory
                 .forEachNonDiscriminating(TestdataEntity.class, true))
-                .createDataset();
+                .createLeftDataset();
 
         var solution = TestdataSolution.generateSolution(2, 2);
         var datasetSession = UniEnumeratingStreamTest.createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(null, entity1, entity2);
@@ -83,7 +89,7 @@ class UniEnumeratingStreamTest {
         datasetSession.retract(entity2);
         datasetSession.settle();
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(null, entity1, entity3);
@@ -95,16 +101,16 @@ class UniEnumeratingStreamTest {
                 new EnumeratingStreamFactory<>(TestdataListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniEnumeratingStream<TestdataListSolution, TestdataListEntity>) enumeratingStreamFactory
                 .forEachNonDiscriminating(TestdataListEntity.class, false))
-                .createDataset();
+                .createLeftDataset();
 
         var solution = TestdataListSolution.generateInitializedSolution(2, 2);
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(entity1, entity2);
@@ -115,7 +121,7 @@ class UniEnumeratingStreamTest {
         datasetSession.retract(entity2);
         datasetSession.settle();
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(entity1, entity3);
@@ -127,16 +133,16 @@ class UniEnumeratingStreamTest {
                 new EnumeratingStreamFactory<>(TestdataListSolution.buildSolutionDescriptor(), EnvironmentMode.PHASE_ASSERT);
         var uniDataset = ((AbstractUniEnumeratingStream<TestdataListSolution, TestdataListEntity>) enumeratingStreamFactory
                 .forEachNonDiscriminating(TestdataListEntity.class, true))
-                .createDataset();
+                .createLeftDataset();
 
         var solution = TestdataListSolution.generateInitializedSolution(2, 2);
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         var entity1 = solution.getEntityList().get(0);
         var entity2 = solution.getEntityList().get(1);
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(null, entity1, entity2);
@@ -147,7 +153,7 @@ class UniEnumeratingStreamTest {
         datasetSession.retract(entity2);
         datasetSession.settle();
 
-        Assertions.assertThat(uniDatasetInstance.iterator())
+        assertThat(uniDatasetInstance.iterator())
                 .toIterable()
                 .map(t -> t.factA)
                 .containsExactly(null, entity1, entity3);
@@ -179,7 +185,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) enumeratingStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, false))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -195,7 +201,7 @@ class UniEnumeratingStreamTest {
         unpinnedEntity.setPlanningPinToIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
@@ -223,7 +229,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) enumeratingStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListEntity.class, true))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -239,7 +245,7 @@ class UniEnumeratingStreamTest {
         unpinnedEntity.setPlanningPinToIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
@@ -267,7 +273,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) enumeratingStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, false))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -284,7 +290,7 @@ class UniEnumeratingStreamTest {
         unpinnedEntity.setPlanningPinToIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
@@ -312,7 +318,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListEntity>) enumeratingStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListEntity.class, true))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -329,7 +335,7 @@ class UniEnumeratingStreamTest {
         unpinnedEntity.setPlanningPinToIndex(0);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
@@ -357,7 +363,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) enumeratingStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, false))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -383,7 +389,7 @@ class UniEnumeratingStreamTest {
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
@@ -399,7 +405,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) enumeratingStreamFactory
                         .forEachNonDiscriminating(TestdataPinnedWithIndexListValue.class, true))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -425,7 +431,7 @@ class UniEnumeratingStreamTest {
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
@@ -440,7 +446,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) enumeratingStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListValue.class, false))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -469,7 +475,7 @@ class UniEnumeratingStreamTest {
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
@@ -484,7 +490,7 @@ class UniEnumeratingStreamTest {
         var uniDataset =
                 ((AbstractUniEnumeratingStream<TestdataPinnedWithIndexListSolution, TestdataPinnedWithIndexListValue>) enumeratingStreamFactory
                         .forEachExcludingPinned(TestdataPinnedWithIndexListValue.class, true))
-                        .createDataset();
+                        .createLeftDataset();
 
         // Prepare the solution;
         var solution = TestdataPinnedWithIndexListSolution.generateInitializedSolution(5, 3);
@@ -513,7 +519,7 @@ class UniEnumeratingStreamTest {
         solution.getEntityList().forEach(TestdataPinnedWithIndexListEntity::setUpShadowVariables);
 
         var datasetSession = createSession(enumeratingStreamFactory, solution);
-        var uniDatasetInstance = datasetSession.getInstance(uniDataset);
+        var uniDatasetInstance = getDatasetInstance(datasetSession, uniDataset);
 
         assertThat(uniDatasetInstance.iterator())
                 .toIterable()
