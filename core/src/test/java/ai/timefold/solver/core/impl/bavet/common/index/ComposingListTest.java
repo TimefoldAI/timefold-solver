@@ -6,6 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import ai.timefold.solver.core.impl.util.MutableInt;
 
 import org.jspecify.annotations.NullMarked;
 import org.junit.jupiter.api.Test;
@@ -104,26 +107,26 @@ class ComposingListTest {
     @Test
     void onDemandSublistLazyInitialization() {
         var composingList = new ComposingList<String>();
-        var supplierCalled = new boolean[] { false };
+        var supplierCalled = new AtomicBoolean(false);
         composingList.addSubList(() -> {
-            supplierCalled[0] = true;
+            supplierCalled.set(true);
             return Arrays.asList("a", "b");
         }, 2);
 
-        assertThat(supplierCalled[0]).isFalse();
-        assertThat(composingList.size()).isEqualTo(2);
-        assertThat(supplierCalled[0]).isFalse();
+        assertThat(supplierCalled).isFalse();
+        assertThat(composingList).hasSize(2);
+        assertThat(supplierCalled).isFalse();
 
         assertThat(composingList.get(0)).isEqualTo("a");
-        assertThat(supplierCalled[0]).isTrue();
+        assertThat(supplierCalled).isTrue();
     }
 
     @Test
     void onDemandSublistCachesResult() {
         var composingList = new ComposingList<String>();
-        var callCount = new int[] { 0 };
+        var callCount = new MutableInt(0);
         composingList.addSubList(() -> {
-            callCount[0]++;
+            callCount.increment();
             return Arrays.asList("a", "b");
         }, 2);
 
@@ -131,7 +134,7 @@ class ComposingListTest {
         composingList.get(1);
         composingList.get(0);
 
-        assertThat(callCount[0]).isEqualTo(1);
+        assertThat(callCount.intValue()).isEqualTo(1);
     }
 
     @Test
@@ -168,12 +171,12 @@ class ComposingListTest {
     @Test
     void indexOutOfBoundsNegative() {
         var composingList = new ComposingList<String>();
-        composingList.addSubList(Arrays.asList("a", "b", "c"));
 
+        assertThat(composingList).isEmpty();
         assertThatThrownBy(() -> composingList.get(-1))
                 .isInstanceOf(IndexOutOfBoundsException.class)
                 .hasMessageContaining("Index: -1")
-                .hasMessageContaining("Size: 3");
+                .hasMessageContaining("Size: 0");
     }
 
     @Test
@@ -196,13 +199,6 @@ class ComposingListTest {
                 .isInstanceOf(IndexOutOfBoundsException.class)
                 .hasMessageContaining("Index: 10")
                 .hasMessageContaining("Size: 3");
-    }
-
-    @Test
-    void emptyList() {
-        var composingList = new ComposingList<String>();
-
-        assertThat(composingList).isEmpty();
     }
 
     @Test

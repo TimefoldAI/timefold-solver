@@ -13,6 +13,7 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> {
 
+    @SuppressWarnings("rawtypes")
     private static final UniTuple EMPTY_TUPLE = new UniTuple<>(null, 0);
 
     private final SolutionView<Solution_> solutionView;
@@ -22,6 +23,8 @@ final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> 
 
     // Required for iteration.
     private boolean hasNext = false;
+
+    @SuppressWarnings("unchecked")
     private UniTuple<B> next = EMPTY_TUPLE;
 
     public FilteringIterator(BiEnumeratingPredicate<Solution_, A, B> filter, SolutionView<Solution_> solutionView,
@@ -32,6 +35,7 @@ final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> 
         this.leftTuple = leftTuple;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public boolean hasNext() {
         if (hasNext) {
@@ -53,6 +57,7 @@ final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> 
         return false;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public UniTuple<B> next() {
         if (!hasNext()) {

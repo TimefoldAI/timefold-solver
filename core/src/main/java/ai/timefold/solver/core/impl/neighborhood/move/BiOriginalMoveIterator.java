@@ -23,6 +23,7 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Solution_>> {
 
+    @SuppressWarnings("rawtypes")
     private static final UniTuple EMPTY_TUPLE = new UniTuple<>(null, 0);
 
     private final BiMoveStreamContext<Solution_, A, B> context;
@@ -33,6 +34,8 @@ final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Sol
     private @Nullable Move<Solution_> nextMove;
     private @Nullable Iterator<UniTuple<A>> leftTupleIterator;
     private @Nullable Iterator<UniTuple<B>> rightTupleIterator;
+
+    @SuppressWarnings("unchecked")
     private UniTuple<A> leftTuple = EMPTY_TUPLE;
 
     public BiOriginalMoveIterator(BiMoveStreamContext<Solution_, A, B> context) {

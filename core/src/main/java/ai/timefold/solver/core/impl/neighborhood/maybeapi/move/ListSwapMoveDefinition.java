@@ -12,6 +12,7 @@ import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
@@ -49,16 +50,19 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
             return moveStreamFactory.pick(assignedValueStream)
                     .pick(assignedValueStream,
                             EnumeratingJoiners.filtering(this::isValidSwap))
-                    .asMove((solutionView, leftPosition, rightPosition) -> Moves.swap(leftPosition.elementPosition,
-                            rightPosition.elementPosition, variableMetaModel));
+                    .asMove(this::buildMove);
         } else {
             return moveStreamFactory.pick(assignedValueStream)
                     .pick(assignedValueStream,
                             EnumeratingJoiners.lessThan(a -> a),
                             EnumeratingJoiners.filtering(this::isValidSwap))
-                    .asMove((solutionView, leftPosition, rightPosition) -> Moves.swap(leftPosition.elementPosition,
-                            rightPosition.elementPosition, variableMetaModel));
+                    .asMove(this::buildMove);
         }
+    }
+
+    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> a,
+            FullElementPosition<Entity_, Value_> b) {
+        return Moves.swap(a.elementPosition, b.elementPosition, variableMetaModel);
     }
 
     private boolean isValidSwap(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> leftPosition,
