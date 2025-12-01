@@ -65,7 +65,7 @@ class FollowerValuesShadowVariableTest {
                         .getMetaModel().entity(TestdataLeaderEntity.class).variable("value");
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderA, value1, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderA, value1), newSolution -> {
             assertThat(followerA1.getValue()).isEqualTo(value1);
             assertThat(followerA2.getValue()).isEqualTo(value1);
             assertThat(followerA3.getValue()).isEqualTo(value1);
@@ -74,7 +74,7 @@ class FollowerValuesShadowVariableTest {
             assertThat(followerB2.getValue()).isNull();
         });
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderB, value2, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderB, value2), newSolution -> {
             assertThat(followerA1.getValue()).isEqualTo(value1);
             assertThat(followerA2.getValue()).isEqualTo(value1);
             assertThat(followerA3.getValue()).isEqualTo(value1);
@@ -83,7 +83,7 @@ class FollowerValuesShadowVariableTest {
             assertThat(followerB2.getValue()).isEqualTo(value2);
         });
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderC, value1, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderC, value1), newSolution -> {
             assertThat(followerA1.getValue()).isEqualTo(value1);
             assertThat(followerA2.getValue()).isEqualTo(value1);
             assertThat(followerA3.getValue()).isEqualTo(value1);

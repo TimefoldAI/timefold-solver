@@ -28,18 +28,19 @@ public final class Moves {
     // Basic variable moves
     // ************************************************************************
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> change(Entity_ entity, @Nullable Value_ value,
-            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public static <Solution_, Entity_, Value_> Move<Solution_> change(
+            PlanningVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity, @Nullable Value_ value) {
         return new ChangeMove<>(variableMetaModel, entity, value);
     }
 
-    public static <Solution_, Entity_> Move<Solution_> swap(Entity_ leftEntity, Entity_ rightEntity,
-            PlanningVariableMetaModel<Solution_, Entity_, Object> variableMetaModel) {
-        return swap(leftEntity, rightEntity, Collections.singletonList(variableMetaModel));
+    public static <Solution_, Entity_> Move<Solution_> swap(
+            PlanningVariableMetaModel<Solution_, Entity_, Object> variableMetaModel, Entity_ leftEntity, Entity_ rightEntity) {
+        return swap(Collections.singletonList(variableMetaModel), leftEntity, rightEntity);
     }
 
-    public static <Solution_, Entity_> Move<Solution_> swap(Entity_ leftEntity, Entity_ rightEntity,
-            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
+    public static <Solution_, Entity_> Move<Solution_> swap(
+            List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList, Entity_ leftEntity,
+            Entity_ rightEntity) {
         return new SwapMove<>(variableMetaModelList, leftEntity, rightEntity);
     }
 
@@ -47,43 +48,49 @@ public final class Moves {
     // List variable moves
     // ************************************************************************
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> assign(Value_ value, PositionInList targetPosition,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return assign(value, targetPosition.entity(), targetPosition.index(), variableMetaModel);
+    public static <Solution_, Entity_, Value_> Move<Solution_> assign(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value,
+            PositionInList targetPosition) {
+        return assign(variableMetaModel, value, targetPosition.entity(), targetPosition.index());
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> assign(Value_ value, Entity_ entity, int index,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public static <Solution_, Entity_, Value_> Move<Solution_> assign(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Value_ value, Entity_ entity,
+            int index) {
         return new ListAssignMove<>(variableMetaModel, value, entity, index);
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> unassign(PositionInList targetPosition,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return unassign(targetPosition.entity(), targetPosition.index(), variableMetaModel);
+    public static <Solution_, Entity_, Value_> Move<Solution_> unassign(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, PositionInList targetPosition) {
+        return unassign(targetPosition.entity(), variableMetaModel, targetPosition.index());
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> unassign(Entity_ entity, int index,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public static <Solution_, Entity_, Value_> Move<Solution_> unassign(Entity_ entity,
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, int index) {
         return new ListUnassignMove<>(variableMetaModel, entity, index);
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> change(PositionInList left, PositionInList right,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return change(left.entity(), left.index(), right.entity(), right.index(), variableMetaModel);
+    public static <Solution_, Entity_, Value_> Move<Solution_> change(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, PositionInList left,
+            PositionInList right) {
+        return change(variableMetaModel, left.entity(), left.index(), right.entity(), right.index());
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> change(Entity_ leftEntity, int leftIndex, Entity_ rightEntity,
-            int rightIndex, PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public static <Solution_, Entity_, Value_> Move<Solution_> change(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity, int leftIndex,
+            Entity_ rightEntity, int rightIndex) {
         return new ListChangeMove<>(variableMetaModel, leftEntity, leftIndex, rightEntity, rightIndex);
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> swap(PositionInList left, PositionInList right,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
-        return swap(left.entity(), left.index(), right.entity(), right.index(), variableMetaModel);
+    public static <Solution_, Entity_, Value_> Move<Solution_> swap(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, PositionInList left,
+            PositionInList right) {
+        return swap(variableMetaModel, left.entity(), left.index(), right.entity(), right.index());
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> swap(Entity_ leftEntity, int leftIndex, Entity_ rightEntity,
-            int rightIndex, PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
+    public static <Solution_, Entity_, Value_> Move<Solution_> swap(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ leftEntity, int leftIndex,
+            Entity_ rightEntity, int rightIndex) {
         return new ListSwapMove<>(variableMetaModel, leftEntity, leftIndex, rightEntity, rightIndex);
     }
 

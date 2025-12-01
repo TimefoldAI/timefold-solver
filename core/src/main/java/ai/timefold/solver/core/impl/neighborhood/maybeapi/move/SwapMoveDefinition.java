@@ -5,15 +5,12 @@ import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVariableMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
-import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.DefaultBiEnumeratingJoiner;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.VariableMetaModel;
@@ -29,6 +26,7 @@ public class SwapMoveDefinition<Solution_, Entity_>
 
     private final PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel;
     private final List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList;
+    private final @Nullable Function<Entity_, Comparable> planningIdGetter;
 
     @SuppressWarnings("unchecked")
     public SwapMoveDefinition(PlanningEntityMetaModel<Solution_, Entity_> entityMetaModel) {
@@ -45,6 +43,18 @@ public class SwapMoveDefinition<Solution_, Entity_>
             throw new IllegalArgumentException("The entityClass (%s) has no basic planning variables."
                     .formatted(entityMetaModel.type().getCanonicalName()));
         }
+        this.planningIdGetter = SwapMoveDefinition.getPlanningIdGetter(entityMetaModel);
+    }
+
+    @SuppressWarnings("rawtypes")
+    static <Solution_, Entity_> @Nullable Function<Entity_, Comparable>
+            getPlanningIdGetter(PlanningEntityMetaModel<Solution_, Entity_> metaModel) {
+        var solutionDescriptor = ((DefaultPlanningSolutionMetaModel<Solution_>) metaModel.solution()).solutionDescriptor();
+        var planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(metaModel.type());
+        if (planningIdMemberAccessor == null) {
+            return null;
+        }
+        return planningIdMemberAccessor.getGetterFunction();
     }
 
     public SwapMoveDefinition(List<PlanningVariableMetaModel<Solution_, Entity_, Object>> variableMetaModelList) {
@@ -61,40 +71,30 @@ public class SwapMoveDefinition<Solution_, Entity_>
                     "The variableMetaModelList (%s) contains variables from multiple entity classes."
                             .formatted(variableMetaModelList));
         };
+        this.planningIdGetter = SwapMoveDefinition.getPlanningIdGetter(entityMetaModel);
     }
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var entityType = entityMetaModel.type();
         var entityStream = moveStreamFactory.forEach(entityType, false);
-        var lessThanIdJoiner = buildLessThanId(entityType);
-        if (lessThanIdJoiner == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
+        var moveConstructor = (BiMoveConstructor<Solution_, Entity_, Entity_>) this::buildMove;
+        if (planningIdGetter == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
                             EnumeratingJoiners.filtering(this::isValidSwap))
-                    .asMove(this::buildMove);
+                    .asMove(moveConstructor);
         } else {
             return moveStreamFactory.pick(entityStream)
                     .pick(entityStream,
-                            lessThanIdJoiner,
+                            EnumeratingJoiners.lessThan(planningIdGetter),
                             EnumeratingJoiners.filtering(this::isValidSwap))
-                    .asMove(this::buildMove);
+                    .asMove(moveConstructor);
         }
     }
 
     private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, Entity_ a, Entity_ b) {
-        return Moves.swap(a, b, variableMetaModelList);
-    }
-
-    private <A> @Nullable DefaultBiEnumeratingJoiner<A, A> buildLessThanId(Class<A> sourceClass) {
-        SolutionDescriptor<Solution_> solutionDescriptor =
-                ((DefaultPlanningSolutionMetaModel<Solution_>) entityMetaModel.solution()).solutionDescriptor();
-        MemberAccessor planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(sourceClass);
-        if (planningIdMemberAccessor == null) {
-            return null;
-        }
-        Function<A, Comparable> planningIdGetter = planningIdMemberAccessor.getGetterFunction();
-        return (DefaultBiEnumeratingJoiner<A, A>) EnumeratingJoiners.lessThan(planningIdGetter);
+        return Moves.swap(variableMetaModelList, a, b);
     }
 
     private boolean isValidSwap(SolutionView<Solution_> solutionView, Entity_ leftEntity, Entity_ rightEntity) {

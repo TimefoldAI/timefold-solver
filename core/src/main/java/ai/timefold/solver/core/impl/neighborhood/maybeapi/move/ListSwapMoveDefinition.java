@@ -3,9 +3,6 @@ package ai.timefold.solver.core.impl.neighborhood.maybeapi.move;
 import java.util.Objects;
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningSolutionMetaModel;
-import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStream;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
@@ -27,17 +24,7 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
 
     public ListSwapMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
-        this.planningIdGetter = getPlanningIdGetter(variableMetaModel.entity().type());
-    }
-
-    private <A> @Nullable Function<A, Comparable> getPlanningIdGetter(Class<A> sourceClass) {
-        SolutionDescriptor<Solution_> solutionDescriptor =
-                ((DefaultPlanningSolutionMetaModel<Solution_>) variableMetaModel.entity().solution()).solutionDescriptor();
-        MemberAccessor planningIdMemberAccessor = solutionDescriptor.getPlanningIdAccessor(sourceClass);
-        if (planningIdMemberAccessor == null) {
-            return null;
-        }
-        return planningIdMemberAccessor.getGetterFunction();
+        this.planningIdGetter = SwapMoveDefinition.getPlanningIdGetter(variableMetaModel.entity());
     }
 
     @Override
@@ -62,7 +49,7 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
 
     private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> a,
             FullElementPosition<Entity_, Value_> b) {
-        return Moves.swap(a.elementPosition, b.elementPosition, variableMetaModel);
+        return Moves.swap(variableMetaModel, a.elementPosition, b.elementPosition);
     }
 
     private boolean isValidSwap(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> leftPosition,

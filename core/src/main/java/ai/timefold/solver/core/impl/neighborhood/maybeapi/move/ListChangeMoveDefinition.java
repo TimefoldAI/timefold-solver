@@ -48,19 +48,20 @@ public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
         var entityValuePairs = moveStreamFactory.forEachAssignablePosition(variableMetaModel);
         var availableValues = moveStreamFactory.forEach(variableMetaModel.type(), false);
         return moveStreamFactory.pick(entityValuePairs)
-                .pick(availableValues, EnumeratingJoiners.filtering(this::isValidChange))
+                .pick(availableValues,
+                        EnumeratingJoiners.filtering(this::isValidChange))
                 .asMove((solutionView, targetPosition, value) -> {
                     var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
                     if (targetPosition instanceof UnassignedElement) {
                         var currentElementPosition = currentPosition.ensureAssigned();
-                        return Moves.unassign(currentElementPosition, variableMetaModel);
+                        return Moves.unassign(variableMetaModel, currentElementPosition);
                     }
                     var targetElementPosition = Objects.requireNonNull(targetPosition).ensureAssigned();
                     if (currentPosition instanceof UnassignedElement) {
-                        return Moves.assign(value, targetElementPosition, variableMetaModel);
+                        return Moves.assign(variableMetaModel, value, targetElementPosition);
                     }
                     var currentElementPosition = currentPosition.ensureAssigned();
-                    return Moves.change(currentElementPosition, targetElementPosition, variableMetaModel);
+                    return Moves.change(variableMetaModel, currentElementPosition, targetElementPosition);
                 });
     }
 

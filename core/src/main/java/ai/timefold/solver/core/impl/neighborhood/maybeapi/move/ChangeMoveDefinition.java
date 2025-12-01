@@ -29,7 +29,7 @@ public class ChangeMoveDefinition<Solution_, Entity_, Value_>
                 .pick(moveStreamFactory.forEach(variableMetaModel.type(), variableMetaModel.allowsUnassigned()),
                         EnumeratingJoiners.filtering(nodeSharingSupportFunctions.differentValueFilter()),
                         EnumeratingJoiners.filtering(nodeSharingSupportFunctions.valueInRangeFilter()))
-                .asMove((solution, entity, value) -> Moves.change(Objects.requireNonNull(entity), value, variableMetaModel));
+                .asMove((solution, entity, value) -> Moves.change(variableMetaModel, Objects.requireNonNull(entity), value));
     }
 
 }

@@ -99,7 +99,7 @@ class DependencyValuesShadowVariableTest {
         // and C.startTime/C.endTime remains null and C.isInconsistent is true.
         // When the move is undone, C.startTime/C.endTime remains null,
         // and C.isInconsistent is false.
-        moveAsserter.assertMoveAndUndo(schedule, Moves.assign(valueC, entityA, 0, variableMetaModel));
+        moveAsserter.assertMoveAndUndo(schedule, Moves.assign(variableMetaModel, valueC, entityA, 0));
     }
 
     @Test
