@@ -29,7 +29,7 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
     private final Predicate<T> filter;
     private final DefaultUniqueRandomSequence<T> delegate;
 
-    public FilteredUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems, Predicate<T> filter) {
+    FilteredUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems, Predicate<T> filter) {
         this.originalList = Collections.unmodifiableList(listOfUniqueItems);
         this.filter = Objects.requireNonNull(filter);
         this.delegate = new DefaultUniqueRandomSequence<>(listOfUniqueItems);
@@ -41,7 +41,7 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
         return new SequenceElement<>(originalList.get(index).getElement(), index);
     }
 
-    public int pickIndex(Random workingRandom) {
+    private int pickIndex(Random workingRandom) {
         if (delegate.isEmpty()) {
             throw new NoSuchElementException("No more elements to pick from.");
         }
@@ -51,6 +51,9 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
         var actualValueIndex = originalRandomIndex;
         var value = nonRemovedElement.value();
         while (!filter.test(value)) {
+            if (delegate.isEmpty()) {
+                throw new NoSuchElementException("No more elements to pick from.");
+            }
             delegate.remove(actualValueIndex);
             // We try the same random index again; the underlying sequence will find the next best non-removed element.
             actualValueIndex = delegate.pickIndex(workingRandom, originalRandomIndex);
@@ -61,16 +64,18 @@ public final class FilteredUniqueRandomSequence<T> implements UniqueRandomSequen
 
     @Override
     public T remove(Random workingRandom) {
-        return remove(pickIndex(workingRandom));
+        return delegate.remove(pickIndex(workingRandom));
     }
 
+    /**
+     * Returns whether there are no more elements to pick from.
+     *
+     * @return true if the underlying sequence has no more elements;
+     *         otherwise true, even if all of those elements may later be filtered out.
+     */
     @Override
-    public T remove(int index) {
-        var element = delegate.remove(index);
-        if (!filter.test(originalList.get(index).getElement())) {
-            throw new NoSuchElementException();
-        }
-        return element;
+    public boolean isEmpty() {
+        return delegate.isEmpty();
     }
 
 }

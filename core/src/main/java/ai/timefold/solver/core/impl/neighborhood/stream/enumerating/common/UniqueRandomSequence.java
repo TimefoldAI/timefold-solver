@@ -39,14 +39,13 @@ public sealed interface UniqueRandomSequence<T>
     T remove(Random workingRandom);
 
     /**
-     * Removes the element at the given index in the underlying list.
-     * Once this method returns, no subsequent {@link #pick(Random)} will return this element ever again.
+     * Returns whether there are no more elements to pick from.
+     * In case of {@link FilteredUniqueRandomSequence}, this method may return false positives,
+     * as it cannot predict how many elements will be filtered out.
      * 
-     * @param index the index of the element to remove
-     * @return The element which exists in the original list at the given index.
-     * @throws NoSuchElementException if the index has already been removed
+     * @return true if there are no more elements to pick from, false otherwise
      */
-    T remove(int index);
+    boolean isEmpty();
 
     record SequenceElement<T>(T value, int index) {
     }

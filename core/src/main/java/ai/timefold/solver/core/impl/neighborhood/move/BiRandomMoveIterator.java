@@ -105,8 +105,21 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
 
         while (!leftTupleSequence.isEmpty()) {
             var leftElement = leftTupleSequence.pick(workingRandom);
-            var leftTuple = leftElement.value();
-            var rightTupleSequence = rightTupleSequenceMap.computeIfAbsent(leftTuple, this::computeRightSequence);
+            pickNextMove(leftElement);
+            if (nextMove != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void pickNextMove(UniqueRandomSequence.SequenceElement<UniTuple<A>> leftElement) {
+        var leftTuple = leftElement.value();
+        var rightTupleSequence = rightTupleSequenceMap.computeIfAbsent(leftTuple, this::computeRightSequence);
+        var remove = false;
+        if (rightTupleSequence.isEmpty()) {
+            remove = true;
+        } else {
             try {
                 var bTuple = rightTupleSequence.remove(workingRandom);
                 var leftFact = leftTuple.factA;
@@ -117,11 +130,13 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
                 // Therefore we can run into a situation where there are no more elements passing the filter,
                 // even though the sequence is not technically empty.
                 // We only find this out at runtime.
-                leftTupleSequence.remove(leftElement.index());
-                rightTupleSequenceMap.remove(leftTuple);
+                remove = true;
             }
         }
-        return false;
+        if (remove) {
+            leftTupleSequence.remove(leftElement.index());
+            rightTupleSequenceMap.remove(leftTuple);
+        }
     }
 
     @Override

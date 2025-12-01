@@ -35,7 +35,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
     private int leftmostIndex;
     private int rightmostIndex;
 
-    public DefaultUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems) {
+    DefaultUniqueRandomSequence(List<? extends ListEntry<T>> listOfUniqueItems) {
         this.originalList = Collections.unmodifiableList(listOfUniqueItems);
         this.length = listOfUniqueItems.size();
         this.removed = new BitSet(length);
@@ -94,7 +94,14 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
         return remove(pickIndex(workingRandom));
     }
 
-    @Override
+    /**
+     * Removes the element at the given index in the underlying list.
+     * Once this method returns, no subsequent {@link #pick(Random)} will return this element ever again.
+     *
+     * @param index the index of the element to remove
+     * @return The element which exists in the original list at the given index.
+     * @throws NoSuchElementException if the index has already been removed
+     */
     public T remove(int index) {
         if (removed.get(index)) {
             throw new IllegalArgumentException("The index (%s) has already been removed.".formatted(index));
@@ -112,6 +119,7 @@ public final class DefaultUniqueRandomSequence<T> implements UniqueRandomSequenc
         return originalList.get(index).getElement();
     }
 
+    @Override
     public boolean isEmpty() {
         return removedCount >= length;
     }

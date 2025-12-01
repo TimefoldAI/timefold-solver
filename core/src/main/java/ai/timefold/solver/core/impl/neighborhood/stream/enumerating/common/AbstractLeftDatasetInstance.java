@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
 import java.util.Iterator;
-import java.util.function.Predicate;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
@@ -43,10 +42,6 @@ public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Abst
 
     public DefaultUniqueRandomSequence<Tuple_> buildRandomSequence() {
         return new DefaultUniqueRandomSequence<>(tupleList.asList());
-    }
-
-    public FilteredUniqueRandomSequence<Tuple_> buildRandomSequence(Predicate<Tuple_> predicate) {
-        return new FilteredUniqueRandomSequence<>(tupleList.asList(), predicate);
     }
 
     public int size() {
