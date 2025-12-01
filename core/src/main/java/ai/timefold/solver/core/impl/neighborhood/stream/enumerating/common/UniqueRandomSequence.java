@@ -19,7 +19,7 @@ public sealed interface UniqueRandomSequence<T>
 
     /**
      * Picks a random element from the list which has not already been removed.
-     * Once an element of the list is removed either via {@link #remove(Random)} or {@link #remove(int)},
+     * Once an element of the list is removed either via {@link #remove(Random)},
      * it will never be returned again by this method.
      *
      * @param workingRandom the random number generator to use
