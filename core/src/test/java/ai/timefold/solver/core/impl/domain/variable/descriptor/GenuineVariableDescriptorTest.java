@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.ArrayList;
 
@@ -9,6 +10,9 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.invalid.parameter.TestdataInvalidCountEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.invalid.parameter.TestdataInvalidTypeEntityProvidingWithParameterEntity;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,5 +38,21 @@ class GenuineVariableDescriptorTest {
         var variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
         assertThat(variableDescriptor.isReinitializable(new TestdataListEntity("a", new TestdataListValue()))).isFalse();
         assertThat(variableDescriptor.isReinitializable(new TestdataListEntity("b", new ArrayList<>()))).isFalse();
+    }
+
+    @Test
+    void invalidGetterWithParameter() {
+        assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
+                .hasMessageContaining(
+                        "The parameter type (ai.timefold.solver.core.testdomain.TestdataSolution) of the method (valueRange) must match the solution (TestdataInvalidTypeEntityProvidingWithParameterSolution).");
+        assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
+                .hasMessageContaining("The getterMethod")
+                .hasMessageContaining("with a ValueRangeProvider annotation must not have more than one parameter.");
+    }
+
+    @Test
+    void valueRangeDescriptorWithSolution() {
+        assertThatCode(TestdataEntityProvidingWithParameterSolution::buildSolutionDescriptor)
+                .doesNotThrowAnyException();
     }
 }

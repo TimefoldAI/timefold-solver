@@ -13,6 +13,7 @@ import java.util.function.Function;
  * which is a property (with a getter and optional setter {@link Method}) or a {@link Field}.
  *
  * @see ReflectionBeanPropertyMemberAccessor
+ * @see ReflectionExtendedBeanPropertyMemberAccessor
  * @see ReflectionFieldMemberAccessor
  * @see ReflectionMethodMemberAccessor
  */

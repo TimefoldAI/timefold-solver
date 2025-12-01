@@ -8,7 +8,7 @@ public abstract class AbstractMemberAccessor implements MemberAccessor {
     private final Function getterFunction = this::executeGetter;
 
     @Override
-    public final <Fact_, Result_> Function<Fact_, Result_> getGetterFunction() {
+    public <Fact_, Result_> Function<Fact_, Result_> getGetterFunction() {
         return getterFunction;
     }
 

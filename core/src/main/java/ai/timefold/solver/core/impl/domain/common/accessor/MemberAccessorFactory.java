@@ -73,15 +73,20 @@ public final class MemberAccessorFactory {
                         break;
                     }
                     // Intentionally fall through (no break)
-                case FIELD_OR_GETTER_METHOD:
-                case FIELD_OR_GETTER_METHOD_WITH_SETTER:
+                case FIELD_OR_GETTER_METHOD, FIELD_OR_GETTER_METHOD_WITH_PARAMETER, FIELD_OR_GETTER_METHOD_WITH_SETTER:
                     boolean getterOnly = memberAccessorType != MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
+                    boolean getterWithParameter =
+                            memberAccessorType == MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_PARAMETER;
                     if (annotationClass == null) {
-                        ReflectionHelper.assertGetterMethod(method);
+                        ReflectionHelper.assertGetterMethod(method, getterWithParameter);
                     } else {
-                        ReflectionHelper.assertGetterMethod(method, annotationClass);
+                        ReflectionHelper.assertGetterMethod(method, annotationClass, getterWithParameter);
                     }
-                    memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
+                    if (getterWithParameter && method.getParameterCount() > 0) {
+                        memberAccessor = new ReflectionExtendedBeanPropertyMemberAccessor(method, getterOnly);
+                    } else {
+                        memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
+                    }
                     break;
                 case VOID_METHOD:
                     memberAccessor = new ReflectionMethodMemberAccessor(method, false);
@@ -167,6 +172,7 @@ public final class MemberAccessorFactory {
     public enum MemberAccessorType {
         FIELD_OR_READ_METHOD,
         FIELD_OR_GETTER_METHOD,
+        FIELD_OR_GETTER_METHOD_WITH_PARAMETER,
         FIELD_OR_GETTER_METHOD_WITH_SETTER,
         VOID_METHOD
     }

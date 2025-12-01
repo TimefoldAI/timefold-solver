@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.domain.entity.descriptor;
 
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_PARAMETER;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertNotMixedInheritance;
@@ -43,6 +44,7 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
+import ai.timefold.solver.core.impl.domain.common.accessor.ExtendedMemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -330,8 +332,19 @@ public class EntityDescriptor<Solution_> {
     private void processValueRangeProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
         if (((AnnotatedElement) member).isAnnotationPresent(ValueRangeProvider.class)) {
             var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                    FIELD_OR_READ_METHOD, ValueRangeProvider.class, descriptorPolicy.getDomainAccessType());
+                    FIELD_OR_GETTER_METHOD_WITH_PARAMETER, ValueRangeProvider.class, descriptorPolicy.getDomainAccessType());
+            assertGetterParameterType(memberAccessor);
             descriptorPolicy.addFromEntityValueRangeProvider(memberAccessor);
+        }
+    }
+
+    private void assertGetterParameterType(MemberAccessor memberAccessor) {
+        if (memberAccessor instanceof ExtendedMemberAccessor extendedMemberAccessor
+                && (!extendedMemberAccessor.getGetterMethodParameterType()
+                        .equals(getSolutionDescriptor().getSolutionClass()))) {
+            throw new IllegalStateException("The parameter type (%s) of the method (%s) must match the solution (%s)."
+                    .formatted(extendedMemberAccessor.getGetterMethodParameterType().getTypeName(), memberAccessor.getName(),
+                            getSolutionDescriptor().getSolutionClass().getSimpleName()));
         }
     }
 
