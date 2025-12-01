@@ -30,7 +30,7 @@
     <version.javadoc.plugin>3.12.0</version.javadoc.plugin>
     <version.rewrite.plugin>6.24.0</version.rewrite.plugin>
     <version.source.plugin>3.3.1</version.source.plugin>
-    <version.resources.plugin>3.3.1</version.resources.plugin>
+    <version.resources.plugin>3.4.0</version.resources.plugin>
     <version.cyclonedx.plugin>2.9.1</version.cyclonedx.plugin>
     <sonar.moduleKey>${project.groupId}:${project.artifactId}</sonar.moduleKey>
     <sonar.sources>.</sonar.sources>
