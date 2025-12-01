@@ -40,7 +40,7 @@
     <version.antrun.plugin>3.2.0</version.antrun.plugin>
     <version.asciidoctor.plugin>3.2.0</version.asciidoctor.plugin>
     <version.asciidoctor.plugin.pdf>2.3.23</version.asciidoctor.plugin.pdf>
-    <version.assembly.plugin>3.7.1</version.assembly.plugin>
+    <version.assembly.plugin>3.8.0</version.assembly.plugin>
     <version.compiler.plugin>3.14.1</version.compiler.plugin>
     <version.dependency.plugin>3.9.0</version.dependency.plugin>
     <version.exec.plugin>3.6.2</version.exec.plugin>
