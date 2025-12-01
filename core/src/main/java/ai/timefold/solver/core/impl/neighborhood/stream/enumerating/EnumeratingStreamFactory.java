@@ -39,7 +39,6 @@ public final class EnumeratingStreamFactory<Solution_> {
         return share(new ForEachIncludingPinnedEnumeratingStream<>(this, sourceClass, includeNull));
     }
 
-    @SuppressWarnings("unchecked")
     public <A> UniEnumeratingStream<Solution_, A> forEachExcludingPinned(Class<A> sourceClass, boolean includeNull) {
         assertValidForEachType(sourceClass);
         if (!solutionDescriptor.getMetaModel().hasEntity(sourceClass)) {
@@ -129,11 +128,11 @@ public final class EnumeratingStreamFactory<Solution_> {
     }
 
     @SuppressWarnings("unchecked")
-    public List<AbstractDataset<Solution_, ?>> getDatasets() {
+    public List<AbstractDataset<Solution_>> getDatasets() {
         return sharingStreamMap.values().stream()
                 .flatMap(s -> {
-                    if (s instanceof TerminalEnumeratingStream<?, ?, ?> terminalStream) {
-                        return Stream.of((AbstractDataset<Solution_, ?>) terminalStream.getDataset());
+                    if (s instanceof TerminalEnumeratingStream<?, ?> terminalStream) {
+                        return Stream.of((AbstractDataset<Solution_>) terminalStream.getDataset());
                     }
                     return Stream.empty();
                 })

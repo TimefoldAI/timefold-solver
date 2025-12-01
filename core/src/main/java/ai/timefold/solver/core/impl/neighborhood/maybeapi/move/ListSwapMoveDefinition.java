@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.maybeapi.move;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStream;
@@ -8,56 +9,63 @@ import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 @NullMarked
 public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
         implements MoveDefinition<Solution_> {
 
     private final PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel;
+    private final @Nullable Function<Entity_, Comparable> planningIdGetter;
 
     public ListSwapMoveDefinition(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel) {
         this.variableMetaModel = Objects.requireNonNull(variableMetaModel);
+        this.planningIdGetter = SwapMoveDefinition.getPlanningIdGetter(variableMetaModel.entity());
     }
 
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var assignedValueStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
-                .filter((solutionView,
-                        value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList);
-        var validAssignedValuePairStream = assignedValueStream.join(assignedValueStream,
-                EnumeratingJoiners.filtering((SolutionView<Solution_> solutionView, Value_ leftValue,
-                        Value_ rightValue) -> !Objects.equals(leftValue, rightValue)));
-        // Ensure unique pairs; without demanding PlanningId, this becomes tricky.
-        // Convert values to their locations in list.
-        var validAssignedValueUniquePairStream =
-                validAssignedValuePairStream
-                        .map((solutionView, leftValue, rightValue) -> new UniquePair<>(leftValue, rightValue))
-                        .distinct()
-                        .map((solutionView, pair) -> FullElementPosition.of(variableMetaModel, solutionView, pair.first()),
-                                (solutionView, pair) -> FullElementPosition.of(variableMetaModel, solutionView, pair.second()));
-        // Eliminate pairs that cannot be swapped due to value range restrictions.
-        var result = validAssignedValueUniquePairStream
-                .filter((solutionView, leftPosition, rightPosition) -> solutionView.isValueInRange(variableMetaModel,
-                        rightPosition.entity(), leftPosition.value())
-                        && solutionView.isValueInRange(variableMetaModel, leftPosition.entity(), rightPosition.value()));
-        // Finally pick the moves.
-        return moveStreamFactory.pick(result)
-                .asMove((solutionView, leftPosition, rightPosition) -> Moves.swap(leftPosition.elementPosition,
-                        rightPosition.elementPosition, variableMetaModel));
+                .filter((solutionView, value) -> solutionView.getPositionOf(variableMetaModel, value) instanceof PositionInList)
+                .map((solutionView, value) -> new FullElementPosition<>(value,
+                        solutionView.getPositionOf(variableMetaModel, value).ensureAssigned(), planningIdGetter));
+        if (planningIdGetter == null) { // If the user hasn't defined a planning ID, we will follow a slower path.
+            return moveStreamFactory.pick(assignedValueStream)
+                    .pick(assignedValueStream,
+                            EnumeratingJoiners.filtering(this::isValidSwap))
+                    .asMove(this::buildMove);
+        } else {
+            return moveStreamFactory.pick(assignedValueStream)
+                    .pick(assignedValueStream,
+                            EnumeratingJoiners.lessThan(a -> a),
+                            EnumeratingJoiners.filtering(this::isValidSwap))
+                    .asMove(this::buildMove);
+        }
+    }
+
+    private Move<Solution_> buildMove(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> a,
+            FullElementPosition<Entity_, Value_> b) {
+        return Moves.swap(variableMetaModel, a.elementPosition, b.elementPosition);
+    }
+
+    private boolean isValidSwap(SolutionView<Solution_> solutionView, FullElementPosition<Entity_, Value_> leftPosition,
+            FullElementPosition<Entity_, Value_> rightPosition) {
+        if (Objects.equals(leftPosition, rightPosition)) {
+            return false;
+        }
+        return solutionView.isValueInRange(variableMetaModel, rightPosition.entity(), leftPosition.value())
+                && solutionView.isValueInRange(variableMetaModel, leftPosition.entity(), rightPosition.value());
     }
 
     @NullMarked
-    private record FullElementPosition<Entity_, Value_>(Value_ value, PositionInList elementPosition) {
-
-        public static <Solution_, Entity_, Value_> FullElementPosition<Entity_, Value_> of(
-                PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
-                SolutionView<Solution_> solutionView, Value_ value) {
-            var assignedElement = solutionView.getPositionOf(variableMetaModel, value).ensureAssigned();
-            return new FullElementPosition<>(value, assignedElement);
-        }
+    private record FullElementPosition<Entity_, Value_>(Value_ value, PositionInList elementPosition,
+            @Nullable Function<Entity_, Comparable> planningIdGetter)
+            implements
+                Comparable<FullElementPosition<Entity_, Value_>> {
 
         public Entity_ entity() {
             return elementPosition.entity();
@@ -67,6 +75,22 @@ public class ListSwapMoveDefinition<Solution_, Entity_, Value_>
             return elementPosition.index();
         }
 
+        @Override
+        public int compareTo(FullElementPosition<Entity_, Value_> o) {
+            if (planningIdGetter == null) { // The code will not get here if the getter is null.
+                throw new IllegalStateException("Impossible state: The planningIdGetter is null, cannot compare entities.");
+            }
+            var entityComparison = planningIdGetter.apply(this.entity()).compareTo(planningIdGetter.apply(o.entity()));
+            if (entityComparison != 0) {
+                return entityComparison;
+            }
+            return Integer.compare(this.index(), o.index());
+        }
+
+        @Override
+        public String toString() {
+            return value + "@" + elementPosition;
+        }
     }
 
 }

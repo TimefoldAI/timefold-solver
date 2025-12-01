@@ -1,12 +1,13 @@
 package ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function;
 
 import ai.timefold.solver.core.api.score.stream.Joiners;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.UniEnumeratingStream;
 
 import org.jspecify.annotations.NullMarked;
 
 /**
- * Created with {@link Joiners}.
+ * Created with {@link EnumeratingJoiners}.
  * Used by {@link UniEnumeratingStream#join(Class, BiEnumeratingJoiner[])}, ...
  *
  * @see Joiners

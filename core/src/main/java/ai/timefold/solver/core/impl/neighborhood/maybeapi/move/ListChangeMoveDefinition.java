@@ -46,29 +46,26 @@ public class ListChangeMoveDefinition<Solution_, Entity_, Value_>
     @Override
     public MoveStream<Solution_> build(MoveStreamFactory<Solution_> moveStreamFactory) {
         var entityValuePairs = moveStreamFactory.forEachAssignablePosition(variableMetaModel);
-        // The stream of these positions is joined with the stream of all existing values,
-        // filtering out those which would not result in a valid move.
-        var enumeratingStream = moveStreamFactory.forEach(variableMetaModel.type(), false)
-                .join(entityValuePairs, EnumeratingJoiners.filtering(this::isValidChange));
-        // When picking from this stream, we decide what kind of move we need to create,
-        // based on whether the value is assigned or unassigned.
-        return moveStreamFactory.pick(enumeratingStream)
-                .asMove((solutionView, value, targetPosition) -> {
+        var availableValues = moveStreamFactory.forEach(variableMetaModel.type(), false);
+        return moveStreamFactory.pick(entityValuePairs)
+                .pick(availableValues,
+                        EnumeratingJoiners.filtering(this::isValidChange))
+                .asMove((solutionView, targetPosition, value) -> {
                     var currentPosition = solutionView.getPositionOf(variableMetaModel, Objects.requireNonNull(value));
                     if (targetPosition instanceof UnassignedElement) {
                         var currentElementPosition = currentPosition.ensureAssigned();
-                        return Moves.unassign(currentElementPosition, variableMetaModel);
+                        return Moves.unassign(variableMetaModel, currentElementPosition);
                     }
                     var targetElementPosition = Objects.requireNonNull(targetPosition).ensureAssigned();
                     if (currentPosition instanceof UnassignedElement) {
-                        return Moves.assign(value, targetElementPosition, variableMetaModel);
+                        return Moves.assign(variableMetaModel, value, targetElementPosition);
                     }
                     var currentElementPosition = currentPosition.ensureAssigned();
-                    return Moves.change(currentElementPosition, targetElementPosition, variableMetaModel);
+                    return Moves.change(variableMetaModel, currentElementPosition, targetElementPosition);
                 });
     }
 
-    private boolean isValidChange(SolutionView<Solution_> solutionView, Value_ value, ElementPosition targetPosition) {
+    private boolean isValidChange(SolutionView<Solution_> solutionView, ElementPosition targetPosition, Value_ value) {
         var currentPosition = solutionView.getPositionOf(variableMetaModel, value);
         if (currentPosition.equals(targetPosition)) { // No change needed.
             return false;

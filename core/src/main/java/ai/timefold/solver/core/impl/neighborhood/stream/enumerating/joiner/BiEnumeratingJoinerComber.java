@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner;
 import java.util.ArrayList;
 import java.util.List;
 
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingJoiner;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
 import org.jspecify.annotations.NullMarked;
@@ -17,12 +17,12 @@ import org.jspecify.annotations.Nullable;
  * @param <B>
  */
 @NullMarked
-public record BiDataJoinerComber<Solution_, A, B>(DefaultBiEnumeratingJoiner<A, B> mergedJoiner,
-        @Nullable BiEnumeratingFilter<Solution_, A, B> mergedFiltering) {
+public record BiEnumeratingJoinerComber<Solution_, A, B>(DefaultBiEnumeratingJoiner<A, B> mergedJoiner,
+        @Nullable BiEnumeratingPredicate<Solution_, A, B> mergedFiltering) {
 
-    public static <Solution_, A, B> BiDataJoinerComber<Solution_, A, B> comb(BiEnumeratingJoiner<A, B>[] joiners) {
+    public static <Solution_, A, B> BiEnumeratingJoinerComber<Solution_, A, B> comb(BiEnumeratingJoiner<A, B>[] joiners) {
         List<DefaultBiEnumeratingJoiner<A, B>> defaultJoinerList = new ArrayList<>(joiners.length);
-        List<BiEnumeratingFilter<Solution_, A, B>> filteringList = new ArrayList<>(joiners.length);
+        List<BiEnumeratingPredicate<Solution_, A, B>> filteringList = new ArrayList<>(joiners.length);
 
         int indexOfFirstFilter = -1;
         // Make sure all indexing joiners, if any, come before filtering joiners. This is necessary for performance.
@@ -46,12 +46,12 @@ public record BiDataJoinerComber<Solution_, A, B>(DefaultBiEnumeratingJoiner<A, 
             }
         }
         DefaultBiEnumeratingJoiner<A, B> mergedJoiner = DefaultBiEnumeratingJoiner.merge(defaultJoinerList);
-        BiEnumeratingFilter<Solution_, A, B> mergedFiltering = mergeFiltering(filteringList);
-        return new BiDataJoinerComber<>(mergedJoiner, mergedFiltering);
+        BiEnumeratingPredicate<Solution_, A, B> mergedFiltering = mergeFiltering(filteringList);
+        return new BiEnumeratingJoinerComber<>(mergedJoiner, mergedFiltering);
     }
 
-    private static <Solution_, A, B> @Nullable BiEnumeratingFilter<Solution_, A, B>
-            mergeFiltering(List<BiEnumeratingFilter<Solution_, A, B>> filteringList) {
+    private static <Solution_, A, B> @Nullable BiEnumeratingPredicate<Solution_, A, B>
+            mergeFiltering(List<BiEnumeratingPredicate<Solution_, A, B>> filteringList) {
         if (filteringList.isEmpty()) {
             return null;
         }
@@ -61,7 +61,7 @@ public record BiDataJoinerComber<Solution_, A, B>(DefaultBiEnumeratingJoiner<A, 
             default ->
                 // Avoid predicate.and() when more than 2 predicates for debugging and potentially performance
                 (SolutionView<Solution_> solutionView, A a, B b) -> {
-                    for (BiEnumeratingFilter<Solution_, A, B> predicate : filteringList) {
+                    for (BiEnumeratingPredicate<Solution_, A, B> predicate : filteringList) {
                         if (!predicate.test(solutionView, a, b)) {
                             return false;
                         }

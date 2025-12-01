@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating;
 
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingMapper;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingMapper;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
 
@@ -11,10 +11,10 @@ import org.jspecify.annotations.NullMarked;
 public interface BiEnumeratingStream<Solution_, A, B> extends EnumeratingStream {
 
     /**
-     * Exhaustively test each fact against the {@link BiEnumeratingFilter}
-     * and match if {@link BiEnumeratingFilter#test(SolutionView, Object, Object)} returns true.
+     * Exhaustively test each fact against the {@link BiEnumeratingPredicate}
+     * and match if {@link BiEnumeratingPredicate#test(SolutionView, Object, Object)} returns true.
      */
-    BiEnumeratingStream<Solution_, A, B> filter(BiEnumeratingFilter<Solution_, A, B> filter);
+    BiEnumeratingStream<Solution_, A, B> filter(BiEnumeratingPredicate<Solution_, A, B> filter);
 
     // ************************************************************************
     // Operations with duplicate tuple possibility

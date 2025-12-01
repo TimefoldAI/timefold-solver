@@ -20,12 +20,12 @@ final class EqualsIndexer<T, Key_> implements Indexer<T> {
     private final Map<Key_, Indexer<T>> downstreamIndexerMap = new HashMap<>();
 
     /**
-     * Construct an {@link EqualsIndexer} which immediately ends in a {@link IndexerBackend}.
+     * Construct an {@link EqualsIndexer} which immediately ends in the backend.
      * This means {@code compositeKey} must be a single key.
      */
-    public EqualsIndexer() {
+    public EqualsIndexer(Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this.keyRetriever = new SingleKeyRetriever<>();
-        this.downstreamIndexerSupplier = LinkedListIndexerBackend::new;
+        this.downstreamIndexerSupplier = downstreamIndexerSupplier;
     }
 
     /**

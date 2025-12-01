@@ -60,19 +60,19 @@ class DynamicFollowerValuesShadowVariableTest {
                         .getMetaModel().entity(TestdataDynamicLeaderEntity.class).variable("value");
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderA, value1, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderA, value1), newSolution -> {
             assertThat(follower1.getValue()).isEqualTo(value1);
             assertThat(follower2.getValue()).isEqualTo(value1);
             assertThat(follower3.getValue()).isEqualTo(null);
         });
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderB, value2, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderB, value2), newSolution -> {
             assertThat(follower1.getValue()).isEqualTo(value1);
             assertThat(follower2.getValue()).isEqualTo(value1);
             assertThat(follower3.getValue()).isEqualTo(value2);
         });
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(leaderA, value2, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, leaderA, value2), newSolution -> {
             assertThat(follower1.getValue()).isEqualTo(value2);
             assertThat(follower2.getValue()).isEqualTo(value2);
             assertThat(follower3.getValue()).isEqualTo(value2);
@@ -109,19 +109,19 @@ class DynamicFollowerValuesShadowVariableTest {
                         .getMetaModel().entity(TestdataDynamicFollowerEntity.class).variable("leader");
         var moveAsserter = MoveAsserter.create(solutionDescriptor);
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(follower1, leaderB, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, follower1, leaderB), newSolution -> {
             assertThat(follower1.getValue()).isEqualTo(value2);
             assertThat(follower2.getValue()).isEqualTo(value1);
             assertThat(follower3.getValue()).isEqualTo(value2);
         });
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(follower3, leaderA, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, follower3, leaderA), newSolution -> {
             assertThat(follower1.getValue()).isEqualTo(value2);
             assertThat(follower2.getValue()).isEqualTo(value1);
             assertThat(follower3.getValue()).isEqualTo(value1);
         });
 
-        moveAsserter.assertMoveAndApply(solution, Moves.change(follower1, null, variableMetamodel), newSolution -> {
+        moveAsserter.assertMoveAndApply(solution, Moves.change(variableMetamodel, follower1, null), newSolution -> {
             assertThat(follower1.getValue()).isEqualTo(null);
             assertThat(follower2.getValue()).isEqualTo(value1);
             assertThat(follower3.getValue()).isEqualTo(value1);

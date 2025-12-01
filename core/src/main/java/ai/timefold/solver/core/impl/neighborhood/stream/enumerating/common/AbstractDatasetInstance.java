@@ -1,8 +1,6 @@
 package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
-import java.util.Iterator;
 import java.util.Objects;
-import java.util.Random;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
@@ -13,20 +11,16 @@ import org.jspecify.annotations.NullMarked;
 public abstract class AbstractDatasetInstance<Solution_, Tuple_ extends AbstractTuple>
         implements TupleLifecycle<Tuple_> {
 
-    private final AbstractDataset<Solution_, Tuple_> parent;
-    protected final int inputStoreIndex;
+    private final AbstractDataset<Solution_> parent;
+    protected final int entryStoreIndex;
 
-    protected AbstractDatasetInstance(AbstractDataset<Solution_, Tuple_> parent, int inputStoreIndex) {
+    protected AbstractDatasetInstance(AbstractDataset<Solution_> parent, int rightMostPositionStoreIndex) {
         this.parent = Objects.requireNonNull(parent);
-        this.inputStoreIndex = inputStoreIndex;
+        this.entryStoreIndex = rightMostPositionStoreIndex;
     }
 
-    public AbstractDataset<Solution_, Tuple_> getParent() {
+    public AbstractDataset<Solution_> getParent() {
         return parent;
     }
-
-    public abstract Iterator<Tuple_> iterator();
-
-    public abstract Iterator<Tuple_> iterator(Random workingRandom);
 
 }

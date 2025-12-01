@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating;
 
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingJoiner;
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingMapper;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
@@ -68,7 +68,7 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * Create a new {@link BiEnumeratingStream} for every combination of A and B for which the {@link BiEnumeratingJoiner}
      * is true (for the properties it extracts from both facts).
      * <p>
-     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiEnumeratingFilter) filter},
+     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiEnumeratingPredicate) filter},
      * because it applies hashing and/or indexing on the properties,
      * so it doesn't create nor checks every combination of A and B.
      *
@@ -129,7 +129,7 @@ public interface UniEnumeratingStream<Solution_, A> extends EnumeratingStream {
      * The stream will include all facts or entities of the given class,
      * regardless of their pinning status.
      * <p>
-     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiEnumeratingFilter) filter},
+     * Important: Joining is faster and more scalable than a {@link BiEnumeratingStream#filter(BiEnumeratingPredicate) filter},
      * because it applies hashing and/or indexing on the properties,
      * so it doesn't create nor checks every combination of A and B.
      *
