@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
@@ -16,6 +17,7 @@ import org.jspecify.annotations.Nullable;
 public final class CompositeCountableValueRange<T> extends AbstractCountableValueRange<T> {
 
     private final boolean isValueImmutable;
+    private final List<? extends AbstractCountableValueRange<T>> valueRangeList;
     private final ValueRangeCache<T> cache;
 
     public CompositeCountableValueRange(List<? extends AbstractCountableValueRange<T>> childValueRangeList) {
@@ -43,11 +45,14 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
             childValueRange.createOriginalIterator().forEachRemaining(cache::add);
         }
         this.isValueImmutable = isImmutable;
+        this.valueRangeList = childValueRangeList;
     }
 
-    private CompositeCountableValueRange(ValueRangeCache<T> cache, boolean isValueImmutable) {
-        this.cache = cache;
+    private CompositeCountableValueRange(boolean isValueImmutable,
+            List<? extends AbstractCountableValueRange<T>> valueRangeList, ValueRangeCache<T> cache) {
         this.isValueImmutable = isValueImmutable;
+        this.valueRangeList = valueRangeList;
+        this.cache = cache;
     }
 
     @Override
@@ -68,7 +73,7 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
     @Override
     public ValueRange<T> sort(ValueRangeSorter<T> sorter) {
         var sortedCache = this.cache.sort(sorter);
-        return new CompositeCountableValueRange<>(sortedCache, isValueImmutable);
+        return new CompositeCountableValueRange<>(isValueImmutable, valueRangeList, sortedCache);
     }
 
     @Override
@@ -86,4 +91,20 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
         return cache.iterator(workingRandom);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof CompositeCountableValueRange<?> that)) {
+            return false;
+        }
+        return isValueImmutable == that.isValueImmutable
+                && Objects.equals(valueRangeList, that.valueRangeList);
+    }
+
+    @Override
+    public int hashCode() {
+        var hash = 7;
+        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
+        hash = 31 * hash + Objects.hashCode(valueRangeList);
+        return hash;
+    }
 }

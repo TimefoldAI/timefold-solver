@@ -89,6 +89,16 @@ public final class BooleanValueRange extends AbstractCountableValueRange<Boolean
     }
 
     @Override
+    public int hashCode() {
+        return 0; // All boolean ranges are equal.
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof BooleanValueRange;
+    }
+
+    @Override
     public String toString() {
         return "[false, true]"; // Formatting: interval (mathematics) ISO 31-11
     }

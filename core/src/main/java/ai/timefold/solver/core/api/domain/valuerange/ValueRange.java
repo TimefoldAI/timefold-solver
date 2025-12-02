@@ -21,6 +21,10 @@ import org.jspecify.annotations.Nullable;
  * ValueRange is stateless, and its contents must not depend on any planning variables.
  * Implementations must be immutable.
  * <p>
+ * It is recommended to implement {@link Object#equals(Object)} and {@link Object#hashCode()}
+ * and for those implementations to be efficient,
+ * because instances are often cached.
+ * <p>
  * Don't implement this interface directly.
  * If you can't use a collection to store the values,
  * use {@link ValueRangeFactory} to get an instance of a {@link CountableValueRange}.

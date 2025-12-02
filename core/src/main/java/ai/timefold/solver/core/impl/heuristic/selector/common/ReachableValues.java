@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.selector.common;
 
 import java.util.AbstractList;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.Comparator;
@@ -43,8 +43,7 @@ public final class ReachableValues<Entity_, Value_> {
         this.expectedSupertypeOfValue = expectedSupertypeOfValue;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
-        this.onDemandRandomAccessEntity = new List[valuesIndex.allItems().size()];
-        this.onDemandRandomAccessValue = new List[valuesIndex.allItems().size()];
+        clear();
     }
 
     private @Nullable ReachableItemValue<Entity_, Value_> fetchItemValue(Object value) {
@@ -145,11 +144,13 @@ public final class ReachableValues<Entity_, Value_> {
         return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue);
     }
 
+    @SuppressWarnings("unchecked")
     public void clear() {
         firstCachedObject = null;
         secondCachedObject = null;
-        this.onDemandRandomAccessEntity = new List[valuesIndex.allItems().size()];
-        this.onDemandRandomAccessValue = new List[valuesIndex.allItems().size()];
+        var valueCount = valuesIndex.allItems().size();
+        this.onDemandRandomAccessEntity = new List[valueCount];
+        this.onDemandRandomAccessValue = new List[valueCount];
     }
 
     @NullMarked
@@ -183,22 +184,13 @@ public final class ReachableValues<Entity_, Value_> {
             return valueBitSet.get(valueIndex);
         }
 
-        private static List<Integer> extractAllIndexes(BitSet bitSet) {
-            var indexes = new ArrayList<Integer>(bitSet.cardinality());
-            for (int i = bitSet.nextSetBit(0); i >= 0; i = bitSet.nextSetBit(i + 1)) {
-                indexes.add(i);
-            }
-            return indexes;
-        }
-
         List<Entity_> getRandomAccessEntityList(List<Entity_> allEntities) {
-            return new ArrayIndexedList<>(extractAllIndexes(entityBitSet), allEntities, null);
+            return new BitSetIndexedList<>(allEntities, entityBitSet);
         }
 
         List<Value_> getRandomAccessValueList(List<ReachableItemValue<Entity_, Value_>> allValues,
                 @Nullable ValueRangeSorter<Value_> valueRangeSorter) {
-            var valuesList = new ArrayIndexedList<>(extractAllIndexes(valueBitSet), allValues,
-                    v -> v.value);
+            var valuesList = new BitSetIndexedList<>(allValues, valueBitSet, v -> v.value);
             if (valueRangeSorter != null) {
                 valueRangeSorter.sort(valuesList);
             }
@@ -212,37 +204,36 @@ public final class ReachableValues<Entity_, Value_> {
     }
 
     @NullMarked
-    private static final class ArrayIndexedList<Type_, Value_> extends AbstractList<Value_> {
+    private static final class BitSetIndexedList<Type_, Value_> extends AbstractList<Value_> {
 
-        private final List<Integer> valueIndex;
-        private final List<Type_> allValues;
-        private final @Nullable Function<Type_, Value_> valueExtractor;
+        private final Value_[] values;
 
-        private ArrayIndexedList(List<Integer> valueIndex, List<Type_> allValues,
-                @Nullable Function<Type_, Value_> valueExtractor) {
-            this.valueIndex = valueIndex;
-            this.allValues = allValues;
-            this.valueExtractor = valueExtractor;
+        @SuppressWarnings("unchecked")
+        private BitSetIndexedList(List<Value_> availableValueList, BitSet containedValueIndex) {
+            var valueCount = 0;
+            var index = containedValueIndex.nextSetBit(0);
+            this.values = (Value_[]) new Object[containedValueIndex.cardinality()];
+            while (index >= 0) {
+                this.values[valueCount++] = availableValueList.get(index);
+                index = containedValueIndex.nextSetBit(index + 1);
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private BitSetIndexedList(List<Type_> availableValueList, BitSet containedValueIndex,
+                Function<Type_, Value_> valueExtractor) {
+            var valueCount = 0;
+            var index = containedValueIndex.nextSetBit(0);
+            this.values = (Value_[]) new Object[containedValueIndex.cardinality()];
+            while (index >= 0) {
+                this.values[valueCount++] = valueExtractor.apply(availableValueList.get(index));
+                index = containedValueIndex.nextSetBit(index + 1);
+            }
         }
 
         @Override
         public Value_ get(int index) {
-            if (index < 0 || index >= valueIndex.size()) {
-                throw new ArrayIndexOutOfBoundsException(index);
-            }
-            return getInnerValue(valueIndex.get(index));
-        }
-
-        private Value_ getInnerValue(int index) {
-            if (index < 0 || index >= allValues.size()) {
-                throw new ArrayIndexOutOfBoundsException(index);
-            }
-            var value = allValues.get(index);
-            if (valueExtractor == null) {
-                return (Value_) value;
-            } else {
-                return valueExtractor.apply(value);
-            }
+            return values[index];
         }
 
         @Override
@@ -250,12 +241,12 @@ public final class ReachableValues<Entity_, Value_> {
             if (comparator == null) {
                 return;
             }
-            valueIndex.sort((Integer v1, Integer v2) -> comparator.compare(getInnerValue(v1), getInnerValue(v2)));
+            Arrays.sort(values, comparator);
         }
 
         @Override
         public int size() {
-            return valueIndex.size();
+            return values.length;
         }
     }
 

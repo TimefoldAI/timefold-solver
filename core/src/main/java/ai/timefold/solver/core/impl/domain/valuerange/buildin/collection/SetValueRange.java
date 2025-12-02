@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.collection;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -75,6 +76,23 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
     @Override
     public Iterator<T> createRandomIterator(Random workingRandom) {
         return getCache().iterator(workingRandom);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SetValueRange<?> that)) {
+            return false;
+        }
+        return isValueImmutable == that.isValueImmutable
+                && Objects.equals(set, that.set);
+    }
+
+    @Override
+    public int hashCode() {
+        var hash = 7;
+        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
+        hash = 31 * hash + Objects.hashCode(set);
+        return hash;
     }
 
     @Override

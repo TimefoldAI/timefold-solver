@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
@@ -143,6 +144,25 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
             return incrementUnit.multiply(BigDecimal.valueOf(index)).add(from);
         }
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof BigDecimalValueRange that)) {
+            return false;
+        }
+        return Objects.equals(from, that.from)
+                && Objects.equals(to, that.to)
+                && Objects.equals(incrementUnit, that.incrementUnit);
+    }
+
+    @Override
+    public int hashCode() {
+        var hash = 7;
+        hash = 31 * hash + Objects.hashCode(from);
+        hash = 31 * hash + Objects.hashCode(to);
+        hash = 31 * hash + Objects.hashCode(incrementUnit);
+        return hash;
     }
 
     @Override

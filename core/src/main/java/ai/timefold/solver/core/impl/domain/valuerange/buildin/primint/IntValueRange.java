@@ -130,6 +130,25 @@ public final class IntValueRange extends AbstractCountableValueRange<Integer> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof IntValueRange that)) {
+            return false;
+        }
+        return from == that.from
+                && to == that.to
+                && incrementUnit == that.incrementUnit;
+    }
+
+    @Override
+    public int hashCode() {
+        var hash = 7;
+        hash = 31 * hash + Integer.hashCode(from);
+        hash = 31 * hash + Integer.hashCode(to);
+        hash = 31 * hash + Integer.hashCode(incrementUnit);
+        return hash;
+    }
+
+    @Override
     public String toString() {
         return "[" + from + "-" + to + ")"; // Formatting: interval (mathematics) ISO 31-11
     }
