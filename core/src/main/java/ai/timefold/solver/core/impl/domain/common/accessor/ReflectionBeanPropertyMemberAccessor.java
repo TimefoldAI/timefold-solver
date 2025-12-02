@@ -13,8 +13,7 @@ import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 /**
  * A {@link MemberAccessor} based on a getter and optionally a setter.
  */
-public sealed class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAccessor
-        permits ReflectionExtendedBeanPropertyMemberAccessor {
+public final class ReflectionBeanPropertyMemberAccessor extends AbstractMemberAccessor {
 
     private final Class<?> propertyType;
     private final String propertyName;
@@ -24,14 +23,10 @@ public sealed class ReflectionBeanPropertyMemberAccessor extends AbstractMemberA
     private final MethodHandle setterMethodHandle;
 
     public ReflectionBeanPropertyMemberAccessor(Method getterMethod) {
-        this(getterMethod, false, false);
+        this(getterMethod, false);
     }
 
     public ReflectionBeanPropertyMemberAccessor(Method getterMethod, boolean getterOnly) {
-        this(getterMethod, getterOnly, false);
-    }
-
-    public ReflectionBeanPropertyMemberAccessor(Method getterMethod, boolean getterOnly, boolean getterWithParameter) {
         this.getterMethod = getterMethod;
         MethodHandles.Lookup lookup = MethodHandles.lookup();
         try {
@@ -45,7 +40,7 @@ public sealed class ReflectionBeanPropertyMemberAccessor extends AbstractMemberA
                     .formatted(getterMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
         }
         Class<?> declaringClass = getterMethod.getDeclaringClass();
-        if (!ReflectionHelper.isGetterMethod(getterMethod, getterWithParameter)) {
+        if (!ReflectionHelper.isGetterMethod(getterMethod)) {
             throw new IllegalArgumentException("The getterMethod (%s) is not a valid getter."
                     .formatted(getterMethod));
         }
@@ -129,18 +124,6 @@ public sealed class ReflectionBeanPropertyMemberAccessor extends AbstractMemberA
     @Override
     public Type getGenericType() {
         return getterMethod.getGenericReturnType();
-    }
-
-    String getPropertyName() {
-        return propertyName;
-    }
-
-    Method getGetterMethod() {
-        return getterMethod;
-    }
-
-    MethodHandle getGetherMethodHandle() {
-        return getherMethodHandle;
     }
 
     @Override

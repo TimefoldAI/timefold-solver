@@ -71,22 +71,14 @@ public final class ReflectionHelper {
                 Character.isUpperCase(propertyName.charAt(1));
     }
 
-    public static boolean isGetterMethod(Method method) {
-        return isGetterMethod(method, false);
-    }
-
     /**
      * Checks whether the given method is a valid getter method according to the JavaBeans standard.
      *
      * @param method never null
-     * @param getterWithParameter a flag that allows the getter method to accept an argument.
-     *        In certain cases,
-     *        we want the getter method for a value range to accept the solution as a parameter.
      * @return true if the given method is a getter method
      */
-    public static boolean isGetterMethod(Method method, boolean getterWithParameter) {
-        if ((!getterWithParameter && method.getParameterCount() != 0)
-                || (getterWithParameter && method.getParameterCount() > 1)) {
+    public static boolean isGetterMethod(Method method) {
+        if (method.getParameterTypes().length != 0) {
             return false;
         }
         String methodName = method.getName();
@@ -283,13 +275,9 @@ public final class ReflectionHelper {
         return !leafMethod.getDeclaringClass().equals(parentMethod.getClass());
     }
 
-    public static void assertGetterMethod(Method getterMethod, boolean getterWithParameter) {
-        if (!getterWithParameter && getterMethod.getParameterCount() != 0) {
+    public static void assertGetterMethod(Method getterMethod) {
+        if (getterMethod.getParameterTypes().length != 0) {
             throw new IllegalStateException("The getterMethod (%s) must not have any parameters (%s)."
-                    .formatted(getterMethod, Arrays.toString(getterMethod.getParameterTypes())));
-        }
-        if (getterWithParameter && getterMethod.getParameterCount() > 1) {
-            throw new IllegalStateException("The getterMethod (%s) must not have more than one parameter. (%s)."
                     .formatted(getterMethod, Arrays.toString(getterMethod.getParameterTypes())));
         }
         var methodName = getterMethod.getName();
@@ -315,18 +303,11 @@ public final class ReflectionHelper {
         }
     }
 
-    public static void assertGetterMethod(Method getterMethod, Class<? extends Annotation> annotationClass,
-            boolean getterWithParameter) {
-        if (!getterWithParameter && getterMethod.getParameterCount() != 0) {
+    public static void assertGetterMethod(Method getterMethod, Class<? extends Annotation> annotationClass) {
+        if (getterMethod.getParameterTypes().length != 0) {
             throw new IllegalStateException("The getterMethod (%s) with a %s annotation must not have any parameters (%s)."
                     .formatted(getterMethod, annotationClass.getSimpleName(),
                             Arrays.toString(getterMethod.getParameterTypes())));
-        }
-        if (getterWithParameter && getterMethod.getParameterCount() > 1) {
-            throw new IllegalStateException(
-                    "The getterMethod (%s) with a %s annotation must not have more than one parameter. (%s)."
-                            .formatted(getterMethod, annotationClass.getSimpleName(),
-                                    Arrays.toString(getterMethod.getParameterTypes())));
         }
         var methodName = getterMethod.getName();
         if (methodName.startsWith(PROPERTY_ACCESSOR_PREFIX_GET)) {
@@ -352,9 +333,13 @@ public final class ReflectionHelper {
         }
     }
 
-    public static void assertReadMethod(Method readMethod) {
-        if (readMethod.getParameterTypes().length != 0) {
+    public static void assertReadMethod(Method readMethod, boolean methodWithParameter) {
+        if (!methodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalStateException("The readMethod (%s) must not have any parameters (%s)."
+                    .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
+        }
+        if (methodWithParameter && readMethod.getParameterCount() > 1) {
+            throw new IllegalStateException("The readMethod (%s) must have only one parameter (%s)."
                     .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
         }
         if (readMethod.getReturnType() == void.class) {
@@ -363,9 +348,14 @@ public final class ReflectionHelper {
         }
     }
 
-    public static void assertReadMethod(Method readMethod, Class<? extends Annotation> annotationClass) {
-        if (readMethod.getParameterTypes().length != 0) {
+    public static void assertReadMethod(Method readMethod, boolean methodWithParameter,
+            Class<? extends Annotation> annotationClass) {
+        if (!methodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalStateException("The readMethod (%s) with a %s annotation must not have any parameters (%s)."
+                    .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
+        }
+        if (methodWithParameter && readMethod.getParameterCount() > 1) {
+            throw new IllegalStateException("The readMethod (%s) with a %s annotation must have only one parameter (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
         }
         if (readMethod.getReturnType() == void.class) {

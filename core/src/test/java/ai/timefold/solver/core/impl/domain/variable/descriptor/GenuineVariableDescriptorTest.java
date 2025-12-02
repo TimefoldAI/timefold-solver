@@ -44,10 +44,10 @@ class GenuineVariableDescriptorTest {
     void invalidGetterWithParameter() {
         assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
                 .hasMessageContaining(
-                        "The parameter type (ai.timefold.solver.core.testdomain.TestdataSolution) of the method (valueRange) must match the solution (TestdataInvalidTypeEntityProvidingWithParameterSolution).");
+                        "The parameter type (ai.timefold.solver.core.testdomain.TestdataSolution) of the method (getValueRange) must match the solution (TestdataInvalidTypeEntityProvidingWithParameterSolution).");
         assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
-                .hasMessageContaining("The getterMethod")
-                .hasMessageContaining("with a ValueRangeProvider annotation must not have more than one parameter.");
+                .hasMessageContaining("The readMethod")
+                .hasMessageContaining("with a ValueRangeProvider annotation must have only one parameter");
     }
 
     @Test

@@ -1,8 +1,8 @@
 package ai.timefold.solver.core.impl.domain.entity.descriptor;
 
-import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_PARAMETER;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
 import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD;
+import static ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessorFactory.MemberAccessorType.FIELD_OR_READ_METHOD_WITH_PARAMETER;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertNotMixedInheritance;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertSingleInheritance;
 import static ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptorValidator.assertValidPlanningVariables;
@@ -332,7 +332,7 @@ public class EntityDescriptor<Solution_> {
     private void processValueRangeProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
         if (((AnnotatedElement) member).isAnnotationPresent(ValueRangeProvider.class)) {
             var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                    FIELD_OR_GETTER_METHOD_WITH_PARAMETER, ValueRangeProvider.class, descriptorPolicy.getDomainAccessType());
+                    FIELD_OR_READ_METHOD_WITH_PARAMETER, ValueRangeProvider.class, descriptorPolicy.getDomainAccessType());
             assertGetterParameterType(memberAccessor);
             descriptorPolicy.addFromEntityValueRangeProvider(memberAccessor);
         }
