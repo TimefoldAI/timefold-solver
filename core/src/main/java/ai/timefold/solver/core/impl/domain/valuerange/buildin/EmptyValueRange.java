@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.sort.ValueRangeSorter;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -41,7 +40,7 @@ public final class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public @NonNull Iterator<T> createOriginalIterator() {
+    public Iterator<T> createOriginalIterator() {
         return (Iterator<T>) EmptyIterator.INSTANCE;
     }
 
@@ -58,8 +57,18 @@ public final class EmptyValueRange<T> extends AbstractCountableValueRange<T> {
 
     @SuppressWarnings("unchecked")
     @Override
-    public @NonNull Iterator<T> createRandomIterator(@NonNull Random workingRandom) {
+    public Iterator<T> createRandomIterator(Random workingRandom) {
         return (Iterator<T>) EmptyIterator.INSTANCE;
+    }
+
+    @Override
+    public int hashCode() {
+        return 7; // All instances are equal.
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof EmptyValueRange<?>;
     }
 
     private static final class EmptyIterator<T> implements Iterator<T> {

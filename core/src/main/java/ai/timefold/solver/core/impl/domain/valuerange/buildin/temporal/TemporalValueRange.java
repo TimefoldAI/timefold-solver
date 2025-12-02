@@ -6,6 +6,7 @@ import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
@@ -179,6 +180,27 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
             return get(index);
         }
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof TemporalValueRange<?> that)) {
+            return false;
+        }
+        return incrementUnitAmount == that.incrementUnitAmount
+                && Objects.equals(incrementUnitType, that.incrementUnitType)
+                && Objects.equals(from, that.from)
+                && Objects.equals(to, that.to);
+    }
+
+    @Override
+    public int hashCode() {
+        var hash = 7;
+        hash = 31 * hash + Long.hashCode(incrementUnitAmount);
+        hash = 31 * hash + Objects.hashCode(incrementUnitType);
+        hash = 31 * hash + Objects.hashCode(from);
+        hash = 31 * hash + Objects.hashCode(to);
+        return hash;
     }
 
     @Override

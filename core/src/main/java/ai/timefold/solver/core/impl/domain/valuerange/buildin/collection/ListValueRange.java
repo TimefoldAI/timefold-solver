@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.valuerange.buildin.collection;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
@@ -74,6 +75,23 @@ public final class ListValueRange<T> extends AbstractCountableValueRange<T> {
     @Override
     public Iterator<T> createRandomIterator(Random workingRandom) {
         return new CachedListRandomIterator<>(list, workingRandom);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof ListValueRange<?> that)) {
+            return false;
+        }
+        return isValueImmutable == that.isValueImmutable
+                && Objects.equals(list, that.list);
+    }
+
+    @Override
+    public int hashCode() {
+        var hash = 7;
+        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
+        hash = 31 * hash + Objects.hashCode(list);
+        return hash;
     }
 
     @Override

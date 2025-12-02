@@ -87,6 +87,23 @@ public class DoubleValueRange extends AbstractUncountableValueRange<Double> {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof DoubleValueRange that)) {
+            return false;
+        }
+        return Double.compare(from, that.from) == 0
+                && Double.compare(to, that.to) == 0;
+    }
+
+    @Override
+    public int hashCode() {
+        var hash = 7;
+        hash = 31 * hash + Double.hashCode(from);
+        hash = 31 * hash + Double.hashCode(to);
+        return hash;
+    }
+
+    @Override
     public String toString() {
         return "[" + from + "-" + to + ")"; // Formatting: interval (mathematics) ISO 31-11
     }

@@ -40,7 +40,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
 
     // Entity related fields
     private @Nullable Map<Entity_, ValueRangeItem<Solution_, Entity_, CountableValueRange<Value_>, Value_>> fromEntityMap;
-    private @Nullable Map<BitSetItem, Entity_> fromEntityBitSet;
+    private @Nullable Map<HashedValueRange<Value_>, Entity_> valueRangeDeduplicationCache;
 
     // ReachableValues related field
     private @Nullable ValueRangeItem<Solution_, Entity_, ReachableValues<Entity_, Value_>, Value_> reachableValuesItem;
@@ -192,7 +192,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             ensureEntityMapIsInitialized(int entityCount) {
         if (fromEntityMap == null) {
             fromEntityMap = CollectionUtils.newIdentityHashMap(entityCount);
-            fromEntityBitSet = CollectionUtils.newHashMap(entityCount);
+            valueRangeDeduplicationCache = CollectionUtils.newHashMap(entityCount);
         }
         return fromEntityMap;
     }
@@ -200,7 +200,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
     private ValueRangeItem<Solution_, Entity_, CountableValueRange<Value_>, Value_> buildEntityValueRangeItem(Entity_ entity,
             @Nullable SelectionSorter<Solution_, Value_> sorter) {
         var valueRange = fetchValueRangeFromEntity(entity, sorter);
-        var entityMatch = findEntityBitSetMatch(entity, valueRange);
+        var entityMatch = findEntityMatch(entity, valueRange);
         if (entityMatch != null) {
             return ValueRangeItem.ofEntity(entityMatch);
         }
@@ -215,15 +215,11 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
      * @param valueRange the entity value range
      * @return returns an existing entity with a matching value range, or returns null if it does not exist.
      */
-    private @Nullable Entity_ findEntityBitSetMatch(Entity_ entity, CountableValueRange<Value_> valueRange) {
-        // We create a BitSet from the range values
-        // and check if another identical range already exists to prevent duplication
-        var valueIndexMap = getIndexMapFromSolution();
-        var valueRangeBitSet = buildBitSetForValueRange(valueRange, valueIndexMap);
-        var bitSetItem = BitSetItem.of(valueRange, valueRangeBitSet);
-        var fromEntity = fromEntityBitSet.get(bitSetItem);
+    private @Nullable Entity_ findEntityMatch(Entity_ entity, CountableValueRange<Value_> valueRange) {
+        var hashedValueRange = HashedValueRange.of(valueRange);
+        var fromEntity = valueRangeDeduplicationCache.get(hashedValueRange);
         if (fromEntity == null) {
-            fromEntityBitSet.put(bitSetItem, entity);
+            valueRangeDeduplicationCache.put(hashedValueRange, entity);
             return null;
         }
         return fromEntity;
@@ -246,19 +242,6 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             valueRange = countableValueRange;
         }
         return sortValueRange(valueRange, sorter);
-    }
-
-    private BitSet buildBitSetForValueRange(CountableValueRange<Value_> valueRange, Map<Value_, Integer> valueIndexMap) {
-        var valueBitSet = new BitSet((int) valueRange.getSize());
-        Iterator<@Nullable Value_> iterator = valueRange.createOriginalIterator();
-        while (iterator.hasNext()) {
-            var value = iterator.next();
-            if (value == null) {
-                continue;
-            }
-            valueBitSet.set(valueIndexMap.get(value));
-        }
-        return valueBitSet;
     }
 
     public ReachableValues<Entity_, Value_> getReachableValues(GenuineVariableDescriptor<Solution_> variableDescriptor,
@@ -366,7 +349,7 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
                 .toList();
     }
 
-    private void loadEntityValueRange(int entityIndex, Map<Value_, Integer> valueIndexMap,
+    private static <Entity_, Value_> void loadEntityValueRange(int entityIndex, Map<Value_, Integer> valueIndexMap,
             CountableValueRange<Value_> valueRange, List<ReachableItemValue<Entity_, Value_>> reachableValueList) {
         // We create a bitset containing all possible values from the range to optimize operations
         var allValuesBitSet = buildBitSetForValueRange(valueRange, valueIndexMap);
@@ -379,6 +362,20 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
             item.addValuesExcept(allValuesBitSet, valueIndex);
             valueIndex = allValuesBitSet.nextSetBit(valueIndex + 1);
         }
+    }
+
+    private static <Value_> BitSet buildBitSetForValueRange(CountableValueRange<Value_> valueRange,
+            Map<Value_, Integer> valueIndexMap) {
+        var valueBitSet = new BitSet((int) valueRange.getSize());
+        Iterator<@Nullable Value_> iterator = valueRange.createOriginalIterator();
+        while (iterator.hasNext()) {
+            var value = iterator.next();
+            if (value == null) {
+                continue;
+            }
+            valueBitSet.set(valueIndexMap.get(value));
+        }
+        return valueBitSet;
     }
 
     private record ValueRangeItem<Solution_, Entity_, Type_, Value_>(@Nullable Entity_ entity, @Nullable Type_ leftItem,
@@ -406,14 +403,13 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
     }
 
     /**
-     * The record holds a reference to {@link BitSet},
-     * a precomputed hash to avoid recalculating it every time since the BitSet should be immutable.
-     * It also includes the size of the BitSet to skip unnecessary comparisons when searching it in the map.
+     * The record holds a reference to {@link CountableValueRange},
+     * a precomputed hash to avoid recalculating it every time.
      */
-    private record BitSetItem(int size, int hash, BitSet item) {
+    private record HashedValueRange<T>(CountableValueRange<T> item, int hash) {
 
-        public static <Value_> BitSetItem of(CountableValueRange<Value_> valueRange, BitSet item) {
-            return new BitSetItem((int) valueRange.getSize(), item.hashCode(), item);
+        public static <Value_> HashedValueRange<Value_> of(CountableValueRange<Value_> valueRange) {
+            return new HashedValueRange<>(valueRange, valueRange.hashCode());
         }
 
         @Override
@@ -423,9 +419,11 @@ final class ValueRangeState<Solution_, Entity_, Value_> {
 
         @Override
         public boolean equals(Object o) {
-            if (!(o instanceof BitSetItem that))
+            if (!(o instanceof ValueRangeState.HashedValueRange<?> that)) {
                 return false;
-            return size() == that.size() && hash() == that.hash() && Objects.equals(item(), that.item());
+            }
+            return hash == that.hash
+                    && Objects.equals(item, that.item);
         }
     }
 

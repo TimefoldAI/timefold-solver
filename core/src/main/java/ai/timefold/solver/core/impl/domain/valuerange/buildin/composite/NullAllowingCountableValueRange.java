@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.valuerange.buildin.composite;
 
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.valuerange.CountableValueRange;
@@ -112,6 +113,19 @@ public final class NullAllowingCountableValueRange<T> extends AbstractCountableV
             return get(index);
         }
 
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof NullAllowingCountableValueRange<?> that)) {
+            return false;
+        }
+        return Objects.equals(childValueRange, that.childValueRange);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(childValueRange);
     }
 
     @Override
