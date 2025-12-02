@@ -184,12 +184,12 @@ public final class ReachableValues<Entity_, Value_> {
         }
 
         List<Entity_> getRandomAccessEntityList(List<Entity_> allEntities) {
-            return new ArrayIndexedList<>(allEntities, entityBitSet);
+            return new BitSetIndexedList<>(allEntities, entityBitSet);
         }
 
         List<Value_> getRandomAccessValueList(List<ReachableItemValue<Entity_, Value_>> allValues,
                 @Nullable ValueRangeSorter<Value_> valueRangeSorter) {
-            var valuesList = new ArrayIndexedList<>(allValues, valueBitSet, v -> v.value);
+            var valuesList = new BitSetIndexedList<>(allValues, valueBitSet, v -> v.value);
             if (valueRangeSorter != null) {
                 valueRangeSorter.sort(valuesList);
             }
@@ -203,11 +203,11 @@ public final class ReachableValues<Entity_, Value_> {
     }
 
     @NullMarked
-    private static final class ArrayIndexedList<Type_, Value_> extends AbstractList<Value_> {
+    private static final class BitSetIndexedList<Type_, Value_> extends AbstractList<Value_> {
 
         private final Value_[] values;
 
-        private ArrayIndexedList(List<Value_> availableValueList, BitSet containedValueIndex) {
+        private BitSetIndexedList(List<Value_> availableValueList, BitSet containedValueIndex) {
             var valueCount = 0;
             var index = containedValueIndex.nextSetBit(0);
             this.values = (Value_[]) new Object[containedValueIndex.cardinality()];
@@ -218,7 +218,7 @@ public final class ReachableValues<Entity_, Value_> {
         }
 
         @SuppressWarnings("unchecked")
-        private ArrayIndexedList(List<Type_> availableValueList, BitSet containedValueIndex,
+        private BitSetIndexedList(List<Type_> availableValueList, BitSet containedValueIndex,
                 Function<Type_, Value_> valueExtractor) {
             var valueCount = 0;
             var index = containedValueIndex.nextSetBit(0);
