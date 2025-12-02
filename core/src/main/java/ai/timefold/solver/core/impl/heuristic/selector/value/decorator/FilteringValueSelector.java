@@ -43,6 +43,10 @@ public class FilteringValueSelector<Solution_>
         }
         // We need to filter out unassigned vars.
         return FilteringValueSelector.of(valueSelector, (scoreDirector, selection) -> {
+            if (selection == null) {
+                // null is considered an unassigned value
+                return false;
+            }
             var listVariableStateSupply = listVariableStateSupplier.get();
             if (listVariableStateSupply.getUnassignedCount() == 0) {
                 return true;
