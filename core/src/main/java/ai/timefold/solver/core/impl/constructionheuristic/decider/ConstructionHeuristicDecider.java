@@ -8,7 +8,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.decider.forager.Constr
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicMoveScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicPhaseScope;
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
@@ -92,7 +92,7 @@ public class ConstructionHeuristicDecider<Solution_> {
             var allowedNonDoableMove = isAllowedNonDoableMove(move);
             if (!allowedNonDoableMove) {
                 var moveDirector = stepScope.getMoveDirector();
-                if (!LegacyMoveAdapter.isDoable(moveDirector, move)) {
+                if (!MoveAdapters.isDoable(moveDirector, move)) {
                     // Construction Heuristic should not do non-doable moves, but in some cases, it has to.
                     // Specifically:
                     //      1/ NoChangeMove for list variable; means "try to not assign that value".
@@ -131,13 +131,8 @@ public class ConstructionHeuristicDecider<Solution_> {
     }
 
     private static <Solution_> boolean isAllowedNonDoableMove(Move<Solution_> move) {
-        if (move instanceof LegacyMoveAdapter<Solution_> legacyMove) {
-            var adaptedMove = legacyMove.legacyMove();
-            return adaptedMove instanceof NoChangeMove<Solution_>
-                    || adaptedMove instanceof ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove<Solution_>;
-        } else {
-            return false;
-        }
+        return MoveAdapters.testWhenLegacyMove(move, legacyMove -> legacyMove instanceof NoChangeMove<Solution_>
+                || legacyMove instanceof ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove<Solution_>);
     }
 
     protected void pickMove(ConstructionHeuristicStepScope<Solution_> stepScope) {

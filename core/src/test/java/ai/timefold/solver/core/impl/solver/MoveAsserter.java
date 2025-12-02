@@ -4,7 +4,7 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -28,39 +28,18 @@ public class MoveAsserter<Solution_> {
         assertMove(solution, move, moveSolutionConsumer, false);
     }
 
-    public void assertMoveAndApply(Solution_ solution, Move<Solution_> move) {
-        assertMoveAndApply(solution, move, (ignored) -> {
-        });
-    }
-
     public void assertMoveAndApply(Solution_ solution, Move<Solution_> move, Consumer<Solution_> moveSolutionConsumer) {
         assertMove(solution, move, moveSolutionConsumer, true);
     }
 
-    public void assertMoveAndUndo(Solution_ solution, ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
-        assertMoveAndUndo(solution, move, (ignored) -> {
-        });
-    }
-
     public void assertMoveAndUndo(Solution_ solution, ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move,
             Consumer<Solution_> moveSolutionConsumer) {
-        assertMove(solution, move, moveSolutionConsumer, false);
-    }
-
-    public void assertMoveAndApply(Solution_ solution, ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
-        assertMoveAndApply(solution, move, (ignored) -> {
-        });
-    }
-
-    public void assertMoveAndApply(Solution_ solution, ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move,
-            Consumer<Solution_> moveSolutionConsumer) {
-        assertMove(solution, move, moveSolutionConsumer, true);
+        assertMove(solution, move, moveSolutionConsumer);
     }
 
     private void assertMove(Solution_ solution, ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move,
-            Consumer<Solution_> moveSolutionConsumer,
-            boolean applyMove) {
-        assertMove(solution, new LegacyMoveAdapter<>(move), moveSolutionConsumer, applyMove);
+            Consumer<Solution_> moveSolutionConsumer) {
+        assertMove(solution, MoveAdapters.toNewMove(move), moveSolutionConsumer, false);
     }
 
     private void assertMove(Solution_ solution, Move<Solution_> move, Consumer<Solution_> moveSolutionConsumer,

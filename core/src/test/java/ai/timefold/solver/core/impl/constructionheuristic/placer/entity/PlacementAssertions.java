@@ -6,7 +6,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.constructionheuristic.placer.Placement;
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -25,7 +25,7 @@ final class PlacementAssertions {
     }
 
     static <Solution_> ChangeMove<Solution_> adapt(Move<Solution_> move) {
-        return (ChangeMove<Solution_>) ((LegacyMoveAdapter<Solution_>) move).legacyMove();
+        return MoveAdapters.extractLegacyMoveOrReturn(move);
     }
 
     static <Solution_> void assertValuePlacement(Placement<Solution_> placement, String valueCode, String... entityCodes) {

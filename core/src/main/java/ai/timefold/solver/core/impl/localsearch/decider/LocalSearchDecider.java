@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.localsearch.decider;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.Acceptor;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForager;
 import ai.timefold.solver.core.impl.localsearch.scope.LocalSearchMoveScope;
@@ -110,9 +110,9 @@ public class LocalSearchDecider<Solution_> {
         var scoreDirector = moveScope.<Score_> getScoreDirector();
         var moveDirector = moveScope.getStepScope().<Score_> getMoveDirector();
         var move = moveScope.getMove();
-        if (!LegacyMoveAdapter.isDoable(moveDirector, move)) {
-            throw new IllegalStateException("Impossible state: Local search move selector (" + moveRepository
-                    + ") provided a non-doable move (" + moveScope.getMove() + ").");
+        if (!MoveAdapters.isDoable(moveDirector, move)) {
+            throw new IllegalStateException("Impossible state: Local search move selector (%s) provided a non-doable move (%s)."
+                    .formatted(moveRepository, move));
         }
         var score = scoreDirector.executeTemporaryMove(moveScope.getMove(), assertMoveScoreFromScratch);
         moveScope.setScore(score);

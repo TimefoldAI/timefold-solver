@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.heuristic.move.CompositeMove;
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.move.NoChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.list.SubList;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
@@ -27,8 +27,9 @@ public interface CodeAssertable {
     String getCode();
 
     static CodeAssertable convert(Object o) {
-        if (o instanceof LegacyMoveAdapter<?> legacyMoveAdapter) {
-            return convert(legacyMoveAdapter.legacyMove());
+        Object o2 = MoveAdapters.extractLegacyMoveOrReturn(Objects.requireNonNull(o));
+        if (o2 != o) {
+            return convert(o2);
         }
         Objects.requireNonNull(o);
         if (o instanceof CodeAssertable assertable) {
