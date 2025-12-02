@@ -43,8 +43,7 @@ public final class ReachableValues<Entity_, Value_> {
         this.expectedSupertypeOfValue = expectedSupertypeOfValue;
         this.valueRangeSorter = valueRangeSorter;
         this.acceptsNullValue = acceptsNullValue;
-        this.onDemandRandomAccessEntity = new List[valuesIndex.allItems().size()];
-        this.onDemandRandomAccessValue = new List[valuesIndex.allItems().size()];
+        clear();
     }
 
     private @Nullable ReachableItemValue<Entity_, Value_> fetchItemValue(Object value) {
@@ -145,11 +144,13 @@ public final class ReachableValues<Entity_, Value_> {
         return new ReachableValues<>(entitiesIndex, valuesIndex, expectedSupertypeOfValue, sorterAdapter, acceptsNullValue);
     }
 
+    @SuppressWarnings("unchecked")
     public void clear() {
         firstCachedObject = null;
         secondCachedObject = null;
-        this.onDemandRandomAccessEntity = new List[valuesIndex.allItems().size()];
-        this.onDemandRandomAccessValue = new List[valuesIndex.allItems().size()];
+        var valueCount = valuesIndex.allItems().size();
+        this.onDemandRandomAccessEntity = new List[valueCount];
+        this.onDemandRandomAccessValue = new List[valueCount];
     }
 
     @NullMarked
@@ -207,6 +208,7 @@ public final class ReachableValues<Entity_, Value_> {
 
         private final Value_[] values;
 
+        @SuppressWarnings("unchecked")
         private BitSetIndexedList(List<Value_> availableValueList, BitSet containedValueIndex) {
             var valueCount = 0;
             var index = containedValueIndex.nextSetBit(0);

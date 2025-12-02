@@ -159,9 +159,9 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
     @Override
     public int hashCode() {
         var hash = 7;
-        hash = 31 * hash + from.hashCode();
-        hash = 31 * hash + to.hashCode();
-        hash = 31 * hash + incrementUnit.hashCode();
+        hash = 31 * hash + Objects.hashCode(from);
+        hash = 31 * hash + Objects.hashCode(to);
+        hash = 31 * hash + Objects.hashCode(incrementUnit);
         return hash;
     }
 
