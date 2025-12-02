@@ -3,7 +3,7 @@ package ai.timefold.solver.core.impl.neighborhood;
 import java.util.Iterator;
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.phase.event.PhaseLifecycleListener;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
@@ -80,7 +80,7 @@ public final class MoveSelectorBasedMoveRepository<Solution_>
 
             @Override
             public Move<Solution_> next() {
-                return new LegacyMoveAdapter<>(delegate.next());
+                return MoveAdapters.toNewMove(delegate.next());
             }
         };
     }
