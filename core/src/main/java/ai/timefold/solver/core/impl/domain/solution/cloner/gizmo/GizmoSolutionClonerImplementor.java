@@ -660,17 +660,22 @@ public class GizmoSolutionClonerImplementor {
         blockCreator.ifInstanceOfElse(constructedCollection, deeplyClonedFieldClass, (isInstanceCreator, casted) -> {
             isInstanceCreator.set(cloneResultHolder, casted);
         }, isNotInstanceCreator -> {
-            var baseMessage = isNotInstanceCreator.localVar("message",
-                    Const.of("Constructed type (%s) is not assignable to field type (%s)."));
-            var formattedMessage = isNotInstanceCreator.invokeVirtual(
-                    MethodDesc.of(String.class, "formatted", String.class, String[].class),
-                    baseMessage,
-                    isNotInstanceCreator.newArray(String.class,
-                            isNotInstanceCreator
-                                    .withClass(isNotInstanceCreator.withObject(constructedCollection).getClass_())
-                                    .getName(),
-                            Const.of(deeplyClonedFieldClass.getName())));
-            isNotInstanceCreator.throw_(isNotInstanceCreator.new_(IllegalStateException.class, formattedMessage));
+            try {
+                var baseMessage = isNotInstanceCreator.localVar("message",
+                        Const.of("Constructed type (%s) is not assignable to field type (%s)."));
+                // Apparently we need to get the method from String.class so it sees the String[] as varargs?
+                var formattedMessage = isNotInstanceCreator.invokeVirtual(
+                        MethodDesc.of(String.class.getMethod("formatted", Object[].class)),
+                        baseMessage,
+                        isNotInstanceCreator.newArray(String.class,
+                                isNotInstanceCreator
+                                        .withClass(isNotInstanceCreator.withObject(constructedCollection).getClass_())
+                                        .getName(),
+                                Const.of(deeplyClonedFieldClass.getName())));
+                isNotInstanceCreator.throw_(isNotInstanceCreator.new_(IllegalStateException.class, formattedMessage));
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
         });
     }
 
