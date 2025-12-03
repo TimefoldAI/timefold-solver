@@ -232,7 +232,7 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     }
 
     @SuppressWarnings("unchecked")
-    private static <E> Collection<E> constructCloneCollection(Collection<E> originalCollection) {
+    public static <E> Collection<E> constructCloneCollection(Collection<E> originalCollection) {
         // TODO Don't hardcode all standard collections
         if (originalCollection instanceof PlanningCloneable<?> planningCloneable) {
             return (Collection<E>) planningCloneable.createNewInstance();
@@ -302,7 +302,7 @@ public final class FieldAccessingSolutionCloner<Solution_> implements SolutionCl
     }
 
     @SuppressWarnings("unchecked")
-    private static <K, V> Map<K, V> constructCloneMap(Map<K, V> originalMap) {
+    public static <K, V> Map<K, V> constructCloneMap(Map<K, V> originalMap) {
         if (originalMap instanceof PlanningCloneable<?> planningCloneable) {
             return (Map<K, V>) planningCloneable.createNewInstance();
         }

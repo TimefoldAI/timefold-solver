@@ -14,14 +14,11 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -608,47 +605,12 @@ public class GizmoSolutionClonerImplementor {
             Var cloneResultHolder) {
         var blockCreator = clonerMethodDescriptor.blockCreator;
 
-        var size = blockCreator.localVar(toClone.name() + "$Size", blockCreator.withCollection(toClone).size());
+        var constructedCollection = blockCreator.localVar(toClone.name() + "$ConstructedCollection", blockCreator.invokeStatic(
+                MethodDesc.of(FieldAccessingSolutionCloner.class, "constructCloneCollection", Collection.class,
+                        Collection.class),
+                toClone));
+        checkCastAndAssign(blockCreator, deeplyClonedFieldClass, cloneResultHolder, constructedCollection);
 
-        if (PlanningCloneable.class.isAssignableFrom(deeplyClonedFieldClass)) {
-            var emptyInstance = blockCreator
-                    .invokeInterface(MethodDesc.of(PlanningCloneable.class, "createNewInstance",
-                            Object.class), toClone);
-            blockCreator.set(cloneResultHolder, emptyInstance);
-        } else if (List.class.isAssignableFrom(deeplyClonedFieldClass)) {
-            blockCreator.set(cloneResultHolder,
-                    blockCreator.new_(ConstructorDesc.of(ArrayList.class, int.class), size));
-        } else if (Set.class.isAssignableFrom(deeplyClonedFieldClass)) {
-            blockCreator.ifInstanceOf(toClone, SortedSet.class, (isSortedSetBranch, castedToClone) -> {
-                var setComparator = isSortedSetBranch
-                        .invokeInterface(MethodDesc.of(SortedSet.class,
-                                "comparator", Comparator.class), castedToClone);
-                isSortedSetBranch.set(cloneResultHolder,
-                        isSortedSetBranch.new_(ConstructorDesc.of(TreeSet.class, Comparator.class),
-                                setComparator));
-            });
-            blockCreator.ifNotInstanceOf(toClone, SortedSet.class,
-                    isNotSortedSetBranch -> isNotSortedSetBranch.set(cloneResultHolder,
-                            isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size)));
-        } else {
-            // field is probably of type collection; determine collection semantics at runtime
-            blockCreator.ifInstanceOf(toClone, Set.class, (isSetBranch, castedToClone) -> {
-                blockCreator.ifInstanceOf(toClone, SortedSet.class, (isSortedSetBranch, sortedCastedToClone) -> {
-                    var setComparator = isSortedSetBranch
-                            .invokeInterface(MethodDesc.of(SortedSet.class,
-                                    "comparator", Comparator.class), sortedCastedToClone);
-                    isSortedSetBranch.set(cloneResultHolder,
-                            isSortedSetBranch.new_(ConstructorDesc.of(TreeSet.class, Comparator.class),
-                                    setComparator));
-                });
-                blockCreator.ifNotInstanceOf(toClone, SortedSet.class,
-                        isNotSortedSetBranch -> isNotSortedSetBranch.set(cloneResultHolder,
-                                isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size)));
-            });
-            // Default to ArrayList
-            blockCreator.ifNotInstanceOf(toClone, Set.class, isNotSetBranch -> isNotSetBranch.set(cloneResultHolder,
-                    isNotSetBranch.new_(ConstructorDesc.of(ArrayList.class, int.class), size)));
-        }
         var iterator =
                 blockCreator.localVar(toClone.name() + "$Iterator", blockCreator.withCollection(toClone).iterator());
         blockCreator.while_(condition -> condition.yield(condition.withIterator(iterator).hasNext()), whileLoopBlock -> {
@@ -682,6 +644,42 @@ public class GizmoSolutionClonerImplementor {
     }
 
     /**
+     * Write the following code
+     * <p>
+     * 
+     * <pre>
+     * if (constructedCollection instanceof deeplyClonedFieldClass temp) {
+     *     cloneResultHolder = temp;
+     * } else {
+     *     throw new IllegalStateException("...");
+     * }
+     * </pre>
+     */
+    private static void checkCastAndAssign(BlockCreator blockCreator, Class<?> deeplyClonedFieldClass, Var cloneResultHolder,
+            Var constructedCollection) {
+        blockCreator.ifInstanceOfElse(constructedCollection, deeplyClonedFieldClass, (isInstanceCreator, casted) -> {
+            isInstanceCreator.set(cloneResultHolder, casted);
+        }, isNotInstanceCreator -> {
+            try {
+                var baseMessage = isNotInstanceCreator.localVar("message",
+                        Const.of("Constructed type (%s) is not assignable to field type (%s)."));
+                // Apparently we need to get the method from String.class so it sees the String[] as varargs?
+                var formattedMessage = isNotInstanceCreator.invokeVirtual(
+                        MethodDesc.of(String.class.getMethod("formatted", Object[].class)),
+                        baseMessage,
+                        isNotInstanceCreator.newArray(String.class,
+                                isNotInstanceCreator
+                                        .withClass(isNotInstanceCreator.withObject(constructedCollection).getClass_())
+                                        .getName(),
+                                Const.of(deeplyClonedFieldClass.getName())));
+                isNotInstanceCreator.throw_(isNotInstanceCreator.new_(IllegalStateException.class, formattedMessage));
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        });
+    }
+
+    /**
      * Writes the following code:
      *
      * <pre>
@@ -703,34 +701,11 @@ public class GizmoSolutionClonerImplementor {
             Var cloneResultHolder) {
         var blockCreator = clonerMethodDescriptor.blockCreator;
 
-        if (PlanningCloneable.class.isAssignableFrom(deeplyClonedFieldClass)) {
-            var emptyInstance = blockCreator
-                    .invokeInterface(MethodDesc.of(PlanningCloneable.class, "createNewInstance",
-                            Object.class), toClone);
-            blockCreator.set(cloneResultHolder, emptyInstance);
-        } else {
-            var holderClass = deeplyClonedFieldClass;
-            try {
-                holderClass.getConstructor();
-            } catch (NoSuchMethodException e) {
-                if (LinkedHashMap.class.isAssignableFrom(holderClass)) {
-                    holderClass = LinkedHashMap.class;
-                } else if (ConcurrentHashMap.class.isAssignableFrom(holderClass)) {
-                    holderClass = ConcurrentHashMap.class;
-                } else {
-                    // Default to LinkedHashMap
-                    holderClass = LinkedHashMap.class;
-                }
-            }
-
-            var size = blockCreator.withMap(toClone).size();
-            try {
-                holderClass.getConstructor(int.class);
-                blockCreator.set(cloneResultHolder, blockCreator.new_(ConstructorDesc.of(holderClass, int.class), size));
-            } catch (NoSuchMethodException e) {
-                blockCreator.set(cloneResultHolder, blockCreator.new_(holderClass));
-            }
-        }
+        var constructedMap = blockCreator.localVar(toClone.name() + "$ConstructedMap",
+                blockCreator.invokeStatic(
+                        MethodDesc.of(FieldAccessingSolutionCloner.class, "constructCloneMap", Map.class, Map.class),
+                        toClone));
+        checkCastAndAssign(blockCreator, deeplyClonedFieldClass, cloneResultHolder, constructedMap);
 
         var entrySet = blockCreator.withMap(toClone).entrySet();
         var iterator = blockCreator.localVar(toClone.name() + "$EntrySet$Iterator",

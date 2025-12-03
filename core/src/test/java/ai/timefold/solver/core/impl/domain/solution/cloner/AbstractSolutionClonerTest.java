@@ -14,6 +14,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -633,12 +634,29 @@ public abstract class AbstractSolutionClonerTest {
         originalEntitySet.addAll(Arrays.asList(a, b, c, d));
         original.setEntitySet(originalEntitySet);
 
+        original.setEntityHashSet(new HashSet<>(originalEntitySet));
+        original.setEntityLinkedHashSet(new LinkedHashSet<>(originalEntitySet));
+        original.setEntityTreeSet(new TreeSet<>(entityComparator));
+        original.getEntityTreeSet().addAll(originalEntitySet);
+
         var clone = cloner.cloneSolution(original);
         assertThat(clone).isNotSameAs(original);
         assertThat(clone.getValueSet()).isSameAs(valueSet);
         assertThat(clone.getScore()).isEqualTo(original.getScore());
 
         var cloneEntitySet = clone.getEntitySet();
+        assertThat(cloneEntitySet)
+                .isInstanceOf(SortedSet.class)
+                .isNotSameAs(originalEntitySet);
+        assertThat(clone.getEntityLinkedHashSet())
+                .isInstanceOf(LinkedHashSet.class)
+                .isNotSameAs(original.getEntityLinkedHashSet());
+        assertThat(clone.getEntityTreeSet())
+                .isInstanceOf(TreeSet.class)
+                .isNotSameAs(original.getEntityTreeSet());
+        assertThat(clone.getEntityHashSet())
+                .isInstanceOf(HashSet.class)
+                .isNotSameAs(original.getEntityHashSet());
         assertThat(cloneEntitySet)
                 .isInstanceOf(SortedSet.class)
                 .isNotSameAs(originalEntitySet);
@@ -655,6 +673,10 @@ public abstract class AbstractSolutionClonerTest {
         assertSetBasedEntityClone(b, cloneB, "b", "1");
         assertSetBasedEntityClone(c, cloneC, "c", "3");
         assertSetBasedEntityClone(d, cloneD, "d", "3");
+
+        assertThat(clone.getEntityHashSet()).containsExactlyInAnyOrder(cloneA, cloneB, cloneC, cloneD);
+        assertThat(clone.getEntityLinkedHashSet()).containsExactly(cloneD, cloneC, cloneB, cloneA);
+        assertThat(clone.getEntityTreeSet()).containsExactly(cloneD, cloneC, cloneB, cloneA);
 
         b.setValue(val2);
         assertCode("2", b.getValue());

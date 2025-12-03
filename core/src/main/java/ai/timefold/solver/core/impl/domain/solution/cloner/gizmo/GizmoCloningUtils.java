@@ -8,6 +8,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -17,7 +18,6 @@ import ai.timefold.solver.core.impl.domain.solution.cloner.PlanningCloneable;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 
 public final class GizmoCloningUtils {
-
     public static Set<Class<?>> getDeepClonedClasses(SolutionDescriptor<?> solutionDescriptor,
             Collection<Class<?>> entitySubclasses) {
         Set<Class<?>> deepClonedClassSet = new HashSet<>();
@@ -46,7 +46,11 @@ public final class GizmoCloningUtils {
                         deepClonedClassSet.add(deepClonedTypeArgument);
                     }
                 }
+
+                // Ignore Collections, Maps, and PlanningCloneables, as there is collection/map/clonable logic to clone them.
                 if (DeepCloningUtils.isFieldDeepCloned(solutionDescriptor, field, clazz)
+                        && !Collection.class.isAssignableFrom(field.getType())
+                        && !Map.class.isAssignableFrom(field.getType())
                         && !PlanningCloneable.class.isAssignableFrom(field.getType())
                         && !deepClonedClassSet.contains(field.getType())) {
                     classesToProcess.add(field.getType());

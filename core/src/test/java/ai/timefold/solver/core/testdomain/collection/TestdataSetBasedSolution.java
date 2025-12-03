@@ -1,6 +1,9 @@
 package ai.timefold.solver.core.testdomain.collection;
 
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.TreeSet;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
@@ -21,6 +24,10 @@ public class TestdataSetBasedSolution extends TestdataObject {
 
     private Set<TestdataValue> valueSet;
     private Set<TestdataSetBasedEntity> entitySet;
+
+    private HashSet<TestdataSetBasedEntity> entityHashSet;
+    private LinkedHashSet<TestdataSetBasedEntity> entityLinkedHashSet;
+    private TreeSet<TestdataSetBasedEntity> entityTreeSet;
 
     private SimpleScore score;
 
@@ -48,6 +55,31 @@ public class TestdataSetBasedSolution extends TestdataObject {
 
     public void setEntitySet(Set<TestdataSetBasedEntity> entitySet) {
         this.entitySet = entitySet;
+    }
+
+    public HashSet<TestdataSetBasedEntity> getEntityHashSet() {
+        return entityHashSet;
+    }
+
+    public void setEntityHashSet(HashSet<TestdataSetBasedEntity> entityHashSet) {
+        this.entityHashSet = entityHashSet;
+    }
+
+    public LinkedHashSet<TestdataSetBasedEntity> getEntityLinkedHashSet() {
+        return entityLinkedHashSet;
+    }
+
+    public void setEntityLinkedHashSet(
+            LinkedHashSet<TestdataSetBasedEntity> entityLinkedHashSet) {
+        this.entityLinkedHashSet = entityLinkedHashSet;
+    }
+
+    public TreeSet<TestdataSetBasedEntity> getEntityTreeSet() {
+        return entityTreeSet;
+    }
+
+    public void setEntityTreeSet(TreeSet<TestdataSetBasedEntity> entityTreeSet) {
+        this.entityTreeSet = entityTreeSet;
     }
 
     @PlanningScore
