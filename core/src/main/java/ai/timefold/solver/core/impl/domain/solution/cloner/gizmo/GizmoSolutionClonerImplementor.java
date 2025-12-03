@@ -659,20 +659,19 @@ public class GizmoSolutionClonerImplementor {
             Var constructedCollection) {
         blockCreator.ifInstanceOfElse(constructedCollection, deeplyClonedFieldClass, (isInstanceCreator, casted) -> {
             isInstanceCreator.set(cloneResultHolder, casted);
-        },
-                isNotInstanceCreator -> {
-                    var baseMessage = isNotInstanceCreator.localVar("message",
-                            Const.of("Constructed type (%s) is not assignable to field type (%s)."));
-                    var formattedMessage = isNotInstanceCreator.invokeVirtual(
-                            MethodDesc.of(String.class, "formatted", String.class, String[].class),
-                            baseMessage,
-                            isNotInstanceCreator.newArray(String.class,
-                                    isNotInstanceCreator
-                                            .withClass(isNotInstanceCreator.withObject(constructedCollection).getClass_())
-                                            .getName(),
-                                    Const.of(deeplyClonedFieldClass.getName())));
-                    isNotInstanceCreator.throw_(isNotInstanceCreator.new_(IllegalStateException.class, formattedMessage));
-                });
+        }, isNotInstanceCreator -> {
+            var baseMessage = isNotInstanceCreator.localVar("message",
+                    Const.of("Constructed type (%s) is not assignable to field type (%s)."));
+            var formattedMessage = isNotInstanceCreator.invokeVirtual(
+                    MethodDesc.of(String.class, "formatted", String.class, String[].class),
+                    baseMessage,
+                    isNotInstanceCreator.newArray(String.class,
+                            isNotInstanceCreator
+                                    .withClass(isNotInstanceCreator.withObject(constructedCollection).getClass_())
+                                    .getName(),
+                            Const.of(deeplyClonedFieldClass.getName())));
+            isNotInstanceCreator.throw_(isNotInstanceCreator.new_(IllegalStateException.class, formattedMessage));
+        });
     }
 
     /**
