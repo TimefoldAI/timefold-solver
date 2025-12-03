@@ -1,5 +1,6 @@
 package ai.timefold.solver.quarkus.deployment;
 
+import static ai.timefold.solver.core.impl.util.ConstantLambdaUtils.uncheck;
 import static org.objectweb.asm.Opcodes.ACC_PUBLIC;
 import static org.objectweb.asm.Opcodes.ALOAD;
 import static org.objectweb.asm.Opcodes.GETFIELD;
@@ -176,7 +177,7 @@ final class GizmoMemberAccessorEntityEnhancer {
             throws ClassNotFoundException, NoSuchMethodException {
         var declaringClass = Class.forName(methodInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
-        var methodMember = getDeclaredMethod(declaringClass, methodInfo.name());
+        var methodMember = getDeclaredMethod(declaringClass, methodInfo);
         var generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(methodMember);
         GizmoMemberDescriptor descriptor;
         var name = getMemberName(methodMember);
@@ -213,15 +214,18 @@ final class GizmoMemberAccessorEntityEnhancer {
         return generatedClassName;
     }
 
-    private static Method getDeclaredMethod(Class<?> declaringClass, String methodName) throws NoSuchMethodException {
+    private static Method getDeclaredMethod(Class<?> declaringClass, MethodInfo methodInfo) throws NoSuchMethodException {
         var methodList = Arrays.stream(declaringClass.getDeclaredMethods())
-                // We seek methods that either have no parameters or consist of only one parameter
-                .filter(m -> m.getName().equals(methodName) && m.getParameterCount() <= 1)
+                .filter(m -> m.getName().equals(methodInfo.name())
+                        && m.getParameterCount() == methodInfo.parameterTypes().size()
+                        && Arrays.equals(m.getParameterTypes(),
+                                methodInfo.parameterTypes().stream()
+                                        .map(uncheck(t -> Class.forName(t.name().toString(), false,
+                                                Thread.currentThread().getContextClassLoader())))
+                                        .toArray(Class[]::new)))
                 .toList();
         if (methodList.isEmpty()) {
-            throw new NoSuchMethodException(methodName);
-        } else if (methodList.size() > 1) {
-            throw new IllegalStateException("Multiple methods found for %s (%s).".formatted(methodName, methodList));
+            throw new NoSuchMethodException(methodInfo.name());
         }
         return methodList.get(0);
     }
