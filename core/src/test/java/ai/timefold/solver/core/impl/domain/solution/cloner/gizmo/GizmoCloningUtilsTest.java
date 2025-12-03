@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.domain.solution.cloner.gizmo;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
-import java.util.Map;
 
 import ai.timefold.solver.core.testdomain.clone.deepcloning.AnnotatedTestdataVariousTypes;
 import ai.timefold.solver.core.testdomain.clone.deepcloning.ExtraDeepClonedObject;
@@ -27,8 +26,6 @@ class GizmoCloningUtilsTest {
                         TestdataFieldAnnotatedDeepCloningEntity.class,
                         AnnotatedTestdataVariousTypes.class,
                         TestdataFieldAnnotatedDeepCloningSolution.class,
-                        TestdataVariousTypes.class,
-                        List.class,
-                        Map.class);
+                        TestdataVariousTypes.class);
     }
 }

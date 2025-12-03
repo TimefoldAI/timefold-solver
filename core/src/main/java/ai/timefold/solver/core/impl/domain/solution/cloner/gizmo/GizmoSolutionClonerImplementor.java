@@ -13,6 +13,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -610,26 +611,56 @@ public class GizmoSolutionClonerImplementor {
 
         var size = blockCreator.localVar(toClone.name() + "$Size", blockCreator.withCollection(toClone).size());
 
+        // Use type.isAssignableFrom(deeplyClonedFieldClass) to determine the category of collection,
+        // and deeplyClonedFieldClass.isAssignableFrom(type) to determine what class to use
         if (PlanningCloneable.class.isAssignableFrom(deeplyClonedFieldClass)) {
             var emptyInstance = blockCreator
                     .invokeInterface(MethodDesc.of(PlanningCloneable.class, "createNewInstance",
                             Object.class), toClone);
             blockCreator.set(cloneResultHolder, emptyInstance);
         } else if (List.class.isAssignableFrom(deeplyClonedFieldClass)) {
-            blockCreator.set(cloneResultHolder,
-                    blockCreator.new_(ConstructorDesc.of(ArrayList.class, int.class), size));
+            if (deeplyClonedFieldClass.isAssignableFrom(ArrayList.class)) {
+                blockCreator.set(cloneResultHolder,
+                        blockCreator.new_(ConstructorDesc.of(ArrayList.class, int.class), size));
+            } else {
+                constructUnknownCollection(blockCreator, List.class, deeplyClonedFieldClass, cloneResultHolder);
+            }
         } else if (Set.class.isAssignableFrom(deeplyClonedFieldClass)) {
-            blockCreator.ifInstanceOf(toClone, SortedSet.class, (isSortedSetBranch, castedToClone) -> {
-                var setComparator = isSortedSetBranch
-                        .invokeInterface(MethodDesc.of(SortedSet.class,
-                                "comparator", Comparator.class), castedToClone);
-                isSortedSetBranch.set(cloneResultHolder,
-                        isSortedSetBranch.new_(ConstructorDesc.of(TreeSet.class, Comparator.class),
-                                setComparator));
-            });
-            blockCreator.ifNotInstanceOf(toClone, SortedSet.class,
-                    isNotSortedSetBranch -> isNotSortedSetBranch.set(cloneResultHolder,
-                            isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size)));
+            if (SortedSet.class.isAssignableFrom(deeplyClonedFieldClass)) {
+                if (deeplyClonedFieldClass.isAssignableFrom(TreeSet.class)) {
+                    var castedToClone = blockCreator.localVar(toClone.name() + "$Casted", SortedSet.class, toClone);
+                    var setComparator = blockCreator
+                            .invokeInterface(MethodDesc.of(SortedSet.class,
+                                    "comparator", Comparator.class), castedToClone);
+                    blockCreator.set(cloneResultHolder,
+                            blockCreator.new_(ConstructorDesc.of(TreeSet.class, Comparator.class),
+                                    setComparator));
+                } else {
+                    constructUnknownCollection(blockCreator, SortedSet.class, deeplyClonedFieldClass, cloneResultHolder);
+                }
+            } else {
+                if (deeplyClonedFieldClass.equals(Set.class)) {
+                    // This is Set, so it can either be sorted or unsorted, and we need to determine it at runtime
+                    blockCreator.ifInstanceOf(toClone, SortedSet.class, (isSortedSetBranch, sortedCastedToClone) -> {
+                        var setComparator = isSortedSetBranch
+                                .invokeInterface(MethodDesc.of(SortedSet.class,
+                                        "comparator", Comparator.class), sortedCastedToClone);
+                        isSortedSetBranch.set(cloneResultHolder,
+                                isSortedSetBranch.new_(ConstructorDesc.of(TreeSet.class, Comparator.class),
+                                        setComparator));
+                    });
+                    blockCreator.ifNotInstanceOf(toClone, SortedSet.class,
+                            isNotSortedSetBranch -> isNotSortedSetBranch.set(cloneResultHolder,
+                                    isNotSortedSetBranch.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size)));
+                } else if (deeplyClonedFieldClass.isAssignableFrom(LinkedHashSet.class)) {
+                    blockCreator.set(cloneResultHolder,
+                            blockCreator.new_(ConstructorDesc.of(LinkedHashSet.class, int.class), size));
+                } else if (deeplyClonedFieldClass.isAssignableFrom(HashSet.class)) {
+                    blockCreator.set(cloneResultHolder, blockCreator.new_(ConstructorDesc.of(HashSet.class, int.class), size));
+                } else {
+                    constructUnknownCollection(blockCreator, Set.class, deeplyClonedFieldClass, cloneResultHolder);
+                }
+            }
         } else {
             // field is probably of type collection; determine collection semantics at runtime
             blockCreator.ifInstanceOf(toClone, Set.class, (isSetBranch, castedToClone) -> {
@@ -679,6 +710,20 @@ public class GizmoSolutionClonerImplementor {
                     elementClass, elementClassType, next, clonedElement);
             whileLoopBlock.withCollection(cloneResultHolder).add(clonedElement);
         });
+    }
+
+    private static void constructUnknownCollection(BlockCreator blockCreator,
+            Class<?> baseCollectionType, Class<?> deeplyClonedFieldClass, Var cloneResultHolder) {
+        try {
+            var constructor = deeplyClonedFieldClass.getConstructor();
+            blockCreator.set(cloneResultHolder,
+                    blockCreator.new_(ConstructorDesc.of(constructor)));
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(
+                    "An unknown %s implementation (%s) is used as the declared type of a field, and it does not have a default constructor."
+                            .formatted(baseCollectionType.getSimpleName(), deeplyClonedFieldClass.getName()),
+                    e);
+        }
     }
 
     /**

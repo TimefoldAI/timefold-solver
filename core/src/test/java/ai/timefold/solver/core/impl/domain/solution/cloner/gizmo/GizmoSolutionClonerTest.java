@@ -44,7 +44,9 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
         var classOutput =
                 GizmoSolutionClonerImplementor.createClassOutputWithDebuggingCapability(classBytecodeHolder);
 
-        System.setProperty("gizmo.debug", "true");
+        if (GizmoSolutionClonerImplementor.DEBUG) {
+            System.setProperty("gizmo.debug", "true");
+        }
         var gizmo = Gizmo.create(classOutput);
 
         gizmo.class_(className, classCreator -> {
@@ -112,8 +114,10 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                             member = new GizmoMemberDescriptor(name, getterDescriptor, memberDescriptor, declaringClass,
                                     setterDescriptor);
                         } else {
-                            throw new IllegalStateException("Failed to generate GizmoMemberDescriptor for (" + name + "): " +
-                                    "Field is not public and does not have both a getter and a setter.");
+                            throw new IllegalStateException("""
+                                    Failed to generate GizmoMemberDescriptor for (%s#%s):
+                                    Field is not public and does not have both a getter and a setter.
+                                    """.formatted(declaringClass.getName(), name));
                         }
                     }
                     solutionFieldToMemberDescriptor.put(field, member);
