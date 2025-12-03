@@ -111,7 +111,7 @@ class GizmoSolutionClonerTest extends AbstractSolutionClonerTest {
                                     setter.getName(),
                                     setter.getReturnType(),
                                     field.getType());
-                            member = new GizmoMemberDescriptor(name, getterDescriptor, memberDescriptor, declaringClass,
+                            member = new GizmoMemberDescriptor(name, getterDescriptor, memberDescriptor, null, declaringClass,
                                     setterDescriptor);
                         } else {
                             throw new IllegalStateException("""

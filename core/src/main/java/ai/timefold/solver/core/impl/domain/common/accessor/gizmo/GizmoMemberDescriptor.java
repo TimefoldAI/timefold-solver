@@ -5,6 +5,7 @@ import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Consumer;
 
@@ -30,6 +31,11 @@ public final class GizmoMemberDescriptor {
      */
     private final String name;
 
+    /**
+     * The type of the read method parameter. Null if the method does not accept a parameter.
+     */
+    private final Type methodParameterType;
+
     private final GizmoMemberHandler memberHandler;
 
     /**
@@ -43,6 +49,10 @@ public final class GizmoMemberDescriptor {
     private final MethodDesc setter;
 
     public GizmoMemberDescriptor(Member member) {
+        this(member, false);
+    }
+
+    public GizmoMemberDescriptor(Member member, boolean methodWithParameter) {
         Class<?> declaringClass = member.getDeclaringClass();
         if (!Modifier.isPublic(member.getModifiers())) {
             throw new IllegalStateException("""
@@ -58,11 +68,13 @@ public final class GizmoMemberDescriptor {
             this.name = member.getName();
             this.memberHandler = GizmoMemberHandler.of(declaringClass, name, fieldDescriptor, false);
             this.setter = null;
+            this.methodParameterType = null;
         } else if (member instanceof Method method) {
             var methodDescriptor = MethodDesc.of(method);
             this.name = ReflectionHelper.isGetterMethod(method) ? ReflectionHelper.getGetterPropertyName(member)
                     : member.getName();
-            this.memberHandler = GizmoMemberHandler.of(declaringClass, methodDescriptor);
+            this.methodParameterType = getMethodParameterType(method, methodWithParameter);
+            this.memberHandler = GizmoMemberHandler.of(declaringClass, (Class<?>) methodParameterType, methodDescriptor);
             this.setter = lookupSetter(methodDescriptor, declaringClass, name).orElse(null);
         } else {
             throw new IllegalArgumentException("%s is not a Method or a Field.".formatted(member));
@@ -75,31 +87,52 @@ public final class GizmoMemberDescriptor {
         this.memberHandler = GizmoMemberHandler.of(declaringClass, name, fieldDescriptor, true);
         this.metadataHandler = this.memberHandler;
         this.setter = null;
+        this.methodParameterType = null;
     }
 
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, MethodDesc metadataDescriptor,
-            Class<?> declaringClass, MethodDesc setterDescriptor) {
+            Type methodParameterType, Class<?> declaringClass, MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
         this.metadataHandler = memberDescriptor == metadataDescriptor ? this.memberHandler
                 : GizmoMemberHandler.of(declaringClass, metadataDescriptor);
+        this.methodParameterType = methodParameterType;
         this.setter = setterDescriptor;
     }
 
-    public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, Class<?> declaringClass,
+    public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, Type methodParameterType, Class<?> declaringClass,
             MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
         this.metadataHandler = this.memberHandler;
+        this.methodParameterType = methodParameterType;
         this.setter = setterDescriptor;
     }
 
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, FieldDesc metadataDescriptor,
-            Class<?> declaringClass, MethodDesc setterDescriptor) {
+            Type methodParameterType, Class<?> declaringClass, MethodDesc setterDescriptor) {
         this.name = name;
         this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
         this.metadataHandler = GizmoMemberHandler.of(declaringClass, name, metadataDescriptor, true);
+        this.methodParameterType = methodParameterType;
         this.setter = setterDescriptor;
+    }
+
+    public static Type getMethodParameterType(Method method, boolean methodWithParameter) {
+        var parameterCount = method.getParameterCount();
+        Type methodParameterType = null;
+        if (methodWithParameter && parameterCount == 1) {
+            methodParameterType = method.getParameterTypes()[0];
+        }
+        if (methodWithParameter && parameterCount > 1) {
+            // Multiple parameters are not allowed
+            throw new IllegalStateException("The getterMethod (%s) must have only one parameter (%s)."
+                    .formatted(method.getName(), Arrays.toString(method.getParameterTypes())));
+        } else if (parameterCount == 1) {
+            return methodParameterType;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -128,6 +161,10 @@ public final class GizmoMemberDescriptor {
 
     public Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj) {
         return memberHandler.readMemberValue(bytecodeCreator, thisObj);
+    }
+
+    public Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj, Expr parameter) {
+        return memberHandler.readMemberValue(bytecodeCreator, thisObj, parameter);
     }
 
     /**
@@ -205,6 +242,10 @@ public final class GizmoMemberDescriptor {
 
     public Type getType() {
         return metadataHandler.getType();
+    }
+
+    public Type getMethodParameterType() {
+        return methodParameterType;
     }
 
     @Override

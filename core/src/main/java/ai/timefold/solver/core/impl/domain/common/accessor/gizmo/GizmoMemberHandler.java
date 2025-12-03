@@ -34,15 +34,22 @@ interface GizmoMemberHandler {
         }
     }
 
+    static GizmoMemberHandler of(Class<?> declaringClass, MethodDesc methodDescriptor) {
+        return of(declaringClass, null, methodDescriptor);
+    }
+
     /**
      * Creates handler for a {@link Method}.
      *
      * @param declaringClass never null, class that declares the {@link Method} in question
+     * @param readMethodParameterType the method parameter type. It is null if the method has no parameter.
      * @param methodDescriptor never null, descriptor of the {@link Method} in question
      * @return never null
      */
-    static GizmoMemberHandler of(Class<?> declaringClass, MethodDesc methodDescriptor) {
-        return new GizmoMethodHandler(declaringClass, methodDescriptor);
+    static GizmoMemberHandler of(Class<?> declaringClass, Class<?> readMethodParameterType, MethodDesc methodDescriptor) {
+        return readMethodParameterType != null
+                ? new GizmoMethodExtendedHandler(declaringClass, readMethodParameterType, methodDescriptor)
+                : new GizmoMethodHandler(declaringClass, methodDescriptor);
     }
 
     void whenIsField(Consumer<FieldDesc> fieldDescriptorConsumer);
@@ -50,6 +57,8 @@ interface GizmoMemberHandler {
     void whenIsMethod(Consumer<MethodDesc> methodDescriptorConsumer);
 
     Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj);
+
+    Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj, Expr parameter);
 
     boolean writeMemberValue(MethodDesc setter, BlockCreator bytecodeCreator, Expr thisObj,
             Expr newValue);

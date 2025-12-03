@@ -41,7 +41,7 @@ class GenuineVariableDescriptorTest {
     }
 
     @Test
-    void invalidGetterWithParameter() {
+    void invalidReadMethodWithParameter() {
         assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
                 .hasMessageContaining(
                         "The parameter type (ai.timefold.solver.core.testdomain.TestdataSolution) of the method (getValueRange) must match the solution (TestdataInvalidTypeEntityProvidingWithParameterSolution).");

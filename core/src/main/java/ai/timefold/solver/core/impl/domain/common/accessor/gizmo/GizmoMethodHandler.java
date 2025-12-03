@@ -10,10 +10,10 @@ import io.quarkus.gizmo2.desc.FieldDesc;
 import io.quarkus.gizmo2.desc.InterfaceMethodDesc;
 import io.quarkus.gizmo2.desc.MethodDesc;
 
-final class GizmoMethodHandler implements GizmoMemberHandler {
+sealed class GizmoMethodHandler implements GizmoMemberHandler permits GizmoMethodExtendedHandler {
 
-    private final Class<?> declaringClass;
-    private final MethodDesc methodDescriptor;
+    final Class<?> declaringClass;
+    final MethodDesc methodDescriptor;
 
     GizmoMethodHandler(Class<?> declaringClass, MethodDesc methodDescriptor) {
         this.declaringClass = declaringClass;
@@ -36,6 +36,11 @@ final class GizmoMethodHandler implements GizmoMemberHandler {
     }
 
     @Override
+    public Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj, Expr parameter) {
+        throw new IllegalStateException("Cannot pass a parameter when invoking the method.");
+    }
+
+    @Override
     public boolean writeMemberValue(MethodDesc setter, BlockCreator bytecodeCreator, Expr thisObj,
             Expr newValue) {
         if (setter == null) {
@@ -46,7 +51,7 @@ final class GizmoMethodHandler implements GizmoMemberHandler {
         }
     }
 
-    private static Expr invokeMemberMethod(Class<?> declaringClass, BlockCreator creator, MethodDesc method,
+    static Expr invokeMemberMethod(Class<?> declaringClass, BlockCreator creator, MethodDesc method,
             Expr bean, Expr... parameters) {
         if (declaringClass.isInterface()) {
             // method might be from the implementation class; we need it from the declaring interface

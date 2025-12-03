@@ -44,6 +44,7 @@ import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.SolverManagerConfig;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
+import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.declarative.RootVariableSource;
 import ai.timefold.solver.core.impl.heuristic.selector.common.nearby.NearbyDistanceMeter;
@@ -1032,7 +1033,9 @@ class TimefoldProcessor {
                         classInfo = methodInfo.declaringClass();
                         memberName = methodInfo.name();
                         buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                                classInfo, methodInfo, true, transformers);
+                                classInfo, methodInfo,
+                                AccessorInfo.of(true, annotatedMember.name().equals(DotNames.VALUE_RANGE_PROVIDER)),
+                                transformers);
                     }
                     default -> throw new IllegalStateException(
                             "The member (%s) is not on a field or method.".formatted(annotatedMember));
@@ -1042,8 +1045,8 @@ class TimefoldProcessor {
                     // targetMethodName is a required field and is always present
                     var targetMethodName = annotatedMember.value("targetMethodName").asString();
                     var methodInfo = classInfo.method(targetMethodName);
-                    buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                            classInfo, methodInfo, false, transformers);
+                    buildMethodAccessor(null, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput, classInfo,
+                            methodInfo, AccessorInfo.of(false, false), transformers);
                 } else if (annotatedMember.name().equals(DotNames.SHADOW_VARIABLE)
                         && annotatedMember.value("supplierName") != null) {
                     // The source method name also must be included
@@ -1057,9 +1060,8 @@ class TimefoldProcessor {
                                 .formatted(ShadowVariable.class.getSimpleName(), memberName, targetMethodName,
                                         classInfo.name().toString()));
                     }
-                    buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer,
-                            classOutput,
-                            classInfo, methodInfo, true, transformers);
+                    buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
+                            classInfo, methodInfo, AccessorInfo.of(true, false), transformers);
                 }
             }
             // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
@@ -1081,7 +1083,7 @@ class TimefoldProcessor {
                         .orElse(null);
                 if (constraintMethodInfo != null) {
                     buildMethodAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer,
-                            classOutput, solutionClassInfo, constraintMethodInfo, true, transformers);
+                            classOutput, solutionClassInfo, constraintMethodInfo, AccessorInfo.of(true, false), transformers);
                 } else {
                     buildFieldAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                             solutionClassInfo, constraintFieldInfo, transformers);
@@ -1162,12 +1164,12 @@ class TimefoldProcessor {
     }
 
     private static void buildMethodAccessor(AnnotationInstance annotatedMember,
-            Set<String> generatedMemberAccessorsClassNameSet,
-            GizmoMemberAccessorEntityEnhancer entityEnhancer, ClassOutput classOutput, ClassInfo classInfo,
-            MethodInfo methodInfo, boolean requiredReturnType, BuildProducer<BytecodeTransformerBuildItem> transformers) {
+            Set<String> generatedMemberAccessorsClassNameSet, GizmoMemberAccessorEntityEnhancer entityEnhancer,
+            ClassOutput classOutput, ClassInfo classInfo, MethodInfo methodInfo, AccessorInfo accessorInfo,
+            BuildProducer<BytecodeTransformerBuildItem> transformers) {
         try {
             generatedMemberAccessorsClassNameSet.add(entityEnhancer.generateMethodAccessor(annotatedMember,
-                    classOutput, classInfo, methodInfo, requiredReturnType, transformers));
+                    classOutput, classInfo, methodInfo, accessorInfo, transformers));
         } catch (ClassNotFoundException | NoSuchMethodException e) {
             throw new IllegalStateException(
                     "Failed to generate member accessor for the method (%s) of the class (%s)."

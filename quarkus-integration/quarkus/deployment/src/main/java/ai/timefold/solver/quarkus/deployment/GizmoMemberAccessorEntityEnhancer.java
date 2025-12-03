@@ -30,6 +30,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import ai.timefold.solver.core.api.domain.solution.cloner.SolutionCloner;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
+import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorFactory;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorImplementor;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberDescriptor;
@@ -102,9 +103,8 @@ final class GizmoMemberAccessorEntityEnhancer {
                 Thread.currentThread().getContextClassLoader());
         var fieldMember = declaringClass.getDeclaredField(fieldInfo.name());
         var member = createMemberDescriptorForField(fieldMember, transformers);
-        var memberInfo = new GizmoMemberInfo(member, true,
-                (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
-                        Thread.currentThread().getContextClassLoader()));
+        var memberInfo = new GizmoMemberInfo(member, true, false, (Class<? extends Annotation>) Class
+                .forName(annotationInstance.name().toString(), false, Thread.currentThread().getContextClassLoader()));
         var generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(fieldMember);
         GizmoMemberAccessorImplementor.defineAccessorFor(generatedClassName, classOutput, memberInfo);
         return generatedClassName;
@@ -165,17 +165,18 @@ final class GizmoMemberAccessorEntityEnhancer {
      * @param classOutput Where to output the bytecode
      * @param classInfo The declaring class for the field
      * @param methodInfo The method to generate the MemberAccessor for
+     * @param accessorInfo The additional information of the accessor
      * @param transformers BuildProducer of BytecodeTransformers
      */
     public String generateMethodAccessor(@Nullable AnnotationInstance annotationInstance, ClassOutput classOutput,
-            ClassInfo classInfo, MethodInfo methodInfo, boolean requiredReturnType,
+            ClassInfo classInfo, MethodInfo methodInfo, AccessorInfo accessorInfo,
             BuildProducer<BytecodeTransformerBuildItem> transformers)
             throws ClassNotFoundException, NoSuchMethodException {
         var declaringClass = Class.forName(methodInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
         var methodMember = declaringClass.getDeclaredMethod(methodInfo.name());
         var generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(methodMember);
-        GizmoMemberDescriptor member;
+        GizmoMemberDescriptor descriptor;
         var name = getMemberName(methodMember);
         var setterDescriptor = getSetterDescriptor(classInfo, methodInfo, name);
 
@@ -184,24 +185,28 @@ final class GizmoMemberAccessorEntityEnhancer {
                 methodInfo.parameterTypes().stream()
                         .map(parameterType -> ClassDesc.ofDescriptor(parameterType.descriptor()))
                         .toArray(ClassDesc[]::new));
-
+        var methodParameterType =
+                GizmoMemberDescriptor.getMethodParameterType(methodMember, accessorInfo.readMethodWithParameter());
         if (Modifier.isPublic(methodInfo.flags())) {
-            member = new GizmoMemberDescriptor(name, memberDescriptor, declaringClass, setterDescriptor.orElse(null));
+            descriptor = new GizmoMemberDescriptor(name, memberDescriptor, methodParameterType, declaringClass,
+                    setterDescriptor.orElse(null));
         } else {
             setterDescriptor = addVirtualMethodGetter(classInfo, methodInfo, name, setterDescriptor.orElse(null), transformers);
             var methodName = getVirtualGetterName(false, name);
             var newMethodDescriptor =
                     ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), methodName,
                             memberDescriptor.returnType());
-            member = new GizmoMemberDescriptor(name, newMethodDescriptor, memberDescriptor, declaringClass,
-                    setterDescriptor.orElse(null));
+            descriptor =
+                    new GizmoMemberDescriptor(name, newMethodDescriptor, memberDescriptor, methodParameterType, declaringClass,
+                            setterDescriptor.orElse(null));
         }
         Class<? extends Annotation> annotationClass = null;
-        if (requiredReturnType || annotationInstance != null) {
+        if (accessorInfo.returnTypeRequired() || annotationInstance != null) {
             annotationClass = (Class<? extends Annotation>) Class.forName(annotationInstance.name().toString(), false,
                     Thread.currentThread().getContextClassLoader());
         }
-        var memberInfo = new GizmoMemberInfo(member, requiredReturnType, annotationClass);
+        var memberInfo = new GizmoMemberInfo(descriptor, accessorInfo.returnTypeRequired(),
+                descriptor.getMethodParameterType() != null, annotationClass);
         GizmoMemberAccessorImplementor.defineAccessorFor(generatedClassName, classOutput, memberInfo);
         return generatedClassName;
     }
@@ -369,7 +374,7 @@ final class GizmoMemberAccessorEntityEnhancer {
             var setterDescriptor =
                     ClassMethodDesc.of(ClassDesc.ofDescriptor(declaringClass.descriptorString()), setterName, void.class,
                             field.getType());
-            return new GizmoMemberDescriptor(name, getterDescriptor, memberDescriptor, declaringClass, setterDescriptor);
+            return new GizmoMemberDescriptor(name, getterDescriptor, memberDescriptor, null, declaringClass, setterDescriptor);
         }
     }
 

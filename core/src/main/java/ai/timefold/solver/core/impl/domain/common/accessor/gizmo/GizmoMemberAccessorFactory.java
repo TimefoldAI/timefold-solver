@@ -30,10 +30,11 @@ public class GizmoMemberAccessorFactory {
      * @param member never null
      * @param annotationClass may be null if the member is not annotated
      * @param gizmoClassLoader never null
+     * @param accessorInfo additional information of the accessor
      * @return never null
      */
     public static MemberAccessor buildGizmoMemberAccessor(Member member, Class<? extends Annotation> annotationClass,
-            boolean returnTypeRequired, GizmoClassLoader gizmoClassLoader) {
+            AccessorInfo accessorInfo, GizmoClassLoader gizmoClassLoader) {
         try {
             // Check if Gizmo on the classpath by verifying we can access one of its classes
             Class.forName("io.quarkus.gizmo2.Gizmo", false,
@@ -43,7 +44,7 @@ public class GizmoMemberAccessorFactory {
                     When using the domainAccessType (%s) the classpath or modulepath must contain io.quarkus.gizmo:gizmo2.
                     Maybe add a dependency to io.quarkus.gizmo:gizmo2.""".formatted(DomainAccessType.GIZMO));
         }
-        return GizmoMemberAccessorImplementor.createAccessorFor(member, annotationClass, returnTypeRequired, gizmoClassLoader);
+        return GizmoMemberAccessorImplementor.createAccessorFor(member, annotationClass, accessorInfo, gizmoClassLoader);
     }
 
     private GizmoMemberAccessorFactory() {
