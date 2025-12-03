@@ -213,7 +213,7 @@ final class GizmoMemberAccessorEntityEnhancer {
         return generatedClassName;
     }
 
-    private Method getDeclaredMethod(Class<?> declaringClass, String methodName) throws NoSuchMethodException {
+    private static Method getDeclaredMethod(Class<?> declaringClass, String methodName) throws NoSuchMethodException {
         var methodList = Arrays.stream(declaringClass.getDeclaredMethods())
                 // We seek methods that either have no parameters or consist of only one parameter
                 .filter(m -> m.getName().equals(methodName) && m.getParameterCount() <= 1)

@@ -29,11 +29,19 @@ public class TestdataInvalidMethodEntityProvidingWithParameterEntity extends Tes
         this.value = value;
     }
 
+    public TestdataValue getValue() {
+        return value;
+    }
+
+    public void setValue(TestdataValue value) {
+        this.value = value;
+    }
+
     public void setValueRange(List<TestdataValue> valueRange) {
         this.valueRange = valueRange;
     }
 
-    public List<TestdataValue> getValueRange1(TestdataEntityProvidingWithParameterSolution solution) {
+    public List<TestdataValue> getValueRange1(TestdataEntityProvidingWithParameterSolution ignoredSolution) {
         return valueRange;
     }
 
@@ -41,7 +49,7 @@ public class TestdataInvalidMethodEntityProvidingWithParameterEntity extends Tes
         this.valueRange = valueRange;
     }
 
-    List<TestdataValue> getValueRange2(TestdataEntityProvidingWithParameterSolution solution) {
+    List<TestdataValue> getValueRange2(TestdataEntityProvidingWithParameterSolution ignoredSolution) {
         return valueRange;
     }
 
