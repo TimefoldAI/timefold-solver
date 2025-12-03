@@ -333,12 +333,12 @@ public final class ReflectionHelper {
         }
     }
 
-    public static void assertReadMethod(Method readMethod, boolean methodWithParameter) {
-        if (!methodWithParameter && readMethod.getParameterCount() != 0) {
+    public static void assertReadMethod(Method readMethod, boolean readMethodWithParameter) {
+        if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalStateException("The readMethod (%s) must not have any parameters (%s)."
                     .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
         }
-        if (methodWithParameter && readMethod.getParameterCount() > 1) {
+        if (readMethodWithParameter && readMethod.getParameterCount() > 1) {
             throw new IllegalStateException("The readMethod (%s) must have only one parameter (%s)."
                     .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
         }
@@ -348,13 +348,13 @@ public final class ReflectionHelper {
         }
     }
 
-    public static void assertReadMethod(Method readMethod, boolean methodWithParameter,
+    public static void assertReadMethod(Method readMethod, boolean readMethodWithParameter,
             Class<? extends Annotation> annotationClass) {
-        if (!methodWithParameter && readMethod.getParameterCount() != 0) {
+        if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalStateException("The readMethod (%s) with a %s annotation must not have any parameters (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
         }
-        if (methodWithParameter && readMethod.getParameterCount() > 1) {
+        if (readMethodWithParameter && readMethod.getParameterCount() > 1) {
             throw new IllegalStateException("The readMethod (%s) with a %s annotation must have only one parameter (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
         }

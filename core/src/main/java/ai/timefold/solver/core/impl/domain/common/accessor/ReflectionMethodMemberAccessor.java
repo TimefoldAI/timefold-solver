@@ -23,7 +23,7 @@ public sealed class ReflectionMethodMemberAccessor extends AbstractMemberAccesso
         this(readMethod, true, false);
     }
 
-    public ReflectionMethodMemberAccessor(Method readMethod, boolean returnTypeRequired, boolean methodWithParameter) {
+    public ReflectionMethodMemberAccessor(Method readMethod, boolean returnTypeRequired, boolean readMethodWithParameter) {
         this.readMethod = readMethod;
         this.returnType = readMethod.getReturnType();
         this.methodName = readMethod.getName();
@@ -38,11 +38,11 @@ public sealed class ReflectionMethodMemberAccessor extends AbstractMemberAccesso
                     %s
                     """.formatted(readMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
         }
-        if (!methodWithParameter && readMethod.getParameterCount() != 0) {
+        if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalArgumentException("The readMethod (%s) must not have any parameters (%s).".formatted(readMethod,
                     Arrays.toString(readMethod.getParameterTypes())));
         }
-        if (methodWithParameter && readMethod.getParameterCount() > 1) {
+        if (readMethodWithParameter && readMethod.getParameterCount() > 1) {
             throw new IllegalArgumentException("The readMethod (%s) must have only one parameter (%s).".formatted(readMethod,
                     Arrays.toString(readMethod.getParameterTypes())));
         }

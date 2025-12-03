@@ -5,7 +5,7 @@ import java.lang.reflect.Type;
 /**
  * This class extends the {@link MemberAccessor} contract and adds a getter method that accepts a parameter.
  *
- * @see ReflectionExtendedBeanPropertyMemberAccessor
+ * @see ReflectionMethodExtendedMemberAccessor
  */
 public interface ExtendedMemberAccessor extends MemberAccessor {
 
