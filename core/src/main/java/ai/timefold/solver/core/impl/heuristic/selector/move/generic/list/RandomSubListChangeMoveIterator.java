@@ -34,11 +34,14 @@ class RandomSubListChangeMoveIterator<Solution_> extends UpcomingSelectionIterat
 
     @Override
     protected Move<Solution_> createUpcomingSelection() {
-        if (!subListIterator.hasNext() || !destinationIterator.hasNext()) {
+        if (!subListIterator.hasNext()) {
             return noUpcomingSelection();
         }
-
+        // The inner node may need the outer iterator to select the next value first
         var subList = subListIterator.next();
+        if (!destinationIterator.hasNext()) {
+            return noUpcomingSelection();
+        }
         var destination = findUnpinnedDestination(destinationIterator, listVariableDescriptor);
         if (destination == null) {
             return noUpcomingSelection();

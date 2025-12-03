@@ -72,15 +72,14 @@ final class KOptListMoveIterator<Solution_, Node_> extends UpcomingSelectionIter
         if (!originIterator.hasNext()) {
             return NoChangeMove.getInstance();
         }
+        // The inner node may need the outer iterator to select the next value first
+        Object firstValue = originIterator.next();
         @SuppressWarnings("unchecked")
         var valueIterator = (Iterator<Node_>) valueSelector.iterator();
         if (!valueIterator.hasNext()) {
             return NoChangeMove.getInstance();
         }
-
-        Object firstValue = originIterator.next();
         Object secondValue = valueIterator.next();
-
         var firstElementPosition = listVariableStateSupply.getElementPosition(firstValue)
                 .ensureAssigned();
         var secondElementPosition = listVariableStateSupply.getElementPosition(secondValue)
