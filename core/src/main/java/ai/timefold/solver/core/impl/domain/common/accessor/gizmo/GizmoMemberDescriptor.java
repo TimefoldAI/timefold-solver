@@ -93,7 +93,7 @@ public final class GizmoMemberDescriptor {
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, MethodDesc metadataDescriptor,
             Type methodParameterType, Class<?> declaringClass, MethodDesc setterDescriptor) {
         this.name = name;
-        this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
+        this.memberHandler = GizmoMemberHandler.of(declaringClass, (Class<?>) methodParameterType, memberDescriptor);
         this.metadataHandler = memberDescriptor == metadataDescriptor ? this.memberHandler
                 : GizmoMemberHandler.of(declaringClass, metadataDescriptor);
         this.methodParameterType = methodParameterType;
@@ -103,7 +103,7 @@ public final class GizmoMemberDescriptor {
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, Type methodParameterType, Class<?> declaringClass,
             MethodDesc setterDescriptor) {
         this.name = name;
-        this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
+        this.memberHandler = GizmoMemberHandler.of(declaringClass, (Class<?>) methodParameterType, memberDescriptor);
         this.metadataHandler = this.memberHandler;
         this.methodParameterType = methodParameterType;
         this.setter = setterDescriptor;
@@ -112,7 +112,7 @@ public final class GizmoMemberDescriptor {
     public GizmoMemberDescriptor(String name, MethodDesc memberDescriptor, FieldDesc metadataDescriptor,
             Type methodParameterType, Class<?> declaringClass, MethodDesc setterDescriptor) {
         this.name = name;
-        this.memberHandler = GizmoMemberHandler.of(declaringClass, memberDescriptor);
+        this.memberHandler = GizmoMemberHandler.of(declaringClass, (Class<?>) methodParameterType, memberDescriptor);
         this.metadataHandler = GizmoMemberHandler.of(declaringClass, name, metadataDescriptor, true);
         this.methodParameterType = methodParameterType;
         this.setter = setterDescriptor;

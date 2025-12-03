@@ -15,6 +15,7 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
+import ai.timefold.solver.core.impl.domain.common.accessor.ExtendedMemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
@@ -108,9 +109,17 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         return countable;
     }
 
+    private Object executeGetter(Object bean, Object parameter) {
+        if (memberAccessor instanceof ExtendedMemberAccessor extendedMemberAccessor) {
+            return extendedMemberAccessor.executeGetter(bean, parameter);
+        } else {
+            return memberAccessor.executeGetter(bean);
+        }
+    }
+
     @SuppressWarnings("unchecked")
-    protected <Value_> CountableValueRange<Value_> readValueRange(Object bean) {
-        Object valueRangeObject = memberAccessor.executeGetter(bean);
+    protected <Value_> CountableValueRange<Value_> readValueRange(Object bean, Object parameter) {
+        Object valueRangeObject = executeGetter(bean, parameter);
         if (valueRangeObject == null) {
             throw new IllegalStateException(
                     "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."

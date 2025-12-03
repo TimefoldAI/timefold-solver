@@ -13,7 +13,9 @@ import java.lang.annotation.Annotation;
 import java.lang.constant.ClassDesc;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -174,7 +176,7 @@ final class GizmoMemberAccessorEntityEnhancer {
             throws ClassNotFoundException, NoSuchMethodException {
         var declaringClass = Class.forName(methodInfo.declaringClass().name().toString(), false,
                 Thread.currentThread().getContextClassLoader());
-        var methodMember = declaringClass.getDeclaredMethod(methodInfo.name());
+        var methodMember = getDeclaredMethod(declaringClass, methodInfo.name());
         var generatedClassName = GizmoMemberAccessorFactory.getGeneratedClassName(methodMember);
         GizmoMemberDescriptor descriptor;
         var name = getMemberName(methodMember);
@@ -209,6 +211,19 @@ final class GizmoMemberAccessorEntityEnhancer {
                 descriptor.getMethodParameterType() != null, annotationClass);
         GizmoMemberAccessorImplementor.defineAccessorFor(generatedClassName, classOutput, memberInfo);
         return generatedClassName;
+    }
+
+    private Method getDeclaredMethod(Class<?> declaringClass, String methodName) throws NoSuchMethodException {
+        var methodList = Arrays.stream(declaringClass.getDeclaredMethods())
+                // We seek methods that either have no parameters or consist of only one parameter
+                .filter(m -> m.getName().equals(methodName) && m.getParameterCount() <= 1)
+                .toList();
+        if (methodList.isEmpty()) {
+            throw new NoSuchMethodException(methodName);
+        } else if (methodList.size() > 1) {
+            throw new IllegalStateException("Multiple methods found for %s (%s).".formatted(methodName, methodList));
+        }
+        return methodList.get(0);
     }
 
     private Optional<MethodDesc> addVirtualMethodGetter(ClassInfo classInfo, MethodInfo methodInfo, String name,

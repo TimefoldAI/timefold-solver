@@ -36,7 +36,7 @@ public final class FromEntityPropertyValueRangeDescriptor<Solution_>
 
     @Override
     public <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity) {
-        return readValueRange(entity);
+        return readValueRange(entity, solution);
     }
 
     @Override
