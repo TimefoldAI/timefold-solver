@@ -15,7 +15,6 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningListVariable;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.domain.common.accessor.ExtendedMemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.valuerange.buildin.EmptyValueRange;
@@ -110,8 +109,8 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
     }
 
     private Object executeGetter(Object bean, Object parameter) {
-        if (memberAccessor instanceof ExtendedMemberAccessor extendedMemberAccessor) {
-            return extendedMemberAccessor.executeGetter(bean, parameter);
+        if (memberAccessor.acceptsParameter()) {
+            return memberAccessor.executeGetter(bean, parameter);
         } else {
             return memberAccessor.executeGetter(bean);
         }

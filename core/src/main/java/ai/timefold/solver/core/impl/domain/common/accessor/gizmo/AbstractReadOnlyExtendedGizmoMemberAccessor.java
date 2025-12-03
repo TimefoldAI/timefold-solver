@@ -2,10 +2,7 @@ package ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
 
 import java.util.function.Function;
 
-import ai.timefold.solver.core.impl.domain.common.accessor.ExtendedMemberAccessor;
-
-public abstract class AbstractReadOnlyExtendedGizmoMemberAccessor extends AbstractReadOnlyGizmoMemberAccessor
-        implements ExtendedMemberAccessor {
+public abstract class AbstractReadOnlyExtendedGizmoMemberAccessor extends AbstractReadOnlyGizmoMemberAccessor {
 
     @Override
     public Object executeGetter(Object bean) {

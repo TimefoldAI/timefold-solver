@@ -9,7 +9,6 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.domain.common.accessor.ExtendedMemberAccessor;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.gizmo.GizmoTestdataEntity;
@@ -208,10 +207,9 @@ class GizmoMemberAccessorImplementorTest {
     void testMethodAnnotatedEntity() throws NoSuchMethodException {
         var member = TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                 TestdataEntityProvidingWithParameterSolution.class);
-        var instance =
-                (ExtendedMemberAccessor) GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
-                        AccessorInfo.of(true, true),
-                        new GizmoClassLoader());
+        var instance = GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
+                AccessorInfo.of(true, true),
+                new GizmoClassLoader());
         assertThat(instance.getName()).isEqualTo("getValueRange");
         assertThat(instance.getType()).isEqualTo(List.class);
         assertThat(instance.getAnnotation(ValueRangeProvider.class)).isNotNull();

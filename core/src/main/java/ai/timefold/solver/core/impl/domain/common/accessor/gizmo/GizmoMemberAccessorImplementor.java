@@ -12,7 +12,6 @@ import java.lang.reflect.Type;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import ai.timefold.solver.core.impl.domain.common.accessor.ExtendedMemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.util.MutableReference;
 
@@ -76,7 +75,8 @@ public final class GizmoMemberAccessorImplementor {
             createGetDeclaringClass(generatedClassInfo);
             createGetType(generatedClassInfo);
             createGetGenericType(generatedClassInfo);
-            if (ExtendedMemberAccessor.class.isAssignableFrom(superClass)) {
+            if (superClass == AbstractReadWriteExtendedGizmoMemberAccessor.class
+                    || superClass == AbstractReadOnlyExtendedGizmoMemberAccessor.class) {
                 // The read method with a parameter requires a different getter implementation
                 // and another method to return the parameter type.
                 createGetGetterMethodParameterType(generatedClassInfo);

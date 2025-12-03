@@ -4,8 +4,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.function.Function;
 
-public final class ReflectionMethodExtendedMemberAccessor extends ReflectionMethodMemberAccessor
-        implements ExtendedMemberAccessor {
+public final class ReflectionMethodExtendedMemberAccessor extends ReflectionMethodMemberAccessor {
 
     private final Type getterMethodParameterType;
 

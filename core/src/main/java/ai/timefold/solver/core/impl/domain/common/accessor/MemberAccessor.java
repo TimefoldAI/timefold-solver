@@ -44,6 +44,20 @@ public interface MemberAccessor {
      */
     <Fact_, Result_> Function<Fact_, Result_> getGetterFunction();
 
+    /**
+     * @return returns the parameter type if the getter accepts a parameter, or null otherwise.
+     */
+    Type getGetterMethodParameterType();
+
+    /**
+     * Differs from {@link #executeGetter(Object)} in that it accepts a single parameter.
+     */
+    Object executeGetter(Object bean, Object value);
+
+    default boolean acceptsParameter() {
+        return getGetterMethodParameterType() != null;
+    }
+
     boolean supportSetter();
 
     void executeSetter(Object bean, Object value);

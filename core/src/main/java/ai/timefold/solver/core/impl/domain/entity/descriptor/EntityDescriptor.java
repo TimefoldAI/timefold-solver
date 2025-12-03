@@ -44,7 +44,6 @@ import ai.timefold.solver.core.api.domain.variable.ShadowVariablesInconsistent;
 import ai.timefold.solver.core.config.heuristic.selector.common.decorator.SelectionSorterOrder;
 import ai.timefold.solver.core.config.util.ConfigUtils;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
-import ai.timefold.solver.core.impl.domain.common.accessor.ExtendedMemberAccessor;
 import ai.timefold.solver.core.impl.domain.common.accessor.MemberAccessor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
@@ -339,11 +338,10 @@ public class EntityDescriptor<Solution_> {
     }
 
     private void assertGetterParameterType(MemberAccessor memberAccessor) {
-        if (memberAccessor instanceof ExtendedMemberAccessor extendedMemberAccessor
-                && (!extendedMemberAccessor.getGetterMethodParameterType()
-                        .equals(getSolutionDescriptor().getSolutionClass()))) {
+        if (memberAccessor.acceptsParameter()
+                && !memberAccessor.getGetterMethodParameterType().equals(getSolutionDescriptor().getSolutionClass())) {
             throw new IllegalStateException("The parameter type (%s) of the method (%s) must match the solution (%s)."
-                    .formatted(extendedMemberAccessor.getGetterMethodParameterType().getTypeName(), memberAccessor.getName(),
+                    .formatted(memberAccessor.getGetterMethodParameterType().getTypeName(), memberAccessor.getName(),
                             getSolutionDescriptor().getSolutionClass().getSimpleName()));
         }
     }
