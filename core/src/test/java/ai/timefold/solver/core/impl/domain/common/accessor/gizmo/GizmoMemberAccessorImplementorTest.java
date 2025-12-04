@@ -9,12 +9,16 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
+import ai.timefold.solver.core.impl.domain.common.accessor.ReflectionMethodExtendedMemberAccessor;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.gizmo.GizmoTestdataEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidCountEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
@@ -234,23 +238,38 @@ class GizmoMemberAccessorImplementorTest {
 
         assertThat(instance.executeGetter(e1, s1)).isEqualTo(List.of(v1, v2));
         e1.setValueRange(List.of(v2));
-        assertThat(e1.getValueRange(s1)).isEqualTo(List.of(v2));
+        assertThat(instance.executeGetter(e1, s1)).isEqualTo(List.of(v2));
+    }
+
+    @Test
+    void testMethodAnnotatedEntityAndInheritance() throws NoSuchMethodException {
+        var member = TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getValueList",
+                TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+        var instance = GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
+                AccessorInfo.withReturnValueAndArguments(),
+                new GizmoClassLoader());
+        assertThat(instance.getName()).isEqualTo("getValueList");
+        assertThat(instance.getType()).isEqualTo(List.class);
+        assertThat(instance.getAnnotation(ValueRangeProvider.class)).isNotNull();
+        assertThat(instance.getGetterMethodParameterType())
+                .isEqualTo(TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var e1 = new TestdataEntityProvidingOnlyBaseAnnotatedChildEntity("e1", v1);
+        var s1 = new TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution("s1");
+        s1.setValueList(List.of(v1, v2));
+
+        assertThat(instance.executeGetter(e1, s1)).isEqualTo(List.of(v1, v2));
+        s1.setValueList(List.of(v2));
+        assertThat(instance.executeGetter(e1, s1)).isEqualTo(List.of(v2));
     }
 
     @Test
     void invalidEntityReadMethodWithParameter() throws NoSuchMethodException {
-        var member = TestdataInvalidTypeEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
-                TestdataSolution.class);
-        assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
-                AccessorInfo.withReturnValueAndNoArguments(),
-                new GizmoClassLoader()))
-                .hasMessageContaining(
-                        "The getterMethod (getValueRange) with a ValueRangeProvider annotation must not have any parameters")
-                .hasMessageContaining("but has parameters ([Lai/timefold/solver/core/testdomain/TestdataSolution;])");
-
-        var otherMember = TestdataInvalidCountEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
+        var member = TestdataInvalidCountEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                 TestdataEntityProvidingWithParameterSolution.class, TestdataEntityProvidingWithParameterSolution.class);
-        assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(otherMember, ValueRangeProvider.class,
+        assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
                 AccessorInfo.withReturnValueAndArguments(),
                 new GizmoClassLoader()))
                 .hasMessageContaining(

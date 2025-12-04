@@ -9,6 +9,9 @@ import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedChildEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidCountEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
@@ -34,7 +37,29 @@ class ReflectionMethodExtendedMemberAccessorTest {
 
         assertThat(memberAccessor.executeGetter(e1, s1)).isEqualTo(List.of(v1, v2));
         e1.setValueRange(List.of(v2));
-        assertThat(e1.getValueRange(s1)).isEqualTo(List.of(v2));
+        assertThat(memberAccessor.executeGetter(e1, s1)).isEqualTo(List.of(v2));
+    }
+
+    @Test
+    void methodAnnotatedEntityAndInheritance() throws NoSuchMethodException {
+        var memberAccessor = new ReflectionMethodExtendedMemberAccessor(
+                TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getValueList",
+                        TestdataEntityProvidingOnlyBaseAnnotatedSolution.class));
+        assertThat(memberAccessor.getName()).isEqualTo("getValueList");
+        assertThat(memberAccessor.getType()).isEqualTo(List.class);
+        assertThat(memberAccessor.getAnnotation(ValueRangeProvider.class)).isNotNull();
+        assertThat(memberAccessor.getGetterMethodParameterType())
+                .isEqualTo(TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+
+        var v1 = new TestdataValue("v1");
+        var v2 = new TestdataValue("v2");
+        var e1 = new TestdataEntityProvidingOnlyBaseAnnotatedChildEntity("e1", v1);
+        var s1 = new TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution("s1");
+        s1.setValueList(List.of(v1, v2));
+
+        assertThat(memberAccessor.executeGetter(e1, s1)).isEqualTo(List.of(v1, v2));
+        s1.setValueList(List.of(v2));
+        assertThat(memberAccessor.executeGetter(e1, s1)).isEqualTo(List.of(v2));
     }
 
     @Test
