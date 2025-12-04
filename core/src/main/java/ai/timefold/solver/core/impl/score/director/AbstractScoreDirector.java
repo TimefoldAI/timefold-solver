@@ -295,6 +295,9 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
 
     @Override
     public void setMoveRepository(@Nullable MoveRepository<Solution_> moveRepository) {
+        if (this.moveRepository == moveRepository) { // Prevent double initialization
+            return;
+        }
         this.moveRepository = moveRepository;
         if (moveRepository != null) {
             moveRepository.initialize(new SessionContext<>(this));

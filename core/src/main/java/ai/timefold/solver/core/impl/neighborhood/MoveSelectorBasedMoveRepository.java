@@ -42,7 +42,6 @@ public final class MoveSelectorBasedMoveRepository<Solution_>
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
         moveSelector.phaseStarted(phaseScope);
-        phaseScope.getScoreDirector().setMoveRepository(this);
     }
 
     @Override
@@ -57,7 +56,6 @@ public final class MoveSelectorBasedMoveRepository<Solution_>
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        phaseScope.getScoreDirector().setMoveRepository(null);
         moveSelector.phaseEnded(phaseScope);
     }
 

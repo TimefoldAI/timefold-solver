@@ -1,0 +1,55 @@
+package ai.timefold.solver.core.impl.neighborhood;
+
+import java.util.Iterator;
+
+import ai.timefold.solver.core.config.heuristic.selector.common.SelectionCacheType;
+import ai.timefold.solver.core.impl.heuristic.move.Move;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
+import ai.timefold.solver.core.impl.heuristic.selector.move.AbstractMoveSelector;
+import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
+
+public final class NeighborhoodsMoveSelector<Solution_> extends AbstractMoveSelector<Solution_> {
+
+    private final NeighborhoodsBasedMoveRepository<Solution_> moveRepository;
+
+    public NeighborhoodsMoveSelector(NeighborhoodsBasedMoveRepository<Solution_> moveRepository) {
+        this.moveRepository = moveRepository;
+    }
+
+    @Override
+    public long getSize() {
+        throw new UnsupportedOperationException("Neighborhood size is not supported by the Neighborhoods API.");
+    }
+
+    @Override
+    public boolean isCountable() {
+        return true;
+    }
+
+    @Override
+    public boolean isNeverEnding() {
+        return moveRepository.isNeverEnding();
+    }
+
+    @Override
+    public SelectionCacheType getCacheType() {
+        return SelectionCacheType.PHASE;
+    }
+
+    @Override
+    public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseStarted(phaseScope);
+        phaseScope.getScoreDirector().setMoveRepository(moveRepository);
+    }
+
+    @Override
+    public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
+        super.phaseEnded(phaseScope);
+        phaseScope.getScoreDirector().setMoveRepository(null);
+    }
+
+    @Override
+    public Iterator<Move<Solution_>> iterator() {
+        return MoveAdapters.toLegacyMove(moveRepository.iterator());
+    }
+}
