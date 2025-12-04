@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution;
+package ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter;
 
 import java.util.ArrayList;
 import java.util.List;

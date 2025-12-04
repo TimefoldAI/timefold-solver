@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.invalid.parameter;
+package ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid;
 
 import java.util.List;
 

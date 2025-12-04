@@ -7,12 +7,12 @@ public abstract class AbstractReadOnlyExtendedGizmoMemberAccessor extends Abstra
     @Override
     public Object executeGetter(Object bean) {
         throw new UnsupportedOperationException(
-                "The method executeGetter(Object) without parameter is not supported. Maybe call executeGetter(Object, Object) from ExtendedMemberAccessor instead.");
+                "Impossible state: the method executeGetter(Object) without parameter is not supported.");
     }
 
     @Override
     public <Fact_, Result_> Function<Fact_, Result_> getGetterFunction() {
-        throw new UnsupportedOperationException("The method getGetterFunction() is not supported.");
+        throw new UnsupportedOperationException("Impossible state: the method getGetterFunction() is not supported.");
     }
 
 }

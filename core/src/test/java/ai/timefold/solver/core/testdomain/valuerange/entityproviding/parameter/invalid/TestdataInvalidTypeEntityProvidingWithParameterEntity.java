@@ -1,4 +1,4 @@
-package ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.invalid.parameter;
+package ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid;
 
 import java.util.List;
 
@@ -8,18 +8,18 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataObject;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.TestdataEntityProvidingWithParameterSolution;
 
 @PlanningEntity
-public class TestdataInvalidCountEntityProvidingWithParameterEntity extends TestdataObject {
+public class TestdataInvalidTypeEntityProvidingWithParameterEntity extends TestdataObject {
 
-    public static EntityDescriptor<TestdataInvalidCountEntityProvidingWithParameterSolution> buildEntityDescriptor() {
-        return TestdataInvalidCountEntityProvidingWithParameterSolution.buildSolutionDescriptor()
-                .findEntityDescriptorOrFail(TestdataInvalidCountEntityProvidingWithParameterEntity.class);
+    public static EntityDescriptor<TestdataInvalidTypeEntityProvidingWithParameterSolution> buildEntityDescriptor() {
+        return TestdataInvalidTypeEntityProvidingWithParameterSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataInvalidTypeEntityProvidingWithParameterEntity.class);
     }
 
-    public static GenuineVariableDescriptor<TestdataInvalidCountEntityProvidingWithParameterSolution>
+    public static GenuineVariableDescriptor<TestdataInvalidTypeEntityProvidingWithParameterSolution>
             buildVariableDescriptorForValueRange() {
         return buildEntityDescriptor().getGenuineVariableDescriptor("valueRange");
     }
@@ -28,15 +28,15 @@ public class TestdataInvalidCountEntityProvidingWithParameterEntity extends Test
 
     private TestdataValue value;
 
-    public TestdataInvalidCountEntityProvidingWithParameterEntity() {
+    public TestdataInvalidTypeEntityProvidingWithParameterEntity() {
         // Required for cloning
     }
 
-    public TestdataInvalidCountEntityProvidingWithParameterEntity(String code, List<TestdataValue> valueRange) {
+    public TestdataInvalidTypeEntityProvidingWithParameterEntity(String code, List<TestdataValue> valueRange) {
         this(code, valueRange, null);
     }
 
-    public TestdataInvalidCountEntityProvidingWithParameterEntity(String code, List<TestdataValue> valueRange,
+    public TestdataInvalidTypeEntityProvidingWithParameterEntity(String code, List<TestdataValue> valueRange,
             TestdataValue value) {
         super(code);
         this.valueRange = valueRange;
@@ -53,8 +53,7 @@ public class TestdataInvalidCountEntityProvidingWithParameterEntity extends Test
     }
 
     @ValueRangeProvider(id = "valueRange")
-    public List<TestdataValue> getValueRange(TestdataEntityProvidingWithParameterSolution solution1,
-            TestdataEntityProvidingWithParameterSolution solution2) {
+    public List<TestdataValue> getValueRange(TestdataSolution solution) {
         return valueRange;
     }
 

@@ -51,7 +51,7 @@ public final class MemberAccessorFactory {
         return switch (domainAccessType) {
             case GIZMO -> GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
                     AccessorInfo.of(memberAccessorType != MemberAccessorType.VOID_METHOD,
-                            memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_PARAMETER),
+                            memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER),
                     (GizmoClassLoader) Objects.requireNonNull(classLoader));
             case REFLECTION -> buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
         };
@@ -64,10 +64,10 @@ public final class MemberAccessorFactory {
         } else if (member instanceof Method method) {
             MemberAccessor memberAccessor;
             switch (memberAccessorType) {
-                case FIELD_OR_READ_METHOD, FIELD_OR_READ_METHOD_WITH_PARAMETER:
+                case FIELD_OR_READ_METHOD, FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER:
                     if (!ReflectionHelper.isGetterMethod(method)) {
                         boolean methodWithParameter =
-                                memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_PARAMETER
+                                memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER
                                         && method.getParameterCount() > 0;
                         if (annotationClass == null) {
                             ReflectionHelper.assertReadMethod(method, methodWithParameter);
@@ -171,7 +171,7 @@ public final class MemberAccessorFactory {
 
     public enum MemberAccessorType {
         FIELD_OR_READ_METHOD,
-        FIELD_OR_READ_METHOD_WITH_PARAMETER,
+        FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
         FIELD_OR_GETTER_METHOD,
         FIELD_OR_GETTER_METHOD_WITH_SETTER,
         VOID_METHOD
