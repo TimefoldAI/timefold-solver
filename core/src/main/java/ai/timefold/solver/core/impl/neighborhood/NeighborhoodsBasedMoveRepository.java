@@ -28,7 +28,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
     private final boolean random;
 
     private @Nullable DefaultNeighborhoodSession<Solution_> neighborhoodSession;
-    private @Nullable MoveIterable<Solution_>[] moveIterableArray;
+    private @Nullable List<MoveIterable<Solution_>> moveIterableList;
     private @Nullable Random workingRandom;
 
     public NeighborhoodsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
@@ -53,9 +53,9 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
         neighborhoodSession = moveStreamFactory.createSession(context);
         moveStreamFactory.getSolutionDescriptor().visitAll(context.workingSolution(), neighborhoodSession::insert);
         neighborhoodSession.settle();
-        moveIterableArray = moveStreamList.stream()
+        moveIterableList = moveStreamList.stream()
                 .map(m -> m.getMoveIterable(neighborhoodSession))
-                .toArray(MoveIterable[]::new);
+                .toList();
     }
 
     public void insert(Object planningEntityOrProblemFact) {
@@ -77,7 +77,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
 
     @Override
     public void phaseStarted(AbstractPhaseScope<Solution_> phaseScope) {
-        this.workingRandom = phaseScope.getWorkingRandom();
+        workingRandom = phaseScope.getWorkingRandom();
         phaseScope.getScoreDirector().setMoveRepository(this);
     }
 
@@ -88,7 +88,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
 
     @Override
     public void stepEnded(AbstractStepScope<Solution_> stepScope) {
-        Objects.requireNonNull(neighborhoodSession).settle();
+        neighborhoodSession.settle(); // The step will have made changes to the working memory; settle it again.
     }
 
     @Override
@@ -106,9 +106,9 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
     @Override
     public Iterator<Move<Solution_>> iterator() {
         if (random) {
-            return new RandomOrderNeighborhoodIterator<>(Objects.requireNonNull(workingRandom), moveIterableArray);
+            return new RandomOrderNeighborhoodIterator<>(moveIterableList, Objects.requireNonNull(workingRandom));
         } else {
-            return new OriginalOrderNeighborhoodIterator<>(moveIterableArray);
+            return new OriginalOrderNeighborhoodIterator<>(moveIterableList);
         }
     }
 

@@ -1,6 +1,5 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -16,13 +15,13 @@ import org.jspecify.annotations.Nullable;
 @NullMarked
 final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<Solution_>> {
 
-    private final List<Iterator<Move<Solution_>>> moveIterators;
+    private final List<Iterator<Move<Solution_>>> unexhaustedMoveIteratorList;
     private final Random workingRandom;
 
     private @Nullable Iterator<Move<Solution_>> currentMoveIterator;
 
-    public RandomOrderNeighborhoodIterator(Random workingRandom, MoveIterable<Solution_>... moveIterables) {
-        this.moveIterators = Arrays.stream(moveIterables)
+    public RandomOrderNeighborhoodIterator(List<MoveIterable<Solution_>> moveIterableList, Random workingRandom) {
+        this.unexhaustedMoveIteratorList = moveIterableList.stream()
                 .map(m -> m.iterator(workingRandom))
                 .collect(Collectors.toList());
         this.workingRandom = workingRandom;
@@ -30,13 +29,13 @@ final class RandomOrderNeighborhoodIterator<Solution_> implements Iterator<Move<
 
     @Override
     public boolean hasNext() {
-        while (!moveIterators.isEmpty()) {
-            var randomIndex = workingRandom.nextInt(moveIterators.size());
-            currentMoveIterator = moveIterators.get(randomIndex);
+        while (!unexhaustedMoveIteratorList.isEmpty()) {
+            var randomIndex = workingRandom.nextInt(unexhaustedMoveIteratorList.size());
+            currentMoveIterator = unexhaustedMoveIteratorList.get(randomIndex);
             if (currentMoveIterator.hasNext()) {
                 return true;
             } else {
-                moveIterators.remove(randomIndex);
+                unexhaustedMoveIteratorList.remove(randomIndex);
             }
         }
         return false;
