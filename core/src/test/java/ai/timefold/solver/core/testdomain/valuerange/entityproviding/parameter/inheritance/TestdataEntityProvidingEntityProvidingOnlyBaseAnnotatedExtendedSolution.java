@@ -9,14 +9,19 @@ import ai.timefold.solver.core.api.score.buildin.simple.SimpleScore;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
-public class TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution extends TestdataEntityProvidingOnlyBaseAnnotatedSolution {
+public class TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution
+        extends TestdataEntityProvidingOnlyBaseAnnotatedSolution {
 
-    public static SolutionDescriptor<TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution> buildSolutionDescriptor() {
-        return SolutionDescriptor.buildSolutionDescriptor(TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class,
-                TestdataEntityProvidingOnlyBaseAnnotatedBaseEntity.class, TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class);
+    public static SolutionDescriptor<TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution>
+            buildSolutionDescriptor() {
+        return SolutionDescriptor.buildSolutionDescriptor(
+                TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class,
+                TestdataEntityProvidingOnlyBaseAnnotatedBaseEntity.class,
+                TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class);
     }
 
-    public static TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution generateSolution(int valueListSize, int entityListSize) {
+    public static TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution generateSolution(int valueListSize,
+            int entityListSize) {
         var solution = new TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution("s1");
         var valueList = new ArrayList<TestdataValue>(valueListSize);
         for (int i = 0; i < valueListSize; i++) {

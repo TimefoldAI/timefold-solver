@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance;
 
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
@@ -9,15 +11,14 @@ import ai.timefold.solver.core.testdomain.TestdataObject;
 import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 
-import java.util.List;
-
 @PlanningEntity
 public class TestdataEntityProvidingOnlyBaseAnnotatedBaseEntity extends TestdataObject {
 
     public static final String VALUE_FIELD = "value";
 
     public static EntityDescriptor<TestdataSolution> buildEntityDescriptor() {
-        return TestdataSolution.buildSolutionDescriptor().findEntityDescriptorOrFail(TestdataEntityProvidingOnlyBaseAnnotatedBaseEntity.class);
+        return TestdataSolution.buildSolutionDescriptor()
+                .findEntityDescriptorOrFail(TestdataEntityProvidingOnlyBaseAnnotatedBaseEntity.class);
     }
 
     public static GenuineVariableDescriptor<TestdataSolution> buildVariableDescriptorForValue() {

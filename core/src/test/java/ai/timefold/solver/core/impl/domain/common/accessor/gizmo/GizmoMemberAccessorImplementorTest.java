@@ -9,9 +9,7 @@ import ai.timefold.solver.core.api.domain.entity.PlanningPin;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
-import ai.timefold.solver.core.impl.domain.common.accessor.ReflectionMethodExtendedMemberAccessor;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
-import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.gizmo.GizmoTestdataEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
@@ -20,7 +18,6 @@ import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.i
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedChildEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingOnlyBaseAnnotatedSolution;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidCountEntityProvidingWithParameterEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterEntity;
 import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
 
 import org.junit.jupiter.api.Test;
