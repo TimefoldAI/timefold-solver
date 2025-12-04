@@ -4,10 +4,10 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
-import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveIteratorFactory;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListChangeMoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.IterableValueSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.FilteringValueSelector;
@@ -59,7 +59,7 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
             if (!moveIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return new Placement<>(MoveIteratorFactory.adaptIterator(moveIterator));
+            return new Placement<>(MoveAdapters.toNewMove(moveIterator));
         }
 
     }
