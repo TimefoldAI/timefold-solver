@@ -1,5 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
+import java.util.Iterator;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
@@ -23,12 +24,28 @@ public final class MoveAdapters {
         return new LegacyMoveAdapter<>(legacyMove);
     }
 
+    public static <Solution_> Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>>
+            toNewMove(Iterator<Move<Solution_>> legacyIterator) {
+        if (legacyIterator instanceof NewIteratorAdapter<Solution_> newIteratorAdapter) {
+            return newIteratorAdapter.moveIterator();
+        }
+        return new LegacyIteratorAdapter<>(legacyIterator);
+    }
+
     public static <Solution_> ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>
             toLegacyMove(ai.timefold.solver.core.preview.api.move.Move<Solution_> newMove) {
         if (newMove instanceof LegacyMoveAdapter<Solution_> legacyMoveAdapter) {
             return legacyMoveAdapter.legacyMove();
         }
         return new NewMoveAdapter<>(newMove);
+    }
+
+    public static <Solution_> Iterator<ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>>
+            toLegacyMove(Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>> newIterator) {
+        if (newIterator instanceof LegacyIteratorAdapter<Solution_> legacyIteratorAdapter) {
+            return legacyIteratorAdapter.moveIterator();
+        }
+        return new NewIteratorAdapter<>(newIterator);
     }
 
     /**
