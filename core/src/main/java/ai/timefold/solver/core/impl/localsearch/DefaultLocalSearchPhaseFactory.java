@@ -99,13 +99,12 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
     private LocalSearchDecider<Solution_> buildNeighborhoodsBasedDecider(HeuristicConfigPolicy<Solution_> configPolicy,
             PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
-        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, termination, neighborhoodProviderClass),
+        return buildDecider(buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass),
                 configPolicy, termination);
     }
 
     private NeighborhoodsBasedMoveRepository<Solution_> buildNeighborhoodsBasedMoveRepository(
             HeuristicConfigPolicy<Solution_> configPolicy,
-            PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
         var solutionDescriptor = configPolicy.getSolutionDescriptor();
         var solutionMetaModel = solutionDescriptor.getMetaModel();
@@ -139,7 +138,7 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
             PhaseTermination<Solution_> termination,
             Class<? extends NeighborhoodProvider<Solution_>> neighborhoodProviderClass) {
         var neighborhoodsMoveSelector = new NeighborhoodsMoveSelector<>(
-                buildNeighborhoodsBasedMoveRepository(configPolicy, termination, neighborhoodProviderClass));
+                buildNeighborhoodsBasedMoveRepository(configPolicy, neighborhoodProviderClass));
         var legacyMoveSelector = buildMoveSelector(configPolicy);
         if (legacyMoveSelector instanceof UnionMoveSelector<Solution_> unionMoveSelector) {
             if (unionMoveSelector.getSelectorProbabilityWeightFactory() != null) {
