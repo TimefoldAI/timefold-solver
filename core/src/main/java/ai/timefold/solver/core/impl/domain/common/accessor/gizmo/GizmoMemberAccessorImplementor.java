@@ -506,6 +506,8 @@ public final class GizmoMemberAccessorImplementor {
             builder.returning(Object.class);
             var bean = builder.parameter("bean", Object.class);
             var value = builder.parameter("value", Object.class);
+            memberInfo.descriptor().whenIsMethod(
+                    md -> assertIsGoodMethod(md, memberInfo.returnTypeRequired(), memberInfo.readMethodWithParameter()));
             builder.body(blockCreator -> {
                 var castedBean =
                         blockCreator.localVar("castedBean", ClassDesc.of(memberInfo.descriptor().getDeclaringClassName()),

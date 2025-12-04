@@ -10,12 +10,14 @@ import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.testdomain.TestdataEntity;
+import ai.timefold.solver.core.testdomain.TestdataSolution;
 import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.gizmo.GizmoTestdataEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.TestdataEntityProvidingWithParameterEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.TestdataEntityProvidingWithParameterSolution;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.invalid.parameter.TestdataInvalidCountEntityProvidingWithParameterEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.invalid.parameter.TestdataInvalidTypeEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidCountEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -226,17 +228,39 @@ class GizmoMemberAccessorImplementorTest {
     }
 
     @Test
-    void testInvalidReadMethodWithParameter() {
-        assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
+    void invalidEntityReadMethodWithParameter() throws NoSuchMethodException {
+        var member = TestdataInvalidTypeEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
+                TestdataSolution.class);
+        assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
+                AccessorInfo.of(true, false),
+                new GizmoClassLoader()))
                 .hasMessageContaining(
-                        "The parameter type (ai.timefold.solver.core.testdomain.TestdataSolution) of the method (getValueRange) must match the solution (TestdataInvalidTypeEntityProvidingWithParameterSolution).");
-        assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
-                .hasMessageContaining("The readMethod")
-                .hasMessageContaining("with a ValueRangeProvider annotation must have only one parameter");
+                        "The getterMethod (getValueRange) with a ValueRangeProvider annotation must not have any parameters")
+                .hasMessageContaining("but has parameters ([Lai/timefold/solver/core/testdomain/TestdataSolution;])");
+
+        var otherMember = TestdataInvalidCountEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
+                TestdataEntityProvidingWithParameterSolution.class, TestdataEntityProvidingWithParameterSolution.class);
+        assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(otherMember, ValueRangeProvider.class,
+                AccessorInfo.of(true, true),
+                new GizmoClassLoader()))
+                .hasMessageContaining(
+                        "The getterMethod (getValueRange) must have only one parameter");
     }
 
     @Test
-    void testForbiddenReadWithoutParameter() throws NoSuchMethodException {
+    void invalidSolutionReadMethodWithParameter() throws NoSuchMethodException {
+        var member = TestdataInvalidParameterSolution.class.getMethod("getValueList",
+                TestdataInvalidParameterSolution.class);
+        assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
+                AccessorInfo.of(true, false),
+                new GizmoClassLoader()))
+                .hasMessageContaining(
+                        "The getterMethod (getValueList) with a ValueRangeProvider annotation must not have any parameters")
+                .hasMessageContaining("but has parameters ([Lai/timefold/solver/core/testdomain/valuerange/parameter/invalid/TestdataInvalidParameterSolution;])");
+    }
+
+    @Test
+    void testForbiddenEntityReadWithoutParameter() throws NoSuchMethodException {
         var member = TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                 TestdataEntityProvidingWithParameterSolution.class);
         var instance = GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
@@ -244,8 +268,9 @@ class GizmoMemberAccessorImplementorTest {
                 new GizmoClassLoader());
         assertThatCode(() -> instance.executeGetter(new TestdataEntityProvidingWithParameterEntity()))
                 .hasMessage(
-                        "The method executeGetter(Object) without parameter is not supported. Maybe call executeGetter(Object, Object) from ExtendedMemberAccessor instead.");
+                        "Impossible state: the method executeGetter(Object) without parameter is not supported.");
         assertThatCode(instance::getGetterFunction)
-                .hasMessage("The method getGetterFunction() is not supported.");
+                .hasMessage("Impossible state: the method getGetterFunction() is not supported.");
     }
+
 }

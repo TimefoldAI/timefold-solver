@@ -7,8 +7,11 @@ import java.util.List;
 
 import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.testdomain.TestdataValue;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.TestdataEntityProvidingWithParameterEntity;
-import ai.timefold.solver.core.testdomain.valuerange.entityproviding.solution.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidCountEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterEntity;
+import ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -35,19 +38,38 @@ class ReflectionMethodExtendedMemberAccessorTest {
     }
 
     @Test
-    void forbiddenReadWithoutParameter() {
+    void invalidEntityReadMethodWithParameter() {
+        assertThatCode(TestdataInvalidTypeEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
+                .hasMessageContaining("The parameter type (ai.timefold.solver.core.testdomain.TestdataSolution)")
+                .hasMessageContaining(
+                        "of the method (getValueRange) must match the solution (ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.invalid.TestdataInvalidTypeEntityProvidingWithParameterSolution).");
+        assertThatCode(TestdataInvalidCountEntityProvidingWithParameterEntity::buildVariableDescriptorForValueRange)
+                .hasMessageContaining("The readMethod")
+                .hasMessageContaining("with a ValueRangeProvider annotation must have only one parameter");
+    }
+
+    @Test
+    void invalidSolutionReadMethodWithParameter() {
+        assertThatCode(TestdataInvalidParameterSolution::buildSolutionDescriptor)
+                .hasMessageContainingAll(
+                        "The readMethod (public java.util.List ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution.getValueList(ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution))")
+                .hasMessageContainingAll(
+                        " with a ValueRangeProvider annotation must not have any parameters ([class ai.timefold.solver.core.testdomain.valuerange.parameter.invalid.TestdataInvalidParameterSolution]).");
+    }
+
+    @Test
+    void forbiddenEntityReadWithoutParameter() {
         assertThatCode(() -> new ReflectionMethodExtendedMemberAccessor(
                 TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                         TestdataEntityProvidingWithParameterSolution.class),
                 true).executeGetter(new TestdataEntityProvidingWithParameterEntity()))
                 .hasMessageContainingAll(
-                        "The method executeGetter(Object) without parameter is not supported. Maybe call executeGetter(Object, Object) from ExtendedMemberAccessor instead.");
+                        "Impossible state: the method executeGetter(Object) without parameter is not supported.");
         assertThatCode(() -> new ReflectionMethodExtendedMemberAccessor(
                 TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                         TestdataEntityProvidingWithParameterSolution.class),
                 true).getGetterFunction())
                 .hasMessageContainingAll(
-                        "The method getGetterFunction() is not supported.");
+                        "Impossible state: the method getGetterFunction() is not supported.");
     }
-
 }
