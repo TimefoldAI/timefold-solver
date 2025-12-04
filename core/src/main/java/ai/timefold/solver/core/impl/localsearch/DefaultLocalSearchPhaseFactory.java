@@ -41,7 +41,6 @@ import ai.timefold.solver.core.impl.neighborhood.MoveSelectorBasedMoveRepository
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsMoveSelector;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodProvider;
-import ai.timefold.solver.core.impl.neighborhood.move.InnerMoveStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhood;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodBuilder;
@@ -129,17 +128,10 @@ public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFact
                 ConfigUtils.newInstance(LocalSearchPhaseConfig.class::getSimpleName, "neighborhoodProviderClass",
                         neighborhoodProviderClass);
         var neighborhoodBuilder = new DefaultNeighborhoodBuilder<>(solutionMetaModel);
+        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
         var moveDefinitionList = ((DefaultNeighborhood<Solution_>) neighborhoodProvider.defineNeighborhood(neighborhoodBuilder))
                 .getMoveDefinitionList();
-        if (moveDefinitionList.size() != 1) {
-            throw new IllegalArgumentException(
-                    "The neighborhoodProviderClass (%s) must define exactly one MoveDefinition, not %s."
-                            .formatted(neighborhoodProviderClass, moveDefinitionList.size()));
-        }
-        var moveDefinition = moveDefinitionList.get(0);
-        var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, configPolicy.getEnvironmentMode());
-        var moveStream = (InnerMoveStream<Solution_>) moveDefinition.build(moveStreamFactory);
-        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, moveStream,
+        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, moveDefinitionList,
                 pickSelectionOrder() == SelectionOrder.RANDOM);
     }
 

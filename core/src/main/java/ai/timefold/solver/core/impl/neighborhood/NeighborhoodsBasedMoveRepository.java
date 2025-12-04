@@ -1,10 +1,11 @@
 package ai.timefold.solver.core.impl.neighborhood;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
+import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
 import ai.timefold.solver.core.impl.neighborhood.move.InnerMoveStream;
 import ai.timefold.solver.core.impl.neighborhood.move.MoveIterable;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
@@ -23,17 +24,19 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
         implements MoveRepository<Solution_> {
 
     private final DefaultMoveStreamFactory<Solution_> moveStreamFactory;
-    private final InnerMoveStream<Solution_> moveStream;
+    private final List<InnerMoveStream<Solution_>> moveStreamList;
     private final boolean random;
 
     private @Nullable DefaultNeighborhoodSession<Solution_> neighborhoodSession;
-    private @Nullable MoveIterable<Solution_> moveIterable;
+    private @Nullable MoveIterable<Solution_>[] moveIterableArray;
     private @Nullable Random workingRandom;
 
     public NeighborhoodsBasedMoveRepository(DefaultMoveStreamFactory<Solution_> moveStreamFactory,
-            InnerMoveStream<Solution_> moveStream, boolean random) {
+            List<MoveDefinition<Solution_>> neighborhood, boolean random) {
         this.moveStreamFactory = Objects.requireNonNull(moveStreamFactory);
-        this.moveStream = Objects.requireNonNull(moveStream);
+        this.moveStreamList = Objects.requireNonNull(neighborhood).stream()
+                .map(d -> (InnerMoveStream<Solution_>) d.build(moveStreamFactory))
+                .toList();
         this.random = random;
     }
 
@@ -50,7 +53,9 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
         neighborhoodSession = moveStreamFactory.createSession(context);
         moveStreamFactory.getSolutionDescriptor().visitAll(context.workingSolution(), neighborhoodSession::insert);
         neighborhoodSession.settle();
-        moveIterable = moveStream.getMoveIterable(neighborhoodSession);
+        moveIterableArray = moveStreamList.stream()
+                .map(m -> m.getMoveIterable(neighborhoodSession))
+                .toArray(MoveIterable[]::new);
     }
 
     public void insert(Object planningEntityOrProblemFact) {
@@ -88,9 +93,8 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
 
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
-        if (neighborhoodSession != null) {
-            neighborhoodSession = null;
-        }
+        neighborhoodSession = null;
+        workingRandom = null;
         phaseScope.getScoreDirector().setMoveRepository(null);
     }
 
@@ -101,42 +105,10 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return new NeverendingMoveIterator<>(moveIterable, random ? workingRandom : null);
-    }
-
-    @NullMarked
-    private static final class NeverendingMoveIterator<Solution_> implements Iterator<Move<Solution_>> {
-
-        private final MoveIterable<Solution_> iterable;
-        private final @Nullable Random workingRandom;
-        private Iterator<Move<Solution_>> iterator;
-
-        public NeverendingMoveIterator(MoveIterable<Solution_> iterable, @Nullable Random workingRandom) {
-            this.iterable = Objects.requireNonNull(iterable);
-            this.workingRandom = workingRandom;
-            this.iterator = createIterator();
-        }
-
-        private Iterator<Move<Solution_>> createIterator() {
-            return workingRandom == null ? iterable.iterator() : iterable.iterator(workingRandom);
-        }
-
-        @Override
-        public boolean hasNext() {
-            if (iterator.hasNext()) {
-                return true;
-            }
-            // If exhausted, start all over.
-            iterator = createIterator();
-            return iterator.hasNext();
-        }
-
-        @Override
-        public Move<Solution_> next() {
-            if (!hasNext()) {
-                throw new NoSuchElementException();
-            }
-            return iterator.next();
+        if (random) {
+            return new RandomOrderNeighborhoodIterator<>(Objects.requireNonNull(workingRandom), moveIterableArray);
+        } else {
+            return new OriginalOrderNeighborhoodIterator<>(moveIterableArray);
         }
     }
 

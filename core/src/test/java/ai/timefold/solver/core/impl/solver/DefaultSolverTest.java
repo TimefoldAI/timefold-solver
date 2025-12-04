@@ -241,7 +241,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWithNeighborhoodsAndMoveSelectorsWorks() {
+    void solveWithNeighborhoodsAndMoveSelectors() {
         var solverConfig = new SolverConfig()
                 .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataSolution.class)
