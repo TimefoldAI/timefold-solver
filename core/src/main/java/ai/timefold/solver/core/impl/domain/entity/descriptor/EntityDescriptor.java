@@ -331,7 +331,8 @@ public class EntityDescriptor<Solution_> {
     private void processValueRangeProviderAnnotation(DescriptorPolicy descriptorPolicy, Member member) {
         if (((AnnotatedElement) member).isAnnotationPresent(ValueRangeProvider.class)) {
             var memberAccessor = descriptorPolicy.getMemberAccessorFactory().buildAndCacheMemberAccessor(member,
-                    FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER, ValueRangeProvider.class, descriptorPolicy.getDomainAccessType());
+                    FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER, ValueRangeProvider.class,
+                    descriptorPolicy.getDomainAccessType());
             assertGetterParameterType(memberAccessor);
             descriptorPolicy.addFromEntityValueRangeProvider(memberAccessor);
         }

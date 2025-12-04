@@ -27,7 +27,8 @@ class GizmoMemberAccessorImplementorTest {
     void testGeneratedMemberAccessorForMethod() throws NoSuchMethodException {
         var member = TestdataEntity.class.getMethod("getValue");
         var memberAccessor =
-                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, AccessorInfo.of(true, false),
+                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         new GizmoClassLoader());
         assertThat(memberAccessor.getName()).isEqualTo("value");
         assertThat(memberAccessor.getType()).isEqualTo(TestdataValue.class);
@@ -50,7 +51,8 @@ class GizmoMemberAccessorImplementorTest {
     void testGeneratedMemberAccessorForMethodWithoutSetter() throws NoSuchMethodException {
         var member = GizmoTestdataEntity.class.getMethod("getId");
         var memberAccessor =
-                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningId.class, AccessorInfo.of(true, false),
+                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningId.class,
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         new GizmoClassLoader());
         assertThat(memberAccessor.getName()).isEqualTo("id");
         assertThat(memberAccessor.getType()).isEqualTo(String.class);
@@ -67,7 +69,8 @@ class GizmoMemberAccessorImplementorTest {
     void testGeneratedMemberAccessorForField() throws NoSuchFieldException {
         var member = GizmoTestdataEntity.class.getField("value");
         var memberAccessor =
-                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, AccessorInfo.of(true, false),
+                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         new GizmoClassLoader());
         assertThat(memberAccessor.getName()).isEqualTo("value");
         assertThat(memberAccessor.getType()).isEqualTo(TestdataValue.class);
@@ -91,7 +94,8 @@ class GizmoMemberAccessorImplementorTest {
         System.setProperty("gizmo.debug", "true");
         var member = GizmoTestdataEntity.class.getField("isPinned");
         var memberAccessor =
-                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningPin.class, AccessorInfo.of(true, false),
+                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningPin.class,
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         new GizmoClassLoader());
         assertThat(memberAccessor.getName()).isEqualTo("isPinned");
         assertThat(memberAccessor.getType()).isEqualTo(boolean.class);
@@ -111,10 +115,12 @@ class GizmoMemberAccessorImplementorTest {
         var gizmoClassLoader = new GizmoClassLoader();
         var member = TestdataEntity.class.getMethod("getValue");
         var memberAccessor1 =
-                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, AccessorInfo.of(true, false),
+                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         gizmoClassLoader);
         var memberAccessor2 =
-                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, AccessorInfo.of(true, false),
+                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         gizmoClassLoader);
 
         assertThat(memberAccessor1.getClass()).isEqualTo(memberAccessor2.getClass());
@@ -147,7 +153,8 @@ class GizmoMemberAccessorImplementorTest {
     void testThrowsWhenGetterMethodHasParameters() throws NoSuchMethodException {
         var member = GizmoTestdataEntity.class.getMethod("methodWithParameters", String.class);
         assertThatCode(() -> {
-            GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, AccessorInfo.of(true, false),
+            GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
+                    AccessorInfo.withReturnValueAndNoArguments(),
                     new GizmoClassLoader());
         }).hasMessage("The getterMethod (methodWithParameters) with a PlanningVariable annotation " +
                 "must not have any parameters, but has parameters ([Ljava/lang/String;]).");
@@ -157,7 +164,8 @@ class GizmoMemberAccessorImplementorTest {
     void testThrowsWhenGetterMethodReturnVoid() throws NoSuchMethodException {
         var member = GizmoTestdataEntity.class.getMethod("getVoid");
         assertThatCode(() -> {
-            GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, AccessorInfo.of(true, false),
+            GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
+                    AccessorInfo.withReturnValueAndNoArguments(),
                     new GizmoClassLoader());
         }).hasMessage("The getterMethod (getVoid) with a PlanningVariable annotation must have a non-void return type.");
     }
@@ -166,7 +174,8 @@ class GizmoMemberAccessorImplementorTest {
     void testThrowsWhenReadMethodReturnVoid() throws NoSuchMethodException {
         var member = GizmoTestdataEntity.class.getMethod("voidMethod");
         assertThatCode(() -> {
-            GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class, AccessorInfo.of(true, false),
+            GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
+                    AccessorInfo.withReturnValueAndNoArguments(),
                     new GizmoClassLoader());
         }).hasMessage("The readMethod (voidMethod) with a PlanningVariable annotation must have a non-void return type.");
     }
@@ -175,7 +184,8 @@ class GizmoMemberAccessorImplementorTest {
     void testGeneratedMemberAccessorForBooleanMethod() throws NoSuchMethodException {
         var member = GizmoTestdataEntity.class.getMethod("isPinned");
         var memberAccessor =
-                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningPin.class, AccessorInfo.of(true, false),
+                GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningPin.class,
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         new GizmoClassLoader());
         assertThat(memberAccessor.getName()).isEqualTo("pinned");
         assertThat(memberAccessor.getType()).isEqualTo(boolean.class);
@@ -196,7 +206,7 @@ class GizmoMemberAccessorImplementorTest {
         var member = GizmoTestdataEntity.class.getMethod("isAMethodThatHasABadName");
         assertThatCode(
                 () -> GizmoMemberAccessorImplementor.createAccessorFor(member, PlanningVariable.class,
-                        AccessorInfo.of(true, false),
+                        AccessorInfo.withReturnValueAndNoArguments(),
                         new GizmoClassLoader()))
                 .hasMessage("""
                         The getterMethod (isAMethodThatHasABadName) with a PlanningVariable annotation \
@@ -210,7 +220,7 @@ class GizmoMemberAccessorImplementorTest {
         var member = TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                 TestdataEntityProvidingWithParameterSolution.class);
         var instance = GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
-                AccessorInfo.of(true, true),
+                AccessorInfo.withReturnValueAndArguments(),
                 new GizmoClassLoader());
         assertThat(instance.getName()).isEqualTo("getValueRange");
         assertThat(instance.getType()).isEqualTo(List.class);
@@ -232,7 +242,7 @@ class GizmoMemberAccessorImplementorTest {
         var member = TestdataInvalidTypeEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                 TestdataSolution.class);
         assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
-                AccessorInfo.of(true, false),
+                AccessorInfo.withReturnValueAndNoArguments(),
                 new GizmoClassLoader()))
                 .hasMessageContaining(
                         "The getterMethod (getValueRange) with a ValueRangeProvider annotation must not have any parameters")
@@ -241,7 +251,7 @@ class GizmoMemberAccessorImplementorTest {
         var otherMember = TestdataInvalidCountEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                 TestdataEntityProvidingWithParameterSolution.class, TestdataEntityProvidingWithParameterSolution.class);
         assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(otherMember, ValueRangeProvider.class,
-                AccessorInfo.of(true, true),
+                AccessorInfo.withReturnValueAndArguments(),
                 new GizmoClassLoader()))
                 .hasMessageContaining(
                         "The getterMethod (getValueRange) must have only one parameter");
@@ -252,11 +262,12 @@ class GizmoMemberAccessorImplementorTest {
         var member = TestdataInvalidParameterSolution.class.getMethod("getValueList",
                 TestdataInvalidParameterSolution.class);
         assertThatCode(() -> GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
-                AccessorInfo.of(true, false),
+                AccessorInfo.withReturnValueAndNoArguments(),
                 new GizmoClassLoader()))
                 .hasMessageContaining(
                         "The getterMethod (getValueList) with a ValueRangeProvider annotation must not have any parameters")
-                .hasMessageContaining("but has parameters ([Lai/timefold/solver/core/testdomain/valuerange/parameter/invalid/TestdataInvalidParameterSolution;])");
+                .hasMessageContaining(
+                        "but has parameters ([Lai/timefold/solver/core/testdomain/valuerange/parameter/invalid/TestdataInvalidParameterSolution;])");
     }
 
     @Test
@@ -264,7 +275,7 @@ class GizmoMemberAccessorImplementorTest {
         var member = TestdataEntityProvidingWithParameterEntity.class.getMethod("getValueRange",
                 TestdataEntityProvidingWithParameterSolution.class);
         var instance = GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
-                AccessorInfo.of(true, true),
+                AccessorInfo.withReturnValueAndArguments(),
                 new GizmoClassLoader());
         assertThatCode(() -> instance.executeGetter(new TestdataEntityProvidingWithParameterEntity()))
                 .hasMessage(

@@ -8,6 +8,14 @@ package ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
  */
 public record AccessorInfo(boolean returnTypeRequired, boolean readMethodWithParameter) {
 
+    public static AccessorInfo withReturnValueAndNoArguments() {
+        return new AccessorInfo(true, false);
+    }
+
+    public static AccessorInfo withReturnValueAndArguments() {
+        return new AccessorInfo(true, true);
+    }
+
     public static AccessorInfo of(boolean returnTypeRequired, boolean readMethodWithParameter) {
         return new AccessorInfo(returnTypeRequired, readMethodWithParameter);
     }

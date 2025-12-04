@@ -1061,7 +1061,7 @@ class TimefoldProcessor {
                                         classInfo.name().toString()));
                     }
                     buildMethodAccessor(annotatedMember, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
-                            classInfo, methodInfo, AccessorInfo.of(true, false), transformers);
+                            classInfo, methodInfo, AccessorInfo.withReturnValueAndNoArguments(), transformers);
                 }
             }
             // The ConstraintWeightOverrides field is not annotated, but it needs a member accessor
@@ -1083,7 +1083,8 @@ class TimefoldProcessor {
                         .orElse(null);
                 if (constraintMethodInfo != null) {
                     buildMethodAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer,
-                            classOutput, solutionClassInfo, constraintMethodInfo, AccessorInfo.of(true, false), transformers);
+                            classOutput, solutionClassInfo, constraintMethodInfo, AccessorInfo.withReturnValueAndNoArguments(),
+                            transformers);
                 } else {
                     buildFieldAccessor(solutionClassInstance, generatedMemberAccessorsClassNameSet, entityEnhancer, classOutput,
                             solutionClassInfo, constraintFieldInfo, transformers);

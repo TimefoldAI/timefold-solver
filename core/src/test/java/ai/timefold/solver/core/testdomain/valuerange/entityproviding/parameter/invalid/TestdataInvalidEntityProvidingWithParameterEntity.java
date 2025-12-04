@@ -23,7 +23,7 @@ public class TestdataInvalidEntityProvidingWithParameterEntity extends TestdataO
     }
 
     public TestdataInvalidEntityProvidingWithParameterEntity(String code, List<TestdataValue> valueRange,
-                                                             TestdataValue value) {
+            TestdataValue value) {
         super(code);
         this.valueRange = valueRange;
         this.value = value;
