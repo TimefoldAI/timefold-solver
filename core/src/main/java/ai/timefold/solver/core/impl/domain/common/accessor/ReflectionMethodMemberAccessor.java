@@ -11,7 +11,8 @@ import java.util.Arrays;
  * A {@link MemberAccessor} based on a single read {@link Method}.
  * Do not confuse with {@link ReflectionBeanPropertyMemberAccessor} which is richer.
  */
-public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor {
+public sealed class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
+        permits ReflectionMethodExtendedMemberAccessor {
 
     private final Class<?> returnType;
     private final String methodName;
@@ -19,10 +20,10 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
     private final MethodHandle methodHandle;
 
     public ReflectionMethodMemberAccessor(Method readMethod) {
-        this(readMethod, true);
+        this(readMethod, true, false);
     }
 
-    public ReflectionMethodMemberAccessor(Method readMethod, boolean returnTypeRequired) {
+    public ReflectionMethodMemberAccessor(Method readMethod, boolean returnTypeRequired, boolean readMethodWithParameter) {
         this.readMethod = readMethod;
         this.returnType = readMethod.getReturnType();
         this.methodName = readMethod.getName();
@@ -37,13 +38,17 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
                     %s
                     """.formatted(readMethod, MemberAccessorFactory.CLASSLOADER_NUDGE_MESSAGE), e);
         }
-        if (readMethod.getParameterTypes().length != 0) {
-            throw new IllegalArgumentException("The readMethod (" + readMethod + ") must not have any parameters ("
-                    + Arrays.toString(readMethod.getParameterTypes()) + ").");
+        if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
+            throw new IllegalArgumentException("The readMethod (%s) must not have any parameters (%s).".formatted(readMethod,
+                    Arrays.toString(readMethod.getParameterTypes())));
+        }
+        if (readMethodWithParameter && readMethod.getParameterCount() > 1) {
+            throw new IllegalArgumentException("The readMethod (%s) must have only one parameter (%s).".formatted(readMethod,
+                    Arrays.toString(readMethod.getParameterTypes())));
         }
         if (returnTypeRequired && readMethod.getReturnType() == void.class) {
-            throw new IllegalArgumentException("The readMethod (" + readMethod + ") must have a return type ("
-                    + readMethod.getReturnType() + ").");
+            throw new IllegalArgumentException(
+                    "The readMethod (%s) must have a return type (%s).".formatted(readMethod, readMethod.getReturnType()));
         }
     }
 
@@ -65,6 +70,14 @@ public final class ReflectionMethodMemberAccessor extends AbstractMemberAccessor
     @Override
     public Type getGenericType() {
         return readMethod.getGenericReturnType();
+    }
+
+    Method getReadMethod() {
+        return readMethod;
+    }
+
+    MethodHandle getMethodHandle() {
+        return methodHandle;
     }
 
     @Override

@@ -108,9 +108,23 @@ public abstract non-sealed class AbstractFromPropertyValueRangeDescriptor<Soluti
         return countable;
     }
 
+    protected <Value_> CountableValueRange<Value_> readValueRangeForSolution(Solution_ solution) {
+        Object valueRangeObject = memberAccessor.executeGetter(solution);
+        return processValueRange(valueRangeObject, solution);
+    }
+
     @SuppressWarnings("unchecked")
-    protected <Value_> CountableValueRange<Value_> readValueRange(Object bean) {
-        Object valueRangeObject = memberAccessor.executeGetter(bean);
+    protected <Value_> CountableValueRange<Value_> readValueRange(Object bean, Object parameter) {
+        Object valueRangeObject;
+        if (memberAccessor.acceptsParameter()) {
+            valueRangeObject = memberAccessor.executeGetter(bean, parameter);
+        } else {
+            valueRangeObject = memberAccessor.executeGetter(bean);
+        }
+        return processValueRange(valueRangeObject, bean);
+    }
+
+    protected <Value_> CountableValueRange<Value_> processValueRange(Object valueRangeObject, Object bean) {
         if (valueRangeObject == null) {
             throw new IllegalStateException(
                     "The @%s-annotated member (%s) called on bean (%s) must not return a null valueRangeObject (%s)."

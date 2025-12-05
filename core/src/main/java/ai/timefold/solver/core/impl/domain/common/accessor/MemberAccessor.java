@@ -15,6 +15,7 @@ import java.util.function.Function;
  * @see ReflectionBeanPropertyMemberAccessor
  * @see ReflectionFieldMemberAccessor
  * @see ReflectionMethodMemberAccessor
+ * @see ReflectionMethodExtendedMemberAccessor
  */
 public interface MemberAccessor {
 
@@ -42,6 +43,20 @@ public interface MemberAccessor {
      * @return never null, a constant reference to {@link #executeGetter(Object)}
      */
     <Fact_, Result_> Function<Fact_, Result_> getGetterFunction();
+
+    /**
+     * @return returns the parameter type if the getter accepts a parameter, or null otherwise.
+     */
+    Type getGetterMethodParameterType();
+
+    /**
+     * Differs from {@link #executeGetter(Object)} in that it accepts a single parameter.
+     */
+    Object executeGetter(Object bean, Object value);
+
+    default boolean acceptsParameter() {
+        return getGetterMethodParameterType() != null;
+    }
 
     boolean supportSetter();
 

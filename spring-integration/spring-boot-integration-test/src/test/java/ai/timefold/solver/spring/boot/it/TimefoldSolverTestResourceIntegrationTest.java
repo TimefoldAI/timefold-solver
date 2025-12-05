@@ -34,13 +34,15 @@ class TimefoldSolverTestResourceIntegrationTest {
                 .baseUrl("http://localhost:" + port + "/integration-test")
                 .build();
 
+        var firstEntity = new IntegrationTestEntity("0");
+        firstEntity.setValueList(List.of(new IntegrationTestValue("1"), new IntegrationTestValue("2")));
+        var secondEntity = new IntegrationTestEntity("1");
+        secondEntity.setValueList(List.of(new IntegrationTestValue("1"), new IntegrationTestValue("2")));
+        var thirdEntity = new IntegrationTestEntity("2");
+        thirdEntity.setValueList(List.of(new IntegrationTestValue("1"), new IntegrationTestValue("2")));
         IntegrationTestSolution problem = new IntegrationTestSolution(
-                List.of(new IntegrationTestEntity("0"),
-                        new IntegrationTestEntity("1"),
-                        new IntegrationTestEntity("2")),
-                List.of(new IntegrationTestValue("0"),
-                        new IntegrationTestValue("1"),
-                        new IntegrationTestValue("2")));
+                List.of(firstEntity, secondEntity, thirdEntity),
+                List.of(new IntegrationTestValue("0")));
         client.post()
                 .bodyValue(problem)
                 .exchange()

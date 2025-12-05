@@ -36,6 +36,11 @@ final class GizmoFieldHandler implements GizmoMemberHandler {
     }
 
     @Override
+    public Expr readMemberValue(BlockCreator bytecodeCreator, Expr thisObj, Expr parameter) {
+        throw new IllegalStateException("Cannot pass a parameter when reading member value.");
+    }
+
+    @Override
     public boolean writeMemberValue(MethodDesc setter, BlockCreator bytecodeCreator, Expr thisObj,
             Expr newValue) {
         if (canBeWritten) {

@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import jakarta.inject.Inject;
@@ -35,10 +36,13 @@ public class TimefoldTestResource {
 
     private static TestdataStringLengthShadowSolution generateProblem() {
         var planningProblem = new TestdataStringLengthShadowSolution();
-        planningProblem.setEntityList(Arrays.asList(
-                new TestdataStringLengthShadowEntity(),
-                new TestdataStringLengthShadowEntity()));
-        planningProblem.setValueList(Arrays.asList("a", "bb", "ccc"));
+        var firstEntity = new TestdataStringLengthShadowEntity();
+        firstEntity.setValueList(List.of("ccc"));
+        var secondEntity = new TestdataStringLengthShadowEntity();
+        secondEntity.setValueList(List.of("ccc"));
+        planningProblem.setEntityList(Arrays.asList(firstEntity, secondEntity));
+        planningProblem.setValueList(Arrays.asList("a", "bb"));
+
         return planningProblem;
     }
 

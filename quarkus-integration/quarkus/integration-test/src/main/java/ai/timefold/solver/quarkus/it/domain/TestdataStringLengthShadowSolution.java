@@ -7,16 +7,15 @@ import ai.timefold.solver.core.api.domain.solution.ConstraintWeightOverrides;
 import ai.timefold.solver.core.api.domain.solution.PlanningEntityCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 
 @PlanningSolution
 public class TestdataStringLengthShadowSolution {
 
-    @ValueRangeProvider(id = "valueRange")
-    private List<String> valueList;
     @PlanningEntityCollectionProperty
     private List<TestdataStringLengthShadowEntityInterface> entityList;
+
+    private List<String> valueList;
 
     ConstraintWeightOverrides<HardSoftScore> constraintWeightOverrides = ConstraintWeightOverrides.of(
             Map.of("Don't assign 2 entities the same value.", HardSoftScore.ofHard(1)));

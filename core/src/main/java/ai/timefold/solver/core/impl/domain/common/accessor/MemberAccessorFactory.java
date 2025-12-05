@@ -11,6 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import ai.timefold.solver.core.api.domain.common.DomainAccessType;
 import ai.timefold.solver.core.api.solver.SolverFactory;
 import ai.timefold.solver.core.impl.domain.common.ReflectionHelper;
+import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.AccessorInfo;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoClassLoader;
 import ai.timefold.solver.core.impl.domain.common.accessor.gizmo.GizmoMemberAccessorFactory;
 
@@ -49,7 +50,8 @@ public final class MemberAccessorFactory {
             Class<? extends Annotation> annotationClass, DomainAccessType domainAccessType, ClassLoader classLoader) {
         return switch (domainAccessType) {
             case GIZMO -> GizmoMemberAccessorFactory.buildGizmoMemberAccessor(member, annotationClass,
-                    memberAccessorType != MemberAccessorType.VOID_METHOD,
+                    AccessorInfo.of(memberAccessorType != MemberAccessorType.VOID_METHOD,
+                            memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER),
                     (GizmoClassLoader) Objects.requireNonNull(classLoader));
             case REFLECTION -> buildReflectiveMemberAccessor(member, memberAccessorType, annotationClass);
         };
@@ -62,19 +64,22 @@ public final class MemberAccessorFactory {
         } else if (member instanceof Method method) {
             MemberAccessor memberAccessor;
             switch (memberAccessorType) {
-                case FIELD_OR_READ_METHOD:
+                case FIELD_OR_READ_METHOD, FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER:
                     if (!ReflectionHelper.isGetterMethod(method)) {
+                        boolean methodWithParameter =
+                                memberAccessorType == MemberAccessorType.FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER
+                                        && method.getParameterCount() > 0;
                         if (annotationClass == null) {
-                            ReflectionHelper.assertReadMethod(method);
+                            ReflectionHelper.assertReadMethod(method, methodWithParameter);
                         } else {
-                            ReflectionHelper.assertReadMethod(method, annotationClass);
+                            ReflectionHelper.assertReadMethod(method, methodWithParameter, annotationClass);
                         }
-                        memberAccessor = new ReflectionMethodMemberAccessor(method);
+                        memberAccessor = methodWithParameter ? new ReflectionMethodExtendedMemberAccessor(method)
+                                : new ReflectionMethodMemberAccessor(method);
                         break;
                     }
                     // Intentionally fall through (no break)
-                case FIELD_OR_GETTER_METHOD:
-                case FIELD_OR_GETTER_METHOD_WITH_SETTER:
+                case FIELD_OR_GETTER_METHOD, FIELD_OR_GETTER_METHOD_WITH_SETTER:
                     boolean getterOnly = memberAccessorType != MemberAccessorType.FIELD_OR_GETTER_METHOD_WITH_SETTER;
                     if (annotationClass == null) {
                         ReflectionHelper.assertGetterMethod(method);
@@ -84,7 +89,7 @@ public final class MemberAccessorFactory {
                     memberAccessor = new ReflectionBeanPropertyMemberAccessor(method, getterOnly);
                     break;
                 case VOID_METHOD:
-                    memberAccessor = new ReflectionMethodMemberAccessor(method, false);
+                    memberAccessor = new ReflectionMethodMemberAccessor(method, false, false);
                     break;
                 default:
                     throw new IllegalStateException("The memberAccessorType (%s) is not implemented."
@@ -166,6 +171,7 @@ public final class MemberAccessorFactory {
 
     public enum MemberAccessorType {
         FIELD_OR_READ_METHOD,
+        FIELD_OR_READ_METHOD_WITH_OPTIONAL_PARAMETER,
         FIELD_OR_GETTER_METHOD,
         FIELD_OR_GETTER_METHOD_WITH_SETTER,
         VOID_METHOD

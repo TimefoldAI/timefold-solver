@@ -333,9 +333,13 @@ public final class ReflectionHelper {
         }
     }
 
-    public static void assertReadMethod(Method readMethod) {
-        if (readMethod.getParameterTypes().length != 0) {
+    public static void assertReadMethod(Method readMethod, boolean readMethodWithParameter) {
+        if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalStateException("The readMethod (%s) must not have any parameters (%s)."
+                    .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
+        }
+        if (readMethodWithParameter && readMethod.getParameterCount() > 1) {
+            throw new IllegalStateException("The readMethod (%s) must have only one parameter (%s)."
                     .formatted(readMethod, Arrays.toString(readMethod.getParameterTypes())));
         }
         if (readMethod.getReturnType() == void.class) {
@@ -344,9 +348,14 @@ public final class ReflectionHelper {
         }
     }
 
-    public static void assertReadMethod(Method readMethod, Class<? extends Annotation> annotationClass) {
-        if (readMethod.getParameterTypes().length != 0) {
+    public static void assertReadMethod(Method readMethod, boolean readMethodWithParameter,
+            Class<? extends Annotation> annotationClass) {
+        if (!readMethodWithParameter && readMethod.getParameterCount() != 0) {
             throw new IllegalStateException("The readMethod (%s) with a %s annotation must not have any parameters (%s)."
+                    .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
+        }
+        if (readMethodWithParameter && readMethod.getParameterCount() > 1) {
+            throw new IllegalStateException("The readMethod (%s) with a %s annotation must have only one parameter (%s)."
                     .formatted(readMethod, annotationClass.getSimpleName(), Arrays.toString(readMethod.getParameterTypes())));
         }
         if (readMethod.getReturnType() == void.class) {

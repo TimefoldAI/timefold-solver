@@ -120,6 +120,16 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("rawtypes")
     private static final QuadFunction QUAD_CONSTANT_ONE_BIG_DECiMAL = (a, b, c, d) -> BigDecimal.ONE;
 
+    public static <T, R> Function<T, R> uncheck(ThrowableFunction<T, R> function) {
+        return t -> {
+            try {
+                return function.apply(t);
+            } catch (Throwable e) {
+                throw new RuntimeException(e);
+            }
+        };
+    }
+
     /**
      * Returns a {@link Runnable} that does nothing.
      *
@@ -428,6 +438,11 @@ public final class ConstantLambdaUtils {
     @SuppressWarnings("unchecked")
     public static <A, B, C, D> QuadFunction<A, B, C, D, BigDecimal> quadConstantOneBigDecimal() {
         return QUAD_CONSTANT_ONE_BIG_DECiMAL;
+    }
+
+    @FunctionalInterface
+    public interface ThrowableFunction<T, R> {
+        R apply(T t) throws Throwable;
     }
 
     private ConstantLambdaUtils() {

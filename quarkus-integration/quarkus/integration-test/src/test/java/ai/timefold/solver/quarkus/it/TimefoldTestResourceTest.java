@@ -17,7 +17,7 @@ class TimefoldTestResourceTest {
 
     @Test
     @Timeout(600)
-    void solveWithSolverFactory() throws Exception {
+    void solveWithSolverFactory() {
         RestAssured.given()
                 .header("Content-Type", "application/json")
                 .when()
@@ -29,7 +29,7 @@ class TimefoldTestResourceTest {
 
     @Test
     @Timeout(600)
-    void solveWithTimeOverride() throws Exception {
+    void solveWithTimeOverride() {
         // Spent-time is 30s by default, but it is overridden with 10
         RestAssured.given()
                 .header("Content-Type", "application/json")

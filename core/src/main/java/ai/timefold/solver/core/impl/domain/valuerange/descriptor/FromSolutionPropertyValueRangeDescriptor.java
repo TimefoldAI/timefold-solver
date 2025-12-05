@@ -21,12 +21,12 @@ public final class FromSolutionPropertyValueRangeDescriptor<Solution_>
 
     @Override
     public <T> ValueRange<T> extractAllValues(Solution_ solution) {
-        return readValueRange(solution);
+        return readValueRangeForSolution(solution);
     }
 
     @Override
     public <T> ValueRange<T> extractValuesFromEntity(Solution_ solution, Object entity) {
-        return readValueRange(solution); // Needed for composite ranges on solution and on entity.
+        return readValueRangeForSolution(solution); // Needed for composite ranges on solution and on entity.
     }
 
     @Override

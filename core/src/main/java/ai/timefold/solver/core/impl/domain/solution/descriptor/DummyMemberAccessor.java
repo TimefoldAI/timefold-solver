@@ -45,6 +45,16 @@ final class DummyMemberAccessor implements MemberAccessor {
     }
 
     @Override
+    public Type getGetterMethodParameterType() {
+        return null;
+    }
+
+    @Override
+    public Object executeGetter(Object bean, Object value) {
+        return null;
+    }
+
+    @Override
     public boolean supportSetter() {
         return false;
     }

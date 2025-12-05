@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.impl.domain.variable.descriptor;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.util.ArrayList;
 
@@ -9,6 +10,8 @@ import ai.timefold.solver.core.testdomain.TestdataValue;
 import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -34,5 +37,13 @@ class GenuineVariableDescriptorTest {
         var variableDescriptor = TestdataListEntity.buildVariableDescriptorForValueList();
         assertThat(variableDescriptor.isReinitializable(new TestdataListEntity("a", new TestdataListValue()))).isFalse();
         assertThat(variableDescriptor.isReinitializable(new TestdataListEntity("b", new ArrayList<>()))).isFalse();
+    }
+
+    @Test
+    void valueRangeDescriptorWithSolution() {
+        assertThatCode(TestdataEntityProvidingWithParameterSolution::buildSolutionDescriptor)
+                .doesNotThrowAnyException();
+        assertThatCode(TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution::buildSolutionDescriptor)
+                .doesNotThrowAnyException();
     }
 }
