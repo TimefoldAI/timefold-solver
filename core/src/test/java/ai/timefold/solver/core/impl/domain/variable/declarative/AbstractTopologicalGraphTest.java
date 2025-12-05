@@ -49,8 +49,8 @@ public abstract class AbstractTopologicalGraphTest<Graph_ extends TopologicalOrd
                 var lowerMembers = expectedTopologicalNodeOrder[j];
                 for (var a : members) {
                     for (var b : lowerMembers) {
-                        var aOrder = graph.getTopologicalOrder(a).order();
-                        var bOrder = graph.getTopologicalOrder(b).order();
+                        var aOrder = graph.getTopologicalOrder(a);
+                        var bOrder = graph.getTopologicalOrder(b);
                         assertThat(aOrder)
                                 .withFailMessage(
                                         () -> "Expected topological order of %d (%d) to be greater than %d (%d) in graph %s"

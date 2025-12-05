@@ -253,7 +253,7 @@ public class DefaultShadowVariableSessionFactory<Solution_> {
         graph.commitChanges(new BitSet());
         var sortedDeclarativeVariables = new ArrayList<>(declarativeShadowVariables);
         sortedDeclarativeVariables.sort(Comparator.<DeclarativeShadowVariableDescriptor<Solution_>> comparingInt(
-                variable -> graph.getTopologicalOrder(nameToIndex.get(variable.getVariableName())).order())
+                variable -> graph.getTopologicalOrder(nameToIndex.get(variable.getVariableName())))
                 .thenComparing(VariableDescriptor::getVariableName));
         return sortedDeclarativeVariables;
     }

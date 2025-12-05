@@ -21,6 +21,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
 
     // These structures are immutable.
     protected final List<GraphNode<Solution_>> nodeList;
+    protected final BaseTopologicalOrderGraph.NodeTopologicalOrder[] nodeTopologicalOrders;
     protected final Map<VariableMetaModel<?, ?, ?>, Map<Object, GraphNode<Solution_>>> variableReferenceToContainingNodeMap;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToBeforeProcessor;
     protected final Map<VariableMetaModel<?, ?, ?>, List<BiConsumer<AbstractVariableReferenceGraph<Solution_, ?>, Object>>> variableReferenceToAfterProcessor;
@@ -44,6 +45,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         }
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(nodeList);
+        nodeTopologicalOrders = outerGraph.buildNodeTopologicalOrderArray(graph);
 
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         changeSet = createChangeSet(instanceCount);

@@ -14,7 +14,7 @@ import ai.timefold.solver.core.impl.util.MutableInt;
 
 public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
 
-    private final NodeTopologicalOrder[] nodeIdToTopologicalOrderMap;
+    private final int[] nodeIdToTopologicalOrderMap;
     private final Map<Integer, List<Integer>> componentMap;
     private final Set<Integer>[] forwardEdges;
     private final Set<Integer>[] backEdges;
@@ -22,7 +22,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
 
     @SuppressWarnings({ "unchecked" })
     public DefaultTopologicalOrderGraph(final int size) {
-        this.nodeIdToTopologicalOrderMap = new NodeTopologicalOrder[size];
+        this.nodeIdToTopologicalOrderMap = new int[size];
         this.componentMap = CollectionUtils.newLinkedHashMap(size);
         this.forwardEdges = new Set[size];
         this.backEdges = new Set[size];
@@ -31,7 +31,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
             forwardEdges[i] = new HashSet<>();
             backEdges[i] = new HashSet<>();
             isNodeInLoopedComponent[i] = false;
-            nodeIdToTopologicalOrderMap[i] = new NodeTopologicalOrder(i, i);
+            nodeIdToTopologicalOrderMap[i] = i;
         }
     }
 
@@ -112,7 +112,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
     }
 
     @Override
-    public NodeTopologicalOrder getTopologicalOrder(int node) {
+    public int getTopologicalOrder(int node) {
         return nodeIdToTopologicalOrderMap[node];
     }
 
@@ -141,7 +141,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
             var isComponentLooped = componentSize != 1;
             var componentNodes = new ArrayList<Integer>(componentSize);
             for (var node = component.nextSetBit(0); node >= 0; node = component.nextSetBit(node + 1)) {
-                nodeIdToTopologicalOrderMap[node] = new NodeTopologicalOrder(node, ordIndex);
+                nodeIdToTopologicalOrderMap[node] = ordIndex;
                 componentNodes.add(node);
                 componentMap.put(node, componentNodes);
 
@@ -206,7 +206,7 @@ public class DefaultTopologicalOrderGraph implements TopologicalOrderGraph {
         var out = new StringBuilder();
         out.append("DefaultTopologicalOrderGraph{\n");
         for (var node = 0; node < forwardEdges.length; node++) {
-            out.append("    ").append(node).append("(").append(nodeIdToTopologicalOrderMap[node].order()).append(") -> ")
+            out.append("    ").append(node).append("(").append(nodeIdToTopologicalOrderMap[node]).append(") -> ")
                     .append(forwardEdges[node].stream()
                             .sorted()
                             .map(Object::toString)

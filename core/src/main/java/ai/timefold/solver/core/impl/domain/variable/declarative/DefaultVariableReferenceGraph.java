@@ -35,7 +35,8 @@ final class DefaultVariableReferenceGraph<Solution_> extends AbstractVariableRef
         // Otherwise its internal collections were observed being re-created so often
         // that the allocation of arrays would become a major bottleneck.
         affectedEntitiesUpdater =
-                new AffectedEntitiesUpdater<>(graph, nodeList, immutableEntityToVariableReferenceMap::get,
+                new AffectedEntitiesUpdater<>(graph, nodeList, nodeTopologicalOrders,
+                        immutableEntityToVariableReferenceMap::get,
                         outerGraph.entityToEntityId.size(), outerGraph.changedVariableNotifier);
     }
 
