@@ -1270,8 +1270,8 @@ Java::
 A `ValueRangeProvider` that uses the solution as a parameter for the planning entity consumes less memory
 compared to the previous approach,
 as it does not require storing information at the entity level.
-Additionally,
-improvements in memory consumption can be observed during the serialization process when using Quarkus or Spring Boot.
+This also helps reduce the overhead of the xref:using-timefold-solver/modeling-planning-problems.adoc#cloningASolution[solution cloning],
+which can become significant for huge data sets.
 ====
 
 [#referencingValueRangeProviders]
