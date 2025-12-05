@@ -44,6 +44,10 @@ public class UnionMoveSelector<Solution_> extends CompositeMoveSelector<Solution
         }
     }
 
+    public SelectionProbabilityWeightFactory<Solution_, MoveSelector<Solution_>> getSelectorProbabilityWeightFactory() {
+        return selectorProbabilityWeightFactory;
+    }
+
     @Override
     public void stepStarted(AbstractStepScope<Solution_> stepScope) {
         scoreDirector = stepScope.getScoreDirector();

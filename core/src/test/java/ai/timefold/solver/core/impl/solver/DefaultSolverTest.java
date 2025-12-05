@@ -241,7 +241,7 @@ class DefaultSolverTest {
     }
 
     @Test
-    void solveWithNeighborhoodsAndMoveSelectorsFails() {
+    void solveWithNeighborhoodsAndMoveSelectors() {
         var solverConfig = new SolverConfig()
                 .withPreviewFeature(PreviewFeature.NEIGHBORHOODS)
                 .withSolutionClass(TestdataSolution.class)
@@ -249,15 +249,14 @@ class DefaultSolverTest {
                 .withEasyScoreCalculatorClass(TestingEasyScoreCalculator.class)
                 .withTerminationConfig(new TerminationConfig()
                         .withBestScoreLimit("0")) // Should get there quickly.
+                // Swaps are coming from move selectors, changes are coming from Neighborhoods.
                 .withPhases(new LocalSearchPhaseConfig()
-                        .withMoveSelectorConfig(new ChangeMoveSelectorConfig())
+                        .withMoveSelectorConfig(new SwapMoveSelectorConfig())
                         .withMoveProviderClass(TestingNeighborhoodProvider.class));
 
         var solution = TestdataSolution.generateSolution(3, 2);
-        Assertions.assertThatThrownBy(() -> PlannerTestUtils.solve(solverConfig, solution))
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("move selectors")
-                .hasMessageContaining("Neighborhoods API");
+        var result = PlannerTestUtils.solve(solverConfig, solution);
+        Assertions.assertThat(result).isNotNull();
     }
 
     @Test

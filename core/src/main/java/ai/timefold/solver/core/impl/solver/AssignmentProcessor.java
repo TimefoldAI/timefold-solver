@@ -15,7 +15,7 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
@@ -131,7 +131,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
             ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
         // No need to call moveDirector.execute(),
         // as legacy moves were guaranteed to trigger shadow vars as part of their contract.
-        new LegacyMoveAdapter<>(move).execute(moveDirector);
+        MoveAdapters.toNewMove(move).execute(moveDirector);
     }
 
     private EntityPlacer<Solution_> buildEntityPlacer() {

@@ -21,7 +21,6 @@ import ai.timefold.solver.core.impl.localsearch.decider.LocalSearchDecider;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.AcceptorFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.forager.LocalSearchForagerFactory;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.ChangeMoveDefinition;
-import ai.timefold.solver.core.impl.neighborhood.move.InnerMoveStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.score.director.easy.EasyScoreDirectorFactory;
 import ai.timefold.solver.core.impl.solver.AbstractSolver;
@@ -98,9 +97,8 @@ class NeighborhoodsBasedLocalSearchTest {
                 .entity(TestdataEntity.class)
                 .basicVariable();
         var moveStreamFactory = new DefaultMoveStreamFactory<>(solutionDescriptor, EnvironmentMode.PHASE_ASSERT);
-        var moveStream = new ChangeMoveDefinition<>(variableMetaModel).build(moveStreamFactory);
         // Random selection otherwise LS gets stuck in an endless loop.
-        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, (InnerMoveStream<TestdataSolution>) moveStream,
+        return new NeighborhoodsBasedMoveRepository<>(moveStreamFactory, List.of(new ChangeMoveDefinition<>(variableMetaModel)),
                 true);
     }
 
