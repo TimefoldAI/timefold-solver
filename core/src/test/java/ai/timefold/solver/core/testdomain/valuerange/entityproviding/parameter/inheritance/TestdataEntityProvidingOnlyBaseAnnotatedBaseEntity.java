@@ -39,7 +39,7 @@ public class TestdataEntityProvidingOnlyBaseAnnotatedBaseEntity extends Testdata
         this.value = value;
     }
 
-    @PlanningVariable(valueRangeProviderRefs = "valueRange")
+    @PlanningVariable(valueRangeProviderRefs = { "valueRange", "otherValueRange" })
     public TestdataValue getValue() {
         return value;
     }
@@ -49,7 +49,12 @@ public class TestdataEntityProvidingOnlyBaseAnnotatedBaseEntity extends Testdata
     }
 
     @ValueRangeProvider(id = "valueRange")
-    public List<TestdataValue> getValueList(TestdataEntityProvidingOnlyBaseAnnotatedSolution solution) {
+    public List<TestdataValue> getValueList(TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution solution) {
+        return solution.getValueList();
+    }
+
+    @ValueRangeProvider(id = "otherValueRange")
+    public List<TestdataValue> getOtherValueList(TestdataEntityProvidingOnlyBaseAnnotatedSolution solution) {
         return solution.getValueList();
     }
 }

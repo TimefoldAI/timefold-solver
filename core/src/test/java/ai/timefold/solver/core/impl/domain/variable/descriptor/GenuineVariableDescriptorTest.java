@@ -11,6 +11,7 @@ import ai.timefold.solver.core.testdomain.list.TestdataListEntity;
 import ai.timefold.solver.core.testdomain.list.TestdataListValue;
 import ai.timefold.solver.core.testdomain.unassignedvar.TestdataAllowsUnassignedEntity;
 import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.TestdataEntityProvidingWithParameterSolution;
+import ai.timefold.solver.core.testdomain.valuerange.entityproviding.parameter.inheritance.TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution;
 
 import org.junit.jupiter.api.Test;
 
@@ -41,6 +42,8 @@ class GenuineVariableDescriptorTest {
     @Test
     void valueRangeDescriptorWithSolution() {
         assertThatCode(TestdataEntityProvidingWithParameterSolution::buildSolutionDescriptor)
+                .doesNotThrowAnyException();
+        assertThatCode(TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution::buildSolutionDescriptor)
                 .doesNotThrowAnyException();
     }
 }

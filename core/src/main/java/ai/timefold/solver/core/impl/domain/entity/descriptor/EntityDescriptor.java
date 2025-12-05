@@ -339,8 +339,8 @@ public class EntityDescriptor<Solution_> {
     }
 
     private void assertGetterParameterType(MemberAccessor memberAccessor) {
-        if (memberAccessor.acceptsParameter()
-                && !memberAccessor.getGetterMethodParameterType().equals(getSolutionDescriptor().getSolutionClass())) {
+        if (memberAccessor.acceptsParameter() && !((Class<?>) memberAccessor.getGetterMethodParameterType())
+                .isAssignableFrom(getSolutionDescriptor().getSolutionClass())) {
             throw new IllegalStateException("The parameter type (%s) of the method (%s) must match the solution (%s)."
                     .formatted(memberAccessor.getGetterMethodParameterType().getTypeName(), memberAccessor.getName(),
                             getSolutionDescriptor().getSolutionClass().getName()));

@@ -3,6 +3,7 @@ package ai.timefold.solver.core.impl.domain.common.accessor.gizmo;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningPin;
@@ -241,15 +242,21 @@ class GizmoMemberAccessorImplementorTest {
     @Test
     void testMethodAnnotatedEntityAndInheritance() throws NoSuchMethodException {
         var member = TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getValueList",
+                TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class);
+        assertMemberWithInheritance(member, TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class);
+        var otherMember = TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getOtherValueList",
                 TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+        assertMemberWithInheritance(otherMember, TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+    }
+
+    void assertMemberWithInheritance(Method member, Class<?> solutionClass) {
         var instance = GizmoMemberAccessorImplementor.createAccessorFor(member, ValueRangeProvider.class,
                 AccessorInfo.withReturnValueAndArguments(),
                 new GizmoClassLoader());
-        assertThat(instance.getName()).isEqualTo("getValueList");
+        assertThat(instance.getName()).isEqualTo(member.getName());
         assertThat(instance.getType()).isEqualTo(List.class);
         assertThat(instance.getAnnotation(ValueRangeProvider.class)).isNotNull();
-        assertThat(instance.getGetterMethodParameterType())
-                .isEqualTo(TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+        assertThat(instance.getGetterMethodParameterType()).isEqualTo(solutionClass);
 
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");

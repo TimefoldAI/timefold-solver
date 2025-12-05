@@ -42,14 +42,22 @@ class ReflectionMethodExtendedMemberAccessorTest {
 
     @Test
     void methodAnnotatedEntityAndInheritance() throws NoSuchMethodException {
-        var memberAccessor = new ReflectionMethodExtendedMemberAccessor(
+        var member = new ReflectionMethodExtendedMemberAccessor(
                 TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getValueList",
+                        TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class));
+        assertMemberWithInheritance(member, TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution.class);
+        var otherMember = new ReflectionMethodExtendedMemberAccessor(
+                TestdataEntityProvidingOnlyBaseAnnotatedChildEntity.class.getMethod("getOtherValueList",
                         TestdataEntityProvidingOnlyBaseAnnotatedSolution.class));
-        assertThat(memberAccessor.getName()).isEqualTo("getValueList");
-        assertThat(memberAccessor.getType()).isEqualTo(List.class);
-        assertThat(memberAccessor.getAnnotation(ValueRangeProvider.class)).isNotNull();
-        assertThat(memberAccessor.getGetterMethodParameterType())
-                .isEqualTo(TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+        assertMemberWithInheritance(otherMember, TestdataEntityProvidingOnlyBaseAnnotatedSolution.class);
+    }
+
+    void assertMemberWithInheritance(ReflectionMethodExtendedMemberAccessor member, Class<?> solutionClass) {
+
+        assertThat(member.getName()).isEqualTo(member.getName());
+        assertThat(member.getType()).isEqualTo(List.class);
+        assertThat(member.getAnnotation(ValueRangeProvider.class)).isNotNull();
+        assertThat(member.getGetterMethodParameterType()).isEqualTo(solutionClass);
 
         var v1 = new TestdataValue("v1");
         var v2 = new TestdataValue("v2");
@@ -57,9 +65,9 @@ class ReflectionMethodExtendedMemberAccessorTest {
         var s1 = new TestdataEntityProvidingEntityProvidingOnlyBaseAnnotatedExtendedSolution("s1");
         s1.setValueList(List.of(v1, v2));
 
-        assertThat(memberAccessor.executeGetter(e1, s1)).isEqualTo(List.of(v1, v2));
+        assertThat(member.executeGetter(e1, s1)).isEqualTo(List.of(v1, v2));
         s1.setValueList(List.of(v2));
-        assertThat(memberAccessor.executeGetter(e1, s1)).isEqualTo(List.of(v2));
+        assertThat(member.executeGetter(e1, s1)).isEqualTo(List.of(v2));
     }
 
     @Test
