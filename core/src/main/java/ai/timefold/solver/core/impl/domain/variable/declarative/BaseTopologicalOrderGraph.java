@@ -28,9 +28,9 @@ public interface BaseTopologicalOrderGraph {
     boolean isLooped(LoopedTracker loopedTracker, int node);
 
     /**
-     * Returns a tuple containing node ID and a number corresponding to its topological order.
-     * In particular, after {@link TopologicalOrderGraph#commitChanges(java.util.BitSet)} is called, the following
-     * must be true for any pair of nodes A, B where:
+     * Returns a tuple containing node ID and a number corresponding to its topological order. In particular, after
+     * {@link TopologicalOrderGraph#commitChanges(java.util.BitSet)} is called, the following must be true for any pair of nodes
+     * A, B where:
      * <ul>
      * <li>A is a predecessor of B</li>
      * <li>`isLooped(A) == isLooped(B) == false`</li>
@@ -39,23 +39,23 @@ public interface BaseTopologicalOrderGraph {
      * <p>
      * Said number may not be unique.
      */
-    NodeTopologicalOrder getTopologicalOrder(int node);
+    int getTopologicalOrder(int node);
 
     /**
-     * Stores a graph node id along its topological order.
+     * Stores a graph node id and dynamically calculates its topological order.
      * Comparisons ignore node id and only use the topological order.
      * For instance, for x = (0, 0) and y = (1, 5), x is before y, whereas for
      * x = (0, 5) and y = (1, 0), y is before x. Note {@link BaseTopologicalOrderGraph}
      * is not guaranteed to return every topological order index (i.e.
      * it might be the case no nodes has order 0).
      */
-    record NodeTopologicalOrder(int nodeId, int order)
+    record NodeTopologicalOrder(int nodeId, BaseTopologicalOrderGraph graph)
             implements
                 Comparable<NodeTopologicalOrder> {
 
         @Override
         public int compareTo(NodeTopologicalOrder other) {
-            return order - other.order;
+            return graph.getTopologicalOrder(nodeId) - graph.getTopologicalOrder(other.nodeId);
         }
 
         @Override

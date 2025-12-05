@@ -116,6 +116,15 @@ public final class VariableReferenceGraphBuilder<Solution_> {
                 .add(consumer);
     }
 
+    public BaseTopologicalOrderGraph.NodeTopologicalOrder[] buildNodeTopologicalOrderArray(BaseTopologicalOrderGraph graph) {
+        var out = new BaseTopologicalOrderGraph.NodeTopologicalOrder[nodeList.size()];
+
+        for (var i = 0; i < out.length; i++) {
+            out[i] = new BaseTopologicalOrderGraph.NodeTopologicalOrder(i, graph);
+        }
+        return out;
+    }
+
     public VariableReferenceGraph build(IntFunction<TopologicalOrderGraph> graphCreator) {
         assertNoFixedLoops();
         if (nodeList.isEmpty()) {
