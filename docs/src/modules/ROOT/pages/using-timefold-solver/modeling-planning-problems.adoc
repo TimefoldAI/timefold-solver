@@ -1243,6 +1243,37 @@ A `ValueRangeProvider` on the planning entity consumes more memory than `ValueRa
 A `ValueRangeProvider` on the planning entity is not currently compatible with a <<chainedPlanningVariable,chained>> variable.
 ====
 
+The value range annotated method can also be defined with a single parameter,
+which must be of the same type as the solution class.
+The method will have access to the current solution and allow for the dynamic generation of a list of values.
+
+[tabs]
+====
+Java::
++
+[source,java,options="nowrap"]
+----
+    @PlanningVariable
+    public Room getRoom() {
+        return room;
+    }
+
+    @ValueRangeProvider
+    public List<Room> getPossibleRoomListWithSolution(Timetable timetable) {
+        return timetable.getRoomListFor(this);
+    }
+----
+====
+
+[NOTE]
+====
+A `ValueRangeProvider` that uses the solution as a parameter for the planning entity consumes less memory
+compared to the previous approach,
+as it does not require storing information at the entity level.
+Additionally,
+improvements in memory consumption can be observed during the serialization process when using Quarkus or Spring Boot.
+====
+
 [#referencingValueRangeProviders]
 ==== Referencing ``ValueRangeProvider``s
 
