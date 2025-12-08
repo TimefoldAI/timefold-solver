@@ -42,7 +42,7 @@ public class PooledEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution
             if (!moveIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return new Placement<>(MoveAdapters.toNewMove(moveIterator));
+            return new Placement<>(MoveAdapters.toNewMoveIterator(moveIterator));
         }
 
     }

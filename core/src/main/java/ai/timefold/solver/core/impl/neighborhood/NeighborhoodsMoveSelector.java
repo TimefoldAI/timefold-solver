@@ -76,6 +76,6 @@ public final class NeighborhoodsMoveSelector<Solution_> extends AbstractMoveSele
 
     @Override
     public Iterator<Move<Solution_>> iterator() {
-        return MoveAdapters.toLegacyMove(moveRepository.iterator());
+        return MoveAdapters.toLegacyMoveIterator(moveRepository.iterator());
     }
 }

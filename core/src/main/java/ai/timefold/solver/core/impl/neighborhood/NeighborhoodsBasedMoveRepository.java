@@ -94,6 +94,7 @@ public final class NeighborhoodsBasedMoveRepository<Solution_>
     @Override
     public void phaseEnded(AbstractPhaseScope<Solution_> phaseScope) {
         neighborhoodSession = null;
+        moveIterableList = null;
         workingRandom = null;
         phaseScope.getScoreDirector().setMoveRepository(null);
     }

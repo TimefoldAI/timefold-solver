@@ -30,8 +30,7 @@ record NewMoveAdapter<Solution_>(Move<Solution_> newMove)
 
     @Override
     public void doMoveOnly(ScoreDirector<Solution_> scoreDirector) {
-        var innerScoreDirector = (InnerScoreDirector<Solution_, ?>) scoreDirector;
-        newMove.execute(getMoveDirector(innerScoreDirector));
+        newMove.execute(getMoveDirector(scoreDirector));
     }
 
     private MoveDirector<Solution_, ?> getMoveDirector(ScoreDirector<Solution_> scoreDirector) {
@@ -41,7 +40,7 @@ record NewMoveAdapter<Solution_>(Move<Solution_> newMove)
     @Override
     public ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>
             rebase(ScoreDirector<Solution_> destinationScoreDirector) {
-        return new NewMoveAdapter<>(newMove.rebase(getMoveDirector(destinationScoreDirector)));
+        return MoveAdapters.toLegacyMove(newMove.rebase(getMoveDirector(destinationScoreDirector)));
     }
 
     @Override

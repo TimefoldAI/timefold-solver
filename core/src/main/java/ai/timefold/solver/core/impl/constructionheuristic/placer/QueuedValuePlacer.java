@@ -59,7 +59,7 @@ public class QueuedValuePlacer<Solution_> extends AbstractEntityPlacer<Solution_
             if (!moveIterator.hasNext()) {
                 return noUpcomingSelection();
             }
-            return new Placement<>(MoveAdapters.toNewMove(moveIterator));
+            return new Placement<>(MoveAdapters.toNewMoveIterator(moveIterator));
         }
 
     }

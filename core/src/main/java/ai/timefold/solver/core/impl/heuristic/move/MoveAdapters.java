@@ -25,7 +25,7 @@ public final class MoveAdapters {
     }
 
     public static <Solution_> Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>>
-            toNewMove(Iterator<Move<Solution_>> legacyIterator) {
+            toNewMoveIterator(Iterator<Move<Solution_>> legacyIterator) {
         if (legacyIterator instanceof NewIteratorAdapter<Solution_> newIteratorAdapter) {
             return newIteratorAdapter.moveIterator();
         }
@@ -41,7 +41,7 @@ public final class MoveAdapters {
     }
 
     public static <Solution_> Iterator<ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>>
-            toLegacyMove(Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>> newIterator) {
+            toLegacyMoveIterator(Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>> newIterator) {
         if (newIterator instanceof LegacyIteratorAdapter<Solution_> legacyIteratorAdapter) {
             return legacyIteratorAdapter.moveIterator();
         }

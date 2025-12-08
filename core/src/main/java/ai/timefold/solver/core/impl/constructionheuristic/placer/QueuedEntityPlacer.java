@@ -67,7 +67,7 @@ public class QueuedEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution
                 MoveSelector<Solution_> moveSelector = moveSelectorIterator.next();
                 moveIterator = moveSelector.iterator();
             }
-            return new Placement<>(MoveAdapters.toNewMove(moveIterator));
+            return new Placement<>(MoveAdapters.toNewMoveIterator(moveIterator));
         }
 
     }
