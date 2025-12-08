@@ -25,7 +25,7 @@ public final class FixedVariableReferenceGraph<Solution_>
         // each node to changed.
         changedVariableNotifier = outerGraph.changedVariableNotifier;
         for (var node = 0; node < nodeList.size(); node++) {
-            changeSet.add(graph.getTopologicalOrder(node));
+            changeSet.add(nodeTopologicalOrders[node]);
             var variableReference = nodeList.get(node).variableReferences().get(0);
             var entityConsistencyState = variableReference.entityConsistencyState();
             if (variableReference.groupEntities() != null) {
@@ -55,7 +55,7 @@ public final class FixedVariableReferenceGraph<Solution_>
         // Before the graph is finalized, ignore changes, since
         // we don't know the topological order yet
         if (isFinalized) {
-            changeSet.add(graph.getTopologicalOrder(node.graphNodeId()));
+            changeSet.add(nodeTopologicalOrders[node.graphNodeId()]);
         }
     }
 
@@ -85,7 +85,7 @@ public final class FixedVariableReferenceGraph<Solution_>
                             continue;
                         }
                         visited.set(nextNode);
-                        changeSet.add(graph.getTopologicalOrder(nextNode));
+                        changeSet.add(nodeTopologicalOrders[nextNode]);
                     }
                 }
             }
