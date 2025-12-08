@@ -53,6 +53,21 @@ public interface BaseTopologicalOrderGraph {
             implements
                 Comparable<NodeTopologicalOrder> {
 
+        /**
+         * If the {@link BaseTopologicalOrderGraph#getTopologicalOrder(int)} of the node
+         * changes while inside a {@link java.util.PriorityQueue}, that {@link java.util.PriorityQueue}
+         * would be corrupted.
+         * <p>
+         * It is vital that all changes to a {@link TopologicalOrderGraph} happen
+         * before nodes are inserted into a {@link java.util.PriorityQueue}, and that
+         * the {@link java.util.PriorityQueue} is cleared before future changes to the
+         * {@link TopologicalOrderGraph}.
+         *
+         * @param other The node this node is being topologically compared to.
+         * @return a negative int if this node is topologically before the other node,
+         *         a positive int if this node is topologically after the other node,
+         *         0 if both nodes have the same topological order.
+         */
         @Override
         public int compareTo(NodeTopologicalOrder other) {
             return graph.getTopologicalOrder(nodeId) - graph.getTopologicalOrder(other.nodeId);

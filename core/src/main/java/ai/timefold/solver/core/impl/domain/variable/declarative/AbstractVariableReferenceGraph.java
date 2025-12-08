@@ -45,7 +45,7 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
         }
         graph = graphCreator.apply(instanceCount);
         graph.withNodeData(nodeList);
-        nodeTopologicalOrders = outerGraph.buildNodeTopologicalOrderArray(graph);
+        nodeTopologicalOrders = buildNodeTopologicalOrderArray(graph, nodeList.size());
 
         var visited = Collections.newSetFromMap(new IdentityHashMap<>());
         changeSet = createChangeSet(instanceCount);
@@ -62,6 +62,16 @@ public abstract sealed class AbstractVariableReferenceGraph<Solution_, ChangeSet
                 addEdge(fixedEdgeEntry.getKey(), toEdge);
             }
         }
+    }
+
+    private BaseTopologicalOrderGraph.NodeTopologicalOrder[] buildNodeTopologicalOrderArray(BaseTopologicalOrderGraph graph,
+            int graphSize) {
+        var out = new BaseTopologicalOrderGraph.NodeTopologicalOrder[graphSize];
+
+        for (var i = 0; i < out.length; i++) {
+            out[i] = new BaseTopologicalOrderGraph.NodeTopologicalOrder(i, graph);
+        }
+        return out;
     }
 
     protected abstract ChangeSet_ createChangeSet(int instanceCount);
