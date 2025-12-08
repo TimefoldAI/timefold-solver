@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
 import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
 import ai.timefold.solver.core.preview.api.move.Rebaser;
@@ -21,29 +20,9 @@ import org.jspecify.annotations.NullMarked;
  * @param <Solution_>
  */
 @NullMarked
-public record LegacyMoveAdapter<Solution_>(
-        ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) implements Move<Solution_> {
-
-    /**
-     * Used to determine if a move is doable.
-     * A move is only doable if:
-     * 
-     * <ul>
-     * <li>It is a new {@link Move}.</li>
-     * <li>It is a legacy move and its {@link AbstractMove#isMoveDoable(ScoreDirector)} return {@code true}.</li>
-     * </ul>
-     * 
-     * @param moveDirector never null
-     * @param move never null
-     * @return true if the move is doable
-     */
-    public static <Solution_> boolean isDoable(MoveDirector<Solution_, ?> moveDirector, Move<Solution_> move) {
-        if (move instanceof LegacyMoveAdapter<Solution_> legacyMoveAdapter) {
-            return legacyMoveAdapter.isMoveDoable(moveDirector);
-        } else {
-            return true; // New moves are always doable.
-        }
-    }
+record LegacyMoveAdapter<Solution_>(ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove)
+        implements
+            Move<Solution_> {
 
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
@@ -71,7 +50,7 @@ public record LegacyMoveAdapter<Solution_>(
 
     @Override
     public Move<Solution_> rebase(Rebaser rebaser) {
-        return new LegacyMoveAdapter<>(legacyMove.rebase(getScoreDirector(rebaser)));
+        return MoveAdapters.toNewMove(legacyMove.rebase(getScoreDirector(rebaser)));
     }
 
     @Override

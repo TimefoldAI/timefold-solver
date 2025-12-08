@@ -104,6 +104,11 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
     }
 
     /**
+     * The neighborhood provider class to use.
+     * If no {@link MoveSelectorConfig} is specified, the solver will use Neighborhoods exclusively.
+     * Otherwise the move selector config will be {@link UnionMoveSelectorConfig merged} with the neighborhood provider,
+     * and the solver will use moves from both.
+     * <p>
      * Part of {@link PreviewFeature#NEIGHBORHOODS}.
      */
     @SuppressWarnings("unchecked")
@@ -112,7 +117,7 @@ public class LocalSearchPhaseConfig extends PhaseConfig<LocalSearchPhaseConfig> 
     }
 
     /**
-     * Part of {@link PreviewFeature#NEIGHBORHOODS}.
+     * @see #getNeighborhoodProviderClass()
      */
     @SuppressWarnings("rawtypes")
     public void setNeighborhoodProviderClass(@Nullable Class<? extends NeighborhoodProvider> neighborhoodProviderClass) {

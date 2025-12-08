@@ -10,7 +10,7 @@ import ai.timefold.solver.core.impl.domain.solution.descriptor.DefaultPlanningVa
 import ai.timefold.solver.core.impl.domain.solution.descriptor.InnerGenuineVariableMetaModel;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.LegacyMoveAdapter;
+import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.move.InnerMutableSolutionView;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
@@ -206,7 +206,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
 
     // Only used in tests of legacy moves.
     public final void execute(ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
-        execute(new LegacyMoveAdapter<>(move));
+        execute(MoveAdapters.toNewMove(move));
     }
 
     public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
@@ -230,7 +230,7 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
     // Only used in tests of legacy moves.
     public final <Result_> Result_ executeTemporary(ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move,
             TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
-        return executeTemporary(new LegacyMoveAdapter<>(move), postprocessor);
+        return executeTemporary(MoveAdapters.toNewMove(move), postprocessor);
     }
 
     @Override
