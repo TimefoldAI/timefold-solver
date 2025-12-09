@@ -6,7 +6,6 @@ import jakarta.xml.bind.annotation.XmlType;
 
 import ai.timefold.solver.core.config.heuristic.selector.move.MoveSelectorConfig;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.preview.api.move.ruin.BasicRuinAndRecreatePicker;
 
 import org.jspecify.annotations.NonNull;
 
@@ -18,7 +17,7 @@ import org.jspecify.annotations.NonNull;
 public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<AdvancedRuinRecreateMoveSelectorConfig> {
     public static final String XML_ELEMENT_NAME = "advancedRuinRecreateMoveSelector";
 
-    protected Class<? extends BasicRuinAndRecreatePicker<?, ?, ?, ?>> ruinAndRecreatePickerClass;
+    protected Class<?> ruinAndRecreatePickerClass;
 
     protected Class<?> entityClass = null;
     protected String variableName = null;
@@ -27,17 +26,17 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
     // Getters/Setters
     // **************************
 
-    public Class<? extends BasicRuinAndRecreatePicker<?, ?, ?, ?>> getRuinAndRecreatePickerClass() {
+    public Class<?> getRuinAndRecreatePickerClass() {
         return ruinAndRecreatePickerClass;
     }
 
     public void setRuinAndRecreatePickerClass(
-            Class<? extends BasicRuinAndRecreatePicker<?, ?, ?, ?>> ruinAndRecreatePickerClass) {
+            Class<?> ruinAndRecreatePickerClass) {
         this.ruinAndRecreatePickerClass = ruinAndRecreatePickerClass;
     }
 
     public @NonNull AdvancedRuinRecreateMoveSelectorConfig withRuinAndRecreatePickerClass(
-            @NonNull Class<? extends BasicRuinAndRecreatePicker<?, ?, ?, ?>> ruinAndRecreatePickerClass) {
+            @NonNull Class<?> ruinAndRecreatePickerClass) {
         this.setRuinAndRecreatePickerClass(ruinAndRecreatePickerClass);
         return this;
     }

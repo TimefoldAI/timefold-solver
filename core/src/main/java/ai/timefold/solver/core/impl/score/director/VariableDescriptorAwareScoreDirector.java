@@ -2,6 +2,7 @@ package ai.timefold.solver.core.impl.score.director;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
+import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 
@@ -9,6 +10,9 @@ public interface VariableDescriptorAwareScoreDirector<Solution_>
         extends ScoreDirector<Solution_> {
 
     SolutionDescriptor<Solution_> getSolutionDescriptor();
+
+    ListVariableStateSupply<Solution_, Object, Object>
+            getListVariableStateSupply(ListVariableDescriptor<Solution_> listVariableDescriptor);
 
     // ************************************************************************
     // Basic variable
