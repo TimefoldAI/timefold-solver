@@ -44,7 +44,7 @@ public interface TimefoldSolverEnterpriseService {
     String COMMUNITY_COORDINATES = "ai.timefold.solver:timefold-solver-core";
     String ENTERPRISE_NAME = "Enterprise Edition";
     String ENTERPRISE_COORDINATES = "ai.timefold.solver.enterprise:timefold-solver-enterprise-core";
-    String DEVELOPMENT_SNAPSHOT = "Development Snapshot";
+    String DEVELOPMENT_SNAPSHOT = "v999-SNAPSHOT";
 
     static String identifySolverVersion() {
         var packaging = COMMUNITY_NAME;
@@ -87,15 +87,16 @@ public interface TimefoldSolverEnterpriseService {
         var communityVersion = getVersionString(TimefoldSolverEnterpriseService.class);
         var enterpriseVersion = getVersionString(service.getClass());
         if (Objects.equals(communityVersion, enterpriseVersion)) { // Identical versions.
-            // We validate the user license at this point
-            try {
-                service.validateUserLicense();
-            } catch (CertificateException e) {
-                throw new IllegalStateException(e);
+            if (!enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) {
+                // We validate the user license at this point
+                try {
+                    service.validateUserLicense();
+                } catch (CertificateException e) {
+                    throw new IllegalStateException("User license validation has failed (%s).".formatted(enterpriseVersion), e);
+                }
             }
             return service;
         } else if (enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) { // Don't enforce when running Enterprise tests.
-            // We do not validate the user license for development snapshots.
             return service;
         }
         throw new IllegalStateException("""
