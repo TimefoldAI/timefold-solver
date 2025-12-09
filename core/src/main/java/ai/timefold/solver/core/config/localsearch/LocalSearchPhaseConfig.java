@@ -31,7 +31,7 @@ import ai.timefold.solver.core.config.localsearch.decider.forager.LocalSearchFor
 import ai.timefold.solver.core.config.phase.PhaseConfig;
 import ai.timefold.solver.core.config.solver.PreviewFeature;
 import ai.timefold.solver.core.config.util.ConfigUtils;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodProvider;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

@@ -3,11 +3,11 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi;
 import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.bi.MapBiToUniNode;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingMapper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.AftBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingMapper;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

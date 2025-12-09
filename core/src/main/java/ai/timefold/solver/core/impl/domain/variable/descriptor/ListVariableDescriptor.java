@@ -14,9 +14,9 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 

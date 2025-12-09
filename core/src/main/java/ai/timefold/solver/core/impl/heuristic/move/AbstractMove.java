@@ -9,7 +9,7 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
-import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
+import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
 
 /**

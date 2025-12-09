@@ -4,7 +4,7 @@ import java.util.Random;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.score.Score;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 

@@ -6,7 +6,7 @@ import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-import ai.timefold.solver.core.impl.neighborhood.move.MoveIterable;
+import ai.timefold.solver.core.impl.neighborhood.stream.MoveIterable;
 import ai.timefold.solver.core.preview.api.move.Move;
 
 import org.jspecify.annotations.NullMarked;

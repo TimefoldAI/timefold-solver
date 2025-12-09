@@ -30,7 +30,7 @@ import ai.timefold.solver.core.impl.domain.variable.InnerVariableListener;
 import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.supply.SupplyManager;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.phase.scope.SolverLifecyclePoint;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;

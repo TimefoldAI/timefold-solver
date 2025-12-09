@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 
 import org.jspecify.annotations.NullMarked;
 

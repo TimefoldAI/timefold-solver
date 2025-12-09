@@ -8,11 +8,6 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.bavet.common.GroupNodeConstructor;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 import ai.timefold.solver.core.impl.bavet.uni.Group1Mapping0CollectorUniNode;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.BiEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingJoiner;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingMapper;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.bi.JoinBiEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.AbstractEnumeratingStream;
@@ -21,6 +16,11 @@ import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridg
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.bridge.ForeBridgeUniEnumeratingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.joiner.BiEnumeratingJoinerComber;
 import ai.timefold.solver.core.impl.util.ConstantLambdaUtils;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.BiEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingMapper;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

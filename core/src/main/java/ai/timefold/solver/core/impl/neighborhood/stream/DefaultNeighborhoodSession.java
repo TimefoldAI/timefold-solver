@@ -2,13 +2,13 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSession;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniLeftDatasetInstance;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDataset;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.UniRightDatasetInstance;
 import ai.timefold.solver.core.preview.api.move.SolutionView;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodSession;
 
 import org.jspecify.annotations.NullMarked;
 

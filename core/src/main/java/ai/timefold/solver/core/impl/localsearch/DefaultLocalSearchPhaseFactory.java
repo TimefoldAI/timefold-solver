@@ -40,7 +40,6 @@ import ai.timefold.solver.core.impl.neighborhood.MoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.MoveSelectorBasedMoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsBasedMoveRepository;
 import ai.timefold.solver.core.impl.neighborhood.NeighborhoodsMoveSelector;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodProvider;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhood;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodBuilder;
@@ -48,6 +47,7 @@ import ai.timefold.solver.core.impl.phase.AbstractPhaseFactory;
 import ai.timefold.solver.core.impl.solver.recaller.BestSolutionRecaller;
 import ai.timefold.solver.core.impl.solver.termination.PhaseTermination;
 import ai.timefold.solver.core.impl.solver.termination.SolverTermination;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodProvider;
 
 public class DefaultLocalSearchPhaseFactory<Solution_> extends AbstractPhaseFactory<Solution_, LocalSearchPhaseConfig> {
 

@@ -5,16 +5,16 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
-import ai.timefold.solver.core.impl.neighborhood.move.InnerMoveStream;
-import ai.timefold.solver.core.impl.neighborhood.move.MoveIterable;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultMoveStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.DefaultNeighborhoodSession;
+import ai.timefold.solver.core.impl.neighborhood.stream.InnerMoveStream;
+import ai.timefold.solver.core.impl.neighborhood.stream.MoveIterable;
 import ai.timefold.solver.core.impl.phase.scope.AbstractPhaseScope;
 import ai.timefold.solver.core.impl.phase.scope.AbstractStepScope;
 import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.move.Move;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;

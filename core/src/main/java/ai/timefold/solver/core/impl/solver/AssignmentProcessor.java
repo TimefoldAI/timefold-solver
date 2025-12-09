@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
