@@ -1,6 +1,7 @@
 package ai.timefold.solver.core.enterprise;
 
 import java.lang.reflect.InvocationTargetException;
+import java.security.cert.CertificateException;
 import java.util.Objects;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -86,8 +87,15 @@ public interface TimefoldSolverEnterpriseService {
         var communityVersion = getVersionString(TimefoldSolverEnterpriseService.class);
         var enterpriseVersion = getVersionString(service.getClass());
         if (Objects.equals(communityVersion, enterpriseVersion)) { // Identical versions.
+            // We validate the user license at this point
+            try {
+                service.validateUserLicense();
+            } catch (CertificateException e) {
+                throw new IllegalStateException(e);
+            }
             return service;
         } else if (enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) { // Don't enforce when running Enterprise tests.
+            // We do not validate the user license for development snapshots.
             return service;
         }
         throw new IllegalStateException("""
@@ -100,12 +108,24 @@ public interface TimefoldSolverEnterpriseService {
     static <T> T buildOrDefault(Function<TimefoldSolverEnterpriseService, T> builder, Supplier<T> defaultValue) {
         try {
             var service = load();
+            var enterpriseVersion = getVersionString(service.getClass());
+            if (!enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) {
+                // We validate the user license at this point
+                service.validateUserLicense();
+            }
             return builder.apply(service);
         } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | InstantiationException
                 | IllegalAccessException e) {
             return defaultValue.get();
+        } catch (CertificateException e) {
+            throw new IllegalStateException(e);
         }
     }
+
+    /**
+     * It performs a security validation to ensure that the user license is valid.
+     */
+    void validateUserLicense() throws CertificateException;
 
     TopologicalOrderGraph buildTopologyGraph(int size);
 
