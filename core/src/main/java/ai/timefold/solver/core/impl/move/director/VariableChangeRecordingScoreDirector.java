@@ -9,7 +9,6 @@ import java.util.Objects;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.domain.variable.ListVariableStateSupply;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.ListVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.VariableDescriptor;
 import ai.timefold.solver.core.impl.heuristic.move.AbstractMove;
@@ -178,12 +177,6 @@ public final class VariableChangeRecordingScoreDirector<Solution_, Score_ extend
     @Override
     public ValueRangeManager<Solution_> getValueRangeManager() {
         return getBacking().getValueRangeManager();
-    }
-
-    @Override
-    public ListVariableStateSupply<Solution_, Object, Object>
-            getListVariableStateSupply(ListVariableDescriptor<Solution_> listVariableDescriptor) {
-        return backingScoreDirector.getListVariableStateSupply(listVariableDescriptor);
     }
 
     /**

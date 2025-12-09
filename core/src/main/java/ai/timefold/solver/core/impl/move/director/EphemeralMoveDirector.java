@@ -24,7 +24,7 @@ final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
         extends MoveDirector<Solution_, Score_> {
 
     EphemeralMoveDirector(InnerScoreDirector<Solution_, Score_> scoreDirector) {
-        super(new VariableChangeRecordingScoreDirector<>(scoreDirector), scoreDirector);
+        super(scoreDirector);
     }
 
     Move<Solution_> createUndoMove() {
