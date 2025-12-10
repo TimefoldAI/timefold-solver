@@ -1,8 +1,7 @@
 package ai.timefold.solver.core.enterprise;
 
 import java.lang.reflect.InvocationTargetException;
-import java.security.cert.CertificateException;
-import java.util.Objects;
+import java.lang.reflect.Method;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -44,7 +43,7 @@ public interface TimefoldSolverEnterpriseService {
     String COMMUNITY_COORDINATES = "ai.timefold.solver:timefold-solver-core";
     String ENTERPRISE_NAME = "Enterprise Edition";
     String ENTERPRISE_COORDINATES = "ai.timefold.solver.enterprise:timefold-solver-enterprise-core";
-    String DEVELOPMENT_SNAPSHOT = "v999-SNAPSHOT";
+    String DEVELOPMENT_SNAPSHOT = "Development Snapshot";
 
     static String identifySolverVersion() {
         var packaging = COMMUNITY_NAME;
@@ -58,75 +57,52 @@ public interface TimefoldSolverEnterpriseService {
         return packaging + " " + version;
     }
 
-    private static String getVersionString(Class<?> clz) {
+    static String getVersionString(Class<?> clz) {
         var version = clz.getPackage().getImplementationVersion();
         return (version == null ? DEVELOPMENT_SNAPSHOT : "v" + version);
     }
 
+    @SuppressWarnings("unchecked")
     static TimefoldSolverEnterpriseService load() throws ClassNotFoundException, NoSuchMethodException,
             InvocationTargetException, InstantiationException, IllegalAccessException {
         // Avoids ServiceLoader by using reflection directly.
         var clz = (Class<? extends TimefoldSolverEnterpriseService>) Class
                 .forName("ai.timefold.solver.enterprise.core.DefaultTimefoldSolverEnterpriseService");
-        return clz.getDeclaredConstructor().newInstance();
+        Method method = clz.getMethod("getInstance", Function.class);
+        return (TimefoldSolverEnterpriseService) method.invoke(null,
+                (Function<Class<?>, String>) TimefoldSolverEnterpriseService::getVersionString);
     }
 
     static TimefoldSolverEnterpriseService loadOrFail(Feature feature) {
-        TimefoldSolverEnterpriseService service;
         try {
-            service = load();
+            return load();
+        } catch (EnterpriseLicenseException cause) {
+            throw new IllegalStateException("""
+                    No valid Timefold Enterprise License was found.
+                    Please contact Timefold to obtain a valid license,
+                    or if you believe that this message was given in error.""",
+                    cause);
         } catch (Exception cause) {
             throw new IllegalStateException("""
                     %s requested but %s %s not found on classpath.
                     Either add the %s dependency, or %s.
-                    Note: %s %s is a commercial product. Visit https://timefold.ai to find out more."""
+                    Note: %s %s is a commercial product.
+                    Visit https://timefold.ai to find out more."""
                     .formatted(feature.getName(), SOLVER_NAME, ENTERPRISE_NAME, feature.getWorkaround(),
                             ENTERPRISE_COORDINATES, SOLVER_NAME, ENTERPRISE_NAME),
                     cause);
         }
-        var communityVersion = getVersionString(TimefoldSolverEnterpriseService.class);
-        var enterpriseVersion = getVersionString(service.getClass());
-        if (Objects.equals(communityVersion, enterpriseVersion)) { // Identical versions.
-            if (!enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) {
-                // We validate the user license at this point
-                try {
-                    service.validateUserLicense();
-                } catch (CertificateException e) {
-                    throw new IllegalStateException("User license validation has failed (%s).".formatted(enterpriseVersion), e);
-                }
-            }
-            return service;
-        } else if (enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) { // Don't enforce when running Enterprise tests.
-            return service;
-        }
-        throw new IllegalStateException("""
-                Detected mismatch between versions of %s %s (%s) and %s (%s).
-                Ensure your project uses the same version of %s and %s dependencies."""
-                .formatted(SOLVER_NAME, COMMUNITY_NAME, communityVersion, ENTERPRISE_NAME, enterpriseVersion,
-                        COMMUNITY_COORDINATES, ENTERPRISE_COORDINATES));
     }
 
     static <T> T buildOrDefault(Function<TimefoldSolverEnterpriseService, T> builder, Supplier<T> defaultValue) {
         try {
             var service = load();
-            var enterpriseVersion = getVersionString(service.getClass());
-            if (!enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) {
-                // We validate the user license at this point
-                service.validateUserLicense();
-            }
             return builder.apply(service);
         } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | InstantiationException
                 | IllegalAccessException e) {
             return defaultValue.get();
-        } catch (CertificateException e) {
-            throw new IllegalStateException(e);
         }
     }
-
-    /**
-     * It performs a security validation to ensure that the user license is valid.
-     */
-    void validateUserLicense() throws CertificateException;
 
     TopologicalOrderGraph buildTopologyGraph(int size);
 
@@ -183,6 +159,14 @@ public interface TimefoldSolverEnterpriseService {
 
         public String getWorkaround() {
             return workaround;
+        }
+
+    }
+
+    final class EnterpriseLicenseException extends RuntimeException {
+
+        public EnterpriseLicenseException(String message, Exception cause) {
+            super(message, cause);
         }
 
     }
