@@ -58,7 +58,7 @@ public final class VariableListenerSupport<Solution_> implements SupplyManager {
 
     public static <Solution_> VariableListenerSupport<Solution_> create(InnerScoreDirector<Solution_, ?> scoreDirector) {
         return new VariableListenerSupport<>(scoreDirector, new NotifiableRegistry<>(scoreDirector.getSolutionDescriptor()),
-                TimefoldSolverEnterpriseService.buildOrDefault(service -> service::buildTopologyGraph,
+                TimefoldSolverEnterpriseService.loadOrDefault(service -> service::buildTopologyGraph,
                         () -> DefaultTopologicalOrderGraph::new));
     }
 
