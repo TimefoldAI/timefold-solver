@@ -10,6 +10,7 @@ import ai.timefold.solver.core.impl.domain.entity.descriptor.EntityDescriptor;
 import ai.timefold.solver.core.impl.domain.policy.DescriptorPolicy;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.value.decorator.MovableChainedTrailingValueFilter;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 
 public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
@@ -183,6 +184,12 @@ public final class BasicVariableDescriptor<Solution_> extends GenuineVariableDes
 
     public SelectionFilter<Solution_, Object> getMovableChainedTrailingValueFilter() {
         return movableChainedTrailingValueFilter;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <Entity_, Value_> PlanningVariableMetaModel<Solution_, Entity_, Value_> getVariableMetaModel() {
+        return (PlanningVariableMetaModel<Solution_, Entity_, Value_>) super.getVariableMetaModel();
     }
 
     private record SortingProperties(String comparatorPropertyName, Class<? extends Comparator> comparatorClass,

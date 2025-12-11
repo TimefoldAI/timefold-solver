@@ -131,12 +131,13 @@ public abstract class VariableDescriptor<Solution_> {
                 && !genuineVariableDescriptor.isInitialized(entity);
     }
 
-    public VariableMetaModel<Solution_, ?, ?> getVariableMetaModel() {
+    @SuppressWarnings("unchecked")
+    public <Entity_, Value_> VariableMetaModel<Solution_, Entity_, Value_> getVariableMetaModel() {
         if (cachedMetamodel != null) {
-            return cachedMetamodel;
+            return (VariableMetaModel<Solution_, Entity_, Value_>) cachedMetamodel;
         }
         cachedMetamodel = entityDescriptor.getEntityMetaModel()
                 .variable(variableName);
-        return cachedMetamodel;
+        return (VariableMetaModel<Solution_, Entity_, Value_>) cachedMetamodel;
     }
 }
