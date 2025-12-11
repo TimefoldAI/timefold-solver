@@ -14,8 +14,8 @@ import ai.timefold.solver.core.config.heuristic.selector.common.nearby.NearbySel
 import ai.timefold.solver.core.config.heuristic.selector.entity.EntitySelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.DestinationSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.list.SubListSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.AdvancedRuinRecreateMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.AdvancedListRuinRecreateMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.MultiStageMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListMultiStageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.value.ValueSelectorConfig;
 import ai.timefold.solver.core.config.partitionedsearch.PartitionedSearchPhaseConfig;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
@@ -144,13 +144,13 @@ public interface TimefoldSolverEnterpriseService {
             HeuristicConfigPolicy<Solution_> configPolicy, SelectionCacheType minimumCacheType,
             SelectionOrder resolvedSelectionOrder, ElementDestinationSelector<Solution_> destinationSelector);
 
-    <Solution_> AbstractMoveSelectorFactory<Solution_, AdvancedRuinRecreateMoveSelectorConfig>
-            buildBasicAdvancedRuinRecreateMoveSelectorFactory(
-                    AdvancedRuinRecreateMoveSelectorConfig moveSelectorConfig);
+    <Solution_> AbstractMoveSelectorFactory<Solution_, MultiStageMoveSelectorConfig>
+            buildBasicMultiStageMoveSelectorFactory(
+                    MultiStageMoveSelectorConfig moveSelectorConfig);
 
-    <Solution_> AbstractMoveSelectorFactory<Solution_, AdvancedListRuinRecreateMoveSelectorConfig>
-            buildListAdvancedRuinRecreateMoveSelectorFactory(
-                    AdvancedListRuinRecreateMoveSelectorConfig moveSelectorConfig);
+    <Solution_> AbstractMoveSelectorFactory<Solution_, ListMultiStageMoveSelectorConfig>
+            buildListMultistageMoveSelectorFactory(
+                    ListMultiStageMoveSelectorConfig moveSelectorConfig);
 
     enum Feature {
         MULTITHREADED_SOLVING("Multi-threaded solving", "remove moveThreadCount from solver configuration"),

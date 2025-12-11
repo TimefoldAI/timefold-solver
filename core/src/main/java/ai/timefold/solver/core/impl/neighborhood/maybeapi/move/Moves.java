@@ -61,12 +61,14 @@ public final class Moves {
     }
 
     public static <Solution_, Entity_, Value_> Move<Solution_> unassign(
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, PositionInList targetPosition) {
-        return unassign(targetPosition.entity(), variableMetaModel, targetPosition.index());
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+            PositionInList targetPosition) {
+        return unassign(variableMetaModel, targetPosition.entity(), targetPosition.index());
     }
 
-    public static <Solution_, Entity_, Value_> Move<Solution_> unassign(Entity_ entity,
-            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, int index) {
+    public static <Solution_, Entity_, Value_> Move<Solution_> unassign(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel, Entity_ entity,
+            int index) {
         return new ListUnassignMove<>(variableMetaModel, entity, index);
     }
 

@@ -10,14 +10,14 @@ import ai.timefold.solver.core.config.util.ConfigUtils;
 import org.jspecify.annotations.NonNull;
 
 @XmlType(propOrder = {
-        "ruinAndRecreatePickerClass",
+        "stageProviderClass",
         "entityClass",
         "variableName"
 })
-public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<AdvancedRuinRecreateMoveSelectorConfig> {
-    public static final String XML_ELEMENT_NAME = "advancedRuinRecreateMoveSelector";
+public class MultiStageMoveSelectorConfig extends MoveSelectorConfig<MultiStageMoveSelectorConfig> {
+    public static final String XML_ELEMENT_NAME = "multiStageMoveSelector";
 
-    protected Class<?> ruinAndRecreatePickerClass;
+    protected Class<?> stageProviderClass;
 
     protected Class<?> entityClass = null;
     protected String variableName = null;
@@ -26,18 +26,18 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
     // Getters/Setters
     // **************************
 
-    public Class<?> getRuinAndRecreatePickerClass() {
-        return ruinAndRecreatePickerClass;
+    public Class<?> getStageProviderClass() {
+        return stageProviderClass;
     }
 
-    public void setRuinAndRecreatePickerClass(
-            Class<?> ruinAndRecreatePickerClass) {
-        this.ruinAndRecreatePickerClass = ruinAndRecreatePickerClass;
+    public void setStageProviderClass(
+            Class<?> stageProviderClass) {
+        this.stageProviderClass = stageProviderClass;
     }
 
-    public @NonNull AdvancedRuinRecreateMoveSelectorConfig withRuinAndRecreatePickerClass(
-            @NonNull Class<?> ruinAndRecreatePickerClass) {
-        this.setRuinAndRecreatePickerClass(ruinAndRecreatePickerClass);
+    public @NonNull MultiStageMoveSelectorConfig withStageProviderClass(
+            @NonNull Class<?> stageProviderClass) {
+        this.setStageProviderClass(stageProviderClass);
         return this;
     }
 
@@ -49,7 +49,7 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
         this.entityClass = entityClass;
     }
 
-    public @NonNull AdvancedRuinRecreateMoveSelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
+    public @NonNull MultiStageMoveSelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
         this.setEntityClass(entityClass);
         return this;
     }
@@ -62,7 +62,7 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
         this.variableName = variableName;
     }
 
-    public @NonNull AdvancedRuinRecreateMoveSelectorConfig withVariableName(@NonNull String variableName) {
+    public @NonNull MultiStageMoveSelectorConfig withVariableName(@NonNull String variableName) {
         this.setVariableName(variableName);
         return this;
     }
@@ -77,22 +77,22 @@ public class AdvancedRuinRecreateMoveSelectorConfig extends MoveSelectorConfig<A
     }
 
     @Override
-    public @NonNull AdvancedRuinRecreateMoveSelectorConfig copyConfig() {
-        return new AdvancedRuinRecreateMoveSelectorConfig().inherit(this);
+    public @NonNull MultiStageMoveSelectorConfig copyConfig() {
+        return new MultiStageMoveSelectorConfig().inherit(this);
     }
 
     @Override
     public void visitReferencedClasses(@NonNull Consumer<Class<?>> classVisitor) {
-        classVisitor.accept(ruinAndRecreatePickerClass);
+        classVisitor.accept(stageProviderClass);
     }
 
     @Override
-    public @NonNull AdvancedRuinRecreateMoveSelectorConfig
-            inherit(@NonNull AdvancedRuinRecreateMoveSelectorConfig inheritedConfig) {
+    public @NonNull MultiStageMoveSelectorConfig
+            inherit(@NonNull MultiStageMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
-        ruinAndRecreatePickerClass =
-                ConfigUtils.inheritOverwritableProperty(ruinAndRecreatePickerClass,
-                        inheritedConfig.getRuinAndRecreatePickerClass());
+        stageProviderClass =
+                ConfigUtils.inheritOverwritableProperty(stageProviderClass,
+                        inheritedConfig.getStageProviderClass());
         entityClass =
                 ConfigUtils.inheritOverwritableProperty(entityClass, inheritedConfig.getEntityClass());
         variableName =

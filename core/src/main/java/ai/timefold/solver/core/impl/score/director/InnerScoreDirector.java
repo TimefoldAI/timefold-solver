@@ -269,7 +269,7 @@ public interface InnerScoreDirector<Solution_, Score_ extends Score<Score_>>
 
     ValueRangeManager<Solution_> getValueRangeManager();
 
-    ListVariableStateSupply<Solution_, Object, Object>
+    <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
             getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor);
 
     InnerScoreDirector<Solution_, Score_> createChildThreadScoreDirector(ChildThreadType childThreadType);

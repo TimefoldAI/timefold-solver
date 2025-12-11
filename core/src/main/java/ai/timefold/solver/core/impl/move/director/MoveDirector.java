@@ -271,7 +271,8 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         return !entityDescriptor.isMovable(backingScoreDirector.getWorkingSolution(), entity);
     }
 
-    protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(InnerScoreDirector<Solution_, ?> scoreDirector,
+    protected static <Solution_, Entity_, Value_> ElementPosition getPositionOf(
+            InnerScoreDirector<Solution_, ?> scoreDirector,
             PlanningListVariableMetaModel<Solution_, Entity_, Value_> listVariableDescriptor, Value_ value) {
         return scoreDirector.getListVariableStateSupply(extractVariableDescriptor(listVariableDescriptor))
                 .getElementPosition(value);
