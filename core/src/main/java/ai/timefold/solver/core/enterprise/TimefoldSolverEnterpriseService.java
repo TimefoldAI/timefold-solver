@@ -50,7 +50,7 @@ public interface TimefoldSolverEnterpriseService {
         try {
             load();
             packaging = ENTERPRISE_NAME;
-        } catch (Throwable e) {
+        } catch (Exception e) {
             // No need to do anything, just checking if Enterprise exists.
         }
         var version = getVersionString(SolverFactory.class);
@@ -82,7 +82,7 @@ public interface TimefoldSolverEnterpriseService {
                     Please contact Timefold to obtain a valid license,
                     or if you believe that this message was given in error.""",
                     cause);
-        } catch (Throwable cause) {
+        } catch (Exception cause) {
             throw new IllegalStateException("""
                     %s requested but %s %s could not be loaded.
                     Maybe add the %s dependency, or %s.
@@ -97,7 +97,7 @@ public interface TimefoldSolverEnterpriseService {
     static <T> T loadOrDefault(Function<TimefoldSolverEnterpriseService, T> builder, Supplier<T> defaultValue) {
         try {
             return builder.apply(load());
-        } catch (Throwable e) {
+        } catch (Exception e) {
             return defaultValue.get();
         }
     }
