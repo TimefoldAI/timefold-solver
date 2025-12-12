@@ -40,7 +40,7 @@ public sealed interface PropagationQueue<T>
     /**
      * Double updates of the same item count as a single update.
      *
-     * @param item
+     * @param item the item to be updated in the propagation queue
      */
     void update(T item);
 
