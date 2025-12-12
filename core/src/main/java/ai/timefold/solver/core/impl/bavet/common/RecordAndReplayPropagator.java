@@ -22,8 +22,7 @@ import org.jspecify.annotations.NullMarked;
 
 /**
  * The implementation records the tuples each object affects inside
- * an internal {@link ai.timefold.solver.core.impl.bavet.NodeNetwork} and
- * replays them on update.
+ * an internal {@link NodeNetwork} and replays them on update.
  * Used by {@link AbstractPrecomputeNode} to precompute constraint streams.
  *
  * @param <Tuple_>
@@ -33,7 +32,6 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
         implements Propagator {
 
     private final Set<Object> retractQueue;
-    private final Set<Object> updateQueue;
     private final Set<Object> insertQueue;
 
     // Store entities and facts separately; we don't need to precompute
@@ -58,7 +56,6 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
 
         // Guesstimate that updates are dominant.
         this.retractQueue = CollectionUtils.newIdentityHashSet(size / 20);
-        this.updateQueue = CollectionUtils.newIdentityHashSet((size / 20) * 18);
         this.insertQueue = CollectionUtils.newIdentityHashSet(size / 20);
         this.objectClassToIsEntitySourceClass = new HashMap<>();
         this.seenEntitySet = CollectionUtils.newIdentityHashSet(size);
@@ -80,7 +77,14 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     }
 
     public void update(Object object) {
-        updateQueue.add(object);
+        // Updates happen very frequently, so we optimize by avoiding the update queue
+        // and going straight to the propagation queue.
+        // The propagation queue deduplicates updates internally.
+        var outTupleList = objectToOutputTuplesMap.get(object);
+        if (outTupleList == null) {
+            return;
+        }
+        outTupleList.forEach(propagationQueue::update);
     }
 
     public void retract(Object object) {
@@ -129,7 +133,6 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
                 }
             }
 
-            updateQueue.clear();
             retractQueue.clear();
             insertQueue.clear();
 
@@ -154,12 +157,6 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
 
     @Override
     public void propagateUpdates() {
-        Set<Tuple_> updatedTuples = CollectionUtils.newIdentityHashSet(2 * updateQueue.size());
-        for (var update : updateQueue) {
-            updatedTuples.addAll(objectToOutputTuplesMap.get(update));
-        }
-        updateQueue.clear();
-        updatedTuples.forEach(propagationQueue::update);
         propagationQueue.propagateUpdates();
     }
 
