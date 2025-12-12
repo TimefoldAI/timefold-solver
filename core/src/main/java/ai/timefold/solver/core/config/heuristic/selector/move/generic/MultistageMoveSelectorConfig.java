@@ -14,8 +14,8 @@ import org.jspecify.annotations.NonNull;
         "entityClass",
         "variableName"
 })
-public class MultiStageMoveSelectorConfig extends MoveSelectorConfig<MultiStageMoveSelectorConfig> {
-    public static final String XML_ELEMENT_NAME = "multiStageMoveSelector";
+public class MultistageMoveSelectorConfig extends MoveSelectorConfig<MultistageMoveSelectorConfig> {
+    public static final String XML_ELEMENT_NAME = "multistageMoveSelector";
 
     protected Class<?> stageProviderClass;
 
@@ -35,7 +35,7 @@ public class MultiStageMoveSelectorConfig extends MoveSelectorConfig<MultiStageM
         this.stageProviderClass = stageProviderClass;
     }
 
-    public @NonNull MultiStageMoveSelectorConfig withStageProviderClass(
+    public @NonNull MultistageMoveSelectorConfig withStageProviderClass(
             @NonNull Class<?> stageProviderClass) {
         this.setStageProviderClass(stageProviderClass);
         return this;
@@ -49,7 +49,7 @@ public class MultiStageMoveSelectorConfig extends MoveSelectorConfig<MultiStageM
         this.entityClass = entityClass;
     }
 
-    public @NonNull MultiStageMoveSelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
+    public @NonNull MultistageMoveSelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
         this.setEntityClass(entityClass);
         return this;
     }
@@ -62,7 +62,7 @@ public class MultiStageMoveSelectorConfig extends MoveSelectorConfig<MultiStageM
         this.variableName = variableName;
     }
 
-    public @NonNull MultiStageMoveSelectorConfig withVariableName(@NonNull String variableName) {
+    public @NonNull MultistageMoveSelectorConfig withVariableName(@NonNull String variableName) {
         this.setVariableName(variableName);
         return this;
     }
@@ -77,8 +77,8 @@ public class MultiStageMoveSelectorConfig extends MoveSelectorConfig<MultiStageM
     }
 
     @Override
-    public @NonNull MultiStageMoveSelectorConfig copyConfig() {
-        return new MultiStageMoveSelectorConfig().inherit(this);
+    public @NonNull MultistageMoveSelectorConfig copyConfig() {
+        return new MultistageMoveSelectorConfig().inherit(this);
     }
 
     @Override
@@ -87,8 +87,8 @@ public class MultiStageMoveSelectorConfig extends MoveSelectorConfig<MultiStageM
     }
 
     @Override
-    public @NonNull MultiStageMoveSelectorConfig
-            inherit(@NonNull MultiStageMoveSelectorConfig inheritedConfig) {
+    public @NonNull MultistageMoveSelectorConfig
+            inherit(@NonNull MultistageMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         stageProviderClass =
                 ConfigUtils.inheritOverwritableProperty(stageProviderClass,

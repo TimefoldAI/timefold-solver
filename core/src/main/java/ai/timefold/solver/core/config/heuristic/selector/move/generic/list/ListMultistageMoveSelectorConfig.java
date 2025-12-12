@@ -12,8 +12,8 @@ import org.jspecify.annotations.NonNull;
 @XmlType(propOrder = {
         "stageProviderClass"
 })
-public class ListMultiStageMoveSelectorConfig extends MoveSelectorConfig<ListMultiStageMoveSelectorConfig> {
-    public static final String XML_ELEMENT_NAME = "listMultiStageMoveSelector";
+public class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<ListMultistageMoveSelectorConfig> {
+    public static final String XML_ELEMENT_NAME = "listMultistageMoveSelector";
 
     protected Class<?> stageProviderClass;
 
@@ -30,7 +30,7 @@ public class ListMultiStageMoveSelectorConfig extends MoveSelectorConfig<ListMul
         this.stageProviderClass = stageProviderClass;
     }
 
-    public @NonNull ListMultiStageMoveSelectorConfig withStageProviderClass(
+    public @NonNull ListMultistageMoveSelectorConfig withStageProviderClass(
             @NonNull Class<?> stageProviderClass) {
         this.setStageProviderClass(stageProviderClass);
         return this;
@@ -46,8 +46,8 @@ public class ListMultiStageMoveSelectorConfig extends MoveSelectorConfig<ListMul
     }
 
     @Override
-    public @NonNull ListMultiStageMoveSelectorConfig copyConfig() {
-        return new ListMultiStageMoveSelectorConfig().inherit(this);
+    public @NonNull ListMultistageMoveSelectorConfig copyConfig() {
+        return new ListMultistageMoveSelectorConfig().inherit(this);
     }
 
     @Override
@@ -56,8 +56,8 @@ public class ListMultiStageMoveSelectorConfig extends MoveSelectorConfig<ListMul
     }
 
     @Override
-    public @NonNull ListMultiStageMoveSelectorConfig
-            inherit(@NonNull ListMultiStageMoveSelectorConfig inheritedConfig) {
+    public @NonNull ListMultistageMoveSelectorConfig
+            inherit(@NonNull ListMultistageMoveSelectorConfig inheritedConfig) {
         super.inherit(inheritedConfig);
         stageProviderClass =
                 ConfigUtils.inheritOverwritableProperty(stageProviderClass,

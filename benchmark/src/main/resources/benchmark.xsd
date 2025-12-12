@@ -1178,10 +1178,10 @@
             <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                                     
             
-            <xs:element name="multiStageMoveSelector" type="tns:multiStageMoveSelectorConfig"/>
+            <xs:element name="multistageMoveSelector" type="tns:multistageMoveSelectorConfig"/>
                                     
             
-            <xs:element name="listMultiStageMoveSelector" type="tns:listMultiStageMoveSelectorConfig"/>
+            <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
                                     
             
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
@@ -2033,10 +2033,10 @@
             <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                                     
             
-            <xs:element name="multiStageMoveSelector" type="tns:multiStageMoveSelectorConfig"/>
+            <xs:element name="multistageMoveSelector" type="tns:multistageMoveSelectorConfig"/>
                                     
             
-            <xs:element name="listMultiStageMoveSelector" type="tns:listMultiStageMoveSelectorConfig"/>
+            <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
                                     
             
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
@@ -2078,7 +2078,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="multiStageMoveSelectorConfig">
+  <xs:complexType name="multistageMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -2111,7 +2111,7 @@
   </xs:complexType>
       
   
-  <xs:complexType name="listMultiStageMoveSelectorConfig">
+  <xs:complexType name="listMultistageMoveSelectorConfig">
             
     
     <xs:complexContent>
@@ -2453,10 +2453,10 @@
             <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                                     
             
-            <xs:element name="multiStageMoveSelector" type="tns:multiStageMoveSelectorConfig"/>
+            <xs:element name="multistageMoveSelector" type="tns:multistageMoveSelectorConfig"/>
                                     
             
-            <xs:element name="listMultiStageMoveSelector" type="tns:listMultiStageMoveSelectorConfig"/>
+            <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
                                     
             
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>

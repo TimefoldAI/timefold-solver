@@ -8,7 +8,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.composite.UnionMov
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.MultiStageMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.MultistageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
@@ -18,7 +18,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.Su
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
-import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListMultiStageMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListMultistageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
@@ -87,11 +87,11 @@ public interface MoveSelectorFactory<Solution_> {
             return new UnionMoveSelectorFactory<>(unionMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof CartesianProductMoveSelectorConfig cartesianProductMoveSelectorConfig) {
             return new CartesianProductMoveSelectorFactory<>(cartesianProductMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof MultiStageMoveSelectorConfig advancedRuinRecreateMoveSelectorConfig) {
+        } else if (moveSelectorConfig instanceof MultistageMoveSelectorConfig advancedRuinRecreateMoveSelectorConfig) {
             var enterpriseService = TimefoldSolverEnterpriseService
                     .loadOrFail(TimefoldSolverEnterpriseService.Feature.ADVANCED_RUIN_AND_RECREATE);
-            return enterpriseService.buildBasicMultiStageMoveSelectorFactory(advancedRuinRecreateMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof ListMultiStageMoveSelectorConfig advancedListRuinRecreateMoveSelectorConfig) {
+            return enterpriseService.buildBasicMultistageMoveSelectorFactory(advancedRuinRecreateMoveSelectorConfig);
+        } else if (moveSelectorConfig instanceof ListMultistageMoveSelectorConfig advancedListRuinRecreateMoveSelectorConfig) {
             var enterpriseService = TimefoldSolverEnterpriseService
                     .loadOrFail(TimefoldSolverEnterpriseService.Feature.ADVANCED_RUIN_AND_RECREATE);
             return enterpriseService

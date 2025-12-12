@@ -425,6 +425,58 @@ to control the frequency of this move:
 The above configuration will run the `RuinRecreateMove` once for every 100 fine-grained moves.
 As always, benchmarking is recommended to find the optimal value for your use case.
 
+[#multistageMoveSelector]
+=== `MultistageMoveSelector`
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
+The `multistageMoveSelector` selects a multistage move to execute from a `BasicVariableStageProvider`.
+
+The `BasicVariableStageProvider` is initialized from the working solution at phase start and when selected supplies a list of `BasicVariableCustomStage`, which each select a move and are executed in order.
+
+Each `BasicVariableCustomStage` has access to a `BasicVariableMoveEvaluator` which allows the stage to evaluate moves without executing them.
+
+Configuration:
+
+[source,xml,options="nowrap"]
+----
+    <multistageMoveSelector>
+        <stageProviderClass>...MyStageProvider</stageProviderClass>
+        <entityClass>...Shift</entityClass>
+        <variableName>employee</variableName>
+    </multistageMoveSelector>
+----
+
+[source,java,options="nowrap"]
+----
+public class MyStageProvider implements BasicVariableStageProvider<Schedule, Shift, Employee, HardSoftScore> {
+    List<Shift> shiftList;
+    Map<String, List<Employee>> employeesBySkillMap;
+
+    @Override
+    public void initialize(Schedule schedule) {
+        this.shiftList = schedule.getShifts();
+        this.employeesBySkillMap = new HashMap<>();
+
+        for (var employee : schedule.getEmployees()) {
+            this.employeesBySkillMap.computeIfAbsent(employee.getSkill(), ignored -> new ArrayList<>()).add(employee);
+        }
+    }
+
+    @Override
+    public List<BasicVariableCustomStage<Schedule, Shift, Employee, HardSoftScore>>
+            createStages(Random random) {
+        var shift = shiftList.get(random.nextInt(shiftList.size()));
+        var employeesWithSkill = employeesBySkillMap.get(shift.getRequiredSkill());
+        return List.of(
+                BasicVariableCustomStage.bestFit(shift, employeesWithSkill));
+    }
+}
+----
 
 [#listMoveSelectors]
 == Move selectors for list variables
@@ -652,6 +704,56 @@ to control the frequency of this move:
 The above configuration will run the `ListRuinRecreateMove` once for every 100 fine-grained moves.
 As always, benchmarking is recommended to find the optimal value for your use case.
 
+[#listMultistageMoveSelector]
+=== `ListMultistageMoveSelector`
+
+[NOTE]
+====
+This feature is a commercial feature of Timefold Solver Enterprise Edition.
+It is not available in the Community Edition.
+====
+
+The `listMultistageMoveSelector` selects a multistage move to execute from a `ListVariableStageProvider`.
+
+The `ListVariableStageProvider` is initialized from the working solution at phase start and when selected supplies a list of `ListVariableCustomStage`, which each select a move and are executed in order.
+
+Each `ListVariableCustomStage` has access to a `ListVariableMoveEvaluator` which allows the stage to evaluate moves without executing them.
+
+Configuration:
+
+[source,xml,options="nowrap"]
+----
+    <listMultistageMoveSelector>
+        <stageProviderClass>...MyStageProvider</stageProviderClass>
+    </listMultistageMoveSelector>
+----
+
+[source,java,options="nowrap"]
+----
+public class MyStageProvider implements ListVariableStageProvider<RoutePlan, Vehicle, Visit, HardSoftScore> {
+    List<Visit> visitList;
+    Map<String, List<Vehicle>> vehiclesBySkillMap;
+
+    @Override
+    public void initialize(RoutePlan routePlan) {
+        this.visitList = routePlan.getVisits();
+        this.vehiclesBySkillMap = new HashMap<>();
+
+        for (var vehicle : routePlan.getVehicles()) {
+            this.vehiclesBySkillMap.computeIfAbsent(vehicle.getSkill(), ignored -> new ArrayList<>()).add(vehicle);
+        }
+    }
+
+    @Override
+    public List<ListVariableCustomStage<RoutePlan, Vehicle, Visit, HardSoftScore>>
+            createStages(Random random) {
+        var visit = visitList.get(random.nextInt(visitList.size()));
+        var vehiclesWithSkill = vehiclesBySkillMap.get(visit.getRequiredSkill());
+        return List.of(
+                ListVariableCustomStage.bestFit(visit, vehiclesWithSkill));
+    }
+}
+----
 
 [#chainMoveSelectors]
 == Move selectors for chained variables
