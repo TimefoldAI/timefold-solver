@@ -37,6 +37,11 @@ public sealed interface PropagationQueue<T>
 
     void insert(T item);
 
+    /**
+     * Double updates of the same item count as a single update.
+     *
+     * @param item
+     */
     void update(T item);
 
     void retract(T item, TupleState state);
