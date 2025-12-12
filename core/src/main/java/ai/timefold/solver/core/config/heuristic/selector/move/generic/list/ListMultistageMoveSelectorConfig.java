@@ -30,6 +30,10 @@ public class ListMultistageMoveSelectorConfig extends MoveSelectorConfig<ListMul
         this.stageProviderClass = stageProviderClass;
     }
 
+    // **************************
+    // With methods
+    // **************************
+
     public @NonNull ListMultistageMoveSelectorConfig withStageProviderClass(
             @NonNull Class<?> stageProviderClass) {
         this.setStageProviderClass(stageProviderClass);

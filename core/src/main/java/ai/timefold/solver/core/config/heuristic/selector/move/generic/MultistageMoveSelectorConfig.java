@@ -35,12 +35,6 @@ public class MultistageMoveSelectorConfig extends MoveSelectorConfig<MultistageM
         this.stageProviderClass = stageProviderClass;
     }
 
-    public @NonNull MultistageMoveSelectorConfig withStageProviderClass(
-            @NonNull Class<?> stageProviderClass) {
-        this.setStageProviderClass(stageProviderClass);
-        return this;
-    }
-
     public Class<?> getEntityClass() {
         return entityClass;
     }
@@ -49,17 +43,27 @@ public class MultistageMoveSelectorConfig extends MoveSelectorConfig<MultistageM
         this.entityClass = entityClass;
     }
 
-    public @NonNull MultistageMoveSelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
-        this.setEntityClass(entityClass);
-        return this;
-    }
-
     public String getVariableName() {
         return variableName;
     }
 
     public void setVariableName(String variableName) {
         this.variableName = variableName;
+    }
+
+    // **************************
+    // With methods
+    // **************************
+
+    public @NonNull MultistageMoveSelectorConfig withStageProviderClass(
+            @NonNull Class<?> stageProviderClass) {
+        this.setStageProviderClass(stageProviderClass);
+        return this;
+    }
+
+    public @NonNull MultistageMoveSelectorConfig withEntityClass(@NonNull Class<?> entityClass) {
+        this.setEntityClass(entityClass);
+        return this;
     }
 
     public @NonNull MultistageMoveSelectorConfig withVariableName(@NonNull String variableName) {
