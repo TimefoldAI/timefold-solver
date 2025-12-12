@@ -27,7 +27,7 @@ see https://timefold.ai/pricing[Timefold Pricing].
 // =============================
 // To switch from Timefold Solver Community Edition to Enterprise Edition,
 // https://timefold.ai/contact[contact us first] to obtain an Enterprise License.
-// This license is represented by a file named `timefold-enterprise-license.pem`,
+// This license is represented by a file named `timefold-solver-enterprise-license.pem`,
 // which you can introduce to your project by one of the following methods:
 //
 // * Place the file in the user's home directory.
