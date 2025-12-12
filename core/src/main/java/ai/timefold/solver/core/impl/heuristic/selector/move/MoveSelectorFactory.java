@@ -89,11 +89,11 @@ public interface MoveSelectorFactory<Solution_> {
             return new CartesianProductMoveSelectorFactory<>(cartesianProductMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof MultistageMoveSelectorConfig advancedRuinRecreateMoveSelectorConfig) {
             var enterpriseService = TimefoldSolverEnterpriseService
-                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.ADVANCED_RUIN_AND_RECREATE);
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
             return enterpriseService.buildBasicMultistageMoveSelectorFactory(advancedRuinRecreateMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof ListMultistageMoveSelectorConfig advancedListRuinRecreateMoveSelectorConfig) {
             var enterpriseService = TimefoldSolverEnterpriseService
-                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.ADVANCED_RUIN_AND_RECREATE);
+                    .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
             return enterpriseService
                     .buildListMultistageMoveSelectorFactory(advancedListRuinRecreateMoveSelectorConfig);
         } else {

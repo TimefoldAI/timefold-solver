@@ -158,8 +158,8 @@ public interface TimefoldSolverEnterpriseService {
         NEARBY_SELECTION("Nearby selection", "remove nearby selection from solver configuration"),
         AUTOMATIC_NODE_SHARING("Automatic node sharing",
                 "remove automatic node sharing from solver configuration"),
-        ADVANCED_RUIN_AND_RECREATE("Advanced ruin and recreate",
-                "remove advancedRuinRecreateMoveSelector and/or advancedListRuinRecreateMoveSelector from the solver configuration");
+        MULTISTAGE_MOVE("Multistage move selector",
+                "remove multistageMoveSelector and/or listMultistageMoveSelector from the solver configuration");
 
         private final String name;
         private final String workaround;
