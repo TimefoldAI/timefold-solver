@@ -13,7 +13,9 @@ You are allowed to use Timefold Solver Enterprise Edition for evaluation and dev
 Please https://timefold.ai/contact[contact Timefold]
 to obtain the credentials necessary to start your evaluation.
 
-TIP: Looking for quicker time-to-value? Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required. Just plug into our API and start optimizing immediately.
+TIP: Looking for quicker time-to-value?
+Timefold offers https://docs.timefold.ai/[pre-built, fully tuned optimization models], no constraint building required.
+Just plug into our API and start optimizing immediately.
 
 For a high-level overview of the differences between Timefold offerings,
 see https://timefold.ai/pricing[Timefold Pricing].
@@ -21,8 +23,22 @@ see https://timefold.ai/pricing[Timefold Pricing].
 [#switchToEnterpriseEdition]
 == Switch to Enterprise Edition
 
-To switch from Timefold Solver Community Edition to Enterprise Edition,
-first reference the Enterprise Edition Maven repository in your project:
+// Uncomment the following when ready to enable the Enterprise license
+// =============================
+// To switch from Timefold Solver Community Edition to Enterprise Edition,
+// https://timefold.ai/contact[contact us first] to obtain an Enterprise License.
+// This license is represented by a file named `timefold-solver-enterprise-license.pem`,
+// which you can introduce to your project by one of the following methods:
+//
+// * Place the file in the user's home directory.
+// * Store the path to the file in `TIMEFOLD_ENTERPRISE_LICENSE` system property.
+// * Place the file in the root of your application classpath.
+//
+// Having done that, reference the Enterprise Edition Maven repository in your project:
+// =============================
+// Also delete the next line of text.
+
+First reference the Enterprise Edition Maven repository in your project:
 
 [tabs]
 ====
@@ -91,7 +107,8 @@ repositories {
 --
 ====
 
-Having done the above, replace references to Community Edition artifacts by their Enterprise Edition counterparts
+Finally, having done all of the above,
+replace references to Community Edition artifacts by their Enterprise Edition counterparts
 as shown in the following table:
 
 |===

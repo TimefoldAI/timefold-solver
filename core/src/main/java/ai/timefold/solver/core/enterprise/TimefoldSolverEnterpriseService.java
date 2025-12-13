@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.enterprise;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Objects;
+import java.lang.reflect.Method;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -57,52 +57,47 @@ public interface TimefoldSolverEnterpriseService {
         return packaging + " " + version;
     }
 
-    private static String getVersionString(Class<?> clz) {
+    @SuppressWarnings("unchecked")
+    static TimefoldSolverEnterpriseService load()
+            throws ClassNotFoundException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
+        // Avoids ServiceLoader by using reflection directly.
+        var clz = (Class<? extends TimefoldSolverEnterpriseService>) Class
+                .forName("ai.timefold.solver.enterprise.core.DefaultTimefoldSolverEnterpriseService");
+        Method method = clz.getMethod("getInstance", Function.class);
+        return (TimefoldSolverEnterpriseService) method.invoke(null,
+                (Function<Class<?>, String>) TimefoldSolverEnterpriseService::getVersionString);
+    }
+
+    static String getVersionString(Class<?> clz) {
         var version = clz.getPackage().getImplementationVersion();
         return (version == null ? DEVELOPMENT_SNAPSHOT : "v" + version);
     }
 
-    static TimefoldSolverEnterpriseService load() throws ClassNotFoundException, NoSuchMethodException,
-            InvocationTargetException, InstantiationException, IllegalAccessException {
-        // Avoids ServiceLoader by using reflection directly.
-        var clz = (Class<? extends TimefoldSolverEnterpriseService>) Class
-                .forName("ai.timefold.solver.enterprise.core.DefaultTimefoldSolverEnterpriseService");
-        return clz.getDeclaredConstructor().newInstance();
-    }
-
     static TimefoldSolverEnterpriseService loadOrFail(Feature feature) {
-        TimefoldSolverEnterpriseService service;
         try {
-            service = load();
+            return load();
+        } catch (EnterpriseLicenseException cause) {
+            throw new IllegalStateException("""
+                    No valid Timefold Enterprise License was found.
+                    Please contact Timefold to obtain a valid license,
+                    or if you believe that this message was given in error.""",
+                    cause);
         } catch (Exception cause) {
             throw new IllegalStateException("""
-                    %s requested but %s %s not found on classpath.
-                    Either add the %s dependency, or %s.
-                    Note: %s %s is a commercial product. Visit https://timefold.ai to find out more."""
+                    %s requested but %s %s could not be loaded.
+                    Maybe add the %s dependency, or %s.
+                    Note: %s %s is a commercial product.
+                    Visit https://timefold.ai to find out more, or contact Timefold customer support."""
                     .formatted(feature.getName(), SOLVER_NAME, ENTERPRISE_NAME, feature.getWorkaround(),
                             ENTERPRISE_COORDINATES, SOLVER_NAME, ENTERPRISE_NAME),
                     cause);
         }
-        var communityVersion = getVersionString(TimefoldSolverEnterpriseService.class);
-        var enterpriseVersion = getVersionString(service.getClass());
-        if (Objects.equals(communityVersion, enterpriseVersion)) { // Identical versions.
-            return service;
-        } else if (enterpriseVersion.equals(DEVELOPMENT_SNAPSHOT)) { // Don't enforce when running Enterprise tests.
-            return service;
-        }
-        throw new IllegalStateException("""
-                Detected mismatch between versions of %s %s (%s) and %s (%s).
-                Ensure your project uses the same version of %s and %s dependencies."""
-                .formatted(SOLVER_NAME, COMMUNITY_NAME, communityVersion, ENTERPRISE_NAME, enterpriseVersion,
-                        COMMUNITY_COORDINATES, ENTERPRISE_COORDINATES));
     }
 
-    static <T> T buildOrDefault(Function<TimefoldSolverEnterpriseService, T> builder, Supplier<T> defaultValue) {
+    static <T> T loadOrDefault(Function<TimefoldSolverEnterpriseService, T> builder, Supplier<T> defaultValue) {
         try {
-            var service = load();
-            return builder.apply(service);
-        } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | InstantiationException
-                | IllegalAccessException e) {
+            return builder.apply(load());
+        } catch (Exception e) {
             return defaultValue.get();
         }
     }
@@ -162,6 +157,18 @@ public interface TimefoldSolverEnterpriseService {
 
         public String getWorkaround() {
             return workaround;
+        }
+
+    }
+
+    final class EnterpriseLicenseException extends RuntimeException {
+
+        public EnterpriseLicenseException(String message) {
+            super(message);
+        }
+
+        public EnterpriseLicenseException(String message, Throwable cause) {
+            super(message, cause);
         }
 
     }
