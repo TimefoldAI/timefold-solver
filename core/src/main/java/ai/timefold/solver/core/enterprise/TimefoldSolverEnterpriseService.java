@@ -104,8 +104,13 @@ public interface TimefoldSolverEnterpriseService {
 
     TopologicalOrderGraph buildTopologyGraph(int size);
 
-    Class<? extends ConstraintProvider>
-            buildLambdaSharedConstraintProvider(Class<? extends ConstraintProvider> originalConstraintProvider);
+    /**
+     * Will create new classes that apply node-sharing to the given {@link ConstraintProvider}.
+     * To reuse these classes, make sure to cache the returned {@link ConstraintProviderNodeSharer}.
+     *
+     * @return never null
+     */
+    ConstraintProviderNodeSharer createNodeSharer();
 
     <Solution_> ConstructionHeuristicDecider<Solution_> buildConstructionHeuristic(PhaseTermination<Solution_> termination,
             ConstructionHeuristicForager<Solution_> forager, HeuristicConfigPolicy<Solution_> configPolicy);
@@ -158,6 +163,12 @@ public interface TimefoldSolverEnterpriseService {
         public String getWorkaround() {
             return workaround;
         }
+
+    }
+
+    interface ConstraintProviderNodeSharer {
+
+        <T extends ConstraintProvider> Class<T> buildNodeSharedConstraintProvider(Class<T> constraintProviderClass);
 
     }
 
