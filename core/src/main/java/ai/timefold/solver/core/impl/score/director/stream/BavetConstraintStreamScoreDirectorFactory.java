@@ -46,7 +46,7 @@ public final class BavetConstraintStreamScoreDirectorFactory<Solution_, Score_ e
         if (Boolean.TRUE.equals(config.getConstraintStreamAutomaticNodeSharing())) {
             var enterpriseService =
                     TimefoldSolverEnterpriseService.loadOrFail(TimefoldSolverEnterpriseService.Feature.AUTOMATIC_NODE_SHARING);
-            return enterpriseService.buildLambdaSharedConstraintProvider(config.getConstraintProviderClass());
+            return enterpriseService.createNodeSharer().buildNodeSharedConstraintProvider(providedConstraintProviderClass);
         } else {
             return providedConstraintProviderClass;
         }
