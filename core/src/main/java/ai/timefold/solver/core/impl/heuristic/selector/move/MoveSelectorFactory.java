@@ -87,15 +87,15 @@ public interface MoveSelectorFactory<Solution_> {
             return new UnionMoveSelectorFactory<>(unionMoveSelectorConfig);
         } else if (moveSelectorConfig instanceof CartesianProductMoveSelectorConfig cartesianProductMoveSelectorConfig) {
             return new CartesianProductMoveSelectorFactory<>(cartesianProductMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof MultistageMoveSelectorConfig advancedRuinRecreateMoveSelectorConfig) {
+        } else if (moveSelectorConfig instanceof MultistageMoveSelectorConfig multistageMoveSelectorConfig) {
             var enterpriseService = TimefoldSolverEnterpriseService
                     .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
-            return enterpriseService.buildBasicMultistageMoveSelectorFactory(advancedRuinRecreateMoveSelectorConfig);
-        } else if (moveSelectorConfig instanceof ListMultistageMoveSelectorConfig advancedListRuinRecreateMoveSelectorConfig) {
+            return enterpriseService.buildBasicMultistageMoveSelectorFactory(multistageMoveSelectorConfig);
+        } else if (moveSelectorConfig instanceof ListMultistageMoveSelectorConfig listMultistageMoveSelectorConfig) {
             var enterpriseService = TimefoldSolverEnterpriseService
                     .loadOrFail(TimefoldSolverEnterpriseService.Feature.MULTISTAGE_MOVE);
             return enterpriseService
-                    .buildListMultistageMoveSelectorFactory(advancedListRuinRecreateMoveSelectorConfig);
+                    .buildListMultistageMoveSelectorFactory(listMultistageMoveSelectorConfig);
         } else {
             throw new IllegalArgumentException(String.format("Unknown %s type: (%s).",
                     MoveSelectorConfig.class.getSimpleName(), moveSelectorConfig.getClass().getName()));
