@@ -15,6 +15,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.NearbyAutoConfigur
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveIteratorFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.factory.MoveListFactoryConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.ChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.MultistageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarChangeMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.PillarSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.RuinRecreateMoveSelectorConfig;
@@ -23,6 +24,7 @@ import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.Su
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.SubChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.chained.TailChainSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListChangeMoveSelectorConfig;
+import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListMultistageMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListRuinRecreateMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.ListSwapMoveSelectorConfig;
 import ai.timefold.solver.core.config.heuristic.selector.move.generic.list.SubListChangeMoveSelectorConfig;
@@ -61,6 +63,10 @@ public class UnionMoveSelectorConfig
                     type = RuinRecreateMoveSelectorConfig.class),
             @XmlElement(name = ListRuinRecreateMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = ListRuinRecreateMoveSelectorConfig.class),
+            @XmlElement(name = MultistageMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = MultistageMoveSelectorConfig.class),
+            @XmlElement(name = ListMultistageMoveSelectorConfig.XML_ELEMENT_NAME,
+                    type = ListMultistageMoveSelectorConfig.class),
             @XmlElement(name = SubChainChangeMoveSelectorConfig.XML_ELEMENT_NAME,
                     type = SubChainChangeMoveSelectorConfig.class),
             @XmlElement(name = SubChainSwapMoveSelectorConfig.XML_ELEMENT_NAME,

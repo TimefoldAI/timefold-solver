@@ -147,7 +147,8 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
     }
 
     @Override
-    public ListVariableStateSupply<Solution_, Object, Object>
+    @SuppressWarnings("unchecked")
+    public <Entity_, Value_> ListVariableStateSupply<Solution_, Entity_, Value_>
             getListVariableStateSupply(ListVariableDescriptor<Solution_> variableDescriptor) {
         var originalListVariableDescriptor = getSolutionDescriptor().getListVariableDescriptor();
         if (variableDescriptor != originalListVariableDescriptor) {
@@ -155,7 +156,7 @@ public abstract class AbstractScoreDirector<Solution_, Score_ extends Score<Scor
                     "The variableDescriptor (%s) is not the same as the solution's variableDescriptor (%s)."
                             .formatted(variableDescriptor, originalListVariableDescriptor));
         }
-        return Objects.requireNonNull(listVariableStateSupply);
+        return Objects.requireNonNull((ListVariableStateSupply<Solution_, Entity_, Value_>) listVariableStateSupply);
     }
 
     @Override

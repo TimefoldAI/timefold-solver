@@ -76,7 +76,8 @@ public interface SolutionView<Solution_> {
      * @param value The value to locate.
      * @return the location of the value in the variable
      */
-    <Entity_, Value_> ElementPosition getPositionOf(PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
+    <Entity_, Value_> ElementPosition getPositionOf(
+            PlanningListVariableMetaModel<Solution_, Entity_, Value_> variableMetaModel,
             Value_ value);
 
     /**

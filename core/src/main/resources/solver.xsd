@@ -591,6 +591,10 @@
                         
             <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                         
+            <xs:element name="multistageMoveSelector" type="tns:multistageMoveSelectorConfig"/>
+                        
+            <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
+                        
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         
             <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
@@ -1157,6 +1161,10 @@
                         
             <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
                         
+            <xs:element name="multistageMoveSelector" type="tns:multistageMoveSelectorConfig"/>
+                        
+            <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
+                        
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         
             <xs:element name="subChainSwapMoveSelector" type="tns:subChainSwapMoveSelectorConfig"/>
@@ -1174,6 +1182,46 @@
           </xs:choice>
                     
           <xs:element minOccurs="0" name="selectorProbabilityWeightFactoryClass" type="xs:string"/>
+                  
+        </xs:sequence>
+              
+      </xs:extension>
+          
+    </xs:complexContent>
+      
+  </xs:complexType>
+    
+  <xs:complexType name="multistageMoveSelectorConfig">
+        
+    <xs:complexContent>
+            
+      <xs:extension base="tns:moveSelectorConfig">
+                
+        <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="stageProviderClass" type="xs:string"/>
+                    
+          <xs:element minOccurs="0" name="entityClass" type="xs:string"/>
+                    
+          <xs:element minOccurs="0" name="variableName" type="xs:string"/>
+                  
+        </xs:sequence>
+              
+      </xs:extension>
+          
+    </xs:complexContent>
+      
+  </xs:complexType>
+    
+  <xs:complexType name="listMultistageMoveSelectorConfig">
+        
+    <xs:complexContent>
+            
+      <xs:extension base="tns:moveSelectorConfig">
+                
+        <xs:sequence>
+                    
+          <xs:element minOccurs="0" name="stageProviderClass" type="xs:string"/>
                   
         </xs:sequence>
               
@@ -1392,6 +1440,10 @@
             <xs:element name="ruinRecreateMoveSelector" type="tns:ruinRecreateMoveSelectorConfig"/>
                         
             <xs:element name="listRuinRecreateMoveSelector" type="tns:listRuinRecreateMoveSelectorConfig"/>
+                        
+            <xs:element name="multistageMoveSelector" type="tns:multistageMoveSelectorConfig"/>
+                        
+            <xs:element name="listMultistageMoveSelector" type="tns:listMultistageMoveSelectorConfig"/>
                         
             <xs:element name="subChainChangeMoveSelector" type="tns:subChainChangeMoveSelectorConfig"/>
                         

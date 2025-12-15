@@ -232,7 +232,8 @@ public final class TestdataListUtils {
         return destinationSelector;
     }
 
-    public static <Solution_> DestinationSelector<Solution_> mockDestinationSelector(ElementPosition... locationsInList) {
+    public static <Solution_> DestinationSelector<Solution_>
+            mockDestinationSelector(ElementPosition... locationsInList) {
         DestinationSelector<Solution_> destinationSelector = mock(DestinationSelector.class);
         var refList = Arrays.asList(locationsInList);
         when(destinationSelector.isCountable()).thenReturn(true);

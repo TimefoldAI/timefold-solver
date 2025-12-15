@@ -16,6 +16,7 @@ import ai.timefold.solver.core.impl.domain.variable.ListVariableStateDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.InverseRelationShadowVariableDescriptor;
 import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
 
 public final class ListVariableDescriptor<Solution_> extends GenuineVariableDescriptor<Solution_> {
 
@@ -192,6 +193,12 @@ public final class ListVariableDescriptor<Solution_> extends GenuineVariableDesc
         } else {
             return effectivePlanningPinToIndexReader.applyAsInt(entity);
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <Entity_, Value_> PlanningListVariableMetaModel<Solution_, Entity_, Value_> getVariableMetaModel() {
+        return (PlanningListVariableMetaModel<Solution_, Entity_, Value_>) super.getVariableMetaModel();
     }
 
 }
