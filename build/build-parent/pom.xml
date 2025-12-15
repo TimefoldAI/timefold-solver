@@ -20,8 +20,8 @@
     <!-- ************************************************************************ -->
     <!-- Dependencies -->
     <!-- ************************************************************************ -->
-    <version.ch.qos.logback>1.5.21</version.ch.qos.logback>
-    <version.io.quarkus>3.30.2</version.io.quarkus>
+    <version.ch.qos.logback>1.5.22</version.ch.qos.logback>
+    <version.io.quarkus>3.30.3</version.io.quarkus>
     <version.org.apache.commons.math3>3.6.1</version.org.apache.commons.math3>
     <version.org.apache.logging.log4j>2.25.2</version.org.apache.logging.log4j>
     <version.org.assertj>3.27.6</version.org.assertj>
