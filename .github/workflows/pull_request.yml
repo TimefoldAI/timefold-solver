@@ -96,7 +96,7 @@ jobs:
       # Since this information rarely changes, we can cache it, preventing CI failures.
       - name: Cache Spring Boot version
         id: cache-spring-boot-version
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: spring-boot-version
           key: spring-boot-version-${{ matrix.spring-version }}
