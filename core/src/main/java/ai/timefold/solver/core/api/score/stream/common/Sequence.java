@@ -49,7 +49,8 @@ public interface Sequence<Value_, Difference_ extends Comparable<Difference_>> {
     Break<Value_, Difference_> getNextBreak();
 
     /**
-     * @return items in this sequence
+     * @return items in this sequence;
+     *         must not be modified by the caller.
      */
     @NonNull
     Collection<Value_> getItems();

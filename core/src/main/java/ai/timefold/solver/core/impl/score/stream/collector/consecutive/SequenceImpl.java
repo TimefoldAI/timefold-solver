@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.NavigableMap;
 import java.util.stream.Collectors;
 
@@ -79,8 +78,7 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
         if (items == null) {
             return items = getComparableItems().values();
         }
-        return Collections.unmodifiableCollection(items);
-
+        return items;
     }
 
     NavigableMap<ComparableValue<Value_, Point_>, Value_> getComparableItems() {

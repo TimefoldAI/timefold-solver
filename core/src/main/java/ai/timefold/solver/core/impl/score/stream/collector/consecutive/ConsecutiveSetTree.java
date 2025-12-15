@@ -1,7 +1,6 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -55,14 +54,16 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         this.zeroDifference = zeroDifference;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public @NonNull Collection<Sequence<Value_, Difference_>> getConsecutiveSequences() {
-        return Collections.unmodifiableCollection(startItemToSequence.values());
+        return (Collection) startItemToSequence.values();
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public @NonNull Collection<Break<Value_, Difference_>> getBreaks() {
-        return Collections.unmodifiableCollection(startItemToPreviousBreak.values());
+        return (Collection) startItemToPreviousBreak.values();
     }
 
     @Override

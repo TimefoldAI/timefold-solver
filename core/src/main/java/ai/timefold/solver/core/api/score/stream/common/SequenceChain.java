@@ -14,13 +14,15 @@ import org.jspecify.annotations.Nullable;
 public interface SequenceChain<Value_, Difference_ extends Comparable<Difference_>> {
 
     /**
-     * @return the sequences contained in the collection in ascending order.
+     * @return the sequences contained in the collection in ascending order;
+     *         must not be modified by the caller.
      */
     @NonNull
     Collection<Sequence<Value_, Difference_>> getConsecutiveSequences();
 
     /**
-     * @return the breaks contained in the collection in ascending order.
+     * @return the breaks contained in the collection in ascending order;
+     *         must not be modified by the caller.
      */
     @NonNull
     Collection<Break<Value_, Difference_>> getBreaks();
