@@ -1,5 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
+import org.jspecify.annotations.NullMarked;
+
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -18,6 +20,7 @@ import java.util.TreeSet;
  * @param <Value_> generic type of the value
  * @param <Point_> generic type of the point on the number line
  */
+@NullMarked
 record ComparableValue<Value_, Point_ extends Comparable<Point_>>(Value_ value, Point_ index)
         implements
             Comparable<ComparableValue<Value_, Point_>> {
@@ -27,15 +30,12 @@ record ComparableValue<Value_, Point_ extends Comparable<Point_>>(Value_ value, 
         if (this == other) {
             return 0;
         }
-        Point_ point1 = this.index;
-        Point_ point2 = other.index;
-        if (point1 != point2) {
-            int comparison = point1.compareTo(point2);
-            if (comparison != 0) {
-                return comparison;
-            }
+        var point1 = index;
+        var point2 = other.index;
+        if (point1 == point2) {
+            return compareWithIdentityHashCode(value, other.value);
         }
-        return compareWithIdentityHashCode(this.value, other.value);
+        return point1.compareTo(point2);
     }
 
     private int compareWithIdentityHashCode(Value_ o1, Value_ o2) {
@@ -44,8 +44,8 @@ record ComparableValue<Value_, Point_ extends Comparable<Point_>>(Value_ value, 
         }
         // Identity Hashcode for duplicate protection; we must always include duplicates.
         // Ex: two different games on the same time slot
-        int identityHashCode1 = System.identityHashCode(o1);
-        int identityHashCode2 = System.identityHashCode(o2);
+        var identityHashCode1 = System.identityHashCode(o1);
+        var identityHashCode2 = System.identityHashCode(o2);
         return Integer.compare(identityHashCode1, identityHashCode2);
     }
 

@@ -1,5 +1,11 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -9,13 +15,6 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
-
-import ai.timefold.solver.core.api.score.stream.common.Break;
-import ai.timefold.solver.core.api.score.stream.common.Sequence;
-import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 
 /**
  * A {@code ConsecutiveSetTree} determines what values are consecutive.
@@ -55,14 +54,22 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         this.zeroDifference = zeroDifference;
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public @NonNull Collection<Sequence<Value_, Difference_>> getConsecutiveSequences() {
-        return Collections.unmodifiableCollection(startItemToSequence.values());
+        if (startItemToSequence.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return (Collection) startItemToSequence.values();
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     @Override
     public @NonNull Collection<Break<Value_, Difference_>> getBreaks() {
-        return Collections.unmodifiableCollection(startItemToPreviousBreak.values());
+        if (startItemToPreviousBreak.isEmpty()) {
+            return Collections.emptyList();
+        }
+        return (Collection) startItemToPreviousBreak.values();
     }
 
     @Override
@@ -83,7 +90,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
 
     @Override
     public @Nullable Break<Value_, Difference_> getFirstBreak() {
-        if (startItemToSequence.size() <= 1) {
+        if (startItemToSequence.isEmpty()) {
             return null;
         }
         return startItemToPreviousBreak.firstEntry().getValue();
@@ -91,7 +98,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
 
     @Override
     public @Nullable Break<Value_, Difference_> getLastBreak() {
-        if (startItemToSequence.size() <= 1) {
+        if (startItemToSequence.isEmpty()) {
             return null;
         }
         return startItemToPreviousBreak.lastEntry().getValue();
@@ -114,7 +121,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         // Adding item to the bag.
         var addingItem = new ComparableValue<>(value, valueIndex);
         valueCountMap.put(value, new ValueCount<>(addingItem));
-        itemMap.put(addingItem, addingItem.value());
+        itemMap.put(addingItem, value);
         if (firstItem == null || addingItem.compareTo(firstItem) < 0) {
             firstItem = addingItem;
         }
@@ -236,16 +243,15 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
             return true;
         }
 
-        // Item is removed from bag
+        // Item is removed from bag; the new first and last items will be computed on-demand.
         valueCountMap.remove(value);
         var removingItem = valueCount.value;
         itemMap.remove(removingItem);
-        boolean noMoreItems = itemMap.isEmpty();
-        if (removingItem.compareTo(firstItem) == 0) {
-            firstItem = noMoreItems ? null : itemMap.firstEntry().getKey();
+        if (firstItem != null && removingItem.compareTo(firstItem) == 0) {
+            firstItem = null;
         }
-        if (removingItem.compareTo(lastItem) == 0) {
-            lastItem = noMoreItems ? null : itemMap.lastEntry().getKey();
+        if (lastItem != null && removingItem.compareTo(lastItem) == 0) {
+            lastItem = null;
         }
 
         var firstBeforeItemEntry = startItemToSequence.floorEntry(removingItem);
@@ -335,10 +341,16 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     }
 
     ComparableValue<Value_, Point_> getFirstItem() {
+        if (firstItem == null && !itemMap.isEmpty()) {
+            firstItem = itemMap.firstKey();
+        }
         return firstItem;
     }
 
     ComparableValue<Value_, Point_> getLastItem() {
+        if (lastItem == null && !itemMap.isEmpty()) {
+            lastItem = itemMap.lastKey();
+        }
         return lastItem;
     }
 

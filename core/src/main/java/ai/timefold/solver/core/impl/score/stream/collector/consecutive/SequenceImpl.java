@@ -1,15 +1,13 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.NavigableMap;
-import java.util.stream.Collectors;
-
 import ai.timefold.solver.core.api.score.stream.common.Break;
 import ai.timefold.solver.core.api.score.stream.common.Sequence;
-
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
+
+import java.util.Collection;
+import java.util.NavigableMap;
+import java.util.stream.Collectors;
 
 /**
  * When adding fields, remember to add them to the JSON serialization code as well, if you want them exposed.
@@ -28,7 +26,6 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     // Memorized calculations
     private Difference_ length;
     private NavigableMap<ComparableValue<Value_, Point_>, Value_> comparableItems;
-    private Collection<Value_> items;
 
     SequenceImpl(ConsecutiveSetTree<Value_, Point_, Difference_> sourceTree, ComparableValue<Value_, Point_> item) {
         this(sourceTree, item, item);
@@ -41,7 +38,6 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
         this.lastItem = lastItem;
         length = null;
         comparableItems = null;
-        items = null;
     }
 
     @Override
@@ -76,11 +72,7 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
 
     @Override
     public @NonNull Collection<Value_> getItems() {
-        if (items == null) {
-            return items = getComparableItems().values();
-        }
-        return Collections.unmodifiableCollection(items);
-
+        return getComparableItems().values();
     }
 
     NavigableMap<ComparableValue<Value_, Point_>, Value_> getComparableItems() {
@@ -124,7 +116,6 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     void invalidate() {
         length = null;
         comparableItems = null;
-        items = null;
     }
 
     SequenceImpl<Value_, Point_, Difference_> split(ComparableValue<Value_, Point_> fromElement) {
