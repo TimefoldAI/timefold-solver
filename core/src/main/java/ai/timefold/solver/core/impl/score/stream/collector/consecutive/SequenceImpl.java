@@ -27,6 +27,7 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     // Memorized calculations
     private Difference_ length;
     private NavigableMap<ComparableValue<Value_, Point_>, Value_> comparableItems;
+    private Collection<Value_> items;
 
     SequenceImpl(ConsecutiveSetTree<Value_, Point_, Difference_> sourceTree, ComparableValue<Value_, Point_> item) {
         this(sourceTree, item, item);
@@ -39,6 +40,7 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
         this.lastItem = lastItem;
         length = null;
         comparableItems = null;
+        items = null;
     }
 
     @Override
@@ -73,7 +75,10 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
 
     @Override
     public @NonNull Collection<Value_> getItems() {
-        return getComparableItems().values();
+        if (items == null) {
+            return items = getComparableItems().values();
+        }
+        return items;
     }
 
     NavigableMap<ComparableValue<Value_, Point_>, Value_> getComparableItems() {
@@ -117,6 +122,7 @@ final class SequenceImpl<Value_, Point_ extends Comparable<Point_>, Difference_ 
     void invalidate() {
         length = null;
         comparableItems = null;
+        items = null;
     }
 
     SequenceImpl<Value_, Point_, Difference_> split(ComparableValue<Value_, Point_> fromElement) {
