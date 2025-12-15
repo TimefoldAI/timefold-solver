@@ -1,13 +1,14 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
-import ai.timefold.solver.core.api.score.stream.common.Break;
-import ai.timefold.solver.core.api.score.stream.common.Sequence;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Collection;
 import java.util.NavigableMap;
 import java.util.stream.Collectors;
+
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * When adding fields, remember to add them to the JSON serialization code as well, if you want them exposed.

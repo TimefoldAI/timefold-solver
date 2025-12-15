@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.api.score.stream.common;
 
+import java.util.Collection;
+
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
-
-import java.util.Collection;
 
 /**
  * Represents a series of consecutive values.

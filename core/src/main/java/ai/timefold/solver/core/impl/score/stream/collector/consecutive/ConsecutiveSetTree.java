@@ -1,11 +1,5 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
-import ai.timefold.solver.core.api.score.stream.common.Break;
-import ai.timefold.solver.core.api.score.stream.common.Sequence;
-import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
-
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -15,6 +9,13 @@ import java.util.Objects;
 import java.util.TreeMap;
 import java.util.function.BiFunction;
 import java.util.function.BinaryOperator;
+
+import ai.timefold.solver.core.api.score.stream.common.Break;
+import ai.timefold.solver.core.api.score.stream.common.Sequence;
+import ai.timefold.solver.core.api.score.stream.common.SequenceChain;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A {@code ConsecutiveSetTree} determines what values are consecutive.
@@ -54,7 +55,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         this.zeroDifference = zeroDifference;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public @NonNull Collection<Sequence<Value_, Difference_>> getConsecutiveSequences() {
         if (startItemToSequence.isEmpty()) {
@@ -63,7 +64,7 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         return (Collection) startItemToSequence.values();
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     @Override
     public @NonNull Collection<Break<Value_, Difference_>> getBreaks() {
         if (startItemToPreviousBreak.isEmpty()) {

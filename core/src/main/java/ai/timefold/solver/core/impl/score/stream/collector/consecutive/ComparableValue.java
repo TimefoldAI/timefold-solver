@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.score.stream.collector.consecutive;
 
-import org.jspecify.annotations.NullMarked;
-
 import java.util.TreeMap;
 import java.util.TreeSet;
+
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Each {@link #value()} is associated with a point ({@link #index()}) on the number line.
