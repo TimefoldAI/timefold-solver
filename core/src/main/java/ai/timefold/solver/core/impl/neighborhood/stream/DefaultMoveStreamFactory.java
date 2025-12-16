@@ -6,13 +6,6 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveStreamFactory;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.EnumeratingJoiners;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.UniEnumeratingStream;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingMapper;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingPredicate;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.sampling.UniSamplingStream;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.DatasetSessionFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.uni.AbstractUniEnumeratingStream;
@@ -21,9 +14,15 @@ import ai.timefold.solver.core.impl.score.director.SessionContext;
 import ai.timefold.solver.core.preview.api.domain.metamodel.ElementPosition;
 import ai.timefold.solver.core.preview.api.domain.metamodel.GenuineVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
-import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningVariableMetaModel;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.MoveStreamFactory;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.EnumeratingJoiners;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.UniEnumeratingStream;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingMapper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingPredicate;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.sampling.UniSamplingStream;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -50,11 +49,6 @@ public final class DefaultMoveStreamFactory<Solution_>
     public DefaultNeighborhoodSession<Solution_> createSession(SessionContext<Solution_> context) {
         var session = datasetSessionFactory.buildSession(context);
         return new DefaultNeighborhoodSession<>(session, context.solutionView());
-    }
-
-    @Override
-    public PlanningSolutionMetaModel<Solution_> getSolutionMetaModel() {
-        return enumeratingStreamFactory.getSolutionDescriptor().getMetaModel();
     }
 
     @Override

@@ -4,7 +4,7 @@ import java.util.Iterator;
 import java.util.function.Predicate;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -16,35 +16,24 @@ import org.jspecify.annotations.NullMarked;
 @NullMarked
 public final class MoveAdapters {
 
-    public static <Solution_> ai.timefold.solver.core.preview.api.move.Move<Solution_>
-            toNewMove(ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
-        if (legacyMove instanceof NewMoveAdapter<Solution_> newMoveAdapter) {
-            return newMoveAdapter.newMove();
-        }
-        return new LegacyMoveAdapter<>(legacyMove);
-    }
-
-    public static <Solution_> Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>>
-            toNewMoveIterator(Iterator<Move<Solution_>> legacyIterator) {
-        if (legacyIterator instanceof NewIteratorAdapter<Solution_> newIteratorAdapter) {
-            return newIteratorAdapter.moveIterator();
-        }
-        return new LegacyIteratorAdapter<>(legacyIterator);
-    }
-
-    public static <Solution_> ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>
+    static <Solution_> ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>
             toLegacyMove(ai.timefold.solver.core.preview.api.move.Move<Solution_> newMove) {
-        if (newMove instanceof LegacyMoveAdapter<Solution_> legacyMoveAdapter) {
-            return legacyMoveAdapter.legacyMove();
+        if (newMove instanceof Move<Solution_> legacyMove) {
+            return legacyMove;
         }
         return new NewMoveAdapter<>(newMove);
     }
 
+    public static <Solution_> ai.timefold.solver.core.preview.api.move.Move<Solution_>
+            unadapt(ai.timefold.solver.core.preview.api.move.Move<Solution_> possibleLegacyMove) {
+        if (possibleLegacyMove instanceof NewMoveAdapter<Solution_> newMoveAdapter) {
+            return newMoveAdapter.newMove();
+        }
+        return possibleLegacyMove;
+    }
+
     public static <Solution_> Iterator<ai.timefold.solver.core.impl.heuristic.move.Move<Solution_>>
             toLegacyMoveIterator(Iterator<ai.timefold.solver.core.preview.api.move.Move<Solution_>> newIterator) {
-        if (newIterator instanceof LegacyIteratorAdapter<Solution_> legacyIteratorAdapter) {
-            return legacyIteratorAdapter.moveIterator();
-        }
         return new NewIteratorAdapter<>(newIterator);
     }
 
@@ -63,8 +52,8 @@ public final class MoveAdapters {
      */
     public static <Solution_> boolean isDoable(MoveDirector<Solution_, ?> moveDirector,
             ai.timefold.solver.core.preview.api.move.Move<Solution_> move) {
-        if (move instanceof LegacyMoveAdapter<Solution_> legacyMoveAdapter) {
-            return legacyMoveAdapter.isMoveDoable(moveDirector);
+        if (move instanceof Move<Solution_> legacyMove) {
+            return legacyMove.isMoveDoable(moveDirector.getScoreDirector());
         } else {
             return true; // New moves are always doable.
         }
@@ -72,20 +61,11 @@ public final class MoveAdapters {
 
     public static <Solution_> boolean testWhenLegacyMove(ai.timefold.solver.core.preview.api.move.Move<Solution_> move,
             Predicate<Move<Solution_>> predicate) {
-        if (move instanceof LegacyMoveAdapter<Solution_> legacyMove) {
-            var adaptedMove = legacyMove.legacyMove();
-            return predicate.test(adaptedMove);
+        if (move instanceof Move<Solution_> legacyMove) {
+            return predicate.test(legacyMove);
         } else {
             return false;
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    public static <T> T extractLegacyMoveOrReturn(Object o) {
-        if (o instanceof LegacyMoveAdapter<?> legacyMoveAdapter) {
-            return (T) legacyMoveAdapter.legacyMove();
-        }
-        return (T) o;
     }
 
     private MoveAdapters() {

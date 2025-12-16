@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
+import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 
 /**
  * This is an alternative to {@link AbstractMove},

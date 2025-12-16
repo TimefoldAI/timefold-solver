@@ -8,7 +8,7 @@ import java.util.function.Function;
 import ai.timefold.solver.core.impl.bavet.bi.joiner.DefaultBiJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.AbstractJoiner;
 import ai.timefold.solver.core.impl.bavet.common.joiner.JoinerType;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.BiEnumeratingJoiner;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.BiEnumeratingJoiner;
 
 import org.jspecify.annotations.NullMarked;
 

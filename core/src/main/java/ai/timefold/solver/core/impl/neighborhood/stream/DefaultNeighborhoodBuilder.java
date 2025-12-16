@@ -5,9 +5,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.NeighborhoodBuilder;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningSolutionMetaModel;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.NeighborhoodBuilder;
 
 import org.jspecify.annotations.NullMarked;
 

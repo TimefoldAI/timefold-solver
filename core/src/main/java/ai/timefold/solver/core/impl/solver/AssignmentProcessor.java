@@ -15,11 +15,9 @@ import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeur
 import ai.timefold.solver.core.impl.constructionheuristic.scope.ConstructionHeuristicStepScope;
 import ai.timefold.solver.core.impl.domain.variable.descriptor.BasicVariableDescriptor;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
-import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.ChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.chained.ChainedChangeMove;
 import ai.timefold.solver.core.impl.heuristic.selector.move.generic.list.ListUnassignMove;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.impl.solver.scope.SolverScope;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PositionInList;
@@ -65,7 +63,7 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
                 if (elementPosition instanceof PositionInList positionInList) { // Unassign the cloned element.
                     var entity = positionInList.entity();
                     var index = positionInList.index();
-                    wrapAndExecute(moveDirector, new ListUnassignMove<>(listVariableDescriptor, entity, index));
+                    moveDirector.execute(new ListUnassignMove<>(listVariableDescriptor, entity, index));
                 }
             }
         } else {
@@ -80,10 +78,10 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
                 if (basicVariableDescriptor.isChained()) {
                     var demand = new SingletonInverseVariableDemand<>(basicVariableDescriptor);
                     var supply = supplyManager.demand(demand);
-                    wrapAndExecute(moveDirector, new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply));
+                    moveDirector.execute(new ChainedChangeMove<>(basicVariableDescriptor, clonedElement, null, supply));
                     supplyManager.cancel(demand);
                 } else {
-                    wrapAndExecute(moveDirector, new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
+                    moveDirector.execute(new ChangeMove<>(basicVariableDescriptor, clonedElement, null));
                 }
             }
         }
@@ -125,13 +123,6 @@ final class AssignmentProcessor<Solution_, Score_ extends Score<Score_>, Recomme
             entityPlacer.phaseEnded(phaseScope);
             entityPlacer.solvingEnded(solverScope);
         }
-    }
-
-    private void wrapAndExecute(MoveDirector<Solution_, Score_> moveDirector,
-            ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
-        // No need to call moveDirector.execute(),
-        // as legacy moves were guaranteed to trigger shadow vars as part of their contract.
-        MoveAdapters.toNewMove(move).execute(moveDirector);
     }
 
     private EntityPlacer<Solution_> buildEntityPlacer() {

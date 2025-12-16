@@ -67,11 +67,11 @@ import ai.timefold.solver.core.impl.domain.variable.nextprev.PreviousElementShad
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorFactorySelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.ComparatorSelectionSorter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionSorter;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.util.CollectionUtils;
 import ai.timefold.solver.core.impl.util.MutableInt;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningEntityMetaModel;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
 
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;

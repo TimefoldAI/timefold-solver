@@ -3,8 +3,8 @@ package ai.timefold.solver.core.impl.neighborhood.stream;
 import java.util.List;
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.MoveDefinition;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.Neighborhood;
+import ai.timefold.solver.core.preview.api.neighborhood.MoveDefinition;
+import ai.timefold.solver.core.preview.api.neighborhood.Neighborhood;
 
 import org.jspecify.annotations.NullMarked;
 

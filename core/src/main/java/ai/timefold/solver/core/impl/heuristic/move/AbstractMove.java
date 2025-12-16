@@ -9,8 +9,10 @@ import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.valuerange.ValueRange;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.domain.valuerange.descriptor.ValueRangeDescriptor;
-import ai.timefold.solver.core.impl.move.director.VariableChangeRecordingScoreDirector;
+import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.VariableDescriptorAwareScoreDirector;
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 /**
  * Abstract superclass for {@link Move}, requiring implementation of undo moves.
@@ -77,4 +79,24 @@ public abstract class AbstractMove<Solution_> implements Move<Solution_> {
         }
         return rebasedObjectSet;
     }
+
+    // ************************************************************************
+    // Final methods from the new move interface, to prevent user error
+    // ************************************************************************
+
+    @Override
+    public final void execute(MutableSolutionView<Solution_> solutionView) {
+        Move.super.execute(solutionView);
+    }
+
+    @Override
+    public final ai.timefold.solver.core.preview.api.move.Move<Solution_> rebase(Rebaser rebaser) {
+        return Move.super.rebase(rebaser);
+    }
+
+    @Override
+    public final String describe() {
+        return Move.super.describe();
+    }
+
 }

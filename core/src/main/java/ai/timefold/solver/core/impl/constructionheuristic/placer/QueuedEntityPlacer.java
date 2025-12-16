@@ -6,7 +6,6 @@ import java.util.List;
 
 import ai.timefold.solver.core.impl.heuristic.HeuristicConfigPolicy;
 import ai.timefold.solver.core.impl.heuristic.move.Move;
-import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.heuristic.selector.common.decorator.SelectionFilter;
 import ai.timefold.solver.core.impl.heuristic.selector.common.iterator.UpcomingSelectionIterator;
 import ai.timefold.solver.core.impl.heuristic.selector.entity.EntitySelector;
@@ -67,7 +66,7 @@ public class QueuedEntityPlacer<Solution_> extends AbstractEntityPlacer<Solution
                 MoveSelector<Solution_> moveSelector = moveSelectorIterator.next();
                 moveIterator = moveSelector.iterator();
             }
-            return new Placement<>(MoveAdapters.toNewMoveIterator(moveIterator));
+            return new Placement<>(Placement.toNewMoveIterator(moveIterator));
         }
 
     }

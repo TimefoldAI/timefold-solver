@@ -26,7 +26,7 @@ import org.jspecify.annotations.NullMarked;
  * consistently across the entire dependency graph.
  * <p>
  * For tabu search, a Move should implement {@link Object#equals(Object)} and {@link Object#hashCode()},
- * {@link #extractPlanningEntities()} and {@link #extractPlanningValues()}.
+ * {@link #getPlanningEntities()} and {@link #getPlanningValues()}.
  * <p>
  * <strong>This package and all of its contents are part of the Neighborhoods API,
  * which is under development and is only offered as a preview feature.</strong>
@@ -100,10 +100,11 @@ public interface Move<Solution_> {
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
      * @return Each entity only once.
-     *         TODO convert to SequencedCollection when on Java 21.
      */
-    default Collection<?> extractPlanningEntities() {
-        throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
+    default Collection<?> getPlanningEntities() {
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the getPlanningEntities() method, so Entity Tabu Search is impossible."
+                        .formatted(getClass()));
     }
 
     /**
@@ -117,22 +118,20 @@ public interface Move<Solution_> {
      * For example, use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
      *
      * @return Each value only once. May contain null.
-     *         TODO convert to SequencedCollection when on Java 21.
      */
-    default Collection<?> extractPlanningValues() {
-        throw new UnsupportedOperationException("The move (" + this + ") does not support tabu search.");
+    default Collection<?> getPlanningValues() {
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the getPlanningValues() method, so Value Tabu Search is impossible."
+                        .formatted(getClass()));
     }
 
     /**
-     * TODO this probably needs a better API,
-     * as move implementations are now expected to be primarily produced by users
-     * and the solver is thus expected to encounter custom moves significantly more.
-     *
      * Describes the move type for statistical purposes.
      * For example, a move which changes a variable "computer" on a class "Process" could be described as
      * "ChangeMove(Process.computer)".
      * <p>
-     * The format is not formalized.
+     * The format is not formalized, but it is recommended to stick to ASCII,
+     * avoiding whitespace and special characters.
      * Never parse the {@link String} returned by this method,
      * it is only intended to be used by the solver.
      *

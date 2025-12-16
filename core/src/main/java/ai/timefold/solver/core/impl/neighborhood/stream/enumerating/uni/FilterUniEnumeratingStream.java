@@ -4,9 +4,9 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.stream.enumerating.function.UniEnumeratingFilter;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.EnumeratingStreamFactory;
 import ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common.DataNodeBuildHelper;
+import ai.timefold.solver.core.preview.api.neighborhood.stream.enumerating.function.UniEnumeratingFilter;
 
 import org.jspecify.annotations.NullMarked;
 

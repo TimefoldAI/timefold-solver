@@ -16,7 +16,7 @@ import ai.timefold.solver.core.impl.domain.variable.descriptor.GenuineVariableDe
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableDemand;
 import ai.timefold.solver.core.impl.domain.variable.inverserelation.SingletonInverseVariableSupply;
 import ai.timefold.solver.core.impl.heuristic.selector.SelectorTestUtils;
-import ai.timefold.solver.core.impl.move.director.MoveDirector;
+import ai.timefold.solver.core.impl.move.MoveDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedAnchor;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
@@ -157,13 +157,6 @@ class TailChainSwapMoveTest {
                 });
 
         moveDirector.executeTemporary(
-                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a1),
-                (__, ___) -> {
-                    SelectorTestUtils.assertChain(a0, a1, a3, a2, a4, a5, a6, a7);
-                    return null;
-                });
-
-        moveDirector.executeTemporary(
                 new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a7, a1),
                 (__, ___) -> {
                     SelectorTestUtils.assertChain(a0, a1, a7, a6, a5, a4, a3, a2);
@@ -269,7 +262,7 @@ class TailChainSwapMoveTest {
     }
 
     @Test
-    void extractPlanningEntitiesWithRightEntityNull() {
+    void getPlanningEntitiesWithRightEntityNull() {
         var a0 = new TestdataChainedAnchor("a0");
         var a1 = new TestdataChainedEntity("a1", null);
 

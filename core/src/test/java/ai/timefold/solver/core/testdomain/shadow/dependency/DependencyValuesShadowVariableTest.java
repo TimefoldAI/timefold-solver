@@ -13,9 +13,9 @@ import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.config.solver.SolverConfig;
 import ai.timefold.solver.core.config.solver.termination.TerminationConfig;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.neighborhood.maybeapi.move.Moves;
 import ai.timefold.solver.core.impl.solver.MoveAsserter;
 import ai.timefold.solver.core.preview.api.domain.metamodel.PlanningListVariableMetaModel;
+import ai.timefold.solver.core.preview.api.move.builtin.Moves;
 
 import org.junit.jupiter.api.Test;
 

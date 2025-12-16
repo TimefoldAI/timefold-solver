@@ -51,7 +51,7 @@ public final class RuinRecreateConstructionHeuristicPhase<Solution_>
         if (!elementsToRuinSet.isEmpty()) {
             var listVariableDescriptor = stepScope.getPhaseScope().getSolverScope().getSolutionDescriptor()
                     .getListVariableDescriptor();
-            var entity = stepScope.getStep().extractPlanningEntities().iterator().next();
+            var entity = stepScope.getStep().getPlanningEntities().iterator().next();
             if (!elementsToRuinSet.contains(entity)) {
                 // Sometimes, the list of elements to be ruined does not include new destinations selected by the CH.
                 // In these cases, we need to record the element list before making any move changes
