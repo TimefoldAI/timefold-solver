@@ -50,12 +50,12 @@ record NewMoveAdapter<Solution_>(Move<Solution_> newMove)
 
     @Override
     public Collection<?> getPlanningEntities() {
-        return newMove.extractPlanningEntities();
+        return newMove.getPlanningEntities();
     }
 
     @Override
     public Collection<?> getPlanningValues() {
-        return newMove.extractPlanningValues();
+        return newMove.getPlanningValues();
     }
 
     @Override

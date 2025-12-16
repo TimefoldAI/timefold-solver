@@ -45,12 +45,12 @@ public final class DummyMove implements Move<TestdataSolution>, CodeAssertable {
     }
 
     @Override
-    public Collection<? extends TestdataSolution> extractPlanningEntities() {
+    public Collection<? extends TestdataSolution> getPlanningEntities() {
         return Collections.emptyList();
     }
 
     @Override
-    public Collection<? extends TestdataSolution> extractPlanningValues() {
+    public Collection<? extends TestdataSolution> getPlanningValues() {
         return Collections.emptyList();
     }
 

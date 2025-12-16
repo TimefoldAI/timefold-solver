@@ -63,9 +63,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move1.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move1.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move1.extractPlanningEntities())
+            softly.assertThat(move1.getPlanningEntities())
                     .containsExactly(e1);
-            softly.assertThat(move1.extractPlanningValues())
+            softly.assertThat(move1.getPlanningValues())
                     .containsExactly(unassignedValue);
         });
 
@@ -75,9 +75,9 @@ class ListChangeMoveDefinitionTest {
             softly.assertThat(move2.getSourceIndex()).isEqualTo(0);
             softly.assertThat(move2.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move2.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move2.extractPlanningEntities())
+            softly.assertThat(move2.getPlanningEntities())
                     .containsExactly(e2, e1);
-            softly.assertThat(move2.extractPlanningValues())
+            softly.assertThat(move2.getPlanningValues())
                     .containsExactly(initiallyAssignedValue);
         });
 
@@ -85,9 +85,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move3.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move3.getDestinationIndex()).isEqualTo(1);
-            softly.assertThat(move3.extractPlanningEntities())
+            softly.assertThat(move3.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move3.extractPlanningValues())
+            softly.assertThat(move3.getPlanningValues())
                     .containsExactly(unassignedValue);
         });
 
@@ -95,9 +95,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move4.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move4.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move4.extractPlanningEntities())
+            softly.assertThat(move4.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move4.extractPlanningValues())
+            softly.assertThat(move4.getPlanningValues())
                     .containsExactly(unassignedValue);
         });
     }
@@ -138,9 +138,9 @@ class ListChangeMoveDefinitionTest {
             softly.assertThat(move1.getSourceIndex()).isEqualTo(0);
             softly.assertThat(move1.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move1.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move1.extractPlanningEntities())
+            softly.assertThat(move1.getPlanningEntities())
                     .containsExactly(e2, e1);
-            softly.assertThat(move1.extractPlanningValues())
+            softly.assertThat(move1.getPlanningValues())
                     .containsExactly(v1);
         });
 
@@ -148,9 +148,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move2.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move2.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move2.extractPlanningEntities())
+            softly.assertThat(move2.getPlanningEntities())
                     .containsExactly(e1);
-            softly.assertThat(move2.extractPlanningValues())
+            softly.assertThat(move2.getPlanningValues())
                     .containsExactly(v2);
         });
 
@@ -158,9 +158,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move3.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move3.getDestinationIndex()).isEqualTo(1);
-            softly.assertThat(move3.extractPlanningEntities())
+            softly.assertThat(move3.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move3.extractPlanningValues())
+            softly.assertThat(move3.getPlanningValues())
                     .containsExactly(v3);
         });
 
@@ -168,9 +168,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move4.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move4.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move4.extractPlanningEntities())
+            softly.assertThat(move4.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move4.extractPlanningValues())
+            softly.assertThat(move4.getPlanningValues())
                     .containsExactly(v3);
         });
     }
@@ -207,9 +207,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move1.getSourceEntity()).isEqualTo(e2);
             softly.assertThat(move1.getSourceIndex()).isEqualTo(0);
-            softly.assertThat(move1.extractPlanningEntities())
+            softly.assertThat(move1.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move1.extractPlanningValues())
+            softly.assertThat(move1.getPlanningValues())
                     .containsExactly(v1);
         });
 
@@ -219,9 +219,9 @@ class ListChangeMoveDefinitionTest {
             softly.assertThat(move2.getSourceIndex()).isEqualTo(0);
             softly.assertThat(move2.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move2.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move2.extractPlanningEntities())
+            softly.assertThat(move2.getPlanningEntities())
                     .containsExactly(e2, e1);
-            softly.assertThat(move2.extractPlanningValues())
+            softly.assertThat(move2.getPlanningValues())
                     .containsExactly(v1);
         });
 
@@ -229,9 +229,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move3.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move3.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move3.extractPlanningEntities())
+            softly.assertThat(move3.getPlanningEntities())
                     .containsExactly(e1);
-            softly.assertThat(move3.extractPlanningValues())
+            softly.assertThat(move3.getPlanningValues())
                     .containsExactly(v2);
         });
 
@@ -239,9 +239,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move4.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move4.getDestinationIndex()).isEqualTo(1);
-            softly.assertThat(move4.extractPlanningEntities())
+            softly.assertThat(move4.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move4.extractPlanningValues())
+            softly.assertThat(move4.getPlanningValues())
                     .containsExactly(v3);
         });
 
@@ -249,9 +249,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move5.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move5.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move5.extractPlanningEntities())
+            softly.assertThat(move5.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move5.extractPlanningValues())
+            softly.assertThat(move5.getPlanningValues())
                     .containsExactly(v3);
         });
     }
@@ -286,9 +286,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move1.getSourceEntity()).isEqualTo(e2);
             softly.assertThat(move1.getSourceIndex()).isEqualTo(0);
-            softly.assertThat(move1.extractPlanningEntities())
+            softly.assertThat(move1.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move1.extractPlanningValues())
+            softly.assertThat(move1.getPlanningValues())
                     .containsExactly(v1);
         });
 
@@ -298,9 +298,9 @@ class ListChangeMoveDefinitionTest {
             softly.assertThat(move2.getSourceIndex()).isEqualTo(0);
             softly.assertThat(move2.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move2.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move2.extractPlanningEntities())
+            softly.assertThat(move2.getPlanningEntities())
                     .containsExactly(e2, e1);
-            softly.assertThat(move2.extractPlanningValues())
+            softly.assertThat(move2.getPlanningValues())
                     .containsExactly(v1);
         });
 
@@ -308,9 +308,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move3.getDestinationEntity()).isEqualTo(e1);
             softly.assertThat(move3.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move3.extractPlanningEntities())
+            softly.assertThat(move3.getPlanningEntities())
                     .containsExactly(e1);
-            softly.assertThat(move3.extractPlanningValues())
+            softly.assertThat(move3.getPlanningValues())
                     .containsExactly(v2);
         });
 
@@ -318,9 +318,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move4.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move4.getDestinationIndex()).isEqualTo(1);
-            softly.assertThat(move4.extractPlanningEntities())
+            softly.assertThat(move4.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move4.extractPlanningValues())
+            softly.assertThat(move4.getPlanningValues())
                     .containsExactly(v2);
         });
 
@@ -328,9 +328,9 @@ class ListChangeMoveDefinitionTest {
         assertSoftly(softly -> {
             softly.assertThat(move5.getDestinationEntity()).isEqualTo(e2);
             softly.assertThat(move5.getDestinationIndex()).isEqualTo(0);
-            softly.assertThat(move5.extractPlanningEntities())
+            softly.assertThat(move5.getPlanningEntities())
                     .containsExactly(e2);
-            softly.assertThat(move5.extractPlanningValues())
+            softly.assertThat(move5.getPlanningValues())
                     .containsExactly(v2);
         });
     }

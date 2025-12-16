@@ -62,25 +62,25 @@ class ListSwapMoveDefinitionTest {
 
         var move1 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(move1.extractPlanningEntities())
+            softly.assertThat(move1.getPlanningEntities())
                     .containsOnly(e1, e2);
-            softly.assertThat(move1.extractPlanningValues())
+            softly.assertThat(move1.getPlanningValues())
                     .containsOnly(assignedValue1, assignedValue2);
         });
 
         var move2 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(move2.extractPlanningEntities())
+            softly.assertThat(move2.getPlanningEntities())
                     .containsOnly(e1, e2);
-            softly.assertThat(move2.extractPlanningValues())
+            softly.assertThat(move2.getPlanningValues())
                     .containsOnly(assignedValue1, assignedValue3);
         });
 
         var move3 = (ListSwapMove<TestdataListSolution, TestdataListEntity, TestdataListValue>) moveList.get(2);
         assertSoftly(softly -> {
-            softly.assertThat(move3.extractPlanningEntities())
+            softly.assertThat(move3.getPlanningEntities())
                     .containsOnly(e2);
-            softly.assertThat(move3.extractPlanningValues())
+            softly.assertThat(move3.getPlanningValues())
                     .containsOnly(assignedValue2, assignedValue3);
         });
     }

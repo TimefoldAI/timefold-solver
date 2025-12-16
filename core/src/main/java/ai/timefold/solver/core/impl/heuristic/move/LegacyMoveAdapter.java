@@ -54,12 +54,12 @@ record LegacyMoveAdapter<Solution_>(ai.timefold.solver.core.impl.heuristic.move.
     }
 
     @Override
-    public Collection<?> extractPlanningEntities() {
+    public Collection<?> getPlanningEntities() {
         return legacyMove.getPlanningEntities();
     }
 
     @Override
-    public Collection<?> extractPlanningValues() {
+    public Collection<?> getPlanningValues() {
         return legacyMove.getPlanningValues();
     }
 

@@ -115,12 +115,12 @@ public class SwapMove<Solution_, Entity_> extends AbstractMove<Solution_> {
     }
 
     @Override
-    public Collection<Entity_> extractPlanningEntities() {
+    public Collection<Entity_> getPlanningEntities() {
         return List.of(leftEntity, rightEntity);
     }
 
     @Override
-    public Collection<Object> extractPlanningValues() {
+    public Collection<Object> getPlanningValues() {
         return new LinkedHashSet<>(getCachedValues()); // Not using Set.of(), as values may be null.
     }
 

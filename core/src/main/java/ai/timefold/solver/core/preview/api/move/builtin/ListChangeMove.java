@@ -137,7 +137,7 @@ public class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
     }
 
     @Override
-    public Collection<Entity_> extractPlanningEntities() {
+    public Collection<Entity_> getPlanningEntities() {
         if (sourceEntity == destinationEntity) {
             return Collections.singleton(sourceEntity);
         } else {
@@ -146,7 +146,7 @@ public class ListChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
     }
 
     @Override
-    public Collection<Value_> extractPlanningValues() {
+    public Collection<Value_> getPlanningValues() {
         return Collections.singleton(getMovedValue());
     }
 

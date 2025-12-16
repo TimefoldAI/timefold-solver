@@ -144,12 +144,12 @@ public class ListSwapMove<Solution_, Entity_, Value_> extends AbstractMove<Solut
     }
 
     @Override
-    public Collection<Entity_> extractPlanningEntities() {
+    public Collection<Entity_> getPlanningEntities() {
         return leftEntity == rightEntity ? Collections.singleton(leftEntity) : Arrays.asList(leftEntity, rightEntity);
     }
 
     @Override
-    public Collection<Value_> extractPlanningValues() {
+    public Collection<Value_> getPlanningValues() {
         return Arrays.asList(getLeftValueCache(), getRightValueCache());
     }
 

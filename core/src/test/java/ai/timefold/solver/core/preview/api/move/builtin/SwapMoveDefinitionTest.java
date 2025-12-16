@@ -53,17 +53,17 @@ class SwapMoveDefinitionTest {
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.extractPlanningEntities())
+            softly.assertThat(firstMove.getPlanningEntities())
                     .containsOnly(e1, e2);
-            softly.assertThat(firstMove.extractPlanningValues())
+            softly.assertThat(firstMove.getPlanningValues())
                     .containsOnly(v1, v2);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.extractPlanningEntities())
+            softly.assertThat(secondMove.getPlanningEntities())
                     .containsOnly(e2, e3);
-            softly.assertThat(secondMove.extractPlanningValues())
+            softly.assertThat(secondMove.getPlanningValues())
                     .containsOnly(v2, v1);
         });
     }
@@ -94,17 +94,17 @@ class SwapMoveDefinitionTest {
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.extractPlanningEntities())
+            softly.assertThat(firstMove.getPlanningEntities())
                     .containsOnly(e1, e2);
-            softly.assertThat(firstMove.extractPlanningValues())
+            softly.assertThat(firstMove.getPlanningValues())
                     .containsOnly(v1, v2, otherV1, otherV2);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.extractPlanningEntities())
+            softly.assertThat(secondMove.getPlanningEntities())
                     .containsOnly(e2, e3);
-            softly.assertThat(secondMove.extractPlanningValues())
+            softly.assertThat(secondMove.getPlanningValues())
                     .containsOnly(v2, v1, otherV2, otherV1);
         });
     }

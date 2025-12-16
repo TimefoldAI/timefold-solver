@@ -43,12 +43,12 @@ public final class ListUnassignMove<Solution_, Entity_, Value_> extends Abstract
     }
 
     @Override
-    public Collection<Entity_> extractPlanningEntities() {
+    public Collection<Entity_> getPlanningEntities() {
         return Collections.singleton(sourceEntity);
     }
 
     @Override
-    public Collection<Value_> extractPlanningValues() {
+    public Collection<Value_> getPlanningValues() {
         return Collections.singleton(getUnassignedValue());
     }
 

@@ -42,12 +42,12 @@ public class ListAssignMove<Solution_, Entity_, Value_> extends AbstractMove<Sol
     }
 
     @Override
-    public Collection<Entity_> extractPlanningEntities() {
+    public Collection<Entity_> getPlanningEntities() {
         return List.of(destinationEntity);
     }
 
     @Override
-    public Collection<Value_> extractPlanningValues() {
+    public Collection<Value_> getPlanningValues() {
         return List.of(planningValue);
     }
 

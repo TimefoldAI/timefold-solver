@@ -61,33 +61,33 @@ class ChangeMoveDefinitionTest {
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.extractPlanningEntities())
+            softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(firstEntity);
-            softly.assertThat(firstMove.extractPlanningValues())
+            softly.assertThat(firstMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.extractPlanningEntities())
+            softly.assertThat(secondMove.getPlanningEntities())
                     .containsExactly(firstEntity);
-            softly.assertThat(secondMove.extractPlanningValues())
+            softly.assertThat(secondMove.getPlanningValues())
                     .containsExactly(secondValue);
         });
 
         var thirdMove = moveList.get(2);
         assertSoftly(softly -> {
-            softly.assertThat(thirdMove.extractPlanningEntities())
+            softly.assertThat(thirdMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.extractPlanningValues())
+            softly.assertThat(thirdMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
 
         var fourthMove = moveList.get(3);
         assertSoftly(softly -> {
-            softly.assertThat(fourthMove.extractPlanningEntities())
+            softly.assertThat(fourthMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(fourthMove.extractPlanningValues())
+            softly.assertThat(fourthMove.getPlanningValues())
                     .containsExactly(secondValue);
         });
     }
@@ -121,33 +121,33 @@ class ChangeMoveDefinitionTest {
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.extractPlanningEntities())
+            softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(firstEntity);
-            softly.assertThat(firstMove.extractPlanningValues())
+            softly.assertThat(firstMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.extractPlanningEntities())
+            softly.assertThat(secondMove.getPlanningEntities())
                     .containsExactly(firstEntity);
-            softly.assertThat(secondMove.extractPlanningValues())
+            softly.assertThat(secondMove.getPlanningValues())
                     .containsExactly(secondValue);
         });
 
         var thirdMove = moveList.get(2);
         assertSoftly(softly -> {
-            softly.assertThat(thirdMove.extractPlanningEntities())
+            softly.assertThat(thirdMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.extractPlanningValues())
+            softly.assertThat(thirdMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
 
         var fourthMove = moveList.get(3);
         assertSoftly(softly -> {
-            softly.assertThat(fourthMove.extractPlanningEntities())
+            softly.assertThat(fourthMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(fourthMove.extractPlanningValues())
+            softly.assertThat(fourthMove.getPlanningValues())
                     .containsExactly(secondValue);
         });
     }
@@ -178,9 +178,9 @@ class ChangeMoveDefinitionTest {
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.extractPlanningEntities())
+            softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(firstMove.extractPlanningValues())
+            softly.assertThat(firstMove.getPlanningValues())
                     .hasSize(1)
                     .containsExactly(firstValue);
         });
@@ -215,27 +215,27 @@ class ChangeMoveDefinitionTest {
 
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.extractPlanningEntities())
+            softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(firstEntity);
-            softly.assertThat(firstMove.extractPlanningValues())
+            softly.assertThat(firstMove.getPlanningValues())
                     .hasSize(1)
                     .containsNull();
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.extractPlanningEntities())
+            softly.assertThat(secondMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(secondMove.extractPlanningValues())
+            softly.assertThat(secondMove.getPlanningValues())
                     .hasSize(1)
                     .containsNull();
         });
 
         var thirdMove = moveList.get(2);
         assertSoftly(softly -> {
-            softly.assertThat(thirdMove.extractPlanningEntities())
+            softly.assertThat(thirdMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.extractPlanningValues())
+            softly.assertThat(thirdMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
     }
@@ -264,34 +264,34 @@ class ChangeMoveDefinitionTest {
         // First entity is assigned to null, therefore the applicable moves assign to firstValue and secondValue.
         var firstMove = moveList.get(0);
         assertSoftly(softly -> {
-            softly.assertThat(firstMove.extractPlanningEntities())
+            softly.assertThat(firstMove.getPlanningEntities())
                     .containsExactly(firstEntity);
-            softly.assertThat(firstMove.extractPlanningValues())
+            softly.assertThat(firstMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
 
         var secondMove = moveList.get(1);
         assertSoftly(softly -> {
-            softly.assertThat(secondMove.extractPlanningEntities())
+            softly.assertThat(secondMove.getPlanningEntities())
                     .containsExactly(firstEntity);
-            softly.assertThat(secondMove.extractPlanningValues())
+            softly.assertThat(secondMove.getPlanningValues())
                     .containsExactly(secondValue);
         });
 
         // Second entity is assigned to secondValue, therefore the applicable moves assign to null and firstValue.
         var thirdMove = moveList.get(2);
         assertSoftly(softly -> {
-            softly.assertThat(thirdMove.extractPlanningEntities())
+            softly.assertThat(thirdMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(thirdMove.extractPlanningValues())
+            softly.assertThat(thirdMove.getPlanningValues())
                     .containsExactly(new TestdataValue[] { null });
         });
 
         var fourthMove = moveList.get(3);
         assertSoftly(softly -> {
-            softly.assertThat(fourthMove.extractPlanningEntities())
+            softly.assertThat(fourthMove.getPlanningEntities())
                     .containsExactly(secondEntity);
-            softly.assertThat(fourthMove.extractPlanningValues())
+            softly.assertThat(fourthMove.getPlanningValues())
                     .containsExactly(firstValue);
         });
 

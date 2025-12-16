@@ -63,19 +63,19 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     }
 
     @Override
-    public Collection<?> extractPlanningEntities() {
+    public Collection<?> getPlanningEntities() {
         Set<Object> entities = CollectionUtils.newLinkedHashSet(moves.length * 2);
         for (Move<Solution_> move : moves) {
-            entities.addAll(move.extractPlanningEntities());
+            entities.addAll(move.getPlanningEntities());
         }
         return entities;
     }
 
     @Override
-    public Collection<?> extractPlanningValues() {
+    public Collection<?> getPlanningValues() {
         Set<Object> values = CollectionUtils.newLinkedHashSet(moves.length * 2);
         for (Move<Solution_> move : moves) {
-            values.addAll(move.extractPlanningValues());
+            values.addAll(move.getPlanningValues());
         }
         return values;
     }

@@ -56,12 +56,12 @@ public class ChangeMove<Solution_, Entity_, Value_> extends AbstractMove<Solutio
     }
 
     @Override
-    public Collection<Entity_> extractPlanningEntities() {
+    public Collection<Entity_> getPlanningEntities() {
         return Collections.singletonList(entity);
     }
 
     @Override
-    public Collection<Value_> extractPlanningValues() {
+    public Collection<Value_> getPlanningValues() {
         return Collections.singletonList(toPlanningValue);
     }
 
