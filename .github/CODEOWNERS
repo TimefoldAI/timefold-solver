@@ -15,7 +15,7 @@
 **/* @triceo
 
 core/src/*/java/ai/timefold/solver/core/impl/domain/valuerange/** @triceo @zepfred
-core/src/*/java/ai/timefold/solver/core/impl/heuristic/** @triceo @zepfred
+core/src/*/java/ai/timefold/solver/core/impl/heuristic/selector/** @triceo @zepfred
 core/src/*/java/ai/timefold/solver/core/impl/constructionheuristic/** @triceo @zepfred
 core/src/*/java/ai/timefold/solver/core/impl/exhaustivesearch/** @triceo @zepfred
 core/src/*/java/ai/timefold/solver/core/impl/localsearch/** @triceo @zepfred
