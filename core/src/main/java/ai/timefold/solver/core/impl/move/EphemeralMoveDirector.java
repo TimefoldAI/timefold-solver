@@ -21,7 +21,8 @@ import org.jspecify.annotations.NullMarked;
  */
 @NullMarked
 final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
-        extends MoveDirector<Solution_, Score_> {
+        extends MoveDirector<Solution_, Score_>
+        implements AutoCloseable {
 
     EphemeralMoveDirector(InnerScoreDirector<Solution_, Score_> scoreDirector) {
         super(scoreDirector);
@@ -48,6 +49,7 @@ final class EphemeralMoveDirector<Solution_, Score_ extends Score<Score_>>
         throw new UnsupportedOperationException("Impossible state: This move director does not support undoing moves.");
     }
 
+    @Override
     public void close() {
         getVariableChangeRecordingScoreDirector().undoChanges();
     }

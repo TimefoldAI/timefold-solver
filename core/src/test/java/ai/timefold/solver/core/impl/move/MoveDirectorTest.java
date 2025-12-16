@@ -46,6 +46,7 @@ import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullMultiS
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullSolution;
 import ai.timefold.solver.core.testdomain.shadow.full.TestdataShadowedFullValue;
 
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 class MoveDirectorTest {
@@ -458,18 +459,20 @@ class MoveDirectorTest {
 
         innerScoreDirector.setWorkingSolution(workingSolution);
 
-        var ephemeralMoveDirector = moveDirector.ephemeral();
-        var scoreDirector = ephemeralMoveDirector.getScoreDirector();
-        var move = new TestdataShadowedFullMultiSwapListMove(entityA, entityB,
-                List.of(
-                        List.of(valueE, valueF),
-                        List.of(valueA, valueB, valueC, valueD)),
-                List.of(
-                        List.of(valueA, valueB, valueC, valueD),
-                        List.of(valueE, valueF)));
-        move.doMoveOnly(scoreDirector);
-        scoreDirector.triggerVariableListeners();
-        ephemeralMoveDirector.close();
+        try (var ephemeralMoveDirector = moveDirector.ephemeral()) {
+            var scoreDirector = ephemeralMoveDirector.getScoreDirector();
+            var move = new TestdataShadowedFullMultiSwapListMove(entityA, entityB,
+                    List.of(
+                            List.of(valueE, valueF),
+                            List.of(valueA, valueB, valueC, valueD)),
+                    List.of(
+                            List.of(valueA, valueB, valueC, valueD),
+                            List.of(valueE, valueF)));
+            move.doMoveOnly(scoreDirector);
+            scoreDirector.triggerVariableListeners();
+        } catch (Exception e) {
+            Assertions.fail(e);
+        }
     }
 
     @Test
