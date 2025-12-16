@@ -1,17 +1,18 @@
 package ai.timefold.solver.core.preview.api.move;
 
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
 import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
-import org.jspecify.annotations.NullMarked;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
@@ -101,8 +102,9 @@ public interface Move<Solution_> {
      * @return Each entity only once.
      */
     default Collection<?> getPlanningEntities() {
-        throw new UnsupportedOperationException("The move (%s) does not support tabu search."
-                .formatted(this));
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the getPlanningEntities() method, so Entity Tabu Search is impossible."
+                        .formatted(getClass()));
     }
 
     /**
@@ -118,8 +120,9 @@ public interface Move<Solution_> {
      * @return Each value only once. May contain null.
      */
     default Collection<?> getPlanningValues() {
-        throw new UnsupportedOperationException("The move (%s) does not support tabu search."
-                .formatted(this));
+        throw new UnsupportedOperationException(
+                "Move class (%s) doesn't implement the getPlanningEntities() method, so Value Tabu Search is impossible."
+                        .formatted(getClass()));
     }
 
     /**

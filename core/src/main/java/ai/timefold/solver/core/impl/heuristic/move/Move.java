@@ -1,9 +1,6 @@
 package ai.timefold.solver.core.impl.heuristic.move;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.Iterator;
 
 import ai.timefold.solver.core.api.domain.entity.PlanningEntity;
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
@@ -13,10 +10,12 @@ import ai.timefold.solver.core.api.domain.variable.PlanningVariable;
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.api.solver.Solver;
-import ai.timefold.solver.core.config.localsearch.decider.acceptor.AcceptorType;
 import ai.timefold.solver.core.impl.heuristic.selector.move.MoveSelector;
 import ai.timefold.solver.core.impl.heuristic.selector.move.factory.MoveListFactory;
 import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAcceptor;
+import ai.timefold.solver.core.impl.move.MoveDirector;
+import ai.timefold.solver.core.preview.api.move.MutableSolutionView;
+import ai.timefold.solver.core.preview.api.move.Rebaser;
 
 /**
  * A Move represents a change of 1 or more {@link PlanningVariable}s of 1 or more {@link PlanningEntity}s
@@ -31,11 +30,39 @@ import ai.timefold.solver.core.impl.localsearch.decider.acceptor.tabu.MoveTabuAc
  * An implementation must extend {@link AbstractMove} to ensure backwards compatibility in future versions.
  * It is highly recommended to override {@link #getPlanningEntities()} and {@link #getPlanningValues()},
  * otherwise the resulting move will throw an exception when used with Tabu search.
+ * <p>
+ * To ease interoperability with Neighborhoods API,
+ * this interface extends {@link ai.timefold.solver.core.preview.api.move.Move},
+ * giving the user an option to override certain methods which they should not.
+ * Specifically, the following methods must not be overridden by the user,
+ * as suitable default implementations are provided:
  *
+ * <ul>
+ * <li>{@link #execute(MutableSolutionView)}</li>
+ * <li>{@link #rebase(Rebaser)}</li>
+ * <li>{@link #describe()}</li>
+ * </ul>
+ *
+ * The following methods should also not be overridden, on account of being deprecated:
+ *
+ * <ul>
+ * <li>{@link #doMove(ScoreDirector)}</li>
+ * </ul>
+ *
+ * <p>
+ * This entire interface exists to provide interoperability with move selectors
+ * and will eventually be phased out in favor of the Neighborhoods API.
+ * It will be marked as deprecated for removal in a future release.
+ *
+ * <p>
+ * To avoid having to implement this interface and instead use the new Move API directly,
+ * you can use {@link MoveAdapters#toLegacyMoveIterator(Iterator)} in your move selectors.
+ * Note that {@link MoveAdapters} is not public API, just like this interface.
+ * 
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see AbstractMove
  */
-public interface Move<Solution_> {
+public interface Move<Solution_> extends ai.timefold.solver.core.preview.api.move.Move<Solution_> {
 
     /**
      * Called before a move is evaluated to decide whether the move can be done and evaluated.
@@ -99,6 +126,15 @@ public interface Move<Solution_> {
     }
 
     /**
+     * Do not override this default implementation.
+     */
+    @Override
+    default void execute(MutableSolutionView<Solution_> solutionView) {
+        var scoreDirector = ((MoveDirector<Solution_, ?>) solutionView).getScoreDirector();
+        doMoveOnly(scoreDirector);
+    }
+
+    /**
      * Rebases a move from an origin {@link ScoreDirector} to another destination {@link ScoreDirector}
      * which is usually on another {@link Thread} or JVM.
      * The new move returned by this method translates the entities and problem facts
@@ -134,6 +170,14 @@ public interface Move<Solution_> {
                         .formatted(getClass()));
     }
 
+    /**
+     * Do not override this default implementation.
+     */
+    @Override
+    default ai.timefold.solver.core.preview.api.move.Move<Solution_> rebase(Rebaser rebaser) {
+        return rebase(((MoveDirector<Solution_, ?>) rebaser).getScoreDirector());
+    }
+
     // ************************************************************************
     // Introspection methods
     // ************************************************************************
@@ -151,38 +195,11 @@ public interface Move<Solution_> {
     }
 
     /**
-     * Returns all planning entities that are being changed by this move.
-     * Required for {@link AcceptorType#ENTITY_TABU}.
-     * <p>
-     * This method is only called after {@link #doMoveOnly(ScoreDirector)} (which might affect the return values).
-     * <p>
-     * Duplicate entries in the returned {@link Collection} are best avoided.
-     * The returned {@link Collection} is recommended to be in a stable order.
-     * For example: use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
-     *
-     * @return never null
+     * Do not override this default implementation.
      */
-    default Collection<? extends Object> getPlanningEntities() {
-        throw new UnsupportedOperationException(
-                "Move class (%s) doesn't implement the extractPlanningEntities() method, so Entity Tabu Search is impossible."
-                        .formatted(getClass()));
+    @Override
+    default String describe() {
+        return getSimpleMoveTypeDescription();
     }
 
-    /**
-     * Returns all planning values that entities are being assigned to by this move.
-     * Required for {@link AcceptorType#VALUE_TABU}.
-     * <p>
-     * This method is only called after {@link #doMoveOnly(ScoreDirector)} (which might affect the return values).
-     * <p>
-     * Duplicate entries in the returned {@link Collection} are best avoided.
-     * The returned {@link Collection} is recommended to be in a stable order.
-     * For example: use {@link List} or {@link LinkedHashSet}, but not {@link HashSet}.
-     *
-     * @return never null
-     */
-    default Collection<? extends Object> getPlanningValues() {
-        throw new UnsupportedOperationException(
-                "Move class (%s) doesn't implement the extractPlanningEntities() method, so Value Tabu Search is impossible."
-                        .formatted(getClass()));
-    }
 }

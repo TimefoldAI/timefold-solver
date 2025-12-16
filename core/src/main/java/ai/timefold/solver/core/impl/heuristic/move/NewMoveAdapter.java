@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.api.score.director.ScoreDirector;
 import ai.timefold.solver.core.impl.move.MoveDirector;
+import ai.timefold.solver.core.impl.move.VariableChangeRecordingScoreDirector;
 import ai.timefold.solver.core.impl.score.director.InnerScoreDirector;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -34,6 +35,9 @@ record NewMoveAdapter<Solution_>(Move<Solution_> newMove)
     }
 
     private MoveDirector<Solution_, ?> getMoveDirector(ScoreDirector<Solution_> scoreDirector) {
+        if (scoreDirector instanceof VariableChangeRecordingScoreDirector<Solution_, ?> recordingScoreDirector) {
+            return recordingScoreDirector.getBacking().getMoveDirector();
+        }
         return ((InnerScoreDirector<Solution_, ?>) scoreDirector).getMoveDirector();
     }
 
@@ -71,7 +75,7 @@ record NewMoveAdapter<Solution_>(Move<Solution_> newMove)
 
     @Override
     public String toString() {
-        return newMove.toString();
+        return "Adapted(%s)".formatted(newMove);
     }
 
 }

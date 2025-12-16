@@ -78,6 +78,12 @@ final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Sol
                 var leftFact = leftTuple.factA;
                 var rightFact = rightTupleIterator.next().factA;
                 nextMove = context.buildMove(leftFact, rightFact);
+                if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
+                    throw new UnsupportedOperationException("""
+                            Neighborhoods do not support legacy moves.
+                            Please refactor your code (%s) to use the new Move API."""
+                            .formatted(legacyMove.getClass().getCanonicalName()));
+                }
                 return true;
             }
         }

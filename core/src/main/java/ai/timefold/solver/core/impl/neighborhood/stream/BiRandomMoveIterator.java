@@ -107,6 +107,12 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
             var leftElement = leftTupleSequence.pick(workingRandom);
             pickNextMove(leftElement);
             if (nextMove != null) {
+                if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
+                    throw new UnsupportedOperationException("""
+                            Neighborhoods do not support legacy moves.
+                            Please refactor your code (%s) to use the new Move API."""
+                            .formatted(legacyMove.getClass().getCanonicalName()));
+                }
                 return true;
             }
         }

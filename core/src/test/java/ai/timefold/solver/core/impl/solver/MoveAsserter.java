@@ -4,7 +4,6 @@ import java.util.function.Consumer;
 
 import ai.timefold.solver.core.api.score.Score;
 import ai.timefold.solver.core.impl.domain.solution.descriptor.SolutionDescriptor;
-import ai.timefold.solver.core.impl.heuristic.move.MoveAdapters;
 import ai.timefold.solver.core.impl.score.director.InnerScore;
 import ai.timefold.solver.core.preview.api.move.Move;
 
@@ -39,7 +38,7 @@ public class MoveAsserter<Solution_> {
 
     private void assertMove(Solution_ solution, ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move,
             Consumer<Solution_> moveSolutionConsumer) {
-        assertMove(solution, MoveAdapters.toNewMove(move), moveSolutionConsumer, false);
+        assertMove(solution, move, moveSolutionConsumer, false);
     }
 
     private void assertMove(Solution_ solution, Move<Solution_> move, Consumer<Solution_> moveSolutionConsumer,

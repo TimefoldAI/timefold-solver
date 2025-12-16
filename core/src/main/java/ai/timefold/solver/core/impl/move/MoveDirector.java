@@ -199,13 +199,8 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
      * Execute a given move and make sure shadow variables are up to date after that.
      */
     public final void execute(Move<Solution_> move) {
-        move.execute(this);
+        MoveAdapters.unadapt(move).execute(this);
         externalScoreDirector.triggerVariableListeners();
-    }
-
-    // Only used in tests of legacy moves.
-    public final void execute(ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move) {
-        execute(MoveAdapters.toNewMove(move));
     }
 
     public final InnerScore<Score_> executeTemporary(Move<Solution_> move) {
@@ -224,12 +219,6 @@ public sealed class MoveDirector<Solution_, Score_ extends Score<Score_>>
         var result = postprocessor.apply(score, ephemeralMoveDirector.createUndoMove());
         ephemeralMoveDirector.close(); // This undoes the move.
         return result;
-    }
-
-    // Only used in tests of legacy moves.
-    public final <Result_> Result_ executeTemporary(ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> move,
-            TemporaryMovePostprocessor<Solution_, Score_, Result_> postprocessor) {
-        return executeTemporary(MoveAdapters.toNewMove(move), postprocessor);
     }
 
     @Override

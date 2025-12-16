@@ -3,7 +3,6 @@ package ai.timefold.solver.core.preview.api.move.builtin;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
@@ -33,7 +32,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     @SafeVarargs
     static <Solution_, Move_ extends Move<Solution_>> Move<Solution_> buildMove(Move_... moves) {
         return switch (moves.length) {
-            case 0 -> throw new UnsupportedOperationException("The CompositeMove cannot be built from an empty move list.");
+            case 0 -> throw new UnsupportedOperationException("The %s cannot be built from an empty move list."
+                    .formatted(CompositeMove.class.getSimpleName()));
             case 1 -> moves[0];
             default -> new CompositeMove<>(moves);
         };
@@ -47,7 +47,7 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     @Override
     public void execute(MutableSolutionView<Solution_> solutionView) {
-        for (Move<Solution_> move : moves) {
+        for (var move : moves) {
             move.execute(solutionView);
         }
     }
@@ -56,7 +56,7 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
     @Override
     public Move<Solution_> rebase(Rebaser rebaser) {
         Move<Solution_>[] rebasedMoves = new Move[moves.length];
-        for (int i = 0; i < moves.length; i++) {
+        for (var i = 0; i < moves.length; i++) {
             rebasedMoves[i] = moves[i].rebase(rebaser);
         }
         return new CompositeMove<>(rebasedMoves);
@@ -64,8 +64,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     @Override
     public Collection<?> getPlanningEntities() {
-        Set<Object> entities = CollectionUtils.newLinkedHashSet(moves.length * 2);
-        for (Move<Solution_> move : moves) {
+        var entities = CollectionUtils.newLinkedHashSet(moves.length * 2);
+        for (var move : moves) {
             entities.addAll(move.getPlanningEntities());
         }
         return entities;
@@ -73,8 +73,8 @@ public final class CompositeMove<Solution_> implements Move<Solution_> {
 
     @Override
     public Collection<?> getPlanningValues() {
-        Set<Object> values = CollectionUtils.newLinkedHashSet(moves.length * 2);
-        for (Move<Solution_> move : moves) {
+        var values = CollectionUtils.newLinkedHashSet(moves.length * 2);
+        for (var move : moves) {
             values.addAll(move.getPlanningValues());
         }
         return values;
