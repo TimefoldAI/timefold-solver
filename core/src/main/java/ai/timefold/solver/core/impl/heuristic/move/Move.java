@@ -57,8 +57,7 @@ import ai.timefold.solver.core.preview.api.move.Rebaser;
  * <p>
  * To avoid having to implement this interface and instead use the new Move API directly,
  * you can use {@link MoveAdapters#toLegacyMoveIterator(Iterator)} in your move selectors.
- * Note that {@link MoveAdapters} is not public API, just like this interface.
- * 
+ *
  * @param <Solution_> the solution type, the class with the {@link PlanningSolution} annotation
  * @see AbstractMove
  */

@@ -121,7 +121,7 @@ public interface Move<Solution_> {
      */
     default Collection<?> getPlanningValues() {
         throw new UnsupportedOperationException(
-                "Move class (%s) doesn't implement the getPlanningEntities() method, so Value Tabu Search is impossible."
+                "Move class (%s) doesn't implement the getPlanningValues() method, so Value Tabu Search is impossible."
                         .formatted(getClass()));
     }
 
