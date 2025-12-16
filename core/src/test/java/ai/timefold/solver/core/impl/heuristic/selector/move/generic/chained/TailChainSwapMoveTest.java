@@ -23,7 +23,6 @@ import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class TailChainSwapMoveTest {
@@ -182,38 +181,6 @@ class TailChainSwapMoveTest {
                 new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a2, a6),
                 (__, ___) -> {
                     SelectorTestUtils.assertChain(a0, a7, a3, a4, a5, a6, a2, a1);
-                    return null;
-                });
-    }
-
-    @Disabled("Doing a move that the logic describes as not doable; why?")
-    @Test
-    void possiblyBrokenLogic() { // Split off from doMoveInSameChain.
-        var a0 = new TestdataChainedAnchor("a0");
-        var a1 = new TestdataChainedEntity("a1", a0);
-        var a2 = new TestdataChainedEntity("a2", a1);
-        var a3 = new TestdataChainedEntity("a3", a2);
-        var a4 = new TestdataChainedEntity("a4", a3);
-        var a5 = new TestdataChainedEntity("a5", a4);
-        var a6 = new TestdataChainedEntity("a6", a5);
-        var a7 = new TestdataChainedEntity("a7", a6);
-
-        var solution = new TestdataChainedSolution("solution");
-        solution.setChainedAnchorList(Arrays.asList(a0));
-        solution.setChainedEntityList(Arrays.asList(a1, a2, a3, a4, a5, a6, a7));
-
-        innerScoreDirector.setWorkingSolution(solution);
-        var inverseVariableSupply = innerScoreDirector.getSupplyManager()
-                .demand(new SingletonInverseVariableDemand<>(variableDescriptor));
-        var anchorVariableSupply = innerScoreDirector.getSupplyManager()
-                .demand(new AnchorVariableDemand<>(variableDescriptor));
-        SelectorTestUtils.assertChain(a0, a1, a2, a3, a4, a5, a6, a7);
-
-        var moveDirector = new MoveDirector<>(innerScoreDirector);
-        moveDirector.executeTemporary(
-                new TailChainSwapMove<>(variableDescriptor, inverseVariableSupply, anchorVariableSupply, a3, a1),
-                (__, ___) -> {
-                    SelectorTestUtils.assertChain(a0, a1, a3, a2, a4, a5, a6, a7);
                     return null;
                 });
     }

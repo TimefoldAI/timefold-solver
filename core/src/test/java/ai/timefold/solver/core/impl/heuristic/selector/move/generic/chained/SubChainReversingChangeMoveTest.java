@@ -21,7 +21,6 @@ import ai.timefold.solver.core.testdomain.chained.TestdataChainedEntity;
 import ai.timefold.solver.core.testdomain.chained.TestdataChainedSolution;
 import ai.timefold.solver.core.testutil.PlannerTestUtils;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class SubChainReversingChangeMoveTest {
@@ -95,64 +94,6 @@ class SubChainReversingChangeMoveTest {
         verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a2);
         verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, b1);
         verify(innerScoreDirector).afterVariableChanged(variableDescriptor, b1);
-    }
-
-    @Disabled("Doing a move that the logic describes as not doable; why?")
-    @Test
-    void sameChainInPlaceNoTrailing() {
-        var a0 = new TestdataChainedAnchor("a0");
-        var a1 = new TestdataChainedEntity("a1", a0);
-        var a2 = new TestdataChainedEntity("a2", a1);
-        var a3 = new TestdataChainedEntity("a3", a2);
-        var a4 = new TestdataChainedEntity("a4", a3);
-        var a5 = new TestdataChainedEntity("a5", a4);
-
-        var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
-                new TestdataChainedEntity[] { a1, a2, a3, a4, a5 });
-
-        var moveDirector = new MoveDirector<>(innerScoreDirector);
-        var move = new SubChainReversingChangeMove<>(new SubChain(Arrays.asList(a3, a4, a5)), variableDescriptor,
-                inverseVariableSupply, a2);
-        moveDirector.execute(move);
-
-        SelectorTestUtils.assertChain(a0, a1, a2, a5, a4, a3);
-
-        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a5);
-        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a5);
-        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
-        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
-        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
-        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
-    }
-
-    @Disabled("Doing a move that the logic describes as not doable; why?")
-    @Test
-    void sameChainInPlaceOldAndNewTrailing() {
-        var a0 = new TestdataChainedAnchor("a0");
-        var a1 = new TestdataChainedEntity("a1", a0);
-        var a2 = new TestdataChainedEntity("a2", a1);
-        var a3 = new TestdataChainedEntity("a3", a2);
-        var a4 = new TestdataChainedEntity("a4", a3);
-        var a5 = new TestdataChainedEntity("a5", a4);
-
-        var inverseVariableSupply = SelectorTestUtils.mockSingletonInverseVariableSupply(
-                new TestdataChainedEntity[] { a1, a2, a3, a4, a5 });
-
-        var moveDirector = new MoveDirector<>(innerScoreDirector);
-        var move = new SubChainReversingChangeMove<>(new SubChain(Arrays.asList(a2, a3, a4)), variableDescriptor,
-                inverseVariableSupply, a1);
-        moveDirector.execute(move);
-
-        SelectorTestUtils.assertChain(a0, a1, a4, a3, a2, a5);
-
-        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a4);
-        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a4);
-        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a3);
-        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a3);
-        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a5);
-        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a5);
-        verify(innerScoreDirector).beforeVariableChanged(variableDescriptor, a2);
-        verify(innerScoreDirector).afterVariableChanged(variableDescriptor, a2);
     }
 
     @Test
