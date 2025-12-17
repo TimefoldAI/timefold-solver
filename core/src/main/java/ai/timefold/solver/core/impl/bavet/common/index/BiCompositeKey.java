@@ -17,6 +17,9 @@ record BiCompositeKey<A, B>(A propertyA, B propertyB) implements CompositeKey {
 
     @Override
     public boolean equals(Object o) { // Often used in hash-based collections; the JDK-generated default is too slow.
+        if (this == o) {
+            return true;
+        }
         return o instanceof BiCompositeKey<?, ?> that &&
                 Objects.equals(propertyA, that.propertyA) &&
                 Objects.equals(propertyB, that.propertyB);
