@@ -3,7 +3,6 @@ package ai.timefold.solver.core.impl.bavet.common.index;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -21,7 +20,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     private final KeyRetriever<Key_> keyRetriever;
     private final Supplier<Indexer<T>> downstreamIndexerSupplier;
-    private final Comparator<Key_> keyComparator;
+    private final boolean reverseOrder;
     private final boolean hasOrEquals;
     private final NavigableMap<Key_, Indexer<T>> comparisonMap;
 
@@ -52,23 +51,19 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
             Supplier<Indexer<T>> downstreamIndexerSupplier) {
         this.keyRetriever = Objects.requireNonNull(keyRetriever);
         this.downstreamIndexerSupplier = Objects.requireNonNull(downstreamIndexerSupplier);
-        /*
-         * For GT/GTE, the iteration order is reversed.
-         * This allows us to iterate over the entire map, stopping when the threshold is reached.
-         * This is done so that we can avoid using head/tail sub maps, which are expensive.
-         */
-        this.keyComparator =
-                (comparisonJoinerType == JoinerType.GREATER_THAN || comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL)
-                        ? Comparator.<Key_> naturalOrder().reversed()
-                        : Comparator.naturalOrder();
+        // For GT/GTE, the iteration order is reversed.
+        // This allows us to iterate over the entire map from the start, stopping when the threshold is reached.
+        // This is done so that we can avoid using head/tail sub maps, which are expensive.
+        this.reverseOrder =
+                comparisonJoinerType == JoinerType.GREATER_THAN || comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL;
         this.hasOrEquals = comparisonJoinerType == JoinerType.GREATER_THAN_OR_EQUAL
                 || comparisonJoinerType == JoinerType.LESS_THAN_OR_EQUAL;
-        this.comparisonMap = new TreeMap<>(keyComparator);
+        this.comparisonMap = reverseOrder ? new TreeMap<>(Comparator.reverseOrder()) : new TreeMap<>();
     }
 
     @Override
     public ListEntry<T> put(Object compositeKey, T tuple) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyRetriever.apply(compositeKey);
         // Avoids computeIfAbsent in order to not create lambdas on the hot path.
         var downstreamIndexer = comparisonMap.get(indexKey);
         if (downstreamIndexer == null) {
@@ -80,7 +75,7 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     @Override
     public void remove(Object compositeKey, ListEntry<T> entry) {
-        Key_ indexKey = keyRetriever.apply(compositeKey);
+        var indexKey = keyRetriever.apply(compositeKey);
         var downstreamIndexer = getDownstreamIndexer(compositeKey, indexKey, entry);
         downstreamIndexer.remove(compositeKey, entry);
         if (downstreamIndexer.isEmpty()) {
@@ -98,36 +93,27 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return downstreamIndexer;
     }
 
-    // TODO clean up DRY
     @Override
     public int size(Object compositeKey) {
-        var mapSize = comparisonMap.size();
-        if (mapSize == 0) {
-            return 0;
-        }
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        if (mapSize == 1) { // Avoid creation of the entry set and iterator.
-            var entry = comparisonMap.firstEntry();
-            if (boundaryReached(entry.getKey(), indexKey)) {
-                return 0;
-            }
-            return entry.getValue().size(compositeKey);
-        } else {
-            var size = 0;
-            for (var entry : comparisonMap.entrySet()) {
-                if (boundaryReached(entry.getKey(), indexKey)) {
-                    break;
-                }
-                // Boundary condition not yet reached; include the indexer in the range.
-                size += entry.getValue().size(compositeKey);
-            }
-            return size;
-        }
+        return switch (comparisonMap.size()) {
+            case 0 -> 0;
+            case 1 -> sizeSingleIndexer(compositeKey);
+            default -> sizeManyIndexers(compositeKey);
+        };
+    }
+
+    private int sizeSingleIndexer(Object compositeKey) {
+        var indexKey = keyRetriever.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        return boundaryReached(entry.getKey(), indexKey) ? 0 : entry.getValue().size(compositeKey);
     }
 
     private boolean boundaryReached(Key_ entryKey, Key_ indexKey) {
-        // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
-        var comparison = keyComparator.compare(entryKey, indexKey);
+        var comparison = entryKey.compareTo(indexKey);
+        if (reverseOrder) {
+            // Comparator matches the order of iteration of the map, so the boundary is always found from the bottom up.
+            comparison = -comparison;
+        }
         if (comparison >= 0) { // Possibility of reaching the boundary condition.
             // Boundary condition reached when we're out of bounds entirely, or when GTE/LTE is not allowed.
             return comparison > 0 || !hasOrEquals;
@@ -135,34 +121,47 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
         return false;
     }
 
+    private int sizeManyIndexers(Object compositeKey) {
+        var indexKey = keyRetriever.apply(compositeKey);
+        var size = 0;
+        for (var entry : comparisonMap.entrySet()) {
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return size;
+            }
+            // Boundary condition not yet reached; include the indexer in the range.
+            size += entry.getValue().size(compositeKey);
+        }
+        return size;
+    }
+
     @Override
     public void forEach(Object compositeKey, Consumer<T> tupleConsumer) {
-        var size = comparisonMap.size();
-        if (size == 0) {
-            return;
-        }
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        if (size == 1) { // Avoid creation of the entry set and iterator.
-            var entry = comparisonMap.firstEntry();
-            visitEntry(compositeKey, tupleConsumer, indexKey, entry);
-        } else {
-            for (var entry : comparisonMap.entrySet()) {
-                var boundaryReached = visitEntry(compositeKey, tupleConsumer, indexKey, entry);
-                if (boundaryReached) {
-                    return;
-                }
-            }
+        switch (comparisonMap.size()) {
+            case 0 -> {
+                /* Nothing to do. */ }
+            case 1 -> forEachSingleIndexer(compositeKey, tupleConsumer);
+            default -> forEachManyIndexers(compositeKey, tupleConsumer);
         }
     }
 
-    private boolean visitEntry(Object compositeKey, Consumer<T> tupleConsumer, Key_ indexKey,
-            Map.Entry<Key_, Indexer<T>> entry) {
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            return true;
+    private void forEachSingleIndexer(Object compositeKey, Consumer<T> tupleConsumer) {
+        var indexKey = keyRetriever.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        if (!boundaryReached(entry.getKey(), indexKey)) {
+            // Boundary condition not yet reached; include the indexer in the range.
+            entry.getValue().forEach(compositeKey, tupleConsumer);
         }
-        // Boundary condition not yet reached; include the indexer in the range.
-        entry.getValue().forEach(compositeKey, tupleConsumer);
-        return false;
+    }
+
+    private void forEachManyIndexers(Object compositeKey, Consumer<T> tupleConsumer) {
+        var indexKey = keyRetriever.apply(compositeKey);
+        for (var entry : comparisonMap.entrySet()) {
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return;
+            }
+            // Boundary condition not yet reached; include the indexer in the range.
+            entry.getValue().forEach(compositeKey, tupleConsumer);
+        }
     }
 
     @Override
@@ -172,39 +171,35 @@ final class ComparisonIndexer<T, Key_ extends Comparable<Key_>>
 
     @Override
     public List<? extends ListEntry<T>> asList(Object compositeKey) {
-        var size = comparisonMap.size();
-        if (size == 0) {
-            return Collections.emptyList();
-        }
+        return switch (comparisonMap.size()) {
+            case 0 -> Collections.emptyList();
+            case 1 -> asListSingleIndexer(compositeKey);
+            default -> asListManyIndexers(compositeKey);
+        };
+    }
+
+    private List<? extends ListEntry<T>> asListSingleIndexer(Object compositeKey) {
+        var indexKey = keyRetriever.apply(compositeKey);
+        var entry = comparisonMap.firstEntry();
+        return boundaryReached(entry.getKey(), indexKey) ? Collections.emptyList() : entry.getValue().asList(compositeKey);
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<? extends ListEntry<T>> asListManyIndexers(Object compositeKey) {
         // The index backend's asList() may take a while to build.
         // At the same time, the elements in these lists will be accessed randomly.
         // Therefore we build this abstraction to avoid building unnecessary lists that would never get accessed.
         var result = new ComposingList<ListEntry<T>>();
-        Key_ indexKey = keyRetriever.apply(compositeKey);
-        if (size == 1) { // Avoid creation of the entry set and iterator.
-            var entry = comparisonMap.firstEntry();
-            visitEntry(compositeKey, result, indexKey, entry);
-        } else {
-            for (var entry : comparisonMap.entrySet()) {
-                var boundaryReached = visitEntry(compositeKey, result, indexKey, entry);
-                if (boundaryReached) {
-                    return result;
-                }
+        var indexKey = keyRetriever.apply(compositeKey);
+        for (var entry : comparisonMap.entrySet()) {
+            if (boundaryReached(entry.getKey(), indexKey)) {
+                return result;
+            } else { // Boundary condition not yet reached; include the indexer in the range.
+                var value = entry.getValue();
+                result.addSubList(() -> (List<ListEntry<T>>) value.asList(compositeKey), value.size(compositeKey));
             }
         }
         return result;
-    }
-
-    @SuppressWarnings("unchecked")
-    private boolean visitEntry(Object compositeKey, ComposingList<ListEntry<T>> result, Key_ indexKey,
-            Map.Entry<Key_, Indexer<T>> entry) {
-        if (boundaryReached(entry.getKey(), indexKey)) {
-            return true;
-        }
-        // Boundary condition not yet reached; include the indexer in the range.
-        var indexer = entry.getValue();
-        result.addSubList(() -> (List<ListEntry<T>>) indexer.asList(compositeKey), indexer.size(compositeKey));
-        return false;
     }
 
     @Override
