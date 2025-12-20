@@ -26,13 +26,13 @@ public final class Group1Mapping2CollectorQuadNode<OldA, OldB, OldC, OldD, A, B,
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(A a) {
-        return new TriTuple<>(a, null, null, outputStoreSize);
+        return TriTuple.of(a, outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Pair<B, C> result) {
-        outTuple.factB = result.key();
-        outTuple.factC = result.value();
+        outTuple.setB(result.key());
+        outTuple.setC(result.value());
     }
 
 }

@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.Objects;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 
-abstract sealed class AbstractGroupNodeConstructor<Tuple_ extends AbstractTuple>
+abstract sealed class AbstractGroupNodeConstructor<Tuple_ extends Tuple>
         implements GroupNodeConstructor<Tuple_>
         permits GroupNodeConstructorWithAccumulate, GroupNodeConstructorWithoutAccumulate {
 

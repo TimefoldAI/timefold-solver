@@ -20,19 +20,16 @@ public final class MapBiToUniNode<A, B, NewA> extends AbstractMapNode<BiTuple<A,
 
     @Override
     protected UniTuple<NewA> map(BiTuple<A, B> tuple) {
-        A factA = tuple.factA;
-        B factB = tuple.factB;
-        return new UniTuple<>(
-                mappingFunction.apply(factA, factB),
-                outputStoreSize);
+        var factA = tuple.getA();
+        var factB = tuple.getB();
+        return UniTuple.of(mappingFunction.apply(factA, factB), outputStoreSize);
     }
 
     @Override
     protected void remap(BiTuple<A, B> inTuple, UniTuple<NewA> outTuple) {
-        A factA = inTuple.factA;
-        B factB = inTuple.factB;
-        NewA newA = mappingFunction.apply(factA, factB);
-        outTuple.factA = newA;
+        var factA = inTuple.getA();
+        var factB = inTuple.getB();
+        outTuple.setA(mappingFunction.apply(factA, factB));
     }
 
 }

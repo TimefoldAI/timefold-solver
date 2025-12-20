@@ -23,23 +23,23 @@ public final class IndexedJoinTriNode<A, B, C>
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return new TriTuple<>(leftTuple.factA, leftTuple.factB, rightTuple.factA, outputStoreSizeTracker.computeStoreSize());
+        return TriTuple.of(leftTuple.getA(), leftTuple.getB(), rightTuple.getA(), outputStoreSizeTracker.computeStoreSize());
     }
 
     @Override
     protected void setOutTupleLeftFacts(TriTuple<A, B, C> outTuple, BiTuple<A, B> leftTuple) {
-        outTuple.factA = leftTuple.factA;
-        outTuple.factB = leftTuple.factB;
+        outTuple.setA(leftTuple.getA());
+        outTuple.setB(leftTuple.getB());
     }
 
     @Override
     protected void setOutTupleRightFact(TriTuple<A, B, C> outTuple, UniTuple<C> rightTuple) {
-        outTuple.factC = rightTuple.factA;
+        outTuple.setC(rightTuple.getA());
     }
 
     @Override
     protected boolean testFiltering(BiTuple<A, B> leftTuple, UniTuple<C> rightTuple) {
-        return filtering.test(leftTuple.factA, leftTuple.factB, rightTuple.factA);
+        return filtering.test(leftTuple.getA(), leftTuple.getB(), rightTuple.getA());
     }
 
 }

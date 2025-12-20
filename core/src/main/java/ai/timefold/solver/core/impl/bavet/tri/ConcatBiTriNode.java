@@ -22,27 +22,27 @@ public final class ConcatBiTriNode<A, B, C>
 
     @Override
     protected TriTuple<A, B, C> getOutTupleFromLeft(BiTuple<A, B> leftTuple) {
-        var factA = leftTuple.factA;
-        var factB = leftTuple.factB;
-        return new TriTuple<>(factA, factB, paddingFunction.apply(factA, factB), outputStoreSize);
+        var factA = leftTuple.getA();
+        var factB = leftTuple.getB();
+        return TriTuple.of(factA, factB, paddingFunction.apply(factA, factB), outputStoreSize);
     }
 
     @Override
     protected TriTuple<A, B, C> getOutTupleFromRight(TriTuple<A, B, C> rightTuple) {
-        return new TriTuple<>(rightTuple.factA, rightTuple.factB, rightTuple.factC, outputStoreSize);
+        return TriTuple.of(rightTuple.getA(), rightTuple.getB(), rightTuple.getC(), outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleFromLeft(BiTuple<A, B> leftTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.factA = leftTuple.factA;
-        outTuple.factB = leftTuple.factB;
+        outTuple.setA(leftTuple.getA());
+        outTuple.setB(leftTuple.getB());
     }
 
     @Override
     protected void updateOutTupleFromRight(TriTuple<A, B, C> rightTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.factA = rightTuple.factA;
-        outTuple.factB = rightTuple.factB;
-        outTuple.factC = rightTuple.factC;
+        outTuple.setA(rightTuple.getA());
+        outTuple.setB(rightTuple.getB());
+        outTuple.setC(rightTuple.getC());
     }
 
 }

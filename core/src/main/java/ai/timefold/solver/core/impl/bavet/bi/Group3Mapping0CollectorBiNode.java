@@ -25,17 +25,15 @@ public final class Group3Mapping0CollectorBiNode<OldA, OldB, A, B, C>
     static <A, B, C, OldA, OldB> Triple<A, B, C> createGroupKey(BiFunction<OldA, OldB, A> groupKeyMappingA,
             BiFunction<OldA, OldB, B> groupKeyMappingB, BiFunction<OldA, OldB, C> groupKeyMappingC,
             BiTuple<OldA, OldB> tuple) {
-        OldA oldA = tuple.factA;
-        OldB oldB = tuple.factB;
-        A a = groupKeyMappingA.apply(oldA, oldB);
-        B b = groupKeyMappingB.apply(oldA, oldB);
-        C c = groupKeyMappingC.apply(oldA, oldB);
-        return new Triple<>(a, b, c);
+        var oldA = tuple.getA();
+        var oldB = tuple.getB();
+        return new Triple<>(groupKeyMappingA.apply(oldA, oldB), groupKeyMappingB.apply(oldA, oldB),
+                groupKeyMappingC.apply(oldA, oldB));
     }
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(Triple<A, B, C> groupKey) {
-        return new TriTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), outputStoreSize);
+        return TriTuple.of(groupKey.a(), groupKey.b(), groupKey.c(), outputStoreSize);
     }
 
     @Override

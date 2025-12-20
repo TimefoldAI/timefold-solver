@@ -26,27 +26,21 @@ public final class MapTriToTriNode<A, B, C, NewA, NewB, NewC>
 
     @Override
     protected TriTuple<NewA, NewB, NewC> map(TriTuple<A, B, C> tuple) {
-        A factA = tuple.factA;
-        B factB = tuple.factB;
-        C factC = tuple.factC;
-        return new TriTuple<>(
-                mappingFunctionA.apply(factA, factB, factC),
-                mappingFunctionB.apply(factA, factB, factC),
-                mappingFunctionC.apply(factA, factB, factC),
-                outputStoreSize);
+        var factA = tuple.getA();
+        var factB = tuple.getB();
+        var factC = tuple.getC();
+        return TriTuple.of(mappingFunctionA.apply(factA, factB, factC), mappingFunctionB.apply(factA, factB, factC),
+                mappingFunctionC.apply(factA, factB, factC), outputStoreSize);
     }
 
     @Override
     protected void remap(TriTuple<A, B, C> inTuple, TriTuple<NewA, NewB, NewC> outTuple) {
-        A factA = inTuple.factA;
-        B factB = inTuple.factB;
-        C factC = inTuple.factC;
-        NewA newA = mappingFunctionA.apply(factA, factB, factC);
-        NewB newB = mappingFunctionB.apply(factA, factB, factC);
-        NewC newC = mappingFunctionC.apply(factA, factB, factC);
-        outTuple.factA = newA;
-        outTuple.factB = newB;
-        outTuple.factC = newC;
+        var factA = inTuple.getA();
+        var factB = inTuple.getB();
+        var factC = inTuple.getC();
+        outTuple.setA(mappingFunctionA.apply(factA, factB, factC));
+        outTuple.setB(mappingFunctionB.apply(factA, factB, factC));
+        outTuple.setC(mappingFunctionC.apply(factA, factB, factC));
     }
 
 }

@@ -6,11 +6,11 @@ import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.api.score.stream.tri.TriConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TriTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
-abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends AbstractTuple, GroupKey_, ResultContainer_, Result_>
+abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractGroupNode<TriTuple<OldA, OldB, OldC>, OutTuple_, GroupKey_, ResultContainer_, Result_> {
 
     private final QuadFunction<ResultContainer_, OldA, OldB, OldC, Runnable> accumulator;
@@ -36,7 +36,7 @@ abstract class AbstractGroupTriNode<OldA, OldB, OldC, OutTuple_ extends Abstract
 
     @Override
     protected final Runnable accumulate(ResultContainer_ resultContainer, TriTuple<OldA, OldB, OldC> tuple) {
-        return accumulator.apply(resultContainer, tuple.factA, tuple.factB, tuple.factC);
+        return accumulator.apply(resultContainer, tuple.getA(), tuple.getB(), tuple.getC());
     }
 
 }

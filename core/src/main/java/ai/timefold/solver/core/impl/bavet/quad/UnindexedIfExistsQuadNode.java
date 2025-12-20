@@ -24,8 +24,7 @@ public final class UnindexedIfExistsQuadNode<A, B, C, D, E> extends AbstractUnin
 
     @Override
     protected boolean testFiltering(QuadTuple<A, B, C, D> leftTuple, UniTuple<E> rightTuple) {
-        return filtering.test(leftTuple.factA, leftTuple.factB, leftTuple.factC, leftTuple.factD,
-                rightTuple.factA);
+        return filtering.test(leftTuple.getA(), leftTuple.getB(), leftTuple.getC(), leftTuple.getD(), rightTuple.getA());
     }
 
 }

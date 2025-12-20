@@ -24,7 +24,7 @@ import org.jspecify.annotations.Nullable;
 final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Solution_>> {
 
     @SuppressWarnings("rawtypes")
-    private static final UniTuple EMPTY_TUPLE = new UniTuple<>(null, 0);
+    private static final UniTuple EMPTY_TUPLE = UniTuple.of(0);
 
     private final BiMoveStreamContext<Solution_, A, B> context;
     private final UniLeftDatasetInstance<Solution_, A> leftDatasetInstance;
@@ -75,8 +75,8 @@ final class BiOriginalMoveIterator<Solution_, A, B> implements Iterator<Move<Sol
                     return false;
                 }
             } else { // Both iterators have elements.
-                var leftFact = leftTuple.factA;
-                var rightFact = rightTupleIterator.next().factA;
+                var leftFact = leftTuple.getA();
+                var rightFact = rightTupleIterator.next().getA();
                 nextMove = context.buildMove(leftFact, rightFact);
                 if (nextMove instanceof ai.timefold.solver.core.impl.heuristic.move.Move<Solution_> legacyMove) {
                     throw new UnsupportedOperationException("""

@@ -91,10 +91,10 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         if (filter == null) { // Shortcut: no filter means we can take the entire right dataset as-is.
             return rightDatasetInstance.buildRandomSequence(compositeKey);
         }
-        var leftFact = leftTuple.factA;
+        var leftFact = leftTuple.getA();
         var solutionView = context.neighborhoodSession().getSolutionView();
         return rightDatasetInstance.buildRandomSequence(compositeKey,
-                rightTuple -> filter.test(solutionView, leftFact, rightTuple.factA));
+                rightTuple -> filter.test(solutionView, leftFact, rightTuple.getA()));
     }
 
     @Override
@@ -128,8 +128,8 @@ final class BiRandomMoveIterator<Solution_, A, B> implements Iterator<Move<Solut
         } else {
             try {
                 var bTuple = rightTupleSequence.remove(workingRandom);
-                var leftFact = leftTuple.factA;
-                var rightFact = bTuple.factA;
+                var leftFact = leftTuple.getA();
+                var rightFact = bTuple.getA();
                 nextMove = context.buildMove(leftFact, rightFact);
             } catch (NoSuchElementException e) {
                 // We cannot guarantee that the right sequence is empty, because we do not check filtering eagerly.

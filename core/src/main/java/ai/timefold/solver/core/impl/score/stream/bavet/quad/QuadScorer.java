@@ -19,7 +19,7 @@ final class QuadScorer<A, B, C, D> extends AbstractScorer<QuadTuple<A, B, C, D>>
     @Override
     protected UndoScoreImpacter impact(QuadTuple<A, B, C, D> tuple) {
         try {
-            return scoreImpacter.apply(weightedScoreImpacter, tuple.factA, tuple.factB, tuple.factC, tuple.factD);
+            return scoreImpacter.apply(weightedScoreImpacter, tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
         } catch (Exception e) {
             throw createExceptionOnImpact(tuple, e);
         }

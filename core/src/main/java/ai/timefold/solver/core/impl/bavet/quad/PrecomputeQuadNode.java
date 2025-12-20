@@ -23,7 +23,6 @@ public final class PrecomputeQuadNode<A, B, C, D> extends AbstractPrecomputeNode
 
     @Override
     protected QuadTuple<A, B, C, D> remapTuple(QuadTuple<A, B, C, D> tuple) {
-        return new QuadTuple<>(tuple.factA, tuple.factB, tuple.factC, tuple.factD,
-                outputStoreSize);
+        return QuadTuple.of(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD(), outputStoreSize);
     }
 }

@@ -23,16 +23,14 @@ public final class Group2Mapping0CollectorBiNode<OldA, OldB, A, B>
 
     static <A, B, OldA, OldB> Pair<A, B> createGroupKey(BiFunction<OldA, OldB, A> groupKeyMappingA,
             BiFunction<OldA, OldB, B> groupKeyMappingB, BiTuple<OldA, OldB> tuple) {
-        OldA oldA = tuple.factA;
-        OldB oldB = tuple.factB;
-        A a = groupKeyMappingA.apply(oldA, oldB);
-        B b = groupKeyMappingB.apply(oldA, oldB);
-        return new Pair<>(a, b);
+        var oldA = tuple.getA();
+        var oldB = tuple.getB();
+        return new Pair<>(groupKeyMappingA.apply(oldA, oldB), groupKeyMappingB.apply(oldA, oldB));
     }
 
     @Override
     protected BiTuple<A, B> createOutTuple(Pair<A, B> groupKey) {
-        return new BiTuple<>(groupKey.key(), groupKey.value(), outputStoreSize);
+        return BiTuple.of(groupKey.key(), groupKey.value(), outputStoreSize);
     }
 
     @Override

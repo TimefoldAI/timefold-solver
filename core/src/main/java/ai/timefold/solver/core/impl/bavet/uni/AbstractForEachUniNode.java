@@ -52,7 +52,7 @@ public abstract sealed class AbstractForEachUniNode<A>
 
     @Override
     public void insert(@Nullable A a) {
-        var tuple = new UniTuple<>(a, outputStoreSize);
+        var tuple = UniTuple.of(a, outputStoreSize);
         var old = tupleMap.put(a, tuple);
         if (old != null) {
             throw new IllegalStateException("The fact (%s) was already inserted, so it cannot insert again."
@@ -62,7 +62,7 @@ public abstract sealed class AbstractForEachUniNode<A>
     }
 
     protected final void updateExisting(@Nullable A a, UniTuple<A> tuple) {
-        var state = tuple.state;
+        var state = tuple.getState();
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
                 throw new IllegalStateException("The fact (%s) was retracted, so it cannot update."
@@ -85,7 +85,7 @@ public abstract sealed class AbstractForEachUniNode<A>
     }
 
     protected void retractExisting(@Nullable A a, UniTuple<A> tuple) {
-        var state = tuple.state;
+        var state = tuple.getState();
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
                 throw new IllegalStateException("The fact (%s) was already retracted, so it cannot retract."

@@ -1,10 +1,10 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
-public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ extends AbstractTuple>
+public abstract class AbstractMapNode<InTuple_ extends Tuple, OutTuple_ extends Tuple>
         extends AbstractNode
         implements TupleLifecycle<InTuple_> {
 
@@ -24,7 +24,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             throw new IllegalStateException("Impossible state: the input for the tuple (" + tuple
                     + ") was already added in the tupleStore.");
         }
-        OutTuple_ outTuple = map(tuple);
+        var outTuple = map(tuple);
         tuple.setStore(inputStoreIndex, outTuple);
         propagationQueue.insert(outTuple);
     }
@@ -42,7 +42,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
         remap(tuple, outTuple);
         // Update must be propagated even if outTuple did not change, since if it is a planning
         // entity, the entity's planning variable might have changed.
-        TupleState previousState = outTuple.state;
+        var previousState = outTuple.getState();
         if (previousState == TupleState.CREATING || previousState == TupleState.UPDATING) {
             // Already in the queue in the correct state.
             return;
@@ -63,7 +63,7 @@ public abstract class AbstractMapNode<InTuple_ extends AbstractTuple, OutTuple_ 
             // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
             return;
         }
-        propagationQueue.retract(outTuple, outTuple.state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
+        propagationQueue.retract(outTuple, outTuple.getState() == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }
 
     @Override

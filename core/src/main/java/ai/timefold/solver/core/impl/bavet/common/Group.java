@@ -1,22 +1,22 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
-final class Group<OutTuple_ extends AbstractTuple, ResultContainer_>
+final class Group<OutTuple_ extends Tuple, ResultContainer_>
         extends AbstractPropagationMetadataCarrier<OutTuple_> {
 
-    public static <OutTuple_ extends AbstractTuple, ResultContainer_> Group<OutTuple_, ResultContainer_>
+    public static <OutTuple_ extends Tuple, ResultContainer_> Group<OutTuple_, ResultContainer_>
             createWithoutAccumulate(Object groupKey, OutTuple_ outTuple) {
         return new Group<>(groupKey, null, outTuple);
     }
 
-    public static <OutTuple_ extends AbstractTuple, ResultContainer_> Group<OutTuple_, ResultContainer_>
+    public static <OutTuple_ extends Tuple, ResultContainer_> Group<OutTuple_, ResultContainer_>
             createWithoutGroupKey(ResultContainer_ resultContainer, OutTuple_ outTuple) {
         return new Group<>(null, resultContainer, outTuple);
     }
 
-    public static <OutTuple_ extends AbstractTuple, ResultContainer_> Group<OutTuple_, ResultContainer_> create(Object groupKey,
+    public static <OutTuple_ extends Tuple, ResultContainer_> Group<OutTuple_, ResultContainer_> create(Object groupKey,
             ResultContainer_ resultContainer, OutTuple_ outTuple) {
         return new Group<>(groupKey, resultContainer, outTuple);
     }
@@ -47,12 +47,12 @@ final class Group<OutTuple_ extends AbstractTuple, ResultContainer_>
 
     @Override
     public TupleState getState() {
-        return outTuple.state;
+        return outTuple.getState();
     }
 
     @Override
     public void setState(TupleState state) {
-        outTuple.state = state;
+        outTuple.setState(state);
     }
 
 }

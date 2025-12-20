@@ -31,14 +31,14 @@ public final class Group1Mapping3CollectorBiNode<OldA, OldB, A, B, C, D, ResultC
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(A a) {
-        return new QuadTuple<>(a, null, null, null, outputStoreSize);
+        return QuadTuple.of(a, outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(QuadTuple<A, B, C, D> outTuple, Triple<B, C, D> result) {
-        outTuple.factB = result.a();
-        outTuple.factC = result.b();
-        outTuple.factD = result.c();
+        outTuple.setB(result.a());
+        outTuple.setC(result.b());
+        outTuple.setD(result.c());
     }
 
 }

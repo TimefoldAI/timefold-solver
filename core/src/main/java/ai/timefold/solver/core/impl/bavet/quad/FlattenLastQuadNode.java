@@ -19,13 +19,12 @@ public final class FlattenLastQuadNode<A, B, C, D, NewD>
 
     @Override
     protected QuadTuple<A, B, C, NewD> createTuple(QuadTuple<A, B, C, D> originalTuple, NewD newD) {
-        return new QuadTuple<>(originalTuple.factA, originalTuple.factB, originalTuple.factC, newD,
-                outputStoreSize);
+        return QuadTuple.of(originalTuple.getA(), originalTuple.getB(), originalTuple.getC(), newD, outputStoreSize);
     }
 
     @Override
     protected D getEffectiveFactIn(QuadTuple<A, B, C, D> tuple) {
-        return tuple.factD;
+        return tuple.getD();
     }
 
 }

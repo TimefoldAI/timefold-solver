@@ -15,15 +15,15 @@ import ai.timefold.solver.core.impl.bavet.NodeNetwork;
 import ai.timefold.solver.core.impl.bavet.common.AbstractNodeBuildHelper;
 import ai.timefold.solver.core.impl.bavet.common.BavetAbstractConstraintStream;
 import ai.timefold.solver.core.impl.bavet.common.BavetRootNode;
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.domain.variable.declarative.ConsistencyTracker;
 import ai.timefold.solver.core.impl.score.buildin.SimpleScoreDefinition;
 import ai.timefold.solver.core.impl.score.constraint.ConstraintMatchPolicy;
 import ai.timefold.solver.core.impl.score.stream.common.RetrievalSemantics;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.AbstractScoreInliner;
 
-public final class BavetPrecomputeBuildHelper<Tuple_ extends AbstractTuple> {
+public final class BavetPrecomputeBuildHelper<Tuple_ extends Tuple> {
     private final NodeNetwork nodeNetwork;
     private final RecordingTupleLifecycle<Tuple_> recordingTupleLifecycle;
     private final Class<?>[] sourceClasses;
