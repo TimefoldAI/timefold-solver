@@ -6,7 +6,7 @@ import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 @NullMarked
-public class RecordingTupleLifecycle<Tuple_ extends AbstractTuple> implements TupleLifecycle<Tuple_>, AutoCloseable {
+public class RecordingTupleLifecycle<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_>, AutoCloseable {
     @Nullable
     TupleRecorder<Tuple_> tupleRecorder;
 

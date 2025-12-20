@@ -21,25 +21,25 @@ public final class UnindexedJoinQuadNode<A, B, C, D>
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(TriTuple<A, B, C> leftTuple, UniTuple<D> rightTuple) {
-        return new QuadTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, rightTuple.factA,
+        return QuadTuple.of(leftTuple.getA(), leftTuple.getB(), leftTuple.getC(), rightTuple.getA(),
                 outputStoreSizeTracker.computeStoreSize());
     }
 
     @Override
     protected void setOutTupleLeftFacts(QuadTuple<A, B, C, D> outTuple, TriTuple<A, B, C> leftTuple) {
-        outTuple.factA = leftTuple.factA;
-        outTuple.factB = leftTuple.factB;
-        outTuple.factC = leftTuple.factC;
+        outTuple.setA(leftTuple.getA());
+        outTuple.setB(leftTuple.getB());
+        outTuple.setC(leftTuple.getC());
     }
 
     @Override
     protected void setOutTupleRightFact(QuadTuple<A, B, C, D> outTuple, UniTuple<D> rightTuple) {
-        outTuple.factD = rightTuple.factA;
+        outTuple.setD(rightTuple.getA());
     }
 
     @Override
     protected boolean testFiltering(TriTuple<A, B, C> leftTuple, UniTuple<D> rightTuple) {
-        return filtering.test(leftTuple.factA, leftTuple.factB, leftTuple.factC, rightTuple.factA);
+        return filtering.test(leftTuple.getA(), leftTuple.getB(), leftTuple.getC(), rightTuple.getA());
     }
 
 }

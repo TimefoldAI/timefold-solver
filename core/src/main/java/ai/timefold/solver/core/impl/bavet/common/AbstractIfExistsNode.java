@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InTupleStorePositionTracker;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -18,7 +18,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <LeftTuple_>
  * @param <Right_>
  */
-public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Right_>
+public abstract class AbstractIfExistsNode<LeftTuple_ extends Tuple, Right_>
         extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
 
     protected final boolean shouldExist;
@@ -138,7 +138,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     protected void updateCounterFromRight(ExistsCounter<LeftTuple_> counter, UniTuple<Right_> rightTuple,
             ElementAwareLinkedList<FilteringTracker<LeftTuple_>> rightTrackerList) {
         var leftTuple = counter.leftTuple;
-        if (!leftTuple.state.isActive()) {
+        if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
             // - The operation is of two entities of the same type, both filtering out unassigned.
             // - One entity became unassigned, so the outTuple is getting retracted.
@@ -188,7 +188,7 @@ public abstract class AbstractIfExistsNode<LeftTuple_ extends AbstractTuple, Rig
     }
 
     @NullMarked
-    protected static final class FilteringTracker<LeftTuple_ extends AbstractTuple> {
+    protected static final class FilteringTracker<LeftTuple_ extends Tuple> {
 
         final ExistsCounter<LeftTuple_> counter;
         private final ElementAwareLinkedList.Entry<FilteringTracker<LeftTuple_>> leftTrackerEntry;

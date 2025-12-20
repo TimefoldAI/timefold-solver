@@ -21,12 +21,12 @@ public final class Group1Mapping0CollectorQuadNode<OldA, OldB, OldC, OldD, A>
 
     static <A, OldA, OldB, OldC, OldD> A createGroupKey(QuadFunction<OldA, OldB, OldC, OldD, A> groupKeyMapping,
             QuadTuple<OldA, OldB, OldC, OldD> tuple) {
-        return groupKeyMapping.apply(tuple.factA, tuple.factB, tuple.factC, tuple.factD);
+        return groupKeyMapping.apply(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD());
     }
 
     @Override
     protected UniTuple<A> createOutTuple(A a) {
-        return new UniTuple<>(a, outputStoreSize);
+        return UniTuple.of(a, outputStoreSize);
     }
 
     @Override

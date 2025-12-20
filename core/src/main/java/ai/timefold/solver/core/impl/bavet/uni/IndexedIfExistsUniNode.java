@@ -28,7 +28,7 @@ public final class IndexedIfExistsUniNode<A, B> extends AbstractIndexedIfExistsN
 
     @Override
     protected boolean testFiltering(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-        return filtering.test(leftTuple.factA, rightTuple.factA);
+        return filtering.test(leftTuple.getA(), rightTuple.getA());
     }
 
 }

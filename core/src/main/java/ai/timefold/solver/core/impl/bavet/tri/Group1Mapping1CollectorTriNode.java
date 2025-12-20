@@ -23,12 +23,12 @@ public final class Group1Mapping1CollectorTriNode<OldA, OldB, OldC, A, B, Result
 
     @Override
     protected BiTuple<A, B> createOutTuple(A a) {
-        return new BiTuple<>(a, null, outputStoreSize);
+        return BiTuple.of(a, outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(BiTuple<A, B> outTuple, B b) {
-        outTuple.factB = b;
+        outTuple.setB(b);
     }
 
 }

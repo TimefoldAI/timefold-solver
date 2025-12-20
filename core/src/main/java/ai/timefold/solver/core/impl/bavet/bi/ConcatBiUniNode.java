@@ -21,24 +21,24 @@ public final class ConcatBiUniNode<A, B>
 
     @Override
     protected BiTuple<A, B> getOutTupleFromLeft(BiTuple<A, B> leftTuple) {
-        return new BiTuple<>(leftTuple.factA, leftTuple.factB, outputStoreSize);
+        return BiTuple.of(leftTuple.getA(), leftTuple.getB(), outputStoreSize);
     }
 
     @Override
     protected BiTuple<A, B> getOutTupleFromRight(UniTuple<A> rightTuple) {
-        var factA = rightTuple.factA;
-        return new BiTuple<>(factA, paddingFunction.apply(factA), outputStoreSize);
+        var factA = rightTuple.getA();
+        return BiTuple.of(factA, paddingFunction.apply(factA), outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleFromLeft(BiTuple<A, B> leftTuple, BiTuple<A, B> outTuple) {
-        outTuple.factA = leftTuple.factA;
-        outTuple.factB = leftTuple.factB;
+        outTuple.setA(leftTuple.getA());
+        outTuple.setB(leftTuple.getB());
     }
 
     @Override
     protected void updateOutTupleFromRight(UniTuple<A> rightTuple, BiTuple<A, B> outTuple) {
-        outTuple.factA = rightTuple.factA;
+        outTuple.setA(rightTuple.getA());
     }
 
 }

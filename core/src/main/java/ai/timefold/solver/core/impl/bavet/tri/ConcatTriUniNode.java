@@ -24,27 +24,25 @@ public final class ConcatTriUniNode<A, B, C>
 
     @Override
     protected TriTuple<A, B, C> getOutTupleFromLeft(TriTuple<A, B, C> leftTuple) {
-        return new TriTuple<>(leftTuple.factA, leftTuple.factB, leftTuple.factC, outputStoreSize);
+        return TriTuple.of(leftTuple.getA(), leftTuple.getB(), leftTuple.getC(), outputStoreSize);
     }
 
     @Override
     protected TriTuple<A, B, C> getOutTupleFromRight(UniTuple<A> rightTuple) {
-        var factA = rightTuple.factA;
-        return new TriTuple<>(factA,
-                paddingFunctionB.apply(factA), paddingFunctionC.apply(factA),
-                outputStoreSize);
+        var factA = rightTuple.getA();
+        return TriTuple.of(factA, paddingFunctionB.apply(factA), paddingFunctionC.apply(factA), outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleFromLeft(TriTuple<A, B, C> leftTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.factA = leftTuple.factA;
-        outTuple.factB = leftTuple.factB;
-        outTuple.factC = leftTuple.factC;
+        outTuple.setA(leftTuple.getA());
+        outTuple.setB(leftTuple.getB());
+        outTuple.setC(leftTuple.getC());
     }
 
     @Override
     protected void updateOutTupleFromRight(UniTuple<A> rightTuple, TriTuple<A, B, C> outTuple) {
-        outTuple.factA = rightTuple.factA;
+        outTuple.setA(rightTuple.getA());
     }
 
 }

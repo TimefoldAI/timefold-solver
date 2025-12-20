@@ -19,7 +19,7 @@ final class TriScorer<A, B, C> extends AbstractScorer<TriTuple<A, B, C>> {
     @Override
     protected UndoScoreImpacter impact(TriTuple<A, B, C> tuple) {
         try {
-            return scoreImpacter.apply(weightedScoreImpacter, tuple.factA, tuple.factB, tuple.factC);
+            return scoreImpacter.apply(weightedScoreImpacter, tuple.getA(), tuple.getB(), tuple.getC());
         } catch (Exception e) {
             throw createExceptionOnImpact(tuple, e);
         }

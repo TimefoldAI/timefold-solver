@@ -6,11 +6,11 @@ import java.util.function.Function;
 import ai.timefold.solver.core.api.score.stream.uni.UniConstraintCollector;
 import ai.timefold.solver.core.config.solver.EnvironmentMode;
 import ai.timefold.solver.core.impl.bavet.common.AbstractGroupNode;
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
 
-abstract class AbstractGroupUniNode<OldA, OutTuple_ extends AbstractTuple, GroupKey_, ResultContainer_, Result_>
+abstract class AbstractGroupUniNode<OldA, OutTuple_ extends Tuple, GroupKey_, ResultContainer_, Result_>
         extends AbstractGroupNode<UniTuple<OldA>, OutTuple_, GroupKey_, ResultContainer_, Result_> {
 
     private final BiFunction<ResultContainer_, OldA, Runnable> accumulator;
@@ -37,6 +37,6 @@ abstract class AbstractGroupUniNode<OldA, OutTuple_ extends AbstractTuple, Group
 
     @Override
     protected final Runnable accumulate(ResultContainer_ resultContainer, UniTuple<OldA> tuple) {
-        return accumulator.apply(resultContainer, tuple.factA);
+        return accumulator.apply(resultContainer, tuple.getA());
     }
 }

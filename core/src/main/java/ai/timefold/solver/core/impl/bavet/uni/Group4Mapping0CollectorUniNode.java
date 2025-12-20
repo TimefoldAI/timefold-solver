@@ -28,17 +28,14 @@ public final class Group4Mapping0CollectorUniNode<OldA, A, B, C, D>
     private static <A, B, C, D, OldA> Quadruple<A, B, C, D> createGroupKey(Function<OldA, A> groupKeyMappingA,
             Function<OldA, B> groupKeyMappingB, Function<OldA, C> groupKeyMappingC, Function<OldA, D> groupKeyMappingD,
             UniTuple<OldA> tuple) {
-        OldA oldA = tuple.factA;
-        A a = groupKeyMappingA.apply(oldA);
-        B b = groupKeyMappingB.apply(oldA);
-        C c = groupKeyMappingC.apply(oldA);
-        D d = groupKeyMappingD.apply(oldA);
-        return new Quadruple<>(a, b, c, d);
+        var oldA = tuple.getA();
+        return new Quadruple<>(groupKeyMappingA.apply(oldA), groupKeyMappingB.apply(oldA), groupKeyMappingC.apply(oldA),
+                groupKeyMappingD.apply(oldA));
     }
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
-        return new QuadTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
+        return QuadTuple.of(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
     }
 
     @Override

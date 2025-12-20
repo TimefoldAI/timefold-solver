@@ -20,12 +20,12 @@ public final class Group0Mapping1CollectorBiNode<OldA, OldB, A, ResultContainer_
 
     @Override
     protected UniTuple<A> createOutTuple(Void groupKey) {
-        return new UniTuple<>(null, outputStoreSize);
+        return UniTuple.of(outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(UniTuple<A> outTuple, A a) {
-        outTuple.factA = a;
+        outTuple.setA(a);
     }
 
 }

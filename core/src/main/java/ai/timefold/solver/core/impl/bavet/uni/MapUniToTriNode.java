@@ -25,23 +25,20 @@ public final class MapUniToTriNode<A, NewA, NewB, NewC> extends AbstractMapNode<
 
     @Override
     protected TriTuple<NewA, NewB, NewC> map(UniTuple<A> tuple) {
-        A factA = tuple.factA;
-        return new TriTuple<>(
-                mappingFunctionA.apply(factA),
-                mappingFunctionB.apply(factA),
-                mappingFunctionC.apply(factA),
+        var factA = tuple.getA();
+        return TriTuple.of(mappingFunctionA.apply(factA), mappingFunctionB.apply(factA), mappingFunctionC.apply(factA),
                 outputStoreSize);
     }
 
     @Override
     protected void remap(UniTuple<A> inTuple, TriTuple<NewA, NewB, NewC> outTuple) {
-        A factA = inTuple.factA;
-        NewA newA = mappingFunctionA.apply(factA);
-        NewB newB = mappingFunctionB.apply(factA);
-        NewC newC = mappingFunctionC.apply(factA);
-        outTuple.factA = newA;
-        outTuple.factB = newB;
-        outTuple.factC = newC;
+        var factA = inTuple.getA();
+        var newA = mappingFunctionA.apply(factA);
+        var newB = mappingFunctionB.apply(factA);
+        var newC = mappingFunctionC.apply(factA);
+        outTuple.setA(newA);
+        outTuple.setB(newB);
+        outTuple.setC(newC);
     }
 
 }

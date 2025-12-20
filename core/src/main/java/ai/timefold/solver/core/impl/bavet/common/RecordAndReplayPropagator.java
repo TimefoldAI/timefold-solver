@@ -11,8 +11,8 @@ import java.util.function.Supplier;
 import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RecordingTupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.score.stream.bavet.common.BavetPrecomputeBuildHelper;
@@ -28,7 +28,7 @@ import org.jspecify.annotations.NullMarked;
  * @param <Tuple_>
  */
 @NullMarked
-public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple> implements Propagator {
+public final class RecordAndReplayPropagator<Tuple_ extends Tuple> implements Propagator {
 
     private final Set<Object> retractQueue;
     private final Set<Object> insertQueue;
@@ -168,14 +168,14 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple> imple
     }
 
     private void insertIfAbsent(Tuple_ tuple) {
-        var state = tuple.state;
+        var state = tuple.getState();
         if (state != TupleState.CREATING) {
             propagationQueue.insert(tuple);
         }
     }
 
     private void retractIfPresent(Tuple_ tuple) {
-        var state = tuple.state;
+        var state = tuple.getState();
         if (state.isDirty()) {
             if (state == TupleState.DYING || state == TupleState.ABORTING) {
                 // We already retracted this tuple from another list, so we

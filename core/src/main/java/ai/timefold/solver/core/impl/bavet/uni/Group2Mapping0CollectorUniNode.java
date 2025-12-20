@@ -23,15 +23,13 @@ public final class Group2Mapping0CollectorUniNode<OldA, A, B>
 
     static <A, B, OldA> Pair<A, B> createGroupKey(Function<OldA, A> groupKeyMappingA, Function<OldA, B> groupKeyMappingB,
             UniTuple<OldA> tuple) {
-        OldA oldA = tuple.factA;
-        A a = groupKeyMappingA.apply(oldA);
-        B b = groupKeyMappingB.apply(oldA);
-        return new Pair<>(a, b);
+        var oldA = tuple.getA();
+        return new Pair<>(groupKeyMappingA.apply(oldA), groupKeyMappingB.apply(oldA));
     }
 
     @Override
     protected BiTuple<A, B> createOutTuple(Pair<A, B> groupKey) {
-        return new BiTuple<>(groupKey.key(), groupKey.value(), outputStoreSize);
+        return BiTuple.of(groupKey.key(), groupKey.value(), outputStoreSize);
     }
 
     @Override

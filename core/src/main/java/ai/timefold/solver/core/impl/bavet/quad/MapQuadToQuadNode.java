@@ -28,32 +28,25 @@ public final class MapQuadToQuadNode<A, B, C, D, NewA, NewB, NewC, NewD>
 
     @Override
     protected QuadTuple<NewA, NewB, NewC, NewD> map(QuadTuple<A, B, C, D> tuple) {
-        A factA = tuple.factA;
-        B factB = tuple.factB;
-        C factC = tuple.factC;
-        D factD = tuple.factD;
-        return new QuadTuple<>(
-                mappingFunctionA.apply(factA, factB, factC, factD),
-                mappingFunctionB.apply(factA, factB, factC, factD),
-                mappingFunctionC.apply(factA, factB, factC, factD),
-                mappingFunctionD.apply(factA, factB, factC, factD),
-                outputStoreSize);
+        var factA = tuple.getA();
+        var factB = tuple.getB();
+        var factC = tuple.getC();
+        var factD = tuple.getD();
+        return QuadTuple.of(mappingFunctionA.apply(factA, factB, factC, factD),
+                mappingFunctionB.apply(factA, factB, factC, factD), mappingFunctionC.apply(factA, factB, factC, factD),
+                mappingFunctionD.apply(factA, factB, factC, factD), outputStoreSize);
     }
 
     @Override
     protected void remap(QuadTuple<A, B, C, D> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
-        A factA = inTuple.factA;
-        B factB = inTuple.factB;
-        C factC = inTuple.factC;
-        D factD = inTuple.factD;
-        NewA newA = mappingFunctionA.apply(factA, factB, factC, factD);
-        NewB newB = mappingFunctionB.apply(factA, factB, factC, factD);
-        NewC newC = mappingFunctionC.apply(factA, factB, factC, factD);
-        NewD newD = mappingFunctionD.apply(factA, factB, factC, factD);
-        outTuple.factA = newA;
-        outTuple.factB = newB;
-        outTuple.factC = newC;
-        outTuple.factD = newD;
+        var factA = inTuple.getA();
+        var factB = inTuple.getB();
+        var factC = inTuple.getC();
+        var factD = inTuple.getD();
+        outTuple.setA(mappingFunctionA.apply(factA, factB, factC, factD));
+        outTuple.setB(mappingFunctionB.apply(factA, factB, factC, factD));
+        outTuple.setC(mappingFunctionC.apply(factA, factB, factC, factD));
+        outTuple.setD(mappingFunctionD.apply(factA, factB, factC, factD));
     }
 
 }

@@ -28,26 +28,18 @@ public final class MapUniToQuadNode<A, NewA, NewB, NewC, NewD>
 
     @Override
     protected QuadTuple<NewA, NewB, NewC, NewD> map(UniTuple<A> tuple) {
-        A factA = tuple.factA;
-        return new QuadTuple<>(
-                mappingFunctionA.apply(factA),
-                mappingFunctionB.apply(factA),
-                mappingFunctionC.apply(factA),
-                mappingFunctionD.apply(factA),
-                outputStoreSize);
+        var factA = tuple.getA();
+        return QuadTuple.of(mappingFunctionA.apply(factA), mappingFunctionB.apply(factA), mappingFunctionC.apply(factA),
+                mappingFunctionD.apply(factA), outputStoreSize);
     }
 
     @Override
     protected void remap(UniTuple<A> inTuple, QuadTuple<NewA, NewB, NewC, NewD> outTuple) {
-        A factA = inTuple.factA;
-        NewA newA = mappingFunctionA.apply(factA);
-        NewB newB = mappingFunctionB.apply(factA);
-        NewC newC = mappingFunctionC.apply(factA);
-        NewD newD = mappingFunctionD.apply(factA);
-        outTuple.factA = newA;
-        outTuple.factB = newB;
-        outTuple.factC = newC;
-        outTuple.factD = newD;
+        var factA = inTuple.getA();
+        outTuple.setA(mappingFunctionA.apply(factA));
+        outTuple.setB(mappingFunctionB.apply(factA));
+        outTuple.setC(mappingFunctionC.apply(factA));
+        outTuple.setD(mappingFunctionD.apply(factA));
     }
 
 }

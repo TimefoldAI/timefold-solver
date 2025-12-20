@@ -24,18 +24,16 @@ public final class Group3Mapping0CollectorTriNode<OldA, OldB, OldC, A, B, C>
     static <A, B, C, OldA, OldB, OldC> Triple<A, B, C> createGroupKey(TriFunction<OldA, OldB, OldC, A> groupKeyMappingA,
             TriFunction<OldA, OldB, OldC, B> groupKeyMappingB, TriFunction<OldA, OldB, OldC, C> groupKeyMappingC,
             TriTuple<OldA, OldB, OldC> tuple) {
-        OldA oldA = tuple.factA;
-        OldB oldB = tuple.factB;
-        OldC oldC = tuple.factC;
-        A a = groupKeyMappingA.apply(oldA, oldB, oldC);
-        B b = groupKeyMappingB.apply(oldA, oldB, oldC);
-        C c = groupKeyMappingC.apply(oldA, oldB, oldC);
-        return new Triple<>(a, b, c);
+        var oldA = tuple.getA();
+        var oldB = tuple.getB();
+        var oldC = tuple.getC();
+        return new Triple<>(groupKeyMappingA.apply(oldA, oldB, oldC), groupKeyMappingB.apply(oldA, oldB, oldC),
+                groupKeyMappingC.apply(oldA, oldB, oldC));
     }
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(Triple<A, B, C> groupKey) {
-        return new TriTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), outputStoreSize);
+        return TriTuple.of(groupKey.a(), groupKey.b(), groupKey.c(), outputStoreSize);
     }
 
     @Override

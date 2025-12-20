@@ -21,12 +21,12 @@ public final class Group1Mapping0CollectorBiNode<OldA, OldB, A>
     }
 
     static <A, OldA, OldB> A createGroupKey(BiFunction<OldA, OldB, A> groupKeyMapping, BiTuple<OldA, OldB> tuple) {
-        return groupKeyMapping.apply(tuple.factA, tuple.factB);
+        return groupKeyMapping.apply(tuple.getA(), tuple.getB());
     }
 
     @Override
     protected UniTuple<A> createOutTuple(A a) {
-        return new UniTuple<>(a, outputStoreSize);
+        return UniTuple.of(a, outputStoreSize);
     }
 
     @Override

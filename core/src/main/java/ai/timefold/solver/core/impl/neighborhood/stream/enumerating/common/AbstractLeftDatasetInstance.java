@@ -2,14 +2,14 @@ package ai.timefold.solver.core.impl.neighborhood.stream.enumerating.common;
 
 import java.util.Iterator;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.util.ElementAwareArrayList;
 import ai.timefold.solver.core.impl.util.ListEntry;
 
 import org.jspecify.annotations.NullMarked;
 
 @NullMarked
-public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends AbstractTuple>
+public abstract class AbstractLeftDatasetInstance<Solution_, Tuple_ extends Tuple>
         extends AbstractDatasetInstance<Solution_, Tuple_>
         implements Iterable<Tuple_> {
 

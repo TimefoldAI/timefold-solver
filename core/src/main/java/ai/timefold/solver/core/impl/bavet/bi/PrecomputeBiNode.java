@@ -23,6 +23,6 @@ public final class PrecomputeBiNode<A, B> extends AbstractPrecomputeNode<BiTuple
 
     @Override
     protected BiTuple<A, B> remapTuple(BiTuple<A, B> tuple) {
-        return new BiTuple<>(tuple.factA, tuple.factB, outputStoreSize);
+        return BiTuple.of(tuple.getA(), tuple.getB(), outputStoreSize);
     }
 }
