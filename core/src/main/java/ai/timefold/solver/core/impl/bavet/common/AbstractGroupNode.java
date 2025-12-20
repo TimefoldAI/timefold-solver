@@ -184,23 +184,30 @@ public abstract class AbstractGroupNode<InTuple_ extends AbstractTuple, OutTuple
             Runnable undoAccumulator = tuple.getStore(undoStoreIndex);
             undoAccumulator.run();
         }
-
-        var oldUserSuppliedGroupKey = hasMultipleGroups ? extractUserSuppliedKey(oldGroup.getGroupKey()) : null;
-        var newUserSuppliedGroupKey = hasMultipleGroups ? groupKeyFunction.apply(tuple) : null;
-        if (Objects.equals(newUserSuppliedGroupKey, oldUserSuppliedGroupKey)) {
-            // No need to change parentCount because it is the same group
-            var outTuple = accumulate(tuple, oldGroup);
-            switch (outTuple.state) {
-                case CREATING, UPDATING -> {
-                    // Already in the correct state.
-                }
-                case OK -> propagationQueue.update(oldGroup);
-                default -> throw new IllegalStateException("Impossible state: The group (" + oldGroup + ") in node (" + this
-                        + ") is in an unexpected state (" + outTuple.state + ").");
-            }
+        if (!hasMultipleGroups) {
+            updateGroup(tuple, oldGroup);
+            return;
+        }
+        var oldUserSuppliedGroupKey = extractUserSuppliedKey(oldGroup.getGroupKey());
+        var newUserSuppliedGroupKey = groupKeyFunction.apply(tuple);
+        if (Objects.equals(oldUserSuppliedGroupKey, newUserSuppliedGroupKey)) {
+            updateGroup(tuple, oldGroup);
         } else {
             killTuple(oldGroup);
             createTuple(tuple, newUserSuppliedGroupKey);
+        }
+    }
+
+    private void updateGroup(InTuple_ tuple, Group<OutTuple_, ResultContainer_> oldGroup) { // No need to change parentCount because it is the same group
+        var outTuple = accumulate(tuple, oldGroup);
+        switch (outTuple.state) {
+            case CREATING, UPDATING -> {
+                // Already in the correct state.
+            }
+            case OK -> propagationQueue.update(oldGroup);
+            default ->
+                throw new IllegalStateException("Impossible state: The group (%s) in node (%s) is in an unexpected state (%s)."
+                        .formatted(oldGroup, this, outTuple.state));
         }
     }
 
