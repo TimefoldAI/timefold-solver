@@ -15,15 +15,17 @@ record MegaCompositeKey(Object... properties) implements CompositeKey {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) { // Due to the use of SINGLE_NULL, this is possible.
+        if (this == o) {
             return true;
         }
-        return o instanceof MegaCompositeKey other && Arrays.equals(properties, other.properties);
+        return o instanceof MegaCompositeKey that &&
+                Arrays.deepEquals(properties, that.properties);
     }
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(properties);
+        // Often used in hash-based collections; the JDK-generated default is too slow.
+        return Arrays.deepHashCode(properties);
     }
 
     @Override

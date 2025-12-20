@@ -4,15 +4,16 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class BigDecimalValueRange extends AbstractCountableValueRange<BigDecimal> {
 
     private final BigDecimal from;
@@ -83,7 +84,7 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
     }
 
     @Override
-    public boolean contains(BigDecimal value) {
+    public boolean contains(@Nullable BigDecimal value) {
         if (value == null || value.compareTo(from) < 0 || value.compareTo(to) >= 0) {
             return false;
         }
@@ -91,7 +92,7 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
     }
 
     @Override
-    public @NonNull Iterator<BigDecimal> createOriginalIterator() {
+    public Iterator<BigDecimal> createOriginalIterator() {
         return new OriginalBigDecimalValueRangeIterator();
     }
 
@@ -117,7 +118,7 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
     }
 
     @Override
-    public @NonNull Iterator<BigDecimal> createRandomIterator(@NonNull Random workingRandom) {
+    public Iterator<BigDecimal> createRandomIterator(Random workingRandom) {
         return new RandomBigDecimalValueRangeIterator(workingRandom);
     }
 
@@ -148,20 +149,24 @@ public final class BigDecimalValueRange extends AbstractCountableValueRange<BigD
 
     @Override
     public boolean equals(Object o) {
-        if (!(o instanceof BigDecimalValueRange that)) {
-            return false;
+        // We do not use Objects.equals(...) due to https://bugs.openjdk.org/browse/JDK-8015417.
+        if (this == o) {
+            return true;
         }
-        return Objects.equals(from, that.from)
-                && Objects.equals(to, that.to)
-                && Objects.equals(incrementUnit, that.incrementUnit);
+        return o instanceof BigDecimalValueRange that &&
+                from.equals(that.from) &&
+                to.equals(that.to) &&
+                incrementUnit.equals(that.incrementUnit);
     }
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Objects.hashCode(from);
-        hash = 31 * hash + Objects.hashCode(to);
-        hash = 31 * hash + Objects.hashCode(incrementUnit);
+        // We do not use Objects.hash(...) because it creates an array each time.
+        // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
+        var hash = 1;
+        hash = 31 * hash + from.hashCode();
+        hash = 31 * hash + to.hashCode();
+        hash = 31 * hash + incrementUnit.hashCode();
         return hash;
     }
 

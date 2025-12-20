@@ -1,20 +1,16 @@
 package ai.timefold.solver.core.testdomain.clone.lookup;
 
-import java.util.Objects;
-
 public class TestdataObjectEquals {
 
-    private final Integer id;
+    private final int id;
 
-    public TestdataObjectEquals(Integer id) {
+    public TestdataObjectEquals(int id) {
         this.id = id;
     }
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 37 * hash + Objects.hashCode(this.id);
-        return hash;
+        return Integer.hashCode(id);
     }
 
     @Override
@@ -22,14 +18,8 @@ public class TestdataObjectEquals {
         if (this == obj) {
             return true;
         }
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final TestdataObjectEquals other = (TestdataObjectEquals) obj;
-        return Objects.equals(this.id, other.id);
+        return obj instanceof TestdataObjectEquals other &&
+                this.id == other.id;
     }
 
 }

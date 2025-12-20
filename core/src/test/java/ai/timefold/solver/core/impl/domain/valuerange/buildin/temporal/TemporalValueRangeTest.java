@@ -409,24 +409,6 @@ class TemporalValueRangeTest {
     }
 
     @Test
-    void nullFrom() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new TemporalValueRange<>(null, LocalDate.MAX, 1, ChronoUnit.DAYS));
-    }
-
-    @Test
-    void nullTo() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new TemporalValueRange<>(LocalDate.MIN, null, 1, ChronoUnit.DAYS));
-    }
-
-    @Test
-    void nullIncrementUnitType() {
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> new TemporalValueRange<>(LocalDate.MIN, LocalDate.MAX, 1, null));
-    }
-
-    @Test
     void invalidIncrementUnitAmount() {
         assertThatIllegalArgumentException()
                 .isThrownBy(() -> new TemporalValueRange<>(LocalDate.MIN, LocalDate.MAX, 0, ChronoUnit.DAYS));

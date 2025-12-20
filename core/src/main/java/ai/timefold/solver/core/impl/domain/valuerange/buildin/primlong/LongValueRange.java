@@ -8,8 +8,10 @@ import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRang
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public final class LongValueRange extends AbstractCountableValueRange<Long> {
 
     private final long from;
@@ -59,7 +61,7 @@ public final class LongValueRange extends AbstractCountableValueRange<Long> {
     }
 
     @Override
-    public boolean contains(Long value) {
+    public boolean contains(@Nullable Long value) {
         if (value == null || value < from || value >= to) {
             return false;
         }
@@ -79,7 +81,7 @@ public final class LongValueRange extends AbstractCountableValueRange<Long> {
     }
 
     @Override
-    public @NonNull Iterator<Long> createOriginalIterator() {
+    public Iterator<Long> createOriginalIterator() {
         return new OriginalLongValueRangeIterator();
     }
 
@@ -105,7 +107,7 @@ public final class LongValueRange extends AbstractCountableValueRange<Long> {
     }
 
     @Override
-    public @NonNull Iterator<Long> createRandomIterator(@NonNull Random workingRandom) {
+    public Iterator<Long> createRandomIterator(Random workingRandom) {
         return new RandomLongValueRangeIterator(workingRandom);
     }
 
@@ -136,21 +138,26 @@ public final class LongValueRange extends AbstractCountableValueRange<Long> {
 
     @Override
     public boolean equals(Object o) {
+        // We do not use Objects.equals(...) due to https://bugs.openjdk.org/browse/JDK-8015417.
+        if (this == o) {
+            return true;
+        }
         if (!(o instanceof LongValueRange that)) {
             return false;
         }
-        return from == that.from
-                && to == that.to
-                && incrementUnit == that.incrementUnit;
+        return from == that.from &&
+                to == that.to &&
+                incrementUnit == that.incrementUnit;
     }
 
     @Override
     public int hashCode() {
-        var hash = 7;
+        // We do not use Objects.hash(...) because it creates an array each time.
+        // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
+        var hash = 1;
         hash = 31 * hash + Long.hashCode(from);
         hash = 31 * hash + Long.hashCode(to);
-        hash = 31 * hash + Long.hashCode(incrementUnit);
-        return hash;
+        return 31 * hash + Long.hashCode(incrementUnit);
     }
 
     @Override

@@ -6,15 +6,15 @@ import java.time.temporal.TemporalAmount;
 import java.time.temporal.TemporalUnit;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Random;
 
 import ai.timefold.solver.core.impl.domain.valuerange.AbstractCountableValueRange;
 import ai.timefold.solver.core.impl.domain.valuerange.util.ValueRangeIterator;
 import ai.timefold.solver.core.impl.solver.random.RandomUtils;
 
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? super Temporal_>>
         extends AbstractCountableValueRange<Temporal_> {
 
@@ -39,11 +39,6 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
         this.incrementUnitAmount = incrementUnitAmount;
         this.incrementUnitType = incrementUnitType;
 
-        if (from == null || to == null || incrementUnitType == null) {
-            throw new IllegalArgumentException("The " + getClass().getSimpleName()
-                    + " must have a from (" + from + "), to (" + to + ") and incrementUnitType (" + incrementUnitType
-                    + ") that are not null.");
-        }
         if (incrementUnitAmount <= 0) {
             throw new IllegalArgumentException("The " + getClass().getSimpleName()
                     + " must have strictly positive incrementUnitAmount (" + incrementUnitAmount + ").");
@@ -100,6 +95,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
         return size;
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public Temporal_ get(long index) {
         if (index >= size || index < 0) {
@@ -129,7 +125,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
     }
 
     @Override
-    public @NonNull Iterator<Temporal_> createOriginalIterator() {
+    public Iterator<Temporal_> createOriginalIterator() {
         return new OriginalTemporalValueRangeIterator();
     }
 
@@ -157,7 +153,7 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
     }
 
     @Override
-    public @NonNull Iterator<Temporal_> createRandomIterator(@NonNull Random workingRandom) {
+    public Iterator<Temporal_> createRandomIterator(Random workingRandom) {
         return new RandomTemporalValueRangeIterator(workingRandom);
     }
 
@@ -184,23 +180,28 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
 
     @Override
     public boolean equals(Object o) {
+        // We do not use Objects.equals(...) due to https://bugs.openjdk.org/browse/JDK-8015417.
+        if (this == o) {
+            return true;
+        }
         if (!(o instanceof TemporalValueRange<?> that)) {
             return false;
         }
-        return incrementUnitAmount == that.incrementUnitAmount
-                && Objects.equals(incrementUnitType, that.incrementUnitType)
-                && Objects.equals(from, that.from)
-                && Objects.equals(to, that.to);
+        return incrementUnitAmount == that.incrementUnitAmount &&
+                incrementUnitType.equals(that.incrementUnitType) &&
+                from.equals(that.from) &&
+                to.equals(that.to);
     }
 
     @Override
     public int hashCode() {
-        var hash = 7;
+        // We do not use Objects.hash(...) because it creates an array each time.
+        // We do not use Objects.hashCode() due to https://bugs.openjdk.org/browse/JDK-8015417.
+        var hash = 1;
         hash = 31 * hash + Long.hashCode(incrementUnitAmount);
-        hash = 31 * hash + Objects.hashCode(incrementUnitType);
-        hash = 31 * hash + Objects.hashCode(from);
-        hash = 31 * hash + Objects.hashCode(to);
-        return hash;
+        hash = 31 * hash + incrementUnitType.hashCode();
+        hash = 31 * hash + from.hashCode();
+        return 31 * hash + to.hashCode();
     }
 
     @Override
