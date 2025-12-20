@@ -89,10 +89,7 @@ public final class SetValueRange<T> extends AbstractCountableValueRange<T> {
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
-        hash = 31 * hash + Objects.hashCode(set);
-        return hash;
+        return 31 * Boolean.hashCode(isValueImmutable) + Objects.hashCode(set);
     }
 
     @Override

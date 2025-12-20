@@ -97,10 +97,7 @@ public class DoubleValueRange extends AbstractUncountableValueRange<Double> {
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Double.hashCode(from);
-        hash = 31 * hash + Double.hashCode(to);
-        return hash;
+        return 31 * Double.hashCode(from) + Double.hashCode(to);
     }
 
     @Override

@@ -16,6 +16,9 @@ public record Quadruple<A, B, C, D>(A a, B b, C c, D d) {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
         return o instanceof Quadruple<?, ?, ?, ?> other
                 && Objects.equals(a, other.a)
                 && Objects.equals(b, other.b)
@@ -25,12 +28,10 @@ public record Quadruple<A, B, C, D>(A a, B b, C c, D d) {
 
     @Override
     public int hashCode() { // Often used in hash-based collections; the JDK-generated default is too slow.
-        var hash = 7;
-        hash = 31 * hash + Objects.hashCode(a);
+        var hash = Objects.hashCode(a);
         hash = 31 * hash + Objects.hashCode(b);
         hash = 31 * hash + Objects.hashCode(c);
-        hash = 31 * hash + Objects.hashCode(d);
-        return hash;
+        return 31 * hash + Objects.hashCode(d);
     }
 
 }

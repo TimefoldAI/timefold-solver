@@ -27,10 +27,7 @@ record BiCompositeKey<A, B>(A propertyA, B propertyB) implements CompositeKey {
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Objects.hashCode(propertyA);
-        hash = 31 * hash + Objects.hashCode(propertyB);
-        return hash;
+        return 31 * Objects.hashCode(propertyA) + Objects.hashCode(propertyB);
     }
 
 }

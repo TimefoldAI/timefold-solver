@@ -12,9 +12,7 @@ public class TestdataObjectEquals {
 
     @Override
     public int hashCode() {
-        int hash = 5;
-        hash = 37 * hash + Objects.hashCode(this.id);
-        return hash;
+        return Objects.hashCode(this.id);
     }
 
     @Override
