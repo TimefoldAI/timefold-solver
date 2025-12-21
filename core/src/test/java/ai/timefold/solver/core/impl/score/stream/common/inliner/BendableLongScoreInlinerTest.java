@@ -27,19 +27,19 @@ class BendableLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBend
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<BendableLongScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(90, 0, 0));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(270, 0, 0));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(90, 0, 0));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 0, 0));
     }
@@ -50,19 +50,19 @@ class BendableLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBend
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<BendableLongScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 90, 0));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 270, 0));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 90, 0));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 0, 0));
     }
@@ -73,19 +73,19 @@ class BendableLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBend
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<BendableLongScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 0, 90));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 0, 270));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 0, 90));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 0, 0));
     }
@@ -96,19 +96,19 @@ class BendableLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataBend
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<BendableLongScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(100, 1_000, 10_000));
 
-        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(300, 3_000, 30_000));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(100, 1_000, 10_000));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(buildScore(0, 0, 0));
     }

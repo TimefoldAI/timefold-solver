@@ -21,32 +21,12 @@ final class HardMediumSoftLongScoreInliner extends AbstractScoreInliner<HardMedi
     @Override
     public WeightedScoreImpacter<HardMediumSoftLongScore, ?>
             buildWeightedScoreImpacter(AbstractConstraint<?, ?, ?> constraint) {
-        HardMediumSoftLongScore constraintWeight = constraintWeightMap.get(constraint);
-        long hardConstraintWeight = constraintWeight.hardScore();
-        long mediumConstraintWeight = constraintWeight.mediumScore();
-        long softConstraintWeight = constraintWeight.softScore();
-        HardMediumSoftLongScoreContext context = new HardMediumSoftLongScoreContext(this, constraint, constraintWeight);
-        if (mediumConstraintWeight == 0L && softConstraintWeight == 0L) {
-            return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
-                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
-                                    .changeHardScoreBy(matchWeight, constraintMatchSupplier));
-        } else if (hardConstraintWeight == 0L && softConstraintWeight == 0L) {
-            return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
-                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
-                                    .changeMediumScoreBy(matchWeight, constraintMatchSupplier));
-        } else if (hardConstraintWeight == 0L && mediumConstraintWeight == 0L) {
-            return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
-                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
-                                    .changeSoftScoreBy(matchWeight, constraintMatchSupplier));
-        } else {
-            return WeightedScoreImpacter.of(context,
-                    (HardMediumSoftLongScoreContext ctx, long matchWeight,
-                            ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
-                                    .changeScoreBy(matchWeight, constraintMatchSupplier));
-        }
+        var constraintWeight = constraintWeightMap.get(constraint);
+        var context = new HardMediumSoftLongScoreContext(this, constraint, constraintWeight);
+        return WeightedScoreImpacter.of(context,
+                (HardMediumSoftLongScoreContext ctx, long matchWeight,
+                        ConstraintMatchSupplier<HardMediumSoftLongScore> constraintMatchSupplier) -> ctx
+                                .changeScoreBy(matchWeight, constraintMatchSupplier));
     }
 
     @Override

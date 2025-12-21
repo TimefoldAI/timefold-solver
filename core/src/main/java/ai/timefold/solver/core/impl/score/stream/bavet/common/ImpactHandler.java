@@ -1,7 +1,7 @@
 package ai.timefold.solver.core.impl.score.stream.bavet.common;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
-import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
+import ai.timefold.solver.core.impl.score.stream.common.inliner.ScoreImpact;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
 
 import org.jspecify.annotations.NullMarked;
@@ -16,7 +16,7 @@ public interface ImpactHandler<Tuple_ extends Tuple> {
      * @param tuple the tuple that triggered the impact
      * @return run to undo the impact
      */
-    UndoScoreImpacter impactNaked(WeightedScoreImpacter<?, ?> impacter, Tuple_ tuple);
+    ScoreImpact<?> impactNaked(WeightedScoreImpacter<?, ?> impacter, Tuple_ tuple);
 
     /**
      * Impacts the score, providing constraint match information but justification for it.
@@ -25,7 +25,7 @@ public interface ImpactHandler<Tuple_ extends Tuple> {
      * @param tuple the tuple that triggered the impact
      * @return run to undo the impact
      */
-    UndoScoreImpacter impactWithoutJustification(WeightedScoreImpacter<?, ?> impacter, Tuple_ tuple);
+    ScoreImpact<?> impactWithoutJustification(WeightedScoreImpacter<?, ?> impacter, Tuple_ tuple);
 
     /**
      * Impacts the score, providing all available metadata.
@@ -34,6 +34,6 @@ public interface ImpactHandler<Tuple_ extends Tuple> {
      * @param tuple the tuple that triggered the impact
      * @return run to undo the impact
      */
-    UndoScoreImpacter impactFull(WeightedScoreImpacter<?, ?> impacter, Tuple_ tuple);
+    ScoreImpact<?> impactFull(WeightedScoreImpacter<?, ?> impacter, Tuple_ tuple);
 
 }

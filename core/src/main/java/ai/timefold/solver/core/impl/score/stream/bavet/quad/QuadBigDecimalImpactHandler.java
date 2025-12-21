@@ -5,7 +5,7 @@ import java.math.BigDecimal;
 import ai.timefold.solver.core.api.function.QuadFunction;
 import ai.timefold.solver.core.impl.bavet.common.tuple.QuadTuple;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.ConstraintMatchSupplier;
-import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
+import ai.timefold.solver.core.impl.score.stream.common.inliner.ScoreImpact;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
 
 import org.jspecify.annotations.NullMarked;
@@ -16,19 +16,19 @@ record QuadBigDecimalImpactHandler<A, B, C, D>(QuadFunction<A, B, C, D, BigDecim
             QuadImpactHandler<A, B, C, D> {
 
     @Override
-    public UndoScoreImpacter impactNaked(WeightedScoreImpacter<?, ?> impacter, QuadTuple<A, B, C, D> tuple) {
+    public ScoreImpact<?> impactNaked(WeightedScoreImpacter<?, ?> impacter, QuadTuple<A, B, C, D> tuple) {
         return impacter.impactScore(matchWeigher.apply(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD()), null);
     }
 
     @Override
-    public UndoScoreImpacter impactWithoutJustification(WeightedScoreImpacter<?, ?> impacter,
+    public ScoreImpact<?> impactWithoutJustification(WeightedScoreImpacter<?, ?> impacter,
             QuadTuple<A, B, C, D> tuple) {
         return impacter.impactScore(matchWeigher.apply(tuple.getA(), tuple.getB(), tuple.getC(), tuple.getD()),
                 ConstraintMatchSupplier.empty());
     }
 
     @Override
-    public UndoScoreImpacter impactFull(WeightedScoreImpacter<?, ?> impacter, QuadTuple<A, B, C, D> tuple) {
+    public ScoreImpact<?> impactFull(WeightedScoreImpacter<?, ?> impacter, QuadTuple<A, B, C, D> tuple) {
         var a = tuple.getA();
         var b = tuple.getB();
         var c = tuple.getC();

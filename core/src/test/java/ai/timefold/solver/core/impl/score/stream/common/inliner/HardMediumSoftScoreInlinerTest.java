@@ -28,19 +28,19 @@ class HardMediumSoftScoreInlinerTest
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(90, 0, 0));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(270, 0, 0));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(90, 0, 0));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 0, 0));
     }
@@ -51,19 +51,19 @@ class HardMediumSoftScoreInlinerTest
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 90, 0));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 270, 0));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 90, 0));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 0, 0));
     }
@@ -74,19 +74,19 @@ class HardMediumSoftScoreInlinerTest
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 0, 90));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 0, 270));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 0, 90));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 0, 0));
     }
@@ -97,19 +97,19 @@ class HardMediumSoftScoreInlinerTest
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<HardMediumSoftScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(100, 1_000, 10_000));
 
-        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(300, 3_000, 30_000));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(100, 1_000, 10_000));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardMediumSoftScore.of(0, 0, 0));
     }
