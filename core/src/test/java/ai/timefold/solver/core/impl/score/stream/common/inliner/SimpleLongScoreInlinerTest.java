@@ -27,19 +27,19 @@ class SimpleLongScoreInlinerTest extends AbstractScoreInlinerTest<TestdataSimple
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<SimpleLongScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleLongScore.of(100));
 
-        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleLongScore.of(300));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleLongScore.of(100));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(SimpleLongScore.of(0));
     }

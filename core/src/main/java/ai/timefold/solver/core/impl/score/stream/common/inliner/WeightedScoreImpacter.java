@@ -43,42 +43,42 @@ public interface WeightedScoreImpacter<Score_ extends Score<Score_>, Context_ ex
      * @param constraintMatchSupplier ignored unless constraint match enableds
      * @return never null
      */
-    UndoScoreImpacter impactScore(int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+    ScoreImpact<Score_> impactScore(int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     /**
      * @param matchWeight never null
      * @param constraintMatchSupplier ignored unless constraint match enabled
      * @return never null
      */
-    UndoScoreImpacter impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+    ScoreImpact<Score_> impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     /**
      * @param matchWeight never null
      * @param constraintMatchSupplier ignored unless constraint match enabled
      * @return never null
      */
-    UndoScoreImpacter impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+    ScoreImpact<Score_> impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     Context_ getContext();
 
     @FunctionalInterface
     interface IntImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-        UndoScoreImpacter impact(Context_ context, int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+        ScoreImpact<Score_> impact(Context_ context, int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     }
 
     @FunctionalInterface
     interface LongImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-        UndoScoreImpacter impact(Context_ context, long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
+        ScoreImpact<Score_> impact(Context_ context, long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     }
 
     @FunctionalInterface
     interface BigDecimalImpactFunction<Score_ extends Score<Score_>, Context_ extends ScoreContext<Score_, ?>> {
 
-        UndoScoreImpacter impact(Context_ context, BigDecimal matchWeight,
+        ScoreImpact<Score_> impact(Context_ context, BigDecimal matchWeight,
                 ConstraintMatchSupplier<Score_> constraintMatchSupplier);
 
     }

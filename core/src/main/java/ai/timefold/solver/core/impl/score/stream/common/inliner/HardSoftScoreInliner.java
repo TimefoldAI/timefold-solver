@@ -19,15 +19,9 @@ final class HardSoftScoreInliner extends AbstractScoreInliner<HardSoftScore> {
     @Override
     public WeightedScoreImpacter<HardSoftScore, ?> buildWeightedScoreImpacter(
             AbstractConstraint<?, ?, ?> constraint) {
-        HardSoftScore constraintWeight = constraintWeightMap.get(constraint);
-        HardSoftScoreContext context = new HardSoftScoreContext(this, constraint, constraintWeight);
-        if (constraintWeight.softScore() == 0) {
-            return WeightedScoreImpacter.of(context, HardSoftScoreContext::changeHardScoreBy);
-        } else if (constraintWeight.hardScore() == 0) {
-            return WeightedScoreImpacter.of(context, HardSoftScoreContext::changeSoftScoreBy);
-        } else {
-            return WeightedScoreImpacter.of(context, HardSoftScoreContext::changeScoreBy);
-        }
+        var constraintWeight = constraintWeightMap.get(constraint);
+        var context = new HardSoftScoreContext(this, constraint, constraintWeight);
+        return WeightedScoreImpacter.of(context, HardSoftScoreContext::changeScoreBy);
     }
 
     @Override

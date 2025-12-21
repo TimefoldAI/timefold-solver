@@ -27,19 +27,19 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(90, 0));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(270, 0));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(90, 0));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(0, 0));
     }
@@ -50,19 +50,19 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(1, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(0, 90));
 
-        var undo2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(2, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(0, 270));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(0, 90));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(0, 0));
     }
@@ -73,19 +73,19 @@ class HardSoftScoreInlinerTest extends AbstractScoreInlinerTest<TestdataHardSoft
         var impacter = buildScoreImpacter(constraintWeight);
         var scoreInliner = (AbstractScoreInliner<HardSoftScore>) impacter.getContext().parent;
 
-        var undo1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
+        var impact1 = impacter.impactScore(10, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(100, 1_000));
 
-        var undo2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
+        var impact2 = impacter.impactScore(20, ConstraintMatchSupplier.empty());
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(300, 3_000));
 
-        undo2.run();
+        impact2.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(100, 1_000));
 
-        undo1.run();
+        impact1.undo();
         assertThat(scoreInliner.extractScore())
                 .isEqualTo(HardSoftScore.of(0, 0));
     }

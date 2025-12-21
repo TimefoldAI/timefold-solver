@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import ai.timefold.solver.core.api.score.buildin.simplelong.SimpleLongScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
 final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleLongScoreInliner> {
 
     public SimpleLongScoreContext(SimpleLongScoreInliner parent, AbstractConstraint<?, ?, ?> constraint,
@@ -10,14 +12,37 @@ final class SimpleLongScoreContext extends ScoreContext<SimpleLongScore, SimpleL
         super(parent, constraint, constraintWeight);
     }
 
-    public UndoScoreImpacter changeScoreBy(long matchWeight, ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) {
-        long impact = constraintWeight.score() * matchWeight;
+    public ScoreImpact<SimpleLongScore> changeScoreBy(long matchWeight,
+            ConstraintMatchSupplier<SimpleLongScore> constraintMatchSupplier) {
+        var impact = constraintWeight.score() * matchWeight;
         parent.score += impact;
-        UndoScoreImpacter undoScoreImpact = () -> parent.score -= impact;
+        var scoreImpact = new SimpleLongImpact(parent, impact);
         if (!constraintMatchPolicy.isEnabled()) {
-            return undoScoreImpact;
+            return scoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, SimpleLongScore.of(impact), constraintMatchSupplier);
+        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+    }
+
+    @NullMarked
+    private record SimpleLongImpact(SimpleLongScoreInliner inliner, long impact)
+            implements
+                ScoreImpact<SimpleLongScore> {
+
+        @Override
+        public AbstractScoreInliner<SimpleLongScore> scoreInliner() {
+            return inliner;
+        }
+
+        @Override
+        public void undo() {
+            inliner.score -= impact;
+        }
+
+        @Override
+        public SimpleLongScore toScore() {
+            return SimpleLongScore.of(impact);
+        }
+
     }
 
 }

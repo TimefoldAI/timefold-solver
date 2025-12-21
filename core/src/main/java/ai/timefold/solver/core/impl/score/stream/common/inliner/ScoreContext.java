@@ -26,9 +26,9 @@ public abstract class ScoreContext<Score_ extends Score<Score_>, ScoreInliner_ e
         return constraintWeight;
     }
 
-    protected UndoScoreImpacter impactWithConstraintMatch(UndoScoreImpacter undoScoreImpact, Score_ score,
+    protected ScoreImpact<Score_> impactWithConstraintMatch(ScoreImpact<Score_> scoreImpact,
             ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
-        return parent.addConstraintMatch(constraint, score, constraintMatchSupplier, undoScoreImpact);
+        return parent.addConstraintMatch(constraint, constraintMatchSupplier, scoreImpact);
     }
 
 }

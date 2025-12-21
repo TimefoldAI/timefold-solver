@@ -5,7 +5,7 @@ import java.util.function.BiFunction;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.BiTuple;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.ConstraintMatchSupplier;
-import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
+import ai.timefold.solver.core.impl.score.stream.common.inliner.ScoreImpact;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
 
 import org.jspecify.annotations.NullMarked;
@@ -16,17 +16,17 @@ record BiBigDecimalImpactHandler<A, B>(BiFunction<A, B, BigDecimal> matchWeigher
             BiImpactHandler<A, B> {
 
     @Override
-    public UndoScoreImpacter impactNaked(WeightedScoreImpacter<?, ?> impacter, BiTuple<A, B> tuple) {
+    public ScoreImpact<?> impactNaked(WeightedScoreImpacter<?, ?> impacter, BiTuple<A, B> tuple) {
         return impacter.impactScore(matchWeigher.apply(tuple.getA(), tuple.getB()), null);
     }
 
     @Override
-    public UndoScoreImpacter impactWithoutJustification(WeightedScoreImpacter<?, ?> impacter, BiTuple<A, B> tuple) {
+    public ScoreImpact<?> impactWithoutJustification(WeightedScoreImpacter<?, ?> impacter, BiTuple<A, B> tuple) {
         return impacter.impactScore(matchWeigher.apply(tuple.getA(), tuple.getB()), ConstraintMatchSupplier.empty());
     }
 
     @Override
-    public UndoScoreImpacter impactFull(WeightedScoreImpacter<?, ?> impacter, BiTuple<A, B> tuple) {
+    public ScoreImpact<?> impactFull(WeightedScoreImpacter<?, ?> impacter, BiTuple<A, B> tuple) {
         var a = tuple.getA();
         var b = tuple.getB();
         var constraint = impacter.getContext().getConstraint();

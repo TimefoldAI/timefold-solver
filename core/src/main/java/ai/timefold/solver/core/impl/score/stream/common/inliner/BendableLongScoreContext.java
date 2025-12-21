@@ -3,6 +3,8 @@ package ai.timefold.solver.core.impl.score.stream.common.inliner;
 import ai.timefold.solver.core.api.score.buildin.bendablelong.BendableLongScore;
 import ai.timefold.solver.core.impl.score.stream.common.AbstractConstraint;
 
+import org.jspecify.annotations.NullMarked;
+
 final class BendableLongScoreContext extends ScoreContext<BendableLongScore, BendableLongScoreInliner> {
 
     private final int hardScoreLevelCount;
@@ -25,60 +27,121 @@ final class BendableLongScoreContext extends ScoreContext<BendableLongScore, Ben
         this(parent, constraint, constraintWeight, hardScoreLevelCount, softScoreLevelCount, -1, -1);
     }
 
-    public UndoScoreImpacter changeSoftScoreBy(long matchWeight,
+    public ScoreImpact<BendableLongScore> changeSoftScoreBy(long matchWeight,
             ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) {
-        long softImpact = scoreLevelWeight * matchWeight;
+        var softImpact = scoreLevelWeight * matchWeight;
         parent.softScores[scoreLevel] += softImpact;
-        UndoScoreImpacter undoScoreImpact = () -> parent.softScores[scoreLevel] -= softImpact;
-        ;
+        var scoreImpact =
+                new SingleSoftLevelScoreImpact(parent, hardScoreLevelCount, softScoreLevelCount, scoreLevel, softImpact);
         if (!constraintMatchPolicy.isEnabled()) {
-            return undoScoreImpact;
+            return scoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact,
-                BendableLongScore.ofSoft(hardScoreLevelCount, softScoreLevelCount, scoreLevel, softImpact),
-                constraintMatchSupplier);
+        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeHardScoreBy(long matchWeight,
+    public ScoreImpact<BendableLongScore> changeHardScoreBy(long matchWeight,
             ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) {
-        long hardImpact = scoreLevelWeight * matchWeight;
+        var hardImpact = scoreLevelWeight * matchWeight;
         parent.hardScores[scoreLevel] += hardImpact;
-        UndoScoreImpacter undoScoreImpact = () -> parent.hardScores[scoreLevel] -= hardImpact;
+        var scoreImpact =
+                new SingleHardLevelScoreImpact(parent, hardScoreLevelCount, softScoreLevelCount, scoreLevel, hardImpact);
         if (!constraintMatchPolicy.isEnabled()) {
-            return undoScoreImpact;
+            return scoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact,
-                BendableLongScore.ofHard(hardScoreLevelCount, softScoreLevelCount, scoreLevel, hardImpact),
-                constraintMatchSupplier);
+        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
     }
 
-    public UndoScoreImpacter changeScoreBy(long matchWeight,
+    public ScoreImpact<BendableLongScore> changeScoreBy(long matchWeight,
             ConstraintMatchSupplier<BendableLongScore> constraintMatchSupplier) {
-        long[] hardImpacts = new long[hardScoreLevelCount];
-        long[] softImpacts = new long[softScoreLevelCount];
-        for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
-            long hardImpact = constraintWeight.hardScore(hardScoreLevel) * matchWeight;
+        var hardImpacts = new long[hardScoreLevelCount];
+        var softImpacts = new long[softScoreLevelCount];
+        for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
+            var hardImpact = constraintWeight.hardScore(hardScoreLevel) * matchWeight;
             hardImpacts[hardScoreLevel] = hardImpact;
             parent.hardScores[hardScoreLevel] += hardImpact;
         }
-        for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
-            long softImpact = constraintWeight.softScore(softScoreLevel) * matchWeight;
+        for (var softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
+            var softImpact = constraintWeight.softScore(softScoreLevel) * matchWeight;
             softImpacts[softScoreLevel] = softImpact;
             parent.softScores[softScoreLevel] += softImpact;
         }
-        UndoScoreImpacter undoScoreImpact = () -> {
-            for (int hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
-                parent.hardScores[hardScoreLevel] -= hardImpacts[hardScoreLevel];
-            }
-            for (int softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
-                parent.softScores[softScoreLevel] -= softImpacts[softScoreLevel];
-            }
-        };
+        var scoreImpact =
+                new ComplexScoreImpact(parent, hardScoreLevelCount, softScoreLevelCount, hardImpacts, softImpacts);
         if (!constraintMatchPolicy.isEnabled()) {
-            return undoScoreImpact;
+            return scoreImpact;
         }
-        return impactWithConstraintMatch(undoScoreImpact, BendableLongScore.of(hardImpacts, softImpacts),
-                constraintMatchSupplier);
+        return impactWithConstraintMatch(scoreImpact, constraintMatchSupplier);
+    }
+
+    @NullMarked
+    private record SingleSoftLevelScoreImpact(BendableLongScoreInliner inliner, int hardScoreLevelCount,
+            int softScoreLevelCount, int scoreLevel, long impact)
+            implements
+                ScoreImpact<BendableLongScore> {
+
+        @Override
+        public AbstractScoreInliner<BendableLongScore> scoreInliner() {
+            return inliner;
+        }
+
+        @Override
+        public void undo() {
+            inliner.softScores[scoreLevel] -= impact;
+        }
+
+        @Override
+        public BendableLongScore toScore() {
+            return BendableLongScore.ofSoft(hardScoreLevelCount, softScoreLevelCount, scoreLevel, impact);
+        }
+    }
+
+    @NullMarked
+    private record SingleHardLevelScoreImpact(BendableLongScoreInliner inliner, int hardScoreLevelCount,
+            int softScoreLevelCount, int scoreLevel, long impact)
+            implements
+                ScoreImpact<BendableLongScore> {
+
+        @Override
+        public AbstractScoreInliner<BendableLongScore> scoreInliner() {
+            return inliner;
+        }
+
+        @Override
+        public void undo() {
+            inliner.hardScores[scoreLevel] -= impact;
+        }
+
+        @Override
+        public BendableLongScore toScore() {
+            return BendableLongScore.ofHard(hardScoreLevelCount, softScoreLevelCount, scoreLevel, impact);
+        }
+    }
+
+    @NullMarked
+    private record ComplexScoreImpact(BendableLongScoreInliner inliner, int hardScoreLevelCount, int softScoreLevelCount,
+            long[] hardImpacts, long[] softImpacts)
+            implements
+                ScoreImpact<BendableLongScore> {
+
+        @Override
+        public AbstractScoreInliner<BendableLongScore> scoreInliner() {
+            return inliner;
+        }
+
+        @Override
+        public void undo() {
+            for (var hardScoreLevel = 0; hardScoreLevel < hardScoreLevelCount; hardScoreLevel++) {
+                inliner.hardScores[hardScoreLevel] -= hardImpacts[hardScoreLevel];
+            }
+            for (var softScoreLevel = 0; softScoreLevel < softScoreLevelCount; softScoreLevel++) {
+                inliner.softScores[softScoreLevel] -= softImpacts[softScoreLevel];
+            }
+        }
+
+        @Override
+        public BendableLongScore toScore() {
+            return BendableLongScore.of(hardImpacts, softImpacts);
+        }
     }
 
 }

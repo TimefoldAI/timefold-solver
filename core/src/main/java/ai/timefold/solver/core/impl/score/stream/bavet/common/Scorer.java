@@ -4,7 +4,7 @@ import java.util.Objects;
 
 import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
-import ai.timefold.solver.core.impl.score.stream.common.inliner.UndoScoreImpacter;
+import ai.timefold.solver.core.impl.score.stream.common.inliner.ScoreImpact;
 import ai.timefold.solver.core.impl.score.stream.common.inliner.WeightedScoreImpacter;
 
 import org.jspecify.annotations.NullMarked;
@@ -34,15 +34,15 @@ public final class Scorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_
 
     @Override
     public void update(Tuple_ tuple) {
-        UndoScoreImpacter undoScoreImpacter = tuple.getStore(inputStoreIndex);
+        ScoreImpact<?> undoScoreImpacter = tuple.getStore(inputStoreIndex);
         // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
         if (undoScoreImpacter != null) {
-            undoScoreImpacter.run();
+            undoScoreImpacter.undo();
         }
         tuple.setStore(inputStoreIndex, impact(tuple));
     }
 
-    public UndoScoreImpacter impact(Tuple_ tuple) {
+    public ScoreImpact<?> impact(Tuple_ tuple) {
         try {
             return scoreImpacter.apply(weightedScoreImpacter, tuple);
         } catch (Exception e) {
@@ -56,10 +56,10 @@ public final class Scorer<Tuple_ extends Tuple> implements TupleLifecycle<Tuple_
 
     @Override
     public void retract(Tuple_ tuple) {
-        UndoScoreImpacter undoScoreImpacter = tuple.removeStore(inputStoreIndex);
+        ScoreImpact<?> undoScoreImpacter = tuple.removeStore(inputStoreIndex);
         // No fail fast if null because we don't track which tuples made it through the filter predicate(s)
         if (undoScoreImpacter != null) {
-            undoScoreImpacter.run();
+            undoScoreImpacter.undo();
         }
     }
 
