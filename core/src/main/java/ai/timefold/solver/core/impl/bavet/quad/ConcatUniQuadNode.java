@@ -27,28 +27,27 @@ public final class ConcatUniQuadNode<A, B, C, D>
 
     @Override
     protected QuadTuple<A, B, C, D> getOutTupleFromLeft(UniTuple<A> leftTuple) {
-        var factA = leftTuple.factA;
-        return new QuadTuple<>(factA,
-                paddingFunctionB.apply(factA), paddingFunctionC.apply(factA), paddingFunctionD.apply(factA),
+        var factA = leftTuple.getA();
+        return QuadTuple.of(factA, paddingFunctionB.apply(factA), paddingFunctionC.apply(factA), paddingFunctionD.apply(factA),
                 outputStoreSize);
     }
 
     @Override
     protected QuadTuple<A, B, C, D> getOutTupleFromRight(QuadTuple<A, B, C, D> rightTuple) {
-        return new QuadTuple<>(rightTuple.factA, rightTuple.factB, rightTuple.factC, rightTuple.factD, outputStoreSize);
+        return QuadTuple.of(rightTuple.getA(), rightTuple.getB(), rightTuple.getC(), rightTuple.getD(), outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleFromLeft(UniTuple<A> leftTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.factA = leftTuple.factA;
+        outTuple.setA(leftTuple.getA());
     }
 
     @Override
     protected void updateOutTupleFromRight(QuadTuple<A, B, C, D> rightTuple, QuadTuple<A, B, C, D> outTuple) {
-        outTuple.factA = rightTuple.factA;
-        outTuple.factB = rightTuple.factB;
-        outTuple.factC = rightTuple.factC;
-        outTuple.factD = rightTuple.factD;
+        outTuple.setA(rightTuple.getA());
+        outTuple.setB(rightTuple.getB());
+        outTuple.setC(rightTuple.getC());
+        outTuple.setD(rightTuple.getD());
     }
 
 }

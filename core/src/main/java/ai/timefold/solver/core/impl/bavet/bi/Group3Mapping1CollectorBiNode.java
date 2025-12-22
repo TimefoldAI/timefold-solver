@@ -30,12 +30,12 @@ public final class Group3Mapping1CollectorBiNode<OldA, OldB, A, B, C, D, ResultC
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(Triple<A, B, C> groupKey) {
-        return new QuadTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), null, outputStoreSize);
+        return QuadTuple.of(groupKey.a(), groupKey.b(), groupKey.c(), outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(QuadTuple<A, B, C, D> outTuple, D d) {
-        outTuple.factD = d;
+        outTuple.setD(d);
     }
 
 }

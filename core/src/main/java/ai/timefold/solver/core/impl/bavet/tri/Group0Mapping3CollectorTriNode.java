@@ -35,14 +35,14 @@ public final class Group0Mapping3CollectorTriNode<OldA, OldB, OldC, A, B, C, Res
 
     @Override
     protected TriTuple<A, B, C> createOutTuple(Void groupKey) {
-        return new TriTuple<>(null, null, null, outputStoreSize);
+        return TriTuple.of(outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(TriTuple<A, B, C> outTuple, Triple<A, B, C> result) {
-        outTuple.factA = result.a();
-        outTuple.factB = result.b();
-        outTuple.factC = result.c();
+        outTuple.setA(result.a());
+        outTuple.setB(result.b());
+        outTuple.setC(result.c());
     }
 
 }

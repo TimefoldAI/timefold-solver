@@ -18,19 +18,19 @@ final class BigDecimalWeightedScoreImpacter<Score_ extends Score<Score_>, Contex
     }
 
     @Override
-    public UndoScoreImpacter impactScore(int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+    public ScoreImpact<Score_> impactScore(int matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), constraintMatchSupplier);
     }
 
     @Override
-    public UndoScoreImpacter impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+    public ScoreImpact<Score_> impactScore(long matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, BigDecimal.valueOf(matchWeight), constraintMatchSupplier);
     }
 
     @Override
-    public UndoScoreImpacter impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
+    public ScoreImpact<Score_> impactScore(BigDecimal matchWeight, ConstraintMatchSupplier<Score_> constraintMatchSupplier) {
         context.getConstraint().assertCorrectImpact(matchWeight);
         return impactFunction.impact(context, matchWeight, constraintMatchSupplier);
     }

@@ -21,22 +21,22 @@ public final class UnindexedJoinBiNode<A, B>
 
     @Override
     protected BiTuple<A, B> createOutTuple(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-        return new BiTuple<>(leftTuple.factA, rightTuple.factA, outputStoreSizeTracker.computeStoreSize());
+        return BiTuple.of(leftTuple.getA(), rightTuple.getA(), outputStoreSizeTracker.computeStoreSize());
     }
 
     @Override
     protected void setOutTupleLeftFacts(BiTuple<A, B> outTuple, UniTuple<A> leftTuple) {
-        outTuple.factA = leftTuple.factA;
+        outTuple.setA(leftTuple.getA());
     }
 
     @Override
     protected void setOutTupleRightFact(BiTuple<A, B> outTuple, UniTuple<B> rightTuple) {
-        outTuple.factB = rightTuple.factA;
+        outTuple.setB(rightTuple.getA());
     }
 
     @Override
     protected boolean testFiltering(UniTuple<A> leftTuple, UniTuple<B> rightTuple) {
-        return filtering.test(leftTuple.factA, rightTuple.factA);
+        return filtering.test(leftTuple.getA(), rightTuple.getA());
     }
 
 }

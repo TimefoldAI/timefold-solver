@@ -14,7 +14,7 @@ import org.jspecify.annotations.NullMarked;
 final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> {
 
     @SuppressWarnings("rawtypes")
-    private static final UniTuple EMPTY_TUPLE = new UniTuple<>(null, 0);
+    private static final UniTuple EMPTY_TUPLE = UniTuple.of(0);
 
     private final SolutionView<Solution_> solutionView;
     private final BiEnumeratingPredicate<Solution_, A, B> filter;
@@ -42,10 +42,10 @@ final class FilteringIterator<Solution_, A, B> implements Iterator<UniTuple<B>> 
             return true;
         }
 
-        var leftFact = leftTuple.factA;
+        var leftFact = leftTuple.getA();
         while (rightTupleIterator.hasNext()) {
             var rightTuple = rightTupleIterator.next();
-            var rightFact = rightTuple.factA;
+            var rightFact = rightTuple.getA();
             if (filter.test(solutionView, leftFact, rightFact)) {
                 hasNext = true;
                 next = rightTuple;

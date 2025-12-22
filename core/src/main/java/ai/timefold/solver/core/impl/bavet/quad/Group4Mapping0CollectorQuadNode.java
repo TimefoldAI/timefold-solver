@@ -30,20 +30,17 @@ public final class Group4Mapping0CollectorQuadNode<OldA, OldB, OldC, OldD, A, B,
             QuadFunction<OldA, OldB, OldC, OldD, C> groupKeyMappingC,
             QuadFunction<OldA, OldB, OldC, OldD, D> groupKeyMappingD,
             QuadTuple<OldA, OldB, OldC, OldD> tuple) {
-        OldA oldA = tuple.factA;
-        OldB oldB = tuple.factB;
-        OldC oldC = tuple.factC;
-        OldD oldD = tuple.factD;
-        A a = groupKeyMappingA.apply(oldA, oldB, oldC, oldD);
-        B b = groupKeyMappingB.apply(oldA, oldB, oldC, oldD);
-        C c = groupKeyMappingC.apply(oldA, oldB, oldC, oldD);
-        D d = groupKeyMappingD.apply(oldA, oldB, oldC, oldD);
-        return new Quadruple<>(a, b, c, d);
+        var oldA = tuple.getA();
+        var oldB = tuple.getB();
+        var oldC = tuple.getC();
+        var oldD = tuple.getD();
+        return new Quadruple<>(groupKeyMappingA.apply(oldA, oldB, oldC, oldD), groupKeyMappingB.apply(oldA, oldB, oldC, oldD),
+                groupKeyMappingC.apply(oldA, oldB, oldC, oldD), groupKeyMappingD.apply(oldA, oldB, oldC, oldD));
     }
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
-        return new QuadTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
+        return QuadTuple.of(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
     }
 
     @Override

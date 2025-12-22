@@ -19,12 +19,12 @@ public final class FlattenLastTriNode<A, B, C, NewC>
 
     @Override
     protected TriTuple<A, B, NewC> createTuple(TriTuple<A, B, C> originalTuple, NewC newC) {
-        return new TriTuple<>(originalTuple.factA, originalTuple.factB, newC, outputStoreSize);
+        return TriTuple.of(originalTuple.getA(), originalTuple.getB(), newC, outputStoreSize);
     }
 
     @Override
     protected C getEffectiveFactIn(TriTuple<A, B, C> tuple) {
-        return tuple.factC;
+        return tuple.getC();
     }
 
 }

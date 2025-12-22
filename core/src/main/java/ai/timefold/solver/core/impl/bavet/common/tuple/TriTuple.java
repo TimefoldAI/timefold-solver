@@ -1,22 +1,46 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
-public final class TriTuple<A, B, C> extends AbstractTuple {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-    // Only a tuple's origin node may modify a fact.
-    public A factA;
-    public B factB;
-    public C factC;
+@NullMarked
+public sealed interface TriTuple<A, B, C> extends Tuple permits UniversalTuple {
 
-    public TriTuple(A factA, B factB, C factC, int storeSize) {
-        super(storeSize);
-        this.factA = factA;
-        this.factB = factB;
-        this.factC = factC;
+    static <A, B, C> TriTuple<A, B, C> of(int storeSize) {
+        return new UniversalTuple<A, B, C, Void>(storeSize, 3);
     }
 
-    @Override
-    public String toString() {
-        return "{" + factA + ", " + factB + ", " + factC + "}";
+    static <A, B, C> TriTuple<A, B, C> of(@Nullable A a, int storeSize) {
+        var tuple = TriTuple.<A, B, C> of(storeSize);
+        tuple.setA(a);
+        return tuple;
     }
+
+    static <A, B, C> TriTuple<A, B, C> of(@Nullable A a, @Nullable B b, int storeSize) {
+        var tuple = TriTuple.<A, B, C> of(a, storeSize);
+        tuple.setB(b);
+        return tuple;
+    }
+
+    static <A, B, C> TriTuple<A, B, C> of(@Nullable A a, @Nullable B b, @Nullable C c, int storeSize) {
+        var tuple = TriTuple.<A, B, C> of(a, b, storeSize);
+        tuple.setC(c);
+        return tuple;
+    }
+
+    @Nullable
+    A getA();
+
+    void setA(@Nullable A a);
+
+    @Nullable
+    B getB();
+
+    void setB(@Nullable B b);
+
+    @Nullable
+    C getC();
+
+    void setC(@Nullable C c);
 
 }

@@ -12,17 +12,17 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 
 import ai.timefold.solver.core.impl.bavet.NodeNetwork;
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.LeftTupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.RightTupleLifecycle;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 
 public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
 
     private final Set<Stream_> activeStreamSet;
     private final Map<AbstractNode, Stream_> nodeCreatorMap;
-    private final Map<Stream_, TupleLifecycle<? extends AbstractTuple>> tupleLifecycleMap;
+    private final Map<Stream_, TupleLifecycle<? extends Tuple>> tupleLifecycleMap;
     private final Map<Stream_, Integer> storeIndexMap;
 
     private List<AbstractNode> reversedNodeList;
@@ -52,30 +52,30 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
                 throw new IllegalStateException("Impossible state: The node (%s) has no parent (%s)."
                         .formatted(node, parent));
             }
-            putInsertUpdateRetract(parent, (TupleLifecycle<? extends AbstractTuple>) node);
+            putInsertUpdateRetract(parent, (TupleLifecycle<? extends Tuple>) node);
         }
     }
 
     public void addNode(AbstractNode node, Stream_ creator, Stream_ leftParent, Stream_ rightParent) {
         reversedNodeList.add(node);
         nodeCreatorMap.put(node, creator);
-        putInsertUpdateRetract(leftParent, TupleLifecycle.ofLeft((LeftTupleLifecycle<? extends AbstractTuple>) node));
-        putInsertUpdateRetract(rightParent, TupleLifecycle.ofRight((RightTupleLifecycle<? extends AbstractTuple>) node));
+        putInsertUpdateRetract(leftParent, TupleLifecycle.ofLeft((LeftTupleLifecycle<? extends Tuple>) node));
+        putInsertUpdateRetract(rightParent, TupleLifecycle.ofRight((RightTupleLifecycle<? extends Tuple>) node));
     }
 
-    public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(Stream_ stream,
+    public <Tuple_ extends Tuple> void putInsertUpdateRetract(Stream_ stream,
             TupleLifecycle<Tuple_> tupleLifecycle) {
         tupleLifecycleMap.put(stream, tupleLifecycle);
     }
 
-    public <Tuple_ extends AbstractTuple> void putInsertUpdateRetract(Stream_ stream, List<? extends Stream_> childStreamList,
+    public <Tuple_ extends Tuple> void putInsertUpdateRetract(Stream_ stream, List<? extends Stream_> childStreamList,
             UnaryOperator<TupleLifecycle<Tuple_>> tupleLifecycleFunction) {
         TupleLifecycle<Tuple_> tupleLifecycle = getAggregatedTupleLifecycle(childStreamList);
         putInsertUpdateRetract(stream, tupleLifecycleFunction.apply(tupleLifecycle));
     }
 
     @SuppressWarnings("unchecked")
-    public <Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_>
+    public <Tuple_ extends Tuple> TupleLifecycle<Tuple_>
             getAggregatedTupleLifecycle(List<? extends Stream_> streamList) {
         var tupleLifecycles = streamList.stream()
                 .filter(this::isStreamActive)
@@ -91,8 +91,8 @@ public abstract class AbstractNodeBuildHelper<Stream_ extends BavetStream> {
     }
 
     @SuppressWarnings("unchecked")
-    private static <Stream_, Tuple_ extends AbstractTuple> TupleLifecycle<Tuple_> getTupleLifecycle(Stream_ stream,
-            Map<Stream_, TupleLifecycle<? extends AbstractTuple>> tupleLifecycleMap) {
+    private static <Stream_, Tuple_ extends Tuple> TupleLifecycle<Tuple_> getTupleLifecycle(Stream_ stream,
+            Map<Stream_, TupleLifecycle<? extends Tuple>> tupleLifecycleMap) {
         var tupleLifecycle = (TupleLifecycle<Tuple_>) tupleLifecycleMap.get(stream);
         if (tupleLifecycle == null) {
             throw new IllegalStateException("Impossible state: the stream (%s) hasn't built a node yet."

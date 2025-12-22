@@ -32,13 +32,13 @@ public final class Group0Mapping2CollectorQuadNode<OldA, OldB, OldC, OldD, A, B,
 
     @Override
     protected BiTuple<A, B> createOutTuple(Void groupKey) {
-        return new BiTuple<>(null, null, outputStoreSize);
+        return BiTuple.of(outputStoreSize);
     }
 
     @Override
     protected void updateOutTupleToResult(BiTuple<A, B> outTuple, Pair<A, B> result) {
-        outTuple.factA = result.key();
-        outTuple.factB = result.value();
+        outTuple.setA(result.key());
+        outTuple.setB(result.value());
     }
 
 }

@@ -2,9 +2,9 @@ package ai.timefold.solver.core.impl.bavet.common;
 
 import java.util.function.Consumer;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.InOutTupleStorePositionTracker;
 import ai.timefold.solver.core.impl.bavet.common.tuple.OutTupleStorePositionTracker;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleLifecycle;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 import ai.timefold.solver.core.impl.bavet.common.tuple.UniTuple;
@@ -19,7 +19,7 @@ import ai.timefold.solver.core.impl.util.ElementAwareLinkedList;
  * @param <LeftTuple_>
  * @param <Right_>
  */
-public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_, OutTuple_ extends AbstractTuple>
+public abstract class AbstractJoinNode<LeftTuple_ extends Tuple, Right_, OutTuple_ extends Tuple>
         extends AbstractTwoInputNode<LeftTuple_, UniTuple<Right_>> {
 
     protected final int inputStoreIndexLeftOutTupleList;
@@ -59,7 +59,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     protected final void insertOutTupleFilteredFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple) {
-        if (!leftTuple.state.isActive()) {
+        if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
             // - One entity became unassigned, so the outTuple is getting retracted.
@@ -93,7 +93,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
                 updateOutTupleLeft(outTuple, leftTuple);
             }
         } else {
-            if (!leftTuple.state.isActive()) {
+            if (!leftTuple.getState().isActive()) {
                 // Assume the following scenario:
                 // - The join is of two entities of the same type, both filtering out unassigned.
                 // - One entity became unassigned, so the outTuple is getting retracted.
@@ -121,10 +121,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     private void doUpdateOutTuple(OutTuple_ outTuple) {
-        var state = outTuple.state;
+        var state = outTuple.getState();
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
-                    .formatted(outTuple, this, outTuple.state));
+                    .formatted(outTuple, this, state));
         } else if (state != TupleState.OK) { // Already in the queue in the correct state.
             return;
         }
@@ -149,7 +149,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     private void processOutTupleUpdateFromLeft(LeftTuple_ leftTuple, UniTuple<Right_> rightTuple,
             ElementAwareLinkedList<OutTuple_> outList, ElementAwareLinkedList<OutTuple_> outTupleList,
             int outputStoreIndexOutEntry) {
-        if (!leftTuple.state.isActive()) {
+        if (!leftTuple.getState().isActive()) {
             // Assume the following scenario:
             // - The join is of two entities of the same type, both filtering out unassigned.
             // - One entity became unassigned, so the outTuple is getting retracted.
@@ -186,7 +186,7 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
         }
     }
 
-    private static <Tuple_ extends AbstractTuple> Tuple_ findOutTuple(ElementAwareLinkedList<Tuple_> sourceList,
+    private static <Tuple_ extends Tuple> Tuple_ findOutTuple(ElementAwareLinkedList<Tuple_> sourceList,
             ElementAwareLinkedList<Tuple_> referenceList, int outputStoreIndexOutEntry) {
         // Hack: the outTuple has no left/right input tuple reference, use the left/right outList reference instead.
         var item = sourceList.first();
@@ -223,10 +223,10 @@ public abstract class AbstractJoinNode<LeftTuple_ extends AbstractTuple, Right_,
     }
 
     private void propagateRetract(OutTuple_ outTuple) {
-        var state = outTuple.state;
+        var state = outTuple.getState();
         if (!state.isActive()) { // Impossible because they shouldn't linger in the indexes.
             throw new IllegalStateException("Impossible state: The tuple (%s) in node (%s) is in an unexpected state (%s)."
-                    .formatted(outTuple, this, outTuple.state));
+                    .formatted(outTuple, this, state));
         }
         propagationQueue.retract(outTuple, state == TupleState.CREATING ? TupleState.ABORTING : TupleState.DYING);
     }

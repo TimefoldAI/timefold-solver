@@ -1,24 +1,57 @@
 package ai.timefold.solver.core.impl.bavet.common.tuple;
 
-public final class QuadTuple<A, B, C, D> extends AbstractTuple {
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
-    // Only a tuple's origin node may modify a fact.
-    public A factA;
-    public B factB;
-    public C factC;
-    public D factD;
+@NullMarked
+public sealed interface QuadTuple<A, B, C, D> extends Tuple permits UniversalTuple {
 
-    public QuadTuple(A factA, B factB, C factC, D factD, int storeSize) {
-        super(storeSize);
-        this.factA = factA;
-        this.factB = factB;
-        this.factC = factC;
-        this.factD = factD;
+    static <A, B, C, D> QuadTuple<A, B, C, D> of(int storeSize) {
+        return new UniversalTuple<>(storeSize, 4);
     }
 
-    @Override
-    public String toString() {
-        return "{" + factA + ", " + factB + ", " + factC + ", " + factD + "}";
+    static <A, B, C, D> QuadTuple<A, B, C, D> of(@Nullable A a, int storeSize) {
+        var tuple = QuadTuple.<A, B, C, D> of(storeSize);
+        tuple.setA(a);
+        return tuple;
     }
+
+    static <A, B, C, D> QuadTuple<A, B, C, D> of(@Nullable A a, @Nullable B b, int storeSize) {
+        var tuple = QuadTuple.<A, B, C, D> of(a, storeSize);
+        tuple.setB(b);
+        return tuple;
+    }
+
+    static <A, B, C, D> QuadTuple<A, B, C, D> of(@Nullable A a, @Nullable B b, @Nullable C c, int storeSize) {
+        var tuple = QuadTuple.<A, B, C, D> of(a, b, storeSize);
+        tuple.setC(c);
+        return tuple;
+    }
+
+    static <A, B, C, D> QuadTuple<A, B, C, D> of(@Nullable A a, @Nullable B b, @Nullable C c, @Nullable D d, int storeSize) {
+        var tuple = QuadTuple.<A, B, C, D> of(a, b, c, storeSize);
+        tuple.setD(d);
+        return tuple;
+    }
+
+    @Nullable
+    A getA();
+
+    void setA(@Nullable A a);
+
+    @Nullable
+    B getB();
+
+    void setB(@Nullable B b);
+
+    @Nullable
+    C getC();
+
+    void setC(@Nullable C c);
+
+    @Nullable
+    D getD();
+
+    void setD(@Nullable D d);
 
 }

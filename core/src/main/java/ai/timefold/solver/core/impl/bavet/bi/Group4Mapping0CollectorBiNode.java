@@ -29,18 +29,15 @@ public final class Group4Mapping0CollectorBiNode<OldA, OldB, A, B, C, D>
             BiFunction<OldA, OldB, A> groupKeyMappingA, BiFunction<OldA, OldB, B> groupKeyMappingB,
             BiFunction<OldA, OldB, C> groupKeyMappingC, BiFunction<OldA, OldB, D> groupKeyMappingD,
             BiTuple<OldA, OldB> tuple) {
-        OldA oldA = tuple.factA;
-        OldB oldB = tuple.factB;
-        A a = groupKeyMappingA.apply(oldA, oldB);
-        B b = groupKeyMappingB.apply(oldA, oldB);
-        C c = groupKeyMappingC.apply(oldA, oldB);
-        D d = groupKeyMappingD.apply(oldA, oldB);
-        return new Quadruple<>(a, b, c, d);
+        var oldA = tuple.getA();
+        var oldB = tuple.getB();
+        return new Quadruple<>(groupKeyMappingA.apply(oldA, oldB), groupKeyMappingB.apply(oldA, oldB),
+                groupKeyMappingC.apply(oldA, oldB), groupKeyMappingD.apply(oldA, oldB));
     }
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
-        return new QuadTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
+        return QuadTuple.of(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
     }
 
     @Override

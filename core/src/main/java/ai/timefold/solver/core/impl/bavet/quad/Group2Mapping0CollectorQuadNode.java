@@ -24,18 +24,16 @@ public final class Group2Mapping0CollectorQuadNode<OldA, OldB, OldC, OldD, A, B>
 
     static <A, B, OldA, OldB, OldC, OldD> Pair<A, B> createGroupKey(QuadFunction<OldA, OldB, OldC, OldD, A> groupKeyMappingA,
             QuadFunction<OldA, OldB, OldC, OldD, B> groupKeyMappingB, QuadTuple<OldA, OldB, OldC, OldD> tuple) {
-        OldA oldA = tuple.factA;
-        OldB oldB = tuple.factB;
-        OldC oldC = tuple.factC;
-        OldD oldD = tuple.factD;
-        A a = groupKeyMappingA.apply(oldA, oldB, oldC, oldD);
-        B b = groupKeyMappingB.apply(oldA, oldB, oldC, oldD);
-        return new Pair<>(a, b);
+        var oldA = tuple.getA();
+        var oldB = tuple.getB();
+        var oldC = tuple.getC();
+        var oldD = tuple.getD();
+        return new Pair<>(groupKeyMappingA.apply(oldA, oldB, oldC, oldD), groupKeyMappingB.apply(oldA, oldB, oldC, oldD));
     }
 
     @Override
     protected BiTuple<A, B> createOutTuple(Pair<A, B> groupKey) {
-        return new BiTuple<>(groupKey.key(), groupKey.value(), outputStoreSize);
+        return BiTuple.of(groupKey.key(), groupKey.value(), outputStoreSize);
     }
 
     @Override

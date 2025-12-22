@@ -31,19 +31,16 @@ public final class Group4Mapping0CollectorTriNode<OldA, OldB, OldC, A, B, C, D>
             TriFunction<OldA, OldB, OldC, C> groupKeyMappingC,
             TriFunction<OldA, OldB, OldC, D> groupKeyMappingD,
             TriTuple<OldA, OldB, OldC> tuple) {
-        OldA oldA = tuple.factA;
-        OldB oldB = tuple.factB;
-        OldC oldC = tuple.factC;
-        A a = groupKeyMappingA.apply(oldA, oldB, oldC);
-        B b = groupKeyMappingB.apply(oldA, oldB, oldC);
-        C c = groupKeyMappingC.apply(oldA, oldB, oldC);
-        D d = groupKeyMappingD.apply(oldA, oldB, oldC);
-        return new Quadruple<>(a, b, c, d);
+        var oldA = tuple.getA();
+        var oldB = tuple.getB();
+        var oldC = tuple.getC();
+        return new Quadruple<>(groupKeyMappingA.apply(oldA, oldB, oldC), groupKeyMappingB.apply(oldA, oldB, oldC),
+                groupKeyMappingC.apply(oldA, oldB, oldC), groupKeyMappingD.apply(oldA, oldB, oldC));
     }
 
     @Override
     protected QuadTuple<A, B, C, D> createOutTuple(Quadruple<A, B, C, D> groupKey) {
-        return new QuadTuple<>(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
+        return QuadTuple.of(groupKey.a(), groupKey.b(), groupKey.c(), groupKey.d(), outputStoreSize);
     }
 
     @Override

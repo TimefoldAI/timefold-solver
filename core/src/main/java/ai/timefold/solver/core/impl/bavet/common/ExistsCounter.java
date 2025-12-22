@@ -1,9 +1,9 @@
 package ai.timefold.solver.core.impl.bavet.common;
 
-import ai.timefold.solver.core.impl.bavet.common.tuple.AbstractTuple;
+import ai.timefold.solver.core.impl.bavet.common.tuple.Tuple;
 import ai.timefold.solver.core.impl.bavet.common.tuple.TupleState;
 
-public final class ExistsCounter<Tuple_ extends AbstractTuple>
+public final class ExistsCounter<Tuple_ extends Tuple>
         extends AbstractPropagationMetadataCarrier<Tuple_> {
 
     final Tuple_ leftTuple;

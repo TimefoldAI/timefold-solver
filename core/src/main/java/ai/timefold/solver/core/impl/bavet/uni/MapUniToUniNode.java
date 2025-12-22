@@ -19,17 +19,15 @@ public final class MapUniToUniNode<A, NewA> extends AbstractMapNode<UniTuple<A>,
 
     @Override
     protected UniTuple<NewA> map(UniTuple<A> tuple) {
-        A factA = tuple.factA;
-        return new UniTuple<>(
-                mappingFunction.apply(factA),
-                outputStoreSize);
+        var factA = tuple.getA();
+        return UniTuple.of(mappingFunction.apply(factA), outputStoreSize);
     }
 
     @Override
     protected void remap(UniTuple<A> inTuple, UniTuple<NewA> outTuple) {
-        A factA = inTuple.factA;
-        NewA newA = mappingFunction.apply(factA);
-        outTuple.factA = newA;
+        var factA = inTuple.getA();
+        var newA = mappingFunction.apply(factA);
+        outTuple.setA(newA);
     }
 
 }
