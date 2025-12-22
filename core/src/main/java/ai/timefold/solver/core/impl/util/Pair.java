@@ -14,6 +14,9 @@ public record Pair<Key_, Value_>(Key_ key, Value_ value) {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
         return o instanceof Pair<?, ?> other
                 && Objects.equals(key, other.key)
                 && Objects.equals(value, other.value);
@@ -21,10 +24,7 @@ public record Pair<Key_, Value_>(Key_ key, Value_ value) {
 
     @Override
     public int hashCode() { // Often used in hash-based collections; the JDK-generated default is too slow.
-        var hash = 7;
-        hash = 31 * hash + Objects.hashCode(key);
-        hash = 31 * hash + Objects.hashCode(value);
-        return hash;
+        return 31 * Objects.hashCode(key) + Objects.hashCode(value);
     }
 
 }

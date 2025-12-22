@@ -141,11 +141,9 @@ public final class IntValueRange extends AbstractCountableValueRange<Integer> {
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Integer.hashCode(from);
+        var hash = Integer.hashCode(from);
         hash = 31 * hash + Integer.hashCode(to);
-        hash = 31 * hash + Integer.hashCode(incrementUnit);
-        return hash;
+        return 31 * hash + Integer.hashCode(incrementUnit);
     }
 
     @Override

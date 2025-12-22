@@ -102,9 +102,6 @@ public final class CompositeCountableValueRange<T> extends AbstractCountableValu
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Boolean.hashCode(isValueImmutable);
-        hash = 31 * hash + Objects.hashCode(valueRangeList);
-        return hash;
+        return 31 * Boolean.hashCode(isValueImmutable) + Objects.hashCode(valueRangeList);
     }
 }

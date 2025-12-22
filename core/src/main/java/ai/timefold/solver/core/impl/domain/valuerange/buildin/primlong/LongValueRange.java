@@ -146,11 +146,9 @@ public final class LongValueRange extends AbstractCountableValueRange<Long> {
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Long.hashCode(from);
+        var hash = Long.hashCode(from);
         hash = 31 * hash + Long.hashCode(to);
-        hash = 31 * hash + Long.hashCode(incrementUnit);
-        return hash;
+        return 31 * hash + Long.hashCode(incrementUnit);
     }
 
     @Override

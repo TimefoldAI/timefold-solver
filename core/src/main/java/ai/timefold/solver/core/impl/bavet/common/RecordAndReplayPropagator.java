@@ -42,6 +42,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     private final Supplier<BavetPrecomputeBuildHelper<Tuple_>> precomputeBuildHelperSupplier;
     private final UnaryOperator<Tuple_> internalTupleToOutputTupleMapper;
     private final Map<Object, List<Tuple_>> objectToOutputTuplesMap;
+    private final Set<Object> alreadyUpdatingMap = Collections.newSetFromMap(new IdentityHashMap<>());
     private final Map<Class<?>, Boolean> objectClassToIsEntitySourceClass;
 
     private final StaticPropagationQueue<Tuple_> propagationQueue;
@@ -77,14 +78,18 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     }
 
     public void update(Object object) {
+        if (!alreadyUpdatingMap.add(object)) {
+            // The list was already sent to the propagation queue.
+            // Don't iterate over it again, even though the queue would deduplicate its contents.
+            return;
+        }
         // Updates happen very frequently, so we optimize by avoiding the update queue
         // and going straight to the propagation queue.
         // The propagation queue deduplicates updates internally.
         var outTupleList = objectToOutputTuplesMap.get(object);
-        if (outTupleList == null) {
-            return;
+        if (outTupleList != null) {
+            outTupleList.forEach(propagationQueue::update);
         }
-        outTupleList.forEach(propagationQueue::update);
     }
 
     public void retract(Object object) {
@@ -158,6 +163,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
     @Override
     public void propagateUpdates() {
         propagationQueue.propagateUpdates();
+        alreadyUpdatingMap.clear();
     }
 
     @Override
@@ -207,7 +213,7 @@ public final class RecordAndReplayPropagator<Tuple_ extends AbstractTuple>
                 internalNodeNetwork.settle();
             }
             if (mappedTuples.isEmpty()) {
-                objectToOutputTuplesMap.put(invalidated, Collections.emptyList());
+                objectToOutputTuplesMap.remove(invalidated);
             } else {
                 objectToOutputTuplesMap.put(invalidated, mappedTuples);
             }

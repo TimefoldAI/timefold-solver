@@ -15,6 +15,9 @@ public record Triple<A, B, C>(A a, B b, C c) {
 
     @Override
     public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
         return o instanceof Triple<?, ?, ?> other
                 && Objects.equals(a, other.a)
                 && Objects.equals(b, other.b)
@@ -23,11 +26,9 @@ public record Triple<A, B, C>(A a, B b, C c) {
 
     @Override
     public int hashCode() { // Often used in hash-based collections; the JDK-generated default is too slow.
-        var hash = 7;
-        hash = 31 * hash + Objects.hashCode(a);
+        var hash = Objects.hashCode(a);
         hash = 31 * hash + Objects.hashCode(b);
-        hash = 31 * hash + Objects.hashCode(c);
-        return hash;
+        return 31 * hash + Objects.hashCode(c);
     }
 
 }

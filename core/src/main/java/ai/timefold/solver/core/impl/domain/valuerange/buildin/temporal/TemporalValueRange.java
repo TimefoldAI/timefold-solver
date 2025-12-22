@@ -195,12 +195,10 @@ public final class TemporalValueRange<Temporal_ extends Temporal & Comparable<? 
 
     @Override
     public int hashCode() {
-        var hash = 7;
-        hash = 31 * hash + Long.hashCode(incrementUnitAmount);
+        var hash = Long.hashCode(incrementUnitAmount);
         hash = 31 * hash + Objects.hashCode(incrementUnitType);
         hash = 31 * hash + Objects.hashCode(from);
-        hash = 31 * hash + Objects.hashCode(to);
-        return hash;
+        return 31 * hash + Objects.hashCode(to);
     }
 
     @Override
