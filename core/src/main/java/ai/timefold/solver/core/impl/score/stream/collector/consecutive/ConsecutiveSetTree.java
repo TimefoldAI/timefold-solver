@@ -101,18 +101,21 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
     public boolean add(Value_ value, Point_ valueIndex) {
         var valueCount = valueCountMap.get(value);
         if (valueCount != null) { // Item already in bag.
-            var addingItem = valueCount.value;
-            if (!Objects.equals(addingItem.index(), valueIndex)) {
-                throw new IllegalStateException(
-                        "Impossible state: the item (" + value + ") is already in the bag with a different index ("
-                                + addingItem.index() + " vs " + valueIndex + ").\n" +
-                                "Maybe the index map function is not deterministic?");
-            }
-            valueCount.count++;
+            addExistingItem(valueCount, valueIndex, value);
             return true;
         }
 
-        // Adding item to the bag.
+        var addingItem = addItemToBag(value, valueIndex);
+        var firstBeforeItemEntry = startItemToSequence.floorEntry(addingItem);
+        if (firstBeforeItemEntry != null) {
+            addSubsequentItem(addingItem, firstBeforeItemEntry, valueIndex, value);
+        } else { // No items before it
+            addFirstItem(addingItem);
+        }
+        return true;
+    }
+
+    private ComparableValue<Value_, Point_> addItemToBag(Value_ value, Point_ valueIndex) {
         var addingItem = new ComparableValue<>(value, valueIndex);
         valueCountMap.put(value, new ValueCount<>(addingItem));
         itemMap.put(addingItem, addingItem.value());
@@ -122,68 +125,67 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
         if (lastItem == null || addingItem.compareTo(lastItem) > 0) {
             lastItem = addingItem;
         }
-
-        var firstBeforeItemEntry = startItemToSequence.floorEntry(addingItem);
-        if (firstBeforeItemEntry != null) {
-            var firstBeforeItem = firstBeforeItemEntry.getKey();
-            var endOfBeforeSequenceItem = firstBeforeItemEntry.getValue().lastItem;
-            var endOfBeforeSequenceIndex = endOfBeforeSequenceItem.index();
-            if (isInNaturalOrderAndHashOrderIfEqual(valueIndex, value, endOfBeforeSequenceIndex,
-                    endOfBeforeSequenceItem.value())) {
-                // Item is already in the bag; do nothing
-                return true;
-            }
-            // Item is outside the bag
-            var firstAfterItem = startItemToSequence.higherKey(addingItem);
-            if (firstAfterItem != null) {
-                addBetweenItems(addingItem, firstBeforeItem, endOfBeforeSequenceItem, firstAfterItem);
-            } else {
-                var prevBag = startItemToSequence.get(firstBeforeItem);
-                if (isFirstSuccessorOfSecond(addingItem, endOfBeforeSequenceItem)) {
-                    // We need to extend the first bag
-                    // No break since afterItem is null
-                    prevBag.setEnd(addingItem);
-                } else {
-                    // Start a new bag of consecutive items
-                    var newBag = new SequenceImpl<>(this, addingItem);
-                    startItemToSequence.put(addingItem, newBag);
-                    startItemToPreviousBreak.put(addingItem, new BreakImpl<>(newBag, prevBag));
-                }
-            }
-        } else {
-            // No items before it
-            var firstAfterItem = startItemToSequence.higherKey(addingItem);
-            if (firstAfterItem != null) {
-                if (isFirstSuccessorOfSecond(firstAfterItem, addingItem)) {
-                    // We need to move the after bag to use item as key
-                    var afterBag = startItemToSequence.remove(firstAfterItem);
-                    afterBag.setStart(addingItem);
-                    // No break since this is the first sequence
-                    startItemToSequence.put(addingItem, afterBag);
-                } else {
-                    // Start a new bag of consecutive items
-                    var afterBag = startItemToSequence.get(firstAfterItem);
-                    var newBag = new SequenceImpl<>(this, addingItem);
-                    startItemToSequence.put(addingItem, newBag);
-                    startItemToPreviousBreak.put(firstAfterItem, new BreakImpl<>(afterBag, newBag));
-                }
-            } else {
-                // Start a new bag of consecutive items
-                var newBag = new SequenceImpl<>(this, addingItem);
-                startItemToSequence.put(addingItem, newBag);
-                // Bag have no other items, so no break
-            }
-        }
-        return true;
+        return addingItem;
     }
 
-    private static <T extends Comparable<T>, Value_> boolean isInNaturalOrderAndHashOrderIfEqual(T a, Value_ aItem, T b,
-            Value_ bItem) {
-        int difference = a.compareTo(b);
-        if (difference != 0) {
-            return difference < 0;
+    private static <Value_, Point_ extends Comparable<Point_>> void
+            addExistingItem(ValueCount<ComparableValue<Value_, Point_>> valueCount, Point_ valueIndex, Value_ value) {
+        var addingItem = valueCount.value;
+        if (!Objects.equals(addingItem.index(), valueIndex)) {
+            throw new IllegalStateException("""
+                    Impossible state: the item (%s) is already in the bag with a different index (%s vs %s)
+                    Maybe the index map function is not deterministic?"""
+                    .formatted(value, addingItem.index(), valueIndex));
         }
-        return System.identityHashCode(aItem) - System.identityHashCode(bItem) < 0;
+        valueCount.count++;
+    }
+
+    private void addSubsequentItem(ComparableValue<Value_, Point_> addingItem,
+            Map.Entry<ComparableValue<Value_, Point_>, SequenceImpl<Value_, Point_, Difference_>> firstBeforeItemEntry,
+            Point_ valueIndex, Value_ value) {
+        var endOfBeforeSequenceItem = firstBeforeItemEntry.getValue().lastItem;
+        var endOfBeforeSequenceIndex = endOfBeforeSequenceItem.index();
+        if (isInNaturalOrderAndHashOrderIfEqual(valueIndex, value, endOfBeforeSequenceIndex,
+                endOfBeforeSequenceItem.value())) {
+            // Item is already in the bag; do nothing
+            return;
+        }
+        // Item is outside the bag
+        var firstBeforeItem = firstBeforeItemEntry.getKey();
+        var firstAfterItem = startItemToSequence.higherKey(addingItem);
+        if (firstAfterItem != null) {
+            addBetweenItems(addingItem, firstBeforeItem, endOfBeforeSequenceItem, firstAfterItem);
+        } else {
+            var prevBag = startItemToSequence.get(firstBeforeItem);
+            if (isFirstSuccessorOfSecond(addingItem, endOfBeforeSequenceItem)) {
+                // We need to extend the first bag
+                // No break since afterItem is null
+                prevBag.setEnd(addingItem);
+            } else {
+                // Start a new bag of consecutive items
+                addSequence(addingItem, prevBag);
+            }
+        }
+    }
+
+    private void addFirstItem(ComparableValue<Value_, Point_> addingItem) {
+        var firstAfterItem = startItemToSequence.higherKey(addingItem);
+        if (firstAfterItem != null) {
+            if (isFirstSuccessorOfSecond(firstAfterItem, addingItem)) {
+                // We need to move the after bag to use item as key
+                var afterBag = startItemToSequence.remove(firstAfterItem);
+                afterBag.setStart(addingItem);
+                // No break since this is the first sequence
+                startItemToSequence.put(addingItem, afterBag);
+            } else {
+                // Start a new bag of consecutive items
+                addSequence(addingItem, firstAfterItem, startItemToSequence.get(firstAfterItem));
+            }
+        } else {
+            // Start a new bag of consecutive items
+            startItemToSequence.put(addingItem, new SequenceImpl<>(this, addingItem));
+            // Bag have no other items, so no break
+        }
     }
 
     private void addBetweenItems(ComparableValue<Value_, Point_> comparableItem,
@@ -225,6 +227,29 @@ public final class ConsecutiveSetTree<Value_, Point_ extends Comparable<Point_>,
                         new BreakImpl<>(newBag, previousSequence));
             }
         }
+    }
+
+    private void addSequence(ComparableValue<Value_, Point_> addingItem,
+            SequenceImpl<Value_, Point_, Difference_> newNextSequence) {
+        var newBag = new SequenceImpl<>(this, addingItem);
+        startItemToSequence.put(addingItem, newBag);
+        startItemToPreviousBreak.put(addingItem, new BreakImpl<>(newBag, newNextSequence));
+    }
+
+    private void addSequence(ComparableValue<Value_, Point_> addingItem, ComparableValue<Value_, Point_> firstAfterItem,
+            SequenceImpl<Value_, Point_, Difference_> newPreviousSequence) {
+        var newBag = new SequenceImpl<>(this, addingItem);
+        startItemToSequence.put(addingItem, newBag);
+        startItemToPreviousBreak.put(firstAfterItem, new BreakImpl<>(newPreviousSequence, newBag));
+    }
+
+    private static <T extends Comparable<T>, Value_> boolean isInNaturalOrderAndHashOrderIfEqual(T a, Value_ aItem, T b,
+            Value_ bItem) {
+        int difference = a.compareTo(b);
+        if (difference != 0) {
+            return difference < 0;
+        }
+        return System.identityHashCode(aItem) - System.identityHashCode(bItem) < 0;
     }
 
     public boolean remove(Value_ value) {
